@@ -27,6 +27,7 @@ Everything in the demo is scripted with fictional merchants and example prices. 
 | `CLAUDE.md` | Rules for coding agents |
 | `docs/DESIGN.md` | Style (iOS light + cyan), layout, trust labels |
 | `docs/DECISIONS.md` | Decision log and open questions |
+| `docs/VISITORS.md` | What visitors actually face: stages, European frictions, personas, interview script |
 | `docs/VISION.md` | Long-term vision (no build scope) |
 | `archive/` | Original handoff docs 01–08, old plan, past reviews |
 

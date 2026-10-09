@@ -23,6 +23,7 @@ Civic guidance (official sources, citations) is LATER, not in the contest build.
 | `ARCHITECTURE.md` | Build architecture, contracts, state machine |
 | `docs/DESIGN.md` | Style tokens, layout, trust labels, screen status |
 | `docs/DECISIONS.md` | Decision log, newest first |
+| `docs/VISITORS.md` | Visitor pain points, personas, interview script (hypotheses until interviews) |
 | `docs/VISION.md` | Long-term vision. **Adds no scope** |
 | `archive/` | Original handoff 01–08, old implementation plan, past reviews. Reference only, never build from it |
 

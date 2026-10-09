@@ -4,6 +4,7 @@ One line per decision, newest first. If a decision changes scope, update `PLAN.m
 
 | Date | Decision | Why |
 |---|---|---|
+| 2026-10-09 | Proposed hero persona: **European business traveller, 2–3 nights** (to confirm in interviews) | Memory + deadline + follow-through matter most; matches the laundry arc |
 | 2026-10-09 | Core promise: **"remembers your situation and follows through with local merchants, with you approving what gets shared"**. Companion = product, mini-apps = mechanism, onboarding = growth | External review: the demo read as three competing products |
 | 2026-10-09 | Hero merchant: **independent laundry with a deadline**, not pharmacy | Pharmacy looks like talabat/Careem; a deadline creates a real agent decision |
 | 2026-10-09 | Add a **deadline-conflict beat** (quote 10:00 vs need 09:00 → ask for earlier) | Turns a merchant reply into an agent decision |

@@ -11,6 +11,8 @@ This is the single plan. Scope, demo and phases live here, and nowhere else. Dec
 
 The companion is the product. Mini-apps are how it works with merchants. Photo onboarding is how more merchants join. Airport arrival is the introduction, not the product.
 
+**Hero persona (proposed):** a European business traveller on a 2–3 night trip. Visitor pain points, personas and the interview script are in `docs/VISITORS.md`.
+
 Contest: Create AI Agents Championship, category **Best Personal AI Agent** (rules, deadline and IP terms still to verify, see Phase 0).
 
 ## 2. Scope
@@ -80,7 +82,8 @@ Gates are binary. Dates are relative until the contest deadline is verified; the
 - [x] Hero merchant: independent laundry with a deadline
 - [x] Mock fixes: lost-bag routing, explicit "I've reached my hotel", merchant updates only from the inbox
 - [ ] Rebuild the sketch to arc v2: laundry deadline-conflict branch, fixed cyan host strip on mini-apps, collapse the approval after send, one progress indicator, remove the Civic tab, compact backstage, a "Scripted demo" label, bigger touch targets in mini-apps
-- [ ] Story test with 6–8 target visitors: after 4 min, ask what it does, what it remembered, who confirmed the request, and would they use it
+- [x] Visitor research seeded from the archive (`docs/VISITORS.md`): stages, European frictions, personas
+- [ ] Story test with 6–8 target visitors using the interview script in `docs/VISITORS.md §5`
 - [ ] Tabletop with 3–5 independent laundries using their real price lists (ack, deadline negotiation, confirm); verify the "unlisted" claim
 - [ ] Projector test with 5 unfamiliar viewers; rehearse to 3:40
 - [ ] Verify contest rules: deadline, required artifacts (video? deck?), judging criteria, IP terms
