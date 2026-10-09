@@ -22,8 +22,12 @@ Everything in the demo is scripted with fictional merchants and example prices. 
 
 | File | What it is |
 |---|---|
-| `CLAUDE.md` | Rules for coding agents and document authority |
-| `PLAN.md` | MVP freeze, demo, phases, gates |
-| `ARCHITECTURE.md` | Build architecture and contracts |
-| `REVIEW.md` | Review of the full planning package |
-| `dubai-io-handoff/` | Original vision and reference docs |
+| `PLAN.md` | **The plan**: scope, demo arc, phases and gates. Start here |
+| `ARCHITECTURE.md` | How it will be built: modules, contracts, state machine, sandbox |
+| `CLAUDE.md` | Rules for coding agents |
+| `docs/DESIGN.md` | Style (iOS light + cyan), layout, trust labels |
+| `docs/DECISIONS.md` | Decision log and open questions |
+| `docs/VISION.md` | Long-term vision (no build scope) |
+| `archive/` | Original handoff docs 01–08, old plan, past reviews |
+
+**Stage:** sketch (Phase 0).

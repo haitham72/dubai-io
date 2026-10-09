@@ -1,8 +1,8 @@
 # Dubai-io — Build Architecture (contest MVP)
 
-**Date:** 9 Oct 2026 · **Supersedes:** `dubai-io-implementation-plan.md` §2–3 and §5 · **Scope source:** `PLAN.md`
+**Updated:** 9 Oct 2026 · **Scope source:** `PLAN.md` (phases referenced as Phase 1–5) · Reference implementation of the UI: `demo/`
 
-This document covers only what the contest build needs. The long-term vision architecture (community, media vault, native sensors, indoor maps, ticket wallet) stays in `dubai-io-handoff/02` and `07` and is **not** built here.
+This document covers only what the contest build needs. The long-term vision architecture (community, media vault, native sensors, indoor maps, ticket wallet) stays in `archive/handoff/02` and `07` and is **not** built here.
 
 ---
 
@@ -29,7 +29,7 @@ One modular monolith (one Python API, one Next.js app) plus a static widget orig
 │  outbox ──► dispatcher ──► messages + SSE fan-out (LISTEN/NOTIFY)       │
 │  scheduler (reminders) ──► outbox                                       │
 │  registry (providers, capabilities, manifests)                          │
-│  civic (ingest, retrieve, cite)    evidence (uploads)    onboarding     │
+│  journey (arrival guide)  memory  evidence (uploads)  onboarding        │
 └───────────────┬─────────────────────────────────────────────────────────┘
                 ▼
      PostgreSQL 16 + pgvector  ·  object storage (local disk in dev, S3-compatible in prod)
@@ -54,7 +54,8 @@ apps/widgets  ── separate origin (e.g. widgets.<domain>), static HTML/JS onl
 | `merchant` | Inbox queries and merchant commands (they go through `actions`) | Let a merchant see other merchants' requests |
 | `outbox` | Transactional outbox, dispatcher, NOTIFY | Deliver one event twice (dedupe on `dedupe_key`) |
 | `scheduler` | Reminder rows, quiet hours, firing into the outbox | Use the LLM to decide *when* to fire |
-| `civic` | Source registry, chunking, embeddings, retrieval, citation check | Answer with no retrieved chunk |
+| `journey` | Arrival guide steps, landmark matching, map pins from user-confirmed places | Claim a position the user didn't confirm |
+| `civic` (LATER) | Official-source retrieval with citations | Answer with no retrieved chunk |
 | `evidence` | Photo/receipt uploads, EXIF stripping, signed URLs | Store files in the DB or vector index |
 | `onboarding` | Menu-photo extraction into a draft provider for operator approval | Publish without operator approval |
 | `memory` | `user_context` (area, language, mode, parking memories) | Infer facts. Everything here is user-supplied or confirmed |
@@ -96,30 +97,31 @@ Every card has `type`, `schema_version`, `card_id`, `title`, `as_of`, `actions: 
 
 | `type` | Purpose | Phase |
 |---|---|---|
-| `text_note` | Plain fallback | P1 |
-| `service_comparison` | ≤3 providers: name, `Money`, availability (`Sourced`), rating (`Sourced` or omitted), capability level | P1 |
-| `action_approval` | What will be sent, to whom, which fields, and the cost if any | P2 |
-| `action_status` | Request id, current status, last authoritative event, `provider_reference` | P2 |
-| `html_widget` | `manifest_id`, `manifest_version`, `bridge_scopes`, `fallback_card` (inline `service_comparison`) | P2 |
-| `citation_answer` | Answer text, `citations[]` (issuer, title, article/section, url, retrieved_at, quote), disclaimer | P3 |
-| `evidence_bundle` | Request ref, attached photos/receipts, timeline | P3 |
-| `complaint_draft` | Editable text, official channel URL, `Open official channel` action (a handoff, never "submit") | P3 |
-| `reminder` | What, when, why (`trigger_source`), snooze/dismiss | P4 |
-| `parking_prompt` / `parking_recall` | Photo, level, pillar (user-supplied), venue, saved_at | P4 |
-| `provider_draft` | Onboarding: extracted items with per-field provenance | P4 |
+| `text_note` | Plain fallback | 1 |
+| `service_comparison` | ≤3 providers: name, `Money`, availability (`Sourced`), rating (`Sourced` or omitted), capability level | 3 |
+| `action_approval` | What will be sent, to whom, which fields, and the cost if any | 3 |
+| `action_status` | Request id, current status, last authoritative event, `provider_reference` | 3 |
+| `html_widget` | `manifest_id`, `manifest_version`, `bridge_scopes`, `fallback_card` (inline `service_comparison`) | 3 |
+| `journey_step` | Step title/body, zone, map ref + pin (user-confirmed), Next / I'm lost | 2 |
+| `ride_options` | Taxi/Metro/app with estimate labels; handoff actions only | 2 |
+| `memory_saved` | Key, value, `user_supplied` | 2 |
+| `evidence_bundle` | Request or trip ref, attached photos/receipts, timeline | 4 |
+| `recovery_checklist` | Lost-item steps built from saved memory, official contact handoff (never "filed") | 4 |
+| `reminder` | What, when, why (`trigger_source`), snooze/dismiss | 2 |
+| `provider_draft` | Onboarding: extracted items with per-field provenance → generated mini-app preview | 4 |
 
 **Out of the MVP union:** `vehicle_status`, `ticket_wallet`, `indoor_route_step`, `delivery_window`, `trip_checklist`, `community_summary`. Add one only when `PLAN.md` moves it into scope.
 
 ### 3.3 Agent tools (read-only)
 
-`registry.search(category, area, deadline)`, `registry.get_provider(id)`, `requests.get(user, id)`, `civic.retrieve(query, lang)`, `memory.get(keys)`, `parking.latest()`.
+`registry.search(category, area, deadline)`, `registry.get_provider(id)`, `requests.get(user, id)`, `memory.get(keys)`, `parking.latest()`.
 "Propose" tools create pending rows but no external effect: `actions.propose_quote_request(provider_id, inputs)` returns an `action_approval` card, and `scheduler.propose_reminder(...)` returns a `reminder` card that needs confirmation.
 
 ---
 
 ## 4. Request state machine (single source of truth)
 
-This extends `handoff/04 §6` with the two missing pieces: a merchant **decline**, and a **second** user approval when the user accepts a quote.
+This extends `archive/handoff/04 §6` with the two missing pieces: a merchant **decline**, and a **second** user approval when the user accepts a quote.
 
 ```
 DRAFT ─► AWAITING_APPROVAL ─(user approves send)─► SUBMITTED
@@ -155,7 +157,7 @@ The render order is: standard card first, widget second, fallback always availab
 
 1. The agent emits `service_comparison`. If the provider has an approved manifest, the card offers `Open widget`.
 2. The host loads `https://widgets.<domain>/<provider>/<version>/index.html` in `<iframe sandbox="allow-scripts">`. **Never add `allow-same-origin`**: together with `allow-scripts` on a same-site origin, it lets the frame strip its own sandbox. The widget origin is a separate site.
-3. Widget CSP: `default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'`. The widget cannot call the API. This fixes `handoff/04 §4b`, which allowed `connect-src` to the API and so contradicted its own "HTML never calls tools" rule.
+3. Widget CSP: `default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'`. The widget cannot call the API. This fixes `archive/handoff/04 §4b`, which allowed `connect-src` to the API and so contradicted its own "HTML never calls tools" rule.
 4. Bridge: `postMessage` with a strict `origin` check on both sides. The host accepts only `{v:1, kind, payload}`, where `kind ∈ manifest.bridge_scopes` (MVP: `quote.read`, `quote.request`). `quote.request` makes the **host** build an `action_approval` card. The widget never submits anything.
 5. If the manifest is missing or unapproved, the iframe fails to load within 3 s, or the client is offline, render `fallback_card`.
 
@@ -183,7 +185,7 @@ labelled "Demo trigger")                                ▼
 
 ---
 
-## 8. Civic RAG
+## 8. Civic RAG (LATER, not in the contest build)
 
 - Corpus: an operator-curated list in `knowledge_sources`. Each row needs issuer, URL, version date, jurisdiction and a reuse note. Ingest from saved copies (PDF/HTML) with section/article anchors.
 - Retrieval: hybrid search (Postgres FTS + pgvector), top-k chunks, then the answer is generated **only** from those chunks.
@@ -195,7 +197,7 @@ labelled "Demo trigger")                                ▼
 
 ## 9. Frontend
 
-- Tabs: **Companion · Services · Civic · Me** (matches the canonical screens S1–S3). `Services` is a browse view backed by the same registry search the agent uses. `Civic` contains only Guides (the RAG entry point) for MVP. Other civic sub-tabs show `Pilot`. Community is not in the nav.
+- Tabs: **Companion · Services · Civic · Me** (see `docs/DESIGN.md`). `Services` is a browse view backed by the same registry search the agent uses. `Civic` contains only Guides (the RAG entry point) for MVP. Other civic sub-tabs show `Pilot`. Community is not in the nav.
 - Card renderer: a `switch` on `card.type` over a component registry. Unknown types fall back to `text_note`. Validation is generated from the contracts.
 - Visual system (founder decision 9 Oct, replaces Editorial Luxury gold): **iOS light mode with a cyan tint**. System font (SF Pro / -apple-system), grouped background `#F2F2F7`, white cards radius 16px, separators `#E5E5EA`, tint `#0A9CC2`, iMessage-style bubbles (bot `#E9E9EB`, user = tint). Merchant mini-apps keep their own branding. Reference implementation: `demo/styles.css`. Required pills: `Demo data`, `Sandbox`, `User-supplied`, `Estimate`, `Demo trigger`, `Official source`.
 - RTL readiness: use logical CSS properties (`margin-inline-start`) from day one. A full Arabic UI is a stretch goal.
