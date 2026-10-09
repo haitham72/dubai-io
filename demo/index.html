@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dubai-io Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="stage">
+
+  <!-- ================= PHONE ================= -->
+  <section class="phone" aria-label="Dubai-io app">
+    <div class="statusbar"><span id="clock">14:32</span><span>5G ▮▮▮</span></div>
+    <header class="appbar">
+      <div class="brand">Dubai-io<small>YOUR DUBAI COMPANION</small></div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <button class="mobile-log-btn" id="mobileLogBtn">Under the hood</button>
+        <span class="mode-pill" id="modePill">Visitor</span>
+      </div>
+    </header>
+
+    <main class="screen active" id="screen-companion">
+      <div class="chat" id="chat"></div>
+    </main>
+
+    <main class="screen" id="screen-services">
+      <div class="svc">
+        <h2>Services</h2>
+        <p class="lead">Each merchant opens as its own mini-app, inside a sandbox.</p>
+        <div class="cats" id="cats"></div>
+        <div id="merchantList"></div>
+      </div>
+    </main>
+
+    <main class="screen" id="screen-civic">
+      <div class="list">
+        <h2>Civic</h2>
+        <div class="row"><div>Official guides<div class="k">Cited answers from official sources only</div></div><span class="pill">Pilot</span></div>
+        <div class="row"><div>Consumer rights help<div class="k">Evidence, complaint draft, official channel link</div></div><span class="pill">Pilot</span></div>
+        <p class="empty">Not part of this demo. Dubai-io never pays fines, tops up balances or books government services. It hands off to the official channel.</p>
+      </div>
+    </main>
+
+    <main class="screen" id="screen-me">
+      <div class="list">
+        <h2>Me</h2>
+        <div class="row"><div>Mode<div class="k">Set by you, never guessed</div></div>
+          <div class="seg" id="modeSeg"><button data-mode="Visitor" class="on">Visitor</button><button data-mode="Resident">Resident</button></div></div>
+        <h4 style="margin:16px 0 6px;font-size:12px;color:var(--ink-3);letter-spacing:.1em">WHAT I REMEMBER (YOU TOLD ME)</h4>
+        <div id="memoryList"></div>
+        <h4 style="margin:16px 0 6px;font-size:12px;color:var(--ink-3);letter-spacing:.1em">PERMISSIONS</h4>
+        <div class="row"><div>Trip reminders</div><span class="pill user">On</span></div>
+        <div class="row"><div>Background location</div><span class="pill">Off (not used)</span></div>
+      </div>
+    </main>
+
+    <form class="composer" id="composer">
+      <input id="input" placeholder="Ask Dubai-io…" autocomplete="off">
+      <button type="submit" aria-label="Send">➤</button>
+    </form>
+    <nav class="tabs">
+      <button class="tab active" data-tab="companion"><span class="ti">✦</span>Companion</button>
+      <button class="tab" data-tab="services"><span class="ti">▦</span>Services</button>
+      <button class="tab" data-tab="civic"><span class="ti">⚖</span>Civic</button>
+      <button class="tab" data-tab="me"><span class="ti">◉</span>Me</button>
+    </nav>
+
+    <!-- mini-app host -->
+    <div class="sheet-backdrop" id="sheetBackdrop"></div>
+    <div class="sheet" id="sheet" role="dialog" aria-label="Merchant mini-app">
+      <div class="sheet-head">
+        <div class="t" id="sheetTitle">Mini-app<small>Sandboxed merchant HTML</small></div>
+        <button class="xbtn" id="sheetClose" aria-label="Close">✕</button>
+      </div>
+      <iframe id="miniFrame" sandbox="allow-scripts" title="Merchant mini-app"></iframe>
+      <div class="sheet-foot"><span id="sheetManifest">manifest</span><span>sandbox: allow-scripts · no same-origin · no network</span></div>
+    </div>
+  </section>
+
+  <!-- ================= BACKSTAGE ================= -->
+  <aside class="backstage" id="backstage">
+    <div class="bs-head">
+      <div>
+        <h2>Under the hood</h2>
+        <p>What the agent, the merchants and the sandbox are doing</p>
+      </div>
+      <div class="bs-actions">
+        <button class="bs-btn" id="restartBtn">↺ Restart demo</button>
+        <button class="bs-btn" id="closeBackstage" style="display:none">Close</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h4>Merchant inbox <label><input type="checkbox" id="autoMerchant" checked> auto-respond</label></h4>
+      <div id="inbox"><div class="inbox-empty">No requests yet. Order something from a pharmacy mini-app.</div></div>
+    </div>
+
+    <div class="panel" style="flex:1;display:flex;flex-direction:column">
+      <h4>Event log <span class="legend">trigger · agent · tool · bridge · action · memory · security</span></h4>
+      <div class="log" id="log"></div>
+    </div>
+  </aside>
+</div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

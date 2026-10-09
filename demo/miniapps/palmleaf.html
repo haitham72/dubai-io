@@ -1,0 +1,72 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Palm Leaf Pharmacy</title>
+<style>
+  body { margin: 0; font-family: system-ui, sans-serif; background: #F2F8F4; color: #12321F; }
+  header { background: #2F7D5B; color: #fff; padding: 18px 16px 22px; }
+  header h1 { margin: 0; font-size: 22px; } header p { margin: 4px 0 0; opacity: .85; font-size: 13px; }
+  .tag { display: inline-block; background: rgba(255,255,255,.18); padding: 3px 8px; border-radius: 6px; font-size: 11px; margin-top: 8px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 14px; }
+  .item { background: #fff; border-radius: 12px; padding: 12px; border: 1px solid #D7EADF; }
+  .item .e { font-size: 28px; } .item b { display: block; font-size: 13px; margin: 6px 0 2px; } .item span { font-size: 12px; color: #4D6B5A; }
+  .q { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+  .q button { width: 28px; height: 28px; border-radius: 8px; border: 1px solid #2F7D5B; background: #fff; color: #2F7D5B; font-size: 16px; }
+  .bar { position: sticky; bottom: 0; background: #fff; border-top: 1px solid #D7EADF; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; }
+  .go { background: #2F7D5B; color: #fff; border: 0; border-radius: 10px; padding: 11px 16px; font-weight: 600; }
+  .go:disabled { opacity: .4; }
+  .note { font-size: 11px; color: #4D6B5A; padding: 0 14px 10px; }
+  .dev { font-size: 11px; color: #7a8f83; background: none; border: 0; text-decoration: underline; margin: 0 14px 12px; padding: 0; cursor: pointer; }
+  pre { font-size: 10.5px; margin: 0 14px 12px; background: #fff; border: 1px dashed #b9d4c4; padding: 8px; border-radius: 8px; white-space: pre-wrap; }
+</style></head>
+<body>
+<header><h1>🌿 Palm Leaf Pharmacy</h1><p>Everyday medicines, delivered</p><span class="tag" id="area">Delivering near you</span></header>
+<div class="grid" id="grid"></div>
+<p class="note">Over-the-counter items only. Prices are merchant-submitted demo data.</p>
+<button class="dev" id="dev">Developer: run sandbox self-test</button>
+<pre id="diag" hidden></pre>
+<div class="bar"><div><b id="total">AED 0.00</b><div style="font-size:11px;color:#4D6B5A">estimate before delivery</div></div><button class="go" id="go" disabled>Request delivery quote</button></div>
+<script>
+  const items = [
+    { e: "💊", name: "Paracetamol 500mg ×24", price: 9 },
+    { e: "🥤", name: "Oral rehydration salts ×10", price: 18 },
+    { e: "🧴", name: "Sunscreen SPF 50", price: 59 },
+    { e: "👃", name: "Saline nasal spray", price: 22 },
+    { e: "🩹", name: "Blister plasters", price: 16 },
+    { e: "💋", name: "Lip balm", price: 12 }
+  ];
+  const qty = items.map(() => 0);
+  const send = (kind, payload) => parent.postMessage({ v: 1, kind, payload }, "*");
+  function draw() {
+    document.getElementById("grid").innerHTML = items.map((it, i) =>
+      `<div class="item"><div class="e">${it.e}</div><b>${it.name}</b><span>AED ${it.price}</span>
+       <div class="q"><button data-i="${i}" data-d="-1">−</button>${qty[i]}<button data-i="${i}" data-d="1">+</button></div></div>`).join("");
+    document.querySelectorAll("[data-i]").forEach(b => b.onclick = () => { qty[b.dataset.i] = Math.max(0, qty[b.dataset.i] + +b.dataset.d); draw(); });
+    const t = items.reduce((s, it, i) => s + it.price * qty[i], 0);
+    document.getElementById("total").textContent = "AED " + t.toFixed(2);
+    document.getElementById("go").disabled = t === 0;
+  }
+  document.getElementById("go").onclick = () => {
+    const chosen = items.map((it, i) => ({ name: it.name, qty: qty[i], price: it.price })).filter(x => x.qty);
+    send("cart.request", { items: chosen, estimate: chosen.reduce((s, x) => s + x.qty * x.price, 0) });
+  };
+  // Shows what the sandbox blocks: network, storage, cookies, top navigation, and out-of-scope bridge calls.
+  document.getElementById("dev").onclick = async () => {
+    const r = {};
+    try { await fetch("https://example.com"); r.network = "ALLOWED"; } catch { r.network = "blocked"; }
+    try { localStorage.setItem("x", "1"); r.storage = "ALLOWED"; } catch { r.storage = "blocked"; }
+    try { document.cookie = "a=1"; r.cookies = document.cookie ? "ALLOWED" : "blocked"; } catch { r.cookies = "blocked"; }
+    try { top.location.href = "https://example.com"; r.top_navigation = "ALLOWED"; } catch { r.top_navigation = "blocked"; }
+    send("diag.report", r);
+    send("payment.charge", { amount: 999 });
+    const pre = document.getElementById("diag"); pre.hidden = false; pre.textContent = JSON.stringify(r, null, 2) + "\npayment.charge → sent to host (expect: denied)";
+  };
+  window.addEventListener("message", (e) => {
+    if (e.source !== parent || !e.data) return;
+    if (e.data.kind === "host.context") document.getElementById("area").textContent = "Delivering to " + e.data.payload.area;
+    if (e.data.kind === "host.error") document.getElementById("diag").textContent += "\nhost replied: " + e.data.payload.reason + " (" + e.data.payload.kind + ")";
+  });
+  draw(); send("app.ready", {});
+</script>
+</body></html>

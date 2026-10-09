@@ -1,0 +1,4 @@
+.playwright-mcp/
+.env
+node_modules/
+__pycache__/
