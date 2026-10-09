@@ -28,6 +28,7 @@ Everything in the demo is scripted with fictional merchants and example prices. 
 | `docs/DESIGN.md` | Style (iOS light + cyan), layout, trust labels |
 | `docs/DECISIONS.md` | Decision log and open questions |
 | `docs/VISITORS.md` | Visitor needs as hypotheses to test, the hotel-concierge question, interview script |
+| `docs/research/` | Deep-research prompt for Gemini/DeepSeek (⏳ not run yet) and its results |
 | `docs/VISION.md` | Long-term vision (no build scope) |
 | `archive/` | Original handoff docs 01–08, old plan, past reviews |
 

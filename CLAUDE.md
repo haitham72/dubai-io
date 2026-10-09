@@ -14,6 +14,10 @@ Civic guidance (official sources, citations) is LATER, not in the contest build.
 
 **Stage: sketch (Phase 0).** The only code is the clickable HTML prototype in `demo/`.
 
+## ⏳ Pending research: remind the founder
+
+`docs/research/research-prompt.md` (deep research for Gemini/DeepSeek on visitor needs, the hotel-concierge question, competitors, fact checks and contest rules) **has not been run yet**. Until a `docs/research/results-*.md` file exists, **remind the founder at the start of any planning or build session** to run it, and offer to merge the results once they're saved there.
+
 ## Docs (highest authority first)
 
 | File | Role |
@@ -24,6 +28,7 @@ Civic guidance (official sources, citations) is LATER, not in the contest build.
 | `docs/DESIGN.md` | Style tokens, layout, trust labels, screen status |
 | `docs/DECISIONS.md` | Decision log, newest first |
 | `docs/VISITORS.md` | Visitor needs as hypotheses to test + interview script. Not evidence |
+| `docs/research/` | Deep-research prompt + results from external tools (pending) |
 | `docs/VISION.md` | Long-term vision. **Adds no scope** |
 | `archive/` | Original handoff 01–08, old implementation plan, past reviews. Reference only, never build from it |
 

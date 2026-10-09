@@ -84,6 +84,7 @@ Gates are binary. Dates are relative until the contest deadline is verified; the
 - [x] Demo arc v2 locked (§3)
 
 **Carried into Phase 1 (non-blocking):**
+- [ ] ⏳ **Run `docs/research/research-prompt.md` in Gemini Deep Research / DeepSeek** and save the results in `docs/research/`. It fills the evidence gaps (laundry deadline, hotel concierge, competitors, contest rules)
 - [ ] Verify contest rules: deadline, artifacts, judging criteria, IP terms (re-anchor phase dates)
 - [ ] Update the sketch to arc v2: deadline-conflict branch, time-aware ride reasoning, RTA fields in the lost-item report, cyan host strip, remove Civic tab, compact backstage, "Scripted demo" label
 - [ ] Replace placeholder maps with arrival-side maps
