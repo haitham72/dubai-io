@@ -197,7 +197,7 @@ labelled "Demo trigger")                                ▼
 
 - Tabs: **Companion · Services · Civic · Me** (matches the canonical screens S1–S3). `Services` is a browse view backed by the same registry search the agent uses. `Civic` contains only Guides (the RAG entry point) for MVP. Other civic sub-tabs show `Pilot`. Community is not in the nav.
 - Card renderer: a `switch` on `card.type` over a component registry. Unknown types fall back to `text_note`. Validation is generated from the contracts.
-- Visual system: the *visual language* of style C "Editorial Luxury" (not its home layout, which copies the DubaiNow favorites grid). Tokens: `--cream #FAF6EF`, `--ink #1A1A1A`, `--gold #C9A86A`, card radius 20px, serif display + sans body, dark theme derived from the same tokens. Required pills: `Demo data`, `Sandbox`, `User-supplied`, `Estimate`, `Demo trigger`, `Official source`.
+- Visual system (founder decision 9 Oct, replaces Editorial Luxury gold): **iOS light mode with a cyan tint**. System font (SF Pro / -apple-system), grouped background `#F2F2F7`, white cards radius 16px, separators `#E5E5EA`, tint `#0A9CC2`, iMessage-style bubbles (bot `#E9E9EB`, user = tint). Merchant mini-apps keep their own branding. Reference implementation: `demo/styles.css`. Required pills: `Demo data`, `Sandbox`, `User-supplied`, `Estimate`, `Demo trigger`, `Official source`.
 - RTL readiness: use logical CSS properties (`margin-inline-start`) from day one. A full Arabic UI is a stretch goal.
 
 ---

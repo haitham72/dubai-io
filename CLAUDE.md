@@ -55,5 +55,5 @@ _Not yet scaffolded. Phase 0 must fill this section in: install, dev, test, lint
 - No git repo exists yet. The first action of Phase 0 is `git init` and committing the docs as they are.
 - Contracts change first (`packages/contracts`), then the generated types, then the code. A card or state change without a contract change is a bug.
 - Every workflow ships with fixtures, a happy-path test and a failure-path test (provider timeout, merchant decline, empty retrieval, duplicate submit).
-- Design tokens come from `ARCHITECTURE.md §9` (Editorial Luxury: cream / ink / gold). Do not invent new palettes.
+- Design tokens come from `ARCHITECTURE.md §9` (iOS light mode, cyan tint; see `demo/styles.css`). Do not invent new palettes.
 - Keep the docs short. Update `PLAN.md` gate status; don't create new planning docs.

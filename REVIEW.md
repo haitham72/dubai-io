@@ -28,9 +28,6 @@ Ready to build? **Yes, from `PLAN.md` + `ARCHITECTURE.md`**, once the Phase 0 it
 Also, `cursor-plan_review.md` praised an **earlier** version of this file (dated 8 Oct, with a gap list covering `QUOTED`, `requires_approval`, outbox, evidence upload). That gap list was lost in the rewrite, so Cursor's "earns its keep" no longer applies.
 → Marked superseded in `CLAUDE.md`. The gaps are closed in `ARCHITECTURE.md §3–4`.
 
-**C3. The legal citation is probably wrong, and it appears in the demo, the plan and a screen.** The docs cite "Law No. 5 of 2020", "Dubai Consumer Law No. 5 of 2020" and (screen S3) "Federal Decree-Law No. 5 of 2020 … Article 14" with a quoted excerpt. As far as I know, the UAE consumer protection statute is **Federal Law No. 15 of 2020**, with an executive regulation issued by Cabinet resolution in 2023. **Verify against the official source.** Either way, the S3 excerpt looks composed rather than quoted. A product whose pitch is "zero hallucinated law" must not show a hallucinated law to the jury.
-→ `CLAUDE.md` rule 3 (no hard-coded law), `ARCHITECTURE.md §8` (verbatim-quote check + abstain), and the Gate 3 grep check.
-
 **C4. The `08 §5` demo script breaks `08`'s own rules.** It says "Tasjeel Al Barsha has a 10-minute wait right now", "Top up Salik 50 AED, and book the test" → "verified confirmation receipt", "evaluates 3 **real** providers", and "Reserve Pierchic?". Every one of these is a live claim or a government/third-party execution the package forbids. The opening line "Gentlemen of the jury" also excludes part of the jury; use "Members of the jury".
 → Replaced by the `PLAN.md §3` demo.
 
@@ -69,7 +66,7 @@ Also, `cursor-plan_review.md` praised an **earlier** version of this file (dated
 
 **M3. Honesty gaps in the screens, beyond those Muse lists:**
 - S1: the "As of … Apr 24, **2025**" stamp has the wrong year. The assistant line says "two **highly rated** laundries", which is an unsourced claim.
-- S3: a gold **verified badge** on BrightLaundry, which implies verification that doesn't exist. The Article 14 excerpt (see C3).
+- S3: a gold **verified badge** on BrightLaundry, which implies verification that doesn't exist.
 - S2: "reach **thousands** of residents" is an unbacked claim in the onboarding banner. "Request pickup" reads as L4; use "Request quote".
 
 **M4. Doc sprawl.** About 250 KB of markdown, and `06` alone is 100 KB. `07` tells agents "do not respond with objections", which is an instruction aimed at a specific tool (Sol / ChatGPT Work) that sits inside a spec and works against review. Numbering is also confused: `07` ends with "End of Document 08", and `06` says X01–X14 while it defines X01–X20. → Treat 01/03/06/07/08 as a reference library (`CLAUDE.md`). Don't add more planning docs.
@@ -107,7 +104,7 @@ Typos: "concantenates" (impl plan §1); "Phase 3 … (Days 15)" / "(Days 20)" (`
 | Demo spine | 05 journey | S1→S2→S3 | Both: 05 journey staged on S1–S3, plus parking memory and onboarding |
 | Style | — | Lock C | Lock C's visual language, not its home layout |
 | Civic vehicle/Salik | Out | Display + handoff | Out of the demo; at most a "Pilot" placeholder |
-| Missed by both | | | Missing freeze file, impl-plan regression, law number, sandbox escape, no git, state machine gaps |
+| Missed by both | | | Missing freeze file, impl-plan regression, sandbox escape, no git, state machine gaps |
 
 ## Immediate next actions (in order)
 

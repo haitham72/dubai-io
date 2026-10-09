@@ -53,6 +53,14 @@ window.DEMO = {
     }
   ],
 
+  // Placeholder maps (to be replaced). pin = [x%, y%] of "you are here" on that image.
+  maps: [
+    { id: "overview", label: "DXB", src: "maps/dxb-overview.png", title: "Dubai International (DXB)", pin: [60, 61], pinLabel: "Terminal 3 · you", note: "Overview of all terminals and concourses." },
+    { id: "checkin", label: "Check-in", src: "maps/t3-check-in.jpg", title: "T3 · Check-in", note: "Check-in hall layout." },
+    { id: "dutyfree", label: "Duty Free", src: "maps/t3-duty-free.jpg", title: "T3 · Duty Free", note: "Shops, food and transfer routes." },
+    { id: "lounge", label: "Lounge", src: "maps/t3-business-lounge.jpg", title: "T3 · Business Class Lounge", note: "Lounge services and gates." }
+  ],
+
   zones: ["Gate", "Passport", "Baggage", "Customs", "Arrivals", "Taxi / Metro"],
 
   destinations: {

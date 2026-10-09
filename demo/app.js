@@ -76,9 +76,9 @@
   function schematic(active) {
     const rows = D.zones.map((z, i) => {
       const y = 8 + i * 34, on = i === active, done = i < active;
-      return `<rect x="6" y="${y}" width="80" height="26" rx="8" fill="${on ? "#C9A86A" : done ? "#E9F3EE" : "#F3ECDF"}" stroke="${on ? "#A8843F" : "#E8DFCE"}"/>
-        <text x="46" y="${y + 17}" text-anchor="middle" font-size="9.5" font-family="Inter,sans-serif" fill="${on ? "#2b210d" : "#5B564E"}">${done ? "✓ " : ""}${z}</text>` +
-        (i < D.zones.length - 1 ? `<line x1="46" y1="${y + 26}" x2="46" y2="${y + 34}" stroke="#D8CCB4" stroke-width="2"/>` : "");
+      return `<rect x="6" y="${y}" width="80" height="26" rx="8" fill="${on ? "#0A9CC2" : done ? "#E8F8EC" : "#F2F2F7"}" stroke="${on ? "#0A9CC2" : "#E5E5EA"}"/>
+        <text x="46" y="${y + 17}" text-anchor="middle" font-size="9.5" font-weight="${on ? 600 : 400}" font-family="-apple-system,Segoe UI,sans-serif" fill="${on ? "#fff" : done ? "#1E8E3E" : "#3C3C43"}">${done ? "✓ " : ""}${z}</text>` +
+        (i < D.zones.length - 1 ? `<line x1="46" y1="${y + 26}" x2="46" y2="${y + 34}" stroke="#D1D1D6" stroke-width="2"/>` : "");
     }).join("");
     return `<svg viewBox="0 0 92 214" role="img" aria-label="Illustrative airport flow">${rows}</svg>`;
   }
@@ -98,13 +98,15 @@
         <div><div class="step-title">${s.title}</div><div class="step-body">${s.body}</div>
         <div class="btn-row">${i < D.airportSteps.length - 1 ? `<button class="btn small" data-x="next">Done, next ✓</button>` : `<button class="btn small" data-x="ride">Compare rides</button>`}
         <button class="btn small ghost" data-x="lost">I'm lost</button>${extras}</div></div></div>
+      ${i === 0 ? `<button class="map-thumb" data-x="map" aria-label="Open airport map"><span class="pin"></span><span class="cap">You're at Terminal 3 · tap for map</span></button>` : ""}
       <div class="progress">${prog}</div>
-      <div class="foot"><span>Illustrative flow, not a terminal map</span><span>Indoor GPS not used</span></div>`;
+      <div class="foot"><span>Steps confirmed by you, no indoor GPS</span><button class="btn small ghost" data-x="map" style="padding:4px 10px;font-size:12px">Airport maps</button></div>`;
     if (!journeyCard) journeyCard = card(html); else { journeyCard.innerHTML = html; chat.append(journeyCard); scroll(); }
     journeyCard.querySelectorAll("[data-x]").forEach((b) => (b.onclick = () => stepAction(b.dataset.x)));
   }
 
   async function stepAction(x) {
+    if (x === "map") return openMap("overview");
     if (x === "next") { user("Done ✓"); await typing(300); renderStep(state.step + 1); }
     if (x === "ride") { user("Compare rides"); rides(); }
     if (x === "lost") {
@@ -124,7 +126,7 @@
     if (x === "belt") {
       user("Save my belt number"); await typing();
       const c = card(`<h3>Belt number</h3><div class="sub">Read it from the arrivals screen</div>
-        <div style="display:flex;gap:8px"><input id="beltIn" placeholder="e.g. 7" style="flex:1;padding:9px 12px;border:1px solid var(--line);border-radius:10px;font:inherit">
+        <div style="display:flex;gap:8px"><input id="beltIn" placeholder="e.g. 7" class="field">
         <button class="btn small" id="beltSave">Save</button></div>`);
       c.querySelector("#beltSave").onclick = async () => {
         const v = c.querySelector("#beltIn").value.trim() || "7";
@@ -158,7 +160,7 @@
     bot("Follow the <b>Taxi</b> signs to the official rank outside arrivals. Use only the official airport taxis.");
     await typing(600);
     const c = card(`<h3>Save your taxi number?</h3><div class="sub">Useful if you leave something in the car</div>
-      <div style="display:flex;gap:8px"><input id="taxiIn" placeholder="Number on the taxi" style="flex:1;padding:9px 12px;border:1px solid var(--line);border-radius:10px;font:inherit">
+      <div style="display:flex;gap:8px"><input id="taxiIn" placeholder="Number on the taxi" class="field">
       <button class="btn small" id="taxiSave">Save</button></div>`);
     c.querySelector("#taxiSave").onclick = async () => {
       const v = c.querySelector("#taxiIn").value.trim() || "12345";
@@ -248,7 +250,7 @@
     $("#sheet").classList.remove("open"); $("#sheetBackdrop").classList.remove("open");
     setTimeout(() => (frame.src = "about:blank"), 300);
   }
-  $("#sheetClose").onclick = closeMini; $("#sheetBackdrop").onclick = closeMini;
+  $("#sheetClose").onclick = closeMini; $("#sheetBackdrop").onclick = () => { closeMini(); $("#mapSheet").classList.remove("open"); };
 
   window.addEventListener("message", (e) => {
     if (e.source !== frame.contentWindow) return;           // only the mounted mini-app
@@ -271,6 +273,33 @@
     closeMini(); showTab("companion");
     approval(merchant, m.kind, m.payload);
   });
+
+  // ---------- airport map viewer ----------
+  let zoom = 1;
+  function openMap(id) {
+    const m = D.maps.find((x) => x.id === id);
+    zoom = id === "overview" ? 1.8 : 1.4;
+    $("#mapTitle").innerHTML = `${m.title}<small>${m.note}</small>`;
+    $("#mapSeg").innerHTML = D.maps.map((x) => `<button class="${x.id === id ? "on" : ""}" data-map="${x.id}">${x.label}</button>`).join("");
+    $("#mapSeg").querySelectorAll("[data-map]").forEach((b) => (b.onclick = () => openMap(b.dataset.map)));
+    $("#mapCanvas").innerHTML = `<img src="${m.src}" alt="${m.title}">` +
+      (m.pin ? `<span class="pin" style="left:${m.pin[0]}%;top:${m.pin[1]}%"></span><span class="map-tag" style="left:${m.pin[0]}%;top:${m.pin[1]}%">${m.pinLabel}</span>` : "");
+    $("#mapPill").textContent = m.pin ? "You are here: confirmed by you" : "Position unknown here";
+    $("#mapNote").textContent = m.pin ? "Pin = the terminal you told me, not GPS." : "I don't know where you are on this map. Tell me a shop or gate you can see.";
+    applyZoom(m);
+    $("#mapSheet").classList.add("open"); $("#sheetBackdrop").classList.add("open");
+    log("ui", `open map ${id}`, { pin: m.pin ? "user_confirmed_terminal" : null });
+  }
+  function applyZoom(m) {
+    $("#mapCanvas").style.width = zoom * 100 + "%";
+    const v = $("#mapView");
+    requestAnimationFrame(() => {
+      if (m && m.pin) { v.scrollLeft = v.scrollWidth * m.pin[0] / 100 - v.clientWidth / 2; v.scrollTop = v.scrollHeight * m.pin[1] / 100 - v.clientHeight / 2; }
+    });
+  }
+  $("#zoomIn").onclick = () => { zoom = Math.min(4, zoom + 0.4); applyZoom(); };
+  $("#zoomOut").onclick = () => { zoom = Math.max(1, zoom - 0.4); applyZoom(); };
+  $("#mapClose").onclick = () => { $("#mapSheet").classList.remove("open"); $("#sheetBackdrop").classList.remove("open"); };
 
   // ---------- approval + request state machine ----------
   const FLOW = ["SUBMITTED", "PROVIDER_ACKNOWLEDGED", "QUOTED", "QUOTE_ACCEPTED", "CONFIRMED"];
@@ -389,8 +418,8 @@
     }
     log("trigger", "flight.landed", { source: "demo_trigger", flight: D.flight.number, airport: "DXB T3", dedupe_key: "EK002:landed" });
     await sleep(300);
-    card(`<div class="hero-hello" style="margin:-14px;border:0;box-shadow:none">
-      <div class="eyebrow">Dubai-io · Proactive <span class="pill trig" style="margin-left:6px">Demo trigger</span></div>
+    card(`<div class="hero-hello">
+      <div class="eyebrow">Dubai-io · Proactive <span class="pill trig">Demo trigger</span></div>
       <h1>Hello, visitor.</h1>
       <p>Welcome to Dubai. Your flight ${D.flight.number} has landed at DXB ${D.flight.terminal}. I'll walk you from the gate to your taxi or Metro, one step at a time.</p></div>`);
     await typing(700);
