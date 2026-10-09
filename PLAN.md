@@ -7,7 +7,9 @@ This is the single plan. Scope, demo and phases live here, and nowhere else. Dec
 
 ## 1. What we're building
 
-> A personal AI companion for Dubai that greets you when you land, walks you through the airport, remembers what matters, and opens local services as mini-apps right inside the chat, with real merchants answering real requests.
+> **Dubai-io remembers your situation and follows through with local merchants, with you approving what gets shared.**
+
+The companion is the product. Mini-apps are how it works with merchants. Photo onboarding is how more merchants join. Airport arrival is the introduction, not the product.
 
 Contest: Create AI Agents Championship, category **Best Personal AI Agent** (rules, deadline and IP terms still to verify, see Phase 0).
 
@@ -19,15 +21,15 @@ Contest: Create AI Agents Championship, category **Best Personal AI Agent** (rul
 |---|---|---|
 | 1 | Persistent chat (history and cards survive reload, streaming) | Companion |
 | 2 | Proactive messages from deterministic triggers (flight landed, merchant replied, reminders), deduplicated | Companion |
-| 3 | Memory the user gives: hotel area, belt number, taxi number; recalled later | Companion |
+| 3 | Memory the user gives (hotel area, taxi number + route + start time), recalled later without asking again | Companion |
 | 4 | **DXB arrival guide:** step-by-step, user-confirmed, landmark "I'm lost", map with a terminal pin | Visitor |
-| 5 | Ride comparison: taxi vs Metro (estimates, handoff only) | Visitor |
+| 5 | Ride recommendation: one pick with a reason, alternative shown (estimates, handoff only) | Visitor |
 | 6 | **Aggregator → per-merchant HTML mini-apps** (sandboxed, scoped bridge) | Services |
-| 7 | Real merchant loop: approval → inbox → ack → quote → user accepts → confirm | Services |
-| 8 | Memory payoff: "I left my bag in the taxi" → recovery checklist + official handoff using saved details | Companion |
+| 7 | Merchant loop with **deadline awareness**: approval → ack → quote → companion checks the quote against the user's deadline, flags a conflict, asks for an earlier slot → accept → confirm | Services |
+| 8 | Memory payoff: "I left my bag in the taxi" → report prepared from saved trip details, asks only for what's missing, official handoff, stays "not recovered" | Companion |
 | 9 | Merchant onboarding: price-list photo → AI-generated mini-app → operator approves → live | Platform |
 
-**If time runs out, cut in this order:** 9 → 8 → 5. Items 1, 2, 4, 6 and 7 are the floor.
+**If time runs out, cut in this order:** 9 → 5 → 4. Items 1, 2, 3, 6, 7 and 8 are the floor: memory + follow-through *is* the product.
 
 ### LATER (vision, not in the contest build)
 
@@ -37,19 +39,34 @@ Civic RAG with citations · resident mode flows (bills, vehicle, Salik/DEWA disp
 
 Fake "Confirmed/Booked/Paid" · invented positions, belts, queues or prices shown as real · government transactions · copying the official DubaiNow look.
 
-## 3. Demo arc (proposed, lock at the end of Phase 0)
+## 3. Demo arc (v2, after the external review; lock after user tests)
 
-| Time | Beat | Shows |
+One visitor, one continuous story: **an independent laundry with a deadline** (shirt pressed by 09:00 for tomorrow's meeting). Family sharing and belt recall are off the main path.
+
+| Time | On screen | Presenter says |
 |---|---|---|
-| 0:00–0:20 | Phone wakes: **"Hello, visitor."** Flight landed at DXB T3 | Proactive |
-| 0:20–1:10 | Arrival guide: gate → passport → baggage (*"Belt 7: remembered"*) → customs → arrivals, map pin, "I'm lost" once | Guidance + memory |
-| 1:10–1:40 | Taxi vs Metro, choose taxi, save taxi number, share trip with family (approval) | Consent |
-| 1:40–2:40 | At the hotel: "Need anything?" → aggregator → three merchants, each its **own mini-app** → order → approval → merchant inbox on the split screen acks/quotes live → accept → confirmed | Mini-apps + real action |
-| 2:40–3:15 | *"I left my bag in the taxi!"* The agent already knows the taxi number, time and route, and prepares the lost-property report and official contact | **Memory payoff** |
-| 3:15–3:50 | Operator: a new shop's price-list photo → generated mini-app → live in search | Platform wow |
-| 3:50–4:00 | Close line | — |
+| 0:00–0:12 | Arrival greeting, "Scripted demo" label, one button: *Guide me to arrivals* | "Dubai-io is a personal companion that remembers your situation and follows through with local merchants." |
+| 0:12–0:35 | Compact airport guide. "I'm lost" → a landmark choice changes where the guide resumes | "It guides me from where I confirm I am, and resumes from what I can see." |
+| 0:35–0:55 | Ride recommendation with a reason. Taxi number, route and start time saved, labelled "You told me" | "I take the taxi. It saves the number, route and time I confirm." |
+| 0:55–1:10 | "I've reached my hotel." User: *"I need a shirt pressed by 9 tomorrow."* | "My hotel area carries into the request." |
+| 1:10–1:30 | Three laundries, two distinct mini-app previews, pick one | "Separate merchant experiences, same conversation." |
+| 1:30–1:55 | Cyan host approval: named shop, shirt count, hotel area, deadline. Pauses visibly | "The shop's mini-app can only ask. Dubai-io shows what's shared and waits for me." |
+| 1:55–2:45 | Merchant inbox expands. Ack → quote **10:00** → companion flags "misses your 09:00 deadline" → asks for earlier → **08:30** → accept → merchant confirms | "Ten o'clock misses my deadline. It catches that, asks for earlier, and says confirmed only when the shop confirms." |
+| 2:45–3:05 | Price-list photo → generated mini-app → owner review → appears in results | "Another shop joins from a photo, reviewed before it goes live." |
+| 3:05–3:40 | **"I left my bag in the taxi!"** Report pre-filled from memory, asks for the bag description, official handoff, "not recovered" | "It already has the trip details. It asks only for what's missing." |
+| 3:40–4:00 | Report beside the earlier taxi-memory card | Close: *"Dubai-io remembers your situation and follows through locally, with you approving what gets shared."* |
 
-The "Under the hood" panel stays visible throughout. Open question for Phase 0: is pharmacy the right merchant category, or the unlisted long tail (laundry, tailor)?
+**Under the hood** goes compact: large events only ("Trip details saved", "Sharing approved", "Merchant confirmed"), with the raw log available for questions. The merchant inbox is labelled "Merchant role, simulated" until a real merchant exists.
+
+### Jury objections (prepared answers)
+
+| Objection | Answer |
+|---|---|
+| What does this add to DubaiNow / Careem / talabat / ChatGPT? | Continuity: the same companion carries your context into a local merchant's reply, quote and confirmation, and you approve what leaves the chat. We don't claim they lack AI or memory |
+| Where's the agency beyond buttons? | It holds the deadline, interprets a conflicting reply and proposes the next step |
+| Why keep it after the airport? | Arrival is the introduction; repeat local requests reuse your preferences and history |
+| Why would merchants join? | A reviewed mini-app from a photo, plus a structured inbox, is less work than WhatsApp back-and-forth. To be validated with shop owners |
+| What have you proved? | The interaction is reviewable. User need, repeat use and merchant participation are what we test next |
 
 ## 4. Phases
 
@@ -59,13 +76,18 @@ Gates are binary. Dates are relative until the contest deadline is verified; the
 
 - [x] Clickable HTML demo (`demo/`), iOS light style, DXB placeholder maps
 - [x] Docs consolidated (this structure)
-- [ ] External review: run the LLM review prompt, plus show the demo to 5 people (visitors/residents)
-- [ ] Decide: hero merchant category, final demo arc (§3)
+- [x] External LLM review (merged into §3 and `docs/DECISIONS.md`)
+- [x] Hero merchant: independent laundry with a deadline
+- [x] Mock fixes: lost-bag routing, explicit "I've reached my hotel", merchant updates only from the inbox
+- [ ] Rebuild the sketch to arc v2: laundry deadline-conflict branch, fixed cyan host strip on mini-apps, collapse the approval after send, one progress indicator, remove the Civic tab, compact backstage, a "Scripted demo" label, bigger touch targets in mini-apps
+- [ ] Story test with 6–8 target visitors: after 4 min, ask what it does, what it remembered, who confirmed the request, and would they use it
+- [ ] Tabletop with 3–5 independent laundries using their real price lists (ack, deadline negotiation, confirm); verify the "unlisted" claim
+- [ ] Projector test with 5 unfamiliar viewers; rehearse to 3:40
 - [ ] Verify contest rules: deadline, required artifacts (video? deck?), judging criteria, IP terms
 - [ ] Start talking to 1 real merchant
 - [ ] Replace placeholder airport maps (arrival side: immigration, baggage, arrivals hall)
 
-**Gate 0:** demo arc locked · rules known with links · one merchant conversation started.
+**Gate 0:** arc v2 survives the user and laundry tests · rules known with links · at least one laundry willing to role-play or pilot.
 
 ### Phase 1 — Skeleton (~2 weeks)
 

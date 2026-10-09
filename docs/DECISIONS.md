@@ -4,6 +4,12 @@ One line per decision, newest first. If a decision changes scope, update `PLAN.m
 
 | Date | Decision | Why |
 |---|---|---|
+| 2026-10-09 | Core promise: **"remembers your situation and follows through with local merchants, with you approving what gets shared"**. Companion = product, mini-apps = mechanism, onboarding = growth | External review: the demo read as three competing products |
+| 2026-10-09 | Hero merchant: **independent laundry with a deadline**, not pharmacy | Pharmacy looks like talabat/Careem; a deadline creates a real agent decision |
+| 2026-10-09 | Add a **deadline-conflict beat** (quote 10:00 vs need 09:00 → ask for earlier) | Turns a merchant reply into an agent decision |
+| 2026-10-09 | Close the pitch on the **lost-bag memory payoff**; onboarding goes before it | End with the person being helped |
+| 2026-10-09 | Remove the Civic tab from the sketch; the forbidden-payment demo is for Q&A only | Fewer promises on stage |
+| 2026-10-09 | Mock fixes: lost-bag intent, explicit hotel arrival, merchant-originated updates | They contradicted the story |
 | 2026-10-09 | Docs consolidated: `PLAN.md` is the single plan; handoff 01–08, the old implementation plan and all reviews moved to `archive/` | 17 overlapping files, no clear authority |
 | 2026-10-09 | We're in **sketch mode**: no legal/citation or licensing work yet. Airport maps are placeholders | Validate the idea and story first |
 | 2026-10-09 | Visual style: **iOS light + cyan** (replaces Editorial Luxury gold) | Founder preference; native feel |
@@ -18,6 +24,5 @@ One line per decision, newest first. If a decision changes scope, update `PLAN.m
 
 ## Open
 
-- Hero merchant category: pharmacy vs unlisted long tail (laundry, tailor)?
-- Lock the demo arc after external review (`PLAN.md §3`)
+- Lock demo arc v2 after the visitor and laundry tests (`PLAN.md §3`)
 - Contest deadline, artifacts and IP terms

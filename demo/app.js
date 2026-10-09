@@ -164,7 +164,8 @@
       <button class="btn small" id="taxiSave">Save</button></div>`);
     c.querySelector("#taxiSave").onclick = async () => {
       const v = c.querySelector("#taxiIn").value.trim() || "12345";
-      remember("Taxi number", `${v} · DXB → ${state.dest}`);
+      state.trip = { number: v, route: `DXB T3 → ${state.dest}`, started: now() };
+      remember("Taxi trip", `Taxi ${v} · ${state.trip.route} · started ${state.trip.started} (you confirmed)`);
       c.innerHTML = `<h3>Taxi ${esc(v)} saved</h3><div class="pills"><span class="pill user">You told me</span></div>`;
       await typing();
       const a = card(`<h3>Share your trip with family?</h3>
@@ -206,7 +207,13 @@
   }
 
   async function arrived() {
-    await sleep(1200);
+    await sleep(800);
+    bot(`Enjoy the ride. Tell me when you've reached your hotel in ${state.dest}.`);
+    chips([["I've reached my hotel", () => hotelReached()]]);
+  }
+
+  async function hotelReached() {
+    await typing();
     log("trigger", "trip.arrived_hotel_area", { source: "user_confirmed", dedupe_key: "arrive:" + state.dest });
     bot(`<span class="pill trig">Proactive</span><br>Welcome to ${state.dest}. After a long flight, people often need a pharmacy, a SIM or laundry. Want me to find something nearby?`);
     chips([["Find a pharmacy", () => pharmacies()], ["Laundry for tomorrow", () => pharmacies("Laundry")], ["I'm fine, thanks", () => bot("Enjoy Dubai. I'm here whenever you need me.")]]);
@@ -344,10 +351,14 @@
     if (to === "QUOTED") r.quote = { total: +((r.p.estimate || 30) + 7).toFixed(2), eta: "35–45 min" };
     if (to === "CONFIRMED") r.ref = r.m.logo + "-" + Math.floor(1000 + Math.random() * 9000);
     drawStatus(r); drawInbox();
-    if (to === "CONFIRMED") setTimeout(() => {
-      log("trigger", "provider.update out_for_delivery", { id: r.id, provenance: "merchant_reported", dedupe_key: r.id + ":ofd" });
-      bot(`<span class="pill trig">Merchant update</span><br>${r.m.name} says your order is on its way (merchant-reported).`);
-    }, 3500);
+  }
+
+  function merchantUpdate(r) {
+    if (r.ofd) { log("security", "duplicate merchant update dropped", { dedupe_key: r.id + ":ofd" }); return; }
+    r.ofd = true;
+    log("trigger", "provider.update out_for_delivery", { id: r.id, actor: "merchant", provenance: "merchant_reported", dedupe_key: r.id + ":ofd" });
+    bot(`<span class="pill trig">Merchant update</span><br>${r.m.name} says your order is on its way.`);
+    drawInbox();
   }
 
   function drawStatus(r) {
@@ -380,11 +391,33 @@
         ? `<button class="btn small ghost" data-id="${r.id}" data-to="${to}">${label}</button>` : "";
       return `<div class="inbox-item"><div class="who">${r.m.name}</div><div>${r.id} · ${r.summary}</div>
         <div class="st-tag">${r.status}</div>
-        <div class="btn-row">${b("PROVIDER_ACKNOWLEDGED", "Acknowledge")}${b("QUOTED", "Send quote")}${b("CONFIRMED", "Confirm")}${b("DECLINED", "Decline")}</div></div>`;
+        <div class="btn-row">${b("PROVIDER_ACKNOWLEDGED", "Acknowledge")}${b("QUOTED", "Send quote")}${b("CONFIRMED", "Confirm")}${b("DECLINED", "Decline")}${r.status === "CONFIRMED" && !r.ofd ? `<button class="btn small ghost" data-ofd="${r.id}">Send "on the way"</button>` : ""}</div></div>`;
     }).join("");
     $("#inbox").querySelectorAll("[data-to]").forEach((btn) => (btn.onclick = () => {
       const r = state.requests.find((x) => x.id === btn.dataset.id); transition(r, btn.dataset.to, "merchant");
     }));
+    $("#inbox").querySelectorAll("[data-ofd]").forEach((btn) => (btn.onclick = () => merchantUpdate(state.requests.find((x) => x.id === btn.dataset.ofd))));
+  }
+
+  // ---------- memory payoff: lost item in taxi ----------
+  async function recovery() {
+    log("agent", "intent: lost_item_in_taxi", { uses_memory: !!state.trip });
+    if (!state.trip) return bot("I'm sorry. I don't have your taxi details saved. Do you have a receipt or the taxi number? I'll help you prepare the report.");
+    log("memory", "recall taxi trip", { ...state.trip, provenance: "user_supplied" });
+    bot("Don't worry. I have the trip details you gave me, so you won't need to remember them.");
+    await typing(500);
+    const c = card(`<div class="card-head"><div><h3>Lost item report</h3><div class="sub">Prepared from what you told me</div></div><span class="pill">Not filed yet</span></div>
+      <div class="shares"><b>From your trip <span class="pill user" style="margin-left:4px">You told me</span></b>Taxi <b>${esc(state.trip.number)}</b> · ${esc(state.trip.route)} · started ${state.trip.started}</div>
+      <div class="shares"><b>Missing: describe the bag</b><input class="field" id="bagIn" placeholder="e.g. black backpack, laptop inside" style="width:100%;margin-top:4px"></div>
+      <div class="btn-row"><button class="btn small" id="bagGo">Prepare report</button></div>`);
+    c.querySelector("#bagGo").onclick = async () => {
+      const bag = c.querySelector("#bagIn").value.trim() || "black backpack, laptop inside";
+      log("action", "recovery.report_prepared", { taxi: state.trip.number, item: bag, status: "PREPARED_NOT_FILED" });
+      c.innerHTML = `<div class="card-head"><div><h3>Report ready</h3><div class="sub">${esc(bag)} · taxi ${esc(state.trip.number)} · ${esc(state.trip.route)} · ${state.trip.started}</div></div><span class="pill">Bag not recovered yet</span></div>
+        <div class="btn-row"><button class="btn small">Contact official lost &amp; found</button><button class="btn small ghost">Copy report</button></div>
+        <div class="foot"><span>Handoff to the official channel. I won't mark anything recovered until you tell me</span></div>`;
+      await typing(); bot("I'll check in with you tomorrow morning about the bag, unless you tell me it's found.");
+    };
   }
 
   // ---------- free text ----------
@@ -397,8 +430,9 @@
     const q = t.toLowerCase();
     if (/pharm|medic|panadol|headache|sick/.test(q)) return pharmacies();
     if (/laundry|iron|shirt/.test(q)) return pharmacies("Laundry");
+    if (/(left|lost|forgot).*(taxi|cab|car)|(taxi|cab).*(left|lost|forgot)/.test(q)) return recovery();
     if (/belt|bag/.test(q)) return bot(state.memory["Baggage belt"] ? `You told me: <b>${state.memory["Baggage belt"]}</b>.` : "You haven't told me a belt number yet. Check the arrivals screens.");
-    if (/taxi number|left .* taxi|lost/.test(q)) return bot(state.memory["Taxi number"] ? `Your taxi: <b>${state.memory["Taxi number"]}</b>. For lost items, contact the official RTA lost-and-found channel. I can help you prepare the details.` : "I don't have a taxi number saved.");
+    if (/taxi number|which taxi/.test(q)) return bot(state.trip ? `Your taxi: <b>${state.trip.number}</b>, ${state.trip.route}, started ${state.trip.started}. <span class="pill user">You told me</span>` : "I don't have a taxi saved.");
     if (/taxi|metro|hotel|ride/.test(q)) { state.dest = state.dest || "Business Bay"; return rides(); }
     if (/lost|where am i/.test(q)) return stepAction("lost");
     bot("This demo is scripted. Try: <i>pharmacy</i>, <i>laundry</i>, <i>which belt?</i>, <i>taxi or metro</i>.");
@@ -406,7 +440,7 @@
 
   // ---------- start ----------
   async function start() {
-    chat.innerHTML = ""; journeyCard = null; state.requests = []; state.memory = {}; state.dest = null;
+    chat.innerHTML = ""; journeyCard = null; state.requests = []; state.memory = {}; state.dest = null; state.trip = null;
     $("#log").innerHTML = ""; $("#inbox").innerHTML = `<div class="inbox-empty">No requests yet. Order something from a pharmacy mini-app.</div>`;
     renderMemory(); renderServices(); showTab("companion");
     $("#modePill").textContent = state.mode;
