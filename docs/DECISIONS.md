@@ -4,6 +4,10 @@ One line per decision, newest first. If a decision changes scope, update `PLAN.m
 
 | Date | Decision | Why |
 |---|---|---|
+| 2026-10-09 | **Plan v1.0 final**; Phase 0 closed. Interviews are optional, not a gate | Founder decision: proceed on desk research |
+| 2026-10-09 | Lost-item report uses RTA's fields (time, pickup/drop-off, roof colour, plate, receipt) | 104k+ items lost in Dubai taxis in 2025; these fields speed recovery |
+| 2026-10-09 | Ride recommendation reasons from time and terminal (Metro not 24h; no Metro at T2) | Real constraint for late arrivals; an agentic moment backed by facts |
+| 2026-10-09 | Laundry deadline stays as the merchant showcase but isn't pitched as a proven pain | No independent evidence found |
 | 2026-10-09 | Working persona: **short-stay business visitor**; "European" is optional, not a differentiator | Traits that matter: short stay, deadline, unfamiliarity (review round 2) |
 | 2026-10-09 | Rejected for now: "first 24 hours" card and flight-delay beat. Flight delay may *replace* the laundry-conflict beat later, never add to it | Keeps the arc focused; test the current arc first |
 | 2026-10-09 | Archive scenarios and LLM reviews are hypotheses, not evidence. Findings are tracked as frequency / consequence / workaround separately; facts are checked against sources, not interviews | Avoid false confidence |
@@ -28,6 +32,6 @@ One line per decision, newest first. If a decision changes scope, update `PLAN.m
 
 ## Open
 
-- **Why not the hotel concierge?** Interviews must show where hotel help falls short
-- Lock demo arc v2 after the interviews and laundry tabletop (`PLAN.md §3`)
+- **Why not the hotel concierge?** Unanswered; optional interviews would settle it
+- Candidate post-contest use case with strong evidence: **car rental deposit disputes** (the #1 tourist complaint)
 - Contest deadline, artifacts and IP terms

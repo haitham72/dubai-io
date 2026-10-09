@@ -1,6 +1,6 @@
 # Visitor needs: hypotheses to test
 
-**Status:** hypothesis inventory, **not research**. Nothing here is evidence of frequency, severity or demand, including the archived case studies (they are plausible stories) and earlier LLM reviews (they are opinions).
+**Status:** hypothesis inventory plus desk research (§0). Interviews are optional and recommended, not blocking. Nothing here is evidence of frequency, severity or demand, including the archived case studies (they are plausible stories) and earlier LLM reviews (they are opinions).
 
 **Working story (not validated):** short-stay business visitor → independent laundry with a deadline → taxi-memory payoff.
 **Next milestone:** evidence that visitors struggle with **coordination and follow-through**, and **prefer our experience over the help they already use**, including the hotel.
@@ -8,6 +8,25 @@
 Tags: `[T03]` / `[S11]` = archived scenario (`archive/handoff/06` Part II, `03`), a hypothesis · `[fact?]` = factual claim to check against official sources (interviews can't verify facts) · `[discovery]` = only interviews can answer.
 
 ---
+
+## 0. Reported evidence (desk research, 9 Oct 2026)
+
+Reddit could not be searched with our tools (it blocks them), so this uses **official statistics and news reports**. Better for *frequency* than anecdotes, weaker for *how it felt*.
+
+| Need | What's reported | Strength | Sources |
+|---|---|---|---|
+| **Item left in a taxi** | **104,000+ items lost in Dubai taxis in 2025**: ~35,000 electronics, ~3,000 official documents incl. passports, over Dh2M cash. In H1 2022 there were 44,062 reports, incl. 12,410 phones and 766 passports. Reports go via the call centre (56%), the Mahboub chat agent (30.8%) and the RTA app (10.8%); most people are contacted within 2 hours. Reporting goes faster with **trip time, pickup/drop-off, roof colour, plate number and receipt** | **Strong** (official RTA figures) | [Gulf News, Jan 2026](https://gulfnews.com/uae/transport/what-do-passengers-forget-most-in-taxis-in-dubai-rta-reveals-top-lost-items-1.500413535) · [Khaleej Times, Aug 2022](https://www.khaleejtimes.com/uae/transport/lost-and-found-in-taxis-in-dubai-dh1-2-million-cash-over-12400-mobile-phones) · [Gulf News how-to](https://gulfnews.com/living-in-uae/transport/dubai-left-something-in-the-taxi-heres-how-to-report-lost-items-1.1705503122582) |
+| **Late-night arrival / getting to the hotel** | Metro isn't 24h (it stops around midnight, with later Friday service); **T2 has no Metro station**; luggage is limited to roughly 1 large + 1 small; airport taxis have a higher starting fare; queues form at busy hours; schedule details differ between sources | **Medium** (guides and news; times vary) | [Gulf News: Metro at DXB](https://gulfnews.com/living-in-uae/transport/uae-planning-to-use-the-metro-at-dubai-international-airport-dxb-all-you-need-to-know-about-the-timings-baggage-policy-and-routes-1.1681826461878) · [DXB transit guide](https://www.trvlogue.com/en/dubai-airport-transit-guide) · [airport transfer guide](https://www.travelarbitrage.net/en/blog/dubai-airport-transfer-2026) |
+| **Tourist consumer disputes** | **Car rental deposits** are the #1 tourist complaint (42%), and refunds dominate; around 1,200 tourist complaints were resolved in one quarter; deposits should be released within 30 days | **Strong** (Dubai consumer-protection figures, some dated) | [Khaleej Times: 5 complaints](https://www.khaleejtimes.com/nation/dubai//5-things-dubai-tourists-complain-about-the-most) · [Khaleej Times: 1,200 complaints](https://khaleejtimes.com/uae/dubai-resolves-1200-consumer-complaints) · [Gulf News: deposits](https://gulfnews.com/living-in-uae/transport/dubai-car-rentals-your-security-deposit-should-be-returned-within-30-days-1.1709647857165) |
+| **Etiquette surprises** | Dress outside the beach, photographing people, public displays of affection, drinking in public, Ramadan, summer heat | **Medium** (consistent across travel guides) | [The Points Guy](https://thepointsguy.com/travel/dubai-mistakes/) · [Lonely Planet](https://lonelyplanet.com/articles/things-to-know-before-traveling-to-dubai) |
+| **Shirt pressed by a deadline** | Only vendor claims that hotel laundry costs more than outside shops; **no independent evidence** that visitors struggle with this | **Weak** | vendor listings only |
+| **Hotel extras** | Tourism Dirham fee of about AED 10 per room per night (third-party summary) | Weak, check officially | [booking help page](https://deluxehomes.helpjuice.com/what-is-tourism-dirham-fee-tdf) |
+
+**What this means for the story:**
+- The **lost-in-taxi payoff is the best-evidenced beat**: high volume, high stakes (passports), and success depends on exactly the details our companion remembers. Make the demo report use RTA's fields: time, pickup/drop-off, roof colour, plate, receipt.
+- The **late-night arrival** has a genuine decision in it: after midnight, or at T2, the Metro isn't an option. The ride recommendation should *reason* from time and terminal. That's an agentic moment backed by facts.
+- The **laundry deadline** is the weakest-evidenced beat. Keep it as the merchant showcase (it demonstrates mini-apps + deadline reasoning), but don't present it in the pitch as a proven pain point.
+- **Honest overlap:** if the ride was booked via Careem, the trip details are already in Careem's history. Our edge is a street-hail or airport-rank taxi, and having the report prepared in the same conversation.
 
 ## 1. The hardest open question: the hotel concierge
 
