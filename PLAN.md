@@ -85,12 +85,12 @@ Source: [dubaichamberdigital.com/en/create-ai-agents](https://www.dubaichamberdi
 |---|---|---|
 | Registration | Opened 7 Oct 2026. Closes "January 2027" on the timeline, but **"December 2026" in the FAQ** (the page contradicts itself) | **Register by 30 Nov 2026** |
 | Submission | Prototype + pitch deck + demo video, "January 2027" (no exact day) | **Internal deadline: 31 Dec 2026** |
-| Semi-final | 24 teams announced Jan 2027 · pitch day Mar 2027 · 12 finalists Mar 2027 | Phase 6 |
+| Semi-final | 24 teams announced Jan 2027 (FAQ says Feb) · pitch day Mar 2027 · 12 finalists Mar 2027 | Phase 6 |
 | Grand final | First week of May 2027, live on stage. **"A fully functional AI agent — not an MVP"** | Phase 6 hardens the build for live use |
 | Judging | No rubric. "Validate" step: *demonstrate customer need, business potential and measurable impact* | Visitor interviews move from optional to Phase 5 |
 | Eligibility | Idea/prototype/early MVP, not commercialised; ≤6 members; original, not copied from an existing repo; must protect personal data | No forks of existing agent repos |
 | Prize | USD 150k per category winner; "AI Agent of the Year" gets more | — |
-| IP terms | **Not stated** | Ask the organisers by email before submitting |
+| IP terms | **Not stated.** The only Terms link is the site-wide Dubai Chambers footer, not contest rules | Ask the organisers by email before submitting |
 
 Phase dates below are anchored to the 31 Dec internal deadline.
 

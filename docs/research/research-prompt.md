@@ -1,6 +1,6 @@
 # Research prompt: Dubai visitor needs (for Gemini Deep Research / DeepSeek)
 
-**Status: ✅ RUN 10 Oct 2026. CLOSED: do not re-run.** Results: `Dubai Visitor Pain Points Research.md` (strongest), `Deepseek-research.md` (no source links; don't cite unlinked claims), `glm-research.md` (priors only). The qwen run failed and was removed. Kept for history only.
+**Status: ✅ RUN 10 Oct 2026. CLOSED: do not re-run.** Results: `Dubai Visitor Pain Points Research.md` (strongest), `Deepseek-research.md` (no source links; don't cite unlinked claims), `glm-research.md` (priors only), `results-kimi-2026-10-09.md` (arrived late, filtered 10 Oct: no canon contradictions, citations mostly not links). The qwen run failed and was removed. Kept for history only.
 
 **Why:** our own tools can't read Reddit or forums. The plan (`PLAN.md` v1.0) rests on desk research that's strong for lost items in taxis, medium for late-night arrival, and **weak for the laundry deadline and the hotel-concierge question**. This research fills those gaps before the build.
 
