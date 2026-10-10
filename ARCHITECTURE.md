@@ -1,7 +1,7 @@
 # Dubai-io — Build Architecture (contest MVP)
 
 **Updated:** 10 Oct 2026 · **Scope source:** `PLAN.md` (phases referenced as Phase 1–5) · Reference implementation of the UI: `demo/`
-**Founder lock (10 Oct, final): bidding/quote ABSOLUTELY REJECTED. `quote.request`, `quote.read`, `QUOTED`, `QUOTE_ACCEPTED` do not exist. Every service opens as a modal HTML mini-app with fixed prices. Opus brief: `docs/reviews/OPUS-HANDOFF-2026-10-10.md`.**
+**Founder lock (10 Oct, final): bidding/quote ABSOLUTELY REJECTED. `quote.request`, `quote.read`, `QUOTED`, `QUOTE_ACCEPTED` do not exist. Every service opens as a modal HTML mini-app with fixed prices.**
 
 This document covers only what the contest build needs. The long-term vision architecture (community, media vault, native sensors, indoor maps, ticket wallet) stays in `archive/handoff/02` and `07` and is **not** built here.
 
@@ -59,7 +59,7 @@ apps/widgets  ── separate origin (e.g. widgets.<domain>), static HTML/JS onl
 | `civic` (LATER) | Official-source retrieval with citations | Answer with no retrieved chunk |
 | `evidence` | Photo/receipt uploads, EXIF stripping, signed URLs | Store files in the DB or vector index |
 | `onboarding` | Menu-photo extraction into a draft provider for operator approval | Publish without operator approval |
-| `memory` | `user_context` (area, language, mode, parking memories) | Infer facts. Everything here is user-supplied or confirmed |
+| `memory` | `user_context` (area, language, mode) and `trip_memories` (taxi plate/receipt, roof colour, route, start time) | Infer facts. Everything here is user-supplied or confirmed |
 
 ---
 
@@ -100,11 +100,11 @@ Every card has `type`, `schema_version`, `card_id`, `title`, `as_of`, `actions: 
 |---|---|---|
 | `text_note` | Plain fallback | 1 |
 | `service_comparison` | Talabat-normal list, ≤3 providers sorted closest + ★ highest: name, `Money` (price-from, fixed), `distance_km` (`Sourced`), `rating` + `rating_count` (`Sourced` or omitted — never invented), `turnaround_sla` + `open_now` (`Sourced`), capability level. Every row's action opens that merchant's **modal HTML mini-app** | 3 |
-| `action_approval` | What will be sent, to whom, which fields, and the fixed total if any | 3 |
-| `action_status` | Request id, current status, last authoritative event, `provider_reference` | 3 |
+| `action_approval` | What will be sent, to whom, which fields, the fixed total (rebuilt by the host from the price list), and the user's `deadline` (`Sourced`, `user_supplied`) | 3 |
+| `action_status` | Request id, current status, last authoritative event, `provider_reference`, `deadline` and `ready_by` (`Sourced`), and a `deadline_conflict: bool` computed in code | 3 |
 | `html_widget` | `manifest_id`, `manifest_version`, `bridge_scopes`, `fallback_card` (inline `service_comparison`) | 3 |
 | `journey_step` | Step title/body, zone, map ref + pin (user-confirmed), Next / I'm lost | 2 |
-| `ride_options` | Taxi/Metro/app with estimate labels; handoff actions only | 2 |
+| `ride_options` | Taxi/Metro/app with estimate labels; handoff actions only. Inputs: local time, weekday, terminal (user-confirmed). A deterministic rule (Metro schedule table with `as_of`; T2 has no Metro) disables Metro and states the reason | 2 |
 | `memory_saved` | Key, value, `user_supplied` | 2 |
 | `evidence_bundle` | Request or trip ref, attached photos/receipts, timeline | 4 |
 | `recovery_checklist` | Lost-item steps built from saved memory, official contact handoff (never "filed") | 4 |
@@ -115,7 +115,7 @@ Every card has `type`, `schema_version`, `card_id`, `title`, `as_of`, `actions: 
 
 ### 3.3 Agent tools (read-only)
 
-`registry.search(category, area, deadline)`, `registry.get_provider(id)`, `requests.get(user, id)`, `memory.get(keys)`, `parking.latest()`.
+`registry.search(category, area, deadline)`, `registry.get_provider(id)`, `requests.get(user, id)`, `memory.get(keys)`, `trips.latest()`.
 "Propose" tools create pending rows but no external effect: `actions.propose_order_request(provider_id, inputs)` returns an `action_approval` card with the fixed total, and `scheduler.propose_reminder(...)` returns a `reminder` card that needs confirmation. `propose_quote_request` does not exist — bidding rejected.
 
 ---
@@ -132,19 +132,22 @@ any non-terminal ─(user)─► CANCELLED
 any non-terminal ─(ttl)─► EXPIRED
 SUBMITTED ─(no ack within N min)─► stays SUBMITTED; UI shows "Waiting for merchant" (no invented status)
 adapter error with unknown outcome ─► UNKNOWN_STATUS
+UNKNOWN_STATUS ─(next authoritative merchant event)─► that event's state; otherwise ─(operator)─► FAILED
 ```
 
 - Terminal: `COMPLETED, DECLINED, CANCELLED, EXPIRED, FAILED`.
 - Each transition is a row in `action_events` (actor, from, to, source, payload hash, at). The `service_requests.status` column is derived from it and updated in the same transaction.
 - Each transition writes one outbox row → `action_status` message in the user's conversation and an inbox update for the merchant.
 - **Idempotency:** `POST /actions/{id}/approve` and every merchant command take an `Idempotency-Key`. A replay returns the original result.
+- **Deadline beat (no state change):** `service_requests` holds the user's `deadline` (`user_supplied`) and the merchant's `ready_by` (`merchant_submitted`). Only a merchant command (`accept` with `ready_by`, or `set_ready_by`) writes `ready_by`, and each write is an `action_events` row. `ready_by > deadline` is computed in code, not by the LLM. It produces a conflict card with one action, "Ask for earlier", which sends a structured request to the inbox. The price never changes.
+- Cancel/expire after `ACCEPTED` notifies the merchant and says "cancel requested". It never claims that work stopped.
 - `OPTIONS_READY` and `QUOTED`/`QUOTE_ACCEPTED` from `04 §6` are dropped. Price is fixed at submit time from the merchant's published price list.
 
 ---
 
 ## 5. Data model (MVP tables)
 
-`users`, `user_context`, `conversations`, `messages` (role, `card` JSONB, `client_msg_id` unique), `providers` (status `draft|approved|suspended`, `is_fixture`), `capabilities` (provider_id, capability_id, level `L1..L3`, input_schema), `widget_manifests`, `service_requests`, `action_events`, `approvals`, `outbox` (dedupe_key unique, available_at, delivered_at), `reminders`, `parking_memories`, `evidence_assets`, `knowledge_sources` (issuer, url, version_date, jurisdiction, license_note), `knowledge_chunks` (embedding vector, section_ref), `audit_log`.
+`users`, `user_context`, `conversations`, `messages` (role, `card` JSONB, `client_msg_id` unique), `providers` (status `draft|approved|suspended`, `is_fixture`, area, lat/lng, `rating` + `rating_count` + `rating_source` (nullable, never invented), opening hours, `turnaround_sla`, `price_list` JSONB with per-item provenance and version), `capabilities` (provider_id, capability_id, level `L1..L3`, input_schema), `widget_manifests`, `service_requests` (status, `deadline`, `ready_by`, `total` fixed at submit, `catalog_version`), `action_events`, `approvals`, `outbox` (dedupe_key unique, available_at, delivered_at), `reminders`, `trip_memories`, `evidence_assets`, `audit_log`. LATER (civic, not created in the contest build): `knowledge_sources`, `knowledge_chunks`.
 
 The system of record is **these tables**, not the LangGraph checkpointer. On each turn the agent rebuilds context from `messages` + `user_context` + open `service_requests`. A browser reload replays `messages`, and pending approvals come back automatically because they are cards whose actions still match a request in `AWAITING_APPROVAL` (single approval — there is no second quote approval).
 
@@ -160,7 +163,9 @@ The render order is: Talabat-normal card first, modal HTML widget second, fallba
 4. Bridge: `postMessage` with a strict `origin` check on both sides. The host accepts only `{v:1, kind, payload}`, where `kind ∈ manifest.bridge_scopes` (MVP: `order.request` ONLY — `quote.*`, `cart.*`, `rx.*`, `pickup.*` are demo legacy and must be migrated to `order.request`). `order.request` makes the **host** build an `action_approval` card with the fixed total. The widget never submits anything.
 5. If the manifest is missing or unapproved, the iframe fails to load within 3 s, or the client is offline, render `fallback_card`.
 
-For the MVP, Dubai-io writes the single widget (`laundry-order`). Merchant-authored HTML is out of scope.
+6. The host never trusts widget numbers. It rebuilds the total from the approved `price_list` version and typed item IDs, and renders widget strings as text. Personal context (hotel area, deadline) stays in the host until the approval card is tapped. The widget doesn't receive it.
+
+For the MVP, Dubai-io writes **one widget template**. Onboarding (PLAN §2 item 9) generates a *manifest + catalog* that fills that template, not new HTML. Merchant-authored HTML is out of scope.
 
 ---
 
@@ -196,9 +201,9 @@ labelled "Demo trigger")                                ▼
 
 ## 9. Frontend
 
-- Tabs: **Companion · Services · Civic · Me** (see `docs/DESIGN.md`). `Services` is a browse view backed by the same registry search the agent uses. `Civic` contains only Guides (the RAG entry point) for MVP. Other civic sub-tabs show `Pilot`. Community is not in the nav.
+- Tabs: **Companion · Services · Me** (see `docs/DESIGN.md`). `Services` is a browse view backed by the same registry search the agent uses. No Civic tab in the contest build (LATER, §8). Community is not in the nav.
 - Card renderer: a `switch` on `card.type` over a component registry. Unknown types fall back to `text_note`. Validation is generated from the contracts.
-- Visual system (founder decision 9 Oct, replaces Editorial Luxury gold): **iOS light mode with a cyan tint**. System font (SF Pro / -apple-system), grouped background `#F2F2F7`, white cards radius 16px, separators `#E5E5EA`, tint `#0A9CC2`, iMessage-style bubbles (bot `#E9E9EB`, user = tint). Merchant mini-apps keep their own branding. Reference implementation: `demo/styles.css`. Required pills: `Demo data`, `Sandbox`, `User-supplied`, `Estimate`, `Demo trigger`, `Official source`.
+- Visual system (founder decision 9 Oct, replaces Editorial Luxury gold): **iOS light mode with a cyan tint**. System font (SF Pro / -apple-system), grouped background `#F2F2F7`, white cards radius 16px, separators `#E5E5EA`, tint `#0A9CC2`, iMessage-style bubbles (bot `#E9E9EB`, user = tint). Merchant mini-apps keep their own branding. Reference implementation: `demo/styles.css`. Required pills: the trust-label set in `docs/DESIGN.md` (single source).
 - RTL readiness: use logical CSS properties (`margin-inline-start`) from day one. A full Arabic UI is a stretch goal.
 
 ---
@@ -209,6 +214,7 @@ labelled "Demo trigger")                                ▼
 - Uploads: size/type limits, EXIF GPS stripped, served by short-lived signed URL, scoped to the owner.
 - Approval cards list the exact fields shared (`CardAction.shares`). The merchant receives only those fields.
 - Secrets live in env; `.env` is never committed. Prompts never contain user secrets.
+- Memory: the user can view, edit and delete every saved fact in **Me**. Trip memories and photos are deleted 30 days after the trip by default.
 - Logs carry a trace id per turn, plus tool name, latency, token cost and status. PII is redacted.
 
 ---

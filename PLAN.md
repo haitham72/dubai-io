@@ -1,8 +1,10 @@
 # Dubai-io — Plan
 
-**Updated:** 10 Oct 2026 · **Status:** **Plan v1.1 draft for Opus to finalize.** Build starts when the founder asks · **Owner:** Haitham
+**Updated:** 10 Oct 2026 · **Status:** 🔒 **Plan v1.1: LOCKED. Planning is closed.** Next step: Phase 1 build · **Owner:** Haitham
 This is the single plan. Scope, demo and phases live here, and nowhere else. Decisions go in `docs/DECISIONS.md`.
-**Founder lock (10 Oct, final, Opus must not reopen): bidding/quote is ABSOLUTELY REJECTED. Every service opens as a modal HTML mini-app (services / shops / stores / rides) with published fixed prices. See `docs/DECISIONS.md` 2026-10-10 rows + `docs/reviews/OPUS-HANDOFF-2026-10-10.md`.**
+**Founder lock (10 Oct, final): bidding/quote is ABSOLUTELY REJECTED. Every service opens as a modal HTML mini-app (services / shops / stores / rides) with published fixed prices.**
+
+> **🔒 Planning lock rules (10 Oct 2026).** §§1–3 don't change during the build. No new reviews, research runs, personas, beats or planning docs. A scope change needs (1) the founder to say so explicitly, (2) one row in `docs/DECISIONS.md`, and (3) something cut from §2 of equal size. New ideas go in `docs/VISION.md` → *Parked ideas* and are not discussed until after submission. The only planning work still allowed is ticking checkboxes and re-anchoring dates in §4.
 
 ---
 
@@ -14,7 +16,7 @@ The companion is the product. Mini-apps are how it works with merchants. Photo o
 
 **Story:** short-stay business visitor → late-night DXB arrival → independent laundry with a deadline → taxi-memory payoff. Reported evidence per beat is in `docs/VISITORS.md §0`: strongest for lost items in taxis, weakest for the laundry deadline. Still open: why not the hotel concierge?
 
-Contest: Create AI Agents Championship, category **Best Personal AI Agent** (rules, deadline and IP terms still to verify; carried into Phase 1).
+Contest: Create AI Agents Championship, category **Best Personal AI Agent** (§4.0 has the verified dates).
 
 ## 2. Scope
 
@@ -26,7 +28,7 @@ Contest: Create AI Agents Championship, category **Best Personal AI Agent** (rul
 | 2 | Proactive messages from deterministic triggers (flight landed, merchant replied, reminders), deduplicated | Companion |
 | 3 | Memory the user gives (hotel area; taxi plate or receipt photo, roof colour, route, start time), recalled later without asking again | Companion |
 | 4 | **DXB arrival guide:** step-by-step, user-confirmed, landmark "I'm lost", map with a terminal pin | Visitor |
-| 5 | Ride recommendation that **reasons from time and terminal** (e.g. after midnight or at T2 → no Metro → taxi), with the alternative shown (estimates, handoff only) | Visitor |
+| 5 | Ride recommendation that **reasons from time and terminal** (e.g. after the weekday Metro close or at T2 → no Metro → taxi; Friday service runs later, so the rule reads day + time from the verified schedule), with the alternative shown (estimates, handoff only) | Visitor |
 | 6 | **Talabat-normal discovery → modal HTML mini-apps** (sandboxed, scoped bridge). List sorted closest + ★ rating + price-from + turnaround. Tap any row → its **own modal HTML mini-app** (services / shops / stores / rides). Fixed published prices only — **no bidding, no quote, no negotiation** | Services |
 | 7 | Merchant loop with **deadline awareness** (fixed order, NO quote): approval → merchant accepts at published price → companion checks ready-time against user's deadline, flags conflict, asks for earlier slot → merchant confirms ready-time | Services |
 | 8 | Memory payoff: "I left my bag in the taxi" → report pre-filled with RTA's fields (time, pickup/drop-off, roof colour, plate, receipt photo) from saved trip details, asks only for what's missing, hands off to the official channels (call centre / chat agent / app), stays "not recovered" | Companion |
@@ -50,13 +52,13 @@ One visitor, one continuous story: **an independent laundry with a deadline** (s
 |---|---|---|
 | 0:00–0:12 | Arrival greeting, "Scripted demo" label, one button: *Guide me to arrivals* | "Dubai-io is a personal companion that remembers your situation and follows through with local merchants." |
 | 0:12–0:35 | Compact airport guide. "I'm lost" → a landmark choice changes where the guide resumes | "It guides me from where I confirm I am, and resumes from what I can see." |
-| 0:35–0:55 | It's 00:40, so the Metro has stopped: it recommends a taxi *with that reason*. Plate (or receipt photo), roof colour, route and start time saved, labelled "You told me" | "It knows the Metro has stopped, so it suggests a taxi, and saves what I'll need if something goes wrong." |
+| 0:35–0:55 | It's 00:40 on a **weekday** (not Friday night), so the Metro has stopped: it recommends a taxi *with that reason*. Plate (or receipt photo), roof colour, route and start time saved, labelled "You told me" | "It knows the Metro has stopped, so it suggests a taxi, and saves what I'll need if something goes wrong." |
 | 0:55–1:10 | "I've reached my hotel." User: *"I need a shirt pressed by 9 tomorrow."* | "My hotel area carries into the request." |
 | 1:10–1:30 | Three laundries as Talabat-normal list (closest + ★ + price-from + turnaround), each row opens its **own modal HTML mini-app** | "Separate merchant experiences, same conversation." |
 | 1:30–1:55 | Cyan host approval: named shop, fixed items + fixed total, hotel area, deadline. Pauses visibly | "The shop's mini-app can only ask. Dubai-io shows what's shared and waits for me." |
-| 1:55–2:45 | Merchant inbox expands. **Accepted at fixed price** → ready-time **10:00** → companion flags "misses your 09:00 deadline" → asks for earlier → **08:30** → merchant confirms (no re-quote, price unchanged) | "Ten o'clock misses my deadline. It catches that, asks for earlier, and says confirmed only when the shop confirms." |
+| 1:55–2:45 | Merchant inbox expands. **Accepted at fixed price** → ready-time **10:00** → companion flags "misses your 09:00 deadline" → asks for earlier → **08:30** → merchant confirms (price unchanged) | "Ten o'clock misses my deadline. It catches that, asks for earlier, and says confirmed only when the shop confirms." |
 | 2:45–3:05 | Price-list photo → generated mini-app → owner review → appears in results | "Another shop joins from a photo, reviewed before it goes live." |
-| 3:05–3:40 | **"I left my bag in the taxi!"** Report pre-filled with the fields RTA asks for, asks only for the bag description, official handoff, "not recovered" | "Over a hundred thousand items were left in Dubai taxis last year. It already has the details the report needs." |
+| 3:05–3:40 | **"I left my bag in the taxi!"** Report pre-filled with the fields RTA asks for, asks only for the bag description, official handoff, "not recovered" | "Over a hundred thousand lost items were reported in Dubai taxis last year. It already has the details the report needs." |
 | 3:40–4:00 | Report beside the earlier taxi-memory card | Close: *"Dubai-io remembers your situation and follows through locally, with you approving what gets shared."* |
 
 **Under the hood** goes compact: large events only ("Trip details saved", "Sharing approved", "Merchant accepted", "Ready confirmed"), with the raw log available for questions. The merchant inbox is labelled "Merchant role, simulated" until a real merchant exists.
@@ -73,7 +75,24 @@ One visitor, one continuous story: **an independent laundry with a deadline** (s
 
 ## 4. Phases
 
-Gates are binary. Dates are relative until the contest deadline is verified; then re-anchor.
+Gates are binary.
+
+### 4.0 Contest facts (checked on the official page, 10 Oct 2026)
+
+Source: [dubaichamberdigital.com/en/create-ai-agents](https://www.dubaichamberdigital.com/en/create-ai-agents)
+
+| Fact | Official page says | What we do |
+|---|---|---|
+| Registration | Opened 7 Oct 2026. Closes "January 2027" on the timeline, but **"December 2026" in the FAQ** (the page contradicts itself) | **Register by 30 Nov 2026** |
+| Submission | Prototype + pitch deck + demo video, "January 2027" (no exact day) | **Internal deadline: 31 Dec 2026** |
+| Semi-final | 24 teams announced Jan 2027 · pitch day Mar 2027 · 12 finalists Mar 2027 | Phase 6 |
+| Grand final | First week of May 2027, live on stage. **"A fully functional AI agent — not an MVP"** | Phase 6 hardens the build for live use |
+| Judging | No rubric. "Validate" step: *demonstrate customer need, business potential and measurable impact* | Visitor interviews move from optional to Phase 5 |
+| Eligibility | Idea/prototype/early MVP, not commercialised; ≤6 members; original, not copied from an existing repo; must protect personal data | No forks of existing agent repos |
+| Prize | USD 150k per category winner; "AI Agent of the Year" gets more | — |
+| IP terms | **Not stated** | Ask the organisers by email before submitting |
+
+Phase dates below are anchored to the 31 Dec internal deadline.
 
 ### Phase 0 — Sketch ✅ *complete*
 
@@ -85,42 +104,51 @@ Gates are binary. Dates are relative until the contest deadline is verified; the
 - [x] Demo arc v2 locked (§3)
 
 **Carried into Phase 1 (non-blocking):**
-- [ ] ⏳ **Run `docs/research/research-prompt.md` in Gemini Deep Research / DeepSeek** and save the results in `docs/research/`. It fills the evidence gaps (laundry deadline, hotel concierge, competitors, contest rules)
-- [ ] Verify contest rules: deadline, artifacts, judging criteria, IP terms (re-anchor phase dates)
-- [ ] Update the sketch to arc v2: deadline-conflict branch, time-aware ride reasoning, RTA fields in the lost-item report, cyan host strip, remove Civic tab, compact backstage, "Scripted demo" label
-- [ ] Replace placeholder maps with arrival-side maps
-- [ ] Optional validation: visitor interviews and laundry tabletop (`docs/VISITORS.md §5`)
+- [x] Deep research run (10 Oct) and closed: results in `docs/research/`, no re-runs
+- [x] Contest rules checked on the official page (§4.0). IP terms not published: email organisers
+- [x] Planning locked (10 Oct): reviews archived to `archive/reviews/2026-10-10/`
 
-### Phase 1 — Skeleton (~2 weeks)
+**Carried into Phase 1 (first week, build work, not planning):**
+- [ ] Register for the championship (before 30 Nov 2026)
+- [ ] Patch the sketch to arc v2 in one pass: three laundries (list → modal mini-app), fixed-price order with the 10:00 → 08:30 ready-time conflict, time+terminal ride reasoning, RTA fields in the lost-item report, cyan approval, no Civic tab, compact backstage, "Scripted demo" label, all bridge kinds → `order.request`, `merchant_reported` → `merchant_submitted`, no `+7`, no invented defaults for blank inputs
+- [ ] Replace placeholder maps with arrival-side maps
+
+### Phase 1 — Skeleton (13–26 Oct)
 
 Monorepo scaffold (`apps/web`, `apps/api`, `apps/widgets`, `packages/contracts`), Postgres, contracts + codegen, auth with demo users, chat persistence + SSE, card renderer, one LLM turn with a read-only tool.
 **Gate 1:** chat → typed card from a tool · reload restores everything · invalid card falls back to text.
 
-### Phase 2 — Arrival companion (~2 weeks)
+### Phase 2 — Arrival companion (27 Oct – 9 Nov)
 
 Arrival guide as cards, landmark matching, memory store, ride comparison, trigger/outbox pipeline with dedupe, demo-trigger endpoint.
-**Gate 2:** a trigger fired twice → one message · the journey survives reload mid-way · saved memory is recalled by free text.
+**Gate 2:** a trigger fired twice → one message · the journey survives reload mid-way · saved memory is recalled by free text · 00:40 weekday or T2 → Metro disabled with a reason, Friday 00:40 at T3 → Metro offered (tests).
 
-### Phase 3 — Mini-apps + merchant loop (~3 weeks)
+### Phase 3 — Mini-apps + merchant loop (10–30 Nov)
 
 Registry and manifests, widget origin + sandbox + bridge (`order.request` only — `quote.*` forbidden), approval cards (single approval), fixed-order state machine with idempotency, merchant inbox with live updates.
 **Gate 3:** merchant action → user chat in < 1 s · out-of-scope bridge call blocked (test) · double-tap approve = one order (idempotency) · accept/decline/cancel paths work. No quote path exists to test.
 
-### Phase 4 — Payoff + platform (~2 weeks)
+### Phase 4 — Payoff + platform (1–14 Dec)
 
 Lost-item recovery using memory (checklist + official handoff, nothing "filed"). Photo → extracted catalog → generated mini-app → operator approval.
 **Gate 4:** a new merchant goes live without code changes · the recovery flow uses only saved, user-given facts.
 
-### Phase 5 — Polish + submit (to deadline)
+### Phase 5 — Polish + submit (15–31 Dec)
 
-Rehearse 10×, record a fallback video, deck, deploy, small user test, honest metrics ("27/30").
-**Gate 5:** 10 clean runs ≤ 4:00 · fallback video recorded.
+Rehearse 10×, record the demo video, deck, deploy, visitor interviews + one laundry owner (`docs/VISITORS.md §5`, the evidence for "customer need"), honest metrics ("27/30").
+**Gate 5:** 10 clean runs ≤ 4:00 · demo video recorded · prototype + deck + video submitted by 31 Dec.
+
+### Phase 6 — Semi-final → final (Jan–May 2027, only if selected)
+
+Harden the same scope for live use: real merchant, real deployment, error paths. **No new scope:** "fully functional" means the §2 floor works live, not more features.
+**Gate 6:** the full §3 arc runs live on the deployed app with one real merchant.
 
 ## 5. Not code, but critical
 
 | Track | Needed by | Fallback |
 |---|---|---|
-| Contest rules, deadline, IP | Phase 0 | — |
+| Registration | 30 Nov 2026 | — |
+| IP terms (not published) | Before submitting | Ask organisers by email |
 | 1 real merchant willing to answer on stage/video | Phase 3 | Clearly labelled sandbox merchant |
 | Real arrival-side airport maps or a redrawn schematic | Phase 2 | Generic step schematic (already in demo) |
 | Hosting + domain | Phase 5 | Local + tunnel |

@@ -20,13 +20,13 @@ Merchant mini-apps keep **their own** branding. That contrast is what makes the 
 
 ## Layout
 
-- Tabs: **Companion · Services · Civic · Me**
+- Tabs: **Companion · Services · Me** (Civic is LATER; no tab in the contest build)
 - Companion is a chat timeline holding messages, cards and proactive messages
 - Mini-apps and maps open as **bottom sheets** over the chat; closing one returns you to the conversation
 
 ## Trust labels (always visible where relevant)
 
-`Demo data` · `Demo estimate` · `You told me` · `Proactive` / `Demo trigger` · `Merchant update` · `Pilot`
+`Demo data` · `Estimate` · `You told me` (UI label for `user_supplied`) · `Sandbox` · `Official source` · `Proactive` / `Demo trigger` · `Merchant update` · `Scripted demo` · `Merchant role, simulated`
 Approval cards show **Will be shared** and **Never shared** before anything leaves the phone.
 
 ## Screens
@@ -34,8 +34,8 @@ Approval cards show **Will be shared** and **Never shared** before anything leav
 | File | Status |
 |---|---|
 | `screens/Dubai Concierge Companion Interface.jpg` | Layout reference (old gold style) |
-| `screens/Dubai Laundry Quote App Mockup.jpg` | Mini-app sheet reference (old gold style) |
-| `screens/Dubai-io Services and Civic Dashboard.jpg` | Services + civic reference (old gold style) |
+| `screens/Dubai Laundry Quote App Mockup.jpg` | Mini-app sheet layout only (old gold style). Its quote flow is rejected: fixed prices only |
+| `screens/Dubai-io Services and Civic Dashboard.jpg` | Services reference only (old gold style). Civic half is LATER |
 | `screens/4 styles.png` | Superseded by iOS light + cyan |
 | `screens/archive/…Montage…jpg` | Do not use: copies the official DubaiNow app |
 | `demo/maps/*` | **Placeholders.** Replace with arrival-side maps (immigration, baggage, arrivals hall) |

@@ -7,17 +7,22 @@ Instructions for any coding agent working in this repo. Read this first, then `P
 Dubai-io is a chat-first AI companion for people living in or visiting Dubai, built as an entry for the Create AI Agents Championship (Best Personal AI Agent). One conversation does three things:
 
 1. **Companion (the "Jarvis" part):** greets visitors on arrival, guides them through DXB step by step, remembers what they tell it, and sends proactive in-chat messages that they've opted into.
-2. **Services (the "WeChat" part, Talabat-normal):** a list sorted closest + ★ + price-from + turnaround, and each row opens its **own modal sandboxed HTML mini-app** (services / shops / stores / rides — same pattern). Fixed published prices only. **Bidding / quote / negotiation is FORBIDDEN in any form.** Requests go to a real merchant, and the merchant's real reply updates the chat.
+2. **Services (the "WeChat" part, Talabat-normal):** a list sorted closest + ★ + price-from + turnaround, and each row opens its **own modal sandboxed HTML mini-app** (services / shops / stores / rides — same pattern). Fixed published prices only. **Bidding / quote / negotiation is FORBIDDEN in any form.** Requests go to a merchant inbox, and the merchant's reply updates the chat ("Merchant role, simulated" until a real merchant is live).
 3. **Platform:** a new shop joins from a photo of its price list, and the AI generates its mini-app for operator approval.
 
 Civic guidance (official sources, citations) is LATER, not in the contest build.
 
-**Stage: sketch (Phase 0).** The only code is the clickable HTML prototype in `demo/`.
+**Stage: 🔒 planning locked (10 Oct 2026). Next: Phase 1 build.** The only code so far is the clickable HTML prototype in `demo/`. Internal submission deadline: **31 Dec 2026** (`PLAN.md §4.0`).
 
-## Research status (10 Oct — results exist, portal check remains)
+## 🔒 Planning is locked: read this before you suggest anything
 
-* `docs/research/` now holds `Deepseek-research.md` (usable, weak links), `Dubai Visitor Pain Points Research.md` (strongest, 48 cites), `glm-research.md` (priors only), `qwen-research.md` (DISCARD — failed run, zero Dubai content). `research-prompt.md:3` status line is stale.
-* Do NOT re-run forum research. Remaining task: verify contest facts on the official portal only (`dubaichamberdigital.com`, Dubai Media Office / WAM): submission deadline (reported Jan 2027), final (reported first week May 2027), artifacts, judging criteria, IP terms. Then re-anchor `PLAN.md §4` dates.
+The founder asked for planning to be closed so the build doesn't get derailed. Every agent must enforce this:
+
+1. **Don't reopen planning.** Don't propose new personas, demo beats, categories, features, research runs, reviews, competitor analyses or planning docs. Don't re-argue a decision in `docs/DECISIONS.md`. That includes bidding/quotes, which stay rejected.
+2. **If the founder drifts** (a new idea, "what if we also…", another review round), say it in one line: *"Planning is locked. Park it in VISION.md → Parked ideas?"* Then go back to the current phase task. Add the idea to that list only if they say yes.
+3. **A scope change** needs all three: the founder says so explicitly, there's a row in `docs/DECISIONS.md`, and something of equal size is cut from `PLAN.md §2`.
+4. **Allowed doc edits during the build:** tick `PLAN.md` checkboxes, re-anchor dates, fix a contradiction found while coding (log it in DECISIONS), and fill in the Commands section.
+5. **At the start of each session**, say which phase and gate we're on (`PLAN.md §4`) and the next unticked item.
 
 ## Docs (highest authority first)
 
@@ -29,9 +34,9 @@ Civic guidance (official sources, citations) is LATER, not in the contest build.
 | `docs/DESIGN.md` | Style tokens, layout, trust labels, screen status |
 | `docs/DECISIONS.md` | Decision log, newest first |
 | `docs/VISITORS.md` | Visitor needs as hypotheses to test + interview script. Not evidence |
-| `docs/research/` | Results from external tools (see Research status above) + prompt |
+| `docs/research/` | Deep-research results, run 10 Oct. **Closed.** Pain Points = strongest; DeepSeek has no links; glm = priors only |
 | `docs/VISION.md` | Long-term vision. **Adds no scope** |
-| `archive/` | Original handoff 01–08, old implementation plan, past reviews. Reference only, never build from it |
+| `archive/` | Original handoff 01–08, old implementation plan, all reviews incl. the 10 Oct round + Opus handoff (`archive/reviews/2026-10-10/`). Reference only, never build from it |
 
 If a request needs something that `PLAN.md` lists as **LATER** or **NEVER**, stop and ask. Do not build a "small version" of it.
 
@@ -43,22 +48,21 @@ dubai-io/
 ├── demo/                        # Phase 0 throwaway prototype (static, no build)
 │   ├── index.html               # phone + backstage shell, modal sheets
 │   ├── app.js                   # chat, journey, Talabat list → modal, fixed-order machine
-│   ├── data.js                  # fixtures only (merchants, bridge_scopes=[order.request])
+│   ├── data.js                  # fixtures only (merchants; legacy cart/rx/pickup scopes → migrating to order.request)
 │   ├── styles.css               # iOS light + cyan tokens (single source for Phase 1)
 │   ├── miniapps/*.html          # one modal HTML mini-app per merchant (own branding)
 │   └── maps/*                   # PLACEHOLDERS — replace with arrival-side maps
 ├── docs/
 │   ├── DECISIONS.md             # decision log, newest first (scope changes land here + PLAN.md)
 │   ├── DESIGN.md / VISITORS.md / VISION.md
-│   ├── research/research-prompt.md + *-research.md  # evidence; qwen = DISCARD
-│   └── reviews/OPUS-HANDOFF-*.md + review-*.md      # advisory only, never authority
+│   └── research/research-prompt.md + *-research.md  # evidence, closed
 ├── screens/                     # jpg/png references only (old gold style); archive/ = banned DubaiNow clone
 ├── archive/handoff/01–08 + README.md               # original handoff, reference only
-├── archive/reviews/ + dubai-io-implementation-plan.md  # superseded, never build from
+├── archive/reviews/ (+ 2026-10-10/) + dubai-io-implementation-plan.md  # superseded, never build from
 └── (Phase 1 scaffolds) apps/web + apps/api + apps/widgets, packages/contracts
 ```
 
-Rules: new durable docs go under `docs/` (one topic per file, linked from PLAN.md); agent reviews go in `docs/reviews/review-<tool>-<date>.md`; never add top-level `*.md` beyond the four canon files; never write code outside `demo/` until Phase 1 scaffold exists.
+Rules: no new planning docs (planning is locked); no more plan reviews; never add top-level `*.md` beyond the four canon files; never write code outside `demo/` until Phase 1 scaffold exists.
 
 ## Non-negotiable rules
 

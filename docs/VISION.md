@@ -40,3 +40,13 @@ There are two audiences in one product: **visitors** (arrival, getting around, l
 - `archive/handoff/03` and `06`: 25 scenarios (S01–S25), tourist deep-dives, edge cases and acceptance tests
 - `archive/handoff/04`: merchant integration standard (L1–L5, manifests, envelopes)
 - `archive/handoff/02`: long-term architecture (community, media, indoor wayfinding, tickets)
+
+## Parked ideas (planning is locked, don't discuss these before submission)
+
+One line per idea, with the date. Nothing here is scope. Review the list after 31 Dec 2026.
+
+| Date | Idea | Source |
+|---|---|---|
+| 2026-10-09 | Car rental deposit disputes (#1 tourist complaint), as a post-contest use case | Research |
+| 2026-10-09 | Flight-delay beat, which could *replace* the laundry conflict, never add to it | Review round 2 |
+| 2026-10-09 | "First 24 hours" card | Review round 2 |
