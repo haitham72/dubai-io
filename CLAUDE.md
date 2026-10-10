@@ -35,6 +35,31 @@ Civic guidance (official sources, citations) is LATER, not in the contest build.
 
 If a request needs something that `PLAN.md` lists as **LATER** or **NEVER**, stop and ask. Do not build a "small version" of it.
 
+## Repo layout (schema — where things go, don't invent new top-level docs)
+
+```
+dubai-io/
+├── CLAUDE.md / PLAN.md / ARCHITECTURE.md / README.md  # canon, this order
+├── demo/                        # Phase 0 throwaway prototype (static, no build)
+│   ├── index.html               # phone + backstage shell, modal sheets
+│   ├── app.js                   # chat, journey, Talabat list → modal, fixed-order machine
+│   ├── data.js                  # fixtures only (merchants, bridge_scopes=[order.request])
+│   ├── styles.css               # iOS light + cyan tokens (single source for Phase 1)
+│   ├── miniapps/*.html          # one modal HTML mini-app per merchant (own branding)
+│   └── maps/*                   # PLACEHOLDERS — replace with arrival-side maps
+├── docs/
+│   ├── DECISIONS.md             # decision log, newest first (scope changes land here + PLAN.md)
+│   ├── DESIGN.md / VISITORS.md / VISION.md
+│   ├── research/research-prompt.md + *-research.md  # evidence; qwen = DISCARD
+│   └── reviews/OPUS-HANDOFF-*.md + review-*.md      # advisory only, never authority
+├── screens/                     # jpg/png references only (old gold style); archive/ = banned DubaiNow clone
+├── archive/handoff/01–08 + README.md               # original handoff, reference only
+├── archive/reviews/ + dubai-io-implementation-plan.md  # superseded, never build from
+└── (Phase 1 scaffolds) apps/web + apps/api + apps/widgets, packages/contracts
+```
+
+Rules: new durable docs go under `docs/` (one topic per file, linked from PLAN.md); agent reviews go in `docs/reviews/review-<tool>-<date>.md`; never add top-level `*.md` beyond the four canon files; never write code outside `demo/` until Phase 1 scaffold exists.
+
 ## Non-negotiable rules
 
 1. **Truth in status.** Never show `Confirmed`, `Booked`, `Paid`, `Filed`, `Verified` or `Delivered` without an authoritative event: a merchant action in the inbox or a verified adapter response. LLM text never changes status. Use `UNKNOWN_STATUS` before you would invent a success.
