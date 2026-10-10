@@ -1,6 +1,6 @@
 # Dubai-io — Plan
 
-**Updated:** 10 Oct 2026 · **Status:** 🔒 **Plan v1.1: LOCKED. Planning is closed.** Next step: Phase 1 build · **Owner:** Haitham
+**Updated:** 10 Oct 2026 · **Status:** 🔒 **Plan v1.1: LOCKED. Planning is closed.** Demo patched to the arc (10 Oct). Next step: Phase 1 build. Visual pass comes later · **Owner:** Haitham
 This is the single plan. Scope, demo and phases live here, and nowhere else. Decisions go in `docs/DECISIONS.md`.
 **Founder lock (10 Oct, final): bidding/quote is ABSOLUTELY REJECTED. Every service opens as a modal HTML mini-app (services / shops / stores / rides) with published fixed prices.**
 
@@ -111,7 +111,7 @@ Phase dates below are anchored to the 31 Dec internal deadline.
 **Carried into Phase 1 (first week, build work, not planning):**
 - [ ] Register for the championship (before 30 Nov 2026)
 - [x] Patch the sketch to arc v2 in one pass (10 Oct, verified end to end in headless Chrome): three laundries (list → modal mini-app), fixed-price order with the 10:00 → 08:30 ready-time conflict, time+terminal ride reasoning, RTA fields in the lost-item report, cyan approval, no Civic tab, compact backstage, "Scripted demo" label, all bridge kinds → `order.request`, `merchant_reported` → `merchant_submitted`, no `+7`, no invented defaults for blank inputs
-- [ ] Replace placeholder maps with arrival-side maps
+- [ ] **Visual pass (deferred, founder starts it):** arrival-side maps, per-shop mini-app look, card polish (`docs/DESIGN.md` → Visual status). It doesn't block Phase 1. It must be done before the Phase 5 video
 
 ### Phase 1 — Skeleton (13–26 Oct)
 

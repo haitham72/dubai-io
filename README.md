@@ -16,7 +16,7 @@ On the left is an iPhone-style app. On the right, **Under the hood** shows the a
 
 Demo path (target, `PLAN.md §3`): **Hello, visitor** → DXB arrival guide → taxi chosen for a reason (00:40, Metro closed) with trip details saved → "shirt pressed by 9 tomorrow" → three laundries, each opening **its own HTML mini-app** in a modal sandbox → approval → merchant accepts the fixed order → ready-time conflict caught → earlier slot confirmed → "I left my bag in the taxi" report pre-filled from memory.
 
-The current sketch still shows the older pharmacy path; updating it is the first build task.
+Use the backstage **Scripted controls** (Hotel reached · Shirt by 9 · Lost bag) to jump between moments. Untick *auto-respond* to drive the merchant by hand. Visuals are functional, not final; a visual pass comes later.
 
 Everything in the demo is scripted with fictional merchants and example prices. Nothing is live.
 

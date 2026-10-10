@@ -12,7 +12,7 @@ Dubai-io is a chat-first AI companion for people living in or visiting Dubai, bu
 
 Civic guidance (official sources, citations) is LATER, not in the contest build.
 
-**Stage: 🔒 planning locked (10 Oct 2026). Next: Phase 1 build.** The only code so far is the clickable HTML prototype in `demo/`. Internal submission deadline: **31 Dec 2026** (`PLAN.md §4.0`).
+**Stage: 🔒 planning locked (10 Oct 2026). Next: Phase 1 build.** The only code so far is the clickable HTML prototype in `demo/`, patched to the locked arc and verified end to end on 10 Oct. **Visuals are functional, not final.** A visual pass comes later (`docs/DESIGN.md` → Visual status). Don't restyle anything until the founder starts it. Internal submission deadline: **31 Dec 2026** (`PLAN.md §4.0`).
 
 ## 🔒 Planning is locked: read this before you suggest anything
 
@@ -48,9 +48,11 @@ dubai-io/
 ├── demo/                        # Phase 0 throwaway prototype (static, no build)
 │   ├── index.html               # phone + backstage shell, modal sheets
 │   ├── app.js                   # chat, journey, Talabat list → modal, fixed-order machine
-│   ├── data.js                  # fixtures only (merchants; legacy cart/rx/pickup scopes → migrating to order.request)
+│   ├── data.js                  # fixtures only (3 laundries + browse-only shops, Metro rule table, onboarding fixture; order.request only)
 │   ├── styles.css               # iOS light + cyan tokens (single source for Phase 1)
-│   ├── miniapps/*.html          # one modal HTML mini-app per merchant (own branding)
+│   ├── miniapps/<shop>.html/.css/.js  # one sandboxed mini-app per merchant (own branding, CSP script-src 'self')
+│   ├── miniapps/bridge.js       # shared one-way bridge (widget → host)
+│   ├── miniapps/template.*      # generated-shop template (onboarding)
 │   └── maps/*                   # PLACEHOLDERS — replace with arrival-side maps
 ├── docs/
 │   ├── DECISIONS.md             # decision log, newest first (scope changes land here + PLAN.md)
