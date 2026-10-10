@@ -1,0 +1,12 @@
+body { margin: 0; font-family: Georgia, "Times New Roman", serif; background: #FBF7EF; color: #2B2418; }
+h1 { margin: 0; padding: 20px 16px 2px; font-size: 26px; letter-spacing: .01em; }
+.sub { padding: 0 16px 6px; color: #7A6B52; font-size: 13px; font-family: system-ui, sans-serif; }
+.box { margin: 12px 14px; background: #fff; border-radius: 14px; padding: 14px; border: 1px solid #EADFC9; display: flex; justify-content: space-between; align-items: center; font-family: system-ui, sans-serif; }
+.box small { display: block; color: #7A6B52; font-size: 12px; margin-top: 2px; }
+.step { display: flex; gap: 10px; align-items: center; }
+.step button { width: 34px; height: 34px; border-radius: 10px; border: 1px solid #C9A86A; background: #fff; font-size: 18px; cursor: pointer; }
+.step b { min-width: 18px; text-align: center; }
+.total { background: #F6EEDC; }
+.go { display: block; width: calc(100% - 28px); margin: 0 14px; background: #C9A86A; border: 0; border-radius: 12px; padding: 13px; font-weight: 700; font-size: 15px; cursor: pointer; }
+.go:disabled { opacity: .4; cursor: default; }
+.fine { font: 11px system-ui, sans-serif; color: #7A6B52; padding: 10px 16px 18px; }

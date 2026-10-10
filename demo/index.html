@@ -13,7 +13,7 @@
   <section class="phone" aria-label="Dubai-io app">
     <div class="island"></div>
     <div class="statusbar">
-      <span id="clock">14:32</span>
+      <span id="clock">Wed 00:40</span>
       <span class="icons">
         <svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5" width="3" height="7" rx="1"/><rect x="10" y="2.5" width="3" height="9.5" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
         <svg width="16" height="12" viewBox="0 0 16 12"><path d="M8 11.5 5.6 9a3.4 3.4 0 0 1 4.8 0zM3.5 6.9a6.4 6.4 0 0 1 9 0l-1.4 1.4a4.4 4.4 0 0 0-6.2 0zM1 4.4a9.9 9.9 0 0 1 14 0l-1.4 1.4a7.9 7.9 0 0 0-11.2 0z"/></svg>
@@ -24,6 +24,7 @@
       <div class="brand">Dubai<span>-io</span><small>Your Dubai companion</small></div>
       <div style="display:flex;gap:6px;align-items:center">
         <button class="mobile-log-btn" id="mobileLogBtn">Under the hood</button>
+        <span class="pill demo scripted" id="scriptedPill" title="Everything in this demo is scripted. Nothing is live.">Scripted demo</span>
         <span class="mode-pill" id="modePill">Visitor</span>
       </div>
     </header>
@@ -41,22 +42,11 @@
       </div>
     </main>
 
-    <main class="screen" id="screen-civic">
-      <div class="list">
-        <h2>Civic</h2>
-        <div class="group-h">Pilot</div>
-        <div class="row"><div>Official guides<div class="k">Cited answers from official sources only</div></div><span class="pill">Pilot</span></div>
-        <div class="row"><div>Consumer rights help<div class="k">Evidence, complaint draft, official channel link</div></div><span class="pill">Pilot</span></div>
-        <p class="empty">Not part of this demo. Dubai-io never pays fines, tops up balances or books government services. It hands off to the official channel.</p>
-      </div>
-    </main>
-
     <main class="screen" id="screen-me">
       <div class="list">
         <h2>Me</h2>
         <div class="group-h">Profile</div>
-        <div class="row"><div>Mode<div class="k">Set by you, never guessed</div></div>
-          <div class="seg" id="modeSeg"><button data-mode="Visitor" class="on">Visitor</button><button data-mode="Resident">Resident</button></div></div>
+        <div class="row"><div>Mode<div class="k">Set by you, never guessed</div></div><span class="pill">Visitor</span></div>
         <div class="group-h">What I remember (you told me)</div>
         <div id="memoryList"></div>
         <div class="group-h">Permissions</div>
@@ -72,7 +62,6 @@
     <nav class="tabs">
       <button class="tab active" data-tab="companion"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 4v-4h0A1.5 1.5 0 0 1 4 14.5z"/><path d="m12 6.5.9 2 2 .9-2 .9-.9 2-.9-2-2-.9 2-.9z" fill="currentColor" stroke="none"/></svg>Companion</button>
       <button class="tab" data-tab="services"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg>Services</button>
-      <button class="tab" data-tab="civic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9.5 12 4l9 5.5M5 10v8m4.7-8v8m4.6-8v8M19 10v8M3.5 20.5h17"/></svg>Civic</button>
       <button class="tab" data-tab="me"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8.5" r="4"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"/></svg>Me</button>
     </nav>
 
@@ -118,13 +107,34 @@
     </div>
 
     <div class="panel">
-      <h4>Merchant inbox <label><input type="checkbox" id="autoMerchant" checked> auto-respond</label></h4>
-      <div id="inbox"><div class="inbox-empty">No requests yet. Order something from a pharmacy mini-app.</div></div>
+      <h4>Merchant inbox <span class="role">Merchant role, simulated</span> <label><input type="checkbox" id="autoMerchant" checked> auto-respond</label></h4>
+      <div id="inbox"><div class="inbox-empty">No requests yet. Open a laundry mini-app and send an order request.</div></div>
     </div>
 
-    <div class="panel" style="flex:1;display:flex;flex-direction:column">
-      <h4>Event log <span class="legend">trigger · agent · tool · bridge · action · memory · security</span></h4>
-      <div class="log" id="log"></div>
+    <div class="panel">
+      <h4>Ops review <span class="role">Operator role, simulated</span></h4>
+      <div id="ops"><div class="inbox-empty">No shop waiting for review.</div></div>
+      <div class="btn-row"><button class="bs-btn" id="joinBtn">Shop uploads a price-list photo (simulated)</button></div>
+    </div>
+
+    <div class="panel">
+      <h4>Scripted controls</h4>
+      <div class="ctl">
+        <label>Scripted weekday <select id="weekdaySel"><option>Mon</option><option>Tue</option><option selected>Wed</option><option>Thu</option><option>Fri</option><option>Sat</option><option>Sun</option></select></label>
+        <label><input type="checkbox" id="slowMini"> simulate mini-app load failure</label>
+      </div>
+      <div class="btn-row">
+        <button class="bs-btn" data-say="I've reached my hotel">Hotel reached</button>
+        <button class="bs-btn" data-say="I need a shirt pressed by 9 tomorrow">Shirt by 9</button>
+        <button class="bs-btn" data-say="I left my bag in the taxi!">Lost bag</button>
+      </div>
+    </div>
+
+    <div class="panel logpanel">
+      <h4>Events <span class="seg" id="logSeg"><button class="on" data-view="key">Key events</button><button data-view="raw">Raw log</button></span></h4>
+      <div class="keylog" id="keylog"></div>
+      <div class="log" id="log" hidden></div>
+      <div class="legend">raw: trigger · agent · tool · bridge · action · memory · security</div>
     </div>
   </aside>
 </div>

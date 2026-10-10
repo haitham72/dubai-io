@@ -1,0 +1,20 @@
+body { margin: 0; font-family: system-ui, sans-serif; background: #EAF6FB; color: #08324A; }
+header { background: linear-gradient(135deg, #0E7FA8, #19B2C9); color: #fff; padding: 20px 16px 22px; }
+header h1 { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -.01em; }
+header h1 i { font-weight: 400; opacity: .8; }
+header p { margin: 4px 0 0; opacity: .9; font-size: 13px; }
+.tag { display: inline-block; background: rgba(255,255,255,.2); padding: 3px 9px; border-radius: 999px; font-size: 11px; margin-top: 8px; }
+.grid { display: grid; grid-template-columns: 1fr; gap: 10px; padding: 14px; }
+.item { display: grid; grid-template-columns: 44px 1fr auto; gap: 12px; align-items: center; background: #fff; border-radius: 16px; padding: 12px; border: 1px solid #CDE8F2; }
+.item .e { font-size: 30px; text-align: center; }
+.item b { display: block; font-size: 14px; }
+.item span { font-size: 12px; color: #4B7A90; }
+.q { display: flex; align-items: center; gap: 8px; }
+.q button { width: 30px; height: 30px; border-radius: 50%; border: 0; background: #0E7FA8; color: #fff; font-size: 17px; cursor: pointer; }
+.bar { position: sticky; bottom: 0; background: #fff; border-top: 1px solid #CDE8F2; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; }
+.bar small { display: block; font-size: 11px; color: #4B7A90; }
+.go { background: #0E7FA8; color: #fff; border: 0; border-radius: 999px; padding: 11px 20px; font-weight: 700; cursor: pointer; }
+.go:disabled { opacity: .4; cursor: default; }
+.dev { font-size: 11px; color: #5C8AA0; background: none; border: 0; text-decoration: underline; margin: 12px 14px 4px; padding: 0; cursor: pointer; }
+pre { font-size: 10.5px; margin: 6px 14px; background: #fff; border: 1px dashed #9CC9DA; padding: 8px; border-radius: 8px; white-space: pre-wrap; }
+.fine { font-size: 11px; color: #4B7A90; padding: 4px 14px 18px; }

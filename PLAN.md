@@ -110,7 +110,7 @@ Phase dates below are anchored to the 31 Dec internal deadline.
 
 **Carried into Phase 1 (first week, build work, not planning):**
 - [ ] Register for the championship (before 30 Nov 2026)
-- [ ] Patch the sketch to arc v2 in one pass: three laundries (list → modal mini-app), fixed-price order with the 10:00 → 08:30 ready-time conflict, time+terminal ride reasoning, RTA fields in the lost-item report, cyan approval, no Civic tab, compact backstage, "Scripted demo" label, all bridge kinds → `order.request`, `merchant_reported` → `merchant_submitted`, no `+7`, no invented defaults for blank inputs
+- [x] Patch the sketch to arc v2 in one pass (10 Oct, verified end to end in headless Chrome): three laundries (list → modal mini-app), fixed-price order with the 10:00 → 08:30 ready-time conflict, time+terminal ride reasoning, RTA fields in the lost-item report, cyan approval, no Civic tab, compact backstage, "Scripted demo" label, all bridge kinds → `order.request`, `merchant_reported` → `merchant_submitted`, no `+7`, no invented defaults for blank inputs
 - [ ] Replace placeholder maps with arrival-side maps
 
 ### Phase 1 — Skeleton (13–26 Oct)

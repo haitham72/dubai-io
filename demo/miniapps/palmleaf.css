@@ -1,0 +1,14 @@
+body { margin: 0; font-family: system-ui, sans-serif; background: #F2F8F4; color: #12321F; }
+header { background: #2F7D5B; color: #fff; padding: 18px 16px 22px; }
+header h1 { margin: 0; font-size: 22px; } header p { margin: 4px 0 0; opacity: .85; font-size: 13px; }
+.tag { display: inline-block; background: rgba(255,255,255,.18); padding: 3px 8px; border-radius: 6px; font-size: 11px; margin-top: 8px; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 14px; }
+.item { background: #fff; border-radius: 12px; padding: 12px; border: 1px solid #D7EADF; }
+.item .e { font-size: 28px; } .item b { display: block; font-size: 13px; margin: 6px 0 2px; } .item span { font-size: 12px; color: #4D6B5A; }
+.q { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.q button { width: 28px; height: 28px; border-radius: 8px; border: 1px solid #2F7D5B; background: #fff; color: #2F7D5B; font-size: 16px; cursor: pointer; }
+.bar { position: sticky; bottom: 0; background: #fff; border-top: 1px solid #D7EADF; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; }
+.small { font-size: 11px; color: #4D6B5A; }
+.go { background: #2F7D5B; color: #fff; border: 0; border-radius: 10px; padding: 11px 16px; font-weight: 600; cursor: pointer; }
+.go:disabled { opacity: .4; cursor: default; }
+.note { font-size: 11px; color: #4D6B5A; padding: 0 14px 10px; }

@@ -1,0 +1,18 @@
+body { margin: 0; font-family: "Helvetica Neue", Arial, sans-serif; background: #12141D; color: #ECEFF7; min-height: 100vh; }
+.top { text-align: center; padding: 26px 16px 16px; border-bottom: 1px solid #2A2E40; }
+.mono { width: 44px; height: 44px; margin: 0 auto 10px; border: 1.5px solid #D9C48A; color: #D9C48A; display: grid; place-items: center; font-weight: 700; letter-spacing: .08em; }
+h1 { margin: 0; font-size: 20px; letter-spacing: .28em; font-weight: 600; }
+.top p { margin: 6px 0 0; color: #8D93AE; font-size: 12px; letter-spacing: .04em; }
+.hours { display: inline-block; margin-top: 10px; font-size: 11px; color: #D9C48A; border: 1px solid #5B5330; padding: 3px 10px; }
+ul { list-style: none; margin: 0; padding: 8px 16px; }
+li { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 16px 0; border-bottom: 1px solid #23273A; }
+li b { font-weight: 500; font-size: 15px; display: block; }
+li span { font-size: 12px; color: #8D93AE; }
+.pick { display: flex; align-items: center; gap: 10px; }
+.pick button { width: 28px; height: 28px; background: none; border: 1px solid #4A4F69; color: #ECEFF7; cursor: pointer; }
+.pick em { font-style: normal; min-width: 14px; text-align: center; }
+.price { color: #D9C48A; font-size: 14px; min-width: 52px; text-align: right; }
+.foot { position: sticky; bottom: 0; background: #0D0F16; border-top: 1px solid #2A2E40; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #8D93AE; }
+.foot button { background: #D9C48A; color: #12141D; border: 0; padding: 11px 16px; font-weight: 700; letter-spacing: .04em; cursor: pointer; }
+.foot button:disabled { opacity: .35; cursor: default; }
+.fine { font-size: 11px; color: #6A708C; padding: 10px 16px 20px; }
