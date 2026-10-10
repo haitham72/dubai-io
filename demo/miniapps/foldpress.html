@@ -31,7 +31,7 @@
   }
   document.getElementById("m").onclick = () => { n = Math.max(1, n - 1); draw(); };
   document.getElementById("p").onclick = () => { n++; draw(); };
-  document.getElementById("go").onclick = () => send("quote.request", { items: [{ name: "Shirt ironing", qty: n, price: 5 }], summary: `${n} shirts · ${slots[slot]}`, estimate: n * 5 });
+  document.getElementById("go").onclick = () => send("order.request", { items: [{ name: "Shirt ironing", qty: n, price: 5 }], summary: `${n} shirts · ${slots[slot]}`, estimate: n * 5 });
   draw(); send("app.ready", {});
 </script>
 </body></html>

@@ -4,6 +4,9 @@ One line per decision, newest first. If a decision changes scope, update `PLAN.m
 
 | Date | Decision | Why |
 |---|---|---|
+| 2026-10-10 | **Bidding/quote ABSOLUTELY REJECTED (final).** No `quote.request`, no `QUOTED`, no `QUOTE_ACCEPTED`, no price negotiation anywhere. Every service opens as a **modal HTML mini-app** (services / shops / stores / rides) with published prices. Reviews arguing to keep bidding (`review-cline` Q1, `review-llm` §1) are **rejected and superseded** | Founder decision, final. Bidding adds latency where latency is the failure; independents publish fixed lists via WhatsApp/Google; Talabat/Careem own fixed-price mental model |
+| 2026-10-10 | **Interaction pattern locked: Talabat-normal discovery + WeChat execution, companion first / services last.** Discovery = list sorted closest + ★ rating + price-from + turnaround. Execution = tap → modal HTML mini-app → fixed order → track. Companion opens and closes demo; services only in middle | Founder direction 10 Oct. Keeps jury answer (continuity + memory) without becoming a Talabat clone |
+| 2026-10-10 | **Bidding/quote flow rejected** — merchant loop is fixed-order (`order.request`) with published prices, single approval. `QUOTED` / `QUOTE_ACCEPTED` / `PROVIDER_ACKNOWLEDGED` removed from state machine | Bidding adds latency where latency is the failure (deadline beat). Research: independents quote fixed per-order via WhatsApp; hotel laundry is slow/expensive but fixed. Talabat/Careem already own fixed-price aggregation. The agentic differentiator is **deadline awareness** (companion flags conflict, proposes earlier slot), not price negotiation. Demo `foldpress.html` already showed fixed "AED 5 each". |
 | 2026-10-09 | **Plan v1.0 final**; Phase 0 closed. Interviews are optional, not a gate | Founder decision: proceed on desk research |
 | 2026-10-09 | Lost-item report uses RTA's fields (time, pickup/drop-off, roof colour, plate, receipt) | 104k+ items lost in Dubai taxis in 2025; these fields speed recovery |
 | 2026-10-09 | Ride recommendation reasons from time and terminal (Metro not 24h; no Metro at T2) | Real constraint for late arrivals; an agentic moment backed by facts |
@@ -14,7 +17,7 @@ One line per decision, newest first. If a decision changes scope, update `PLAN.m
 | 2026-10-09 | Hotel concierge treated as the main competitor for this persona | It may already solve shirt pressing and taxi problems |
 | 2026-10-09 | Core promise: **"remembers your situation and follows through with local merchants, with you approving what gets shared"**. Companion = product, mini-apps = mechanism, onboarding = growth | External review: the demo read as three competing products |
 | 2026-10-09 | Hero merchant: **independent laundry with a deadline**, not pharmacy | Pharmacy looks like talabat/Careem; a deadline creates a real agent decision |
-| 2026-10-09 | Add a **deadline-conflict beat** (quote 10:00 vs need 09:00 → ask for earlier) | Turns a merchant reply into an agent decision |
+| 2026-10-09 | Add a **deadline-conflict beat** (ready-time 10:00 vs need 09:00 → ask for earlier; FIXED price, no quote — supersedes quote wording 10 Oct) | Turns a merchant reply into an agent decision |
 | 2026-10-09 | Close the pitch on the **lost-bag memory payoff**; onboarding goes before it | End with the person being helped |
 | 2026-10-09 | Remove the Civic tab from the sketch; the forbidden-payment demo is for Q&A only | Fewer promises on stage |
 | 2026-10-09 | Mock fixes: lost-bag intent, explicit hotel arrival, merchant-originated updates | They contradicted the story |
@@ -25,7 +28,7 @@ One line per decision, newest first. If a decision changes scope, update `PLAN.m
 | 2026-10-09 | Services open as **per-merchant HTML mini-apps** from an aggregator card (WeChat model) | The core differentiator |
 | 2026-10-09 | Civic RAG, vehicles, Salik/DEWA moved to LATER | Keep the contest build focused |
 | 2026-10-09 | Mini-app sandbox: `allow-scripts` only, no network, scoped `postMessage` bridge; host executes, widget never does | Security by construction |
-| 2026-10-09 | Request states add `DECLINED` and `QUOTE_ACCEPTED` (user approves the price) | Gaps in the original state machine |
+| 2026-10-09 | Request states add `DECLINED` (superseded 10 Oct: `QUOTE_ACCEPTED`/`PROVIDER_ACKNOWLEDGED` removed — single approval, fixed order) | Gaps in the original state machine |
 | 2026-10-09 | The LLM can read and propose; only user/merchant taps change state | Truth in status by construction |
 | 2026-10-09 | Stack: Next.js + FastAPI + LangGraph + Postgres/pgvector; no Redis, PostGIS or microservices | Solo-builder sized |
 | 2026-10-09 | Visitor/resident mode is a user setting, not auto-detected | No reliable signal |

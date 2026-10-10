@@ -14,7 +14,7 @@ python -m http.server 8765
 
 On the left is an iPhone-style app. On the right, **Under the hood** shows the agent's tool calls, the sandbox bridge, the request state machine and a merchant inbox you can drive by hand (untick *auto-respond*).
 
-Demo path: **Hello, visitor** → DXB arrival guide (gate → passport → baggage → customs → arrivals) → taxi or Metro → "find a pharmacy" → each pharmacy opens **its own HTML mini-app** in a sandbox → approval → merchant quote → confirmed.
+Demo path: **Hello, visitor** → DXB arrival guide (gate → passport → baggage → customs → arrivals) → taxi or Metro → "find a pharmacy" → each pharmacy opens **its own HTML mini-app** in a modal sandbox → approval → merchant accepts fixed order → confirmed.
 
 Everything in the demo is scripted with fictional merchants and example prices. Nothing is live.
 

@@ -116,7 +116,7 @@ window.DEMO = {
       distance: "1.0 km",
       color: "#A8843F",
       logo: "FP",
-      manifest: { version: "3.0.0", entry: "miniapps/foldpress.html", bridge_scopes: ["quote.request"], fallback_card: "service_comparison" }
+      manifest: { version: "3.0.0", entry: "miniapps/foldpress.html", bridge_scopes: ["order.request"], fallback_card: "service_comparison" }
     }
   ]
 };

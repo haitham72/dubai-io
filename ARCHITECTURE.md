@@ -1,6 +1,7 @@
 # Dubai-io — Build Architecture (contest MVP)
 
-**Updated:** 9 Oct 2026 · **Scope source:** `PLAN.md` (phases referenced as Phase 1–5) · Reference implementation of the UI: `demo/`
+**Updated:** 10 Oct 2026 · **Scope source:** `PLAN.md` (phases referenced as Phase 1–5) · Reference implementation of the UI: `demo/`
+**Founder lock (10 Oct, final): bidding/quote ABSOLUTELY REJECTED. `quote.request`, `quote.read`, `QUOTED`, `QUOTE_ACCEPTED` do not exist. Every service opens as a modal HTML mini-app with fixed prices. Opus brief: `docs/reviews/OPUS-HANDOFF-2026-10-10.md`.**
 
 This document covers only what the contest build needs. The long-term vision architecture (community, media vault, native sensors, indoor maps, ticket wallet) stays in `archive/handoff/02` and `07` and is **not** built here.
 
@@ -13,7 +14,7 @@ One modular monolith (one Python API, one Next.js app) plus a static widget orig
 ```
 ┌──────────────────────── apps/web (Next.js PWA) ────────────────────────┐
 │  /            Companion chat · card renderer · widget host (iframe)    │
-│  /merchant    Merchant inbox (acknowledge / quote / decline / confirm) │
+│  /merchant    Merchant inbox (accept / decline / mark ready / confirm) — fixed orders only, no quoting │
 │  /ops         Provider onboarding review                               │
 └───────────────┬───────────────────────────────▲────────────────────────┘
                 │ REST (commands)               │ SSE (per-conversation, per-merchant streams)
@@ -81,7 +82,7 @@ class Sourced(BaseModel):          # wraps any displayed fact
 class Money(BaseModel):
     amount: Decimal
     currency: Literal["AED"] = "AED"
-    kind: Literal["quote", "from_estimate", "fixture"]
+    kind: Literal["fixed", "from_estimate", "fixture"]  # NEVER "quote" — bidding rejected 10 Oct
 
 class CardAction(BaseModel):
     id: str                        # MUST match a registry capability id or a ui.* local action
@@ -98,8 +99,8 @@ Every card has `type`, `schema_version`, `card_id`, `title`, `as_of`, `actions: 
 | `type` | Purpose | Phase |
 |---|---|---|
 | `text_note` | Plain fallback | 1 |
-| `service_comparison` | ≤3 providers: name, `Money`, availability (`Sourced`), rating (`Sourced` or omitted), capability level | 3 |
-| `action_approval` | What will be sent, to whom, which fields, and the cost if any | 3 |
+| `service_comparison` | Talabat-normal list, ≤3 providers sorted closest + ★ highest: name, `Money` (price-from, fixed), `distance_km` (`Sourced`), `rating` + `rating_count` (`Sourced` or omitted — never invented), `turnaround_sla` + `open_now` (`Sourced`), capability level. Every row's action opens that merchant's **modal HTML mini-app** | 3 |
+| `action_approval` | What will be sent, to whom, which fields, and the fixed total if any | 3 |
 | `action_status` | Request id, current status, last authoritative event, `provider_reference` | 3 |
 | `html_widget` | `manifest_id`, `manifest_version`, `bridge_scopes`, `fallback_card` (inline `service_comparison`) | 3 |
 | `journey_step` | Step title/body, zone, map ref + pin (user-confirmed), Next / I'm lost | 2 |
@@ -110,25 +111,23 @@ Every card has `type`, `schema_version`, `card_id`, `title`, `as_of`, `actions: 
 | `reminder` | What, when, why (`trigger_source`), snooze/dismiss | 2 |
 | `provider_draft` | Onboarding: extracted items with per-field provenance → generated mini-app preview | 4 |
 
-**Out of the MVP union:** `vehicle_status`, `ticket_wallet`, `indoor_route_step`, `delivery_window`, `trip_checklist`, `community_summary`. Add one only when `PLAN.md` moves it into scope.
+**Out of the MVP union:** `vehicle_status`, `ticket_wallet`, `indoor_route_step`, `delivery_window`, `trip_checklist`, `community_summary`, anything with bidding/quote fields. Add one only when `PLAN.md` moves it into scope.
 
 ### 3.3 Agent tools (read-only)
 
 `registry.search(category, area, deadline)`, `registry.get_provider(id)`, `requests.get(user, id)`, `memory.get(keys)`, `parking.latest()`.
-"Propose" tools create pending rows but no external effect: `actions.propose_quote_request(provider_id, inputs)` returns an `action_approval` card, and `scheduler.propose_reminder(...)` returns a `reminder` card that needs confirmation.
+"Propose" tools create pending rows but no external effect: `actions.propose_order_request(provider_id, inputs)` returns an `action_approval` card with the fixed total, and `scheduler.propose_reminder(...)` returns a `reminder` card that needs confirmation. `propose_quote_request` does not exist — bidding rejected.
 
 ---
 
 ## 4. Request state machine (single source of truth)
 
-This extends `archive/handoff/04 §6` with the two missing pieces: a merchant **decline**, and a **second** user approval when the user accepts a quote.
+Fixed-order lifecycle (Talabat-normal). No bidding, no second approval. Merchant either accepts or declines the order at their published price.
 
 ```
 DRAFT ─► AWAITING_APPROVAL ─(user approves send)─► SUBMITTED
-SUBMITTED ─(merchant)─► PROVIDER_ACKNOWLEDGED ─(merchant quotes)─► QUOTED
-SUBMITTED | PROVIDER_ACKNOWLEDGED ─(merchant)─► DECLINED
-QUOTED ─(user accepts quote = approval #2)─► QUOTE_ACCEPTED ─(merchant confirms)─► CONFIRMED
-CONFIRMED ─(merchant marks done | user reports done)─► COMPLETED
+SUBMITTED ─(merchant accepts)─► ACCEPTED ─(merchant marks ready)─► READY ─(merchant marks done | user reports done)─► COMPLETED
+SUBMITTED | ACCEPTED | READY ─(merchant)─► DECLINED
 any non-terminal ─(user)─► CANCELLED
 any non-terminal ─(ttl)─► EXPIRED
 SUBMITTED ─(no ack within N min)─► stays SUBMITTED; UI shows "Waiting for merchant" (no invented status)
@@ -139,7 +138,7 @@ adapter error with unknown outcome ─► UNKNOWN_STATUS
 - Each transition is a row in `action_events` (actor, from, to, source, payload hash, at). The `service_requests.status` column is derived from it and updated in the same transaction.
 - Each transition writes one outbox row → `action_status` message in the user's conversation and an inbox update for the merchant.
 - **Idempotency:** `POST /actions/{id}/approve` and every merchant command take an `Idempotency-Key`. A replay returns the original result.
-- `OPTIONS_READY` from `04 §6` is a card state, not a request state, and is dropped here.
+- `OPTIONS_READY` and `QUOTED`/`QUOTE_ACCEPTED` from `04 §6` are dropped. Price is fixed at submit time from the merchant's published price list.
 
 ---
 
@@ -147,21 +146,21 @@ adapter error with unknown outcome ─► UNKNOWN_STATUS
 
 `users`, `user_context`, `conversations`, `messages` (role, `card` JSONB, `client_msg_id` unique), `providers` (status `draft|approved|suspended`, `is_fixture`), `capabilities` (provider_id, capability_id, level `L1..L3`, input_schema), `widget_manifests`, `service_requests`, `action_events`, `approvals`, `outbox` (dedupe_key unique, available_at, delivered_at), `reminders`, `parking_memories`, `evidence_assets`, `knowledge_sources` (issuer, url, version_date, jurisdiction, license_note), `knowledge_chunks` (embedding vector, section_ref), `audit_log`.
 
-The system of record is **these tables**, not the LangGraph checkpointer. On each turn the agent rebuilds context from `messages` + `user_context` + open `service_requests`. A browser reload replays `messages`, and pending approvals come back automatically because they are cards whose actions still match a request in `AWAITING_APPROVAL` or `QUOTED`.
+The system of record is **these tables**, not the LangGraph checkpointer. On each turn the agent rebuilds context from `messages` + `user_context` + open `service_requests`. A browser reload replays `messages`, and pending approvals come back automatically because they are cards whose actions still match a request in `AWAITING_APPROVAL` (single approval — there is no second quote approval).
 
 ---
 
 ## 6. Widget host (the "WeChat inner-HTML" part)
 
-The render order is: standard card first, widget second, fallback always available.
+The render order is: Talabat-normal card first, modal HTML widget second, fallback always available.
 
-1. The agent emits `service_comparison`. If the provider has an approved manifest, the card offers `Open widget`.
+1. The agent emits `service_comparison` (closest + ★ + price-from + turnaround). Every row offers `Open` → that provider's **modal** HTML mini-app (services / shops / stores / rides — same pattern for all four).
 2. The host loads `https://widgets.<domain>/<provider>/<version>/index.html` in `<iframe sandbox="allow-scripts">`. **Never add `allow-same-origin`**: together with `allow-scripts` on a same-site origin, it lets the frame strip its own sandbox. The widget origin is a separate site.
 3. Widget CSP: `default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'`. The widget cannot call the API. This fixes `archive/handoff/04 §4b`, which allowed `connect-src` to the API and so contradicted its own "HTML never calls tools" rule.
-4. Bridge: `postMessage` with a strict `origin` check on both sides. The host accepts only `{v:1, kind, payload}`, where `kind ∈ manifest.bridge_scopes` (MVP: `quote.read`, `quote.request`). `quote.request` makes the **host** build an `action_approval` card. The widget never submits anything.
+4. Bridge: `postMessage` with a strict `origin` check on both sides. The host accepts only `{v:1, kind, payload}`, where `kind ∈ manifest.bridge_scopes` (MVP: `order.request` ONLY — `quote.*`, `cart.*`, `rx.*`, `pickup.*` are demo legacy and must be migrated to `order.request`). `order.request` makes the **host** build an `action_approval` card with the fixed total. The widget never submits anything.
 5. If the manifest is missing or unapproved, the iframe fails to load within 3 s, or the client is offline, render `fallback_card`.
 
-For the MVP, Dubai-io writes the single widget (`laundry-quote`). Merchant-authored HTML is out of scope.
+For the MVP, Dubai-io writes the single widget (`laundry-order`). Merchant-authored HTML is out of scope.
 
 ---
 
@@ -179,7 +178,7 @@ labelled "Demo trigger")                                ▼
                                           INSERT message + NOTIFY ──► SSE ──► chat
 ```
 
-- MVP trigger sources: (a) user-confirmed reminders ("remind me when my parents land Friday 14:15"), (b) request state changes (merchant quoted), (c) the operator demo-trigger endpoint, used to stand in for a geofence on stage. Its cards always carry `trigger_source: "demo"`, and the UI shows it.
+- MVP trigger sources: (a) user-confirmed reminders ("remind me when my parents land Friday 14:15"), (b) request state changes (merchant accepted / ready), (c) the operator demo-trigger endpoint, used to stand in for a geofence on stage. Its cards always carry `trigger_source: "demo"`, and the UI shows it.
 - Parking: the trigger only *prompts*. The memory is saved from the user's photo plus their typed level/pillar. OCR may pre-fill the fields, and the user must confirm them. Recall is a plain read.
 - Gate test: fire the same trigger twice and exactly one message appears. Reload and the message persists.
 

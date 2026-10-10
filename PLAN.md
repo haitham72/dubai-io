@@ -1,7 +1,8 @@
 # Dubai-io — Plan
 
-**Updated:** 9 Oct 2026 · **Status:** **Plan v1.0, final.** Build starts when the founder asks · **Owner:** Haitham
+**Updated:** 10 Oct 2026 · **Status:** **Plan v1.1 draft for Opus to finalize.** Build starts when the founder asks · **Owner:** Haitham
 This is the single plan. Scope, demo and phases live here, and nowhere else. Decisions go in `docs/DECISIONS.md`.
+**Founder lock (10 Oct, final, Opus must not reopen): bidding/quote is ABSOLUTELY REJECTED. Every service opens as a modal HTML mini-app (services / shops / stores / rides) with published fixed prices. See `docs/DECISIONS.md` 2026-10-10 rows + `docs/reviews/OPUS-HANDOFF-2026-10-10.md`.**
 
 ---
 
@@ -26,8 +27,8 @@ Contest: Create AI Agents Championship, category **Best Personal AI Agent** (rul
 | 3 | Memory the user gives (hotel area; taxi plate or receipt photo, roof colour, route, start time), recalled later without asking again | Companion |
 | 4 | **DXB arrival guide:** step-by-step, user-confirmed, landmark "I'm lost", map with a terminal pin | Visitor |
 | 5 | Ride recommendation that **reasons from time and terminal** (e.g. after midnight or at T2 → no Metro → taxi), with the alternative shown (estimates, handoff only) | Visitor |
-| 6 | **Aggregator → per-merchant HTML mini-apps** (sandboxed, scoped bridge) | Services |
-| 7 | Merchant loop with **deadline awareness**: approval → ack → quote → companion checks the quote against the user's deadline, flags a conflict, asks for an earlier slot → accept → confirm | Services |
+| 6 | **Talabat-normal discovery → modal HTML mini-apps** (sandboxed, scoped bridge). List sorted closest + ★ rating + price-from + turnaround. Tap any row → its **own modal HTML mini-app** (services / shops / stores / rides). Fixed published prices only — **no bidding, no quote, no negotiation** | Services |
+| 7 | Merchant loop with **deadline awareness** (fixed order, NO quote): approval → merchant accepts at published price → companion checks ready-time against user's deadline, flags conflict, asks for earlier slot → merchant confirms ready-time | Services |
 | 8 | Memory payoff: "I left my bag in the taxi" → report pre-filled with RTA's fields (time, pickup/drop-off, roof colour, plate, receipt photo) from saved trip details, asks only for what's missing, hands off to the official channels (call centre / chat agent / app), stays "not recovered" | Companion |
 | 9 | Merchant onboarding: price-list photo → AI-generated mini-app → operator approves → live | Platform |
 
@@ -39,7 +40,7 @@ Civic RAG with citations · resident mode flows (bills, vehicle, Salik/DEWA disp
 
 ### NEVER
 
-Fake "Confirmed/Booked/Paid" · invented positions, belts, queues or prices shown as real · government transactions · copying the official DubaiNow look.
+Fake "Confirmed/Booked/Paid" · invented positions, belts, queues or prices shown as real · government transactions · copying the official DubaiNow look · **bidding / quote / price negotiation in any form (`quote.request`, `QUOTED`, `QUOTE_ACCEPTED`)**.
 
 ## 3. Demo arc (v2, final)
 
@@ -51,21 +52,21 @@ One visitor, one continuous story: **an independent laundry with a deadline** (s
 | 0:12–0:35 | Compact airport guide. "I'm lost" → a landmark choice changes where the guide resumes | "It guides me from where I confirm I am, and resumes from what I can see." |
 | 0:35–0:55 | It's 00:40, so the Metro has stopped: it recommends a taxi *with that reason*. Plate (or receipt photo), roof colour, route and start time saved, labelled "You told me" | "It knows the Metro has stopped, so it suggests a taxi, and saves what I'll need if something goes wrong." |
 | 0:55–1:10 | "I've reached my hotel." User: *"I need a shirt pressed by 9 tomorrow."* | "My hotel area carries into the request." |
-| 1:10–1:30 | Three laundries, two distinct mini-app previews, pick one | "Separate merchant experiences, same conversation." |
-| 1:30–1:55 | Cyan host approval: named shop, shirt count, hotel area, deadline. Pauses visibly | "The shop's mini-app can only ask. Dubai-io shows what's shared and waits for me." |
-| 1:55–2:45 | Merchant inbox expands. Ack → quote **10:00** → companion flags "misses your 09:00 deadline" → asks for earlier → **08:30** → accept → merchant confirms | "Ten o'clock misses my deadline. It catches that, asks for earlier, and says confirmed only when the shop confirms." |
+| 1:10–1:30 | Three laundries as Talabat-normal list (closest + ★ + price-from + turnaround), each row opens its **own modal HTML mini-app** | "Separate merchant experiences, same conversation." |
+| 1:30–1:55 | Cyan host approval: named shop, fixed items + fixed total, hotel area, deadline. Pauses visibly | "The shop's mini-app can only ask. Dubai-io shows what's shared and waits for me." |
+| 1:55–2:45 | Merchant inbox expands. **Accepted at fixed price** → ready-time **10:00** → companion flags "misses your 09:00 deadline" → asks for earlier → **08:30** → merchant confirms (no re-quote, price unchanged) | "Ten o'clock misses my deadline. It catches that, asks for earlier, and says confirmed only when the shop confirms." |
 | 2:45–3:05 | Price-list photo → generated mini-app → owner review → appears in results | "Another shop joins from a photo, reviewed before it goes live." |
 | 3:05–3:40 | **"I left my bag in the taxi!"** Report pre-filled with the fields RTA asks for, asks only for the bag description, official handoff, "not recovered" | "Over a hundred thousand items were left in Dubai taxis last year. It already has the details the report needs." |
 | 3:40–4:00 | Report beside the earlier taxi-memory card | Close: *"Dubai-io remembers your situation and follows through locally, with you approving what gets shared."* |
 
-**Under the hood** goes compact: large events only ("Trip details saved", "Sharing approved", "Merchant confirmed"), with the raw log available for questions. The merchant inbox is labelled "Merchant role, simulated" until a real merchant exists.
+**Under the hood** goes compact: large events only ("Trip details saved", "Sharing approved", "Merchant accepted", "Ready confirmed"), with the raw log available for questions. The merchant inbox is labelled "Merchant role, simulated" until a real merchant exists.
 
 ### Jury objections (prepared answers)
 
 | Objection | Answer |
 |---|---|
-| What does this add to DubaiNow / Careem / talabat / ChatGPT? | Continuity: the same companion carries your context into a local merchant's reply, quote and confirmation, and you approve what leaves the chat. We don't claim they lack AI or memory |
-| Where's the agency beyond buttons? | It holds the deadline, interprets a conflicting reply and proposes the next step |
+| What does this add to DubaiNow / Careem / talabat / ChatGPT? | Continuity: the same companion carries your context into a local merchant's fixed order and ready-time confirmation, and you approve what leaves the chat. We don't claim they lack AI or memory |
+| Where's the agency beyond buttons? | It holds the deadline, checks a fixed ready-time against it and proposes the next step (no price negotiation) |
 | Why keep it after the airport? | Arrival is the introduction; repeat local requests reuse your preferences and history |
 | Why would merchants join? | A reviewed mini-app from a photo, plus a structured inbox, is less work than WhatsApp back-and-forth. To be validated with shop owners |
 | What have you proved? | The interaction is reviewable. User need, repeat use and merchant participation are what we test next |
@@ -102,8 +103,8 @@ Arrival guide as cards, landmark matching, memory store, ride comparison, trigge
 
 ### Phase 3 — Mini-apps + merchant loop (~3 weeks)
 
-Registry and manifests, widget origin + sandbox + bridge, approval cards, request state machine with idempotency, merchant inbox with live updates.
-**Gate 3:** merchant action → user chat in < 1 s · out-of-scope bridge call blocked (test) · double approve = one request · decline/cancel paths work.
+Registry and manifests, widget origin + sandbox + bridge (`order.request` only — `quote.*` forbidden), approval cards (single approval), fixed-order state machine with idempotency, merchant inbox with live updates.
+**Gate 3:** merchant action → user chat in < 1 s · out-of-scope bridge call blocked (test) · double-tap approve = one order (idempotency) · accept/decline/cancel paths work. No quote path exists to test.
 
 ### Phase 4 — Payoff + platform (~2 weeks)
 

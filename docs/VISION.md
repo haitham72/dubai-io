@@ -25,7 +25,7 @@ There are two audiences in one product: **visitors** (arrival, getting around, l
 3. **Consent before sharing.** The user sees exactly what goes to whom.
 4. **Proactive, not creepy.** Opt-in triggers, quiet hours, easy "that's wrong", no background tracking assumed.
 5. **Many merchants, few contracts.** Merchants are records in a registry with shared capability contracts, not one integration each.
-6. **Merchant maturity levels:** L1 discoverable → L2 contactable → L3 quotes → L4 confirmed booking → L5 tracked fulfilment. A shop joins at whatever level it can actually support.
+6. **Merchant maturity levels:** L1 discoverable → L2 contactable → L3 fixed orders → L4 confirmed booking → L5 tracked fulfilment. A shop joins at whatever level it can actually support. (No bidding level — rejected 10 Oct.)
 
 ## Where it goes after the contest
 

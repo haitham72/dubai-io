@@ -309,28 +309,27 @@
   $("#mapClose").onclick = () => { $("#mapSheet").classList.remove("open"); $("#sheetBackdrop").classList.remove("open"); };
 
   // ---------- approval + request state machine ----------
-  const FLOW = ["SUBMITTED", "PROVIDER_ACKNOWLEDGED", "QUOTED", "QUOTE_ACCEPTED", "CONFIRMED"];
+  const FLOW = ["SUBMITTED", "ACCEPTED", "READY", "COMPLETED"];
   const ALLOWED = {
     AWAITING_APPROVAL: ["SUBMITTED", "CANCELLED"],
-    SUBMITTED: ["PROVIDER_ACKNOWLEDGED", "DECLINED", "CANCELLED"],
-    PROVIDER_ACKNOWLEDGED: ["QUOTED", "DECLINED", "CANCELLED"],
-    QUOTED: ["QUOTE_ACCEPTED", "CANCELLED"],
-    QUOTE_ACCEPTED: ["CONFIRMED", "CANCELLED"],
-    CONFIRMED: ["COMPLETED"]
+    SUBMITTED: ["ACCEPTED", "DECLINED", "CANCELLED"],
+    ACCEPTED: ["READY", "DECLINED", "CANCELLED"],
+    READY: ["COMPLETED", "CANCELLED"],
+    COMPLETED: []
   };
-  const LABEL = { SUBMITTED: "Sent to merchant", PROVIDER_ACKNOWLEDGED: "Merchant acknowledged", QUOTED: "Merchant quoted", QUOTE_ACCEPTED: "You accepted the quote", CONFIRMED: "Merchant confirmed" };
+  const LABEL = { SUBMITTED: "Sent to merchant", ACCEPTED: "Merchant accepted", READY: "Ready for pickup", COMPLETED: "Completed" };
 
   function approval(m, kind, p) {
     const shares = {
       "cart.request": ["Item list", `Delivery area: ${state.dest || "Business Bay"}`, "Contact: in-app chat (phone hidden)"],
       "rx.request": ["Prescription photo", `Delivery area: ${state.dest || "Business Bay"}`, "Contact: in-app chat (phone hidden)"],
       "pickup.request": ["Item list", "Your first name for pickup"],
-      "quote.request": ["Item count and pickup slot", `Pickup area: ${state.dest || "Business Bay"}`]
+      "order.request": ["Item count and pickup slot", `Pickup area: ${state.dest || "Business Bay"}`]
     }[kind];
     const items = (p.items || []).map((i) => `${i.qty}× ${esc(i.name)}`).join(", ") || esc(p.summary || "");
     const c = card(`<div class="card-head"><div><h3>Send to ${m.name}?</h3><div class="sub">${items}</div></div><span class="pill demo">Demo merchant</span></div>
       <div class="shares"><b>Will be shared</b>${shares.join(" · ")}</div>
-      ${p.estimate ? `<div class="shares"><b>Estimate</b>AED ${p.estimate.toFixed(2)}. The merchant confirms the final price</div>` : ""}
+      ${p.estimate ? `<div class="shares"><b>Fixed total</b>AED ${p.estimate.toFixed(2)}</div>` : ""}
       <div class="btn-row"><button class="btn small" data-a="ok">Approve and send</button><button class="btn small ghost" data-a="no">Cancel</button></div>`);
     log("action", "request DRAFT → AWAITING_APPROVAL", { merchant: m.id, kind });
     c.querySelector('[data-a="ok"]').onclick = () => { c.querySelectorAll("button").forEach((x) => (x.disabled = true)); createRequest(m, kind, p, items); };
@@ -338,7 +337,7 @@
   }
 
   function createRequest(m, kind, p, summary) {
-    const r = { id: "REQ-" + ++reqSeq, m, kind, p, summary, status: "AWAITING_APPROVAL", quote: null, ref: null, el: null };
+    const r = { id: "REQ-" + ++reqSeq, m, kind, p, summary, status: "AWAITING_APPROVAL", ref: null, el: null };
     state.requests.push(r);
     r.el = card(""); transition(r, "SUBMITTED", "user");
     if ($("#autoMerchant").checked) autoMerchant(r);
@@ -348,8 +347,7 @@
     if (!(ALLOWED[r.status] || []).includes(to)) { log("security", `illegal transition ${r.status} → ${to} rejected`, { id: r.id, actor }); return; }
     log("action", `${r.id} ${r.status} → ${to}`, { actor, source: actor === "merchant" ? "merchant_inbox" : "user_tap" });
     r.status = to;
-    if (to === "QUOTED") r.quote = { total: +((r.p.estimate || 30) + 7).toFixed(2), eta: "35–45 min" };
-    if (to === "CONFIRMED") r.ref = r.m.logo + "-" + Math.floor(1000 + Math.random() * 9000);
+    if (to === "COMPLETED") r.ref = r.m.logo + "-" + Math.floor(1000 + Math.random() * 9000);
     drawStatus(r); drawInbox();
   }
 
@@ -365,38 +363,32 @@
     const idx = FLOW.indexOf(r.status);
     const track = r.status === "DECLINED" || r.status === "CANCELLED"
       ? `<div class="st bad"><i></i>${r.status === "DECLINED" ? "Merchant declined. Want me to try another pharmacy?" : "Cancelled"}</div>`
-      : FLOW.map((s, k) => `<div class="st ${k < idx ? "done" : k === idx ? "now" : ""}"><i></i>${LABEL[s]}${s === "QUOTED" && r.quote ? `: <b>AED ${r.quote.total.toFixed(2)}</b>, ${r.quote.eta}` : ""}${s === "CONFIRMED" && r.ref ? ` · ref ${r.ref}` : ""}</div>`).join("");
+      : FLOW.map((s, k) => `<div class="st ${k < idx ? "done" : k === idx ? "now" : ""}"><i></i>${LABEL[s]}${s === "COMPLETED" && r.ref ? ` · ref ${r.ref}` : ""}</div>`).join("");
     r.el.innerHTML = `<div class="card-head"><div><h3>${r.m.name}</h3><div class="sub">${r.summary}</div></div><span class="pill">${r.id}</span></div>
       <div class="status-track">${track}</div>
-      ${r.status === "QUOTED" ? `<div class="btn-row"><button class="btn small" data-q="ok">Accept AED ${r.quote.total.toFixed(2)}</button><button class="btn small ghost" data-q="no">Decline</button></div>` : ""}
       <div class="foot"><span>Status changes only when the merchant or you act</span></div>`;
-    const ok = r.el.querySelector('[data-q="ok"]');
-    if (ok) {
-      ok.onclick = () => { transition(r, "QUOTE_ACCEPTED", "user"); if ($("#autoMerchant").checked) setTimeout(() => transition(r, "CONFIRMED", "merchant"), 1500); };
-      r.el.querySelector('[data-q="no"]').onclick = () => transition(r, "CANCELLED", "user");
-    }
     scroll();
   }
 
   async function autoMerchant(r) {
-    await sleep(1500); if (r.status === "SUBMITTED") transition(r, "PROVIDER_ACKNOWLEDGED", "merchant");
-    await sleep(2000); if (r.status === "PROVIDER_ACKNOWLEDGED") transition(r, "QUOTED", "merchant");
+    await sleep(1500); if (r.status === "SUBMITTED") transition(r, "ACCEPTED", "merchant");
+    await sleep(2000); if (r.status === "ACCEPTED") transition(r, "READY", "merchant");
+    await sleep(1500); if (r.status === "READY") transition(r, "COMPLETED", "merchant");
   }
 
   function drawInbox() {
     const open = state.requests.filter((r) => r.status !== "AWAITING_APPROVAL");
     if (!open.length) return;
     $("#inbox").innerHTML = open.slice().reverse().map((r) => {
-      const b = (to, label) => (ALLOWED[r.status] || []).includes(to) && to !== "QUOTE_ACCEPTED" && to !== "CANCELLED"
+      const b = (to, label) => (ALLOWED[r.status] || []).includes(to) && to !== "CANCELLED"
         ? `<button class="btn small ghost" data-id="${r.id}" data-to="${to}">${label}</button>` : "";
       return `<div class="inbox-item"><div class="who">${r.m.name}</div><div>${r.id} · ${r.summary}</div>
         <div class="st-tag">${r.status}</div>
-        <div class="btn-row">${b("PROVIDER_ACKNOWLEDGED", "Acknowledge")}${b("QUOTED", "Send quote")}${b("CONFIRMED", "Confirm")}${b("DECLINED", "Decline")}${r.status === "CONFIRMED" && !r.ofd ? `<button class="btn small ghost" data-ofd="${r.id}">Send "on the way"</button>` : ""}</div></div>`;
+        <div class="btn-row">${b("ACCEPTED", "Accept")}${b("READY", "Mark ready")}${b("COMPLETED", "Complete")}${b("DECLINED", "Decline")}</div></div>`;
     }).join("");
     $("#inbox").querySelectorAll("[data-to]").forEach((btn) => (btn.onclick = () => {
       const r = state.requests.find((x) => x.id === btn.dataset.id); transition(r, btn.dataset.to, "merchant");
     }));
-    $("#inbox").querySelectorAll("[data-ofd]").forEach((btn) => (btn.onclick = () => merchantUpdate(state.requests.find((x) => x.id === btn.dataset.ofd))));
   }
 
   // ---------- memory payoff: lost item in taxi ----------

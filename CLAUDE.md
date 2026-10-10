@@ -7,16 +7,17 @@ Instructions for any coding agent working in this repo. Read this first, then `P
 Dubai-io is a chat-first AI companion for people living in or visiting Dubai, built as an entry for the Create AI Agents Championship (Best Personal AI Agent). One conversation does three things:
 
 1. **Companion (the "Jarvis" part):** greets visitors on arrival, guides them through DXB step by step, remembers what they tell it, and sends proactive in-chat messages that they've opted into.
-2. **Services (the "WeChat" part):** an aggregator card lists merchants, and each opens its **own sandboxed HTML mini-app**. Requests go to a real merchant, and the merchant's real reply updates the chat.
+2. **Services (the "WeChat" part, Talabat-normal):** a list sorted closest + ★ + price-from + turnaround, and each row opens its **own modal sandboxed HTML mini-app** (services / shops / stores / rides — same pattern). Fixed published prices only. **Bidding / quote / negotiation is FORBIDDEN in any form.** Requests go to a real merchant, and the merchant's real reply updates the chat.
 3. **Platform:** a new shop joins from a photo of its price list, and the AI generates its mini-app for operator approval.
 
 Civic guidance (official sources, citations) is LATER, not in the contest build.
 
 **Stage: sketch (Phase 0).** The only code is the clickable HTML prototype in `demo/`.
 
-## ⏳ Pending research: remind the founder
+## Research status (10 Oct — results exist, portal check remains)
 
-`docs/research/research-prompt.md` (deep research for Gemini/DeepSeek on visitor needs, the hotel-concierge question, competitors, fact checks and contest rules) **has not been run yet**. Until a `docs/research/results-*.md` file exists, **remind the founder at the start of any planning or build session** to run it, and offer to merge the results once they're saved there.
+* `docs/research/` now holds `Deepseek-research.md` (usable, weak links), `Dubai Visitor Pain Points Research.md` (strongest, 48 cites), `glm-research.md` (priors only), `qwen-research.md` (DISCARD — failed run, zero Dubai content). `research-prompt.md:3` status line is stale.
+* Do NOT re-run forum research. Remaining task: verify contest facts on the official portal only (`dubaichamberdigital.com`, Dubai Media Office / WAM): submission deadline (reported Jan 2027), final (reported first week May 2027), artifacts, judging criteria, IP terms. Then re-anchor `PLAN.md §4` dates.
 
 ## Docs (highest authority first)
 
@@ -28,7 +29,7 @@ Civic guidance (official sources, citations) is LATER, not in the contest build.
 | `docs/DESIGN.md` | Style tokens, layout, trust labels, screen status |
 | `docs/DECISIONS.md` | Decision log, newest first |
 | `docs/VISITORS.md` | Visitor needs as hypotheses to test + interview script. Not evidence |
-| `docs/research/` | Deep-research prompt + results from external tools (pending) |
+| `docs/research/` | Results from external tools (see Research status above) + prompt |
 | `docs/VISION.md` | Long-term vision. **Adds no scope** |
 | `archive/` | Original handoff 01–08, old implementation plan, past reviews. Reference only, never build from it |
 
@@ -41,7 +42,7 @@ If a request needs something that `PLAN.md` lists as **LATER** or **NEVER**, sto
 3. **No invented positions or facts.** The arrival guide never claims an indoor position, belt, gate or queue time the user didn't confirm. Map pins mark only user-confirmed places. Prices and times are labelled estimates.
 4. **No government execution.** Salik, DEWA, RTA, Tasjeel and fines are display-only or `Open official portal` links. No top-ups, no bookings, no wait times.
 5. **No official branding.** Do not use the DubaiNow layout, government emblems or ministry logos. `screens/archive/` holds the rejected DubaiNow-clone montage; don't reuse it.
-6. **Approval before side effects.** Sharing data with a merchant, sending a request and accepting a quote each need an explicit user tap on an approval card that lists exactly which fields get shared.
+6. **Approval before side effects.** Sharing data with a merchant and sending a fixed-price order each need an explicit user tap on an approval card that lists exactly which fields get shared. Single approval only — there is no second quote approval because quotes do not exist.
 7. **Only registered actions execute.** A card action's `id` must match a capability ID in the registry. The agent fills in *data*. It never writes executable payloads, HTML, SQL or URLs to call.
 8. **Proactive = deterministic.** Reminders and triggers come from the scheduler/outbox, not from LLM polling. Every one is deduplicated (`dedupe_key`), consented, respects quiet hours, and is stored as a normal chat message. A trigger the user did not cause is labelled `Demo trigger` on stage. The PWA does **not** do background geofencing.
 9. **Memory is user-given.** Belt, taxi number, hotel area and similar facts are stored as `user_supplied` and shown with a "You told me" label. Nothing is inferred silently.
