@@ -119,7 +119,13 @@
 
     <div class="panel">
       <h4>Merchant inbox <label><input type="checkbox" id="autoMerchant" checked> auto-respond</label></h4>
-      <div id="inbox"><div class="inbox-empty">No requests yet. Order something from a pharmacy mini-app.</div></div>
+      <div id="inbox"><div class="inbox-empty">No requests yet. Order something from a merchant mini-app.</div></div>
+    </div>
+
+    <div class="panel" id="panelTriggers">
+      <h4>Trigger panel (operator)</h4>
+      <div class="chips" id="trigChips"></div>
+      <p class="k" style="margin:6px 0 0">Fires a Demo trigger. Each fires twice → one message.</p>
     </div>
 
     <div class="panel" style="flex:1;display:flex;flex-direction:column">

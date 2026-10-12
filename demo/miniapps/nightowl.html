@@ -37,7 +37,7 @@
   let attached = false, mode = "Delivery";
   document.getElementById("up").onclick = (e) => { attached = true; e.currentTarget.classList.add("done"); e.currentTarget.textContent = "✓ prescription_sample.jpg attached"; document.getElementById("go").disabled = false; };
   document.querySelectorAll("[data-m]").forEach(b => b.onclick = () => { mode = b.dataset.m; document.querySelectorAll("[data-m]").forEach(x => x.classList.toggle("on", x === b)); });
-  document.getElementById("go").onclick = () => send("rx.request", { summary: `Prescription review · ${mode}`, mode, attachment: "prescription_sample.jpg", estimate: 0 });
+  document.getElementById("go").onclick = () => send("order.request", { summary: `Prescription review · ${mode}`, mode, attachment: "prescription_sample.jpg", estimate: 0 });
   window.addEventListener("message", (e) => { if (e.source === parent && e.data && e.data.kind === "host.context") document.getElementById("area").textContent = e.data.payload.area; });
   send("app.ready", {});
 </script>

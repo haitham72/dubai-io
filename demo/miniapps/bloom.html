@@ -34,7 +34,7 @@
     document.querySelectorAll("[data-i]").forEach(el => el.onclick = () => { pick = +el.dataset.i; draw(); });
     document.getElementById("go").disabled = pick === null;
   }
-  document.getElementById("go").onclick = () => { const k = kits[pick]; send("pickup.request", { items: [{ name: k.name, qty: 1, price: k.price }], estimate: k.price }); };
+  document.getElementById("go").onclick = () => { const k = kits[pick]; send("order.request", { items: [{ name: k.name, qty: 1, price: k.price }], estimate: k.price }); };
   draw(); send("app.ready", {});
 </script>
 </body></html>
