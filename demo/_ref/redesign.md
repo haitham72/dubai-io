@@ -30,6 +30,8 @@ app, same style".
 ★ = the 9 images that are enough to redesign the app. The rest are completeness. Total with everything:
 14 images from 15 prompts. **Lock Home (1) before sending anything else.**
 
+**Resident / VIP arc:** see Part 2 (R-series, 8 images + a context patch). Built after the visitor redesign ships.
+
 **Scope of the redesign:** layout, hierarchy, iconography, spacing, states and motion cues.
 **Palette stays locked** (`demo/styles.css` tokens; CLAUDE.md: "do not invent new palettes").
 
@@ -456,6 +458,185 @@ amber, action green, memory cyan, security red) in a monospace list with timesta
 
 ---
 
+## Part 2 — Resident / VIP arc (R-series)
+
+Second arc, built **after** the visitor redesign ships (PLAN.md items 10–11). Same chat, same style lock, same
+navigation model. Paste **R0** once, then R1 … R6.
+
+**Personality (the one line):** Dubai-io does not just answer, it **mobilises**. You state a goal; it makes a
+plan, sends agents to providers' sites, APIs and tools, prepares every step and comes back with **one thing
+to approve**.
+
+```text
+Goal → Plan → Agents fan out (websites, partner agents, APIs, tools) → Steps prepared, live status
+     → ONE approval → Provider confirms → Calendar entries, to the second
+```
+
+**Rules that hold in every R prompt**
+
+| Rule | In practice |
+|---|---|
+| No quotes | Fixed published prices. Providers answer **slot requests**: "Can do Thu 10:00" / "No slot" / "Waiting". The price never changes |
+| No government execution | A private runner visits the centre. Official portal = handoff link. Fines are display-only. Never "Renewed" without a provider event |
+| Truth in status | Only the status words in Prompt 0, always a human line + mono code, with `hh:mm:ss` timestamps |
+| Fictional providers | Runners Valet Hands (demo), Rank Runner (demo), Express Pit (demo) · insurers Shield Motor (demo), Gulf Assure (demo), Palm Cover (demo) · marketplaces Souq Express (demo), NestHome (demo) · pros FixIt Pros (demo), Maid Match (demo), BuildRight (demo) · found shop Al Barsha Cooling (demo). No real brands (Amazon, IKEA …) |
+| VIP | A small cyan "VIP" pill plus a "Priority" line. No gold, no new colours |
+
+| # | Prompt | Type | Core |
+|---|---|---|---|
+| **R0** | Resident / VIP context patch | context only | ★ |
+| **R1** | Home, resident + VIP | screen | ★ |
+| **R2** | Goal in motion: renew car licence (plan, agents at work) | screen | ★ |
+| R2a | Papers check | popup | |
+| **R3** | Providers: fixed prices + slot replies | screen | ★ |
+| R3a | Runner proposal + approval | popup | ★ |
+| **R4** | Insurance choice (2-up) | screen + popup | ★ |
+| **R5** | Done: timeline + calendar to the second | screen | ★ |
+| **R6** | Home services: fix it / maid / renovation (2-up) | screen + popup | ★ |
+
+### R0 — Resident / VIP context patch
+
+```text
+RESIDENT / VIP UPDATE. Do NOT generate an image for this message, reply with exactly: "Ready".
+Dubai-io now also serves residents, especially VIPs. Same app, same style lock, same navigation model.
+PERSONALITY: Dubai-io does not just answer, it mobilises. The user states a goal; Dubai-io makes a plan, sends
+agents to the providers' websites, APIs and tools, prepares each step, and comes back with ONE thing to approve.
+Show this as a "goal plan": steps in order, each with the sources being contacted (small chips: website, partner
+agent, API, tool) and a live status, with timestamps to the second (hh:mm:ss).
+RULES: fixed published prices only. Providers reply to SLOT requests ("Can do Thu 10:00", "No slot", "Waiting")
+and the price never changes; no quotes or bids anywhere. Dubai-io never submits to a government entity: a
+private runner visits the centre, the official portal is a handoff link, fines are display-only. Status words
+only from the list; every status comes from a provider event, shown as a human line plus the mono code.
+VIP is a small cyan "VIP" pill plus a "Priority" line. No gold, no new colours.
+FICTIONAL PROVIDERS ONLY: runners Valet Hands (demo), Rank Runner (demo), Express Pit (demo); insurers Shield Motor (demo), Gulf Assure
+(demo), Palm Cover (demo); marketplaces Souq Express (demo), NestHome (demo); pros FixIt Pros (demo), Maid Match
+(demo), BuildRight (demo); found shop Al Barsha Cooling (demo).
+```
+
+### R1 — Home, resident + VIP
+
+```text
+FILE NAME: R1-resident-home.png
+SCREEN R1: HOME (Companion tab), IDLE state, resident. Same layout as the visitor Home: AI search on top, floating
+Liquid Glass tab bar at the bottom, NO composer.
+Top: "Dubai-io" large bold, right side two small pills "Resident" and "VIP". AI search "Ask Dubai-io". Under it a
+context strip: "Dubai Marina · you told me".
+Content: 1) hero card: eyebrow "Dubai-io · Priority", title "Good afternoon, Alex.", body "Two things are coming up.
+I can handle both." 2) "Coming up" card with two rows: car icon "Car licence expires in 12 days" with cyan
+"Renew" chip; wrench icon "AC service is due this month" with cyan "Fix it" chip. 3) "Try asking" strip of three
+cards: "Renew my car licence", "Fix something at home", "Find a maid". Amber pill "Demo data" on the hero.
+Bottom: glass tab bar only (Companion active, Services, Civic, Me).
+```
+
+### R2 — Goal in motion: renew my car licence
+
+**Feeds:** the goal-plan card: the visual core of the "mobilise" personality.
+
+```text
+FILE NAME: R2-goal-plan.png
+SCREEN R2: CHAT ACTIVE (compact header with back chevron, glass composer replacing the tab bar).
+1) Cyan user bubble: "renew my car licence"
+2) Subtle chip with sparkle: "Luna understood: Resident · Vehicle · Licence renewal"
+3) Grey bot bubble: "On it. I'm preparing everything and I'll come back with one thing for you to approve."
+4) Large white "goal plan" card: title "Renew car licence", sub "5 steps · 2 done · 00:01:12 elapsed", purple pill
+   "Demo trigger", amber "Demo data". A vertical step list with a rail, each step with a status icon, a
+   human line, a mono tag and a hh:mm:ss time:
+   1 "Check your papers" · done · "From what you told me" · ACCEPTED · 14:02:07
+   2 "Find pickup providers" · in progress · three small source chips "Valet Hands (demo) · site",
+     "Rank Runner (demo) · agent", "Shield Motor (demo) · API" · "3 slot requests sent" · SUBMITTED · 14:02:11
+   3 "Propose a runner" · waiting · pending
+   4 "Choose insurance" · waiting · pending
+   5 "Confirmed by the provider" · waiting for provider · pending
+   Footer small grey: "Prices are published and fixed. Nothing is marked done until a provider confirms."
+Make it feel like quiet, competent work happening in parallel, with one clear thing coming next.
+```
+
+### R2a — Popup: papers check
+
+```text
+FILE NAME: R2a-papers-check.png
+POPUP over R2, 88% bottom sheet. Title "Your papers", grey "Checked from what you told me. Verify on the official
+portal." Rows with icon, name, value, green pill "You told me": "Vehicle registration · expires 24 Oct",
+"Emirates ID · valid", "Insurance · expires 24 Oct", amber chip "Vehicle test · needed". A row "Fines" with grey
+"Display only · open the official portal" and an external-link icon. Cyan button "Add a document photo".
+Footer: "Dubai-io never submits anything to RTA or Tasjeel."
+```
+
+### R3 — Providers: fixed prices + slot replies
+
+```text
+FILE NAME: R3-providers-slots.png
+SCREEN R3: CHAT ACTIVE, same chrome as R2. Bot bubble: "Three providers can pick up and renew. Prices are
+published; they only confirm slots." One white card "Pickup and renewal", amber "Demo data". Three rows: logo
+tile, name, pill "Partner app (demo)", fixed price "AED 180 (demo) · fixed", a slot-reply chip and a mono tag,
+cyan "Open":
+Valet Hands (demo), green tile VH, "Can do Thu 10:00", ACCEPTED, reply time 14:02:19.
+Rank Runner (demo), teal tile RR, "No slot today · next Fri 09:00", DECLINED.
+Express Pit (demo), indigo tile EP, "Waiting for reply…", pending.
+Footer: "Price never changes after a reply."
+```
+
+### R3a — Popup: runner proposal + approval
+
+```text
+FILE NAME: R3a-runner-proposal.png
+POPUP over R3, 88% bottom sheet in Dubai-io chrome. Title "Valet Hands (demo)", pills "Partner app (demo)" and
+"Priority · VIP". Runner row: round silhouette avatar, "Faisal M.", "Licensed runner · 4.9 ★ (demo)". A plan block:
+"Thu 10:00 pickup · Dubai Marina" → "Vehicle test and renewal at a licensed centre" → "Back by 14:00". Fixed price
+"AED 180 (demo)". Two info blocks: "WILL BE SHARED": "Registration copy · Emirates ID copy · pickup address ·
+contact via in-app chat". "NEVER SHARED": "Insurance details until you choose · payment card". Buttons: cyan
+"Approve and send", grey "Cancel". Small grey: "A private runner visits the centre. Dubai-io submits nothing."
+```
+
+### R4 — Insurance choice (2-up)
+
+```text
+FILE NAME: R4-insurance.png
+SCREEN R4, 2-up. LEFT: chat with a white card "Motor insurance" listing three insurers sorted by price, each with
+a logo tile, name, pill "Partner app (demo)", fixed yearly price and a "Choose" button: Palm Cover (demo)
+"AED 1,320 / year (demo)", Shield Motor (demo) "AED 1,450 / year (demo)", Gulf Assure (demo) "AED 1,780 / year
+(demo)". RIGHT: Shield Motor's sheet (88% bottom sheet, its own deep-blue branding, Google sign-in strip): three
+plan cards "Third party · AED 980 (demo)", "Comprehensive · AED 1,450 (demo)" selected, "Comprehensive + agency ·
+AED 1,980 (demo)", mono footer "manifest · scopes: auth.signin, policy.select" and "sandbox · no network".
+```
+
+### R5 — Done: timeline + calendar to the second
+
+**Feeds:** the proof of follow-through: every step, who confirmed it and when, as calendar entries.
+
+```text
+FILE NAME: R5-done-timeline.png
+SCREEN R5: CHAT ACTIVE. White card "Car licence renewal", green mono tag "COMPLETED", sub "Confirmed by Valet Hands
+(demo) · Thu 12:03:17". Under it a month strip showing three small dots on Thu. Then a vertical timeline, each
+event with a hh:mm:ss time, a human line, the source chip and a small calendar icon "Added to calendar":
+14:02:07 "Papers checked" · you told me
+14:02:19 "Valet Hands replied: Thu 10:00" · ACCEPTED
+14:05:33 "You approved the runner"
+Thu 09:58:02 "Runner arrived at Dubai Marina" · provider update
+Thu 10:41:55 "Vehicle test passed" · provider report
+Thu 12:03:17 "Registration renewed" · COMPLETED · provider confirmed
+Thu 13:10:44 "Insurance policy issued by Shield Motor (demo)" · COMPLETED
+Thu 13:58:20 "Car returned to Dubai Marina" · provider update
+Footer small grey: "Every line came from a provider. Dubai-io submitted nothing to RTA."
+```
+
+### R6 — Home services: fix it / maid / renovation (2-up)
+
+```text
+FILE NAME: R6-home-services.png
+SCREEN R6, 2-up. LEFT: chat after "my AC is not cooling". A white card "Fix it · AC", three category chips on top
+"Fix it" (selected), "Maid", "Renovation". Rows with logo tile, name, source pill and a fixed price:
+NestHome (demo), pill "Marketplace", "AC service pack · AED 220 (demo)", "Delivered + installed Thu";
+FixIt Pros (demo), pill "Pro", "from AED 150 (demo) · next slot today 17:00";
+Al Barsha Cooling (demo), pill "Found nearby", "from AED 120 (demo) · next slot tomorrow 09:00".
+RIGHT: FixIt Pros' sheet (88% bottom, its own orange branding): "AC check and gas refill · AED 150 (demo)", "AC
+deep clean · AED 220 (demo)", a slot picker chips "Today 17:00" (selected) "Tomorrow 09:00" "Tomorrow 14:00",
+green strip "Signed in with Google (demo)", orange "Request this slot" button, footer "price is fixed · they
+confirm the slot".
+```
+
+---
+
 ## Other retouchings (not image work)
 
 Found while building. Tackle after the images land, in this order.
@@ -481,7 +662,7 @@ Found while building. Tackle after the images land, in this order.
 
 ## After the images arrive
 
-1. Save to `demo/_ref/` on the `redesign` branch (names from the series map).
+1. Save to `demo/_ref/` on the `redesign` branch (names from the series map; R-series as `R1-…png`).
 2. Build in series order: tokens and chrome (0, 1) → navigation takeover (1a) → guide (1b, 1c) → rows (2) →
    sheet templates (2a, 2b) → approvals (3) → banner (3a) → recovery (4, 4a) → tabs (5, 5a) → console (6).
 3. Verify each screen with a Playwright screenshot at 390 px against its reference image, then run the

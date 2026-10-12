@@ -1,8 +1,9 @@
 # Dubai-io — Plan
 
-**Updated:** 12 Oct 2026 · **Status:** **Plan v1.2.** Build starts when the founder asks · **Owner:** Haitham
+**Updated:** 12 Oct 2026 · **Status:** **Plan v1.3.** Build starts when the founder asks · **Owner:** Haitham
 This is the single plan. Scope, demo and phases live here, and nowhere else. (Decision log lives on `main`; `build` is code-only.)
 **Founder lock (10 Oct, final): bidding/quote is ABSOLUTELY REJECTED. Every service opens as a modal HTML mini-app (services / shops / stores / rides) with published fixed prices.**
+**Founder decision (12 Oct): the Resident/VIP arc (items 10–11) moves from LATER to IN, built after the visitor redesign. Providers answer slot/availability requests at published fixed prices. The quote lock above is unchanged.**
 
 ---
 
@@ -31,16 +32,18 @@ Contest: Create AI Agents Championship, category **Best Personal AI Agent**. Off
 | 7 | Merchant loop with **deadline awareness** (fixed order, NO quote): approval → merchant accepts at published price → companion checks ready-time against user's deadline, flags conflict, asks for earlier slot → merchant confirms ready-time | Services |
 | 8 | Memory payoff: "I left my bag in the taxi" → report pre-filled with RTA's fields (time, pickup/drop-off, roof colour, plate, receipt photo) from saved trip details, asks only for what's missing, hands off to the official channels (call centre / chat agent / app), stays "not recovered" | Companion |
 | 9 | Merchant onboarding: price-list photo → AI-generated mini-app → operator approves → live | Platform |
+| 10 | **Resident/VIP arc** (second arc, after the visitor redesign): a goal ("renew my car licence") becomes a plan. Agents read provider sites / APIs / MCP tools, prepare each step and send **slot requests at published fixed prices**: papers check (user-supplied facts only) → provider rows → runner proposal → insurance choice → provider-confirmed done, with a per-step calendar timeline to the second. A private runner makes the visit; Dubai-io never submits to RTA/Tasjeel | Resident |
+| 11 | **Home services:** "fix it / maid / renovation" → rows from marketplace apps and found shops, each opens its own modal mini-app, fixed prices (fictional demo providers) | Resident |
 
-**If time runs out, cut in this order:** 9 → 5 → 4. Items 1, 2, 3, 6, 7 and 8 are the floor: memory + follow-through *is* the product.
+**If time runs out, cut in this order:** 11 → 10 → 9 → 5 → 4. Items 1, 2, 3, 6, 7 and 8 are the floor: memory + follow-through *is* the product.
 
 ### LATER (vision, not in the contest build)
 
-Civic RAG with citations · resident mode flows (bills, vehicle, Salik/DEWA displays) · community · background geofencing · ticket wallet · payments · media memory · Arabic RTL UI (Arabic answers are fine) · native app.
+Civic RAG with citations · resident bills and Salik/DEWA displays · community · background geofencing · ticket wallet · payments · media memory · Arabic RTL UI (Arabic answers are fine) · native app.
 
 ### NEVER
 
-Fake "Confirmed/Booked/Paid" · invented positions, belts, queues or prices shown as real · government transactions · copying the official DubaiNow look · **bidding / quote / price negotiation in any form (`quote.request`, `QUOTED`, `QUOTE_ACCEPTED`)**.
+Fake "Confirmed/Booked/Paid" · invented positions, belts, queues or prices shown as real · government transactions (a private runner may visit the centre; Dubai-io never submits, pays, or marks anything renewed without a provider event; fines are display-only) · copying the official DubaiNow look · **bidding / quote / price negotiation in any form (`quote.request`, `QUOTED`, `QUOTE_ACCEPTED`)**.
 
 ## 3. Demo arc (v2, final)
 
@@ -110,6 +113,14 @@ Registry and manifests, widget origin + sandbox + bridge (`order.request` only �
 
 Lost-item recovery using memory (checklist + official handoff, nothing "filed"). Photo → extracted catalog → generated mini-app → operator approval.
 **Gate 4:** a new merchant goes live without code changes · the recovery flow uses only saved, user-given facts.
+
+### Resident/VIP arc (starts after the visitor redesign ships)
+
+- [ ] Resident/VIP design prompts generated and imported (`redesign.md`, R-series)
+- [ ] Goal-to-plan card: agents at work, per-step status with timestamps to the second
+- [ ] Car-licence renewal: papers check → fixed-price rows + slot replies → runner proposal → insurance → provider-confirmed done + calendar timeline
+- [ ] Home services rows (fix it / maid / renovation) from marketplace apps and found shops
+**Gate R:** every step shows a provider-sourced status · no quote path · nothing marked renewed or paid without a provider event · fines display-only.
 
 ### Phase 5 — Polish + submit (to deadline)
 
