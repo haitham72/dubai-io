@@ -142,7 +142,7 @@ Rehearse 10×, record a fallback video, deck, deploy, small user test, honest me
 
 ### 6.1 Definition of done
 
-- Runs in **iPhone Safari at 390 × 844**, and Add to Home Screen works. No native iOS build, no backend.
+- Runs in **iPhone Safari at 390 × 844**, and Add to Home Screen works. No native iOS build. The only server is the small Luna API (6.9); the app still works without it (mock fallback).
 - Same story as §3 (arrival → laundry deadline → taxi memory), plus Luna rows (community, shopping), the waypoint guide and the lost-item cash/card paths, all in the redesigned look.
 - Every rule in `CLAUDE.md` still holds (truth in status, fixed prices, sandbox, approvals, no government execution, no quotes).
 - Gates in 6.6 pass, with screenshots next to the reference images.
@@ -156,15 +156,18 @@ apps/web/
   public/maps/          copy of demo/maps
   src/styles/           tokens.css (demo/styles.css tokens + glass), base.css
   src/data/             fixtures.ts  (from demo/data.js)
-  src/luna/             mock.ts      (from demo/luna.js, same understand() contract)
+  src/luna/             client.ts (API first, mock fallback), mock.ts (from demo/luna.js, same contract)
+  src/motion/           scroll reveal, spring + gesture, reduced-motion helpers (6.8)
+  src/shaders/          HeroField.tsx + GLSL (WebGL2 canvas behind the Home hero) (6.8)
   src/bridge/           host.ts (scopes, handler table), MiniAppSheet.tsx (iframe sandbox="allow-scripts")
   src/state/            store.ts (one reducer or zustand; epoch guard, dedupe map)
   src/components/       AppBar, AISearch, GlassTabBar, Composer, Bubble, Card, Chip, Pill, StatusTag, Sheet, Banner
   src/screens/          Home, Chat, Services, Civic, Me, Backstage
   src/flows/            journey, rows, join, purchase, recovery, triggers, laundry, tickets, faith
+apps/api/               Luna only: FastAPI + LangGraph (6.9). Not needed to run the web app
 ```
 
-Dependencies: `react`, `react-dom`, `vite`, `typescript`, `vitest`, `@playwright/test` (+ `zustand` optional). Plain CSS (CSS modules). No UI kit, no router needed beyond screen state, no backend client.
+Dependencies (web): `react`, `react-dom`, `vite`, `typescript`, `vitest`, `@playwright/test`, a spring/gesture lib (`framer-motion` or `@use-gesture/react` + `react-spring`), a tiny WebGL helper (`ogl`, or raw WebGL2), `zustand` optional. Plain CSS (CSS modules). No UI kit.
 
 ### 6.3 Reference map
 
@@ -203,7 +206,7 @@ Source of truth for behaviour is `demo/app.js`, `demo/data.js`, `demo/luna.js`. 
 | Behaviour | Demo source | Notes |
 |---|---|---|
 | Journey: setStep, confirmWaypoint, I'm lost | `app.js` journey section | state is host-owned, pushed down to the iframe |
-| Luna first, regex router as fallback | `luna.js`, composer `onsubmit` | keep confidence ≥ 0.6, 22 fallback cards |
+| Luna first (API, then mock), regex router as fallback | `luna.js`, composer `onsubmit` | keep confidence ≥ 0.6, 22 fallback cards; log `via: langgraph \| mock-luna` |
 | Rows: community + shopping, sign-in, join approval, purchase event → calendar | `providerRows`, `joinApproval`, `purchaseReported`, `signIn` | prices `AED x (demo)`; dedupe by order ref |
 | Approval + fixed-order machine | `approval`, `createRequest`, `transition`, `FLOW`/`ALLOWED` | single approval, idempotent |
 | Laundry deadline loop | `laundryDeadline`, `laundryMerchantFlow` | no re-quote |
@@ -217,8 +220,9 @@ Bridge: scopes in each manifest AND a handler in the host table; unknown or out-
 
 | Step | Build | Gate (Playwright iPhone profile, 390 px) |
 |---|---|---|
-| 0 | Scaffold, tokens, Home idle | matches `01-home` / `01a` left; glass bar visible; no composer |
-| 1 | Chat takeover, Luna, rows, partner + shop sheets | composer replaces bar; rows match `02`; sign-in → signed in; purchase → calendar card |
+| 0 | Scaffold, tokens, Home idle + **motion L1 (scroll reveal) + L3 (hero shader)** | matches `01-home` / `01a` left; glass bar visible; no composer; reveal is scroll-linked; shader degrades to a static gradient |
+| 1 | Chat takeover + **motion L2 (gesture + spring)**, Luna mock, rows, partner + shop sheets | composer replaces bar with a continuous, interruptible transition; rows match `02`; sign-in → signed in; purchase → calendar card |
+| 1b | **Luna API** (`apps/api`, LangGraph) behind `LUNA.understand` | golden set passes; web works with the API off; `via` shows in the log |
 | 2 | Guide, approvals + events, banner | six waypoints any order; belt saved; approval lists shared / never shared |
 | 3 | Recovery, Services / Me, merchant + onboarding | cash and card paths end at `READY` or `PREPARED_NOT_FILED`; order accepted → ready-time |
 | 4 | Backstage, tour, retouch list | triggers fire once; log filters |
@@ -232,9 +236,32 @@ Audits at every gate: bridge audit `rg "quote\.|QUOTED|cart\.request|rx\.request
 
 View it: `cd apps/web && npm run dev -- --host`, then `http://10.5.3.228:5173` on the iPhone (same Wi-Fi; allow the Windows firewall prompt), then Share → Add to Home Screen. HTTPS (tunnel or deploy) only when testing the compass or sharing a link.
 
-### 6.8 Open items (defaults apply unless the founder overrides)
+### 6.8 Motion (Home): all three levels (founder: "use all")
+
+Goal: scrolling and swiping Home feels fluid, with content coming into place under the finger. This is a web app, so "Metal shaders" means a **WebGL2 canvas** (Safari runs it through Metal). No native Metal. Palette stays locked.
+
+| Level | What | How |
+|---|---|---|
+| **L1 Scroll-linked reveal** | Hero, question card and the three "Try asking" cards translate (24 px → 0), scale (.97 → 1) and fade **as the finger moves**, staggered. AI search compresses on scroll. Hero art parallaxes at ~0.4× | CSS scroll-driven animations (`animation-timeline: view()` / `scroll()`, `animation-range: entry 0% cover 35%`). Fallback when unsupported: `IntersectionObserver` + `requestAnimationFrame` writing CSS variables |
+| **L2 Gesture + spring** | Home ↔ chat is one continuous, interruptible motion. Dragging up from the glass bar morphs the capsule into the composer; Home content slides up and dims; the chat header slides in. Back chevron or swipe down reverses it. Rubber-band at the ends | Spring physics (stiffness ~300, damping ~30) with pointer drag + velocity; shared-layout transition for bar → composer. Never block input mid-animation |
+| **L3 Shader field** | A slow, fluid background behind the hero: domain-warped noise in the locked palette (cyan `#0A9CC2` → `#E3F6FB` → white). Scroll velocity and touch drive a soft ripple uniform. Optional: refraction highlight at the glass bar's edge | One `<canvas>` (WebGL2, GLSL ES 3.0) behind the hero only. Render at 0.5–0.75× scale, DPR cap 2, pause when hidden or off-screen |
+
+Constraints: 60 fps target on iPhone 12 or newer; a single canvas; text contrast stays AA over the field (keep it low-contrast under cards); honour `prefers-reduced-motion` (no parallax, no ripple, static gradient); fall back to a static gradient if WebGL2 is missing or the frame budget is blown; no layout-thrashing reads in scroll handlers; `will-change` only during motion. Add a `?fps` overlay for on-device checks (there is no Mac Inspector assumed). The glass bar keeps `backdrop-filter` as its fallback look.
+
+### 6.9 Luna service (LangGraph, `apps/api`)
+
+Purpose: real user-understanding behind `LUNA.understand`. The web app is still a demo that works offline.
+
+- **Endpoint:** `POST /luna/understand` with `{ text, context? }` → `{ intent, category, interests[], origin, item, trace, confidence, via, matched[] }`, **the same shape as `luna.js`**. Intents are a registry allowlist (`community.find`, `shopping.buy`, `lost_item.taxi`, `none`, later the resident/VIP intents). Luna returns understanding only; no actions, no HTML, no URLs (CLAUDE.md rule 7).
+- **Graph v1:** `normalize` (language, light transliteration) → `understand` (one LLM node, structured output with a Pydantic model) → `validate` (clamp to the allowlist, drop unknown slots, set `confidence`). Specialist subgraphs and a supervisor come later (see `ARCHITECTURE.md`: read-only and propose-only, no interrupt/resume).
+- **Config:** model from `LLM_MODEL`, key `ANTHROPIC_API_KEY` server-side only, never in the web bundle or in git; 3 s timeout; log text redacted.
+- **Web client:** `src/luna/client.ts` tries the API (`VITE_LUNA_URL`, via the Vite dev proxy `/api` so the iPhone needs no CORS or mixed-content), waits at most 2.5 s, then uses `mock.ts`. The log shows `via: langgraph` or `mock-luna`. Same dispatch, same 0.6 threshold, regex router still behind it.
+- **Run:** `uvicorn app.main:app --host 0.0.0.0 --port 8000` in `apps/api`; Vite proxies `/api` to it.
+- **Tests:** a golden set (the 19 router routes, community/shopping/lost phrasings, typos such as `egyutians` / `taksi`, Arabic) as pytest; a contract test against the TS type. The API is optional: all web gates must pass with it off.
+
+### 6.10 Open items (defaults apply unless the founder overrides)
 
 - Missing references: `01b-guide` (stop 1 open) and `02b-shop-sheet`: derive from `01c` and `02a`.
 - Tab label **Companion** vs **Home**: default Companion.
-- Real Luna (LangGraph) stays behind `LUNA.understand`; no keys in the web app.
-- Out of scope here: backend, Arabic RTL, dark mode, real arrival-side maps and image licensing (retouch list in `redesign.md`).
+- No motion reference exists (the founder's "Wapi" example could not be identified): build from 6.8 and review on the phone; adjust easing and stagger by eye.
+- Out of scope here: memory persistence / checkpointer, Arabic RTL, dark mode, real arrival-side maps and image licensing (retouch list in `redesign.md`).
