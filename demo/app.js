@@ -1,17 +1,12 @@
-// Dubai-io clickable demo. Scripted, no backend, no LLM.
+// Dubai-io clickable demo. Scripted, no backend. Luna is a mock extractor (luna.js).
 // The "Under the hood" panel shows what a real build would do at each step.
 (() => {
   const D = window.DEMO;
+  const LUNA = window.LUNA;   // mock Luna: same understand(text) contract the real service will return
   const $ = (s) => document.querySelector(s);
   const chat = $("#chat");
-  const state = { mode: "Visitor", memory: {}, requests: [], dest: null, step: 0, epoch: 0, cashRuns: 0 };
+  const state = { mode: "Visitor", memory: {}, requests: [], dest: null, step: 0, epoch: 0, cashRuns: 0, query: null, signedIn: {}, purchases: new Set(), fired: {} };
   let reqSeq = 4800;
-
-  // ---------- Luna NLU seam (STUB, not wired) ----------
-  // Phase 1 puts the language model behind the API proxy, never in this static page.
-  // No keys here, and nothing is fetched. weight 0.0 = the regex router below always wins.
-  const UNDERSTORY_URL = window.location.origin.replace("/index.html", "") + "/demo/luna.js";
-  const NLU = { url: UNDERSTORY_URL, weight: 0.0 };
 
   // ---------- helpers ----------
   const now = () => new Date().toTimeString().slice(0, 5);
@@ -95,69 +90,73 @@
   }
   document.querySelectorAll(".tab").forEach((b) => (b.onclick = () => showTab(b.dataset.tab)));
 
-  // ---------- airport journey ----------
-  function schematic(active) {
-    const rows = D.zones.map((z, i) => {
-      const y = 8 + i * 34, on = i === active, done = i < active;
-      return `<rect x="6" y="${y}" width="80" height="26" rx="8" fill="${on ? "#0A9CC2" : done ? "#E8F8EC" : "#F2F2F7"}" stroke="${on ? "#0A9CC2" : "#E5E5EA"}"/>
-        <text x="46" y="${y + 17}" text-anchor="middle" font-size="9.5" font-weight="${on ? 600 : 400}" font-family="-apple-system,Segoe UI,sans-serif" fill="${on ? "#fff" : done ? "#1E8E3E" : "#3C3C43"}">${done ? "✓ " : ""}${z}</text>` +
-        (i < D.zones.length - 1 ? `<line x1="46" y1="${y + 26}" x2="46" y2="${y + 34}" stroke="#D1D1D6" stroke-width="2"/>` : "");
-    }).join("");
-    return `<svg viewBox="0 0 92 214" role="img" aria-label="Illustrative airport flow">${rows}</svg>`;
-  }
-
-  let journeyCard = null;
-  function renderStep(i) {
-    state.step = i;
-    const s = D.airportSteps[i];
-    log("agent", `journey step → ${s.id}`, { step: i + 1, of: D.airportSteps.length, position_source: "user_confirmed" });
+  // ---------- airport journey: waypoints guide (built-in mini-app) + chat summary ----------
+  // Position is only what the user taps (I'm here / Done / a landmark). The guide sheet renders host
+  // data; state.step stays host-owned and is pushed down on every change.
+  let guideCard = null;
+  function renderSummary() {
+    const i = state.step, n = D.airportSteps.length, s = D.airportSteps[i];
     const prog = D.airportSteps.map((_, k) => `<span class="${k <= i ? "on" : ""}"></span>`).join("");
-    const extras = s.extra === "needs" ? `<button class="btn small ghost" data-x="needs">What do I need?</button>`
-      : s.extra === "belt" ? `<button class="btn small ghost" data-x="belt">Save my belt number</button>` : "";
-    const html = `
-      <div class="card-head"><div><h3>DXB arrival guide</h3><div class="sub">${D.flight.terminal} · step ${i + 1} of ${D.airportSteps.length}</div></div>
+    const html = `<div class="card-head"><div><h3>DXB arrival guide</h3><div class="sub">${D.flight.terminal} · waypoint ${i + 1} of ${n}</div></div>
       <div class="pills"><span class="pill demo">Demo data</span></div></div>
-      <div class="journey">${schematic(s.zone)}
-        <div><div class="step-title">${s.title}</div><div class="step-body">${s.body}</div>
-        <div class="btn-row">${i < D.airportSteps.length - 1 ? `<button class="btn small" data-x="next">Done, next ✓</button>` : `<button class="btn small" data-x="ride">Compare rides</button>`}
-        <button class="btn small ghost" data-x="lost">I'm lost</button>${extras}</div></div></div>
-      ${i === 0 ? `<button class="map-thumb" data-x="map" aria-label="Open airport map"><span class="pin"></span><span class="cap">You're at Terminal 3 · tap for map</span></button>` : ""}
+      <div class="step-title">${s.title}</div>
       <div class="progress">${prog}</div>
-      <div class="foot"><span>Steps confirmed by you, no indoor GPS</span><button class="btn small ghost" data-x="map" style="padding:4px 10px;font-size:12px">Airport maps</button></div>`;
-    if (!journeyCard) journeyCard = card(html); else { journeyCard.innerHTML = html; chat.append(journeyCard); scroll(); }
-    journeyCard.querySelectorAll("[data-x]").forEach((b) => (b.onclick = () => stepAction(b.dataset.x)));
+      <div class="btn-row"><button class="btn small" data-x="open">Open guide</button><button class="btn small ghost" data-x="lost">I'm lost</button></div>
+      <div class="foot"><span>Waypoints confirmed by you, no indoor GPS</span></div>`;
+    if (!guideCard) guideCard = card(html); else guideCard.innerHTML = html;
+    guideCard.querySelectorAll("[data-x]").forEach((b) => (b.onclick = () => (b.dataset.x === "open" ? openGuide() : lostFlow())));
   }
 
-  async function stepAction(x) {
-    if (x === "map") return openMap("overview");
-    if (x === "next") { user("Done ✓"); await typing(300); renderStep(state.step + 1); }
-    if (x === "ride") { user("Compare rides"); rides(); }
-    if (x === "lost") {
-      user("I'm lost");
-      await typing();
-      bot("No problem. I can't see your exact position indoors, so tell me what's around you.");
-      log("tool", "venue.ask_landmark", { reason: "indoor position unknown" });
-      chips(D.airportSteps.slice(0, 5).map((s, k) => [s.landmark, async () => {
-        log("tool", "venue.match_landmark", { landmark: s.landmark, matched_step: s.id, confidence: "user_confirmed" });
-        await typing(); bot(`Got it. You're at <b>${s.title.toLowerCase()}</b>. Picking up from there.`); renderStep(k);
-      }]));
+  function guidePayload() {
+    return {
+      steps: D.airportSteps.map(({ id, title, body, img, imgCaption, tile, pin, landmark, extra, sideStop }) => ({ id, title, body, img, imgCaption, tile, pin, landmark, extra, sideStop })),
+      current: state.step, dest: state.dest, terminal: D.flight.terminal, belt: state.belt
+    };
+  }
+  function pushGuideState() {
+    if (current && current.kind === "guide" && $("#sheet").classList.contains("open") && frame.contentWindow) {
+      frame.contentWindow.postMessage({ v: 1, kind: "host.state", payload: { current: state.step, belt: state.belt } }, "*");
     }
-    if (x === "needs") {
-      user("What do I need?"); await typing();
-      bot("Passport, plus any visa or entry permit that applies to you. Requirements depend on your nationality, so check the official entry requirements if unsure. <span class='pill'>Official guidance link</span>");
+  }
+  function openGuide() { openMini("dxbguide"); }
+
+  function setStep(k, via) {
+    const s = D.airportSteps[k];
+    state.step = k;
+    log("agent", `journey step → ${s.id}`, { step: k + 1, of: D.airportSteps.length, position_source: "user_confirmed", via });
+    renderSummary(); pushGuideState();
+  }
+
+  function confirmWaypoint(p) {
+    const k = D.airportSteps.findIndex((s) => s.id === p.step_id);
+    if (k < 0 || !["here", "done", "landmark"].includes(p.via)) { log("security", "invalid waypoint confirm dropped", p); return; }
+    const s = D.airportSteps[k];
+    if (p.via === "landmark") {
+      log("tool", "venue.match_landmark", { landmark: s.landmark, matched_step: s.id, confidence: "user_confirmed" });
+      bot(`Got it. You're at <b>${s.title.toLowerCase()}</b>. Picking up from there.`);
     }
-    if (x === "belt") {
-      user("Save my belt number"); await typing();
-      const c = card(`<h3>Belt number</h3><div class="sub">Read it from the arrivals screen</div>
-        <div style="display:flex;gap:8px"><input id="beltIn" placeholder="e.g. 7" class="field">
-        <button class="btn small" id="beltSave">Save</button></div>`);
-      c.querySelector("#beltSave").onclick = async () => {
-        const v = c.querySelector("#beltIn").value.trim() || "7";
-        remember("Baggage belt", `Belt ${v} · ${D.flight.number}`);
-        c.innerHTML = `<h3>Saved: Belt ${esc(v)}</h3><div class="pills"><span class="pill user">You told me</span></div>`;
-        await typing(); bot(`I'll remember belt ${esc(v)}. Ask "which belt?" any time.`);
-      };
-    }
+    setStep(p.via === "done" ? Math.min(k + 1, D.airportSteps.length - 1) : k, p.via);
+  }
+
+  async function saveMemoryFromApp(p) {
+    const fmt = MEMORY_KEYS[p.key], v = String(p.value == null ? "" : p.value).trim();
+    if (!fmt || !/^\d{1,3}$/.test(v)) { log("security", "memory.save rejected", { key: p.key }); return; }
+    state.belt = v;
+    remember(p.key, fmt(v));
+    pushGuideState();
+    await typing(); bot(`I'll remember belt ${esc(v)}. Ask "which belt?" any time.`);
+  }
+
+  // Free-text / chat path for "I'm lost": landmark chips, same outcome as the guide's own panel.
+  async function lostFlow() {
+    user("I'm lost");
+    await typing();
+    bot("No problem. I can't see your exact position indoors, so tell me what's around you.");
+    log("tool", "venue.ask_landmark", { reason: "indoor position unknown" });
+    chips(D.airportSteps.slice(0, 5).map((s, k) => [s.landmark, async () => {
+      log("tool", "venue.match_landmark", { landmark: s.landmark, matched_step: s.id, confidence: "user_confirmed" });
+      await typing(); bot(`Got it. You're at <b>${s.title.toLowerCase()}</b>. Picking up from there.`); setStep(k, "landmark");
+    }]));
   }
 
   async function rides() {
@@ -180,7 +179,7 @@
 
   async function taxiFlow() {
     user("Taxi"); await typing();
-    renderStep(5);
+    setStep(5, "flow");
     bot("Follow the <b>Taxi</b> signs to the official rank outside arrivals. Use only the cream official airport taxis, not anyone offering rides inside.");
     await typing(600);
     const c = card(`<h3>Save your taxi details?</h3><div class="sub">Useful if you leave something in the car — the official report asks for exactly these</div>
@@ -208,7 +207,7 @@
 
   async function metroFlow() {
     user("Metro"); await typing();
-    renderStep(5);
+    setStep(5, "flow");
     const d = D.destinations[state.dest];
     const steps = [
       "Follow the <b>Metro</b> signs from arrivals to the terminal's Metro station.",
@@ -286,33 +285,111 @@
     }]]);
   }
 
-  // ---------- community: opt-in groups, mutual join, demo fixtures ----------
-  async function community() {
-    await typing();
-    remember("Interests", "AI engineering · Egyptian community");
-    log("tool", "community.search", { area: state.dest || "Dubai Marina", interests: ["ai_engineering", "egyptian"], results: D.communities.map((g) => g.id) });
-    bot("I can show <b>opt-in communities</b> around the Marina. These are <b>demo examples</b> — no real people. Joining always needs both sides to agree, and areas stay approximate.");
-    await typing(400);
-    const rows = D.communities.map((g, i) => `<div class="opt"><div class="ico">👥</div>
-      <div><b>${g.name}</b><div class="line">${g.line || g.kind} · ${g.kind} · ${g.interested}</div><div class="line">${g.area} (approximate)</div>
-      <div class="st-tag" id="joinState${i}">REQUESTABLE</div></div><button class="btn small" data-g="${i}" id="joinBtn${i}">Request to join</button></div>`).join("");
-    const c = card(`<div class="card-head"><div><h3>People &amp; communities near you</h3><div class="sub">Demo examples · mutual opt-in only</div></div><span class="pill demo">Demo data</span></div>${rows}
-      <div class="foot"><span>No precise locations · no contact shared until both sides agree</span></div>`);
-    c.querySelectorAll("[data-g]").forEach((b) => (b.onclick = () => requestJoin(+b.dataset.g, c)));
+  // ---------- provider rows: one pattern for every "find me…" request ----------
+  // Luna turns the sentence into {category, interests, origin, item}. Rows come from the registry
+  // (built-in first, partner apps after); each row opens its own mini-app, and the app's next move
+  // (a join request, a purchase) comes back into chat through the bridge.
+  const tagLabel = (t) => ({ ai: "AI", ml: "ML" }[t] || t.charAt(0).toUpperCase() + t.slice(1));
+  const titleCase = (s) => String(s).replace(/\b\w/g, (c) => c.toUpperCase());
+  const wantedTags = (q) => [...((q && q.interests) || []), ...((q && q.origin) ? [q.origin] : [])];
+
+  function rankGroups(app, q) {
+    const want = wantedTags(q);
+    return app.groups.map((g) => ({ ...g, match: g.tags.filter((t) => want.includes(t)) }))
+      .sort((a, b) => b.match.length - a.match.length);
+  }
+  // Demo list price for any item: deterministic from the name, labelled "(demo)" everywhere it shows.
+  function listPrice(app, item) {
+    let h = 0; for (const ch of String(item)) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+    const list = Math.round((40 + (h % 360)) * app.price.mult);
+    return { list, shipping: app.price.shipping, total: list + app.price.shipping };
   }
 
-  async function requestJoin(i, c) {
-    const g = D.communities[i];
-    const btn = c.querySelector(`#joinBtn${i}`); btn.disabled = true;
-    c.querySelector(`#joinState${i}`).textContent = "REQUESTED";
-    log("action", "community.join_requested", { group: g.id, actor: "user" });
-    user(`Request to join ${g.name}`);
+  async function providerRows(category, q = {}) {
+    state.query = q;
     await typing();
-    bot(`Request sent to <b>${g.name}</b>. Nothing is shared until a group admin approves.`);
-    await sleep(1800);
-    c.querySelector(`#joinState${i}`).textContent = "ACCEPTED";
-    log("trigger", "community.join_accepted", { group: g.id, actor: "group_admin (demo)", provenance: "demo_fixture" });
-    bot(`<span class="pill trig">Community update</span><br><b>${g.name}</b> accepted you ✓. Their next meetup: Saturday, public café in Marina — say the word and I'll add it to your plan.`);
+    if (category === "Shopping" && !q.item) return bot("What should I look for? Try <i>buy airpods</i> or <i>cheapest running shoes</i>.");
+    const apps = D.apps.filter((a) => a.category === category);
+    const want = wantedTags(q);
+    let rows;
+    if (category === "Community") {
+      if (want.length) remember("Interests", want.map(tagLabel).join(" · "));
+      rows = apps.map((a) => { const g = rankGroups(a, q); return { a, score: g.filter((x) => x.match.length).length, best: g[0] ? g[0].match.length : 0, total: g.length }; })
+        .sort((x, y) => y.best - x.best || y.score - x.score || (x.a.publisher === "dubai-io" ? -1 : 1));
+    } else {
+      rows = apps.map((a) => ({ a, p: listPrice(a, q.item) })).sort((x, y) => x.p.total - y.p.total);
+    }
+    log("tool", "registry.search", { category, interests: q.interests || [], origin: q.origin || null, item: q.item || null, results: rows.map((r) => r.a.id) });
+    const partners = rows.length - 1;
+    bot(category === "Community"
+      ? (want.length
+        ? `Here's where I found <b>${esc(want.map(tagLabel).join(" · "))}</b> groups: Dubai-io's own communities plus ${partners} partner apps. Each opens its own mini-app. All demo examples, no real people.`
+        : `Here are communities around you from ${rows.length} apps. Each opens its own mini-app. All demo examples, no real people.`)
+      : `Comparing <b>${esc(titleCase(q.item))}</b> across ${rows.length} apps, cheapest first (list prices, demo). Open one to see it. You buy on their site, not through me.`);
+    await typing(300);
+    const html = rows.map((r, i) => {
+      const a = r.a;
+      const metric = category === "Community"
+        ? (want.length ? (r.score ? `${r.score} matching group${r.score > 1 ? "s" : ""} · best fit ${r.best} of ${want.length}` : "No exact match") : `${r.total} groups`)
+        : `AED ${r.p.total} (demo)${i === 0 ? " · <b>Best price</b>" : ""} · ${a.eta}`;
+      const pill = a.publisher === "dubai-io" ? `<span class="pill est">Dubai-io</span>` : `<span class="pill demo">Partner app (demo)</span>`;
+      return `<div class="opt"><div class="ico" style="background:${a.color};color:#fff;font-size:12px;font-weight:700">${a.logo}</div>
+        <div><b>${a.name}</b> ${pill}<div class="line">${metric}</div><div class="line">${a.blurb}</div></div>
+        <button class="btn small" data-app="${a.id}">Open</button></div>`;
+    }).join("");
+    const c = card(`<div class="card-head"><div><h3>${category === "Community" ? "Communities" : esc(titleCase(q.item))}</h3>
+      <div class="sub">${category === "Community" ? "Opt-in groups · mutual accept only" : "List prices · sorted cheapest first"}</div></div><span class="pill demo">Demo data</span></div>${html}
+      <div class="foot"><span>${category === "Community" ? "No precise locations · nothing shared until you approve" : "Prices are demo list prices · payment happens on the app's own site"}</span></div>`);
+    c.querySelectorAll("[data-app]").forEach((b) => (b.onclick = () => openMini(b.dataset.app)));
+  }
+  const community = () => providerRows("Community", {});
+
+  // Bridge: sign-in. The host brokers the (demo) Google sign-in; the app never receives a token.
+  function signIn(app) {
+    state.signedIn[app.id] = true;
+    log("action", "oauth.signed_in", { app: app.id, provider: "google (demo)", shares: ["name", "email"], token: "kept by host, never sent to the app" });
+    if (frame.contentWindow) frame.contentWindow.postMessage({ v: 1, kind: "host.state", payload: { signedIn: true } }, "*");
+  }
+
+  // Bridge: community.join_request → approval card listing exactly what is shared.
+  function joinApproval(app, p) {
+    const g = (app.groups || []).find((x) => x.id === p.group_id);
+    if (!g) { log("security", "join request for unknown group dropped", { app: app.id, group: p.group_id }); return; }
+    const mine = ((state.query && state.query.interests) || []).map(tagLabel).join(" · ") || "none";
+    const c = card(`<div class="card-head"><div><h3>Request to join ${g.name}?</h3><div class="sub">${g.kind} · ${g.area} · via ${app.name}</div></div><span class="pill demo">Demo data</span></div>
+      <div class="shares"><b>Will be shared</b>First name · interests (${esc(mine)}) · approximate area (${esc(state.dest || "Dubai")}) · contact via in-app chat</div>
+      <div class="shares"><b>Never shared</b>Phone number · exact location · email</div>
+      <div class="foot"><span>Nothing is sent until you tap. The group's admin decides.</span></div>
+      <div class="btn-row"><button class="btn small" data-a="ok">Approve and send</button><button class="btn small ghost" data-a="no">Cancel</button></div>`);
+    log("action", "request DRAFT → AWAITING_APPROVAL", { app: app.id, group: g.id, kind: "community.join_request" });
+    c.querySelector('[data-a="ok"]').onclick = async () => {
+      c.querySelectorAll("button").forEach((x) => (x.disabled = true));
+      const ep = state.epoch;
+      log("action", "community.join_requested", { group: g.id, app: app.id, actor: "user", status: "SUBMITTED" });
+      c.innerHTML = `<h3>Request sent to ${g.name}</h3><div class="sub">Nothing is shared until a group admin approves.</div>${statusTag("SUBMITTED")}`;
+      if (!(await waitRun(1800, ep))) return;
+      log("trigger", "community.join_accepted", { group: g.id, actor: "group_admin (demo)", provenance: "demo_fixture", status: "ACCEPTED" });
+      c.innerHTML = `<h3>${g.name}</h3><div class="sub">Group admin accepted you</div>${statusTag("ACCEPTED")}`;
+      bot(`<span class="pill trig">Community update</span><br><b>${g.name}</b> accepted you ✓. Their next meetup: Saturday, public café in Marina. Say the word and I'll add it to your plan.`);
+    };
+    c.querySelector('[data-a="no"]').onclick = () => { c.innerHTML = `<h3>Cancelled</h3><div class="sub">Nothing was sent.</div>`; };
+  }
+
+  // Bridge: purchase.report → the provider's own event lands in chat, then a calendar follow-up.
+  function purchaseReported(app, p) {
+    const item = String(p.item || "").trim().slice(0, 60), ref = String(p.order_ref || ""), total = Number(p.total);
+    if (!item || !/^[A-Z0-9-]{4,16}$/.test(ref) || !(total > 0)) { log("security", "purchase.report rejected", { app: app.id }); return; }
+    if (state.purchases.has(ref)) { log("security", "duplicate purchase event dropped", { dedupe_key: "purchase:" + ref }); return; }
+    state.purchases.add(ref);
+    log("trigger", "provider.update purchase", { app: app.id, ref, total, actor: "merchant", provenance: "merchant_reported", status: "ACCEPTED", dedupe_key: "purchase:" + ref });
+    (async () => {
+      await typing(500);
+      bot(`<span class="pill trig">Merchant update</span><br>I found you purchased <b>${esc(item)}</b> (#${esc(ref)}) from ${app.name} for <b>AED ${total} (demo)</b>. I'm adding a follow-up to your calendar.`);
+      await typing(400);
+      log("action", "calendar.event_added", { what: "delivery check: " + item, when: app.eta, provenance: "demo_fixture" });
+      card(`<div class="card-head"><div><h3>Calendar · follow-up</h3><div class="sub">Delivery check: ${esc(item)} · ${esc(app.eta)}</div></div><span class="pill demo">Demo data</span></div>${statusTag("ACCEPTED")}
+        <div class="foot"><span>From order #${esc(ref)} at ${app.name}. Dubai-io never charged anything.</span></div>`);
+    })();
   }
 
   // ---------- parking memory: photo + user-confirmed spot, recall on demand ----------
@@ -613,19 +690,13 @@
 
   async function sceneMosque() {
     const m = D.mosques.find((x) => x.id === "marina");
-    const times = D.prayerFixtures.times, order = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
-    const next = order.find((p) => times[p] > now()) || "Fajr";
+    const next = "Maghrib", at = D.prayerFixtures.times[next], dist = D.triggerFixtures.mosqueDistance;
     await typing(300);
-    bot(`<span class="pill trig">Demo trigger</span><br><b>${m.name}</b> is about ${m.distance} away (demo estimate). Bring wudu? Next prayer: <b>${next} ${times[next]}</b> (demo fixture).`);
-    const c = card(`<div class="card-head"><div><h3>Mosque near you</h3><div class="sub">${m.name} · ${m.area} · ${m.distance} (demo estimate)</div></div><span class="pill demo">Demo data</span></div>
-      <div class="shares"><b>Wudu reminder</b><span id="wuduState">pending · tap to set it</span></div>
-      <div class="btn-row"><button class="btn small" id="wuduSet">Set wudu reminder</button><button class="btn small ghost" id="trigQibla">Qibla</button></div>
-      <div class="foot"><span>Simulated proximity ping. The demo can't detect where you are.</span></div>`);
-    c.querySelector("#wuduSet").onclick = (ev) => {
-      ev.target.disabled = true;
-      log("action", "scheduler.propose_reminder", { what: "wudu before " + next, status: "SET", dedupe_key: "wudu:" + next });
-      c.querySelector("#wuduState").textContent = `set · before ${next} ${times[next]}`;
-    };
+    bot(`<span class="pill trig">Demo trigger</span><br><b>${m.name}</b> is ${dist} away. Bring wudu? Next prayer: <b>${next} ${at}</b>.`);
+    log("action", "scheduler.propose_reminder", { what: "wudu before " + next, status: "SET", dedupe_key: "wudu:" + next });
+    const c = card(`<div class="card-head"><div><h3>Mosque near you</h3><div class="sub">${m.name} · ${m.area} · ${dist}</div></div><span class="pill demo">Demo data</span></div>
+      <div class="shares"><b>Wudu reminder</b>Set · before ${next} ${at}</div>
+      <div class="btn-row"><button class="btn small ghost" id="trigQibla">Qibla</button></div>`);
     c.querySelector("#trigQibla").onclick = () => qibla();
   }
 
@@ -716,21 +787,37 @@
   }
 
   // ---------- mini-app host + bridge ----------
+  // One host for everything the user browses: merchants and built-in apps (publisher "dubai-io")
+  // share the sandbox, the manifest and the scoped bridge. The app asks, the host decides.
   const frame = $("#miniFrame");
   let current = null;
+  const findApp = (id) => D.apps.concat(D.merchants).find((a) => a.id === id);
   function openMini(id) {
-    current = D.merchants.find((m) => m.id === id);
-    $("#sheetTitle").innerHTML = `${current.name}<small>Merchant mini-app · their own HTML</small>`;
+    current = findApp(id);
+    const who = current.publisher === "dubai-io" ? "Built-in mini-app · Dubai-io" : current.publisher === "partner" ? "Partner mini-app · their own HTML" : "Merchant mini-app · their own HTML";
+    $("#sheetTitle").innerHTML = `${current.name}<small>${who}</small>`;
     $("#sheetManifest").textContent = `manifest v${current.manifest.version} · scopes: ${current.manifest.bridge_scopes.join(", ")}`;
     frame.src = current.manifest.entry;
     $("#sheet").classList.add("open"); $("#sheetBackdrop").classList.add("open");
-    log("ui", `mount mini-app ${id}`, { entry: current.manifest.entry, sandbox: "allow-scripts", scopes: current.manifest.bridge_scopes });
+    log("ui", `mount mini-app ${id}`, { entry: current.manifest.entry, publisher: current.publisher || "merchant", sandbox: "allow-scripts", scopes: current.manifest.bridge_scopes });
   }
   function closeMini() {
     $("#sheet").classList.remove("open"); $("#sheetBackdrop").classList.remove("open");
     setTimeout(() => (frame.src = "about:blank"), 300);
   }
-  $("#sheetClose").onclick = closeMini; $("#sheetBackdrop").onclick = () => { closeMini(); $("#mapSheet").classList.remove("open"); };
+  $("#sheetClose").onclick = closeMini; $("#sheetBackdrop").onclick = closeMini;
+
+  // Registered actions only: a kind must be in the app's manifest scopes AND have a handler here.
+  const MEMORY_KEYS = { "Baggage belt": (v) => `Belt ${v} · ${D.flight.number}` };
+  const HANDLERS = {
+    "order.request": { closes: true, run: (app, p) => approval(app, "order.request", p) },
+    "journey.confirm_waypoint": { run: (app, p) => confirmWaypoint(p) },
+    "memory.save": { run: (app, p) => saveMemoryFromApp(p) },
+    "ride.compare": { closes: true, run: () => { user("Compare rides"); rides(); } },
+    "auth.signin": { run: (app) => signIn(app) },
+    "community.join_request": { closes: true, run: (app, p) => joinApproval(app, p) },
+    "purchase.report": { closes: true, run: (app, p) => purchaseReported(app, p) }
+  };
 
   window.addEventListener("message", (e) => {
     if (e.source !== frame.contentWindow) return;           // only the mounted mini-app
@@ -738,48 +825,30 @@
     if (!m || m.v !== 1 || typeof m.kind !== "string") { log("security", "malformed bridge message dropped", m); return; }
     if (m.kind === "app.ready") {
       const ctx = { area: state.dest || "Business Bay", lang: "en" };
-      log("bridge", `${current.id} ready → host shares minimal context`, ctx);
+      if (current.kind === "guide") ctx.guide = guidePayload();
+      if (current.category === "Community" || current.category === "Shopping") {
+        const q = state.query || {};
+        ctx.app = { id: current.id, name: current.name, color: current.color, logo: current.logo, publisher: current.publisher };
+        ctx.signedIn = !!state.signedIn[current.id];
+        if (current.category === "Community") ctx.community = { groups: rankGroups(current, q), interests: q.interests || [], origin: q.origin || null };
+        else ctx.shop = { item: q.item || "item", ...listPrice(current, q.item || "item"), eta: current.eta };
+      }
+      log("bridge", `${current.id} ready → host shares minimal context`, { area: ctx.area, lang: ctx.lang, guide: ctx.guide ? "waypoints + current step" : undefined, signedIn: ctx.signedIn, query: state.query && current.category ? { interests: state.query.interests, origin: state.query.origin, item: state.query.item } : undefined });
       frame.contentWindow.postMessage({ v: 1, kind: "host.context", payload: ctx }, "*");
       return;
     }
     if (m.kind === "diag.report") { log("security", `${current.id} sandbox self-test`, m.payload); return; }
-    if (!current.manifest.bridge_scopes.includes(m.kind)) {
-      log("security", `BLOCKED "${m.kind}": not in manifest scopes`, { merchant: current.id, allowed: current.manifest.bridge_scopes });
+    const h = HANDLERS[m.kind];
+    if (!current.manifest.bridge_scopes.includes(m.kind) || !h) {
+      log("security", `BLOCKED "${m.kind}": not in manifest scopes`, { app: current.id, allowed: current.manifest.bridge_scopes });
       frame.contentWindow.postMessage({ v: 1, kind: "host.error", payload: { reason: "scope_denied", kind: m.kind } }, "*");
       return;
     }
     log("bridge", `${current.id} → ${m.kind}`, m.payload);
-    const merchant = current;
-    closeMini(); showTab("companion");
-    approval(merchant, m.kind, m.payload);
+    const app = current;
+    if (h.closes) { closeMini(); showTab("companion"); }
+    h.run(app, m.payload || {});
   });
-
-  // ---------- airport map viewer ----------
-  let zoom = 1;
-  function openMap(id) {
-    const m = D.maps.find((x) => x.id === id);
-    zoom = id === "overview" ? 1.8 : 1.4;
-    $("#mapTitle").innerHTML = `${m.title}<small>${m.note}</small>`;
-    $("#mapSeg").innerHTML = D.maps.map((x) => `<button class="${x.id === id ? "on" : ""}" data-map="${x.id}">${x.label}</button>`).join("");
-    $("#mapSeg").querySelectorAll("[data-map]").forEach((b) => (b.onclick = () => openMap(b.dataset.map)));
-    $("#mapCanvas").innerHTML = `<img src="${m.src}" alt="${m.title}">` +
-      (m.pin ? `<span class="pin" style="left:${m.pin[0]}%;top:${m.pin[1]}%"></span><span class="map-tag" style="left:${m.pin[0]}%;top:${m.pin[1]}%">${m.pinLabel}</span>` : "");
-    $("#mapPill").textContent = m.pin ? "You are here: confirmed by you" : "Position unknown here";
-    $("#mapNote").textContent = m.pin ? "Pin = the terminal you told me, not GPS." : "I don't know where you are on this map. Tell me a shop or gate you can see.";
-    applyZoom(m);
-    $("#mapSheet").classList.add("open"); $("#sheetBackdrop").classList.add("open");
-    log("ui", `open map ${id}`, { pin: m.pin ? "user_confirmed_terminal" : null });
-  }
-  function applyZoom(m) {
-    $("#mapCanvas").style.width = zoom * 100 + "%";
-    const v = $("#mapView");
-    requestAnimationFrame(() => {
-      if (m && m.pin) { v.scrollLeft = v.scrollWidth * m.pin[0] / 100 - v.clientWidth / 2; v.scrollTop = v.scrollHeight * m.pin[1] / 100 - v.clientHeight / 2; }
-    });
-  }
-  $("#zoomIn").onclick = () => { zoom = Math.min(4, zoom + 0.4); applyZoom(); };
-  $("#zoomOut").onclick = () => { zoom = Math.max(1, zoom - 0.4); applyZoom(); };
-  $("#mapClose").onclick = () => { $("#mapSheet").classList.remove("open"); $("#sheetBackdrop").classList.remove("open"); };
 
   // ---------- approval + request state machine ----------
   const FLOW = ["SUBMITTED", "ACCEPTED", "READY", "COMPLETED"];
@@ -1099,6 +1168,15 @@
     $("#input").value = ""; user(t);
     log("agent", "intent classify", { text: t });
     await typing();
+    // Luna first. Confident → dispatch on intent; otherwise the regex router below answers (fallback).
+    const u = await LUNA.understand(t);
+    log("agent", u.intent === "none" ? "luna.understood: no confident intent → regex router" : "luna.understood",
+      u.intent === "none" ? { via: u.via } : { intent: u.intent, category: u.category, interests: u.interests, origin: u.origin, item: u.item, confidence: u.confidence, via: u.via, matched: u.matched });
+    if (u.confidence >= LUNA.minConfidence) {
+      if (u.intent === "community.find") return providerRows("Community", u);
+      if (u.intent === "shopping.buy") return providerRows("Shopping", u);
+      if (u.intent === "lost_item.taxi") return recovery({ trace: u.trace });
+    }
     const q = t.toLowerCase();
     if (/pharm|medic|panadol|headache|sick/.test(q)) return pharmacies();
     if (/tailor/.test(q)) return pharmacies("Tailors");
@@ -1118,14 +1196,15 @@
     if (/belt|bag/.test(q)) return bot(state.memory["Baggage belt"] ? `You told me: <b>${state.memory["Baggage belt"]}</b>.` : "You haven't told me a belt number yet. Check the arrivals screens.");
     if (/taxi number|which taxi|receipt|roof/.test(q)) return bot(state.trip ? `Your taxi: plate <b>${state.trip.number}</b>, ${state.trip.roof} roof, ${state.trip.route}, started ${state.trip.started}, ${state.trip.receipt}. <span class="pill user">You told me</span>` : "I don't have a taxi saved.");
     if (/taxi|metro|hotel|ride/.test(q)) { state.dest = state.dest || "Business Bay"; return rides(); }
-    if (/lost|where am i/.test(q)) return stepAction("lost");
-    if (NLU.weight > 0) log("agent", "nlu seam enabled but not wired in the static demo", { url: NLU.url, weight: NLU.weight });
+    if (/\bguide\b|waypoint/.test(q)) { renderSummary(); return openGuide(); }
+    if (/lost|where am i/.test(q)) return lostFlow();
     return honestFallback(q);
   };
 
   // ---------- start ----------
   async function start() {
-    chat.innerHTML = ""; journeyCard = null; state.requests = []; state.memory = {}; state.dest = null; state.trip = null;
+    chat.innerHTML = ""; guideCard = null; state.requests = []; state.memory = {}; state.dest = null; state.trip = null;
+    state.step = 0; state.belt = null; state.query = null; state.signedIn = {}; state.purchases = new Set(); closeMini();
     state.epoch++; state.cashRuns = 0; state.fired = {};   // restart: stale timers stop, sims and dedupe reset
     state.photos = D.seedPhotos.map((p) => ({ ...p, mine: false }));
     $("#log").innerHTML = ""; $("#inbox").innerHTML = `<div class="inbox-empty">No requests yet. Order something from a merchant mini-app.</div>`;
@@ -1146,7 +1225,7 @@
     await typing(700);
     bot("Where are you staying tonight?");
     chips(Object.keys(D.destinations).map((d) => [d, async () => {
-      state.dest = d; remember("Staying in", d); await typing(); bot("Perfect. Let's go. Tap <b>Done</b> after each step, or <b>I'm lost</b> any time."); renderStep(0);
+      state.dest = d; remember("Staying in", d); await typing(); bot("Perfect. Your waypoints are open. Tap <b>I'm here</b> wherever you are, or <b>I'm lost</b> any time."); setStep(0, "start"); openGuide();
     }]));
   }
 

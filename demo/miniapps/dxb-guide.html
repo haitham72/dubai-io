@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<!-- Built-in mini-app (publisher: dubai-io). Same sandbox + bridge as merchant apps: renders host data,
+     sends only manifest scopes. Images come from ../maps (img-src 'self'); no network (default-src 'none'). -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src 'self' data:">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DXB arrival guide</title>
+<style>
+  /* Mirror of the :root tokens in ../styles.css (single source stays there). */
+  :root { --bg:#F2F2F7; --card:#fff; --fill:#F2F2F7; --fill-2:#E9E9EB; --label:#000; --label-2:#3C3C43; --label-3:#8E8E93;
+          --sep:#E5E5EA; --tint:#0A9CC2; --tint-soft:#E3F6FB; --tint-line:#B8E6F2; --ok:#34C759; --ok-text:#1E8E3E; --warn:#B25E00; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--label); font: 15px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  header { padding: 14px 16px 10px; background: var(--card); border-bottom: .5px solid var(--sep); position: sticky; top: 0; z-index: 5; }
+  header h1 { margin: 0; font-size: 19px; letter-spacing: -.01em; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  header .sub { color: var(--label-3); font-size: 12.5px; margin-top: 2px; }
+  .pill { font-size: 11px; font-weight: 500; padding: 3px 8px; border-radius: 999px; white-space: nowrap; background: var(--fill); color: var(--label-2); }
+  .pill.demo { background: #FFF3E0; color: var(--warn); }
+  .pill.est { background: var(--tint-soft); color: var(--tint); }
+  .pill.user { background: #E8F8EC; color: var(--ok-text); }
+  .routebar { display: flex; gap: 4px; margin-top: 10px; }
+  .routebar button { flex: 1; height: 8px; border: 0; padding: 0; border-radius: 4px; background: var(--fill-2); }
+  .routebar button.done { background: var(--tint-line); } .routebar button.now { background: var(--tint); }
+  ol.route { list-style: none; margin: 0; padding: 14px 12px 4px; }
+  .wp { display: grid; grid-template-columns: 34px 1fr; gap: 8px; }
+  .rail { display: flex; flex-direction: column; align-items: center; }
+  .dot { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 700; background: var(--card); border: 2px solid var(--fill-2); color: var(--label-3); flex: none; }
+  .wp.now .dot { background: var(--tint); border-color: var(--tint); color: #fff; box-shadow: 0 0 0 5px var(--tint-soft); }
+  .wp.done .dot { background: var(--ok); border-color: var(--ok); color: #fff; }
+  .line { flex: 1; width: 3px; background: var(--fill-2); margin: 4px 0; border-radius: 2px; min-height: 12px; }
+  .wp.done .line { background: var(--tint-line); }
+  .wp:last-child .line { visibility: hidden; }
+  .card { background: var(--card); border-radius: 14px; margin-bottom: 10px; box-shadow: 0 1px 2px rgba(0,0,0,.04); overflow: hidden; }
+  .wp.now .card { box-shadow: 0 0 0 1.5px var(--tint), 0 4px 14px rgba(10,156,194,.12); }
+  .head { display: flex; align-items: center; gap: 10px; width: 100%; border: 0; background: none; padding: 10px; text-align: left; }
+  .thumb { width: 56px; height: 42px; border-radius: 8px; overflow: hidden; flex: none; background: var(--tint-soft) center/cover no-repeat; display: grid; place-items: center; font-size: 22px; border: .5px solid var(--sep); }
+  .ttl { flex: 1; min-width: 0; } .ttl b { display: block; font-size: 15px; } .ttl small { color: var(--label-3); font-size: 12px; }
+  .wp.now .ttl small { color: var(--tint); font-weight: 600; } .wp.done .ttl small { color: var(--ok-text); }
+  .chev { color: var(--label-3); transition: transform .2s; font-size: 18px; } .wp.open .chev { transform: rotate(90deg); }
+  .detail { padding: 0 10px 12px; }
+  .media { position: relative; aspect-ratio: 16 / 9; border-radius: 10px; overflow: hidden; background: #EEF1F4 center/cover no-repeat; border: .5px solid var(--sep); cursor: zoom-in; display: block; width: 100%; padding: 0; }
+  .media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .media.tile { cursor: default; display: grid; place-items: center; background: var(--tint-soft); text-align: center; border-color: var(--tint-line); }
+  .tile .ic { font-size: 40px; line-height: 1; } .tile .tn { font-size: 12.5px; color: var(--label-2); margin-top: 6px; padding: 0 10px; }
+  .zoomhint { position: absolute; right: 8px; bottom: 8px; background: rgba(255,255,255,.92); border-radius: 8px; padding: 3px 7px; font-size: 11px; font-weight: 600; }
+  .cap { margin: 8px 0 0; font-size: 12px; color: var(--label-3); display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .body { margin: 10px 0 0; color: var(--label-2); font-size: 14px; line-height: 1.45; }
+  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .btn { border: 0; border-radius: 10px; padding: 9px 13px; font-size: 14px; font-weight: 600; background: var(--tint); color: #fff; }
+  .btn.ghost { background: var(--fill); color: var(--tint); }
+  .field { flex: 1; min-width: 0; padding: 9px 11px; border: 0; border-radius: 10px; background: var(--fill); font: inherit; outline: none; }
+  .field:focus { box-shadow: 0 0 0 2px var(--tint-line); }
+  .note { margin: 10px 0 0; padding: 9px 11px; border-radius: 10px; background: var(--fill); font-size: 13px; color: var(--label-2); }
+  .side { display: flex; gap: 10px; align-items: center; margin-top: 10px; padding: 8px; border-radius: 12px; border: 1px dashed var(--tint-line); background: #FBFEFF; cursor: zoom-in; width: 100%; text-align: left; }
+  .side .thumb { width: 64px; height: 48px; }
+  .side b { font-size: 13.5px; display: block; } .side span { font-size: 12px; color: var(--label-3); }
+  .lost { margin: 0 12px 10px; }
+  .lostbtn { width: 100%; border: 0; background: var(--card); border-radius: 12px; padding: 12px; font-weight: 600; color: var(--tint); box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+  .lostpanel { background: var(--card); border-radius: 12px; padding: 12px; margin-top: 8px; }
+  .lostpanel p { margin: 0 0 8px; color: var(--label-2); font-size: 14px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { border: 1px solid var(--tint-line); background: var(--card); color: var(--tint); padding: 8px 12px; border-radius: 999px; font-size: 13.5px; font-weight: 500; }
+  footer { padding: 4px 16px 24px; color: var(--label-3); font-size: 11px; line-height: 1.4; }
+  /* lightbox: one image, zoom + scroll, no tabs */
+  #lb { position: fixed; inset: 0; background: #111; z-index: 20; display: none; flex-direction: column; }
+  #lb.open { display: flex; }
+  .lb-top { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; color: #fff; gap: 8px; }
+  .lb-top b { font-size: 14px; } .lb-top small { display: block; opacity: .7; font-size: 11.5px; font-weight: 400; }
+  .lb-top .tools { display: flex; gap: 6px; }
+  .lb-top button { width: 36px; height: 36px; border-radius: 10px; border: 0; background: rgba(255,255,255,.16); color: #fff; font-size: 18px; font-weight: 600; }
+  #lbScroll { flex: 1; overflow: auto; background: #F7F8FA; }
+  #lbCanvas { position: relative; width: 100%; }
+  #lbCanvas img { display: block; width: 100%; height: auto; }
+  .pin { position: absolute; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; background: var(--tint); border: 3px solid #fff; animation: pulse 1.8s infinite; }
+  .pintag { position: absolute; transform: translate(-50%, -150%); background: #000; color: #fff; font-size: 11px; font-weight: 600; padding: 4px 8px; border-radius: 8px; white-space: nowrap; }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(10,156,194,.55); } 70% { box-shadow: 0 0 0 16px rgba(10,156,194,0); } 100% { box-shadow: 0 0 0 0 rgba(10,156,194,0); } }
+</style></head>
+<body>
+<header>
+  <h1><span id="ttl">Your route</span><span class="pill demo">Demo data</span></h1>
+  <div class="sub" id="sub">Terminal 3</div>
+  <div class="routebar" id="routebar" aria-label="Route progress"></div>
+</header>
+<ol class="route" id="route"></ol>
+<div class="lost"><button class="lostbtn" data-act="lost">I'm lost</button><div id="lostpanel"></div></div>
+<footer>Reference maps are airport diagrams, not your live position. I only know a stop when you tap it: no indoor GPS.</footer>
+
+<div id="lb" role="dialog" aria-label="Reference map">
+  <div class="lb-top"><div><b id="lbTitle"></b><small id="lbSub">Reference map · not your live position</small></div>
+    <div class="tools"><button data-act="zoomout" aria-label="Zoom out">−</button><button data-act="zoomin" aria-label="Zoom in">+</button><button data-act="lbclose" aria-label="Close">✕</button></div></div>
+  <div id="lbScroll"><div id="lbCanvas"><img id="lbImg" alt=""></div></div>
+</div>
+
+<script>
+  const send = (kind, payload) => parent.postMessage({ v: 1, kind, payload: payload || {} }, "*");
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const src = (p) => "../" + p;
+  const $ = (s) => document.querySelector(s);
+
+  let G = null;          // guide payload, owned by the host and pushed down
+  let open = 0;          // expanded waypoint
+  let needs = false, lostOpen = false, beltSaved = null;
+
+  function mediaHTML(s, k) {
+    if (s.tile) return `<div class="media tile"><div><div class="ic">${s.tile.icon}</div><div class="tn">${esc(s.tile.note)}</div></div></div>`;
+    if (s.pin) return `<button class="media" data-act="zoom" data-k="${k}" style="background-image:url(${src(s.img)});background-size:250%;background-position:66.7% 64.2%" aria-label="Open map">
+      <span class="pin" style="left:50%;top:50%"></span><span class="zoomhint">Tap to zoom</span></button>`;
+    return `<button class="media" data-act="zoom" data-k="${k}" aria-label="Open map"><img src="${src(s.img)}" alt="${esc(s.imgCaption || s.title)}"><span class="zoomhint">Tap to zoom</span></button>`;
+  }
+  function thumbHTML(s) {
+    if (s.tile) return `<span class="thumb">${s.tile.icon}</span>`;
+    if (s.pin) return `<span class="thumb" style="background-image:url(${src(s.img)});background-size:250%;background-position:66.7% 64.2%"></span>`;
+    return `<span class="thumb" style="background-image:url(${src(s.img)})"></span>`;
+  }
+
+  function render() {
+    if (!G) return;
+    const n = G.steps.length, last = n - 1;
+    $("#ttl").textContent = `${G.terminal} → ${G.dest || "your hotel"}`;
+    $("#sub").textContent = `${n} waypoints · tap "I'm here" wherever you are`;
+    $("#routebar").innerHTML = G.steps.map((s, k) =>
+      `<button class="${k < G.current ? "done" : k === G.current ? "now" : ""}" data-act="toggle" data-k="${k}" aria-label="${esc(s.title)}"></button>`).join("");
+    $("#route").innerHTML = G.steps.map((s, k) => {
+      const st = k < G.current ? "done" : k === G.current ? "now" : "todo";
+      const label = st === "done" ? "✓ You confirmed" : st === "now" ? "Current stop" : "Not yet";
+      const isOpen = k === open;
+      let d = "";
+      if (isOpen) {
+        const hasMap = !!s.img;
+        d = `<div class="detail">${mediaHTML(s, k)}
+          ${hasMap ? `<div class="cap"><span class="pill est">Reference map</span>${esc(s.imgCaption || "")} · not your live position</div>` : ""}
+          <p class="body">${s.body}</p>
+          ${s.extra === "needs" && needs ? `<div class="note">Passport, plus any visa or entry permit that applies to you. Requirements depend on your nationality, so check the official entry requirements if unsure. <span class="pill">Official guidance link</span></div>` : ""}
+          ${s.extra === "belt" ? (beltSaved
+            ? `<div class="note">Saved: <b>Belt ${esc(beltSaved)}</b> <span class="pill user">You told me</span> · ask "which belt?" in chat any time.</div>`
+            : `<div class="btn-row"><input class="field" id="beltIn" placeholder="Belt number, e.g. 7" inputmode="numeric" maxlength="3"><button class="btn" data-act="belt">Save belt</button></div>`) : ""}
+          ${s.sideStop ? `<button class="side" data-act="side" data-k="${k}">${`<span class="thumb" style="background-image:url(${src(s.sideStop.img)})"></span>`}<span><b>${esc(s.sideStop.title)}</b><span>${esc(s.sideStop.note)} · tap to see the map</span></span></button>` : ""}
+          <div class="btn-row">
+            ${k === last ? `<button class="btn" data-act="ride">Compare rides</button>` : ""}
+            ${k !== G.current ? `<button class="btn ${k > G.current ? "" : "ghost"}" data-act="here" data-k="${k}">${k > G.current ? "I'm here" : "I'm back here"}</button>` : ""}
+            ${k === G.current && k < last ? `<button class="btn" data-act="done" data-k="${k}">Done ✓ next stop</button>` : ""}
+            ${s.extra === "needs" ? `<button class="btn ghost" data-act="needs">What do I need?</button>` : ""}
+          </div></div>`;
+      }
+      return `<li class="wp ${st} ${isOpen ? "open" : ""}" id="wp${k}">
+        <div class="rail"><span class="dot">${st === "done" ? "✓" : k + 1}</span><span class="line"></span></div>
+        <div class="card"><button class="head" data-act="toggle" data-k="${k}">${thumbHTML(s)}<span class="ttl"><b>${esc(s.title)}</b><small>${label}</small></span><span class="chev">›</span></button>${d}</div></li>`;
+    }).join("");
+    $("#lostpanel").innerHTML = lostOpen
+      ? `<div class="lostpanel"><p>I can't see where you are indoors. Tap what's around you and I'll pick up from there.</p>
+         <div class="chips">${G.steps.slice(0, 5).map((s, k) => `<button class="chip" data-act="landmark" data-k="${k}">${esc(s.landmark)}</button>`).join("")}</div></div>` : "";
+  }
+
+  // lightbox (one image at a time; zoom with +/−, scroll to pan)
+  let zoom = 1, lbPin = null;
+  function applyZoom() {
+    $("#lbCanvas").style.width = zoom * 100 + "%";
+    if (lbPin) requestAnimationFrame(() => {
+      const sc = $("#lbScroll");
+      sc.scrollLeft = sc.scrollWidth * lbPin[0] / 100 - sc.clientWidth / 2;
+      sc.scrollTop = sc.scrollHeight * lbPin[1] / 100 - sc.clientHeight / 2;
+    });
+  }
+  function openLb(path, title, pin, pinLabel) {
+    $("#lbTitle").textContent = title;
+    $("#lbImg").src = src(path); $("#lbImg").alt = title;
+    document.querySelectorAll("#lbCanvas .pin, #lbCanvas .pintag").forEach((e) => e.remove());
+    lbPin = pin || null;
+    if (pin) {
+      $("#lbCanvas").insertAdjacentHTML("beforeend", `<span class="pin" style="left:${pin[0]}%;top:${pin[1]}%"></span><span class="pintag" style="left:${pin[0]}%;top:${pin[1]}%">${esc(pinLabel || "Terminal 3 · you told me")}</span>`);
+    }
+    zoom = pin ? 1.8 : 1; applyZoom();
+    $("#lb").classList.add("open");
+  }
+
+  document.addEventListener("click", (e) => {
+    const t = e.target.closest("[data-act]"); if (!t || !G) return;
+    const k = t.dataset.k != null ? +t.dataset.k : null, s = k != null ? G.steps[k] : null, a = t.dataset.act;
+    if (a === "toggle") { open = open === k ? -1 : k; render(); if (open === k) $("#wp" + k).scrollIntoView({ block: "nearest", behavior: "smooth" }); }
+    else if (a === "here") send("journey.confirm_waypoint", { step_id: s.id, via: "here" });
+    else if (a === "done") send("journey.confirm_waypoint", { step_id: s.id, via: "done" });
+    else if (a === "landmark") { lostOpen = false; send("journey.confirm_waypoint", { step_id: s.id, via: "landmark" }); }
+    else if (a === "needs") { needs = !needs; render(); }
+    else if (a === "lost") { lostOpen = !lostOpen; render(); }
+    else if (a === "ride") send("ride.compare", {});
+    else if (a === "belt") {
+      const v = ($("#beltIn").value || "").trim() || "7";
+      if (!/^\d{1,3}$/.test(v)) return;
+      beltSaved = v; send("memory.save", { key: "Baggage belt", value: v }); render();
+    }
+    else if (a === "zoom") openLb(s.img, s.imgCaption || s.title, s.pin, "Terminal 3 · you told me");
+    else if (a === "side") openLb(s.sideStop.img, s.sideStop.imgCaption || s.sideStop.title);
+    else if (a === "zoomin") { zoom = Math.min(4, zoom + 0.4); applyZoom(); }
+    else if (a === "zoomout") { zoom = Math.max(1, zoom - 0.4); applyZoom(); }
+    else if (a === "lbclose") $("#lb").classList.remove("open");
+  });
+
+  window.addEventListener("message", (e) => {
+    if (e.source !== parent || !e.data || e.data.v !== 1) return;
+    const m = e.data;
+    if (m.kind === "host.context" && m.payload.guide) {
+      G = m.payload.guide; open = G.current; beltSaved = G.belt || null; render();
+    } else if (m.kind === "host.state" && G) {
+      const moved = m.payload.current !== G.current;     // e.g. belt saved: keep the user's open stop
+      G.current = m.payload.current; if (moved) open = G.current; if (m.payload.belt) beltSaved = m.payload.belt;
+      render(); const el = $("#wp" + open); if (moved && el) el.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    } else if (m.kind === "host.error") {
+      const el = document.createElement("div"); el.className = "note"; el.style.margin = "0 12px 10px";
+      el.textContent = "Host declined: " + m.payload.reason + " (" + m.payload.kind + ")"; $(".lost").before(el);
+    }
+  });
+  send("app.ready", {});
+</script>
+</body></html>
