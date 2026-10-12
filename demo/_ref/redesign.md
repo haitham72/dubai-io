@@ -12,9 +12,10 @@ app, same style".
 | # | Prompt | Type | Images | Core |
 |---|---|---|---|---|
 | **0** | System prompt (context) | context only, no image | 0 | ★ |
-| **1** | Home (companion, arrival) | screen | 1 | ★ |
-| 1a | Arrival guide: waypoints | popup over Home | 1 | ★ |
-| 1b | Guide states: "I'm lost" + map zoom | popups over Home | 1 (2-up) | |
+| **1** | Home, idle: AI search on top, glass tab bar | screen | 1 | ★ |
+| 1a | Chat takes over: glass bar → composer (before / after) | state change | 1 (2-up) | ★ |
+| 1b | Arrival guide: waypoints | popup over Home | 1 | ★ |
+| 1c | Guide states: "I'm lost" + map zoom | popups over Home | 1 (2-up) | |
 | **2** | Ask → provider rows | screen | 1 | ★ |
 | 2a | Partner app: sign-in → signed in | popup over rows | 1 (2-up) | ★ |
 | 2b | Shopping app: product → order placed | popup over rows | 1 (2-up) | ★ |
@@ -26,8 +27,8 @@ app, same style".
 | 5a | Merchant app + shop onboarding | popups over Services | 1 (2-up) | |
 | 6 | Backstage operator console | desktop, optional | 1 | |
 
-★ = the 8 images that are enough to redesign the app. The rest are completeness. Total with everything:
-13 images from 14 prompts.
+★ = the 9 images that are enough to redesign the app. The rest are completeness. Total with everything:
+14 images from 15 prompts. **Lock Home (1) before sending anything else.**
 
 **Scope of the redesign:** layout, hierarchy, iconography, spacing, states and motion cues.
 **Palette stays locked** (`demo/styles.css` tokens; CLAUDE.md: "do not invent new palettes").
@@ -36,9 +37,30 @@ app, same style".
 
 1. New image chat. Paste **Prompt 0**. The model should reply "Ready" and wait. If it generates an image,
    say "no image yet, wait for the first screen".
-2. Paste **Prompt 1**. Iterate until Home is right, because everything after copies it.
-3. Paste its popups (1a, 1b), then the next screen, then its popups, and so on.
-4. If style drifts: "Match the Home screen exactly: same top bar, bubbles, cards, chips, tab bar, icons."
+2. Paste **Prompt 1**. Iterate until Home is right (AI search on top, glass tab bar at the bottom, no
+   composer), because everything after copies it. Do not continue until Home is locked.
+3. Then 1a (chat takes over), its popups (1b, 1c), the next screen, its popups, and so on.
+4. If style drifts: "Match the Home screen exactly: same AI search, glass tab bar, cards, chips, icons."
+
+**Already pasted the old Prompt 0?** Paste only the block below, then Prompt 1 again. It replaces the
+navigation rules in that chat.
+
+```text
+NAVIGATION UPDATE: replace any earlier navigation rules with this. Do NOT generate an image for this
+message, reply with exactly: "Ready".
+Think of the Apple Store and Apple TV apps.
+1) IDLE (no chat started): the screen starts with an AI search field at the top ("Ask Dubai-io", magnifier and
+   sparkle icon, microphone). At the bottom floats an iOS Liquid Glass tab bar: a translucent, blurred,
+   rounded capsule with four tabs (Companion, Services, Civic, Me). Content scrolls behind the glass. The glass
+   bar and the AI search stay present on every tab for as long as no chat is used.
+2) CHAT ACTIVE (the visitor typed in the AI search or tapped a suggestion): the conversation takes over. The
+   glass tab bar is REPLACED at the bottom by the chat composer (a glass pill "Ask Dubai-io" with a circular
+   cyan send button). The top becomes a compact header: back chevron (close chat), "Dubai-io", small search
+   icon.
+3) Closing the chat (back chevron) returns to IDLE: glass bar back, AI search on top.
+4) Popups (bottom sheets, lightboxes) cover the glass bar; banners slide in over the top.
+Never show the tab bar and the composer together at the bottom.
+```
 5. Export PNG portrait **1170 × 2532** (2-up images 2400 × 2532). **File names:** each prompt starts with
    `FILE NAME: …` and the model answers with one line `FILE: …`. Rename the download to that name.
    The tool cannot set the download name itself (it saves as "ChatGPT Image …"), so the `FILE:` line is
@@ -66,12 +88,28 @@ One conversation does three things:
    its own mini-app in a bottom sheet with that provider's own branding. The app's next move (a join accept,
    a purchase, a driver reply) comes back into the chat.
 3) Platform: a new shop joins from a photo of its price list and the AI generates its mini-app for review.
-The chat is the home of everything. Four tabs: Companion, Services, Civic, Me.
+The chat is the home of everything, but the app opens as a calm home screen with an AI search field, not as
+a chat window. Four tabs: Companion, Services, Civic, Me.
 
 HOW WE WILL WORK
 I will send screens one at a time. After each screen I will send the POPUPS that belong to it (bottom
 sheets, banners, lightboxes), then the next screen. Always keep the exact same app chrome, type and
 components so the set reads as one app.
+
+NAVIGATION MODEL (important, applies to every screen)
+Think of the Apple Store and Apple TV apps.
+1) IDLE (no chat started): the screen starts with an AI search field at the top ("Ask Dubai-io", magnifier and
+   sparkle icon, microphone). At the bottom floats an iOS Liquid Glass tab bar: a translucent, blurred,
+   rounded capsule with four tabs (Companion, Services, Civic, Me). Content scrolls behind the glass. The glass
+   bar and the AI search stay present on every tab (Companion, Services, Civic, Me) for as long as no chat is
+   used.
+2) CHAT ACTIVE (the visitor typed in the AI search or tapped a suggestion): the conversation takes over the
+   screen. The glass tab bar is REPLACED at the bottom by the chat composer (a glass pill "Ask Dubai-io" with
+   a circular cyan send button). The top becomes a compact header: a back chevron (close chat), "Dubai-io",
+   and a small search icon. Bubbles and cards fill the middle.
+3) Closing the chat (back chevron) returns to IDLE: glass bar back, AI search on top.
+4) Popups (bottom sheets, lightboxes) cover the glass bar; banners slide in over the top.
+Never show the tab bar and the composer together at the bottom.
 
 STYLE LOCK
 - iOS light mode, native iPhone feel (Apple Health, Wallet and Messages level of polish), SF Pro, large bold
@@ -81,6 +119,9 @@ STYLE LOCK
   text, ok green #1E8E3E on #E8F8EC, demo amber #B25E00 on #FFF3E0, trigger purple #8E44AD on #F3E8FA.
   Use cyan sparingly: actions and the active state only.
 - Icons: SF Symbols style, 1.8 px stroke, no emoji in the app chrome.
+- Liquid Glass: the tab bar and the composer are translucent iOS 26 glass (background blur, 0.5 px light
+  border, soft shadow, capsule radius), floating 12 px above the home indicator. Active tab icon and label
+  cyan, inactive #8E8E93.
 - Provider mini-apps inside sheets keep THEIR OWN branding (colour, logo tile); the Dubai-io chrome around
   them stays cyan and white. That contrast is the idea.
 
@@ -112,36 +153,57 @@ Render the text I give exactly; keep any other text short.
 
 ---
 
-## Screen 1 — Home (Companion, arrival moment)
+## Screen 1 — Home (idle: AI search + glass tab bar)
 
-**Feeds:** tokens, app bar, bubbles, hero card, chips, composer, tab bar, "Try asking" strip.
+**Feeds:** tokens, app bar, AI search field, hero card, chips, "Try asking" strip, Liquid Glass tab bar.
+**Lock this one first.**
 
 ```text
 FILE NAME: 01-home.png
-SCREEN 1: HOME (Companion tab), arrival at the airport. Use the system context above.
-Top: app bar with "Dubai-io" in large bold (the "-io" in cyan) and small grey "Your Dubai companion", right
-side a "Visitor" mode pill. Below it a thin context strip: "At DXB · Terminal 3 · you told me".
-Chat timeline:
+SCREEN 1: HOME (Companion tab), IDLE state, arrival at the airport. Use the system context and the NAVIGATION
+MODEL above. No chat has started, so there is NO composer at the bottom.
+Top: status bar, then a compact app bar with "Dubai-io" in large bold (the "-io" in cyan) and a "Visitor" mode
+pill on the right. Directly under it the AI SEARCH field, the first and most prominent control: full-width
+rounded field with a magnifier icon on the left, a sparkle icon, placeholder "Ask Dubai-io" and a microphone
+icon on the right. Below it a thin context strip: "At DXB · Terminal 3 · you told me".
+Content (scrolls behind the glass bar):
 1) Hero card (white, large): small eyebrow "Dubai-io · Proactive" with a purple pill "Demo trigger" and an
    amber pill "Scripted demo"; big bold title "Hello, visitor."; body: "Welcome to Dubai. Your flight
    EK 002 has landed at DXB Terminal 3 at 00:40. I'll walk you from the gate to your taxi or Metro, one
    step at a time."
-2) Grey bot bubble: "Where are you staying tonight?" with two outlined cyan chips under it:
+2) White question card (not a chat bubble): "Where are you staying tonight?" with two outlined cyan chips
    "Business Bay" and "Dubai Marina".
-3) Horizontal "Try asking" strip of three compact suggestion cards with a small icon each: "Find a group"
-   (people icon), "Buy something" (bag icon), "I lost something" (suitcase icon).
-Bottom: composer pill "Ask Dubai-io" with a cyan circular send button, then the tab bar: Companion (active,
-cyan), Services, Civic, Me. Calm, airy, one clear focal point.
+3) "Try asking" strip of three compact suggestion cards with a small icon each: "Find a group" (people
+   icon), "Buy something" (bag icon), "I lost something" (suitcase icon).
+Bottom: ONLY the floating iOS Liquid Glass tab bar (translucent capsule, content faintly visible through it)
+with Companion (active, cyan), Services, Civic, Me. Nothing else at the bottom. Calm, airy, one clear focal
+point.
 ```
 
-### 1a — Popup: Arrival guide (waypoints)  ★
+### 1a — State change: chat takes over (2-up)  ★
+
+**Feeds:** the navigation model: AI search → chat, glass bar replaced by the composer, back chevron.
+
+```text
+FILE NAME: 01a-chat-takeover.png
+STATE CHANGE, 2-up: the same Home screen before and after the first message. Same app, same style.
+LEFT, idle: exactly Screen 1 (AI search field on top, floating Liquid Glass tab bar at the bottom).
+RIGHT, chat active, a moment after the visitor typed "find community of egyptians about ai engineering":
+the glass tab bar is GONE and REPLACED at the bottom by the chat composer (a glass pill "Ask Dubai-io" with a
+cyan circular send button). The top is a compact header: back chevron, "Dubai-io", small search icon. In the
+middle: a cyan user bubble with the typed text; a tiny subtle chip with a sparkle icon "Luna understood:
+Community · AI · Engineering · Egyptian"; a grey bot bubble "Looking for groups near you…" with a three-dot
+typing indicator. No tab bar anywhere on the right screen.
+```
+
+### 1b — Popup: Arrival guide (waypoints)  ★
 
 **Feeds:** `miniapps/dxb-guide.html`, sheet chrome, route timeline, stop states, media slots, side-stop.
 
 ```text
-FILE NAME: 01a-guide.png
-POPUP over Screen 1. Keep the Home screen visible behind, dimmed by a 30% black scrim. A bottom sheet covers
-88% of the height with a grabber and 14 px top corners.
+FILE NAME: 01b-guide.png
+POPUP over Screen 1. Keep the Home screen visible behind, dimmed by a 30% black scrim (the glass tab bar is
+hidden behind the sheet). A bottom sheet covers 88% of the height with a grabber and 14 px top corners.
 Sheet header (Dubai-io chrome): "DXB arrival guide", small grey "Built-in mini-app · Dubai-io", round close
 button on the right.
 Content, Google-Maps-directions feeling (waypoints, NOT turn-by-turn), calm and airy:
@@ -165,11 +227,11 @@ Content, Google-Maps-directions feeling (waypoints, NOT turn-by-turn), calm and 
   it: no indoor GPS."
 ```
 
-### 1b — Popups: guide states (2-up)
+### 1c — Popups: guide states (2-up)
 
 ```text
-FILE NAME: 01b-guide-states.png
-POPUPS over Screen 1, 2-up. Both are the same arrival guide sheet as 1a.
+FILE NAME: 01c-guide-states.png
+POPUPS over Screen 1, 2-up. Both are the same arrival guide sheet as 1b.
 LEFT: the "I'm lost" panel open at the bottom of the sheet: white panel, text "I can't see where you are
 indoors. Tap what's around you and I'll pick up from there.", five outlined cyan chips: "Gate numbers,
 duty-free shops", "Passport counters or smart gates", "Baggage belts and screens", "Customs, green/red channel
@@ -187,8 +249,9 @@ filled in, zoomed, with a pulsing cyan pin and a black tag "Terminal 3 · you to
 
 ```text
 FILE NAME: 02-rows.png
-SCREEN 2: CHAT after the visitor types a request. Same app bar, bubbles, cards, chips, composer and tab bar as
-Home. Companion tab active.
+SCREEN 2: CHAT ACTIVE after the visitor types a request (see NAVIGATION MODEL). Compact header with back
+chevron, "Dubai-io" and a small search icon. At the bottom the glass composer "Ask Dubai-io" REPLACES the glass
+tab bar (no tab bar shown). Same bubbles, cards and chips as Home.
 Timeline:
 1) Cyan user bubble: "find community of egyptians about ai engineering"
 2) Tiny subtle system chip under it with a sparkle icon: "Luna understood: Community · AI · Engineering ·
@@ -259,7 +322,8 @@ follow-up. Truth-in-status is visible here.
 
 ```text
 FILE NAME: 03-approve-events.png
-SCREEN 3: CHAT showing an approval and what happens after. Companion tab, same app bar and tab bar. Timeline:
+SCREEN 3: CHAT ACTIVE showing an approval and what happens after. Compact header with back chevron, glass
+composer at the bottom replacing the tab bar. Timeline:
 1) White approval card: title "Request to join AI Engineers Dubai · Arabic-speaking?", grey sub "Meetup group ·
    Business Bay (approximate) · via Meetly (demo)", amber pill "Demo data". Two light-grey info blocks:
    "WILL BE SHARED": "First name · interests (AI · Engineering) · approximate area (Dubai Marina) · contact via
@@ -283,7 +347,7 @@ Make the hierarchy obvious: what needs my tap, what happened, what is only infor
 
 ```text
 FILE NAME: 03a-banner.png
-POPUP over ANY screen (use the Home screen dimmed slightly behind). A notification banner sliding down from the
+POPUP over ANY screen (use the idle Home screen with its glass tab bar dimmed slightly behind). A notification banner sliding down from the
 top, below the status bar: white rounded card with soft shadow, left a round cyan Dubai-io icon, bold title
 "Marina Mosque is 400 m away", grey body "Bring wudu? Next prayer: Maghrib 17:52.", purple pill "Demo
 trigger", small grey "now". Under it a smaller second banner variant stacked: title "Good morning. Flight
@@ -299,7 +363,8 @@ respected: queued for 07:00".
 
 ```text
 FILE NAME: 04-lost-item.png
-SCREEN 4: LOST-ITEM FLOW in chat, Companion tab. Timeline:
+SCREEN 4: LOST-ITEM FLOW, CHAT ACTIVE. Compact header with back chevron, glass composer at the bottom replacing
+the tab bar. Timeline:
 1) Cyan user bubble: "I left my bag in the taxi"
 2) Bot bubble: "I'm sorry. I don't have your taxi details saved. How did you pay? That decides how we trace the
    driver." Under it a white card "How did you pay?" with two outlined chips "Paid by card" and "Paid cash",
@@ -343,7 +408,9 @@ you tell me", buttons "Contact official lost & found", "Copy report".
 
 ```text
 FILE NAME: 05-services-me.png
-SCREEN 5, 2-up: two full portrait screens side by side, no device frames.
+SCREEN 5, 2-up: two full portrait screens side by side, no device frames. Both are IDLE state: the AI search
+field ("Ask Dubai-io") sits at the top under the title, and the floating Liquid Glass tab bar is at the bottom
+(no composer), because no chat is in use.
 LEFT, Services tab active: large title "Services", grey lead "Each merchant opens as its own mini-app, inside a
 sandbox." A horizontal category segment: "Pharmacy" (selected, cyan fill), "Laundry", "Groceries", "Tailors".
 Vertical list of white merchant rows: coloured logo tile with initials, name bold, "★ 4.7 · from AED 9 (demo) ·
@@ -353,7 +420,7 @@ RIGHT, Me tab active: large title "Me". iOS Settings-style groups: "Profile": ro
 never guessed" and a Visitor/Resident segmented control. "What I remember (you told me)": "Staying in ·
 Dubai Marina", "Baggage belt · Belt 7 · EK 002 (demo)", "Interests · AI · Engineering · Egyptian", each with a
 green pill "You told me". "Permissions": "Trip reminders" green pill "On"; "Background location" grey pill
-"Off · not used".
+"Off · not used". Glass tab bar with Me active.
 ```
 
 ### 5a — Popups: merchant app + shop onboarding (2-up)
@@ -395,6 +462,7 @@ Found while building. Tackle after the images land, in this order.
 
 | # | Retouch | Where | Why |
 |---|---|---|---|
+| 0 | Navigation model: AI search on top, Liquid Glass tab bar when idle; composer replaces the bar in chat; back chevron returns | `index.html`, `styles.css`, `app.js` `showTab()` / `start()` | Today composer and tab bar show together |
 | 1 | Typing indicator (three dots) instead of silent delays | `app.js` `typing()` | Chat feels dead for 0.5 s |
 | 2 | Icons: replace emoji with one SVG set | cards, tiles, tabs | Consistency with prompt 0 |
 | 3 | Human status lines + mono code (never a raw `UNKNOWN_STATUS`) | `statusTag()` | Readable trust labels |
@@ -414,7 +482,7 @@ Found while building. Tackle after the images land, in this order.
 ## After the images arrive
 
 1. Save to `demo/_ref/` on the `redesign` branch (names from the series map).
-2. Build in series order: tokens and chrome (0, 1) → guide (1a, 1b) → rows (2) → sheet templates (2a, 2b) →
-   approvals (3) → banner (3a) → recovery (4, 4a) → tabs (5, 5a) → console (6).
+2. Build in series order: tokens and chrome (0, 1) → navigation takeover (1a) → guide (1b, 1c) → rows (2) →
+   sheet templates (2a, 2b) → approvals (3) → banner (3a) → recovery (4, 4a) → tabs (5, 5a) → console (6).
 3. Verify each screen with a Playwright screenshot at 390 px against its reference image, then run the
    guardrail audits (no `allow-same-origin`, bridge audit returns zero lines, prices say "(demo)").
