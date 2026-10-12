@@ -167,7 +167,7 @@ apps/web/
 apps/api/               Luna only: FastAPI + LangGraph (6.9). Not needed to run the web app
 ```
 
-Dependencies (web): `react`, `react-dom`, `vite`, `typescript`, `vitest`, `@playwright/test`, a spring/gesture lib (`framer-motion` or `@use-gesture/react` + `react-spring`), a tiny WebGL helper (`ogl`, or raw WebGL2), `zustand` optional. Plain CSS (CSS modules). No UI kit.
+Dependencies (web): `react`, `react-dom`, `vite`, `typescript`, `vitest`, `@playwright/test`, a spring/gesture lib (`framer-motion` or `@use-gesture/react` + `react-spring`), a tiny WebGL helper (`ogl`, or raw WebGL2), founder-supplied effect libraries `border-beam`, `voice-glow`, `thinking-orbs` (npm-verified, MIT, zero deps; pin exact versions, see `demo/_ref/visuals-libraries.md`), `zustand` optional. Plain CSS (CSS modules). No UI kit.
 
 ### 6.3 Reference map
 
@@ -186,6 +186,7 @@ Dependencies (web): `react`, `react-dom`, `vite`, `typescript`, `vitest`, `@play
 | Backstage (≥ 1100 px) | `06-backstage.png` | inbox, trigger panel, tools status, event log |
 | Arrival notification | `x-arrival-notification.png` | in-app Banner on first load (web cannot do Live Activities) |
 | First-run tour | `x-home-onboarding.png` | 3-step coach marks over the AI search |
+| Chat effects: Beam, Voice, Orb + ShipSwift `SWMetal` shader ideas | `demo/_ref/visuals-libraries.md` (prompts copied as supplied; our notes in Part 3) | Composer `BorderBeam` / `VoiceBeam`, bot avatar `ThinkingOrb`, GLSL ideas for L3 |
 | Dark theme + map pin + permission card | `x-location-geofence-darkmode.jpg` (Apple Find My / Maps screenshot, **style reference only**, third-party names must not appear) | dark token set (`prefers-color-scheme` + manual), guide lightbox pin with an "approximate" ring, Me → Permissions "Notifications are off" card, detail-sheet pattern (title, status, two actions) |
 | Resident/VIP | R-series prompts, no images yet | after visitor parity |
 
@@ -248,6 +249,8 @@ Goal: scrolling and swiping Home feels fluid, with content coming into place und
 | **L3 Shader field** | A slow, fluid background behind the hero: domain-warped noise in the locked palette (cyan `#0A9CC2` → `#E3F6FB` → white). Scroll velocity and touch drive a soft ripple uniform. Optional: refraction highlight at the glass bar's edge | One `<canvas>` (WebGL2, GLSL ES 3.0) behind the hero only. Render at 0.5–0.75× scale, DPR cap 2, pause when hidden or off-screen |
 
 Constraints: 60 fps target on iPhone 12 or newer; a single canvas; text contrast stays AA over the field (keep it low-contrast under cards); honour `prefers-reduced-motion` (no parallax, no ripple, static gradient); fall back to a static gradient if WebGL2 is missing or the frame budget is blown; no layout-thrashing reads in scroll handlers; `will-change` only during motion. Add a `?fps` overlay for on-device checks (there is no Mac Inspector assumed). The glass bar keeps `backdrop-filter` as its fallback look.
+
+**Effect libraries (founder-supplied, copied as-is in `demo/_ref/visuals-libraries.md`):** `BorderBeam` (composer / goal-plan card while working), `VoiceBeam` + `useMicrophone` (mic button; needs HTTPS and a tap, so keep a typed fallback), `ThinkingOrb` (bot avatar and inline "working", replacing typing dots). Rules: palette locked (use `ocean` / `mono` or token `colors`), one glow at a time, pause under reduced motion, never imply a result. ShipSwift `SWMetal` is a learning source for L3 shader techniques only (re-implement in GLSL; check its licence before reusing code).
 
 ### 6.9 Luna service (LangGraph, `apps/api`)
 
