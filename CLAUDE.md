@@ -63,7 +63,7 @@ Rules: never add top-level `*.md` beyond the four canon files (paper trail lives
 
 ## Stack (for Phase 1+, pin versions at scaffold)
 
-- `apps/web`: Next.js (App Router, TypeScript), mobile-first PWA. Routes `/` (user), `/merchant` (inbox), `/ops` (onboarding review).
+- `apps/web`: **Vite + React + TypeScript** (founder decision 12 Oct, replaces Next.js), mobile-first PWA viewed in iPhone Safari, no native iOS build. Routes `/` (user), `/merchant` (inbox), `/ops` (onboarding review). Mini-apps stay sandboxed HTML (`<iframe sandbox="allow-scripts">`) served from `public/miniapps/`.
 - `apps/api`: Python 3.12, FastAPI, Pydantic v2, LangGraph, SQLAlchemy 2 + Alembic.
 - `apps/widgets`: static widget bundles served from a **different origin**.
 - `packages/contracts`: Pydantic models are the source of truth. A script exports JSON Schema, and TS types are generated from it. Never hand-edit generated TS.
@@ -73,7 +73,8 @@ Rules: never add top-level `*.md` beyond the four canon files (paper trail lives
 ## Commands
 
 - Demo: `cd demo && python -m http.server 8765`, then open http://localhost:8765
-- App: not yet scaffolded (Phase 1 fills in install, dev, test, lint, migrate, seed).
+- App (`apps/web`, once scaffolded): `cd apps/web && npm install && npm run dev -- --host`, then open `http://<pc-ip>:5173` on the iPhone (same Wi-Fi) and Add to Home Screen. HTTPS (tunnel or deploy) is needed for the live compass.
+- API / tests / migrate / seed: Phase 1 fills in.
 
 ## Working conventions
 
