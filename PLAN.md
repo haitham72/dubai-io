@@ -1,8 +1,8 @@
 # Dubai-io — Plan
 
-**Updated:** 10 Oct 2026 · **Status:** **Plan v1.1 draft for Opus to finalize.** Build starts when the founder asks · **Owner:** Haitham
-This is the single plan. Scope, demo and phases live here, and nowhere else. Decisions go in `docs/DECISIONS.md`.
-**Founder lock (10 Oct, final, Opus must not reopen): bidding/quote is ABSOLUTELY REJECTED. Every service opens as a modal HTML mini-app (services / shops / stores / rides) with published fixed prices. See `docs/DECISIONS.md` 2026-10-10 rows + `docs/reviews/OPUS-HANDOFF-2026-10-10.md`.**
+**Updated:** 12 Oct 2026 · **Status:** **Plan v1.2.** Build starts when the founder asks · **Owner:** Haitham
+This is the single plan. Scope, demo and phases live here, and nowhere else. (Decision log lives on `main`; `build` is code-only.)
+**Founder lock (10 Oct, final): bidding/quote is ABSOLUTELY REJECTED. Every service opens as a modal HTML mini-app (services / shops / stores / rides) with published fixed prices.**
 
 ---
 
@@ -12,9 +12,9 @@ This is the single plan. Scope, demo and phases live here, and nowhere else. Dec
 
 The companion is the product. Mini-apps are how it works with merchants. Photo onboarding is how more merchants join. Airport arrival is the introduction, not the product.
 
-**Story:** short-stay business visitor → late-night DXB arrival → independent laundry with a deadline → taxi-memory payoff. Reported evidence per beat is in `docs/VISITORS.md §0`: strongest for lost items in taxis, weakest for the laundry deadline. Still open: why not the hotel concierge?
+**Story:** short-stay business visitor → late-night DXB arrival → independent laundry with a deadline → taxi-memory payoff. Evidence: strongest for lost items in taxis (104k+ RTA 2025), medium for laundry deadline (Nov 2025 two-day concierge failure). Concierge verdict: serious but inconsistent competitor. Still open: preference for Dubai-io vs hotel.
 
-Contest: Create AI Agents Championship, category **Best Personal AI Agent** (rules, deadline and IP terms still to verify; carried into Phase 1).
+Contest: Create AI Agents Championship, category **Best Personal AI Agent**. Official materials contradict: registration Dec 2026 (FAQ/launch) vs Jan 2027 (timeline); global eligibility vs Dubai-licence requirement for non-residents; no published rubric. Portal-only verification carried into Phase 1 — do NOT hard-code dates.
 
 ## 2. Scope
 
@@ -50,13 +50,13 @@ One visitor, one continuous story: **an independent laundry with a deadline** (s
 |---|---|---|
 | 0:00–0:12 | Arrival greeting, "Scripted demo" label, one button: *Guide me to arrivals* | "Dubai-io is a personal companion that remembers your situation and follows through with local merchants." |
 | 0:12–0:35 | Compact airport guide. "I'm lost" → a landmark choice changes where the guide resumes | "It guides me from where I confirm I am, and resumes from what I can see." |
-| 0:35–0:55 | It's 00:40, so the Metro has stopped: it recommends a taxi *with that reason*. Plate (or receipt photo), roof colour, route and start time saved, labelled "You told me" | "It knows the Metro has stopped, so it suggests a taxi, and saves what I'll need if something goes wrong." |
+| 0:35–0:55 | It's 00:40, so the Metro has stopped: it recommends a taxi *with that reason* (official cream RTA taxi, not solicitors; Hala has no airport pickup). Plate (or receipt photo — explicitly prompted "snap this receipt"), roof colour, route and start time saved, labelled "You told me" | "It knows the Metro has stopped, so it suggests a taxi, and saves what I'll need if something goes wrong." |
 | 0:55–1:10 | "I've reached my hotel." User: *"I need a shirt pressed by 9 tomorrow."* | "My hotel area carries into the request." |
 | 1:10–1:30 | Three laundries as Talabat-normal list (closest + ★ + price-from + turnaround), each row opens its **own modal HTML mini-app** | "Separate merchant experiences, same conversation." |
 | 1:30–1:55 | Cyan host approval: named shop, fixed items + fixed total, hotel area, deadline. Pauses visibly | "The shop's mini-app can only ask. Dubai-io shows what's shared and waits for me." |
 | 1:55–2:45 | Merchant inbox expands. **Accepted at fixed price** → ready-time **10:00** → companion flags "misses your 09:00 deadline" → asks for earlier → **08:30** → merchant confirms (no re-quote, price unchanged) | "Ten o'clock misses my deadline. It catches that, asks for earlier, and says confirmed only when the shop confirms." |
 | 2:45–3:05 | Price-list photo → generated mini-app → owner review → appears in results | "Another shop joins from a photo, reviewed before it goes live." |
-| 3:05–3:40 | **"I left my bag in the taxi!"** Report pre-filled with the fields RTA asks for, asks only for the bag description, official handoff, "not recovered" | "Over a hundred thousand items were left in Dubai taxis last year. It already has the details the report needs." |
+| 3:05–3:40 | **"I left my bag in the taxi!"** Report pre-filled with the fields RTA asks for (time, pickup/drop-off, roof colour, plate, receipt), asks only for the bag description, official handoff (SMS workflow), "not recovered" — never a recovery probability | "Over a hundred thousand items were left in Dubai taxis last year. It already has the details the report needs." |
 | 3:40–4:00 | Report beside the earlier taxi-memory card | Close: *"Dubai-io remembers your situation and follows through locally, with you approving what gets shared."* |
 
 **Under the hood** goes compact: large events only ("Trip details saved", "Sharing approved", "Merchant accepted", "Ready confirmed"), with the raw log available for questions. The merchant inbox is labelled "Merchant role, simulated" until a real merchant exists.
@@ -79,17 +79,17 @@ Gates are binary. Dates are relative until the contest deadline is verified; the
 
 - [x] Clickable HTML demo (`demo/`), iOS light style, DXB placeholder maps
 - [x] Docs consolidated (this structure)
-- [x] Two external LLM review rounds merged (`docs/DECISIONS.md`)
+- [x] Two external LLM review rounds merged (on `main`)
 - [x] Hero: short-stay business visitor → independent laundry deadline → taxi-memory payoff
-- [x] Desk research on reported visitor problems (`docs/VISITORS.md §0`)
+- [x] Desk research on reported visitor problems (on `main`)
 - [x] Demo arc v2 locked (§3)
 
 **Carried into Phase 1 (non-blocking):**
-- [ ] ⏳ **Run `docs/research/research-prompt.md` in Gemini Deep Research / DeepSeek** and save the results in `docs/research/`. It fills the evidence gaps (laundry deadline, hotel concierge, competitors, contest rules)
-- [ ] Verify contest rules: deadline, artifacts, judging criteria, IP terms (re-anchor phase dates)
+- [x] ✅ Forum/first-hand research DONE (on `main`). Do NOT re-run.
+- [ ] Verify contest rules on the official portal ONLY (`dubaichamberdigital.com`, Dubai Media Office / WAM): deadline (Dec 2026 vs Jan 2027 conflict), artifacts (prototype + deck + video + summary report?), judging criteria (no rubric published), IP (non-exclusive licence claim), eligibility (global vs licence), physical attendance + security. Then re-anchor phase dates
 - [ ] Update the sketch to arc v2: deadline-conflict branch, time-aware ride reasoning, RTA fields in the lost-item report, cyan host strip, remove Civic tab, compact backstage, "Scripted demo" label
 - [ ] Replace placeholder maps with arrival-side maps
-- [ ] Optional validation: visitor interviews and laundry tabletop (`docs/VISITORS.md §5`)
+- [ ] Optional validation: visitor interviews and laundry tabletop (script on `main`)
 
 ### Phase 1 — Skeleton (~2 weeks)
 

@@ -1,9 +1,9 @@
 # Dubai-io — Build Architecture (contest MVP)
 
 **Updated:** 10 Oct 2026 · **Scope source:** `PLAN.md` (phases referenced as Phase 1–5) · Reference implementation of the UI: `demo/`
-**Founder lock (10 Oct, final): bidding/quote ABSOLUTELY REJECTED. `quote.request`, `quote.read`, `QUOTED`, `QUOTE_ACCEPTED` do not exist. Every service opens as a modal HTML mini-app with fixed prices. Opus brief: `docs/reviews/OPUS-HANDOFF-2026-10-10.md`.**
+**Founder lock (10 Oct, final): bidding/quote ABSOLUTELY REJECTED. `quote.request`, `quote.read`, `QUOTED`, `QUOTE_ACCEPTED` do not exist. Every service opens as a modal HTML mini-app with fixed prices.**
 
-This document covers only what the contest build needs. The long-term vision architecture (community, media vault, native sensors, indoor maps, ticket wallet) stays in `archive/handoff/02` and `07` and is **not** built here.
+This document covers only what the contest build needs. Long-term vision items (community, media vault, native sensors, indoor maps, ticket wallet) are **not** built here.
 
 ---
 
@@ -156,8 +156,8 @@ The render order is: Talabat-normal card first, modal HTML widget second, fallba
 
 1. The agent emits `service_comparison` (closest + ★ + price-from + turnaround). Every row offers `Open` → that provider's **modal** HTML mini-app (services / shops / stores / rides — same pattern for all four).
 2. The host loads `https://widgets.<domain>/<provider>/<version>/index.html` in `<iframe sandbox="allow-scripts">`. **Never add `allow-same-origin`**: together with `allow-scripts` on a same-site origin, it lets the frame strip its own sandbox. The widget origin is a separate site.
-3. Widget CSP: `default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'`. The widget cannot call the API. This fixes `archive/handoff/04 §4b`, which allowed `connect-src` to the API and so contradicted its own "HTML never calls tools" rule.
-4. Bridge: `postMessage` with a strict `origin` check on both sides. The host accepts only `{v:1, kind, payload}`, where `kind ∈ manifest.bridge_scopes` (MVP: `order.request` ONLY — `quote.*`, `cart.*`, `rx.*`, `pickup.*` are demo legacy and must be migrated to `order.request`). `order.request` makes the **host** build an `action_approval` card with the fixed total. The widget never submits anything.
+3. Widget CSP: `default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'`. The widget cannot call the API.
+4. Bridge: `postMessage` with a strict `origin` check on both sides. The host accepts only `{v:1, kind, payload}`, where `kind ∈ manifest.bridge_scopes` (MVP: `order.request` ONLY). `order.request` makes the **host** build an `action_approval` card with the fixed total. The widget never submits anything.
 5. If the manifest is missing or unapproved, the iframe fails to load within 3 s, or the client is offline, render `fallback_card`.
 
 For the MVP, Dubai-io writes the single widget (`laundry-order`). Merchant-authored HTML is out of scope.
@@ -196,7 +196,7 @@ labelled "Demo trigger")                                ▼
 
 ## 9. Frontend
 
-- Tabs: **Companion · Services · Civic · Me** (see `docs/DESIGN.md`). `Services` is a browse view backed by the same registry search the agent uses. `Civic` contains only Guides (the RAG entry point) for MVP. Other civic sub-tabs show `Pilot`. Community is not in the nav.
+- Tabs: **Companion · Services · Civic · Me**. `Services` is a browse view backed by the same registry search the agent uses. `Civic` contains only Guides for MVP. Other civic sub-tabs show `Pilot`. Community is not in the nav.
 - Card renderer: a `switch` on `card.type` over a component registry. Unknown types fall back to `text_note`. Validation is generated from the contracts.
 - Visual system (founder decision 9 Oct, replaces Editorial Luxury gold): **iOS light mode with a cyan tint**. System font (SF Pro / -apple-system), grouped background `#F2F2F7`, white cards radius 16px, separators `#E5E5EA`, tint `#0A9CC2`, iMessage-style bubbles (bot `#E9E9EB`, user = tint). Merchant mini-apps keep their own branding. Reference implementation: `demo/styles.css`. Required pills: `Demo data`, `Sandbox`, `User-supplied`, `Estimate`, `Demo trigger`, `Official source`.
 - RTL readiness: use logical CSS properties (`margin-inline-start`) from day one. A full Arabic UI is a stretch goal.

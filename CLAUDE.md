@@ -14,10 +14,10 @@ Civic guidance (official sources, citations) is LATER, not in the contest build.
 
 **Stage: sketch (Phase 0).** The only code is the clickable HTML prototype in `demo/`.
 
-## Research status (10 Oct — results exist, portal check remains)
+## Research status (build branch — code-only)
 
-* `docs/research/` now holds `Deepseek-research.md` (usable, weak links), `Dubai Visitor Pain Points Research.md` (strongest, 48 cites), `glm-research.md` (priors only), `qwen-research.md` (DISCARD — failed run, zero Dubai content). `research-prompt.md:3` status line is stale.
-* Do NOT re-run forum research. Remaining task: verify contest facts on the official portal only (`dubaichamberdigital.com`, Dubai Media Office / WAM): submission deadline (reported Jan 2027), final (reported first week May 2027), artifacts, judging criteria, IP terms. Then re-anchor `PLAN.md §4` dates.
+* Paper trail (research, reviews, decisions, visitor evidence, handoff archive) lives on `main`. This branch keeps the 4 canon files + `demo/` only.
+* Do NOT re-run forum research. Remaining task: verify contest facts on the official portal only (`dubaichamberdigital.com`, Dubai Media Office / WAM): submission deadline (Dec 2026 vs Jan 2027 conflict), final (first week May 2027), artifacts, judging criteria (no rubric published), IP terms. Then re-anchor `PLAN.md §4` dates.
 
 ## Docs (highest authority first)
 
@@ -26,39 +26,27 @@ Civic guidance (official sources, citations) is LATER, not in the contest build.
 | `CLAUDE.md` (this) | Hard rules for agents |
 | `PLAN.md` | **The single plan**: scope (IN / LATER / NEVER), demo arc, phases, gates |
 | `ARCHITECTURE.md` | Build architecture, contracts, state machine |
-| `docs/DESIGN.md` | Style tokens, layout, trust labels, screen status |
-| `docs/DECISIONS.md` | Decision log, newest first |
-| `docs/VISITORS.md` | Visitor needs as hypotheses to test + interview script. Not evidence |
-| `docs/research/` | Results from external tools (see Research status above) + prompt |
-| `docs/VISION.md` | Long-term vision. **Adds no scope** |
-| `archive/` | Original handoff 01–08, old implementation plan, past reviews. Reference only, never build from it |
+| `demo/` | Clickable prototype (static, no build): chat, journey, Talabat list → modal, fixed-order machine |
+| `main` branch | Paper trail: `docs/` (decisions, design, visitors, vision, research, reviews) + `archive/` (handoff, old reviews) |
 
 If a request needs something that `PLAN.md` lists as **LATER** or **NEVER**, stop and ask. Do not build a "small version" of it.
 
 ## Repo layout (schema — where things go, don't invent new top-level docs)
 
 ```
-dubai-io/
+dubai-io/  (branch: build — code-only; paper trail lives on main)
 ├── CLAUDE.md / PLAN.md / ARCHITECTURE.md / README.md  # canon, this order
-├── demo/                        # Phase 0 throwaway prototype (static, no build)
+├── demo/                        # clickable prototype (static, no build)
 │   ├── index.html               # phone + backstage shell, modal sheets
 │   ├── app.js                   # chat, journey, Talabat list → modal, fixed-order machine
 │   ├── data.js                  # fixtures only (merchants, bridge_scopes=[order.request])
 │   ├── styles.css               # iOS light + cyan tokens (single source for Phase 1)
 │   ├── miniapps/*.html          # one modal HTML mini-app per merchant (own branding)
 │   └── maps/*                   # PLACEHOLDERS — replace with arrival-side maps
-├── docs/
-│   ├── DECISIONS.md             # decision log, newest first (scope changes land here + PLAN.md)
-│   ├── DESIGN.md / VISITORS.md / VISION.md
-│   ├── research/research-prompt.md + *-research.md  # evidence; qwen = DISCARD
-│   └── reviews/OPUS-HANDOFF-*.md + review-*.md      # advisory only, never authority
-├── screens/                     # jpg/png references only (old gold style); archive/ = banned DubaiNow clone
-├── archive/handoff/01–08 + README.md               # original handoff, reference only
-├── archive/reviews/ + dubai-io-implementation-plan.md  # superseded, never build from
 └── (Phase 1 scaffolds) apps/web + apps/api + apps/widgets, packages/contracts
 ```
 
-Rules: new durable docs go under `docs/` (one topic per file, linked from PLAN.md); agent reviews go in `docs/reviews/review-<tool>-<date>.md`; never add top-level `*.md` beyond the four canon files; never write code outside `demo/` until Phase 1 scaffold exists.
+Rules: never add top-level `*.md` beyond the four canon files (paper trail lives on `main`); never write code outside `demo/` until Phase 1 scaffold exists.
 
 ## Non-negotiable rules
 
@@ -92,5 +80,5 @@ Rules: new durable docs go under `docs/` (one topic per file, linked from PLAN.m
 - Repo: `github.com/haitham72/dubai-io` (private), branch `main`.
 - Contracts change first (`packages/contracts`), then the generated types, then the code. A card or state change without a contract change is a bug.
 - Every workflow ships with fixtures, a happy-path test and a failure-path test (provider timeout, merchant decline, empty retrieval, duplicate submit).
-- Design tokens come from `docs/DESIGN.md` (iOS light mode, cyan tint). Do not invent new palettes.
-- Keep the docs short. Tick `PLAN.md` checkboxes, log decisions in `docs/DECISIONS.md`, and don't create new planning docs.
+- Design tokens live in `demo/styles.css` on this branch (iOS light mode, cyan tint; `docs/DESIGN.md` on `main`). Do not invent new palettes.
+- Keep the docs short. Tick `PLAN.md` checkboxes, and don't create new planning docs.
