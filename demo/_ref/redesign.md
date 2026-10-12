@@ -39,8 +39,11 @@ app, same style".
 2. Paste **Prompt 1**. Iterate until Home is right, because everything after copies it.
 3. Paste its popups (1a, 1b), then the next screen, then its popups, and so on.
 4. If style drifts: "Match the Home screen exactly: same top bar, bubbles, cards, chips, tab bar, icons."
-5. Export PNG portrait **1170 × 2532** (2-up images 2400 × 2532). Name them `01-home.png`,
-   `01a-guide.png`, `02-rows.png`, `02a-partner-sheet.png` …
+5. Export PNG portrait **1170 × 2532** (2-up images 2400 × 2532). **File names:** each prompt starts with
+   `FILE NAME: …` and the model answers with one line `FILE: …`. Rename the download to that name.
+   The tool cannot set the download name itself (it saves as "ChatGPT Image …"), so the `FILE:` line is
+   what you copy. If you skip renaming, drop the files into `demo/_ref/` in any order: they are matched
+   to this series by content.
 6. Image models garble long text. Every prompt gives exact copy; fix one line at a time: "replace the
    heading with exactly: …".
 
@@ -96,6 +99,11 @@ Government emblems or ministry logos, the DubaiNow layout, real brand logos (use
 #C2410C, DealDash Dubai (demo) purple #7C3AED, Palm Leaf Pharmacy, Marina Express Laundry), gold/black luxury
 styling, stock photos of people, phone frames or mockup backgrounds.
 
+FILE NAMING
+Every prompt I send starts with a line "FILE NAME: <name>.png". After you generate the image, reply with
+exactly one line and nothing else: "FILE: <name>.png", using that exact name. Never invent expressive names
+like "home screen first try", and never describe the image in words.
+
 OUTPUT FORMAT
 One flat portrait UI screen per image, 1170x2532 px, status bar at 9:41, no device frame, no captions
 outside the UI. "2-up" means two full screens side by side, each 1170x2532, with a 40 px light-grey gap.
@@ -109,6 +117,7 @@ Render the text I give exactly; keep any other text short.
 **Feeds:** tokens, app bar, bubbles, hero card, chips, composer, tab bar, "Try asking" strip.
 
 ```text
+FILE NAME: 01-home.png
 SCREEN 1: HOME (Companion tab), arrival at the airport. Use the system context above.
 Top: app bar with "Dubai-io" in large bold (the "-io" in cyan) and small grey "Your Dubai companion", right
 side a "Visitor" mode pill. Below it a thin context strip: "At DXB · Terminal 3 · you told me".
@@ -130,6 +139,7 @@ cyan), Services, Civic, Me. Calm, airy, one clear focal point.
 **Feeds:** `miniapps/dxb-guide.html`, sheet chrome, route timeline, stop states, media slots, side-stop.
 
 ```text
+FILE NAME: 01a-guide.png
 POPUP over Screen 1. Keep the Home screen visible behind, dimmed by a 30% black scrim. A bottom sheet covers
 88% of the height with a grabber and 14 px top corners.
 Sheet header (Dubai-io chrome): "DXB arrival guide", small grey "Built-in mini-app · Dubai-io", round close
@@ -158,6 +168,7 @@ Content, Google-Maps-directions feeling (waypoints, NOT turn-by-turn), calm and 
 ### 1b — Popups: guide states (2-up)
 
 ```text
+FILE NAME: 01b-guide-states.png
 POPUPS over Screen 1, 2-up. Both are the same arrival guide sheet as 1a.
 LEFT: the "I'm lost" panel open at the bottom of the sheet: white panel, text "I can't see where you are
 indoors. Tap what's around you and I'll pick up from there.", five outlined cyan chips: "Gate numbers,
@@ -175,6 +186,7 @@ filled in, zoomed, with a pulsing cyan pin and a black tag "Terminal 3 · you to
 **Feeds:** `providerRows()` card, the "Luna understood" chip, row anatomy. Same card serves shopping.
 
 ```text
+FILE NAME: 02-rows.png
 SCREEN 2: CHAT after the visitor types a request. Same app bar, bubbles, cards, chips, composer and tab bar as
 Home. Companion tab active.
 Timeline:
@@ -201,6 +213,7 @@ Make the rows a clean scannable list (Talabat-style clarity), best match first.
 **Feeds:** sheet template, provider branding inside a sandbox, Google sign-in strip, group cards, match chips.
 
 ```text
+FILE NAME: 02a-partner-sheet.png
 POPUPS over Screen 2, 2-up. Chat dimmed behind (30% black scrim). Each is an 88% bottom sheet with grabber.
 Sheet header (Dubai-io chrome): "Meetly (demo)", small grey "Partner mini-app · their own HTML", close button.
 Inside, the PARTNER's own branding: violet #6B4EFF header with a white rounded logo tile "M", "Meetly (demo)"
@@ -224,6 +237,7 @@ Mono tiny footer on both: "manifest v2.3.0 · scopes: auth.signin, community.joi
 **Feeds:** shopping template, "(demo)" price lines, buy-on-their-site note, success state.
 
 ```text
+FILE NAME: 02b-shop-sheet.png
 POPUPS over Screen 2 (a price comparison), 2-up, same sheet chrome as 2a. Partner: "Souq Express (demo)", green
 #1F8A5B, white logo tile "SE", chip "Demo data · demo list prices".
 LEFT, product: green strip "Signed in with Google (demo) · name + email shared with Souq Express (demo)"; a
@@ -244,6 +258,7 @@ Mono footer: "manifest v4.1.0 · scopes: auth.signin, purchase.report" and "sand
 follow-up. Truth-in-status is visible here.
 
 ```text
+FILE NAME: 03-approve-events.png
 SCREEN 3: CHAT showing an approval and what happens after. Companion tab, same app bar and tab bar. Timeline:
 1) White approval card: title "Request to join AI Engineers Dubai · Arabic-speaking?", grey sub "Meetup group ·
    Business Bay (approximate) · via Meetly (demo)", amber pill "Demo data". Two light-grey info blocks:
@@ -267,6 +282,7 @@ Make the hierarchy obvious: what needs my tap, what happened, what is only infor
 **Feeds:** `trip.*` / `geo.*` trigger presentation (Demo trigger, quiet hours, one message per trigger).
 
 ```text
+FILE NAME: 03a-banner.png
 POPUP over ANY screen (use the Home screen dimmed slightly behind). A notification banner sliding down from the
 top, below the status bar: white rounded card with soft shadow, left a round cyan Dubai-io icon, bold title
 "Marina Mosque is 400 m away", grey body "Bring wudu? Next prayer: Maghrib 17:52.", purple pill "Demo
@@ -282,6 +298,7 @@ respected: queued for 07:00".
 **Feeds:** `recovery()` flow: pay-choice chips, trace states, driver card with fake photos, `driver en route`.
 
 ```text
+FILE NAME: 04-lost-item.png
 SCREEN 4: LOST-ITEM FLOW in chat, Companion tab. Timeline:
 1) Cyan user bubble: "I left my bag in the taxi"
 2) Bot bubble: "I'm sorry. I don't have your taxi details saved. How did you pay? That decides how we trace the
@@ -304,6 +321,7 @@ Calm and reassuring: the visitor is stressed, so one obvious next step.
 ### 4a — Popups: driver detail + RTA report (2-up)
 
 ```text
+FILE NAME: 04a-driver-rta.png
 POPUPS over Screen 4, 2-up, 88% bottom sheets over the dimmed chat.
 LEFT, "Driver": sheet title "Taxi #DXB-4471", grey "Matched from your route and time". A large placeholder
 photo of the cream taxi, a driver portrait placeholder, "Imran K.", mono tag "driver en route", "ETA 12 min to
@@ -324,6 +342,7 @@ you tell me", buttons "Contact official lost & found", "Copy report".
 **Feeds:** Services list ("Talabat-normal"), category chips, rows, Me tab memory ("You told me"), permissions.
 
 ```text
+FILE NAME: 05-services-me.png
 SCREEN 5, 2-up: two full portrait screens side by side, no device frames.
 LEFT, Services tab active: large title "Services", grey lead "Each merchant opens as its own mini-app, inside a
 sandbox." A horizontal category segment: "Pharmacy" (selected, cyan fill), "Laundry", "Groceries", "Tailors".
@@ -340,6 +359,7 @@ green pill "You told me". "Permissions": "Trip reminders" green pill "On"; "Back
 ### 5a — Popups: merchant app + shop onboarding (2-up)
 
 ```text
+FILE NAME: 05a-merchant-onboarding.png
 POPUPS over the Services screen, 2-up, 88% bottom sheets.
 LEFT, merchant mini-app (their own branding): green #2F7D5B header "Palm Leaf Pharmacy", "Everyday medicines,
 delivered", chip "Delivering near you"; a 2-column grid of product tiles with an icon, name and "AED x (demo)"
@@ -357,6 +377,7 @@ operator approval.", a small phone preview thumbnail of the generated mini-app (
 ## 6 (optional) — Backstage operator console (desktop 16:10)
 
 ```text
+FILE NAME: 06-backstage.png
 Same product, a DESKTOP operator console beside the phone, 1600x1000 px, same palette and type. Title "Under
 the hood", sub "What the agent, the merchants and the sandbox are doing", a cyan "Restart demo" button. Panels
 in rounded #F2F2F7 cards: "Merchant inbox" (rows with request id, merchant, status tag, small Accept / Mark
