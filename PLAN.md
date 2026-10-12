@@ -1,6 +1,6 @@
 # Dubai-io — Plan
 
-**Updated:** 12 Oct 2026 · **Status:** **Plan v1.3.** Build starts when the founder asks · **Owner:** Haitham
+**Updated:** 12 Oct 2026 · **Status:** **Plan v1.4** (build plan for `apps/web` in §6) · **Owner:** Haitham
 This is the single plan. Scope, demo and phases live here, and nowhere else. (Decision log lives on `main`; `build` is code-only.)
 **Founder lock (10 Oct, final): bidding/quote is ABSOLUTELY REJECTED. Every service opens as a modal HTML mini-app (services / shops / stores / rides) with published fixed prices.**
 **Founder decision (12 Oct): the Resident/VIP arc (items 10–11) moves from LATER to IN, built after the visitor redesign. Providers answer slot/availability requests at published fixed prices. The quote lock above is unchanged.**
@@ -135,3 +135,106 @@ Rehearse 10×, record a fallback video, deck, deploy, small user test, honest me
 | 1 real merchant willing to answer on stage/video | Phase 3 | Clearly labelled sandbox merchant |
 | Real arrival-side airport maps or a redrawn schematic | Phase 2 | Generic step schematic (already in demo) |
 | Hosting + domain | Phase 5 | Local + tunnel |
+
+## 6. Redesign build plan (`apps/web`, Vite + React + TS)
+
+**Handoff for the build agent.** Read order: `CLAUDE.md` → this section → `demo/_ref/redesign.md` (prompts and exact copy) → the images in `demo/_ref/`. Branch `redesign`. This section replaces the Next.js front-end assumptions in Phases 1–3; the backend phases are unchanged. Build the **visitor redesign to parity first**, then the Resident/VIP arc (items 10–11).
+
+### 6.1 Definition of done
+
+- Runs in **iPhone Safari at 390 × 844**, and Add to Home Screen works. No native iOS build, no backend.
+- Same story as §3 (arrival → laundry deadline → taxi memory), plus Luna rows (community, shopping), the waypoint guide and the lost-item cash/card paths, all in the redesigned look.
+- Every rule in `CLAUDE.md` still holds (truth in status, fixed prices, sandbox, approvals, no government execution, no quotes).
+- Gates in 6.6 pass, with screenshots next to the reference images.
+
+### 6.2 Structure
+
+```
+apps/web/
+  index.html            viewport-fit=cover, theme-color, apple-mobile-web-app-*, apple-touch-icon (orb)
+  public/miniapps/      dxb-guide.html, community.html, shop.html, merchants (copy from demo/miniapps)
+  public/maps/          copy of demo/maps
+  src/styles/           tokens.css (demo/styles.css tokens + glass), base.css
+  src/data/             fixtures.ts  (from demo/data.js)
+  src/luna/             mock.ts      (from demo/luna.js, same understand() contract)
+  src/bridge/           host.ts (scopes, handler table), MiniAppSheet.tsx (iframe sandbox="allow-scripts")
+  src/state/            store.ts (one reducer or zustand; epoch guard, dedupe map)
+  src/components/       AppBar, AISearch, GlassTabBar, Composer, Bubble, Card, Chip, Pill, StatusTag, Sheet, Banner
+  src/screens/          Home, Chat, Services, Civic, Me, Backstage
+  src/flows/            journey, rows, join, purchase, recovery, triggers, laundry, tickets, faith
+```
+
+Dependencies: `react`, `react-dom`, `vite`, `typescript`, `vitest`, `@playwright/test` (+ `zustand` optional). Plain CSS (CSS modules). No UI kit, no router needed beyond screen state, no backend client.
+
+### 6.3 Reference map
+
+| Screen / state | Reference | Build as |
+|---|---|---|
+| Home, idle | `01-home.png`, left half of `01a-chat-takeover.png` | AISearch top, GlassTabBar, HeroCard, QuestionCard, TryAsking |
+| Chat active | right half of `01a-chat-takeover.png`, `02-rows.png` | compact header + back chevron, Composer replaces the tab bar, LunaChip, RowsCard |
+| Guide (built-in mini-app) | `01c-guide-states.png`; spec only: prompt 1b in `redesign.md` (no image for stop 1) | `dxb-guide.html`, restyled; stop media from `public/maps` |
+| Partner sheet | `02a-partner-sheet.png` | `community.html` (sign-in then signed in) |
+| Shop sheet | no image; derive from `02a` + prompt 2b | `shop.html` |
+| Approval + events | `03-approve-events.png` | ApprovalCard, StatusTrack, UpdateBubble, CalendarCard |
+| Banner | `03a-banner.png` (Home behind it must show the glass bar) | Banner |
+| Lost item | `04-lost-item.png`, `04a-driver-rta.png` | RecoveryFlow, DriverSheet, ReportSheet |
+| Services / Me | `05-services-me.png` (add AI search + glass bar per 6.4) | ServicesScreen, MeScreen |
+| Merchant + onboarding | `05a-merchant-onboarding.png` | merchant mini-app, shop review sheet |
+| Backstage (≥ 1100 px) | `06-backstage.png` | inbox, trigger panel, tools status, event log |
+| Arrival notification | `x-arrival-notification.png` | in-app Banner on first load (web cannot do Live Activities) |
+| First-run tour | `x-home-onboarding.png` | 3-step coach marks over the AI search |
+| Resident/VIP | R-series prompts, no images yet | after visitor parity |
+
+Ignore `demo/_ref/_rejected/`. Fix on the way: `06` shows the real brand "Carrefour Express" (use "Marina Fresh (demo)"); `00`'s button reads "Indoor nav" (use "Arrival guide"; no indoor-position claims).
+
+### 6.4 Navigation model (decided)
+
+1. **Idle:** AI search at the top, floating Liquid Glass tab bar (Companion, Services, Civic, Me) at the bottom, on every tab, no composer.
+2. **Chat active** (typed, or a suggestion tapped): compact header (back chevron, "Dubai-io", search icon); the glass **Composer replaces** the tab bar. Never show both.
+3. **Back chevron:** returns to idle.
+4. Sheets cover the bar; banners slide over the top.
+5. Companion keeps its label and the orb icon (as in the references). Rename to "Home" only if the founder says so.
+6. Home chrome follows `01a` (left); the skyline art lives inside the hero card, not as a full-bleed background.
+
+### 6.5 Port the logic, don't redesign it
+
+Source of truth for behaviour is `demo/app.js`, `demo/data.js`, `demo/luna.js`. Port as typed modules:
+
+| Behaviour | Demo source | Notes |
+|---|---|---|
+| Journey: setStep, confirmWaypoint, I'm lost | `app.js` journey section | state is host-owned, pushed down to the iframe |
+| Luna first, regex router as fallback | `luna.js`, composer `onsubmit` | keep confidence ≥ 0.6, 22 fallback cards |
+| Rows: community + shopping, sign-in, join approval, purchase event → calendar | `providerRows`, `joinApproval`, `purchaseReported`, `signIn` | prices `AED x (demo)`; dedupe by order ref |
+| Approval + fixed-order machine | `approval`, `createRequest`, `transition`, `FLOW`/`ALLOWED` | single approval, idempotent |
+| Laundry deadline loop | `laundryDeadline`, `laundryMerchantFlow` | no re-quote |
+| Recovery (card + cash, RTA report) | `recovery`, `traceByCard`, `traceByCash`, `rtaReport` | epoch guard; cash outcome alternates |
+| Triggers + dedupe 2500 ms | `TRIGGERS`, `fireTrigger` | same-window messages only |
+| Faith, parking, photo search, departure, day plan, tickets, onboarding sim | matching sections | keep fixtures |
+
+Bridge: scopes in each manifest AND a handler in the host table; unknown or out-of-scope kinds log `BLOCKED` and reply `host.error`. Sandbox stays `allow-scripts` only; no `allow-same-origin`.
+
+### 6.6 Build order and gates
+
+| Step | Build | Gate (Playwright iPhone profile, 390 px) |
+|---|---|---|
+| 0 | Scaffold, tokens, Home idle | matches `01-home` / `01a` left; glass bar visible; no composer |
+| 1 | Chat takeover, Luna, rows, partner + shop sheets | composer replaces bar; rows match `02`; sign-in → signed in; purchase → calendar card |
+| 2 | Guide, approvals + events, banner | six waypoints any order; belt saved; approval lists shared / never shared |
+| 3 | Recovery, Services / Me, merchant + onboarding | cash and card paths end at `READY` or `PREPARED_NOT_FILED`; order accepted → ready-time |
+| 4 | Backstage, tour, retouch list | triggers fire once; log filters |
+| 5 | Resident/VIP arc (R-series) | Gate R in §4 |
+
+Audits at every gate: bridge audit `rg "quote\.|QUOTED|cart\.request|rx\.request|pickup\.request|payment\.charge"` returns nothing · no `allow-same-origin` · every price says `(demo)` · status words only from the CLAUDE.md list · no real brands.
+
+### 6.7 iPhone requirements
+
+`viewport-fit=cover` and `env(safe-area-inset-*)` · `100dvh`, never `100vh` · `-webkit-backdrop-filter` beside `backdrop-filter` · inputs ≥ 16 px (no zoom) · `overscroll-behavior: none` on the shell · 44 px targets · no hover-only affordances · live compass needs HTTPS and a tap (`DeviceOrientationEvent.requestPermission`), so fall back to the manual bearing.
+
+View it: `cd apps/web && npm run dev -- --host`, then `http://10.5.3.228:5173` on the iPhone (same Wi-Fi; allow the Windows firewall prompt), then Share → Add to Home Screen. HTTPS (tunnel or deploy) only when testing the compass or sharing a link.
+
+### 6.8 Open items (defaults apply unless the founder overrides)
+
+- Missing references: `01b-guide` (stop 1 open) and `02b-shop-sheet`: derive from `01c` and `02a`.
+- Tab label **Companion** vs **Home**: default Companion.
+- Real Luna (LangGraph) stays behind `LUNA.understand`; no keys in the web app.
+- Out of scope here: backend, Arabic RTL, dark mode, real arrival-side maps and image licensing (retouch list in `redesign.md`).
