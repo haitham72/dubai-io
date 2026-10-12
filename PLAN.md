@@ -186,6 +186,7 @@ Dependencies (web): `react`, `react-dom`, `vite`, `typescript`, `vitest`, `@play
 | Backstage (≥ 1100 px) | `06-backstage.png` | inbox, trigger panel, tools status, event log |
 | Arrival notification | `x-arrival-notification.png` | in-app Banner on first load (web cannot do Live Activities) |
 | First-run tour | `x-home-onboarding.png` | 3-step coach marks over the AI search |
+| Dark theme + map pin + permission card | `x-location-geofence-darkmode.jpg` (Apple Find My / Maps screenshot, **style reference only**, third-party names must not appear) | dark token set (`prefers-color-scheme` + manual), guide lightbox pin with an "approximate" ring, Me → Permissions "Notifications are off" card, detail-sheet pattern (title, status, two actions) |
 | Resident/VIP | R-series prompts, no images yet | after visitor parity |
 
 Ignore `demo/_ref/_rejected/`. Fix on the way: `06` shows the real brand "Carrefour Express" (use "Marina Fresh (demo)"); `00`'s button reads "Indoor nav" (use "Arrival guide"; no indoor-position claims).
@@ -264,4 +265,6 @@ Purpose: real user-understanding behind `LUNA.understand`. The web app is still 
 - Missing references: `01b-guide` (stop 1 open) and `02b-shop-sheet`: derive from `01c` and `02a`.
 - Tab label **Companion** vs **Home**: default Companion.
 - No motion reference exists (the founder's "Wapi" example could not be identified): build from 6.8 and review on the phone; adjust easing and stagger by eye.
-- Out of scope here: memory persistence / checkpointer, Arabic RTL, dark mode, real arrival-side maps and image licensing (retouch list in `redesign.md`).
+- **Dark mode:** not in the first pass. Reference captured (`x-location-geofence-darkmode.jpg`); build tokens as CSS variables so a dark set drops in at step 4 if the founder says go.
+- **Location / geofencing:** the web app has no background geofencing (CLAUDE.md rule 8) and never claims an indoor position (rule 3). Proximity scenes stay operator-fired `Demo trigger`s; an optional foreground `navigator.geolocation` button may be added behind explicit consent, labelled as approximate. The pin on any map is a place the user confirmed.
+- Out of scope here: memory persistence / checkpointer, Arabic RTL, real arrival-side maps and image licensing (retouch list in `redesign.md`).
