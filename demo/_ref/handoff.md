@@ -69,9 +69,7 @@ Read `CLAUDE.md` → `PLAN.md` (§7) → `demo/_ref/services/cases.md` + `intake
 
 ## Pending / not finished
 
-1. **Republish both Artifacts.** These two lab edits are committed but not published:
-   - flat light grey/cyan user bubbles
-   - tapping the Dubai-io logo restarts the demo from the Wi-Fi landing
+1. ~~Republish~~ done (v4 has the flat bubbles and the logo restart).
 2. **Wire `chat.js` to `/api/luna/turn`:**
    - Call it when served from `/lab` on the API host, with a ~15 s timeout and the lab router as fallback.
    - Show "Luna · gpt-6-luna (high) · intent · ms".
@@ -89,4 +87,11 @@ Read `CLAUDE.md` → `PLAN.md` (§7) → `demo/_ref/services/cases.md` + `intake
 7. **Google Agent Platform / Agent Registry** (GA 18 Jun 2026): not adopted. Our agents are LangGraph in `apps/api`, and Google APIs are tools. Revisit only if we need A2A interop. The extra APIs enabled by its setup wizard (Compute Engine, Notebooks, Model Armor, …) are unused; the founder may disable them.
 8. **Vite + React port (`apps/web`)** of the picked shell and accepted cases: not started.
 9. **CLAUDE.md stack line still says Anthropic Claude.** The founder switched to OpenAI models on 13 Oct; the PLAN.md §6.9 note records it. Update the CLAUDE.md line when the founder confirms that is permanent.
-10. **Untracked:** `demo/_ref/01 - Visitor onboarding/` (founder ref). Commit it with the next commit.
+10. **WaveSpeed images:** the founder will provide the API later. Every slot in `demo/lab/media.json` has a `wavespeed_prompt` field (several still empty); swap images under the same slot ids and set `provenance: generated`. C1 candidate portraits go first.
+11. **How to start the demo:**
+    - tap the Dubai-io logo (top-left on Home, or in the chat header), or
+    - Me → "Replay landing and Wi-Fi sign-in", or
+    - add `#wifi` to the link.
+
+    A refresh skips the intro once it has been seen (stored per browser).
+12. **Untracked:** `demo/_ref/01 - Visitor onboarding/` (founder ref). Commit it with the next commit.

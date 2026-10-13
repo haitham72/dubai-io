@@ -317,7 +317,7 @@ Purpose: real user-understanding behind `LUNA.understand`. The web app is still 
 - **Surface:** glass category menu (All + categories + subcategories, searchable) · map ↔ list toggle (glyph pins / photo tiles) · one bottom sheet for any place.
   - The sheet shows: photo, name, category chip, ★ · Google, distance estimate, "Partner (demo)".
   - Its actions depend on what the provider supports: Directions / Call / Book / Order / Open app.
-- **Placement:** the Services tab opens it; cases open it pre-filtered. An ask with no matching category maps to the nearest one or "Other", and still shows results.
+- **Placement (updated 13 Oct):** the **Maps** tab opens this surface (near me); cases open it pre-filtered. An ask with no matching category maps to the nearest one or "Other", and still shows results. The **Services** tab is a separate path: competing providers (partner/merchant mini-apps, websites, marketplaces) with published offers and Best-price / Fastest badges; mini-apps open sandboxed and end in one approval. **io** is chat + cards; asking flies the cards up.
 - **Truth:** pins only from Places or partners; the user dot only with consent; Places on a Google Map with attribution (live).
 
 ### 7.4 The loop
