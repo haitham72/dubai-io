@@ -1,6 +1,6 @@
 # Dubai-io — Plan
 
-**Updated:** 13 Oct 2026 · **Status:** **Plan v1.5** (Home v2 + temporal profiler + services loop in §7) · **Owner:** Haitham
+**Updated:** 13 Oct 2026 (late) · **Status:** **Plan v1.5** · handoff: `demo/_ref/handoff.md` (Home v2 + temporal profiler + services loop in §7) · **Owner:** Haitham
 This is the single plan. Scope, demo and phases live here, and nowhere else. (Decision log lives on `main`; `build` is code-only.)
 **Founder lock (10 Oct, final): bidding/quote is ABSOLUTELY REJECTED. Every service opens as a modal HTML mini-app (services / shops / stores / rides) with published fixed prices.**
 **Founder decision (12 Oct): the Resident/VIP arc (items 10–11) moves from LATER to IN, built after the visitor redesign. Providers answer slot/availability requests at published fixed prices. The quote lock above is unchanged.**
@@ -270,7 +270,7 @@ Purpose: real user-understanding behind `LUNA.understand`. The web app is still 
 
 - **Endpoint:** `POST /luna/understand` with `{ text, context? }` → `{ intent, category, interests[], origin, item, trace, confidence, via, matched[] }`, **the same shape as `luna.js`**. Intents are a registry allowlist (`community.find`, `shopping.buy`, `lost_item.taxi`, `none`, later the resident/VIP intents). Luna returns understanding only; no actions, no HTML, no URLs (CLAUDE.md rule 7).
 - **Graph v1:** `normalize` (language, light transliteration) → `understand` (one LLM node, structured output with a Pydantic model) → `validate` (clamp to the allowlist, drop unknown slots, set `confidence`). Specialist subgraphs and a supervisor come later (see `ARCHITECTURE.md`: read-only and propose-only, no interrupt/resume).
-- **Config:** model from `LLM_MODEL`, key `ANTHROPIC_API_KEY` server-side only, never in the web bundle or in git; 3 s timeout; log text redacted.
+- **Config:** provider and model from config (`LLM_PROVIDER`, `LUNA_MODEL`, `LUNA_EFFORT`), keys server-side only, never in the web bundle or in git; log text redacted. **Founder decision 13 Oct: OpenAI `gpt-6-luna` (high reasoning) or `gpt-6.1-sol` (medium).** Slice built in `apps/api` (LangGraph, stated-fact memory, Places/Routes proxy); golden set 11/11 on both; latency 4–9 s per turn, so streaming or a cheaper first pass is needed (see `demo/_ref/handoff.md`).
 - **Web client:** `src/luna/client.ts` tries the API (`VITE_LUNA_URL`, via the Vite dev proxy `/api` so the iPhone needs no CORS or mixed-content), waits at most 2.5 s, then uses `mock.ts`. The log shows `via: langgraph` or `mock-luna`. Same dispatch, same 0.6 threshold, regex router still behind it.
 - **Run:** `uvicorn app.main:app --host 0.0.0.0 --port 8000` in `apps/api`; Vite proxies `/api` to it.
 - **Tests:** a golden set (the 19 router routes, community/shopping/lost phrasings, typos such as `egyutians` / `taksi`, Arabic) as pytest; a contract test against the TS type. The API is optional: all web gates must pass with it off.

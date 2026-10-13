@@ -3,4 +3,6 @@
 node_modules/
 __pycache__/
 opencode.json
-package-lock.json
+package-lock.jsonapps/api/.venv/
+apps/api/data/
+.pytest_cache/

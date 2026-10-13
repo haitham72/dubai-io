@@ -37,7 +37,7 @@ document.body.insertAdjacentHTML('beforeend', `
 <div id="app" class="mode-home ${reduced ? 'reduced' : ''}">
   <canvas id="gl" aria-hidden="true"></canvas>
   <header class="top">
-    <div class="brand"><b>Dubai-io</b><span class="area">${svg('pin', 'ic xs')} Dubai Marina · you told me</span></div>
+    <div class="brand"><button class="brand-btn" id="brandBtn" aria-label="Dubai-io. Tap to restart the demo"><b>Dubai-io</b></button><span class="area">${svg('pin', 'ic xs')} Dubai Marina · you told me</span></div>
     <span class="pill demo" title="Everything here is demo data">Demo data</span>
   </header>
   <main id="stage" aria-roledescription="carousel" aria-label="Home cards"></main>
@@ -47,7 +47,7 @@ document.body.insertAdjacentHTML('beforeend', `
   <section class="chatv" id="chat" aria-label="Chat">
     <div class="c-top">
       <button class="round glass" id="chatBack" aria-label="Back to cards">${svg('back')}</button>
-      <div class="c-title"><b>Dubai-io</b><span>Luna in this lab is a keyword router; the LangGraph service replaces it</span></div>
+      <div class="c-title"><button class="brand-btn" id="brandBtn2" aria-label="Dubai-io. Tap to restart the demo"><b>Dubai-io</b></button><span>Luna in this lab is a keyword router; the LangGraph service replaces it</span></div>
     </div>
     <div class="c-scroll" id="chatScroll"><div class="c-list" id="chatList"></div></div>
   </section>
@@ -720,6 +720,17 @@ function openMe() {
   $('#meIntro').addEventListener('click', () => { closeSheet(); setView('home'); startOnboarding(); });
   $('#meWifi').addEventListener('click', () => { closeSheet(); setView('home'); S.deck = []; stageEl.innerHTML = ''; railEl.innerHTML = ''; startArrival(() => startOnboarding()); });
 }
+
+// Tapping the Dubai-io logo restarts the demo from the airport Wi-Fi.
+function restartDemo() {
+  closeSheet(); closeOffers(); setView('home');
+  try { localStorage.removeItem('dubaiio.lab.onboarded'); } catch { /* private mode */ }
+  S.deck = []; stageEl.innerHTML = ''; railEl.innerHTML = ''; captionEl.textContent = '';
+  toast('Restarting the demo from landing.');
+  startArrival(() => startOnboarding());
+}
+$('#brandBtn').addEventListener('click', restartDemo);
+$('#brandBtn2').addEventListener('click', restartDemo);
 
 // ---------------------------------------------------------------- dev panels
 if (flags.has('fps')) $('#fps').hidden = false;
