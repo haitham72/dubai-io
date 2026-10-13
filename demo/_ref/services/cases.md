@@ -42,6 +42,7 @@ A case earns an entry only when it proves something the engine can't do yet (a n
 | C10 | Merchant joins from a price-list photo | `platform/onboarding/` ⚑ | onboarding | built (v1 demo) |
 | C11 | Share a video → map | `shops/coffee/` ✓ ref | video-ingest, map-browse | idea |
 | C12 | Pets: vet / 24h / pet shop / boarding / grooming / photo | `service/pets/` ✓ ref | map-browse, book-slot, route, bundle | idea |
+| C14 | Visitor arrival via a sponsored airport Wi-Fi page → Dubai-io intro | `companion/arrival-wifi/` ⚑ (ref: `../01 - Visitor onboarding/01 - visitor wifi.jpg`) | onboarding | built (lab) |
 | C13 | Food: share a photo/video or ask → recipe · videos · nearby restaurants · delivery apps with offers, **ranked by intent** | `shops/restaurants/` ✓ ref | video-ingest, intent-mix, nearby-rows, published-offer, handoff | idea · **needs plan change** |
 
 ⚑ = proposed new group (`companion/`, `platform/`) for things that are not merchant services. The founder confirms it before any folder is created. C4–C10 are specified in `PLAN.md` §3 and `../redesign.md`; their entries here stay short until one is picked.
@@ -191,6 +192,13 @@ status: idea · **needs plan change** · refs `shops/restaurants/` (`food.jpg`; 
 - Lab: scripted photo → "Looks like koshari" → 4 cards, with a time toggle (Fri 13:00 / Tue 22:40) that reorders them live.
 
 ---
+
+## C14 · Visitor arrival via sponsored airport Wi-Fi
+status: built (lab) · ref `../01 - Visitor onboarding/01 - visitor wifi.jpg` · scene `#wifi`
+
+- System notification "Sign in to Wi-Fi network" → captive-portal page → "Get online now" → a **Sponsored** Dubai-io card → "Open Dubai-io" → the soft card-by-card intro.
+- **Unbranded on purpose:** "Airport Free Wi-Fi (demo)", no airport or telecom logos (CLAUDE.md rule 5; a look-alike of a real operator's page would be impersonation). The sponsorship is a concept to pitch, not a claim.
+- A real captive-portal browser is limited and can only hand off to the app (App Store / web link); the lab shows the ideal path.
 
 ## Review log
 

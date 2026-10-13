@@ -1,12 +1,227 @@
 {
-  "_note": "Every image the lab shows. provenance: stock (Unsplash Licence: free to use, no attribution required) until WaveSpeed replaces a slot with provenance: generated, under the same slot id.",
-  "slots": [
-    { "id": "onboard.marina", "file": "media/marina.jpg", "subject": "Dubai Marina at night, dhows lit on the water", "source": "https://images.unsplash.com/photo-1761341063556-80cb742411b6", "licence": "Unsplash", "provenance": "stock", "wavespeed_prompt": "Dubai Marina at blue hour, lit dhows on calm water, towers soft in haze, cinematic, no logos" },
-    { "id": "service.home", "file": "media/home.jpg", "subject": "Bright living room (home help, maid hire)", "source": "https://images.unsplash.com/photo-1631510390389-c1e4fb20ff31", "licence": "Unsplash", "provenance": "stock", "wavespeed_prompt": "Sunlit Dubai apartment living room, white linen sofa, plants, calm morning light, no people" },
-    { "id": "shops.food", "file": "media/food.jpg", "subject": "Hummus and flatbread flat-lay", "source": "https://images.unsplash.com/photo-1697126248437-db26a30024c5", "licence": "Unsplash", "provenance": "stock", "wavespeed_prompt": "Top-down koshari bowl with crispy onions, tomato sauce on the side, soft daylight, stone table" },
-    { "id": "service.pets", "file": "media/pets.jpg", "subject": "A small white dog being groomed with scissors", "source": "https://images.unsplash.com/photo-1719464454959-9cf304ef4774", "licence": "Unsplash", "provenance": "stock", "wavespeed_prompt": "Groomer trimming a fluffy white dog, bright studio, shallow depth of field" },
-    { "id": "service.barber", "file": "media/barber.jpg", "subject": "Barber trimming a beard", "source": "https://images.unsplash.com/photo-1599011176306-4a96f1516d4d", "licence": "Unsplash", "provenance": "stock", "wavespeed_prompt": "Barber shaping a beard with scissors, warm shop light, no logos" },
-    { "id": "shops.coffee", "file": "media/coffee.jpg", "subject": "Espresso pouring from a portafilter", "source": "https://images.unsplash.com/photo-1609050471053-8636409f9f5b", "licence": "Unsplash", "provenance": "stock", "wavespeed_prompt": "Espresso extraction close-up, caramel crema, steel portafilter, soft backlight" },
-    { "id": "shops.cloth", "file": "media/cloth.jpg", "subject": "Rack of cyan and pastel t-shirts", "source": "https://images.unsplash.com/photo-1657651315305-a1b608182927", "licence": "Unsplash", "provenance": "stock", "wavespeed_prompt": "Rack of summer shirts in cyan and pastel tones, clean boutique, no brand tags" }
-  ]
+ "_note": "Every image the lab shows. provenance: stock (Unsplash Licence: free to use, no attribution required) until WaveSpeed replaces a slot with provenance: generated, under the same slot id.",
+ "slots": [
+  {
+   "id": "onboard.marina",
+   "file": "media/marina.jpg",
+   "subject": "Dubai Marina at night, dhows lit on the water",
+   "source": "https://images.unsplash.com/photo-1761341063556-80cb742411b6",
+   "licence": "Unsplash",
+   "provenance": "stock",
+   "wavespeed_prompt": "Dubai Marina at blue hour, lit dhows on calm water, towers soft in haze, cinematic, no logos"
+  },
+  {
+   "id": "service.home",
+   "file": "media/home.jpg",
+   "subject": "Bright living room (home help, maid hire)",
+   "source": "https://images.unsplash.com/photo-1631510390389-c1e4fb20ff31",
+   "licence": "Unsplash",
+   "provenance": "stock",
+   "wavespeed_prompt": "Sunlit Dubai apartment living room, white linen sofa, plants, calm morning light, no people"
+  },
+  {
+   "id": "shops.food",
+   "file": "media/food.jpg",
+   "subject": "Hummus and flatbread flat-lay",
+   "source": "https://images.unsplash.com/photo-1697126248437-db26a30024c5",
+   "licence": "Unsplash",
+   "provenance": "stock",
+   "wavespeed_prompt": "Top-down koshari bowl with crispy onions, tomato sauce on the side, soft daylight, stone table"
+  },
+  {
+   "id": "service.pets",
+   "file": "media/pets.jpg",
+   "subject": "A small white dog being groomed with scissors",
+   "source": "https://images.unsplash.com/photo-1719464454959-9cf304ef4774",
+   "licence": "Unsplash",
+   "provenance": "stock",
+   "wavespeed_prompt": "Groomer trimming a fluffy white dog, bright studio, shallow depth of field"
+  },
+  {
+   "id": "service.barber",
+   "file": "media/barber.jpg",
+   "subject": "Barber trimming a beard",
+   "source": "https://images.unsplash.com/photo-1599011176306-4a96f1516d4d",
+   "licence": "Unsplash",
+   "provenance": "stock",
+   "wavespeed_prompt": "Barber shaping a beard with scissors, warm shop light, no logos"
+  },
+  {
+   "id": "shops.coffee",
+   "file": "media/coffee.jpg",
+   "subject": "Espresso pouring from a portafilter",
+   "source": "https://images.unsplash.com/photo-1609050471053-8636409f9f5b",
+   "licence": "Unsplash",
+   "provenance": "stock",
+   "wavespeed_prompt": "Espresso extraction close-up, caramel crema, steel portafilter, soft backlight"
+  },
+  {
+   "id": "shops.cloth",
+   "file": "media/cloth.jpg",
+   "subject": "Rack of cyan and pastel t-shirts",
+   "source": "https://images.unsplash.com/photo-1657651315305-a1b608182927",
+   "licence": "Unsplash",
+   "provenance": "stock",
+   "wavespeed_prompt": "Rack of summer shirts in cyan and pastel tones, clean boutique, no brand tags"
+  },
+  {
+   "id": "places.airport-plane",
+   "file": "media/airport-plane.jpg",
+   "subject": "Plane taking off at sunset over an airport apron (unbranded)",
+   "source": "https://images.unsplash.com/photo-1583150647472-d239652a12f5",
+   "licence": "Unsplash",
+   "provenance": "stock",
+   "wavespeed_prompt": ""
+  },
+  {
+   "id": "places.cafe-counter",
+   "file": "media/cafe-counter.jpg",
+   "subject": "Modern coffee shop with a curved counter",
+   "source": "https://images.unsplash.com/photo-1567880905822-56f8e06fe630",
+   "licence": "Unsplash",
+   "provenance": "stock",
+   "wavespeed_prompt": ""
+  },
+  {
+   "id": "places.cafe-bulbs",
+   "file": "media/cafe-bulbs.jpg",
+   "subject": "Cafe interior with hanging bulbs",
+   "source": "https://images.unsplash.com/photo-1511081692775-05d0f180a065",
+   "licence": "Unsplash",
+   "provenance": "stock",
+   "wavespeed_prompt": ""
+  },
+  {
+   "id": "places.rest-water",
+   "file": "media/rest-water.jpg",
+   "subject": "Restaurant with a view of the water",
+   "source": "https://images.unsplash.com/photo-1559339352-11d035aa65de",
+   "licence": "Unsplash",
+   "provenance": "stock",
+   "wavespeed_prompt": ""
+  },
+  {
+   "id": "places.rest-room",
+   "file": "media/rest-room.jpg",
+   "subject": "Restaurant interior",
+   "source": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4",
+   "licence": "Unsplash",
+   "provenance": "stock",
+   "wavespeed_prompt": ""
+  },
+  {
+   "id": "places.shawarma",
+   "file": "media/shawarma.jpg",
+   "subject": "Beef shawarma",
+   "source": "https://images.unsplash.com/photo-1529006557810-274b9b2fc783",
+   "licence": "Unsplash",
+   "provenance": "stock",
+   "wavespeed_prompt": ""
+  },
+  {
+   "id": "places.spread",
+   "file": "media/spread.jpg",
+   "subject": "Middle Eastern spread on a table",
+   "source": "https://images.unsplash.com/photo-1748540459503-19efc015143b",
+   "licence": "Unsplash",
+   "provenance": "stock",
+   "wavespeed_prompt": ""
+  },
+  {
+   "id": "places.grill",
+   "file": "media/grill.jpg",
+   "subject": "Mixed grill platter",
+   "source": "https://images.unsplash.com/photo-1555939594-58d7cb561ad1",
+   "licence": "Unsplash",
+   "provenance": "stock",
+   "wavespeed_prompt": ""
+  },
+  {
+   "id": "places.vet",
+   "file": "media/vet.jpg",
+   "subject": "Veterinarian examining a dachshund",
+   "source": "https://images.unsplash.com/photo-1770836037793-95bdbf190f71",
+   "licence": "Unsplash",
+   "provenance": "stock",
+   "wavespeed_prompt": ""
+  },
+  {
+   "id": "places.puppy",
+   "file": "media/puppy.jpg",
+   "subject": "Pomeranian puppy on a blue blanket",
+   "source": "https://images.unsplash.com/photo-1588626863948-1d7978596f17",
+   "licence": "Unsplash",
+   "provenance": "stock",
+   "wavespeed_prompt": ""
+  },
+  {
+   "id": "places.laundry",
+   "file": "media/laundry.jpg",
+   "subject": "Stack of folded shirts",
+   "source": "https://images.unsplash.com/photo-1635274605638-d44babc08a4f",
+   "licence": "Unsplash",
+   "provenance": "stock",
+   "wavespeed_prompt": ""
+  },
+  {
+   "id": "places.laundry-shelf",
+   "file": "media/laundry-shelf.jpg",
+   "subject": "Shelf of folded shirts",
+   "source": "https://images.unsplash.com/photo-1700659392887-0a026c53f8e2",
+   "licence": "Unsplash",
+   "provenance": "stock",
+   "wavespeed_prompt": ""
+  },
+  {
+   "id": "places.ac",
+   "file": "media/ac.jpg",
+   "subject": "Wall air conditioner at 22 degrees",
+   "source": "https://images.unsplash.com/photo-1762341123870-d706f257a12e",
+   "licence": "Unsplash",
+   "provenance": "stock",
+   "wavespeed_prompt": ""
+  },
+  {
+   "id": "places.barber-dark",
+   "file": "media/barber-dark.jpg",
+   "subject": "Barber at work, low light",
+   "source": "https://images.unsplash.com/photo-1503951914875-452162b0f3f1",
+   "licence": "Unsplash",
+   "provenance": "stock",
+   "wavespeed_prompt": ""
+  },
+  {
+   "id": "places.home-green",
+   "file": "media/home-green.jpg",
+   "subject": "Bright living room with green cushions",
+   "source": "https://images.unsplash.com/photo-1615800002234-05c4d488696c",
+   "licence": "Unsplash",
+   "provenance": "stock",
+   "wavespeed_prompt": ""
+  },
+  {
+   "id": "places.shoes",
+   "file": "media/shoes.jpg",
+   "subject": "Espadrilles and a straw hat",
+   "source": "https://images.unsplash.com/photo-1565953198075-db265882ee68",
+   "licence": "Unsplash",
+   "provenance": "stock",
+   "wavespeed_prompt": ""
+  },
+  {
+   "id": "places.marina-night",
+   "file": "media/marina-night.jpg",
+   "subject": "Dubai Marina towers at night",
+   "source": "https://images.unsplash.com/photo-1527354711091-dfe0e5f699be",
+   "licence": "Unsplash",
+   "provenance": "stock",
+   "wavespeed_prompt": ""
+  }
+ ],
+ "map": {
+  "file": "fixtures/dubai-map.json",
+  "source": "OpenStreetMap via Overpass API, extracted 13 Oct 2026, simplified",
+  "licence": "ODbL 1.0 — attribution: © OpenStreetMap contributors",
+  "provenance": "official_open_data"
+ }
 }

@@ -198,7 +198,7 @@ labelled "Demo trigger")                                ▼
 
 ## 9. Frontend
 
-- Tabs: **Companion · Services · Civic · Me**. `Services` is a browse view backed by the same registry search the agent uses. `Civic` contains only Guides for MVP. Other civic sub-tabs show `Pilot`. Community is not in the nav.
+- Tabs (13 Oct): **io · Maps · Services · Me**. `io` is Home (card stage + composer); `Maps` is the full-screen map with floating glass menus and a results sheet; `Services` is a grid generated from the category registry; `Me` holds the profile. Civic is not in the nav (LATER). Community is not in the nav.
 - Card renderer: a `switch` on `card.type` over a component registry. Unknown types fall back to `text_note`. Validation is generated from the contracts.
 - Visual system (founder decision 9 Oct, replaces Editorial Luxury gold): **iOS light mode with a cyan tint**. System font (SF Pro / -apple-system), grouped background `#F2F2F7`, white cards radius 16px, separators `#E5E5EA`, tint `#0A9CC2`, iMessage-style bubbles (bot `#E9E9EB`, user = tint). Merchant mini-apps keep their own branding. Reference implementation: `demo/styles.css`. Required pills: `Demo data`, `Sandbox`, `User-supplied`, `Estimate`, `Demo trigger`, `Official source`.
 - RTL readiness: use logical CSS properties (`margin-inline-start`) from day one. A full Arabic UI is a stretch goal.

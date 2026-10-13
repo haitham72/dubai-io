@@ -81,6 +81,7 @@ export const PROFILE_CARD = {
 export const CATEGORIES = [
   { id: 'pets', group: 'service', label: 'Pets', glyph: 'paw', case: 'C12',
     subs: ['Vet', '24h', 'Pet shop', 'Boarding', 'Grooming', 'Photo'],
+    subKeys: { Grooming: ['groom', 'bath', 'trim'], Vet: ['vet', 'check-up', 'checkup', 'vaccin', 'sick'], '24h': ['urgent', 'emergency'], Boarding: ['board', 'holiday'], Photo: ['photo'] },
     keywords: ['pet', 'dog', 'cat', 'puppy', 'vet', 'groom', 'boarding', 'kennel'] },
   { id: 'food', group: 'shops', label: 'Food', glyph: 'fork', case: 'C13',
     subs: ['Restaurants', 'Delivery'],
@@ -99,27 +100,7 @@ export const CATEGORIES = [
     subs: ['AC', 'Plumbing', 'Electrical'], keywords: ['ac', 'fix', 'plumber', 'leak', 'electric', 'repair', 'broken'] },
 ];
 
-// x, y are positions on the stylised lab map (0..1). Not real coordinates.
-const ph = '+971 4 000 0000';
-export const PLACES = [
-  { id: 'p1', cat: 'pets', sub: 'Grooming', name: 'Paws & Co. Grooming', partner: true, rating: 4.8, count: 214, area: 'Dubai Marina', km: 0.7, x: 0.30, y: 0.42, img: 'media/pets.jpg', price: 'Bath + trim, medium dog · AED 180 (demo)', actions: ['directions', 'call', 'book'] },
-  { id: 'p2', cat: 'pets', sub: 'Vet', name: 'Marina Vet Clinic', partner: true, rating: 4.7, count: 389, area: 'Dubai Marina', km: 1.1, x: 0.22, y: 0.55, img: null, price: 'Wellness check · AED 250 (demo)', actions: ['directions', 'call', 'book'] },
-  { id: 'p3', cat: 'pets', sub: '24h', name: '24h Pet Care', partner: false, rating: 4.5, count: 97, area: 'JLT', km: 2.3, x: 0.47, y: 0.33, img: null, actions: ['directions', 'call'] },
-  { id: 'p4', cat: 'pets', sub: 'Pet shop', name: 'Pet Corner', partner: false, rating: 4.4, count: 152, area: 'JLT', km: 2.0, x: 0.55, y: 0.40, img: null, actions: ['directions', 'call'] },
-  { id: 'p5', cat: 'pets', sub: 'Boarding', name: 'Happy Tails Boarding', partner: false, rating: 4.6, count: 61, area: 'Al Barsha', km: 4.8, x: 0.74, y: 0.58, img: null, actions: ['directions', 'call'] },
-  { id: 'p6', cat: 'barber', name: 'Fade Factory', partner: true, rating: 4.8, count: 312, area: 'Dubai Marina', km: 0.6, x: 0.34, y: 0.50, img: 'media/barber.jpg', price: 'Cut + beard · AED 90 (demo, published bundle)', actions: ['directions', 'call', 'book'] },
-  { id: 'p7', cat: 'barber', name: 'Al Barsha Gents', partner: false, rating: 4.6, count: 128, area: 'Al Barsha', km: 1.1, x: 0.66, y: 0.52, img: null, actions: ['directions', 'call'] },
-  { id: 'p8', cat: 'barber', name: 'Marina Blade', partner: false, rating: 4.7, count: 205, area: 'Dubai Marina', km: 2.0, x: 0.26, y: 0.36, img: null, actions: ['directions', 'call'] },
-  { id: 'p9', cat: 'food', sub: 'Restaurants', name: 'Koshari Corner', partner: true, rating: 4.6, count: 540, area: 'Al Barsha', km: 3.1, x: 0.70, y: 0.45, img: 'media/food.jpg', price: 'Koshari, large · AED 32 (demo)', actions: ['directions', 'call', 'order'] },
-  { id: 'p10', cat: 'food', sub: 'Delivery', name: 'Plate Run', partner: false, rating: 4.3, count: 2100, area: 'Delivery app', km: null, x: 0.50, y: 0.62, img: null, price: '15% off first order · as of 13 Oct (demo)', actions: ['app'] },
-  { id: 'p11', cat: 'coffee', name: 'Bean Theory', partner: true, rating: 4.7, count: 433, area: 'Al Quoz', km: 6.2, x: 0.86, y: 0.40, img: 'media/coffee.jpg', price: 'Flat white · AED 22 (demo)', actions: ['directions', 'call', 'order'] },
-  { id: 'p12', cat: 'coffee', name: 'Third Wave Lab', partner: false, rating: 4.5, count: 187, area: 'JLT', km: 2.1, x: 0.51, y: 0.27, img: null, actions: ['directions', 'call'] },
-  { id: 'p13', cat: 'home-help', sub: 'Maid', name: 'Nest Helpers', partner: true, rating: 4.5, count: 76, area: 'Al Barsha', km: 3.9, x: 0.62, y: 0.66, img: 'media/home.jpg', price: 'Filipina placement · AED 6,400 · 9 days (demo)', actions: ['directions', 'call', 'book'] },
-  { id: 'p14', cat: 'home-help', sub: 'Visa services', name: 'Marina Typing', partner: true, rating: 4.4, count: 58, area: 'Dubai Marina', km: 0.9, x: 0.37, y: 0.60, img: null, price: 'Domestic worker visa pack · AED 2,890 · 6 days (demo)', actions: ['directions', 'call', 'book'] },
-  { id: 'p15', cat: 'laundry', name: 'Marina Express Laundry', partner: true, rating: 4.6, count: 301, area: 'Dubai Marina', km: 0.4, x: 0.31, y: 0.47, img: null, price: 'Shirt pressed · AED 8 (demo)', actions: ['directions', 'call', 'order'] },
-  { id: 'p16', cat: 'clothing', name: 'Centre Style', partner: false, rating: 4.2, count: 860, area: 'Mall (demo)', km: 3.4, x: 0.58, y: 0.48, img: 'media/cloth.jpg', actions: ['directions', 'app'] },
-  { id: 'p17', cat: 'fix-it', sub: 'AC', name: 'Al Barsha Cooling', partner: false, rating: 4.5, count: 92, area: 'Al Barsha', km: 3.6, x: 0.68, y: 0.38, img: null, price: 'AC check · from AED 120 (demo)', actions: ['directions', 'call'] },
-].map(p => ({ ...p, phone: ph }));
+export { PLACES, HOME, AREA_LABELS, SOURCES } from './places.js';
 
 // ---------- Profile episodes (scripted timeline, Oct 2026) ----------
 // kind: told | choice | view | order | visit | share. ev: evidence for hypotheses.

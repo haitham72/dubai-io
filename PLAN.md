@@ -75,6 +75,7 @@ One visitor, one continuous story: **an independent laundry with a deadline** (s
 
 | Objection | Answer |
 |---|---|
+| Google Maps already has Ask Maps (Gemini, Mar 2026) | Ask Maps answers place questions with a personalised map, and coverage reports no booking or acting for you. It launched in the US + India; nothing found for the UAE. Dubai-io follows through: a fixed-price order to the merchant, your approval of what is shared, merchant-confirmed status, and a profile you can see and forget |
 | What does this add to DubaiNow / Careem / talabat / ChatGPT? | Continuity: the same companion carries your context into a local merchant's fixed order and ready-time confirmation, and you approve what leaves the chat. We don't claim they lack AI or memory |
 | Where's the agency beyond buttons? | It holds the deadline, checks a fixed ready-time against it and proposes the next step (no price negotiation) |
 | Why keep it after the airport? | Arrival is the introduction; repeat local requests reuse your preferences and history |
@@ -169,7 +170,7 @@ apps/web/
   src/bridge/           host.ts (scopes, handler table), MiniAppSheet.tsx (iframe sandbox="allow-scripts")
   src/state/            store.ts (one reducer or zustand; epoch guard, dedupe map)
   src/components/       AppBar, AISearch, GlassTabBar, Composer, Bubble, Card, Chip, Pill, StatusTag, Sheet, Banner
-  src/screens/          Home, Chat, Services, Civic, Me, Backstage
+  src/screens/          io (Home), Maps, Services, Me, Backstage
   src/flows/            journey, rows, join, purchase, recovery, triggers, laundry, tickets, faith
 apps/api/               Luna only: FastAPI + LangGraph (6.9). Not needed to run the web app
 ```
@@ -203,7 +204,7 @@ Ignore `demo/_ref/_rejected/`. Fix on the way: `06` shows the real brand "Carref
 
 ### 6.4 Navigation model (decided)
 
-1. **Idle:** AI search at the top, floating Liquid Glass tab bar (Companion, Services, Civic, Me) at the bottom, on every tab, no composer.
+1. **Idle (13 Oct):** brand row on top, the **composer docked at the bottom** above a floating Liquid Glass tab bar **io · Maps · Services · Me** (Civic removed from the nav; civic stays LATER). Asking flies the Home cards up into the full-screen map (§7.3).
 2. **Chat active** (typed, or a suggestion tapped): compact header (back chevron, "Dubai-io", search icon); the glass **Composer replaces** the tab bar. Never show both.
 3. **Back chevron:** returns to idle.
 4. Sheets cover the bar; banners slide over the top.
