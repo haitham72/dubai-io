@@ -1,0 +1,12 @@
+{
+  "_note": "Every image the lab shows. provenance: stock (Unsplash Licence: free to use, no attribution required) until WaveSpeed replaces a slot with provenance: generated, under the same slot id.",
+  "slots": [
+    { "id": "onboard.marina", "file": "media/marina.jpg", "subject": "Dubai Marina at night, dhows lit on the water", "source": "https://images.unsplash.com/photo-1761341063556-80cb742411b6", "licence": "Unsplash", "provenance": "stock", "wavespeed_prompt": "Dubai Marina at blue hour, lit dhows on calm water, towers soft in haze, cinematic, no logos" },
+    { "id": "service.home", "file": "media/home.jpg", "subject": "Bright living room (home help, maid hire)", "source": "https://images.unsplash.com/photo-1631510390389-c1e4fb20ff31", "licence": "Unsplash", "provenance": "stock", "wavespeed_prompt": "Sunlit Dubai apartment living room, white linen sofa, plants, calm morning light, no people" },
+    { "id": "shops.food", "file": "media/food.jpg", "subject": "Hummus and flatbread flat-lay", "source": "https://images.unsplash.com/photo-1697126248437-db26a30024c5", "licence": "Unsplash", "provenance": "stock", "wavespeed_prompt": "Top-down koshari bowl with crispy onions, tomato sauce on the side, soft daylight, stone table" },
+    { "id": "service.pets", "file": "media/pets.jpg", "subject": "A small white dog being groomed with scissors", "source": "https://images.unsplash.com/photo-1719464454959-9cf304ef4774", "licence": "Unsplash", "provenance": "stock", "wavespeed_prompt": "Groomer trimming a fluffy white dog, bright studio, shallow depth of field" },
+    { "id": "service.barber", "file": "media/barber.jpg", "subject": "Barber trimming a beard", "source": "https://images.unsplash.com/photo-1599011176306-4a96f1516d4d", "licence": "Unsplash", "provenance": "stock", "wavespeed_prompt": "Barber shaping a beard with scissors, warm shop light, no logos" },
+    { "id": "shops.coffee", "file": "media/coffee.jpg", "subject": "Espresso pouring from a portafilter", "source": "https://images.unsplash.com/photo-1609050471053-8636409f9f5b", "licence": "Unsplash", "provenance": "stock", "wavespeed_prompt": "Espresso extraction close-up, caramel crema, steel portafilter, soft backlight" },
+    { "id": "shops.cloth", "file": "media/cloth.jpg", "subject": "Rack of cyan and pastel t-shirts", "source": "https://images.unsplash.com/photo-1657651315305-a1b608182927", "licence": "Unsplash", "provenance": "stock", "wavespeed_prompt": "Rack of summer shirts in cyan and pastel tones, clean boutique, no brand tags" }
+  ]
+}

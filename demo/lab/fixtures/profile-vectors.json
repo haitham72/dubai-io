@@ -1,0 +1,24 @@
+{
+  "_note": "Hand-computed expectations for the temporal math (ARCHITECTURE.md §12.3). The JS lab (tests/profile.test.mjs) and the future Python profiler must both pass these. Prior = 1; times in days from t0.",
+  "decay": [
+    { "value": 5, "days": 90, "half_life": 90, "expect": 3 },
+    { "value": 3, "days": 0, "half_life": 90, "expect": 3 },
+    { "value": 9, "days": 180, "half_life": 90, "expect": 3 },
+    { "value": 1, "days": 400, "half_life": 30, "expect": 1 }
+  ],
+  "belief": [
+    { "name": "two choices, same moment", "half_life": 90, "evidence": [[0, 2], [0, 2]], "as_of": 0, "expect": { "alpha": 5, "beta": 1, "conf": 0.833333, "n": 2 } },
+    { "name": "one choice, read one half-life later", "half_life": 90, "evidence": [[0, 2]], "as_of": 90, "expect": { "alpha": 2, "beta": 1, "conf": 0.666667, "n": 1 } },
+    { "name": "dismissal goes to beta", "half_life": 90, "evidence": [[0, -1]], "as_of": 0, "expect": { "alpha": 1, "beta": 2, "conf": 0.333333, "n": 1 } },
+    { "name": "evidence after as_of is ignored", "half_life": 90, "evidence": [[0, 2], [10, 2]], "as_of": 5, "expect": { "alpha": 2.924448, "beta": 1, "conf": 0.745183, "n": 1 } }
+  ],
+  "tiers": [
+    { "provenance": "inferred", "use": "rerank", "expect": true },
+    { "provenance": "inferred", "use": "prefill", "expect": false },
+    { "provenance": "inferred", "use": "approval", "expect": false },
+    { "provenance": "inferred", "use": "proactive", "expect": false },
+    { "provenance": "user_supplied", "use": "prefill", "expect": true },
+    { "provenance": "user_supplied", "use": "status", "expect": false },
+    { "provenance": "inferred", "use": "status", "expect": false }
+  ]
+}
