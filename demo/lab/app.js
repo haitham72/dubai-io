@@ -1,14 +1,20 @@
-// Home v2 lab. Flow: airport Wi-Fi portal (sponsored card) -> soft card-by-card
-// intro -> Home coverflow with the composer at the bottom -> ask for a service
-// -> cards fly up and dissolve -> full-screen map with floating glass menus and
-// a draggable results sheet (Uber / Talabat style).
+// Home v2 lab. Flow: iPhone Wi-Fi sign-in -> install + open Dubai-io -> soft
+// card-by-card intro -> io: card stage + chat with the composer at the bottom.
+// Asking lifts the cards away into the chat; the answer can be a recovery
+// report, the airport guide, competing service offers (Services) or places
+// near you (Maps, full-screen).
 // Flags (query or hash, hash tokens joined by '.'): fps, tune, nogl, intro,
-// wifi, services, profile.
+// wifi, services, maps, guide, profile.
 import { createRenderer } from './gl.js';
 import { VARIANT } from './shaders.js';
 import { PALETTES, ONBOARDING, CASES, PROFILE_CARD, CATEGORIES, PLACES, SOURCES, EPISODES, HYPOTHESES, TOLD_LABELS } from './data.js';
 import { profileAt } from './profile.js';
 import { createMap, km } from './map.js';
+import { $, svg, esc, toast, openSheet, closeSheet, reduced } from './ui.js';
+import { initChat, wireChat, handle, post, update, hasThread } from './chat.js';
+import { initOffers, wireOffers, openOffers, closeOffers, renderServiceGrid } from './offers.js';
+import { startGuide, wireGuide } from './guide.js';
+import { startArrival } from './arrival.js';
 
 // ---------------------------------------------------------------- setup
 const flags = (() => {
@@ -19,47 +25,10 @@ const flags = (() => {
 })();
 const paletteName = window.PALETTE in PALETTES ? window.PALETTE : 'cyan';
 const palette = PALETTES[paletteName];
-const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const store = {
   get(k) { try { return localStorage.getItem('dubaiio.lab.' + k); } catch { return null; } },
   set(k, v) { try { localStorage.setItem('dubaiio.lab.' + k, v); } catch { /* private mode */ } },
 };
-
-const ICON = {
-  orb: '<circle cx="12" cy="12" r="8" /><path d="M8.5 13.5c1.8 1.6 5.2 1.6 7 0" />',
-  grid: '<rect x="4" y="4" width="7" height="7" rx="2" /><rect x="13" y="4" width="7" height="7" rx="2" /><rect x="4" y="13" width="7" height="7" rx="2" /><rect x="13" y="13" width="7" height="7" rx="2" />',
-  civic: '<path d="M4 20h16M6 20v-8M10 20v-8M14 20v-8M18 20v-8M3 10l9-6 9 6z" />',
-  person: '<circle cx="12" cy="8" r="4" /><path d="M4.5 20c1.4-3.6 4.2-5.4 7.5-5.4s6.1 1.8 7.5 5.4" />',
-  arrow: '<path d="M5 12h14M13 6l6 6-6 6" />',
-  up: '<path d="M12 19V5M6 11l6-6 6 6" />',
-  back: '<path d="M15 5l-7 7 7 7" />',
-  mic: '<rect x="9" y="3" width="6" height="11" rx="3" /><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21" />',
-  wifi: '<path d="M2.5 9a14 14 0 0 1 19 0M5.5 12.2a9.5 9.5 0 0 1 13 0M8.6 15.4a5 5 0 0 1 6.8 0" /><circle cx="12" cy="18.6" r="1.1" />',
-  check: '<path d="M5 12.5l4.2 4.2L19 7" />',
-  lock: '<rect x="5" y="10.5" width="14" height="10" rx="2.5" /><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" />',
-  play: '<path d="M8 5.5v13l11-6.5z" />',
-  star: '<path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.8L12 16.9 6.8 19.6l1-5.8L3.5 9.7l5.9-.8z" />',
-  paw: '<circle cx="7" cy="9" r="1.8" /><circle cx="11" cy="6" r="1.8" /><circle cx="15.5" cy="7" r="1.8" /><circle cx="18" cy="11" r="1.6" /><path d="M8.5 17.5c0-3 2-5.5 4.2-5.5 2.4 0 4.3 2.5 4.3 5.2 0 2-1.6 2.6-4.2 2.3-2.4.3-4.3.2-4.3-2z" />',
-  fork: '<path d="M7 3v8M5 3v5a2 2 0 0 0 4 0V3M7 11v10M17 3c-2 1-3 3.5-3 6.5V13h3v8" />',
-  cup: '<path d="M4 9h12v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5zM16 10h1.5a2.5 2.5 0 0 1 0 5H16M8 3c-.8 1 .8 2 0 3M12 3c-.8 1 .8 2 0 3" />',
-  scissors: '<circle cx="6" cy="7" r="2.6" /><circle cx="6" cy="17" r="2.6" /><path d="M8.2 8.4L20 17M8.2 15.6L20 7" />',
-  home: '<path d="M4 11l8-7 8 7M6 9.5V20h12V9.5M10 20v-5h4v5" />',
-  drop: '<path d="M12 3c3 4 6 7 6 11a6 6 0 0 1-12 0c0-4 3-7 6-11z" />',
-  bag: '<path d="M5 8h14l-1 12H6zM9 8V6a3 3 0 0 1 6 0v2" />',
-  wrench: '<path d="M14.5 6.5a4 4 0 0 0 5 5L13 18a2.1 2.1 0 0 1-3-3l6.5-6.5a4 4 0 0 0-5-5l2.5 2.5-1.5 1.5z" />',
-  dots: '<circle cx="6" cy="12" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="18" cy="12" r="1.6" />',
-  pin: '<path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z" /><circle cx="12" cy="10" r="2.3" />',
-  nav: '<path d="M4 11.5L20 4l-7.5 16-1.8-6.7z" />',
-  phone: '<path d="M6.5 3.5h3l1.5 4-2 1.5a11 11 0 0 0 6 6l1.5-2 4 1.5v3a2 2 0 0 1-2 2A16 16 0 0 1 4.5 5.5a2 2 0 0 1 2-2z" />',
-  cal: '<rect x="4" y="5" width="16" height="15" rx="2.5" /><path d="M4 10h16M9 3v4M15 3v4" />',
-  app: '<rect x="6" y="3" width="12" height="18" rx="3" /><path d="M10.5 18h3" />',
-  clock: '<circle cx="12" cy="12" r="8.5" /><path d="M12 7.5V12l3 2" />',
-  map: '<path d="M9 4.5L3.5 6.5v13l5.5-2 6 2 5.5-2v-13l-5.5 2z" /><path d="M9 4.5v13M15 6.5v13" />',
-  spark: '<path d="M12 3v5M12 16v5M3 12h5M16 12h5M6 6l3 3M15 15l3 3M18 6l-3 3M9 15l-3 3" />',
-};
-const svg = (name, cls = 'ic') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICON[name] || ICON.dots}</svg>`;
-const $ = (s, r = document) => r.querySelector(s);
-const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const catOf = id => CATEGORIES.find(c => c.id === id);
 const fmtN = n => n.toLocaleString('en-US');
 
@@ -75,11 +44,19 @@ document.body.insertAdjacentHTML('beforeend', `
   <nav class="rail" id="rail" aria-label="Cards"></nav>
   <p class="caption" id="caption" aria-live="polite"></p>
 
-  <section id="results" class="results" aria-label="Services map">
+  <section class="chatv" id="chat" aria-label="Chat">
+    <div class="c-top">
+      <button class="round glass" id="chatBack" aria-label="Back to cards">${svg('back')}</button>
+      <div class="c-title"><b>Dubai-io</b><span>Luna in this lab is a keyword router; the LangGraph service replaces it</span></div>
+    </div>
+    <div class="c-scroll" id="chatScroll"><div class="c-list" id="chatList"></div></div>
+  </section>
+
+  <section id="results" class="results" aria-label="Map near you">
     <div id="mapEl" class="mapbox"></div>
     <div class="map-fallback" id="mapFallback" hidden>Map needs WebGL. The list below has every place.</div>
     <div class="r-top">
-      <button class="round glass" id="back" aria-label="Back to Home">${svg('back')}</button>
+      <button class="round glass" id="back" aria-label="Back">${svg('back')}</button>
       <div class="ask glass" id="ask" hidden></div>
       <span class="pill demo">Demo data</span>
     </div>
@@ -91,9 +68,14 @@ document.body.insertAdjacentHTML('beforeend', `
     </section>
   </section>
 
+  <section class="svcgrid" id="svcGrid" aria-label="Services">
+    <div class="sg-head"><h2>Services</h2><p>Providers compete for each service: partner mini-apps, websites and marketplaces, at their published prices. Places near you live in Maps.</p></div>
+    <div class="sg-grid" id="sgGrid"></div>
+  </section>
+
   <form class="composer glass" id="composer" role="search" autocomplete="off">
     <label class="sr" for="q">Ask Dubai-io</label>
-    <input id="q" name="q" type="text" placeholder="Ask for anything nearby" enterkeyhint="send" />
+    <input id="q" name="q" type="text" placeholder="Ask Dubai-io" enterkeyhint="send" />
     <button type="button" class="c-mic" id="mic" aria-label="Voice (typed in this lab)">${svg('mic', 'ic sm')}</button>
     <button type="submit" class="c-send" aria-label="Send">${svg('up', 'ic sm')}</button>
   </form>
@@ -105,9 +87,17 @@ document.body.insertAdjacentHTML('beforeend', `
     <button data-tab="me">${svg('person')}<span>Me</span></button>
   </nav>
 
-  <section class="svcgrid" id="svcGrid" aria-label="Services">
-    <div class="sg-head"><h2>Services</h2><p>Everything Dubai-io can find for you near Dubai Marina. New categories arrive as data, so this grid grows on its own.</p></div>
-    <div class="sg-grid" id="sgGrid"></div>
+  <section class="offers" id="offers" aria-label="Offers">
+    <div class="of-top"><button class="round glass" id="offersBack" aria-label="Back">${svg('back')}</button><span class="pill demo">Demo data</span></div>
+    <div class="of-scroll" id="offersScroll"><div id="offersHead" class="of-head"></div><div id="offersList" class="of-list"></div><p class="fine of-fine" id="offersFine"></p></div>
+  </section>
+
+  <section class="guide" id="guide" aria-label="Airport guide">
+    <div class="g-top"><button class="round glass" id="gClose" aria-label="Close guide">${svg('close')}</button>
+      <div class="g-meta"><b>DXB arrival guide</b><span id="gTerm"></span></div><span class="pill demo">Demo</span></div>
+    <div class="g-dots" id="gDots"></div>
+    <div class="g-card" id="gCard"></div>
+    <div class="g-actions"><button class="btn" id="gLost">I’m lost</button><button class="btn primary" id="gNext"></button></div>
   </section>
 
   <div class="scrim" id="scrim" hidden></div>
@@ -115,35 +105,7 @@ document.body.insertAdjacentHTML('beforeend', `
     <button class="grab" id="sheetClose" aria-label="Close"><span></span></button>
     <div class="sheet-body" id="sheetBody"></div>
   </section>
-
-  <section class="portal" id="portal" hidden aria-label="Airport Wi-Fi sign-in (demo)">
-    <div class="p-bg" style="background-image:url('media/airport-plane.jpg')"></div>
-    <div class="p-status"><span>21:42</span><span>${svg('wifi', 'ic xs')}</span></div>
-    <button class="p-notif" id="pNotif">
-      <span class="p-ic">${svg('wifi', 'ic sm')}</span>
-      <span class="p-txt"><b>Sign in to Wi-Fi network</b><span>Airport Free Wi-Fi (demo)</span></span>
-    </button>
-    <div class="p-web" id="pWeb">
-      <div class="p-chrome">${svg('lock', 'ic xs')}<span>Airport Free Wi-Fi · sign-in (demo)</span><button id="pDone">Done</button></div>
-      <div class="p-page">
-        <div class="p-hero" style="background-image:url('media/airport-plane.jpg')">
-          <p class="p-kicker">Welcome to Dubai</p>
-          <h1>Free Wi-Fi at the airport</h1>
-          <button class="p-btn" id="pOnline">Get online now</button>
-          <p class="p-terms">I agree to the terms and conditions (demo)</p>
-        </div>
-        <div class="p-connected" id="pConnected" hidden>${svg('check', 'ic sm')} You’re online (demo)</div>
-        <article class="p-sponsor" id="pSponsor">
-          <span class="p-tag">Sponsored</span>
-          <div class="p-sp-row"><span class="p-orb"></span><div><b>Dubai-io</b><span>Your Dubai companion</span></div></div>
-          <p>Guides you from the gate to your hotel, remembers your taxi, and books local shops at their published prices. You approve everything that leaves your phone.</p>
-          <button class="p-cta" id="pOpen">Open Dubai-io ${svg('arrow', 'ic sm')}</button>
-        </article>
-        <p class="p-fine">Concept mock of a sponsored airport Wi-Fi page. Not an airport or operator page.</p>
-      </div>
-    </div>
-  </section>
-
+  <section class="portal" id="portal" hidden aria-label="Arrival (demo)"></section>
   <div class="toast" id="toast" role="status" hidden></div>
   <div class="fps" id="fps" hidden></div>
   <div class="tune glass" id="tune" hidden></div>
@@ -157,7 +119,7 @@ if (!renderer) app.classList.add('nogl');
 const T0 = Date.parse('2026-10-01T00:00:00'), T1 = Date.parse('2026-10-13T23:00:00');
 const S = {
   mode: 'onboard', deck: [], pos: 0, vel: 0, target: 0, drag: null,
-  tilt: [0, 0], tiltTarget: [0, 0], view: 'home', maxDpr: 3,
+  tilt: [0, 0], tiltTarget: [0, 0], view: 'home', from: 'home', maxDpr: 3,
   tune: { ribs: 8.5, foil: 1, grain: 0.07, aura: 0.95 },
   shape: { falloff: 2.4, height: 0.85, glow: 0.24 },
   overrides: {}, asOf: T1, active: -1,
@@ -168,6 +130,18 @@ const G = {};
 window.__lab = { S, G };
 let seedN = 1;
 const mkCard = def => ({ ...def, variant: VARIANT[def.kind] ?? 0, seed: (seedN++ * 7.31) % 13, rev: reduced ? 1 : 0, revStart: 0, revDur: 1100, out: false, el: null });
+
+// ---------------------------------------------------------------- views
+const VIEWS = ['home', 'chat', 'results', 'services'];
+function setView(v) {
+  if (S.view !== v) S.from = S.view;
+  S.view = v;
+  for (const x of VIEWS) app.classList.toggle('mode-' + x, x === v);
+  setTab(v === 'results' ? 'maps' : v === 'services' ? 'services' : 'home');
+  setLift(v === 'home' ? 0 : 1);
+}
+function showChat() { closeOffers(); if (S.view !== 'chat') setView('chat'); }
+function setTab(t) { document.querySelectorAll('.tabbar button').forEach(b => b.toggleAttribute('aria-current', b.dataset.tab === t)); }
 
 // ---------------------------------------------------------------- layout
 function layout() {
@@ -194,7 +168,6 @@ function params(i) {
   const d = i - S.pos, ad = Math.abs(d), sg = Math.sign(d);
   const c = S.deck[i];
   const e = 1 - Math.pow(1 - c.rev, 3);
-  // fly-up: the centre card leaves first, neighbours follow
   const li = Math.max(0, Math.min(1, S.lift * 1.35 - ad * 0.16));
   const fl = li * li * (3 - 2 * li);
   return {
@@ -246,27 +219,7 @@ function buildRail() {
   }).join('');
 }
 
-// ---------------------------------------------------------------- flows: portal, intro, home
-function startPortal() {
-  const P = $('#portal');
-  P.hidden = false; P.className = 'portal'; app.classList.add('mode-portal');
-  $('#pOnline').hidden = false; $('#pOnline').disabled = false; $('#pOnline').textContent = 'Get online now';
-  $('#pConnected').hidden = true; $('#pSponsor').classList.remove('lit');
-  requestAnimationFrame(() => P.classList.add('in'));
-  setTimeout(() => P.classList.add('notif'), reduced ? 0 : 700);
-}
-$('#pNotif').addEventListener('click', () => $('#portal').classList.add('web'));
-$('#pOnline').addEventListener('click', () => {
-  $('#pOnline').disabled = true; $('#pOnline').textContent = 'Connecting…';
-  setTimeout(() => { $('#pOnline').hidden = true; $('#pConnected').hidden = false; $('#pSponsor').classList.add('lit'); }, reduced ? 0 : 900);
-});
-$('#pDone').addEventListener('click', () => toast('Tap Open Dubai-io to continue.'));
-$('#pOpen').addEventListener('click', () => {
-  const P = $('#portal');
-  P.classList.add('out');
-  setTimeout(() => { P.hidden = true; P.className = 'portal'; app.classList.remove('mode-portal'); startOnboarding(); }, reduced ? 0 : 650);
-});
-
+// ---------------------------------------------------------------- flows: intro, home
 function startOnboarding() {
   S.mode = 'onboard';
   S.deck = [mkCard(ONBOARDING[0])];
@@ -307,7 +260,7 @@ function buildHome() {
 }
 function captionFor(c) {
   if (!c) return '';
-  if (S.mode === 'onboard') return c.next === 'Start' ? 'Tap Start, or swipe back to read again.' : 'Swipe, or tap Next. Or just ask below.';
+  if (S.mode === 'onboard') return c.next === 'Start' ? 'Tap Start, or just ask below.' : 'Swipe, or tap Next. Or just ask below.';
   if (c.becauseHyp) {
     const h = c.becauseHyp;
     const tag = h.provenance === 'user_supplied' ? 'you confirmed' : `I noticed, ${Math.round(h.conf * 100)}%`;
@@ -391,10 +344,12 @@ function frame(now) {
     [...railEl.children].forEach((d, i) => d.setAttribute('aria-current', i === active ? 'true' : 'false'));
     captionEl.innerHTML = captionFor(S.deck[active]);
   }
-  if (renderer && !document.hidden && stageVisible) {
-    glCards.sort((a, b) => b.ad - a.ad);
-    auras.sort((a, b) => b.weight - a.weight);
-    renderer.render({ cards: glCards, auras: auras.slice(0, 2), time, tune: S.tune, shape: S.shape });
+  if (renderer && !document.hidden) {
+    if (stageVisible) {
+      glCards.sort((a, b) => b.ad - a.ad);
+      auras.sort((a, b) => b.weight - a.weight);
+      renderer.render({ cards: glCards, auras: auras.slice(0, 2), time, tune: S.tune, shape: S.shape });
+    } else renderer.clear();
   }
   fpsAcc += dt; fpsN++;
   if (fpsAcc >= 0.5) {
@@ -405,7 +360,7 @@ function frame(now) {
   }
   requestAnimationFrame(frame);
 }
-function setLift(to) { S.liftFrom = S.lift; S.liftTo = to; S.liftStart = performance.now(); }
+function setLift(to) { if (S.liftTo === to) return; S.liftFrom = S.lift; S.liftTo = to; S.liftStart = performance.now(); }
 
 // ---------------------------------------------------------------- stage input
 function onDown(e) {
@@ -451,39 +406,19 @@ railEl.addEventListener('click', e => { const d = e.target.closest('.dot'); if (
 addEventListener('keydown', e => {
   if (e.target.closest?.('input')) return;
   if (!$('#sheet').hidden) { if (e.key === 'Escape') closeSheet(); return; }
-  if (S.view === 'results') { if (e.key === 'Escape') exitResults(); return; }
+  if (S.view !== 'home') { if (e.key === 'Escape') goBack(); return; }
   if (e.key === 'ArrowRight') { if (S.mode === 'onboard' && Math.round(S.pos) === S.deck.length - 1) advance(); else S.target = Math.min(S.deck.length - 1, Math.round(S.pos) + 1); }
   if (e.key === 'ArrowLeft') S.target = Math.max(0, Math.round(S.pos) - 1);
   if (e.key === 'Enter') openCard(S.deck[Math.round(S.pos)]);
 });
-
-// ---------------------------------------------------------------- modal sheet + toast
-const sheet = $('#sheet'), scrim = $('#scrim'), sheetBody = $('#sheetBody');
-let sheetOnClose = null;
-function openSheet(html, onClose) {
-  sheetBody.innerHTML = html; sheetOnClose = onClose || null;
-  sheet.hidden = false; scrim.hidden = false;
-  requestAnimationFrame(() => { sheet.classList.add('open'); scrim.classList.add('open'); });
-  sheetBody.scrollTop = 0;
-}
-function closeSheet() {
-  if (sheet.hidden) return;
-  sheet.classList.remove('open'); scrim.classList.remove('open');
-  setTimeout(() => { sheet.hidden = true; scrim.hidden = true; }, reduced ? 0 : 320);
-  sheetOnClose?.(); sheetOnClose = null;
-}
 $('#sheetClose').addEventListener('click', closeSheet);
-scrim.addEventListener('click', closeSheet);
-let toastTimer = 0;
-function toast(msg) {
-  const t = $('#toast'); t.textContent = msg; t.hidden = false; t.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { t.classList.remove('show'); setTimeout(() => { t.hidden = true; }, 250); }, 2600);
-}
+$('#scrim').addEventListener('click', closeSheet);
+
 function openCard(c) {
   if (!c) return;
   if (S.mode === 'onboard') { advance(); return; }
   if (c.id === 'you') { openProfile(); return; }
+  if (c.ask) { handle(c.ask); return; }
   const cat = catOf(c.category);
   openSheet(`
     <div class="sheet-hero" style="background-image:url('${c.img}')"><span class="eyebrow">${esc(c.eyebrow)}</span></div>
@@ -547,19 +482,7 @@ function refreshHomeCaptions() {
   S.active = -1;
 }
 
-// ---------------------------------------------------------------- understanding an ask
-// Lab stand-in for Luna: keyword routing into the category registry. An ask
-// with no category still gets every place nearby.
-function understand(text) {
-  const q = text.toLowerCase();
-  const cat = CATEGORIES.find(c => c.keywords.some(k => q.includes(k)) || q.includes(c.label.toLowerCase()));
-  if (!cat) return { cat: 'all', sub: null, label: 'Nearby', other: true };
-  let sub = null;
-  for (const [s, keys] of Object.entries(cat.subKeys || {})) if (keys.some(k => q.includes(k))) { sub = s; break; }
-  return { cat: cat.id, sub, label: sub ? `${cat.label} › ${sub}` : cat.label };
-}
-
-// ---------------------------------------------------------------- results: full-screen map + sheet
+// ---------------------------------------------------------------- Maps: near me
 let MAP = null;
 window.__lab.map = () => MAP;
 const rsheet = $('#rsheet'), rsScroll = $('#rsScroll');
@@ -575,28 +498,22 @@ function filtered() {
 }
 function enterResults({ ask = null, cat = 'all', sub = null } = {}) {
   S.ask = ask; S.cat = cat; S.sub = sub; S.src = null; S.detail = null;
-  S.view = 'results';
-  closeSheet();
-  app.classList.add('mode-results'); app.classList.remove('mode-home', 'mode-services');
-  setTab('maps');
-  setLift(1);
+  closeSheet(); closeOffers();
+  setView('results');
   ensureMap();
   setSnap('peek', true);
   renderResults();
   setTimeout(() => { MAP?.resize(); refit(); }, reduced ? 0 : 380);
 }
-function exitResults() {
-  S.view = 'home'; S.detail = null;
-  app.classList.remove('mode-results'); app.classList.add('mode-home');
-  setTab('home');
-  setLift(0);
-  $('#q').value = '';
+function goBack() {
+  if (S.view === 'results' && S.detail) { backToList(); return; }
+  if (S.view === 'results' && S.from === 'chat') { setView('chat'); return; }
+  setView('home');
 }
 function refit() {
   if (!MAP) return;
   const list = filtered().filter(p => p.lat != null);
   MAP.filter(new Set(list.map(p => p.id)));
-  // frame you + the closest few, like ride and delivery apps; the rest sit just off-screen
   MAP.ready.then(() => MAP.fit(new Set(list.slice(0, 4).map(p => p.id)), G.snaps.peek));
 }
 function renderChips() {
@@ -617,16 +534,14 @@ const WHY = {
   visited: () => `${svg('clock', 'ic xs')} You went before`,
   google: p => `${svg('star', 'ic xs')} Google · ${fmtN(p.count)} reviews (demo)`,
 };
-function media(p, cls) {
-  return p.img ? `<div class="${cls}" style="background-image:url('${p.img}')"></div>` : `<div class="${cls} glyph">${svg(catOf(p.cat).glyph, 'ic lg')}</div>`;
-}
+const media = (p, cls) => p.img ? `<div class="${cls}" style="background-image:url('${p.img}')"></div>` : `<div class="${cls} glyph">${svg(catOf(p.cat).glyph, 'ic lg')}</div>`;
 function renderResults() {
   renderChips();
   const ask = $('#ask');
   if (S.ask) {
-    const u = understand(S.ask);
+    const cat = catOf(S.cat);
     ask.hidden = false;
-    ask.innerHTML = `<span class="ask-q">${esc(S.ask)}</span><span class="ask-u">${svg('orb', 'ic xs')} ${u.other ? 'No category yet · showing everything nearby' : `Understood · ${esc(u.label)}`}</span>`;
+    ask.innerHTML = `<span class="ask-q">${esc(S.ask)}</span><span class="ask-u">${svg('orb', 'ic xs')} ${cat ? `Near you · ${esc(cat.label)}${S.sub ? ' › ' + esc(S.sub) : ''}` : 'Near you · everything'}</span>`;
   } else ask.hidden = true;
   if (S.detail) { renderDetail(); return; }
   const list = filtered();
@@ -635,10 +550,8 @@ function renderResults() {
   const partners = list.filter(p => p.partner).length;
   const counts = Object.fromEntries(SOURCES.map(s => [s.id, PLACES.filter(p => (S.cat === 'all' || p.cat === S.cat) && p.why === s.id).length]));
   rsScroll.innerHTML = `
-    <div class="rs-head">
-      <h3>${list.length} ${esc(what)} near Dubai Marina</h3>
-      <p>${partners ? `${partners} partner${partners === 1 ? '' : 's'} with published prices · ` : ''}closest first · distances are estimates</p>
-    </div>
+    <div class="rs-head"><h3>${list.length} ${esc(what)} near Dubai Marina</h3>
+      <p>${partners ? `${partners} partner${partners === 1 ? '' : 's'} with published prices · ` : ''}closest first · distances are estimates</p></div>
     <div class="hcards" id="hcards">${list.map(p => `
       <button class="hcard" data-p="${p.id}">${media(p, 'hc-img')}
         <span class="hc-txt"><b>${esc(p.name)}</b><span>★ ${p.rating.toFixed(1)} · ${esc(p.area)}${p.km != null ? ` · ${p.km} km` : ''}</span>
@@ -705,7 +618,7 @@ function renderDetail() {
 }
 function backToList() { S.detail = null; renderResults(); setSnap('peek'); refit(); }
 
-$('#back').addEventListener('click', () => { if (S.detail) backToList(); else exitResults(); });
+$('#back').addEventListener('click', goBack);
 $('#rChips').addEventListener('click', e => { const b = e.target.closest('[data-cat]'); if (!b) return; S.cat = b.dataset.cat; S.sub = null; S.src = null; S.detail = null; S.ask = null; renderResults(); refit(); });
 $('#rSubs').addEventListener('click', e => { const b = e.target.closest('[data-sub]'); if (!b) return; S.sub = b.dataset.sub || null; S.detail = null; renderResults(); refit(); });
 rsScroll.addEventListener('click', e => {
@@ -715,8 +628,6 @@ rsScroll.addEventListener('click', e => {
   const t = e.target.closest('[data-p]');
   if (t) openDetail(t.dataset.p);
 });
-
-// sheet snapping: peek (carousel) -> half -> full (Good spots grid)
 function setSnap(name, instant) {
   S.snap = name;
   if (!G.snaps) return;
@@ -760,55 +671,41 @@ function setSnap(name, instant) {
   $('#rGrab').addEventListener('click', () => { if (rsheet.dataset.dragged !== '1') setSnap(S.snap === 'peek' ? 'half' : S.snap === 'half' ? 'full' : 'peek'); });
 })();
 
-// ---------------------------------------------------------------- composer, tabs
-const placeholders = ['A groomer for my dog this week', 'Koshari near me', 'Somebody to fix my AC', 'A haircut tonight', 'Specialty coffee'];
+// ---------------------------------------------------------------- Services: competing offers
+function enterServices() { closeSheet(); renderServiceGrid($('#sgGrid')); setView('services'); }
+$('#sgGrid').addEventListener('click', e => {
+  const b = e.target.closest('.sg-card'); if (!b) return;
+  if (b.dataset.ask) { $('#q').focus(); return; }
+  openOffers(b.dataset.svc);
+});
+
+// ---------------------------------------------------------------- chat, composer, tabs
+initChat({ enterResults, openOffers, startGuide, showChat });
+initOffers({ post, update, showChat });
+wireChat(); wireOffers(); wireGuide();
+$('#chatBack').addEventListener('click', () => setView('home'));
+
+const placeholders = ['I lost my wallet', 'Guide me through the airport', 'Home cleaning prices', 'Coffee near me', 'A groomer for my dog'];
 let phI = 0;
 setInterval(() => { const q = $('#q'); if (!q.value && document.activeElement !== q) q.placeholder = placeholders[phI++ % placeholders.length]; }, 3200);
 $('#composer').addEventListener('submit', e => {
   e.preventDefault();
   const text = $('#q').value.trim(); if (!text) return;
-  $('#q').blur();
-  if (S.mode === 'onboard') store.set('onboarded', '1');
-  const u = understand(text);
-  $('#q').value = '';
-  enterResults({ ask: text, cat: u.cat, sub: u.sub });
+  $('#q').value = ''; $('#q').blur();
+  if (S.mode === 'onboard') { store.set('onboarded', '1'); }
+  closeOffers();
+  handle(text);
 });
 $('#mic').addEventListener('click', () => toast('Voice needs a secure page and a tap on the phone. Type for now.'));
 document.querySelector('.tabbar').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
   const t = b.dataset.tab;
-  if (t === 'home') { if (S.view === 'results') exitResults(); else if (S.view === 'services') exitServices(); }
-  else if (t === 'maps') { if (S.view === 'services') hideServicesGrid(); enterResults({ cat: 'all' }); }
+  closeOffers();
+  if (t === 'home') setView(hasThread() && S.view === 'home' ? 'chat' : 'home');
+  else if (t === 'maps') enterResults({ cat: 'all' });
   else if (t === 'services') enterServices();
   else if (t === 'me') openMe();
 });
-
-// Services tab: one card per registry category (data, not code), plus "ask
-// for anything" for categories that don't exist yet.
-function enterServices() {
-  if (S.view === 'results') { app.classList.remove('mode-results'); }
-  S.view = 'services';
-  app.classList.add('mode-services'); app.classList.remove('mode-home');
-  setTab('services'); setLift(1);
-  const cover = id => (PLACES.find(p => p.cat === id && p.img) || {}).img;
-  $('#sgGrid').innerHTML = CATEGORIES.map(c => {
-    const n = PLACES.filter(p => p.cat === c.id).length, partners = PLACES.filter(p => p.cat === c.id && p.partner).length;
-    const img = cover(c.id);
-    return `<button class="sg-card" data-cat="${c.id}">
-      <span class="sg-img" style="${img ? `background-image:url('${img}')` : ''}"></span>
-      <span class="sg-ic">${svg(c.glyph, 'ic sm')}</span>
-      <span class="sg-txt"><b>${esc(c.label)}</b><span>${n} nearby${partners ? ` · ${partners} partner${partners === 1 ? '' : 's'}` : ''}</span>${c.subs.length ? `<em>${c.subs.slice(0, 3).map(esc).join(' · ')}</em>` : ''}</span>
-    </button>`;
-  }).join('') + `<button class="sg-card ask" data-ask="1"><span class="sg-ic">${svg('spark', 'ic sm')}</span><span class="sg-txt"><b>Anything else</b><span>Ask below. If there is no category yet, I still search nearby.</span></span></button>`;
-}
-function hideServicesGrid() { app.classList.remove('mode-services'); }
-function exitServices() { S.view = 'home'; hideServicesGrid(); app.classList.add('mode-home'); setTab('home'); setLift(0); }
-$('#sgGrid').addEventListener('click', e => {
-  const b = e.target.closest('.sg-card'); if (!b) return;
-  if (b.dataset.ask) { $('#q').focus(); return; }
-  hideServicesGrid(); enterResults({ cat: b.dataset.cat });
-});
-function setTab(t) { document.querySelectorAll('.tabbar button').forEach(b => b.toggleAttribute('aria-current', b.dataset.tab === t)); }
 function openMe() {
   openSheet(`
     <h3 id="sheetTitle">Me</h3>
@@ -816,12 +713,12 @@ function openMe() {
     <div class="actions col">
       <button class="btn" id="meProfile">${svg('person', 'ic sm')} You, over time</button>
       <button class="btn" id="meIntro">${svg('orb', 'ic sm')} Replay the intro</button>
-      <button class="btn" id="meWifi">${svg('wifi', 'ic sm')} Replay the airport Wi-Fi arrival</button>
+      <button class="btn" id="meWifi">${svg('wifi', 'ic sm')} Replay landing and Wi-Fi sign-in</button>
     </div>
     <p class="fine">Flags: add #fps, #tune or #nogl to the link (join with dots, e.g. #fps.tune).</p>`);
   $('#meProfile').addEventListener('click', () => { closeSheet(); setTimeout(openProfile, 340); });
-  $('#meIntro').addEventListener('click', () => { closeSheet(); if (S.view === 'results') exitResults(); startOnboarding(); });
-  $('#meWifi').addEventListener('click', () => { closeSheet(); if (S.view === 'results') exitResults(); S.deck = []; stageEl.innerHTML = ''; startPortal(); });
+  $('#meIntro').addEventListener('click', () => { closeSheet(); setView('home'); startOnboarding(); });
+  $('#meWifi').addEventListener('click', () => { closeSheet(); setView('home'); S.deck = []; stageEl.innerHTML = ''; railEl.innerHTML = ''; startArrival(() => startOnboarding()); });
 }
 
 // ---------------------------------------------------------------- dev panels
@@ -840,9 +737,12 @@ addEventListener('resize', layout);
 document.addEventListener('visibilitychange', () => { last = performance.now(); });
 layout();
 const firstRun = !store.get('onboarded');
-if (flags.has('wifi') || (firstRun && !flags.has('intro') && !flags.has('services') && !flags.has('profile'))) startPortal();
+const direct = ['intro', 'services', 'maps', 'guide', 'profile'].some(f => flags.has(f));
+if (flags.has('wifi') || (firstRun && !direct)) startArrival(() => startOnboarding());
 else if (flags.has('intro')) startOnboarding();
 else buildHome();
-if (flags.has('services')) { if (S.mode === 'onboard') buildHome(); enterResults({ cat: 'pets' }); }
+if (flags.has('services')) { if (S.mode === 'onboard') buildHome(); enterServices(); }
+if (flags.has('maps')) { if (S.mode === 'onboard') buildHome(); enterResults({ cat: 'pets' }); }
+if (flags.has('guide')) { if (S.mode === 'onboard') buildHome(); handle('Guide me through the airport'); }
 if (flags.has('profile')) { if (S.mode === 'onboard') buildHome(); setTimeout(openProfile, 400); }
 requestAnimationFrame(t => { last = t; frame(t); });

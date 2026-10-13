@@ -216,6 +216,60 @@
    "licence": "Unsplash",
    "provenance": "stock",
    "wavespeed_prompt": ""
+  },
+  {
+   "id": "guide.guide-gate",
+   "file": "media/guide-gate.jpg",
+   "subject": "Gate sign in Arabic (not DXB)",
+   "source": "https://images.unsplash.com/photo-1783260111770-c9f55f51c758",
+   "licence": "Unsplash",
+   "provenance": "stock",
+   "wavespeed_prompt": ""
+  },
+  {
+   "id": "guide.guide-passport",
+   "file": "media/guide-passport.jpg",
+   "subject": "Airport corridor with immigration signage (not DXB)",
+   "source": "https://images.unsplash.com/photo-1771945029451-da143c6ea0e8",
+   "licence": "Unsplash",
+   "provenance": "stock",
+   "wavespeed_prompt": ""
+  },
+  {
+   "id": "guide.guide-baggage",
+   "file": "media/guide-baggage.jpg",
+   "subject": "Baggage carousel with screens (not DXB)",
+   "source": "https://images.unsplash.com/photo-1702411739431-0b6874405792",
+   "licence": "Unsplash",
+   "provenance": "stock",
+   "wavespeed_prompt": ""
+  },
+  {
+   "id": "guide.guide-customs",
+   "file": "media/guide-customs.jpg",
+   "subject": "Terminal ceiling with signage (not DXB)",
+   "source": "https://images.unsplash.com/photo-1752689309754-56b8f7f185ec",
+   "licence": "Unsplash",
+   "provenance": "stock",
+   "wavespeed_prompt": ""
+  },
+  {
+   "id": "guide.guide-arrivals",
+   "file": "media/guide-arrivals.jpg",
+   "subject": "Modern terminal hall (not DXB)",
+   "source": "https://images.unsplash.com/photo-1783768813434-21bca14a41db",
+   "licence": "Unsplash",
+   "provenance": "stock",
+   "wavespeed_prompt": ""
+  },
+  {
+   "id": "guide.guide-taxi",
+   "file": "media/guide-taxi.jpg",
+   "subject": "Taxi roof sign at night (generic)",
+   "source": "https://images.unsplash.com/photo-1490650404312-a2175773bbf5",
+   "licence": "Unsplash",
+   "provenance": "stock",
+   "wavespeed_prompt": ""
   }
  ],
  "map": {

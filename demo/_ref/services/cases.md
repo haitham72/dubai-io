@@ -34,8 +34,8 @@ A case earns an entry only when it proves something the engine can't do yet (a n
 | C2 | Clothing: facet browse + Try It On | `shops/cloth/` ✓ ref | facets, tryon, approval, order | idea |
 | C3 | Barber | `service/barber/` | nearby-rows, tryon, add-ons, published-offer, book-slot, route, rate-after | idea |
 | C4 | Laundry with a deadline | `service/laundry/` | nearby-rows, approval, deadline-check, events | built (v1 demo) |
-| C5 | DXB arrival guide + ride | `companion/arrival/` ⚑ | guide | built (v1 demo) |
-| C6 | Lost bag in a taxi | `companion/lost-item/` ⚑ | recovery | built (v1 demo) |
+| C5 | DXB arrival guide + ride | `companion/arrival/` ⚑ | guide | built (lab v3) |
+| C6 | Lost item (wallet, bag, phone) in a taxi / Metro / shop | `companion/lost-item/` ⚑ | recovery | built (lab v3) |
 | C7 | Car licence renewal (R2–R5 in `../redesign.md`) | `service/car-licence/` | lanes, book-slot, holo-choice, events | idea |
 | C8 | Fix it / AC / renovation (R6 in `../redesign.md`) | `service/fix-it/` | nearby-rows, book-slot | idea |
 | C9 | Community + shopping rows | `shops/community/` | nearby-rows, sign-in | built (v1 demo) |

@@ -1,0 +1,37 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Palm Quick Press</title>
+<style>
+  body { margin: 0; font-family: system-ui, sans-serif; background: #F3F1FA; color: #2B2640; }
+  h1 { margin: 0; padding: 18px 16px 4px; font-size: 22px; } .sub { padding: 0 16px; color: #6E6690; font-size: 13px; }
+  .box { margin: 14px; background: #fff; border-radius: 14px; padding: 14px; border: 1px solid #DCD6F0; }
+  .row { display: flex; justify-content: space-between; align-items: center; }
+  .step { display: flex; gap: 10px; align-items: center; }
+  .step button { width: 34px; height: 34px; border-radius: 10px; border: 1px solid #6B5CA5; background: #fff; font-size: 18px; }
+  .slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 8px; }
+  .slots button { border: 1px solid #DCD6F0; background: #fff; border-radius: 10px; padding: 9px 4px; font-size: 12px; }
+  .slots button.on { background: #E4E0F6; border-color: #6B5CA5; font-weight: 600; }
+  .go { display: block; width: calc(100% - 28px); margin: 0 14px; background: #6B5CA5; color: #fff; border: 0; border-radius: 12px; padding: 13px; font-weight: 700; font-size: 15px; }
+</style></head>
+<body>
+<h1>Palm Quick Press</h1><div class="sub">Budget pressing · next-day · AED 4 per shirt (demo)</div>
+<div class="box"><div class="row"><div><b>Shirts</b><div class="sub" style="padding:0">AED 4 each (demo)</div></div>
+  <div class="step"><button id="m">−</button><b id="n">1</b><button id="p">+</button></div></div></div>
+<div class="box"><b>Pickup</b><div class="slots" id="slots"></div></div>
+<button class="go" id="go">Send order request</button>
+<script>
+  let n = 1, slot = 0; const slots = ["Today 18:00", "Today 21:00", "Tomorrow 08:00"];
+  const send = (kind, payload) => parent.postMessage({ v: 1, kind, payload }, "*");
+  function draw() {
+    document.getElementById("n").textContent = n;
+    document.getElementById("slots").innerHTML = slots.map((s, i) => `<button class="${i === slot ? "on" : ""}" data-i="${i}">${s}</button>`).join("");
+    document.querySelectorAll("[data-i]").forEach(b => b.onclick = () => { slot = +b.dataset.i; draw(); });
+  }
+  document.getElementById("m").onclick = () => { n = Math.max(1, n - 1); draw(); };
+  document.getElementById("p").onclick = () => { n++; draw(); };
+  document.getElementById("go").onclick = () => send("order.request", { items: [{ name: "Shirt pressing", qty: n, price: 4 }], summary: `${n} shirts · ${slots[slot]}`, estimate: n * 4 });
+  draw(); send("app.ready", {});
+</script>
+</body></html>

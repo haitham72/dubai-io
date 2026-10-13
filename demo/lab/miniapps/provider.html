@@ -1,0 +1,66 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Provider mini-app</title>
+<style>
+  :root { --c: #0A9CC2; }
+  body { margin: 0; font-family: -apple-system, system-ui, sans-serif; background: #F6F7F9; color: #14202A; }
+  header { padding: 20px 16px 14px; background: var(--c); color: #fff; }
+  header .logo { width: 44px; height: 44px; border-radius: 12px; background: rgba(255,255,255,.22); display: grid; place-items: center; font-weight: 800; letter-spacing: .02em; }
+  header h1 { margin: 10px 0 2px; font-size: 22px; } header p { margin: 0; opacity: .85; font-size: 13px; }
+  .offer { margin: 12px 14px 0; padding: 10px 12px; border-radius: 12px; background: #FFF7E6; color: #7A4B00; font-size: 13px; }
+  .box { margin: 12px 14px; background: #fff; border-radius: 14px; padding: 6px 12px; border: 1px solid #E3E8EC; }
+  .item { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid #EEF1F3; }
+  .item:last-child { border-bottom: 0; }
+  .item b { font-size: 15px; } .item small { display: block; color: #66737D; font-size: 12px; margin-top: 2px; }
+  .step { display: flex; gap: 8px; align-items: center; }
+  .step button { width: 32px; height: 32px; border-radius: 10px; border: 1px solid var(--c); background: #fff; font-size: 17px; color: #14202A; }
+  h2 { margin: 16px 16px 6px; font-size: 14px; color: #66737D; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
+  .slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 0 14px; }
+  .slots button { border: 1px solid #E3E8EC; background: #fff; border-radius: 10px; padding: 10px 4px; font-size: 12.5px; color: #14202A; }
+  .slots button.on { border-color: var(--c); background: color-mix(in srgb, var(--c) 12%, #fff); font-weight: 700; }
+  .total { display: flex; justify-content: space-between; margin: 16px 16px 8px; font-size: 15px; }
+  .go { display: block; width: calc(100% - 28px); margin: 0 14px 18px; background: var(--c); color: #fff; border: 0; border-radius: 14px; padding: 14px; font-weight: 700; font-size: 15px; }
+  .fine { margin: 0 16px 20px; font-size: 11.5px; color: #8A96A0; }
+</style></head>
+<body>
+<header><div class="logo" id="logo"></div><h1 id="name">Loading…</h1><p id="line"></p></header>
+<div class="offer" id="offer" hidden></div>
+<div class="box" id="items"></div>
+<h2>Slot</h2><div class="slots" id="slots"></div>
+<div class="total"><span>Total (published prices)</span><b id="total"></b></div>
+<button class="go" id="go">Send request</button>
+<p class="fine">This page is the provider's own mini-app. It can only ask Dubai-io to show you an approval. Prices are fixed; nothing is negotiated.</p>
+<script>
+  const send = (kind, payload) => parent.postMessage({ v: 1, kind, payload }, "*");
+  let P = null, qty = {}, slot = 0;
+  function draw() {
+    if (!P) return;
+    document.documentElement.style.setProperty("--c", P.color);
+    document.getElementById("logo").textContent = P.logo;
+    document.getElementById("name").textContent = P.name;
+    document.getElementById("line").textContent = P.line || "";
+    const o = document.getElementById("offer"); o.hidden = !P.offer; o.textContent = P.offer ? "Their published offer: " + P.offer : "";
+    document.getElementById("items").innerHTML = P.items.map(i => `<div class="item"><div><b>${i.name}</b><small>AED ${i.price} (demo)</small></div>
+      <div class="step"><button data-m="${i.id}">−</button><b>${qty[i.id] || 0}</b><button data-p="${i.id}">+</button></div></div>`).join("");
+    document.getElementById("slots").innerHTML = P.slots.map((s, k) => `<button class="${k === slot ? "on" : ""}" data-s="${k}">${s}</button>`).join("");
+    const t = P.items.reduce((a, i) => a + (qty[i.id] || 0) * i.price, 0);
+    document.getElementById("total").textContent = "AED " + t + " (demo)";
+    document.getElementById("go").disabled = !t;
+    document.querySelectorAll("[data-m]").forEach(b => b.onclick = () => { qty[b.dataset.m] = Math.max(0, (qty[b.dataset.m] || 0) - 1); draw(); });
+    document.querySelectorAll("[data-p]").forEach(b => b.onclick = () => { qty[b.dataset.p] = (qty[b.dataset.p] || 0) + 1; draw(); });
+    document.querySelectorAll("[data-s]").forEach(b => b.onclick = () => { slot = +b.dataset.s; draw(); });
+  }
+  window.addEventListener("message", e => {
+    const m = e.data;
+    if (!m || m.v !== 1) return;
+    if (m.kind === "host.context" && m.payload && m.payload.provider) { P = m.payload.provider; qty[P.items[P.items.length - 1].id] = 1; draw(); }
+  });
+  document.getElementById("go").onclick = () => send("order.request", {
+    items: P.items.filter(i => qty[i.id]).map(i => ({ id: i.id, qty: qty[i.id] })),
+    slot: P.slots[slot],
+  });
+  send("app.ready", {});
+</script>
+</body></html>
