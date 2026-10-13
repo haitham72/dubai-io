@@ -339,4 +339,4 @@ The lab rebuilt onboarding, the chat flows and the map, but most of the approved
 2. **Services are too verbose.** Group them logically as in `01-home.png`, with short labels and few words per card. Keep competing offers one level down.
 3. **The lost-item / transport story is lost and too rigid.** Rebuild C6 to `04-lost-item.png` and `04a-driver-rta.png`: the driver detail sheet, the RTA report sheet, and the card and cash trace paths from v1 (`demo/app.js` `recovery`, `traceByCard`, `traceByCash`, `rtaReport`). The current chat-only report is a stub.
 4. **Port the rest of the reference set** (`01a`–`06`, `x-*`) to the §6.3 reference map. Check each screen against its image with a 390 px screenshot before calling it done.
-5. **Palette.** "Chromatic" came from the carousel references (violet/magenta). Cyan + purple is the locked palette. The founder picks; if no pick, keep cyan and delete the chromatic page.
+5. **Palette: cyan, picked by the founder on 13 Oct.** Remove the chromatic page and its branches.

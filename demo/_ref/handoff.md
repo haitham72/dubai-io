@@ -95,3 +95,23 @@ Read `CLAUDE.md` → `PLAN.md` (§7) → `demo/_ref/services/cases.md` + `intake
 
     A refresh skips the intro once it has been seen (stored per browser).
 12. **Untracked:** `demo/_ref/01 - Visitor onboarding/` (founder ref). Commit it with the next commit.
+
+## Founder decisions and issues (end of session)
+
+- **Palette: cyan (picked 13 Oct).** Delete `demo/lab/home-v2-chromatic.html` and the `chromatic` branches in CSS/JS when convenient; keep cyan + purple fringe only.
+- **API won't start on the founder's PC:** `ImportError: cannot import name 'ArgsKwargs' from 'pydantic_core._pydantic_core'`, with `F:\Anaconda\Lib` in the traceback while `(base)` was active.
+  - Likely cause: the venv was rebuilt or run against Anaconda's Python, while its packages were built for Python 3.13. The pydantic_core binary doesn't match.
+  - Fix:
+
+    ```powershell
+    conda deactivate
+    cd G:\Haitham\VsCode\contest\apps\api
+    Remove-Item -Recurse -Force .venv
+    py -3.13 -m venv .venv
+    $env:REQUESTS_CA_BUNDLE = ""
+    .\.venv\Scripts\python -m pip install -r requirements.txt
+    .\.venv\Scripts\python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+    ```
+
+  - If `py -3.13` isn't found, use `"C:\Program Files\Python313\python.exe" -m venv .venv`.
+  - Add this to `demo/run.md` once verified.
