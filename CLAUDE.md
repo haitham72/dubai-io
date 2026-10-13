@@ -26,7 +26,8 @@ Civic guidance (official sources, citations) is LATER, not in the contest build.
 | `CLAUDE.md` (this) | Hard rules for agents |
 | `PLAN.md` | **The single plan**: scope (IN / LATER / NEVER), demo arc, phases, gates |
 | `ARCHITECTURE.md` | Build architecture, contracts, state machine |
-| `demo/` | Clickable prototype (static, no build): chat, journey, Talabat list → modal, fixed-order machine |
+| `demo/` | Clickable prototype (static, no build): chat, journey, Talabat list → modal, fixed-order machine; `demo/lab/` = Home v2 visual lab |
+| `demo/_ref/services/` | **Services list (`cases.md`) + intake guide (`intake.md`).** New ideas go here, never into `PLAN.md` |
 | `main` branch | Paper trail: `docs/` (decisions, design, visitors, vision, research, reviews) + `archive/` (handoff, old reviews) |
 
 If a request needs something that `PLAN.md` lists as **LATER** or **NEVER**, stop and ask. Do not build a "small version" of it.
@@ -51,15 +52,24 @@ Rules: never add top-level `*.md` beyond the four canon files (paper trail lives
 ## Non-negotiable rules
 
 1. **Truth in status.** Never show `Confirmed`, `Booked`, `Paid`, `Filed`, `Verified` or `Delivered` without an authoritative event: a merchant action in the inbox or a verified adapter response. LLM text never changes status. Use `UNKNOWN_STATUS` before you would invent a success.
-2. **Every number has provenance.** Prices, balances, ratings, dates and counts carry `provenance` (`official | provider_confirmed | merchant_submitted | user_supplied | estimate | demo_fixture`) and `as_of`. Fixture data renders a visible `Demo data` pill.
+2. **Every number has provenance.** Prices, balances, ratings, dates and counts carry `provenance` (`official | provider_confirmed | merchant_submitted | user_supplied | inferred | estimate | demo_fixture`) and `as_of`. Fixture data renders a visible `Demo data` pill.
 3. **No invented positions or facts.** The arrival guide never claims an indoor position, belt, gate or queue time the user didn't confirm. Map pins mark only user-confirmed places. Prices and times are labelled estimates.
 4. **No government execution.** Salik, DEWA, RTA, Tasjeel and fines are display-only or `Open official portal` links. No top-ups, no bookings, no wait times.
 5. **No official branding.** Do not use the DubaiNow layout, government emblems or ministry logos. `screens/archive/` holds the rejected DubaiNow-clone montage; don't reuse it.
 6. **Approval before side effects.** Sharing data with a merchant and sending a fixed-price order each need an explicit user tap on an approval card that lists exactly which fields get shared. Single approval only — there is no second quote approval because quotes do not exist.
 7. **Only registered actions execute.** A card action's `id` must match a capability ID in the registry. The agent fills in *data*. It never writes executable payloads, HTML, SQL or URLs to call.
 8. **Proactive = deterministic.** Reminders and triggers come from the scheduler/outbox, not from LLM polling. Every one is deduplicated (`dedupe_key`), consented, respects quiet hours, and is stored as a normal chat message. A trigger the user did not cause is labelled `Demo trigger` on stage. The PWA does **not** do background geofencing.
-9. **Memory is user-given.** Belt, taxi number, hotel area and similar facts are stored as `user_supplied` and shown with a "You told me" label. Nothing is inferred silently.
+9. **Memory is user-given or visibly inferred.** Facts the user states are `user_supplied` and shown as "You told me". The temporal profiler may store inferences only as **hypotheses** (`provenance: inferred`, confidence, evidence, valid time). Each one is listed under "I noticed" with Confirm / Edit / Not true / Forget. An unconfirmed hypothesis may re-rank options only, with a visible "Because…" chip. It never pre-fills a field, appears on an approval card, triggers a proactive message or sets a status. Nothing about the user is stored where they can't see it. Health, religion, ethnicity, nationality-as-trait, gender, sexuality and politics are never inferred. See `ARCHITECTURE.md §12`.
 10. **Widget sandbox:** provider HTML runs only from the separate widget origin, inside `<iframe sandbox="allow-scripts">`, with `connect-src 'none'`. It reaches the host only through the allowlisted `postMessage` bridge. See `ARCHITECTURE.md §6`.
+
+## Service intake
+
+**New ideas and services.** When the user adds an idea, a service or a reference image, follow [`demo/_ref/services/intake.md`](demo/_ref/services/intake.md).
+- File it under `demo/_ref/services/<shops|service>/<category>/`.
+- The default outcome is a category-registry row: filed cases are ~1% of the app, and the generic engine covers the rest. Add or extend a case in `demo/_ref/services/cases.md` (status `idea`) only when the idea needs a new pattern, rule or data source, or is a demo moment.
+- Never write a case into `PLAN.md`.
+- If the idea is unclear (category, the user's ask, what is sold or done, who confirms), ask before filing.
+- If it touches a NEVER item, stop and say so.
 
 ## Stack (for Phase 1+, pin versions at scaffold)
 

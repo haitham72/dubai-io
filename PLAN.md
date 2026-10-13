@@ -1,9 +1,14 @@
 # Dubai-io — Plan
 
-**Updated:** 12 Oct 2026 · **Status:** **Plan v1.4** (build plan for `apps/web` in §6) · **Owner:** Haitham
+**Updated:** 13 Oct 2026 · **Status:** **Plan v1.5** (Home v2 + temporal profiler + services loop in §7) · **Owner:** Haitham
 This is the single plan. Scope, demo and phases live here, and nowhere else. (Decision log lives on `main`; `build` is code-only.)
 **Founder lock (10 Oct, final): bidding/quote is ABSOLUTELY REJECTED. Every service opens as a modal HTML mini-app (services / shops / stores / rides) with published fixed prices.**
 **Founder decision (12 Oct): the Resident/VIP arc (items 10–11) moves from LATER to IN, built after the visitor redesign. Providers answer slot/availability requests at published fixed prices. The quote lock above is unchanged.**
+**Founder decisions (13 Oct):**
+- The **temporal profiler is core** (visible hypotheses, `ARCHITECTURE.md §12`).
+- **Home v2** (shader coverflow, soft reveal) and the universal **Services surface** come first.
+- Service cases live in `demo/_ref/services/cases.md`, are picked one at a time (§7), and are ~1% of the app; the generic engine covers the rest.
+- The quote lock is unchanged.
 
 ---
 
@@ -33,13 +38,15 @@ Contest: Create AI Agents Championship, category **Best Personal AI Agent**. Off
 | 8 | Memory payoff: "I left my bag in the taxi" → report pre-filled with RTA's fields (time, pickup/drop-off, roof colour, plate, receipt photo) from saved trip details, asks only for what's missing, hands off to the official channels (call centre / chat agent / app), stays "not recovered" | Companion |
 | 9 | Merchant onboarding: price-list photo → AI-generated mini-app → operator approves → live | Platform |
 | 10 | **Resident/VIP arc** (second arc, after the visitor redesign): a goal ("renew my car licence") becomes a plan. Agents read provider sites / APIs / MCP tools, prepare each step and send **slot requests at published fixed prices**: papers check (user-supplied facts only) → provider rows → runner proposal → insurance choice → provider-confirmed done, with a per-step calendar timeline to the second. A private runner makes the visit; Dubai-io never submits to RTA/Tasjeel | Resident |
-| 11 | **Home services:** "fix it / maid / renovation" → rows from marketplace apps and found shops, each opens its own modal mini-app, fixed prices (fictional demo providers) | Resident |
+| 11 | **Service cases:** picked from `demo/_ref/services/cases.md` by C-ID (maid with visa, cloth try-on, barber, pets, food, video → map, …). Fixed prices, fictional demo providers | Services |
+| 12 | **Temporal profile:** visible hypotheses that learn over time, "You, over time" card, "Because…" on every re-rank (`ARCHITECTURE.md §12`) | Companion |
+| 13 | **Services surface:** data-driven category registry, map ↔ list, one bottom sheet for any provider (§7.3) | Services |
 
-**If time runs out, cut in this order:** 11 → 10 → 9 → 5 → 4. Items 1, 2, 3, 6, 7 and 8 are the floor: memory + follow-through *is* the product.
+**If time runs out, cut in this order:** 11 → 10 → 9 → 5 → 4. Items 1, 2, 3, 6, 7, 8, **12 and 13** are the floor: memory + follow-through *is* the product.
 
 ### LATER (vision, not in the contest build)
 
-Civic RAG with citations · resident bills and Salik/DEWA displays · community · background geofencing · ticket wallet · payments · media memory · Arabic RTL UI (Arabic answers are fine) · native app.
+Civic RAG with citations · resident bills and Salik/DEWA displays · community · background geofencing · ticket wallet · payments · media memory · Arabic RTL UI (Arabic answers are fine) · native app (Swift; ShipSwift originals, Liquid Glass, haptics, share extension) · live AR try-on · marketplace feeds via affiliate APIs.
 
 ### NEVER
 
@@ -167,7 +174,7 @@ apps/web/
 apps/api/               Luna only: FastAPI + LangGraph (6.9). Not needed to run the web app
 ```
 
-Dependencies (web): `react`, `react-dom`, `vite`, `typescript`, `vitest`, `@playwright/test`, a spring/gesture lib (`framer-motion` or `@use-gesture/react` + `react-spring`), a tiny WebGL helper (`ogl`, or raw WebGL2), founder-supplied effect libraries `border-beam`, `voice-glow`, `thinking-orbs` (npm-verified, MIT, zero deps; pin exact versions, see `demo/_ref/visuals-libraries.md`), `zustand` optional. Plain CSS (CSS modules). No UI kit.
+Dependencies (web): `react`, `react-dom`, `vite`, `typescript`, `vitest`, `@playwright/test`, a spring/gesture lib (`framer-motion` or `@use-gesture/react` + `react-spring`), a tiny WebGL helper (`ogl`, or raw WebGL2), founder-supplied effect libraries `border-beam`, `voice-glow`, `thinking-orbs`, plus `metal-fx` (silver only), `img-fx` (+`three`, lazy-loaded) and `liquid-gooey` (all npm-verified, MIT; pin exact versions, see `demo/_ref/visuals-libraries.md`), `zustand` optional. Plain CSS (CSS modules). No UI kit.
 
 ### 6.3 Reference map
 
@@ -189,6 +196,8 @@ Dependencies (web): `react`, `react-dom`, `vite`, `typescript`, `vitest`, `@play
 | Chat effects: Beam, Voice, Orb + ShipSwift `SWMetal` shader ideas | `demo/_ref/visuals-libraries.md` (prompts copied as supplied; our notes in Part 3) | Composer `BorderBeam` / `VoiceBeam`, bot avatar `ThinkingOrb`, GLSL ideas for L3 |
 | Dark theme + map pin + permission card | `x-location-geofence-darkmode.jpg` (Apple Find My / Maps screenshot, **style reference only**, third-party names must not appear) | dark token set (`prefers-color-scheme` + manual), guide lightbox pin with an "approximate" ring, Me → Permissions "Notifications are off" card, detail-sheet pattern (title, status, two actions) |
 | Resident/VIP | R-series prompts, no images yet | after visitor parity |
+| Home v2 stage | `demo/_ref/carousel/carousel*.jpg` (aura above, glow below), `carousel/holographi ccards.mp4` (holo finishes), ShipSwift `SWMetal` (MIT) | §7.2 |
+| Services surface + cases | `demo/_ref/services/` tree (pets = surface pattern; cloth, coffee, restaurants, "Pulled data services") | §7.3, `cases.md` |
 
 Ignore `demo/_ref/_rejected/`. Fix on the way: `06` shows the real brand "Carrefour Express" (use "Marina Fresh (demo)"); `00`'s button reads "Indoor nav" (use "Arrival guide"; no indoor-position claims).
 
@@ -222,13 +231,15 @@ Bridge: scopes in each manifest AND a handler in the host table; unknown or out-
 
 | Step | Build | Gate (Playwright iPhone profile, 390 px) |
 |---|---|---|
-| 0 | Scaffold, tokens, Home idle + **motion L1 (scroll reveal) + L3 (hero shader)** | matches `01-home` / `01a` left; glass bar visible; no composer; reveal is scroll-linked; shader degrades to a static gradient |
+| 0 | **Home v2 lab → picked shell** (§7.2) ported in: scaffold, tokens, coverflow stage + shaders, soft reveal, "You, over time", Services surface | founder picked the shell on the iPhone; aura + glow visible; fallbacks work |
+| P | **`apps/api` scaffold + temporal profiler** (`ARCHITECTURE.md §12`) before any other backend feature | golden timelines, property tests and tier-leak test pass; hot path p95 ≤ 300 ms |
 | 1 | Chat takeover + **motion L2 (gesture + spring)**, Luna mock, rows, partner + shop sheets | composer replaces bar with a continuous, interruptible transition; rows match `02`; sign-in → signed in; purchase → calendar card |
 | 1b | **Luna API** (`apps/api`, LangGraph) behind `LUNA.understand` | golden set passes; web works with the API off; `via` shows in the log |
 | 2 | Guide, approvals + events, banner | six waypoints any order; belt saved; approval lists shared / never shared |
 | 3 | Recovery, Services / Me, merchant + onboarding | cash and card paths end at `READY` or `PREPARED_NOT_FILED`; order accepted → ready-time |
 | 4 | Backstage, tour, retouch list | triggers fire once; log filters |
 | 5 | Resident/VIP arc (R-series) | Gate R in §4 |
+| loop | **Next picked case** from `demo/_ref/services/cases.md` (§7.4) | that case's checks in `cases.md` |
 
 Audits at every gate: bridge audit `rg "quote\.|QUOTED|cart\.request|rx\.request|pickup\.request|payment\.charge"` returns nothing · no `allow-same-origin` · every price says `(demo)` · status words only from the CLAUDE.md list · no real brands.
 
@@ -271,3 +282,50 @@ Purpose: real user-understanding behind `LUNA.understand`. The web app is still 
 - **Dark mode:** not in the first pass. Reference captured (`x-location-geofence-darkmode.jpg`); build tokens as CSS variables so a dark set drops in at step 4 if the founder says go.
 - **Location / geofencing:** the web app has no background geofencing (CLAUDE.md rule 8) and never claims an indoor position (rule 3). Proximity scenes stay operator-fired `Demo trigger`s; an optional foreground `navigator.geolocation` button may be added behind explicit consent, labelled as approximate. The pin on any map is a place the user confirmed.
 - Out of scope here: memory persistence / checkpointer, Arabic RTL, real arrival-side maps and image licensing (retouch list in `redesign.md`).
+
+## 7. Home v2 + services loop (13 Oct)
+
+### 7.1 Platform order
+- **HTML lab first** (`demo/lab/`, ES modules, no build; edit → reload → private Artifact link on the iPhone). Modules are laid out like `apps/web/src/{shaders,motion,…}`, so the port is a copy.
+- **Vite + React second:** the picked shell and accepted cases are ported into `apps/web`.
+- **Swift later** (needs a Mac + Xcode).
+- Shaders match native (Safari runs WebGL2 on Metal). Native-only upgrades, kept for later: real Liquid Glass refraction, 120 Hz, haptics, share-sheet target, Live Activities.
+
+### 7.2 Home v2 shell (lab: `demo/lab/home-v2-cyan.html`, `home-v2-chromatic.html`)
+- **Layout:** glass AI search · **coverflow stage** · swatch rail · caption line · glass tab bar / composer. **No "Good morning {name}" + card list.**
+- **Onboarding:** soft reveal, one card at a time (blur → sharp, `img-fx` sweep).
+- **"You, over time" card:** the profile with a timeline scrubber; chips glow by confidence.
+- **"Try:" cards** come from `cases.md`.
+- **Stage shader:** one WebGL2 canvas behind the DOM cards.
+  - Centre card's band: **top aura** (dual-Kawase blur, ~1.35× width × 0.45× height) + **bottom glow** (mirrored, 24–40 px, 10–15%). Side cards get neither.
+  - Rendering: linear light, filmic tone map, blue-noise dither. Band at 1.0× DPR (cap 3), aura at 0.5×. Tiers A/B/C (C = video poster); reduced motion → static.
+- **Shader ports** (ShipSwift `SWMetal`, MIT, notice kept):
+  - GrainGradient / AnimatedMeshGradient: bands
+  - Foil: best price
+  - PolishedAluminum + IntenseBling: fastest/premium
+  - Glitter: provider events only
+  - ChromaticGlass: paperwork
+  - LiquidChrome: totals
+  - `metal-fx` silver on the one primary CTA
+  - One glow at a time.
+- **Palette:** two lab pages, cyan+purple vs chromatic (chromatic only inside shader media). The founder picks; if chromatic wins, the CLAUDE.md palette line is updated.
+- **Dev flags:** `?tune` · `?fps` · `?scene=<case>` · `?asof=<iso>`.
+
+### 7.3 Services surface (universal; from the pets ref's app style)
+- **Category registry** is data (`demo/lab/fixtures/categories.json` → `registry.categories`): id, group `shops|service`, label, glyph, subcategories, sources (Places types / partners), answer types, linked case. A new category is a row, not code.
+- **Surface:** glass category menu (All + categories + subcategories, searchable) · map ↔ list toggle (glyph pins / photo tiles) · one bottom sheet for any place.
+  - The sheet shows: photo, name, category chip, ★ · Google, distance estimate, "Partner (demo)".
+  - Its actions depend on what the provider supports: Directions / Call / Book / Order / Open app.
+- **Placement:** the Services tab opens it; cases open it pre-filtered. An ask with no matching category maps to the nearest one or "Other", and still shows results.
+- **Truth:** pins only from Places or partners; the user dot only with consent; Places on a Google Map with attribution (live).
+
+### 7.4 The loop
+| Step | Who | What | Done when |
+|---|---|---|---|
+| 1 Pick shell | Founder | Opens both lab Artifacts on the iPhone | Palette recorded |
+| 2 Pick next case | Founder | Claude asks with `idea` / `rebuild` cases from `demo/_ref/services/cases.md` | `picked` |
+| 3 Build | Claude | `?scene=<id>`, media, episodes → profile, Artifact republished, audits | `built`, link sent |
+| 4 Review | Founder | On the iPhone; notes by message or Artifact comments | Logged in the case, `in review` |
+| 5 Rebuild | Claude | Apply notes, re-audit, same link | Accept → `accepted`; else back to 4 |
+
+New ideas follow `demo/_ref/services/intake.md` (see CLAUDE.md "Service intake"). A case enters this plan only as "needs plan change", after the founder agrees.

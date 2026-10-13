@@ -153,3 +153,20 @@ Technique ideas for the WebGL2 layer (PLAN.md §6.8, L3). Re-implement in GLSL; 
 | Scroll / touch ripple | `SWWater`, `SWSwirl`, `SWVoronoi` |
 | Success / "found it" sparkle | `SWGlitter`, `SWIntenseBling` |
 | Dot-matrix accents | `SWDots*` family, `SWHalftone` |
+
+### More libraries.dev packages (found 13 Oct; no founder prompt supplied)
+
+| Package | Version | Licence | Peer | Use in Dubai-io |
+|---|---|---|---|---|
+| `metal-fx` | 2.0.11 | MIT | react, react-dom ≥ 18; WebGL2 (falls back to the plain child) | `MetalFx preset="silver"` on the one primary CTA. **No `gold`** (R0: no gold). `chromatic` only if the founder picks the chromatic palette. `reflectionTargets` lets neighbouring cards catch the metal |
+| `img-fx` | 0.5.1 | MIT | react, react-dom ≥ 18, `three` ≥ 0.149 | `ImageGeneration`: `sweep-gradient` for the onboarding soft reveal; `pixels-organic` only where an image is really generated (try-on). Lazy-load (three is heavy) |
+| `liquid-gooey` | 0.2.2 | MIT | react, react-dom ≥ 18 | `Liquid` merges: agent-lane pills → one total; fitting-tray pill |
+| `bot-avatars` | 0.2.2 | MIT | react ≥ 18 (2D canvas) | Not used (the ThinkingOrb is the avatar) |
+
+### ShipSwift update
+
+ShipSwift is **MIT**, so porting is allowed as long as the licence notice is kept in each ported shader file (the earlier "do not copy" note is superseded).
+- **Holographic set** (`demo/_ref/carousel/holographi ccards.mp4`): `SWFoil`, `SWGlitter`, `SWIntenseBling`, `SWChromaticGlass`, `SWPolishedAluminum`, drag/tilt-driven.
+- **Gradient source:** `SWGrainGradient`, `SWAnimatedMeshGradient` (`SWAnimation/`).
+
+Mapping is in `PLAN.md` §7.2. The native app later uses the Swift originals.
