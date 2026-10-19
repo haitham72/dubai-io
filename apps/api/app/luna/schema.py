@@ -5,7 +5,7 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
 
-Intent = Literal["lost_item", "airport_guide", "service_offers", "places_near", "greeting", "smalltalk", "unclear"]
+Intent = Literal["lost_item", "airport_guide", "service_offers", "places_near", "order_status", "greeting", "smalltalk", "unclear"]
 Service = Literal["laundry", "cleaning", "ac", "grooming", "carwash", "pharmacy", "maid"]
 Category = Literal["pets", "food", "coffee", "barber", "home-help", "laundry", "clothing", "fix-it"]
 FactKey = Literal["area", "hotel", "terminal", "taxi_plate", "taxi_roof", "deadline", "pet", "language", "other"]

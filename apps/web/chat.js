@@ -61,6 +61,7 @@ export function route(text) {
   }
   if (svc) return { intent: 'service_offers', service: svc.id, conf: 0.75 };
   if (HELLO.test(q)) return { intent: 'greeting', conf: 0.95 };
+  if (/\b(my order|order status|is (it|my \w+) ready|ready yet|has the (shop|laundry|merchant))\b/.test(q)) return { intent: 'order_status', conf: 0.9 };
   if (THANKS.test(q)) return { intent: 'thanks', conf: 0.95 };
   return { intent: 'unclear', conf: 0.3 };
 }
@@ -142,6 +143,7 @@ export async function handle(text) {
       return ctx.enterResults({ ask: text, cat: r.cat, sub: r.sub });
     }
     case 'greeting': return botSay(`<p>Hi! Ask me for a service, a place nearby or help at the airport, or tell me if you’ve lost something.</p>${chips(['Guide me through the airport', 'Home cleaning prices', 'Coffee near me', 'I lost my wallet'])}`);
+    case 'order_status': return orderStatus();
     case 'smalltalk': return botSay('<p>'+esc(r.reply||'How can I help?')+'</p>');
     case 'thanks': return botSay(`<p>Anytime.</p>`);
     default: return botSay(`<p>${esc(r.clarify || 'I’m not sure I got that. Which of these is closest?')}</p>${chips(['Find a place near me', 'Compare a service', 'I lost something', 'Help at the airport'])}<p class="hint">I’d rather ask than guess.</p>`);
@@ -157,6 +159,16 @@ async function offers(id,request) {
     <div class="mini-rows">${top.map(p => `<div class="mr"><span class="logo" style="background:${p.color}">${esc(p.logo)}</span><span class="mr-t"><b>${esc(p.name)}</b><em>from AED ${p.from.toLocaleString('en-US')} ${esc(p.unit)} (demo) · ${esc(p.eta)} (demo)</em></span>${p.offer ? `<span class="mr-o">${svg('tag', 'ic xs')}</span>` : ''}</div>`).join('')}</div>
     <button class="btn primary sm" data-service-request="${g.id}" data-request-text="${esc(request||'')}">Plan this request</button>
     <button class="btn sm" data-offers="${g.id}">See all ${g.providers.length} offers ${svg('chev', 'ic xs')}</button>`);
+}
+
+// Status questions are answered from the server's order record, never from model text (rule 1).
+async function orderStatus() {
+  let orders = [];
+  try { orders = (await api('/api/actions')).actions.filter(a => a.capability_id === 'order.request' && a.status !== 'DRAFT' && a.status !== 'AWAITING_APPROVAL'); } catch { /* offline */ }
+  if (!orders.length) return botSay('<p>I don’t see an order you’ve sent from this device yet.</p>');
+  const latest = orders.sort((a, b) => (b.events.at(-1)?.at || '').localeCompare(a.events.at(-1)?.at || ''))[0];
+  await botSay('<p>Here is the latest from the shop’s own updates:</p>');
+  trackOrder(latest);
 }
 
 async function airport() {

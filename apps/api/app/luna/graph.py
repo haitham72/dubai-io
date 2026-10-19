@@ -20,7 +20,9 @@ import re
 import time
 from typing import Annotated, Optional, TypedDict
 
-from langgraph.checkpoint.memory import InMemorySaver
+import sqlite3
+
+from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.graph import END, START, StateGraph
 from openai import OpenAI
 
@@ -40,6 +42,7 @@ Intents:
   grooming (pet grooming at home), carwash (car wash at home), pharmacy (medicine delivery), maid (hiring a maid or nanny with a visa).
 - places_near: they want a place nearby to go to. category is one of:
   pets, food, coffee, barber, home-help, laundry, clothing, fix-it. subcategory if obvious (e.g. Grooming, Vet, 24h, Restaurants).
+- order_status: they ask about an order or request they already sent (is it ready, accepted, when). Never state its status yourself; the app reads it from the order record.
 - greeting, smalltalk: hello, thanks, chit-chat.
 - unclear: you cannot tell. Then ask one short clarifying question in `clarify`.
 
@@ -157,7 +160,10 @@ def build():
     g.add_edge("understand", "validate")
     g.add_edge("validate", "remember")
     g.add_edge("remember", END)
-    return g.compile(checkpointer=InMemorySaver())
+    # Conversation state survives restarts (thread-scoped short-term memory; the profile is long-term memory).
+    settings.data_dir.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(settings.data_dir / "luna_checkpoints.sqlite3", check_same_thread=False)
+    return g.compile(checkpointer=SqliteSaver(conn))
 
 
 graph = build()
