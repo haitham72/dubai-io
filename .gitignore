@@ -13,3 +13,4 @@ output/playwright/
 
 apps/api/data/*.sqlite3*
 apps/api/data/oauth.key
+output/

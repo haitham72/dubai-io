@@ -102,28 +102,33 @@ Founder correction: all services must use the agentic loop in `PLAN.md` §7.8. A
 
 ## Commands
 
-PowerShell setup and troubleshooting: [`demo/run.md`](demo/run.md). From the repository root:
+From the repository root:
 
 ```powershell
-node demo/lab/tests/profile.test.mjs
+node apps/web/tests/profile.test.mjs
+node apps/web/tests/recovery.test.mjs
+node apps/web/tests/luna-client.test.mjs
 cd apps/api
 .\.venv\Scripts\python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
-Open http://localhost:8000 (cyan lab); health is `/api/health`. This serves the API, but lab chat remains the keyword router until wired. In another terminal, from `apps/api`:
+Open http://localhost:8000 (cyan app); health is `/api/health`. Hash flags jump to a flow: `#wifi` (arrival), `#intro` (onboarding), `#services`, `#guide`, `#profile`. In another terminal, from `apps/api`:
 
 ```powershell
-.\.venv\Scripts\python -m pytest -q
+.\.venv\Scripts\python -m pytest -q tests
 ```
 
-- Legacy v1: `cd demo`, then `python -m http.server 8765`; open http://localhost:8765.
+`tests/` only — a bare `pytest` walks `data/` and fails with a `PermissionError` on Windows. The 11 skipped tests are the live Luna golden cases; run `$env:RUN_LIVE=1` before a rehearsal.
+
 - Planned React app, once scaffolded: from `apps/web`, `npm install`, then `npm run dev -- --host`. HTTPS is needed for phone microphone/compass permissions.
 - Migrate / seed / contracts commands are not implemented yet.
+- `pytest` requires `python-dotenv`; if `.env` is missing, keys stay unset and `/api/luna/turn` returns 503.
+
 
 ## Working conventions
 
 - Repo: `github.com/haitham72/dubai-io` (private). Current working branch: `redesign`; `main` holds the paper trail.
 - Current Luna contract changes start in `apps/api/app/luna/schema.py`. Once scaffolded, shared contracts change in `packages/contracts`, then generated types, then consumers.
 - Every workflow ships with fixtures, a happy-path test and a failure-path test (provider timeout, merchant decline, empty retrieval, duplicate submit).
-- Palette: cyan with the approved purple fringe. Lab tokens/styles live in `demo/lab/stage.css`, `stage-v3.css` and `data.js`; legacy v1 tokens live in `demo/styles.css`. The chromatic variant remains only pending cleanup. Do not invent new palettes.
+- Palette: cyan with the approved purple fringe. Tokens/styles live in `apps/web/stage.css`, `stage-v3.css` and `data.js`. The chromatic variant has been removed. Do not invent new palettes.
 - Keep the docs short. Tick `PLAN.md` checkboxes, and don't create new planning docs.

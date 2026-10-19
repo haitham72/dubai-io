@@ -44,11 +44,19 @@ Open `http://localhost:8000` (or `http://<your-ip>:8000` on mobile on the same W
 ```powershell
 # Backend tests (Python / pytest)
 cd apps/api
-.\.venv\Scripts\pytest
+.\.venv\Scripts\python -m pytest -q tests
 
-# Frontend tests (Node.js)
+# Frontend tests (Node.js) — 107 checks across 3 files
 node apps/web/tests/profile.test.mjs
 node apps/web/tests/recovery.test.mjs
+node apps/web/tests/luna-client.test.mjs
+```
+
+The 11 skipped backend tests are the live Luna golden cases. Run them before a rehearsal:
+
+```powershell
+$env:RUN_LIVE=1
+.\.venv\Scripts\python -m pytest -q tests
 ```
 
 ## Documentation Map
@@ -62,5 +70,6 @@ Agents and contributors should read: `CLAUDE.md` → `PLAN.md` → `ARCHITECTURE
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Target architecture, state machine, trust boundary |
 | [Handoff](docs/handoff.md) | Current implementation status and active review prompts |
 | [Product Review](docs/DUBAI-IO_Product_Enhancement_Review.md) | Strategic & technical product evaluation |
-| [Gemini Review](docs/gemini-review.md) | Architectural critique, roadmap, and alignment notes |
+| [Gemini Review](docs/gemini-review.md) | Architectural critique, roadmap, and alignment notes (see its correction banner — repo paths reconciled 19 Oct) |
+| [Independent Review](docs/space-bunny_review.md) | Third peer review: scope arbitration, live-proof gap analysis, sprint plan |
 | [Cases](docs/services/cases.md) / [Intake](docs/services/intake.md) | Service catalog cases and intake rules |
