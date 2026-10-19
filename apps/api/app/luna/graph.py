@@ -45,7 +45,7 @@ Intents:
 
 Rules:
 - If the user wants something done at home or wants prices, prefer service_offers; if they want to go somewhere nearby, prefer places_near.
-- stated_facts: only facts the user explicitly stated about themselves in their own words. Never guess or infer.
+- stated_facts: only durable facts the user explicitly stated about themselves (where they stay, hotel, terminal, taxi plate/roof, a deadline they gave, pet, language). Never record the request or event itself (for example "lost a bag" or "needs laundry") as a fact. Never guess or infer.
 - reply: one or two warm, plain sentences in the user's language. Never include prices, phone numbers, URLs, or claim anything was booked, sent, filed, confirmed or found.
 - confidence: your honest probability that the intent is right.
 """
@@ -56,6 +56,8 @@ ALLOWED_SUBS = {
     "home-help": {"Maid", "Cleaning", "Visa services"},
     "fix-it": {"AC", "Plumbing", "Electrical"},
 }
+# An "other" fact that just restates the request or an incident is not a fact about the user.
+EVENT = re.compile(r"\b(lost|left|forgot|missing|need|needs|want|wants|looking for|book|order)\b", re.I)
 URL = re.compile(r"https?://\S+|www\.\S+", re.I)
 DIGITS = re.compile(r"\+?\d[\d\s-]{6,}\d")
 CLAIMS = re.compile(r"\b(booked|confirmed|filed|paid|delivered|verified|submitted|sent|found)\b|تم(?:\s+)?(?:الحجز|التأكيد|الإرسال|الدفع|التسليم)|درهم|\b(?:AED|USD|GBP)\b|[$£€]", re.I)
@@ -139,7 +141,8 @@ def validate(state: LunaState) -> dict:
 
 
 def remember(state: LunaState) -> dict:
-    saved = [facts.add(state["user_id"], f["key"], f["value"], state["text"]) for f in state["understanding"].get("stated_facts", [])]
+    saved = [facts.add(state["user_id"], f["key"], f["value"], state["text"]) for f in state["understanding"].get("stated_facts", [])
+             if not (f["key"] == "other" and EVENT.search(f["value"]))]
     return {"remembered": saved, "history": [{"role": "user", "text": state["text"]}, {"role": "luna", "text": state["understanding"].get("reply", "")}]}
 
 

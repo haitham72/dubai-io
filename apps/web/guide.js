@@ -122,16 +122,18 @@ function taxiMemory() {
     <form id="taxiForm" class="tf">
       <label for="plate">Plate number (on the car or the receipt)</label><input id="plate" placeholder="e.g. 12345" value="${esc(told.plate || '')}" />
       <label for="roof">Roof colour</label><input id="roof" placeholder="e.g. red" value="${esc(told.roof || '')}" />
+      <label for="tfTo">Going to (hotel area)</label><input id="tfTo" placeholder="e.g. Dubai Marina" value="${esc(told.area || '')}" />
       <div class="actions"><button type="button" class="btn" id="tfSkip">Not now</button><button class="btn primary">Save</button></div>
     </form>
     <p class="fine">Shown back to you as “You told me”. Never shared without your approval.</p>`);
   $('#tfSkip').addEventListener('click', () => { closeSheet(); finish('Taxi'); });
   $('#taxiForm').addEventListener('submit', e => {
     e.preventDefault();
-    const plate = $('#plate').value.trim(), roof = $('#roof').value.trim();
+    const plate = $('#plate').value.trim(), roof = $('#roof').value.trim(), to = $('#tfTo').value.trim();
     if (plate) told.plate = plate;
     if (roof) told.roof = roof;
-    told.trip = { from: `DXB ${G.terminal === '?' ? '' : 'T' + G.terminal}`.trim(), to: 'Dubai Marina', at: new Date() };
+    if (to) told.area = to; // the hotel area carries into later requests ("You told me")
+    told.trip = { from: `DXB ${G.terminal === '?' ? '' : 'T' + G.terminal}`.trim(), to: to || told.area || '', at: new Date() };
     closeSheet(); finish('Taxi');
   });
 }

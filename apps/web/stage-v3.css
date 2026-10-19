@@ -270,3 +270,5 @@
 .status .st-head { align-items: flex-start; }
 .status .st-head .logo { flex: none; width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; background: #E8F1F4; color: var(--tint-ink); font-weight: 700; font-size: 13px; }
 .status .st-head > div { flex: 1; }
+.demo-label { position: fixed; z-index: 9999; top: max(6px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); pointer-events: none;
+  font: 600 11px/1 var(--font); letter-spacing: .02em; color: #8A5A00; background: #FFF4D6; padding: 5px 10px; border-radius: 999px; white-space: nowrap; }

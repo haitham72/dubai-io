@@ -34,6 +34,11 @@ const flags = (() => {
   location.hash.replace(/^#/, '').split('.').filter(Boolean).forEach(t => f.add(t));
   return f;
 })();
+// Stage mode (PLAN §3): a persistent "Scripted demo" label; ?demo or #demo, kept for this tab.
+try { if (flags.has('demo')) sessionStorage.setItem('dubaiio.demo', '1'); } catch { /* storage blocked */ }
+if (flags.has('demo') || (() => { try { return sessionStorage.getItem('dubaiio.demo') === '1'; } catch { return false; } })()) {
+  document.body.insertAdjacentHTML('beforeend', '<div class="demo-label" role="note">Scripted demo · sandbox merchant · demo data</div>');
+}
 const paletteName = window.PALETTE in PALETTES ? window.PALETTE : 'cyan';
 const palette = PALETTES[paletteName];
 const store = {

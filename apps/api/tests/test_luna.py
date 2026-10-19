@@ -99,3 +99,9 @@ def test_thread_key_is_scoped_to_user(monkeypatch):
     luna.turn("b:c", "a", "hi")
     luna.turn("c", "a:b", "hi")
     assert calls[-1] != calls[-2]
+
+
+def test_requests_and_incidents_are_not_stored_as_user_facts():
+    from app.luna.graph import EVENT
+    assert EVENT.search("Left their bag in a taxi") and EVENT.search("Needs a shirt pressed")
+    assert not EVENT.search("Meeting at 9am") and not EVENT.search("leftover rice")

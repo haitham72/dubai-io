@@ -168,8 +168,8 @@ async function startGuideFlow(term) {
     terminal: term,
     onDone: async res => {
       if (!res || !res.mode) { await botSay(`<p>Guide closed. Say “guide me” any time to pick it up again.</p>`); return; }
-      const mem = [told.belt && `belt ${esc(told.belt)}`, told.plate && `taxi ${esc(told.plate)}${told.roof ? ` (${esc(told.roof)} roof)` : ''}`].filter(Boolean);
-      await botSay(`<p>${res.mode === 'Metro' ? 'Enjoy the ride. Keep your Nol card handy.' : res.mode === 'Taxi' ? 'Safe ride to Dubai Marina.' : 'You’re through arrivals.'}</p>
+      const mem = [told.belt && `belt ${esc(told.belt)}`, told.area && `going to ${esc(told.area)}`, told.plate && `taxi ${esc(told.plate)}${told.roof ? ` (${esc(told.roof)} roof)` : ''}`].filter(Boolean);
+      await botSay(`<p>${res.mode === 'Metro' ? 'Enjoy the ride. Keep your Nol card handy.' : res.mode === 'Taxi' ? `Safe ride${told.area ? ' to ' + esc(told.area) : ''}.` : 'You’re through arrivals.'}</p>
         ${mem.length ? `<p class="told">${svg('check', 'ic xs')} You told me: ${mem.join(' · ')}</p><p class="hint">If you leave something in the car, just say “I lost my wallet”.</p>` : ''}`);
     },
   });
