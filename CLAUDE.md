@@ -12,7 +12,7 @@ Dubai-io is a chat-first AI companion for people living in or visiting Dubai, bu
 
 Civic guidance (official sources, citations) is LATER, not in the contest build.
 
-**Stage: Phase 0 complete; apps/web + early API slice.** Current branch: `redesign`. `apps/web/` is the active cyan frontend (with Wi-Fi captive arrival, coverflow onboarding, airport guide, services catalog, and Luna chat). `apps/api/` serves the web app and exposes Luna, stated-fact memory, and Places/Routes endpoints. Web chat calls Luna on the API origin and falls back to the labelled router. Local anonymous sessions and SQLite request drafts/approvals are implemented; browser history saves plain text and report data. The configured Google OAuth connector is prepared but credentials are absent (ARCHITECTURE.md §§13–14). No live provider adapter is registered.
+**Stage: contest loop working (19 Oct).** Current branch: `redesign`. `apps/web/` is the cyan frontend; `apps/api/` serves it and runs Luna (understanding only), the action engine with the `order.request` capability and a **sandbox merchant inbox adapter** (`merchant.py`), host catalog pricing (`catalog.py`), SSE status, the proactive outbox (`proactive.py`), the profile store (`profile.py`), live Google Places/Routes, and a separate widget origin on `WIDGET_PORT`. No real merchant or government adapter exists. Status of record: `docs/handoff.md`.
 
 ## Research status
 

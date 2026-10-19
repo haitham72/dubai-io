@@ -33,6 +33,9 @@ cd apps/api
 Open `http://localhost:8000` (or `http://<your-ip>:8000` on mobile on the same Wi-Fi).
 
 - The backend serves `apps/web` directly at `/` (and `/index.html`).
+- Sandbox merchant inbox + operator Demo triggers: `http://localhost:8000/merchant.html` (PIN from `MERCHANT_PIN`, or generated into `apps/api/data/merchant.pin`). Use a second device on the same Wi-Fi on stage.
+- Mini-apps load from a separate widget origin on port `8001` (`WIDGET_PORT`), started by the same process.
+- `apps/api/.env`: `OPENAI_API_KEY`, `GOOGLE_PLACES_KEY` (Places + Routes), optional `LUNA_EFFORT` (`low` ≈ 2.3 s per turn).
 - To jump straight to specific stage flows, use hash flags:
   - `http://localhost:8000/#wifi` — Replays the full airport arrival & Wi-Fi captive portal sign-in flow.
   - `http://localhost:8000/#intro` — Replays the card onboarding intro.

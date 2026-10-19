@@ -143,7 +143,7 @@ adapter error with unknown outcome ─► UNKNOWN_STATUS
 - Each transition writes one outbox row → `action_status` message in the user's conversation and an inbox update for the merchant.
 - **Idempotency:** `POST /actions/{id}/approve` and every merchant command take an `Idempotency-Key`. A replay returns the original result.
 - Legacy `OPTIONS_READY` and `QUOTED`/`QUOTE_ACCEPTED` are dropped. Price is fixed at submit time from the merchant's published price list.
-- Current lab `offers.js` emits `SLOT_CONFIRMED` in its simulated track; it is not a canonical lifecycle state above. Align slot confirmation as provider-event metadata/wording without inventing a new lifecycle state.
+- Implemented (19 Oct): merchant commands in `apps/api/app/merchant.py` drive `ACCEPTED/READY/COMPLETED/DECLINED`; ready-time changes are `ready_time` events, not states. The client-simulated track and `SLOT_CONFIRMED` were removed.
 
 ---
 
@@ -308,7 +308,7 @@ Configuration: GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET, GOOGLE_OAUTH_
 
 ## 14. Shared local action engine
 
-Implemented in actions.py, with SQLite lab tables for sessions, actions, preparation keys and approval results. Capabilities declare allowed/required user-supplied fields, recipient, effect, optional server-published total and an adapter. Seven service categories plus taxi recovery are registered for preparation; every runtime adapter is absent. This is local infrastructure, not completed production/provider integration.
+Implemented in actions.py, with SQLite lab tables for sessions, actions, preparation keys and approval results. Capabilities declare allowed/required user-supplied fields, recipient, effect, optional server-published total and an adapter. Seven service categories plus taxi recovery are registered for preparation without adapters. `order.request` (19 Oct) prices orders from the host catalog and executes through the sandbox merchant inbox adapter; acceptance comes only from a merchant session. This is local infrastructure, not completed production/provider integration.
 
 prepare validates the capability/fields, preserves missing facts, deduplicates retries and saves DRAFT, BLOCKED or AWAITING_APPROVAL. approve binds snapshot hash and revision plus current recipient/effect/published cost. It persists DISPATCHING before the adapter call, prevents duplicate/concurrent dispatch and accepts SUBMITTED only on registered provider evidence. Exceptions/unverified responses/interrupted dispatch become UNKNOWN_STATUS and cannot automatically resend. Discard only affects unsent drafts; dispatched cancellation needs a provider-specific capability. Timestamped events and drafts survive restart.
 

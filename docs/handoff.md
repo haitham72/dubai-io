@@ -1,78 +1,43 @@
-# Handoff: Dubai-io monorepo build, 19 Oct 2026
+# Handoff: Dubai-io, 19 Oct 2026 (evening)
 
-**Branch:** `redesign` (current working branch).  
-**Read order for any incoming LLM:** `CLAUDE.md` → `PLAN.md` → `ARCHITECTURE.md` → `docs/handoff.md` → `docs/gemini-review.md`.
+**Branch:** `redesign`. **Read order:** `CLAUDE.md` → `PLAN.md` (19 Oct decisions in its header) → `ARCHITECTURE.md` → this file → `docs/main-llm-adjudication.md` (review verdicts, critical path §7). The other reviews in `docs/` are frozen.
 
----
+## 1. Run it
 
-## 1. Clean Monorepo Architecture (Completed 19 Oct)
-
-The repository layout has been modernized to eliminate the confusing `demo/` folder structure:
-
-```
-dubai-io/
-├── apps/
-│   ├── web/                    # Active frontend (HTML/CSS/ES modules; Wi-Fi arrival, coverflow, guide, services, chat)
-│   └── api/                    # Backend API (Python 3.13, FastAPI, LangGraph Luna agent, Places/Routes)
-├── design/
-│   ├── references/             # UI flow reference images (01 - visitor wifi.jpg, carousels, flow PNGs)
-│   └── screens/                # High-level mockups & montage exports
-├── docs/
-│   ├── handoff.md              # This handoff document
-│   ├── DUBAI-IO_Product_Enhancement_Review.md # Strategic product review (Oct 18)
-│   ├── gemini-review.md        # Architectural review & next steps (Oct 19)
-│   ├── references/             # redesign.md, visuals-libraries.md
-│   └── services/               # cases.md, intake.md
-├── CLAUDE.md                   # Agent engineering rules & constraints
-├── PLAN.md                     # Contest plan, scope boundaries, phases
-├── ARCHITECTURE.md             # Target contracts & architecture
-└── README.md                   # Quickstart guide
+```powershell
+cd apps/api
+.\.venv\Scripts\python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
-* **Legacy `demo/` Retired:** The obsolete prototype (`demo/index.html`) has been completely removed from the `redesign` branch (preserved in `main` history).
-* **`feat/miniapp-bridge` Stale Branch Deleted:** The stale bridge branch and temporary worktree were pruned.
-* **Unified Single Origin:** `apps/api` serves `apps/web` directly at `http://localhost:8000/`. `apps/web/index.html` (the Wi-Fi arrival flow) is the default entry point.
+| URL | What |
+|---|---|
+| `http://<host>:8000/` | The app (`#wifi`, `#intro`, `#services`, `#guide`, `#profile` jump to flows) |
+| `http://<host>:8000/merchant.html` | Sandbox merchant inbox + operator Demo triggers. PIN: `MERCHANT_PIN`, or generated into `apps/api/data/merchant.pin` at startup |
+| `http://<host>:8001/miniapps/…` | Separate widget origin (same process; `WIDGET_PORT`, 0 disables) |
 
----
+`.env` (in `apps/api`, not committed): `OPENAI_API_KEY`, `GOOGLE_PLACES_KEY` (Places + Routes), optional `LUNA_EFFORT` (local is `low`: median 2.3 s vs 4.7 s at `high`, same 4/4 accuracy on the bench), `MERCHANT_PIN`. Web assets are served `no-cache`, so phones pick up edits on reload.
 
-## 2. Current Implementation State
+## 2. What works end to end (verified in a browser, 19 Oct)
 
-- **Wi-Fi Arrival & Onboarding (`apps/web/arrival.js`):**
-  - iOS Wi-Fi settings mock (`#wifi`) → Join "Airport Free Wi-Fi" → Captive sign-in sheet ("Welcome to Dubai · sponsored by Dubai-io") → Install sheet ("Dubai-io / Your Dubai companion", GET) → App expands into coverflow onboarding.
-- **Home Stage & Services:**
-  - Shader coverflow stage (Cyan theme; C1 reflection at 70% intensity = 0.385).
-  - Universal services catalog (`apps/web/offers.js`, `services.js`) with grouped categories, published fixed prices, and sandboxed mini-app modal sheets.
-- **AI Companion (Luna):**
-  - `apps/web/chat.js` communicates with `POST /api/luna/turn` on `apps/api`.
-  - Falls back gracefully to the labelled client router if backend is offline.
-  - User stated facts stored in `apps/api/data/memory.json` with "You told me" badges and full view/edit/forget endpoints.
-- **Action Persistence:**
-  - `apps/api/app/actions.py` implements anonymous sessions, SQLite storage, idempotent approval tokens, and strict status gating (`UNKNOWN_STATUS`).
+1. **Luna** runs at `/` (gated on `/api/health`, not the URL path). Understanding only; facts the user states show once as "You told me".
+2. **One order path.** Partner mini-app (separate origin, `sandbox="allow-scripts"`, CSP `connect-src 'none'`) asks via `order.request` → server rebuilds items/total from `apps/api/app/catalog.py` (widget prices ignored) → one approval card listing exact shared fields → `order.request` capability with the sandbox inbox adapter → `SUBMITTED` with a server reference.
+3. **Merchant inbox** (`merchant.py`): separate role, sees only its provider's orders and approved fields. Accept (with ready time) / confirm time / ready / complete / decline; idempotent; canonical states only.
+4. **Live status in chat** over SSE (`/api/actions/{id}/stream`, 1.5 s poll fallback); the card survives reload.
+5. **Deadline loop:** server compares the merchant's ready time with the user's stated deadline; "Ask for 08:30, same price" → merchant confirms → "meets your deadline. Confirmed by the shop, not by me."
+6. **Proactive** (`proactive.py`): outbox with `dedupe_key`, consent, quiet hours 23:00–07:00 Dubai. "Remind me before it's ready" schedules a user reminder; operator triggers (`fast_forward_reminders`, `flight_landed`) arrive labelled **Demo trigger**.
+7. **Profile** (`profile.py` + `profile-store.js`): real choices become episodes (allowlisted hypotheses only; sensitive traits cannot be stored); Confirm / Not true / Forget persist; Forget unlinks evidence. Fixture history is labelled "demo history".
+8. **Google live:** Routes ETA in the ride card ("Estimate · Google"); Places "Also nearby on Google" list on offers (discovery only, attributed, no prices, no map pins).
+9. **UI rule:** no shadows; AI text plain, user turn tinted box, actions in white rounded boxes (`stage-v3.css` "clean chat").
 
----
+## 3. Tests
 
-## 3. Test Verification (100% Green)
+`cd apps/api; .\.venv\Scripts\python -m pytest -q tests` → **62 passed, 11 skipped** (live Luna golden set; `$env:RUN_LIVE=1` before rehearsals).
+`node apps/web/tests/{profile,recovery,luna-client}.test.mjs` → 92 + 8 + 9.
 
-1. **Backend Tests:**
-   ```powershell
-   cd apps/api
-   .\.venv\Scripts\pytest
-   # Result: 40 passed, 11 skipped (paid golden cases) in 1.73s
-   ```
-2. **Frontend Tests:**
-   ```powershell
-   node apps/web/tests/profile.test.mjs
-   node apps/web/tests/recovery.test.mjs
-   # Result: 100 passed, 0 failed
-   ```
+## 4. Remaining (see adjudication §7)
 
----
-
-## 4. Immediate Next Objectives (For Incoming / Main LLM)
-
-1. **Review Strategic Docs:**
-   - Read [`docs/DUBAI-IO_Product_Enhancement_Review.md`](DUBAI-IO_Product_Enhancement_Review.md) (comprehensive product review) and [`docs/gemini-review.md`](gemini-review.md) (architectural recommendations).
-2. **Follow the critical path in [`main-llm-adjudication.md`](main-llm-adjudication.md) §7** (approved 19 Oct; decisions in `PLAN.md` header):
-   - Luna is understanding-only; the host (not Luna) builds the approval card from the server catalog.
-   - Approve → registered adapter → merchant inbox on a second device → a **real merchant tap** changes status in chat. Never simulate the merchant.
-3. **Stage cut = `PLAN.md` §3** (arrival → laundry deadline → taxi memory). The fine appeal is removed.
+- Taxi-memory payoff check on the stage path (step 11) and the "Scripted demo" label.
+- Rehearsal: 10 timed 4:00 runs on phone + second device; record the fallback video (step 15).
+- Optional: push-to-talk voice spike (step 14).
+- Stage-only: merchant tablet/phone on the same LAN; pre-warm one Luna turn.
+- Not production: SQLite, anonymous cookie sessions, sandbox merchant PIN; no real merchant yet (`PLAN.md` §5).
