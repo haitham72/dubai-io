@@ -28,7 +28,7 @@ docker compose --env-file .env up -d                                   # Postgre
 
 ```powershell
 cd apps/api
-.\.venv\Scripts\python -m pytest -q tests          # 75 passed, 11 live cases skipped ($env:RUN_LIVE=1 to run)
+.\.venv\Scripts\python -m pytest -q tests          # 76 passed, 11 live cases skipped ($env:RUN_LIVE=1 to run)
 node ../web/tests/profile.test.mjs; node ../web/tests/recovery.test.mjs; node ../web/tests/luna-client.test.mjs
 ```
 
