@@ -5,7 +5,7 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
 
-Intent = Literal["lost_item", "airport_guide", "service_offers", "places_near", "order_status", "info_question", "market_quote", "greeting", "smalltalk", "unclear"]
+Intent = Literal["lost_item", "airport_guide", "service_offers", "places_near", "order_status", "info_question", "market_quote", "product_search", "greeting", "smalltalk", "unclear"]
 Service = Literal["laundry", "cleaning", "ac", "grooming", "carwash", "pharmacy", "maid"]
 Category = Literal["pets", "food", "coffee", "barber", "home-help", "laundry", "clothing", "fix-it"]
 FactKey = Literal["area", "hotel", "terminal", "taxi_plate", "taxi_roof", "deadline", "pet", "language", "other"]
@@ -26,7 +26,7 @@ class Understanding(BaseModel):
     category: Optional[Category] = Field(description="places_near only")
     subcategory: Optional[str] = Field(description="places_near only, e.g. Grooming, Vet, 24h")
     terminal: Optional[Literal["1", "2", "3"]]
-    query: Optional[str] = Field(default=None, max_length=200, description="info_question only: a short web search query")
+    query: Optional[str] = Field(default=None, max_length=200, description="info_question: a short web search query; product_search: the product to search for, e.g. shampoo")
     symbol: Optional[str] = Field(default=None, max_length=15, description="market_quote only: the ticker symbol, e.g. AAPL, TSLA, BINANCE:BTCUSDT")
     stated_facts: list[StatedFact] = Field(description="Only facts the user explicitly stated about themselves. Never guesses.")
     reply: str = Field(max_length=300, description="One or two warm, plain sentences. No URLs, prices, phone numbers or order statuses.")

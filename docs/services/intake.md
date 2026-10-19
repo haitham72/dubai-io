@@ -36,7 +36,7 @@ Stop and tell the user if the idea needs any of:
 - a quote, bid or price negotiation
 - a government submission or payment
 - a status shown without a provider event (including "Verified")
-- a real brand on screen
+- government or official branding (impersonation), or a real person's face on a made-up character
 - AI advice in a safety-critical domain (medical, legal), which stays display + handoff only
 - inferring a sensitive trait (health, religion, ethnicity, nationality-as-trait, gender, sexuality, politics)
 

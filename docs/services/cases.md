@@ -4,7 +4,7 @@ Menu for picking the next case **after the January submission** (cases are froze
 
 **Status flow:** `idea → picked → built → in review → accepted`
 
-**Shared rules:** fixed published prices only (no quotes, bids or negotiation) · one approval before anything leaves the phone · status words only on a merchant/provider event · `(demo)` on every price, no real brands on screen · generated images say "AI preview"; try-on only with the user's own photo, 18+ · Google attribution on Places data · hypotheses only re-rank, with a "Because…" chip.
+**Shared rules:** fixed published prices only (no quotes, bids or negotiation) · one approval before anything leaves the phone · status words only on a merchant/provider event · fixture prices say `(demo)`; live data (real shops, products, prices) shows its source and time · generated images say "AI preview"; try-on only with the user's own photo, 18+ · Google attribution on Places data · hypotheses only re-rank, with a "Because…" chip.
 
 ## Index
 
@@ -79,7 +79,7 @@ Lanes Maid · Office · Visa fan out (ThinkingOrb, BorderBeam, pipeline sheet). 
 status: idea · refs `shops/cloth/` (`try it on - lens.jpg`) · scene `?scene=C2`
 
 **Ask:** "I need a summer outfit."
-- Marketplace lanes. Names on screen are fictional: Souq Express, CartNest, DealDash Dubai, Centre Style (demo). Real marketplaces appear only in the pitch; later real feeds come via affiliate APIs (LATER).
+- Marketplace lanes. Real marketplaces and products are fine on screen with source and time (e.g. Amazon.ae via SerpAPI).
 - Facets **Gender · Age · Item** over one merged photo-tile set (cut-out on a shader swatch, price (demo), ★, delivery time, shop badge). "By shop" toggle. Fitting-tray pill (gooey merge). Gender is never inferred: asked once, then confirmed.
 - Try It On sheet per the ref, restyled to our tokens: photo centred, items as bobbing stickers, hints "Full body · Front facing · Bright", **Try It On** / "Choose a different photo".
 - Approval first: "Your photo + N item images → Nano Banana via WaveSpeed. Not shared with shops. Deleted after the preview unless you keep it."
@@ -135,7 +135,7 @@ The pets ref also defines the universal **Services surface** (already built). Th
 - **Profile:** pet facts (name, species, breed, age band, vaccination due) stored only when told. Teaches a grooming-cadence routine, raised after ≥ 3 visits.
 
 ## C13 · Food: share or ask → the right kind of answer
-status: idea · **needs plan change** · refs `shops/restaurants/` (`food.jpg`; logic only, no creator likenesses) · scene `?scene=C13`
+status: idea · **needs plan change** · refs `shops/restaurants/` (`food.jpg`; logic only) · scene `?scene=C13`
 
 - **Input:** a dish photo · a food video (same routes as C11) · a typed ask ("craving koshari").
 - **Understanding:** frames/transcript or image → Claude → `{dish, cuisine, key_ingredients[], place_hint?}`, shown as "Looks like **koshari**" with *Not this* (a guess, never asserted).
@@ -143,13 +143,13 @@ status: idea · **needs plan change** · refs `shops/restaurants/` (`food.jpg`; 
   1. **Make it:** recipe with source link, time, difficulty ("AI-adapted" when adapted).
   2. **Watch it:** cooking videos → handoff to the video site.
   3. **Go there:** nearby restaurants (★ · Google, distance estimate, open now, price-from), map toggle.
-  4. **Get it delivered:** delivery apps, fictional on screen (Plate Run (demo), Souq Eats (demo)), ETA estimate, **published** offer only ("15% off first order · as of 13 Oct (demo)") → handoff. Partner restaurants open their own mini-app.
+  4. **Get it delivered:** delivery apps (real names fine, opened as a handoff), ETA estimate, **published** offer only ("15% off first order · as of 13 Oct (demo)") → handoff. Partner restaurants open their own mini-app.
 - **`intent-mix`, the counter-intuitive part:** the same photo is ordered differently by the temporal profile, with a "Because…" chip on each card.
   - Fri 13:00 → **Go there** first ("Because: you eat out on Friday lunch").
   - Tue 22:40 → **Get it delivered** first ("Because: late on weeknights you order in").
   - After 3 saved recipes → **Make it** first.
 - **Profile:** reads area, cuisine likes, and the conditional fact "cook / order / eat out by time-of-week". Diet, allergies and halal only if told. Teaches cuisine preference and the time-conditioned policy.
-- **Rules touched:** no real delivery brands on screen; offers merchant-published with `as_of`; no health advice in recipes beyond what the user told (e.g. allergy filter); videos and apps are handoffs.
+- **Rules touched:** offers merchant-published with `as_of`; no health advice in recipes beyond what the user told (e.g. allergy filter); videos and apps are handoffs.
 - **Needs plan change:** recipe/video search in 1b (Claude `web_search` server tool with citations + a video-search API key, server-side). Founder to agree before it enters `PLAN.md`.
 - **Open questions:** (1) order in-app for partner restaurants only? Default yes, others hand off. (2) Creator rail from the ref? Default out.
 - Lab: scripted photo → "Looks like koshari" → 4 cards, with a time toggle (Fri 13:00 / Tue 22:40) that reorders them live.

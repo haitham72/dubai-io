@@ -45,3 +45,11 @@ def test_quote_is_a_template_from_provider_data(monkeypatch):
 
 def test_bad_symbols_never_reach_the_provider():
     assert research.finnhub_quote("AAPL; DROP TABLE") is None
+
+
+def test_product_search_returns_links_and_prices_only(monkeypatch):
+    monkeypatch.setattr(research, "amazon_search", lambda q: [{"title": "Shampoo 400 ml", "price": "AED 17.20", "rating": 4.6, "reviews": 221,
+                                                              "thumbnail": "https://m.media-amazon.com/i.jpg", "link": "https://www.amazon.ae/dp/X", "asin": "X"}])
+    out = research.research({"intent": "product_search", "query": "shampoo"}, "find me shampoo", fake_client("never used"))
+    assert out["tool"] == "amazon" and len(out["products"]) == 1 and out["products"][0]["as_of"]
+    assert out["sources"][0]["url"].startswith("https://www.amazon.ae/s?k=")

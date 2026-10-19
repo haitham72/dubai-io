@@ -145,6 +145,7 @@ export async function handle(text) {
     case 'greeting': return botSay(`<p>Hi! Ask me for a service, a place nearby or help at the airport, or tell me if you’ve lost something.</p>${chips(['Guide me through the airport', 'Home cleaning prices', 'Coffee near me', 'I lost my wallet'])}`);
     case 'order_status': return orderStatus();
     case 'info_question': case 'market_quote': return botSay(answerHTML(r));
+    case 'product_search': return botSay(productsHTML(r), { wide: true });
     case 'smalltalk': return botSay('<p>'+esc(r.reply||'How can I help?')+'</p>');
     case 'thanks': return botSay(`<p>Anytime.</p>`);
     default: return botSay(`<p>${esc(r.clarify || 'I’m not sure I got that. Which of these is closest?')}</p>${chips(['Find a place near me', 'Compare a service', 'I lost something', 'Help at the airport'])}<p class="hint">I’d rather ask than guess.</p>`);
@@ -167,6 +168,19 @@ function answerHTML(r) {
   const at = r.sources?.[0]?.as_of ? new Date(r.sources[0].as_of).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '';
   const list = (r.sources || []).map(s => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${s.n ? `[${s.n}] ` : ''}${esc(s.title || s.url)}</a> <span>${esc(s.via)}</span></li>`).join('');
   return `<p>${esc(r.answer || r.reply || 'I couldn’t find that.')}</p>${list ? `<ol class="sources">${list}</ol><p class="hint">${r.tool === 'finnhub' ? 'Market data' : 'Web sources'}${at ? ', checked ' + at : ''}. Sources can be wrong; open them to confirm.</p>` : ''}`;
+}
+
+// Product search: live Amazon.ae listings (links, prices, thumbnails). Nothing is bought; a card opens Amazon.
+function productsHTML(r) {
+  const list = r.products || [];
+  if (!list.length) return `<p>${esc(r.answer || 'No products found.')}</p>`;
+  const at = list[0].as_of ? new Date(list[0].as_of).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '';
+  const card = p => `<a class="prod" href="${esc(p.link)}" target="_blank" rel="noopener noreferrer">
+      <span class="prod-img">${p.thumbnail ? `<img src="${esc(p.thumbnail)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : ''}</span>
+      <span class="prod-t">${esc(p.title)}</span>
+      <span class="prod-m">${p.price ? `<b>${esc(p.price)}</b>` : 'See price'}${p.rating ? ` · ★ ${p.rating}${p.reviews ? ` (${p.reviews.toLocaleString('en-US')})` : ''}` : ''}</span></a>`;
+  return `<p>${esc(r.answer)}</p><div class="prod-grid">${list.map(card).join('')}</div>
+    <p class="hint">Live from Amazon.ae via SerpAPI${at ? ', ' + at : ''}. Prices may change; nothing is bought here.</p>`;
 }
 
 // Status questions are answered from the server's order record, never from model text (rule 1).

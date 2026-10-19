@@ -13,6 +13,7 @@ Reference for wiring provider adapters. Scope still comes from `PLAN.md` §2; th
 | Drive time | Google Routes API | **Live** | Ride-card ETA, labelled `Estimate · Google` |
 | Fixed-price orders | Dubai-io sandbox merchant inbox | **Live** | `order.request` → `merchant.py`; real merchant taps |
 | Web answers | Tavily (primary), SerpAPI (fallback) | **Live** | Luna `info_question` → `luna/research.py`; answer only from cited sources; civic questions refused |
+| Product search | SerpAPI Amazon engine (`amazon.ae`) | **Live** | Luna `product_search` → 10 cards (image, AED price, rating) that open Amazon.ae; nothing is bought. Later: Creators API + affiliate tag once Associates qualifies |
 | Market quotes | Finnhub `/quote` | **Live** | Luna `market_quote`; fixed template, no model-written numbers |
 
 ## Read-only additions (fit the contest; need a key)

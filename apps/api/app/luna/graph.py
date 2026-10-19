@@ -46,6 +46,7 @@ Intents:
 - order_status: they ask about an order or request they already sent (is it ready, accepted, when). Never state its status yourself; the app reads it from the order record.
 - info_question: a factual question that needs current public information (opening hours, events, what something is, weather, news). Set query to a short search query. Not for services, places to go, orders or lost items.
 - market_quote: they ask for a stock or crypto price. Set symbol to the ticker.
+- product_search: they want to find or buy a physical product (shampoo, charger, sunscreen). Set query to the product. Not for services done for them or places to go.
 - greeting, smalltalk: hello, thanks, chit-chat.
 - unclear: you cannot tell. Then ask one short clarifying question in `clarify`.
 
@@ -129,7 +130,7 @@ def understand(state: LunaState) -> dict:
 def validate(state: LunaState) -> dict:
     u = dict(state["understanding"])
     # keep slots only where they belong to the intent
-    keep = {"lost_item": {"item", "where_lost"}, "airport_guide": {"terminal"}, "service_offers": {"service"}, "places_near": {"category", "subcategory"}, "info_question": {"query"}, "market_quote": {"symbol"}}.get(u["intent"], set())
+    keep = {"lost_item": {"item", "where_lost"}, "airport_guide": {"terminal"}, "service_offers": {"service"}, "places_near": {"category", "subcategory"}, "info_question": {"query"}, "market_quote": {"symbol"}, "product_search": {"query"}}.get(u["intent"], set())
     for slot in ("item", "where_lost", "service", "category", "subcategory", "terminal", "query", "symbol"):
         if slot not in keep:
             u[slot] = None
@@ -153,7 +154,7 @@ def remember(state: LunaState) -> dict:
     return {"remembered": saved, "history": [{"role": "user", "text": state["text"]}, {"role": "luna", "text": state["understanding"].get("reply", "")}]}
 
 
-RESEARCH = {"info_question", "market_quote"}
+RESEARCH = {"info_question", "market_quote", "product_search"}
 
 
 def research(state: LunaState) -> dict:
@@ -202,7 +203,7 @@ def turn(thread_id: str, user_id: str, text: str) -> dict:
         "model": out.get("model"),
         "ms": out.get("ms"),
         "remembered": out.get("remembered", []),
-        **({"answer": out["research"]["answer"], "sources": out["research"]["sources"], "tool": out["research"]["tool"]}
+        **({"answer": out["research"]["answer"], "sources": out["research"]["sources"], "tool": out["research"]["tool"], "products": out["research"].get("products", [])}
            if out["understanding"]["intent"] in RESEARCH and out.get("research") else {}),
         "told": facts.current(user_id),
         "turns": len(out.get("history", [])) // 2,

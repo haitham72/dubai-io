@@ -1,5 +1,5 @@
 // Understanding only; this module never executes service actions.
-const INTENTS = new Set(['lost_item','airport_guide','service_offers','places_near','order_status','info_question','market_quote','greeting','smalltalk','unclear']);
+const INTENTS = new Set(['lost_item','airport_guide','service_offers','places_near','order_status','info_question','market_quote','product_search','greeting','smalltalk','unclear']);
 const SERVICES = new Set(['laundry','cleaning','ac','grooming','carwash','pharmacy','maid']);
 const CATEGORIES = new Set(['pets','food','coffee','barber','home-help','laundry','clothing','fix-it']);
 export function mapUnderstanding(value) {
@@ -11,8 +11,11 @@ export function mapUnderstanding(value) {
   if(r.intent==='lost_item'){r.item=typeof value.item==='string'?value.item.slice(0,80):'item';r.where=['taxi','metro','shop'].includes(value.where_lost)?value.where_lost:null;}
   if(r.intent==='airport_guide')r.terminal=['1','2','3'].includes(value.terminal)?value.terminal:null;
   if(r.intent==='service_offers'){if(!SERVICES.has(value.service))throw new Error('Unknown service');r.service=value.service;}
-  if(['info_question','market_quote'].includes(r.intent)){r.answer=typeof value.answer==='string'?value.answer.slice(0,700):'';r.tool=typeof value.tool==='string'?value.tool.slice(0,20):'';
+  if(['info_question','market_quote','product_search'].includes(r.intent)){r.answer=typeof value.answer==='string'?value.answer.slice(0,700):'';r.tool=typeof value.tool==='string'?value.tool.slice(0,20):'';
     r.sources=(Array.isArray(value.sources)?value.sources:[]).filter(s=>s&&typeof s.url==='string'&&/^https:\/\//.test(s.url)).slice(0,5).map(s=>({n:Number.isInteger(s.n)?s.n:null,title:String(s.title||'').slice(0,120),url:s.url,via:String(s.via||'').slice(0,30),as_of:String(s.as_of||'')}));}
+  if(r.intent==='product_search')r.products=(Array.isArray(value.products)?value.products:[]).filter(p=>p&&typeof p.link==='string'&&/^https:\/\/www\.amazon\.ae\//.test(p.link)&&typeof p.title==='string').slice(0,10)
+    .map(p=>({title:p.title.slice(0,140),link:p.link,price:typeof p.price==='string'?p.price.slice(0,20):null,rating:Number.isFinite(p.rating)?p.rating:null,reviews:Number.isInteger(p.reviews)?p.reviews:null,
+      thumbnail:typeof p.thumbnail==='string'&&/^https:\/\/m\.media-amazon\.com\//.test(p.thumbnail)?p.thumbnail:null,as_of:String(p.as_of||'')}));
   if(r.intent==='places_near'){if(!CATEGORIES.has(value.category))throw new Error('Unknown category');r.cat=value.category;r.sub=typeof value.subcategory==='string'?value.subcategory.slice(0,80):null;}
   return r;
 }

@@ -13,7 +13,7 @@
 
 ## State
 
-Working end to end (browser-verified 19 Oct): Luna at `/` · one order path (server catalog prices → one approval → sandbox merchant inbox → live SSE card) · deadline loop (10:00 → ask 08:30 → merchant confirms) · reminders + labelled Demo triggers (dedupe, consent, quiet hours) · taxi memory → prefilled lost-item report · profile learning from real choices (Confirm / Not true / Forget persist) · profile document + bi-temporal facts in Postgres · Luna research tools (Tavily/SerpAPI cited answers, Finnhub quotes, civic questions refused) · live Google Routes ETA + Places list · mini-apps on a separate origin.
+Working end to end (browser-verified 19 Oct): Luna at `/` · one order path (server catalog prices → one approval → sandbox merchant inbox → live SSE card) · deadline loop (10:00 → ask 08:30 → merchant confirms) · reminders + labelled Demo triggers (dedupe, consent, quiet hours) · taxi memory → prefilled lost-item report · profile learning from real choices (Confirm / Not true / Forget persist) · profile document + bi-temporal facts in Postgres · Luna research tools (Tavily/SerpAPI cited answers, Finnhub quotes, civic questions refused) · product search (live Amazon.ae results via SerpAPI, links only) · live Google Routes ETA + Places list · mini-apps on a separate origin.
 
 Tests: 75 backend passed (also on Postgres with `TEST_DATABASE_URL`), 11 live cases skipped; JS 92 + 8 + 11.
 
