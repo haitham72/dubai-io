@@ -103,6 +103,15 @@ export function watchOrder(id, onUpdate) {
   return () => { closed = true; es?.close(); clearInterval(poll); };
 }
 
+// Per-browser memory of reminders already set (the server dedupes regardless).
+const REMINDED = 'dubaiio.reminded';
+const reminded = () => { try { return JSON.parse(localStorage.getItem(REMINDED) || '{}'); } catch { return {}; } };
+export async function remindWhenReady(id) {
+  const r = await api('/api/reminders', { method: 'POST', body: JSON.stringify({ action_id: id }) });
+  try { localStorage.setItem(REMINDED, JSON.stringify({ ...reminded(), [id]: r.scheduled_for })); } catch { /* private mode */ }
+  return r;
+}
+
 export async function requestEarlier(id, target) {
   return api(`/api/actions/${encodeURIComponent(id)}/request-earlier`, { method: 'POST', body: JSON.stringify({ target }) });
 }
@@ -127,11 +136,15 @@ export function orderCardHTML(a) {
   const conflict = dc ? (dc.meets
     ? `<p class="told">${svg('check', 'ic xs')} Ready ${esc(dc.ready_at)} meets your ${esc(dc.deadline)} deadline. Confirmed by the shop, not by me.</p>`
     : `<p class="warn">Ready ${esc(dc.ready_at)} misses your ${esc(dc.deadline)} deadline.</p>${a.status === 'ACCEPTED' ? (a.earlier_request ? `<p class="hint">Waiting for ${esc(o.provider)} to answer ${esc(a.earlier_request.target)}.</p>` : target ? `<button class="btn primary sm" data-earlier="${esc(a.id)}" data-target="${esc(target)}">Ask for ${esc(target)}, same price</button>` : '') : ''}`) : '';
+  const set = reminded()[a.id];
+  const remind = !['ACCEPTED', 'READY'].includes(a.status) || !a.ready_at || (dc && !dc.meets) ? ''
+    : set ? `<p class="hint">${svg('clock', 'ic xs')} Reminder set for ${esc(new Date(set).toLocaleString('en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Dubai' }))} (quiet hours 23:00–07:00 respected)</p>`
+    : `<button class="btn sm" data-remind="${esc(a.id)}">${svg('clock', 'ic xs')} Remind me before it’s ready</button>`;
   const pending = a.status === 'SUBMITTED' ? `<p class="hint">Waiting for the merchant. No status changes until they tap.</p>` : a.status === 'UNKNOWN_STATUS' ? `<p class="warn">${esc(a.blocked_reason || 'Outcome unknown.')}</p>` : '';
   return `<div class="msg bot wide status" data-order="${esc(a.id)}">
     <div class="st-head"><span class="logo">${esc((o.provider || '?').slice(0, 2).toUpperCase())}</span><div><b>${esc(o.provider || a.recipient)}</b><span>${o.lines.map(l => `${l.qty}× ${esc(l.name)}`).join(', ')} · ${money(a.fixed_total_aed)} (demo)</span></div><span class="pill">Sandbox merchant · live</span></div>
     <ol class="st-steps">${steps.map(x => `<li class="${x === last ? 'now' : ''}"><span class="st-dot"></span><div><b>${esc(x.label)}</b><span><code>${x.code}</code> · ${fmt(x.at)}</span></div></li>`).join('')}</ol>
-    ${conflict}${pending}
+    ${conflict}${pending}${remind}
     <p class="st-ref">${a.evidence ? `Ref ${esc(a.evidence.reference)} · ` : ''}the price can’t change now</p>
   </div>`;
 }

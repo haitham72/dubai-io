@@ -48,7 +48,16 @@ async function command(btn) {
 
 const refresh = () => call('/api/merchant/orders').then(d => render(d.orders)).catch(() => {});
 
+async function ops() {
+  try {
+    const { triggers } = await call('/api/demo/triggers');
+    $('#opsButtons').innerHTML = triggers.map(t => `<button data-trigger="${esc(t.kind)}" title="${esc(t.description)}">${esc(t.kind.replaceAll('_', ' '))}</button>`).join('');
+    $('#ops').hidden = false;
+  } catch { /* not signed in */ }
+}
+
 function live() {
+  ops();
   es?.close();
   es = new EventSource('/api/merchant/stream');
   es.onmessage = m => { try { render(JSON.parse(m.data)); } catch { /* ignore */ } };
@@ -57,6 +66,11 @@ function live() {
 
 async function start() {
   $('#inbox').addEventListener('click', e => { const b = e.target.closest('[data-cmd]'); if (b) command(b); });
+  $('#opsButtons').addEventListener('click', async e => {
+    const b = e.target.closest('[data-trigger]'); if (!b) return;
+    try { const r = await call('/api/demo/triggers', { method: 'POST', body: JSON.stringify({ kind: b.dataset.trigger }) }); $('#opsMsg').textContent = `${b.dataset.trigger}: ${r.affected} message(s) queued`; }
+    catch (err) { $('#opsMsg').textContent = err.message; }
+  });
   try {
     render((await call('/api/merchant/orders')).orders);
     live();

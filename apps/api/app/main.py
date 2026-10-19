@@ -18,6 +18,7 @@ from .auth import router as auth_router
 from .actions import COOKIE, engine, router as action_router
 from .config import settings
 from .merchant import merchant_pin, router as merchant_router
+from .proactive import router as proactive_router
 from .luna import graph as luna
 from .luna.schema import FactKey
 
@@ -25,6 +26,7 @@ app = FastAPI(title="Dubai-io API", version="0.1.0")
 app.include_router(auth_router)
 app.include_router(action_router)
 app.include_router(merchant_router)
+app.include_router(proactive_router)
 
 
 @app.middleware("http")

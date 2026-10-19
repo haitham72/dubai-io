@@ -9,7 +9,7 @@ import { $, svg, esc, toast, told, wait } from './ui.js';
 import { CATEGORIES } from './data.js';
 import { SERVICE_GROUPS, matchService, byNear } from './offers.js';
 import { createLunaClient } from './luna-client.js';
-import { orderCardHTML, watchOrder, requestEarlier } from './orders.js';
+import { orderCardHTML, watchOrder, requestEarlier, remindWhenReady } from './orders.js';
 import { api } from './service-workflow.js';
 import { identity, getMessages, saveMessages, resetSession } from './session-state.js';
 import { initRecovery, startRecovery, resetRecovery, handleRecoveryClick, restoreReport } from './recovery.js';
@@ -26,10 +26,12 @@ export function initChat(c) {
   ctx = c; initRecovery({ say: botSay, post, update, near: () => ctx.enterResults({ cat: 'all' }) });
   for(const saved of getMessages()) {
     if(!['me','bot'].includes(saved?.who)||typeof saved.text!=='string')continue;
+    if(saved.who==='bot'&&typeof saved.msgId==='string'){items.push({id:++seq,who:'bot',msgId:saved.msgId,msgSource:saved.msgSource,text:saved.text,html:proactiveHTML(saved.msgSource,saved.text.slice(0,600))});continue;}
     if(saved.who==='bot'&&typeof saved.actionId==='string'){const id=++seq;items.push({id,who:'bot',type:'order',actionId:saved.actionId,action:null,text:saved.text});follow(id,saved.actionId);continue;}
     items.push({id:++seq,who:saved.who,text:saved.text.slice(0,6000),r:saved.who==='me'?saved.r:null,html:saved.who==='bot'?'<p>'+esc(saved.text.slice(0,6000))+'</p>':null,recoveryReport:saved.recoveryReport});
   }
   render();
+  followMessages();
 }
 export function resetChat() { threadEpoch++; for(const stop of watchers.values())stop(); watchers.clear(); luna.reset(); resetSession(); for(const key of Object.keys(told))delete told[key]; items.length = 0; resetRecovery(); render(); }
 
@@ -75,6 +77,15 @@ function follow(itemId, actionId) {
   api('/api/actions/' + encodeURIComponent(actionId)).then(a => update(itemId, it => { it.action = a; })).catch(() => update(itemId, it => { it.missing = true; }));
   watchers.set(itemId, watchOrder(actionId, a => update(itemId, it => { it.action = a; })));
 }
+const proactiveHTML = (source, text) => `<p><span class="pill-st">${source === 'demo' ? 'Demo trigger' : 'Reminder you asked for'}</span></p><p>${esc(text)}</p>`;
+// Proactive messages: delivered by the server outbox (deduped, consented, quiet hours), shown once each.
+let messageStream = null;
+function followMessages() {
+  if (messageStream) return;
+  const show = list => { for (const m of list || []) if (!items.some(it => it.msgId === m.id)) post({ who: 'bot', msgId: m.id, msgSource: m.trigger_source, text: m.text, html: proactiveHTML(m.trigger_source, m.text) }); };
+  const start = () => { try { messageStream = new EventSource('/api/messages/stream'); messageStream.onmessage = e => { try { show(JSON.parse(e.data)); } catch { /* ignore */ } }; messageStream.onerror = () => { messageStream.close(); setTimeout(() => { messageStream = null; followMessages(); }, 5000); }; } catch { /* no SSE */ } };
+  api('/api/session').then(start).catch(() => setTimeout(followMessages, 10000));
+}
 export function trackOrder(action) { const id = post({ who: 'bot', type: 'order', actionId: action.id, action }); follow(id, action.id); return id; }
 
 async function botSay(html, extra = {}) {
@@ -95,7 +106,7 @@ function render() {
   saveMessages(items.filter(it=>!it.typing).map(it=>{
     const box=document.createElement('div');box.innerHTML=it.html||'';
     const text=it.who==='me'?it.text:it.type==='order'?'Order '+(it.action?.recipient||''):box.textContent;
-    return {who:it.who==='me'?'me':'bot',text,r:it.r||null,recoveryReport:it.recoveryReport||null,...(it.type==='order'?{actionId:it.actionId}:{})};
+    return {who:it.who==='me'?'me':'bot',text,r:it.r||null,recoveryReport:it.recoveryReport||null,...(it.type==='order'?{actionId:it.actionId}:{}),...(it.msgId?{msgId:it.msgId,msgSource:it.msgSource,text:it.text}:{})};
   }));
   list.innerHTML = items.map(it => {
     if (it.who === 'me') return `<div class="msg me"><p>${esc(it.text)}</p>${it.pending ? '<span class="luna">Luna is understanding your request…</span>' : ''}${it.r ? `<span class="luna">${svg('orb', 'ic xs')} ${esc(it.r.via === 'langgraph' ? 'LangGraph · ' + it.r.model : 'Lab router')} · ${esc(it.r.intent)}${it.r.item ? ` · item: ${esc(it.r.item)}` : ''}${it.r.service ? ` · ${esc(it.r.service)}` : ''}${it.r.cat ? ` · ${esc(it.r.cat)}${it.r.sub ? ' › ' + esc(it.r.sub) : ''}` : ''} · ${Math.round(it.r.conf * 100)}%${it.r.ms != null ? ' · ' + (it.r.ms/1000).toFixed(1) + ' s' : ''}${it.r.fallback_reason ? ' · ' + esc(it.r.fallback_reason) : ''}</span>` : ''}</div>`;
@@ -168,6 +179,8 @@ export function wireChat() {
   $('#chatList').addEventListener('click', e => {
     if (handleRecoveryClick(e)) return;
     const saved=e.target.closest('[data-restored-report]');if(saved){const it=items.find(i=>i.id===Number(saved.dataset.restoredReport));if(it?.recoveryReport)restoreReport(it.recoveryReport);return;}
+    const rem = e.target.closest('[data-remind]');
+    if (rem) { rem.disabled = true; remindWhenReady(rem.dataset.remind).then(() => render()).catch(err => { toast(err.message); rem.disabled = false; }); return; }
     const early = e.target.closest('[data-earlier]');
     if (early) { early.disabled = true; requestEarlier(early.dataset.earlier, early.dataset.target).catch(err => { toast(err.message); early.disabled = false; }); return; }
     const say = e.target.closest('[data-say]');
