@@ -160,10 +160,20 @@ def build():
     g.add_edge("understand", "validate")
     g.add_edge("validate", "remember")
     g.add_edge("remember", END)
-    # Conversation state survives restarts (thread-scoped short-term memory; the profile is long-term memory).
+    return g.compile(checkpointer=checkpointer())
+
+
+def checkpointer():
+    """Conversation state survives restarts: Postgres when DATABASE_URL is set, else SQLite in data/."""
+    if settings.database_url:
+        import psycopg
+        from psycopg.rows import dict_row
+        from langgraph.checkpoint.postgres import PostgresSaver
+        saver = PostgresSaver(psycopg.connect(settings.database_url, autocommit=True, prepare_threshold=0, row_factory=dict_row))
+        saver.setup()
+        return saver
     settings.data_dir.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(settings.data_dir / "luna_checkpoints.sqlite3", check_same_thread=False)
-    return g.compile(checkpointer=SqliteSaver(conn))
+    return SqliteSaver(sqlite3.connect(settings.data_dir / "luna_checkpoints.sqlite3", check_same_thread=False))
 
 
 graph = build()

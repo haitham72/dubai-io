@@ -10,7 +10,6 @@ from hashlib import sha256
 import json
 from pathlib import Path
 import secrets
-import sqlite3
 from threading import RLock
 from typing import Callable, Literal
 from uuid import uuid4
@@ -23,6 +22,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from . import catalog
 from .config import settings
+from .db import connect
 
 
 class InputValue(BaseModel):
@@ -135,18 +135,17 @@ def fingerprint(value):
 
 
 class ActionStore:
-    def __init__(self, path: Path):
-        path.parent.mkdir(parents=True, exist_ok=True)
-        self.db = sqlite3.connect(path, check_same_thread=False)
-        self.db.execute("PRAGMA journal_mode=WAL")
-        self.db.execute("CREATE TABLE IF NOT EXISTS actions (id TEXT PRIMARY KEY, owner TEXT, data TEXT)")
+    def __init__(self, target):
+        """target: a postgresql:// URL (DATABASE_URL) or a SQLite file path (tests, local fallback)."""
+        self.db = connect(target)
+        self.db.execute("CREATE TABLE IF NOT EXISTS actions (id TEXT PRIMARY KEY, owner TEXT, data TEXT, provider TEXT)")
         self.db.execute("CREATE TABLE IF NOT EXISTS sessions (token_hash TEXT PRIMARY KEY, owner TEXT)")
         self.db.execute("CREATE TABLE IF NOT EXISTS preparations (owner TEXT, key TEXT, payload_hash TEXT, result TEXT, PRIMARY KEY(owner,key))")
         self.db.execute("CREATE TABLE IF NOT EXISTS approvals (action_id TEXT, key TEXT, result TEXT, PRIMARY KEY(action_id,key))")
         self.db.execute("CREATE TABLE IF NOT EXISTS merchant_sessions (token_hash TEXT PRIMARY KEY, provider_id TEXT)")
         self.db.execute("CREATE TABLE IF NOT EXISTS merchant_commands (action_id TEXT, key TEXT, result TEXT, PRIMARY KEY(action_id,key))")
-        if "provider" not in [row[1] for row in self.db.execute("PRAGMA table_info(actions)")]:
-            self.db.execute("ALTER TABLE actions ADD COLUMN provider TEXT")
+        if self.db.dialect == "sqlite" and "provider" not in [row[1] for row in self.db.execute("PRAGMA table_info(actions)")]:
+            self.db.execute("ALTER TABLE actions ADD COLUMN provider TEXT")  # older local databases
         self.db.commit()
         self.lock = RLock()
 
@@ -332,7 +331,7 @@ def engine():
     global _engine
     with _engine_lock:
         if _engine is None:
-            _engine = ActionEngine(ActionStore(settings.data_dir / "actions.sqlite3"))
+            _engine = ActionEngine(ActionStore(settings.database_url or settings.data_dir / "actions.sqlite3"))
         return _engine
 
 

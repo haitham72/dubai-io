@@ -32,7 +32,7 @@ STATUSES = {"confirmed", "rejected", "forgotten"}
 
 
 def setup(store):
-    store.db.execute("""CREATE TABLE IF NOT EXISTS episodes (id TEXT PRIMARY KEY, owner TEXT, at TEXT, kind TEXT, text TEXT, ev TEXT,
+    store.db.execute("""CREATE TABLE IF NOT EXISTS episodes (id TEXT PRIMARY KEY, owner TEXT, at TEXT, kind TEXT, text TEXT, ev JSON,
         dedupe_key TEXT, UNIQUE(owner, dedupe_key))""")
     store.db.execute("CREATE TABLE IF NOT EXISTS profile_overrides (owner TEXT, hypothesis TEXT, status TEXT, at TEXT, PRIMARY KEY(owner, hypothesis))")
     store.db.commit()

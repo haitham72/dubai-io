@@ -43,11 +43,14 @@ class ProfileStore:
         db = self._store().db
         if not self._ready:
             db.execute("""CREATE TABLE IF NOT EXISTS user_profile (owner TEXT PRIMARY KEY, display_name TEXT, home_area TEXT, language TEXT,
-                mode TEXT, attributes TEXT NOT NULL DEFAULT '{}', version INTEGER NOT NULL DEFAULT 0, created_at TEXT, updated_at TEXT)""")
+                mode TEXT, attributes JSON NOT NULL DEFAULT '{}', version INTEGER NOT NULL DEFAULT 0, created_at TEXT, updated_at TEXT)""")
             db.execute("""CREATE TABLE IF NOT EXISTS profile_facts (id TEXT PRIMARY KEY, owner TEXT NOT NULL, facet TEXT NOT NULL, key TEXT NOT NULL,
-                value TEXT NOT NULL, provenance TEXT NOT NULL, status TEXT NOT NULL, confidence REAL, source TEXT, evidence TEXT,
+                value JSON NOT NULL, provenance TEXT NOT NULL, status TEXT NOT NULL, confidence REAL, source TEXT, evidence JSON,
                 valid_from TEXT NOT NULL, valid_to TEXT, recorded_at TEXT NOT NULL, superseded_by TEXT)""")
             db.execute("CREATE INDEX IF NOT EXISTS profile_facts_current ON profile_facts(owner, key, valid_to)")
+            if db.dialect == "postgres":  # semantic recall later: one embedding per fact (pgvector)
+                db.execute("ALTER TABLE profile_facts ADD COLUMN IF NOT EXISTS embedding vector(1536)")
+                db.execute("CREATE INDEX IF NOT EXISTS profile_facts_attributes ON user_profile USING gin (attributes)")
             db.commit()
             self._ready = True
             self._import_legacy(db)

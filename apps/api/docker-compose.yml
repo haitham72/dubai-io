@@ -1,0 +1,24 @@
+# Local Postgres 16 + pgvector for apps/api (ARCHITECTURE.md §1, §12).
+# Start:  docker compose --env-file .env up -d     (from apps/api)
+# The app uses DATABASE_URL from .env; without it, it falls back to SQLite in data/.
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: dubaiio-db
+    environment:
+      POSTGRES_DB: dubaiio
+      POSTGRES_USER: dubaiio
+      POSTGRES_PASSWORD: ${PG_PASSWORD:?set PG_PASSWORD in .env}
+    ports:
+      - "127.0.0.1:5432:5432"   # local only
+    volumes:
+      - dubaiio-pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dubaiio -d dubaiio"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+
+volumes:
+  dubaiio-pg:

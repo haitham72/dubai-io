@@ -3,6 +3,8 @@ httpx==0.28.1
 langgraph==1.2.15
 langgraph-checkpoint==4.3.0
 langgraph-checkpoint-sqlite==3.1.2
+langgraph-checkpoint-postgres==3.2.0
+psycopg[binary]==3.3.6
 openai==3.29.0
 pydantic==2.14.1
 pytest==9.1.1
