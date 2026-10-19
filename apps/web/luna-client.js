@@ -22,7 +22,9 @@ export function createLunaClient({fetcher=globalThis.fetch,timeoutMs=15000,enabl
       const owner=generation;
       const work=async()=>{
         if(owner!==generation)return null;
-        if(!enabled)return {...fallback(text),via:'lab router',fallback_reason:'Offline demo'};
+        const on=typeof enabled==='function'?await Promise.resolve().then(enabled).catch(()=>false):enabled;
+        if(owner!==generation)return null;
+        if(!on)return {...fallback(text),via:'lab router',fallback_reason:'Luna offline'};
         const controller=new AbortController();active=controller;
         let timer;
         try{

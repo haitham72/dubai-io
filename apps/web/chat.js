@@ -15,7 +15,10 @@ import { initRecovery, startRecovery, resetRecovery, handleRecoveryClick, restor
 let ctx = null; // { enterResults, openOffers, startGuide, showChat }
 const items = [];
 let seq = 0, threadEpoch = 0;
-const luna = createLunaClient({fetcher:labFetch,enabled:location.pathname.startsWith('/lab/'),identity});
+// Luna runs wherever the API answers with a configured model key; one probe, re-tried after a failure.
+let health=null, healthAt=0;
+const lunaReady=()=>{if(!health||(health.failed&&Date.now()-healthAt>30000)){healthAt=Date.now();health=fetch('/api/health',{signal:AbortSignal.timeout(3000)}).then(r=>r.ok?r.json():null).then(h=>!!h?.openai_key).catch(()=>false);health.then(ok=>{health.failed=!ok;});}return health;};
+const luna = createLunaClient({fetcher:labFetch,enabled:lunaReady,identity});
 
 export function initChat(c) {
   ctx = c; initRecovery({ say: botSay, post, update, near: () => ctx.enterResults({ cat: 'all' }) });

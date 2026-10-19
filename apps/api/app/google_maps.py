@@ -1,6 +1,8 @@
 """Server-side Google Maps Platform calls. The key never leaves the server.
 Places results are returned uncached, with the attribution the terms require,
 and the live UI must show them on a Google map (Places policy)."""
+from datetime import datetime, timezone
+
 import httpx
 
 from .config import settings
@@ -28,7 +30,7 @@ async def search_places(query: str, lat: float | None = None, lng: float | None 
         "maps_url": p.get("googleMapsUri"),
         "provenance": "provider_confirmed",
     } for p in r.json().get("places", [])]
-    return {"places": places, "attribution": "Google", "cache": "none"}
+    return {"places": places, "attribution": "Google", "cache": "none", "as_of": datetime.now(timezone.utc).isoformat(timespec="seconds")}
 
 
 async def route(origin: dict, dest: dict, mode: str = "DRIVE") -> dict:
@@ -39,4 +41,4 @@ async def route(origin: dict, dest: dict, mode: str = "DRIVE") -> dict:
     r.raise_for_status()
     rt = (r.json().get("routes") or [{}])[0]
     secs = int(str(rt.get("duration", "0s")).rstrip("s") or 0)
-    return {"minutes": round(secs / 60), "km": round(rt.get("distanceMeters", 0) / 1000, 1), "provenance": "estimate", "attribution": "Google"}
+    return {"minutes": round(secs / 60), "km": round(rt.get("distanceMeters", 0) / 1000, 1), "provenance": "estimate", "attribution": "Google", "as_of": datetime.now(timezone.utc).isoformat(timespec="seconds")}
