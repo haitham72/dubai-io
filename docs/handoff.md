@@ -40,8 +40,6 @@ cd apps/api
 ## 4. Remaining (see adjudication §7)
 
 - APIs: `docs/references/api-catalog.md` (what is live, what needs keys, what is impossible or blocked). Native iOS: `PLAN.md` §8 (plan only).
-
-- Taxi-memory payoff check on the stage path (step 11) and the "Scripted demo" label.
 - Rehearsal: 10 timed 4:00 runs on phone + second device; record the fallback video (step 15).
 - Optional: push-to-talk voice spike (step 14).
 - Stage-only: merchant tablet/phone on the same LAN; pre-warm one Luna turn.
