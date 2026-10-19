@@ -9,7 +9,7 @@ import { openSavedRequests } from './service-workflow.js';
 // wifi, services, maps, guide, profile.
 import { createRenderer } from './gl.js';
 import { VARIANT } from './shaders.js';
-import { PALETTES, ONBOARDING, CASES, PROFILE_CARD, CATEGORIES, PLACES, SOURCES, EPISODES, HYPOTHESES, TOLD_LABELS } from './data.js';
+import { PALETTES, ONBOARDING, CASES, PROFILE_CARD, CATEGORIES, PLACES, SOURCES, EPISODES, HYPOTHESES, TOLD_LABELS, HOME, AREA_LABELS } from './data.js';
 import { profileAt, allowed } from './profile.js';
 import { loadProfile, profileEpisodes, setOverride } from './profile-store.js';
 import { createMap, km } from './map.js';
@@ -37,6 +37,7 @@ const flags = (() => {
 // Stage mode (PLAN §3): a persistent "Scripted demo" label; ?demo or #demo, kept for this tab.
 try { if (flags.has('demo')) sessionStorage.setItem('dubaiio.demo', '1'); } catch { /* storage blocked */ }
 if (flags.has('demo') || (() => { try { return sessionStorage.getItem('dubaiio.demo') === '1'; } catch { return false; } })()) {
+  document.body.classList.add('stage-demo');
   document.body.insertAdjacentHTML('beforeend', '<div class="demo-label" role="note">Scripted demo</div>');
 }
 const paletteName = window.PALETTE in PALETTES ? window.PALETTE : 'cyan';
@@ -53,8 +54,7 @@ document.body.insertAdjacentHTML('beforeend', `
 <div id="app" class="mode-home ${reduced ? 'reduced' : ''}">
   <canvas id="gl" aria-hidden="true"></canvas>
   <header class="top">
-    <div class="brand"><button class="brand-btn" id="brandBtn" aria-label="Dubai-io. Tap to restart the demo"><b>Dubai-io</b></button><span class="area">${svg('pin', 'ic xs')} Dubai Marina · demo area</span></div>
-    <span class="pill demo" title="Everything here is demo data">Demo data</span>
+    <div class="brand"><button class="brand-btn" id="brandBtn" aria-label="Dubai-io. Tap to restart the demo"><b>Dubai-io</b></button><span class="area">${svg('pin', 'ic xs')} ${esc(told.area || 'Dubai')}${told.area ? ' · you told me' : ''}</span></div>
   </header>
   <main id="stage" aria-roledescription="carousel" aria-label="Home cards"></main>
   <nav class="rail" id="rail" aria-label="Cards"></nav>
@@ -63,18 +63,22 @@ document.body.insertAdjacentHTML('beforeend', `
   <section class="chatv" id="chat" aria-label="Chat">
     <div class="c-top">
       <button class="round glass" id="chatBack" aria-label="Back to cards">${svg('back')}</button>
-      <div class="c-title"><button class="brand-btn" id="brandBtn2" aria-label="Dubai-io. Tap to restart the demo"><b>Dubai-io</b></button><span>Luna understands requests · service actions require approval</span></div>
+      <span class="c-orb" aria-hidden="true"></span>
+      <div class="c-title"><button class="brand-btn" id="brandBtn2" aria-label="Dubai-io. Tap to restart the demo"><b>Dubai-<i>io</i></b></button><span>Your Dubai companion</span></div>
+      <button class="c-mode" id="chatMode" aria-label="Mode: visitor">${svg('person', 'ic xs')} Visitor ${svg('chev', 'ic xs')}</button>
+      <button class="round" id="chatSearch" aria-label="Browse services">${svg('search')}</button>
     </div>
     <div class="c-scroll" id="chatScroll"><div class="c-list" id="chatList"></div></div>
   </section>
 
   <section id="results" class="results" aria-label="Map near you">
     <div id="mapEl" class="mapbox"></div>
+    <img id="gmap" class="gmap" alt="" hidden>
     <div class="map-fallback" id="mapFallback" hidden>Map needs WebGL. The list below has every place.</div>
     <div class="r-top">
       <button class="round glass" id="back" aria-label="Back">${svg('back')}</button>
       <div class="ask glass" id="ask" hidden></div>
-      <span class="pill demo">Demo data</span>
+      <span class="pill demo" id="rDemo">Demo data</span>
     </div>
     <div class="r-chips" id="rChips"></div>
     <div class="r-chips sub" id="rSubs"></div>
@@ -101,7 +105,7 @@ document.body.insertAdjacentHTML('beforeend', `
   </nav>
 
   <section class="offers" id="offers" aria-label="Offers">
-    <div class="of-top"><button class="round glass" id="offersBack" aria-label="Back">${svg('back')}</button><span class="pill demo">Demo data</span></div>
+    <div class="of-top"><button class="round glass" id="offersBack" aria-label="Back">${svg('back')}</button><span class="pill demo">Sandbox partners</span></div>
     <div class="of-scroll" id="offersScroll"><div id="offersHead" class="of-head"></div><div id="offersList" class="of-list"></div><p class="fine of-fine" id="offersFine"></p></div>
   </section>
 
@@ -528,7 +532,36 @@ function ensureMap() {
   MAP = createMap($('#mapEl'), paletteName, svg, id => openDetail(id));
   if (!MAP) { MAP = undefined; $('#mapFallback').hidden = false; }
 }
+// ---- live Google Places (real data); the fixture list is only a labelled fallback
+const placeCache = new Map();
+function areaCenter() {
+  const area = String(told.area || HOME.label).toUpperCase();
+  const hit = AREA_LABELS.find(([name]) => area.includes(name));
+  return hit ? { lat: hit[1], lng: hit[2], label: told.area || HOME.label } : { lat: HOME.lat, lng: HOME.lng, label: told.area || HOME.label };
+}
+const liveKey = () => `${S.cat}|${S.sub || ''}|${areaCenter().label}`;
+function liveState() { return placeCache.get(liveKey()); }
+function loadLive() {
+  const key = liveKey();
+  if (placeCache.has(key)) return;
+  const c = areaCenter(), cat = catOf(S.cat);
+  const what = S.sub || (cat ? cat.label : 'Popular places');
+  placeCache.set(key, { status: 'loading' });
+  fetch('/api/places/search', { method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(9000),
+    body: JSON.stringify({ query: `${what} near ${c.label}`, lat: c.lat, lng: c.lng }) })
+    .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(d => placeCache.set(key, { status: 'ok', at: d.as_of, places: d.places.filter(x => x.lat != null).map(x => ({
+      id: 'g:' + x.id, live: true, name: x.name, rating: x.rating || 0, count: x.ratings || 0, lat: x.lat, lng: x.lng,
+      area: x.short_address || x.address || '', address: x.address, cat: S.cat, sub: S.sub, open: x.open_now, phone: x.phone, website: x.website, maps: x.maps_url,
+      img: x.photo ? '/api/places/photo?w=480&name=' + encodeURIComponent(x.photo) : null, photoBy: (x.photo_by || [])[0] || '' })) }))
+    .catch(() => placeCache.set(key, { status: 'error' }))
+    .finally(() => { if (S.view === 'results' && liveKey() === key) { renderResults(); refit(); } });
+}
+const kmFrom = (c, p) => { const R = 6371, dLat = (p.lat - c.lat) * Math.PI / 180, dLng = (p.lng - c.lng) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(c.lat * Math.PI / 180) * Math.cos(p.lat * Math.PI / 180) * Math.sin(dLng / 2) ** 2; return Math.round(2 * R * Math.asin(Math.sqrt(a)) * 10) / 10; };
 function filtered() {
+  const live = liveState();
+  if (live?.status === 'ok') { const c = areaCenter(); return live.places.map(p => ({ ...p, km: kmFrom(c, p) })).sort((a, b) => a.km - b.km || b.rating - a.rating); }
   return PLACES.filter(p => (S.cat === 'all' || p.cat === S.cat) && (!S.sub || p.sub === S.sub) && (!S.src || p.why === S.src))
     .map(p => ({ ...p, km: km(p) }))
     .sort((a, b) => (a.km ?? 99) - (b.km ?? 99) || b.rating - a.rating);
@@ -539,6 +572,7 @@ function enterResults({ ask = null, cat = 'all', sub = null } = {}) {
   setView('results');
   ensureMap();
   setSnap('peek', true);
+  loadLive();
   renderResults();
   setTimeout(() => { MAP?.resize(); refit(); }, reduced ? 0 : 380);
 }
@@ -547,7 +581,19 @@ function goBack() {
   if (S.view === 'results' && S.from === 'chat') { setView('chat'); return; }
   setView('home');
 }
+function showGoogleMap(list, one) {
+  const g = $('#gmap'), live = liveState()?.status === 'ok';
+  $('#mapEl').style.visibility = live ? 'hidden' : '';
+  $('#rDemo').hidden = live;
+  if (!live) { g.hidden = true; return; }
+  const c = areaCenter(), pins = (one ? [one] : list.slice(0, 9)).map(p => `${p.lat.toFixed(6)},${p.lng.toFixed(6)}`).join('|');
+  const src = `/api/staticmap?s=tall&c=${c.lat},${c.lng}&m=${encodeURIComponent(pins)}${one ? '&z=16' : ''}`;
+  if (g.getAttribute('src') !== src) g.src = src;
+  g.alt = one ? `Google map: ${one.name}` : 'Google map of the results'; g.hidden = false;
+}
 function refit() {
+  if (liveState()?.status === 'ok') { showGoogleMap(filtered()); return; }
+  showGoogleMap([]);
   if (!MAP) return;
   const list = filtered().filter(p => p.lat != null);
   MAP.filter(new Set(list.map(p => p.id)));
@@ -581,6 +627,8 @@ function renderResults() {
     ask.innerHTML = `<span class="ask-q">${esc(S.ask)}</span><span class="ask-u">${svg('orb', 'ic xs')} ${cat ? `Near you · ${esc(cat.label)}${S.sub ? ' › ' + esc(S.sub) : ''}` : 'Near you · everything'}</span>`;
   } else ask.hidden = true;
   if (S.detail) { renderDetail(); return; }
+  const live = liveState();
+  if (live?.status === 'ok' || live?.status === 'loading') { renderLiveResults(live); return; }
   const list = filtered();
   const cat = catOf(S.cat);
   const what = S.sub ? S.sub.toLowerCase() : cat ? cat.label.toLowerCase() : 'places';
@@ -614,7 +662,52 @@ function renderResults() {
       <p class="fine">Fictional places on real streets. Ratings, prices and distances are demo data. Map data © OpenStreetMap contributors.</p>
     </div>`;
 }
+function renderLiveResults(live) {
+  const cat = catOf(S.cat), c = areaCenter();
+  const what = S.sub ? S.sub.toLowerCase() : cat ? cat.label.toLowerCase() : 'places';
+  if (live.status === 'loading') { rsScroll.innerHTML = `<div class="rs-head"><h3>Finding ${esc(what)} near ${esc(c.label)}…</h3><p>Live from Google Maps</p></div>`; return; }
+  const list = filtered();
+  const at = live.at ? new Date(live.at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '';
+  const credits = [...new Set(list.map(p => p.photoBy).filter(Boolean))].slice(0, 4).join(', ');
+  const img = p => p.img ? `<div class="hc-img" style="background-image:url('${p.img}')"></div>` : `<div class="hc-img glyph">${svg(cat?.glyph || 'pin', 'ic lg')}</div>`;
+  rsScroll.innerHTML = `
+    <div class="rs-head"><h3>${list.length} ${esc(what)} near ${esc(c.label)}</h3><p>Live from Google Maps · closest first · distances are straight-line estimates</p></div>
+    <div class="hcards" id="hcards">${list.map((p, i) => `
+      <button class="hcard" data-p="${esc(p.id)}">${img(p)}
+        <span class="hc-txt"><b>${i + 1}. ${esc(p.name)}</b><span>${p.rating ? `★ ${p.rating.toFixed(1)} · ` : ''}${p.km} km${p.open === true ? ' · open now' : p.open === false ? ' · closed' : ''}</span>
+        <span class="chip mini ghost">Google</span></span>
+      </button>`).join('')}</div>
+    <h4 class="sec">All results <span class="count">${list.length}</span></h4>
+    <div class="masonry live">${list.map((p, i) => `
+      <button class="tile" data-p="${esc(p.id)}">
+        <div class="tile-media">${img(p).replace('hc-img', 'tile-img')}<span class="tile-tag">${i + 1}</span></div>
+        <div class="tile-txt">
+          <div class="tile-row"><b>${esc(p.name)}</b>${p.rating ? `<span class="rt">★ ${p.rating.toFixed(1)}</span>` : ''}</div>
+          <span class="tile-area">${esc(p.area)} · ${p.km} km</span>
+          <span class="tile-why">${p.open === true ? '<span class="open">Open now</span>' : p.open === false ? '<span class="closed">Closed now</span>' : ''}${p.count ? ` · ${fmtN(p.count)} Google reviews` : ''}</span>
+        </div>
+      </button>`).join('') || `<p class="empty">Google found no ${esc(what)} near ${esc(c.label)}.</p>`}</div>
+    <p class="fine">Live from Google Maps${at ? ', ' + at : ''}. Not partners: no ordering here; Directions, Call and Website hand off.${credits ? ' Photos: ' + esc(credits) + ' (Google Maps).' : ''}</p>`;
+}
+function renderLiveDetail(p) {
+  const k = catOf(p.cat);
+  showGoogleMap([], p);
+  rsScroll.innerHTML = `
+    <button class="d-back" id="dBack">${svg('back', 'ic sm')} All results</button>
+    <div class="d-hero">${p.img ? `<div class="d-img" style="background-image:url('${p.img.replace('w=480', 'w=900')}')"></div>` : `<div class="d-img glyph">${svg(k?.glyph || 'pin', 'ic lg')}</div>`}
+      <div class="d-over">${k ? `<span class="chip mini dark">${svg(k.glyph, 'ic xs')} ${esc(p.sub || k.label)}</span>` : ''}<h3>${esc(p.name)}</h3></div></div>
+    <ul class="d-rows">
+      ${p.rating ? `<li>${svg('star', 'ic sm')}<span><b>${p.rating.toFixed(1)}</b> (${fmtN(p.count)}) · Google</span></li>` : ''}
+      ${p.open != null ? `<li>${svg('clock', 'ic sm')}<span>${p.open ? 'Open now' : 'Closed now'} · Google</span></li>` : ''}
+      <li>${svg('pin', 'ic sm')}<span>${esc(p.address || p.area)} · ${p.km} km (straight line)</span></li>
+    </ul>
+    ${p.maps ? `<a class="btn primary wide big" href="${esc(p.maps)}" target="_blank" rel="noopener noreferrer">${svg('nav', 'ic sm')} Directions in Google Maps</a>` : ''}
+    <div class="actions">${p.phone ? `<a class="btn" href="tel:${esc(p.phone.replace(/[^+0-9]/g, ''))}">${svg('phone', 'ic sm')} Call</a>` : ''}${p.website ? `<a class="btn" href="${esc(p.website)}" target="_blank" rel="noopener noreferrer">${svg('globe', 'ic sm')} Website</a>` : ''}</div>
+    <p class="fine">Live from Google Maps. Not a Dubai-io partner: nothing is ordered or shared here.${p.photoBy ? ' Photo: ' + esc(p.photoBy) + ' (Google Maps).' : ''}</p>`;
+  $('#dBack').addEventListener('click', backToList);
+}
 function openDetail(id) {
+  if (String(id).startsWith('g:')) { S.detail = id; renderResults(); setSnap('half'); rsScroll.scrollTop = 0; return; }
   if (S.view !== 'results') enterResults({ cat: PLACES.find(p => p.id === id).cat });
   S.detail = id;
   renderResults();
@@ -623,6 +716,7 @@ function openDetail(id) {
   MAP?.ready.then(() => MAP.select(id, G.snaps.half));
 }
 function renderDetail() {
+  if (String(S.detail).startsWith('g:')) { const p = filtered().find(x => x.id === S.detail); if (p) renderLiveDetail(p); return; }
   const p0 = PLACES.find(p => p.id === S.detail); if (!p0) return;
   const p = { ...p0, km: km(p0) }, k = catOf(p.cat);
   const primary = p.actions.find(a => a === 'book' || a === 'order') || (p.lat != null ? 'directions' : p.actions[0]);
@@ -656,8 +750,8 @@ function renderDetail() {
 function backToList() { S.detail = null; renderResults(); setSnap('peek'); refit(); }
 
 $('#back').addEventListener('click', goBack);
-$('#rChips').addEventListener('click', e => { const b = e.target.closest('[data-cat]'); if (!b) return; S.cat = b.dataset.cat; S.sub = null; S.src = null; S.detail = null; S.ask = null; renderResults(); refit(); });
-$('#rSubs').addEventListener('click', e => { const b = e.target.closest('[data-sub]'); if (!b) return; S.sub = b.dataset.sub || null; S.detail = null; renderResults(); refit(); });
+$('#rChips').addEventListener('click', e => { const b = e.target.closest('[data-cat]'); if (!b) return; S.cat = b.dataset.cat; S.sub = null; S.src = null; S.detail = null; S.ask = null; loadLive(); renderResults(); refit(); });
+$('#rSubs').addEventListener('click', e => { const b = e.target.closest('[data-sub]'); if (!b) return; S.sub = b.dataset.sub || null; S.detail = null; loadLive(); renderResults(); refit(); });
 rsScroll.addEventListener('click', e => {
   if (rsheet.dataset.dragged === '1') return;
   const s = e.target.closest('[data-src]');
@@ -709,6 +803,11 @@ function setSnap(name, instant) {
 })();
 
 // ---------------------------------------------------------------- Services: competing offers
+// Chat header: search opens Services; the mode pill explains that resident mode comes later.
+document.addEventListener('click', e => {
+  if (e.target.closest('#chatSearch')) enterServices();
+  if (e.target.closest('#chatMode')) toast('Visitor mode. Resident mode comes after the contest build.');
+});
 function enterServices() { closeSheet(); renderServicesLanding($('#svcGrid'), told.area); setView('services'); }
 $('#svcGrid').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;

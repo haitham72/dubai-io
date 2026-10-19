@@ -104,6 +104,11 @@ export function openOffers(id) {
   $('#offers').classList.add('open');
   $('#offersScroll').scrollTop = 0;
 }
+export function openProvider(groupId, providerId) {
+  current = SERVICE_GROUPS.find(g => g.id === groupId) || current;
+  const p = current?.providers.find(x => x.id === providerId);
+  if (p?.entry) openMini(p);
+}
 export function closeOffers() { $('#offers').classList.remove('open'); }
 
 function renderOffers() {

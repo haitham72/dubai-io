@@ -8,7 +8,7 @@ Then open http://<pc-ip>:8000/lab/home-v2-cyan.html
 import uuid
 
 import httpx
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Query, Request, Response
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -132,6 +132,33 @@ async def places(body: PlacesIn):
         return await google_maps.search_places(body.query, body.lat, body.lng)
     except httpx.HTTPStatusError as err:
         raise HTTPException(502, f"Places error {err.response.status_code}") from err
+
+
+@app.get("/api/places/photo")
+async def places_photo(name: str = Query(max_length=1200), w: int = 480):
+    try:
+        data, kind = await google_maps.place_photo(name, w)
+    except ValueError:
+        raise HTTPException(400, "Bad photo reference")
+    except httpx.HTTPError:
+        raise HTTPException(502, "Photo unavailable")
+    return Response(data, media_type=kind, headers={"Cache-Control": "private, max-age=3600"})
+
+
+@app.get("/api/staticmap")
+async def staticmap(c: str = Query(pattern=r"^-?\d+(\.\d+)?,-?\d+(\.\d+)?$"), m: str = Query(default="", max_length=400), z: int | None = Query(default=None, ge=3, le=20), s: str = Query(default="wide", pattern="^(wide|tall)$")):
+    """Google map image with up to 9 numbered pins: c=lat,lng · m=lat,lng|lat,lng · z=zoom."""
+    try:
+        pins = [tuple(float(v) for v in pair.split(",")) for pair in m.split("|") if pair][:9]
+        if any(len(p) != 2 or not (-90 <= p[0] <= 90 and -180 <= p[1] <= 180) for p in pins):
+            raise ValueError
+        center = tuple(float(v) for v in c.split(","))
+        data = await google_maps.static_map(center, pins, z, "460x640" if s == "tall" else "640x400")
+    except ValueError:
+        raise HTTPException(400, "Bad coordinates")
+    except httpx.HTTPError:
+        raise HTTPException(502, "Map unavailable")
+    return Response(data, media_type="image/png", headers={"Cache-Control": "private, max-age=600"})
 
 
 @app.post("/api/route")

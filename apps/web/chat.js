@@ -7,7 +7,7 @@ import { openServiceRequest } from './service-workflow.js';
 // status: reports are "prepared, not filed"; items stay "not recovered".
 import { $, svg, esc, toast, told, wait } from './ui.js';
 import { CATEGORIES } from './data.js';
-import { SERVICE_GROUPS, matchService, byNear } from './offers.js';
+import { SERVICE_GROUPS, matchService, byNear, openProvider } from './offers.js';
 import { createLunaClient } from './luna-client.js';
 import { orderCardHTML, watchOrder, requestEarlier, remindWhenReady } from './orders.js';
 import { api } from './service-workflow.js';
@@ -27,6 +27,7 @@ export function initChat(c) {
   for(const saved of getMessages()) {
     if(!['me','bot'].includes(saved?.who)||typeof saved.text!=='string')continue;
     if(saved.who==='bot'&&typeof saved.msgId==='string'){items.push({id:++seq,who:'bot',msgId:saved.msgId,msgSource:saved.msgSource,text:saved.text,html:proactiveHTML(saved.msgSource,saved.text.slice(0,600))});continue;}
+    if(saved.who==='bot'&&saved.rich&&typeof saved.rich.kind==='string'){const html=richHTML(saved.rich);if(html){items.push({id:++seq,who:'bot',wide:true,rich:saved.rich,text:saved.text,html});continue;}}
     if(saved.who==='bot'&&typeof saved.actionId==='string'){const id=++seq;items.push({id,who:'bot',type:'order',actionId:saved.actionId,action:null,text:saved.text});follow(id,saved.actionId);continue;}
     items.push({id:++seq,who:saved.who,text:saved.text.slice(0,6000),r:saved.who==='me'?saved.r:null,html:saved.who==='bot'?'<p>'+esc(saved.text.slice(0,6000))+'</p>':null,recoveryReport:saved.recoveryReport});
   }
@@ -78,7 +79,7 @@ function follow(itemId, actionId) {
   api('/api/actions/' + encodeURIComponent(actionId)).then(a => update(itemId, it => { it.action = a; })).catch(() => update(itemId, it => { it.missing = true; }));
   watchers.set(itemId, watchOrder(actionId, a => update(itemId, it => { it.action = a; })));
 }
-const proactiveHTML = (source, text) => `<p><span class="pill-st">${source === 'demo' ? 'Demo trigger' : 'Reminder you asked for'}</span></p><p>${esc(text)}</p>`;
+const proactiveHTML = (source, text) => `<p><span class="upd-pill">${svg(source === 'demo' ? 'spark' : 'clock', 'ic xs')} ${source === 'demo' ? 'Demo trigger' : 'Reminder you asked for'}</span></p><p>${esc(text)}</p>`;
 // Proactive messages: delivered by the server outbox (deduped, consented, quiet hours), shown once each.
 let messageStream = null;
 function followMessages() {
@@ -107,13 +108,13 @@ function render() {
   saveMessages(items.filter(it=>!it.typing).map(it=>{
     const box=document.createElement('div');box.innerHTML=it.html||'';
     const text=it.who==='me'?it.text:it.type==='order'?'Order '+(it.action?.recipient||''):box.textContent;
-    return {who:it.who==='me'?'me':'bot',text,r:it.r||null,recoveryReport:it.recoveryReport||null,...(it.type==='order'?{actionId:it.actionId}:{}),...(it.msgId?{msgId:it.msgId,msgSource:it.msgSource,text:it.text}:{})};
+    return {who:it.who==='me'?'me':'bot',text,r:it.r||null,recoveryReport:it.recoveryReport||null,...(it.type==='order'?{actionId:it.actionId}:{}),...(it.msgId?{msgId:it.msgId,msgSource:it.msgSource,text:it.text}:{}),...(it.rich?{rich:it.rich}:{})};
   }));
   list.innerHTML = items.map(it => {
-    if (it.who === 'me') return `<div class="msg me"><p>${esc(it.text)}</p>${it.pending ? '<span class="luna">Luna is understanding your request…</span>' : ''}${it.r ? `<span class="luna">${svg('orb', 'ic xs')} ${esc(it.r.via === 'langgraph' ? 'LangGraph · ' + it.r.model : 'Lab router')} · ${esc(it.r.intent)}${it.r.item ? ` · item: ${esc(it.r.item)}` : ''}${it.r.service ? ` · ${esc(it.r.service)}` : ''}${it.r.cat ? ` · ${esc(it.r.cat)}${it.r.sub ? ' › ' + esc(it.r.sub) : ''}` : ''} · ${Math.round(it.r.conf * 100)}%${it.r.ms != null ? ' · ' + (it.r.ms/1000).toFixed(1) + ' s' : ''}${it.r.fallback_reason ? ' · ' + esc(it.r.fallback_reason) : ''}</span>` : ''}</div>`;
+    if (it.who === 'me') return `<div class="msg me"><p>${esc(it.text)}</p></div>${it.pending ? `<div class="understood pending">${svg('spark', 'ic xs')}<span>Luna is understanding…</span></div>` : ''}${it.r ? understoodHTML(it) : ''}`;
     if (it.typing) return `<div class="msg bot typing"><span class="orbdot"></span><span class="orbdot"></span><span class="orbdot"></span></div>`;
     if (it.type === 'order') return it.missing ? `<div class="msg bot"><p>This order is no longer available on this device.</p></div>` : orderCardHTML(it.action);
-    return `<div class="msg bot ${it.wide ? 'wide' : ''}">${it.html}${it.recoveryReport ? `<button class="btn sm" data-restored-report="${it.id}">Review saved report</button>` : ''}</div>`;
+    return `<div class="msg bot ${it.wide ? 'wide' : ''} ${it.rich ? 'rich' : ''}">${it.html}${it.recoveryReport ? `<button class="btn sm" data-restored-report="${it.id}">Review saved report</button>` : ''}</div>`;
   }).join('');
   requestAnimationFrame(() => { const s = $('#chatScroll'); if (s) s.scrollTop = s.scrollHeight; });
 }
@@ -135,7 +136,7 @@ export async function handle(text) {
   switch (r.intent) {
     case 'lost_item': return startRecovery({ item: r.item, where: r.where });
     case 'airport_guide': return r.terminal ? startGuideFlow(r.terminal) : airport();
-    case 'service_offers': return offers(r.service,text);
+    case 'service_offers': return offers(r.service);
     case 'places_near': {
       await botSay(`<p>Here’s what’s near you, closest first. Opening the map.</p>`);
       await wait(500);
@@ -144,8 +145,8 @@ export async function handle(text) {
     }
     case 'greeting': return botSay(`<p>Hi! Ask me for a service, a place nearby or help at the airport, or tell me if you’ve lost something.</p>${chips(['Guide me through the airport', 'Home cleaning prices', 'Coffee near me', 'I lost my wallet'])}`);
     case 'order_status': return orderStatus();
-    case 'info_question': case 'market_quote': return botSay(answerHTML(r));
-    case 'product_search': return botSay(productsHTML(r), { wide: true });
+    case 'info_question': case 'market_quote': { const rich = { kind: 'answer', r: { answer: r.answer, reply: r.reply, sources: r.sources, tool: r.tool } }; return botSay(richHTML(rich), { rich }); }
+    case 'product_search': { const rich = { kind: 'products', r: { answer: r.answer, products: r.products } }; return botSay(richHTML(rich), { wide: true, rich }); }
     case 'smalltalk': return botSay('<p>'+esc(r.reply||'How can I help?')+'</p>');
     case 'thanks': return botSay(`<p>Anytime.</p>`);
     default: return botSay(`<p>${esc(r.clarify || 'I’m not sure I got that. Which of these is closest?')}</p>${chips(['Find a place near me', 'Compare a service', 'I lost something', 'Help at the airport'])}<p class="hint">I’d rather ask than guess.</p>`);
@@ -154,13 +155,41 @@ export async function handle(text) {
 const chips = list => `<div class="qchips">${list.map(t => `<button data-say="${esc(t)}">${esc(t)}</button>`).join('')}</div>`;
 
 // ---------------------------------------------------------------- flows
-async function offers(id,request) {
-  const g = SERVICE_GROUPS.find(x => x.id === id);
-  const top = [...g.providers].sort(byNear).slice(0, 3);
-  await botSay(`<p>${g.providers.length} providers compete for <b>${esc(g.label.toLowerCase())}</b>. Closest first, then rating; every price is the provider’s own published one.</p>
-    <div class="mini-rows">${top.map(p => `<div class="mr"><span class="logo" style="background:${p.color}">${esc(p.logo)}</span><span class="mr-t"><b>${esc(p.name)}</b><em>from AED ${p.from.toLocaleString('en-US')} ${esc(p.unit)} (demo) · ${esc(p.eta)} (demo)</em></span>${p.offer ? `<span class="mr-o">${svg('tag', 'ic xs')}</span>` : ''}</div>`).join('')}</div>
-    <button class="btn primary sm" data-service-request="${g.id}" data-request-text="${esc(request||'')}">Plan this request</button>
-    <button class="btn sm" data-offers="${g.id}">See all ${g.providers.length} offers ${svg('chev', 'ic xs')}</button>`);
+async function offers(id) {
+  const rich = { kind: 'offers', id };
+  return botSay(richHTML(rich), { wide: true, rich });
+}
+
+// Rows card (reference 02-rows): closest first, each row opens its own mini-app.
+function offersCardHTML(id) {
+  const g = SERVICE_GROUPS.find(x => x.id === id); if (!g) return '';
+  const rows = [...g.providers].sort(byNear).slice(0, 3).map(p => `<div class="rc-row">
+      <span class="logo lg" style="background:${p.color}">${esc(p.logo)}</span>
+      <div class="rc-t"><b>${esc(p.name)}</b><span class="rc-tag">${p.entry ? 'Mini-app' : p.source === 'website' ? 'Website' : 'Marketplace'}</span>
+        <span class="rc-meta">AED ${p.from.toLocaleString('en-US')} ${esc(p.unit)} · ${esc(p.eta)}</span><span class="rc-sub">${p.km} km · ★ ${p.rating.toFixed(1)} · demo</span></div>
+      ${p.entry ? `<button class="open-btn" data-open-provider="${g.id}|${p.id}">Open ${svg('chev', 'ic xs')}</button>` : ''}</div>`).join('');
+  return `<p>${g.providers.length} providers for <b>${esc(g.label.toLowerCase())}</b>, closest first. Prices are each provider’s own published list.</p>
+    <div class="rows-card"><div class="rc-head"><span class="rc-ic">${svg(g.glyph, 'ic sm')}</span><div><b>${esc(g.label)}</b><span>Fixed published prices · no bidding</span></div><span class="pill demo">Sandbox partners</span></div>
+    ${rows}<p class="rc-foot">${svg('shield', 'ic xs')} Nothing is shared until you approve.</p></div>
+    <button class="btn sm" data-offers="${g.id}">See all ${g.providers.length} offers ${svg('chev', 'ic xs')}</button>`;
+}
+
+function richHTML(rich) {
+  if (rich.kind === 'offers') return offersCardHTML(rich.id);
+  if (rich.kind === 'products') return productsHTML(rich.r || {});
+  if (rich.kind === 'answer') return answerHTML(rich.r || {});
+  return '';
+}
+
+const INTENT_LABEL = { lost_item: 'Lost item', airport_guide: 'Airport guide', service_offers: 'Service', places_near: 'Places near you', order_status: 'Order status', info_question: 'Question',
+  market_quote: 'Market quote', product_search: 'Shopping', greeting: 'Greeting', smalltalk: 'Chat', thanks: 'Thanks', unclear: 'Not sure yet' };
+// "Luna understood: Service · Laundry" (reference 02-rows); tap for the technical line.
+function understoodHTML(it) {
+  const r = it.r;
+  const svc = r.service && SERVICE_GROUPS.find(g => g.id === r.service)?.label;
+  const parts = [INTENT_LABEL[r.intent] || r.intent, r.item, svc, r.cat && (r.sub ? r.cat + ' › ' + r.sub : r.cat), r.terminal && 'Terminal ' + r.terminal].filter(Boolean);
+  const tech = `${r.via === 'langgraph' ? 'LangGraph · ' + r.model : 'Offline router'} · ${Math.round(r.conf * 100)}%${r.ms != null ? ' · ' + (r.ms / 1000).toFixed(1) + ' s' : ''}${r.fallback_reason ? ' · ' + r.fallback_reason : ''}`;
+  return `<button class="understood" data-tech="${it.id}" aria-expanded="${!!it.tech}">${svg('spark', 'ic xs')}<span><em>Luna understood:</em> ${esc(parts.join(' · '))}</span>${svg('chev', 'ic xs')}</button>${it.tech ? `<p class="understood-tech">${esc(tech)}</p>` : ''}`;
 }
 
 // Research answers: written only from the listed sources (web search or market data), shown with them.
@@ -215,6 +244,10 @@ export function wireChat() {
   $('#chatList').addEventListener('click', e => {
     if (handleRecoveryClick(e)) return;
     const saved=e.target.closest('[data-restored-report]');if(saved){const it=items.find(i=>i.id===Number(saved.dataset.restoredReport));if(it?.recoveryReport)restoreReport(it.recoveryReport);return;}
+    const tech = e.target.closest('[data-tech]');
+    if (tech) { const it = items.find(i => i.id === Number(tech.dataset.tech)); if (it) { it.tech = !it.tech; render(); } return; }
+    const op = e.target.closest('[data-open-provider]');
+    if (op) { const [g, pid] = op.dataset.openProvider.split('|'); openProvider(g, pid); return; }
     const rem = e.target.closest('[data-remind]');
     if (rem) { rem.disabled = true; remindWhenReady(rem.dataset.remind).then(() => render()).catch(err => { toast(err.message); rem.disabled = false; }); return; }
     const early = e.target.closest('[data-earlier]');

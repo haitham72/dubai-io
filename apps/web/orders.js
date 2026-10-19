@@ -59,20 +59,16 @@ async function prepare() {
 
 function renderReview(a) {
   const o = a.order, f = a.fields;
+  const shared = [`${o.lines.map(l => `${l.qty}× ${esc(l.name)}`).join(', ')} · total`, o.slot && `pickup ${esc(o.slot)}`,
+    f.area && `area: ${esc(f.area.value)} (you told me)`, f.deadline && `needed by ${esc(f.deadline.value)} (you told me)`].filter(Boolean).join(' · ');
   $('#ordReview').innerHTML = `
-    <p class="lead">${o.lines.map(l => `${l.qty}× ${esc(l.name)}`).join(', ')}${o.slot ? ` · pickup ${esc(o.slot)}` : ''}</p>
-    <div class="appr">
-      <div class="appr-total"><span>Total at their published prices</span><b>${money(a.fixed_total_aed)} (demo)</b></div>
-      <h4>Shared with ${esc(a.recipient)}</h4>
-      <ul><li>${svg('check', 'ic xs')} The items, total${o.slot ? ' and pickup slot' : ''} above</li>
-        ${f.area ? `<li>${svg('check', 'ic xs')} Area: ${esc(f.area.value)} (you told me)</li>` : ''}
-        ${f.deadline ? `<li>${svg('check', 'ic xs')} Needed by: ${esc(f.deadline.value)} (you told me)</li>` : ''}</ul>
-      <h4>Never shared</h4>
-      <ul class="no"><li>${svg('close', 'ic xs')} Your name, number and profile</li><li>${svg('close', 'ic xs')} Anything I noticed about you, and your other orders</li></ul>
-    </div>
+    <div class="ap-total"><span>Total at ${esc(a.recipient.replace(' (sandbox merchant)', ''))}’s published prices</span><b>${money(a.fixed_total_aed)}</b></div>
+    <div class="ap-box"><span class="ap-ic">${svg('arrow', 'ic sm')}</span><div><h5>Will be shared</h5><p>${shared}</p></div></div>
+    <div class="ap-box"><span class="ap-ic">${svg('lock', 'ic sm')}</span><div><h5>Never shared</h5><p>Your name · phone number · profile and anything I noticed · other orders</p></div></div>
     ${a.status === 'DRAFT' ? `<p class="hint">Add ${a.missing.map(esc).join(', ')} to continue.</p>` : ''}
-    <div class="actions"><button class="btn" id="ordNo">Cancel</button><button class="btn primary" id="ordYes" ${a.status === 'AWAITING_APPROVAL' ? '' : 'disabled'}>Approve and send</button></div>
-    <p class="fine">One approval. Prices come from the merchant’s published list (${esc(o.provenance.replace('_', ' '))}, as of ${esc(o.as_of)}), not from the mini-app. The price can’t change after you send; the merchant can accept or decline.</p>`;
+    <p class="ap-info">${svg('shield', 'ic xs')} Nothing is sent until you tap. The shop accepts or declines; the price can’t change.</p>
+    <div class="ap-actions"><button class="btn primary" id="ordYes" ${a.status === 'AWAITING_APPROVAL' ? '' : 'disabled'}>Approve and send</button><button class="btn" id="ordNo">Cancel</button></div>
+    <p class="fine">Prices from the shop’s published list (${esc(o.provenance.replace('_', ' '))}, as of ${esc(o.as_of)}), not from the mini-app. Sandbox merchant.</p>`;
   $('#ordNo').addEventListener('click', () => { closeSheet(); toast('Nothing was sent.'); });
   $('#ordYes').addEventListener('click', approve);
 }
@@ -130,7 +126,6 @@ export function orderCardHTML(a) {
     : e.kind === 'status' ? [{ at: e.at, label: STEP[e.to] + (e.ready_at ? ` · ready ${e.ready_at}` : '') + (e.reason ? ` · ${e.reason}` : ''), code: e.to }]
     : e.kind === 'earlier_requested' ? [{ at: e.at, label: `You asked for ${e.target}, same price`, code: 'REQUEST' }]
     : e.kind === 'ready_time' ? [{ at: e.at, label: `Merchant set ready time to ${e.to}`, code: 'READY_TIME' }] : []);
-  const last = steps[steps.length - 1];
   const dc = a.deadline_check;
   const target = dc && !dc.meets ? earlierThan(dc.deadline) : null;
   const conflict = dc ? (dc.meets
@@ -140,10 +135,14 @@ export function orderCardHTML(a) {
   const remind = !['ACCEPTED', 'READY'].includes(a.status) || !a.ready_at || (dc && !dc.meets) ? ''
     : set ? `<p class="hint">${svg('clock', 'ic xs')} Reminder set for ${esc(new Date(set).toLocaleString('en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Dubai' }))} (quiet hours 23:00–07:00 respected)</p>`
     : `<button class="btn sm" data-remind="${esc(a.id)}">${svg('clock', 'ic xs')} Remind me before it’s ready</button>`;
-  const pending = a.status === 'SUBMITTED' ? `<p class="hint">Waiting for the merchant. No status changes until they tap.</p>` : a.status === 'UNKNOWN_STATUS' ? `<p class="warn">${esc(a.blocked_reason || 'Outcome unknown.')}</p>` : '';
+  const pending = a.status === 'UNKNOWN_STATUS' ? `<p class="warn">${esc(a.blocked_reason || 'Outcome unknown.')}</p>` : '';
+  const done = ['COMPLETED', 'DECLINED', 'CANCELLED'].includes(a.status);
+  const waiting = a.status === 'SUBMITTED' ? 'Waiting for the shop to accept…' : a.status === 'ACCEPTED' ? 'Waiting for the shop to mark it ready…' : a.status === 'READY' ? 'Ready for pickup; waiting for the shop to mark it done…' : '';
+  const title = a.status === 'DECLINED' ? `${esc(o.provider)} declined` : a.status === 'COMPLETED' ? `Done at ${esc(o.provider)}` : `Order sent to ${esc(o.provider)}`;
   return `<div class="msg bot wide status" data-order="${esc(a.id)}">
-    <div class="st-head"><span class="logo">${esc((o.provider || '?').slice(0, 2).toUpperCase())}</span><div><b>${esc(o.provider || a.recipient)}</b><span>${o.lines.map(l => `${l.qty}× ${esc(l.name)}`).join(', ')} · ${money(a.fixed_total_aed)} (demo)</span></div><span class="pill">Sandbox merchant · live</span></div>
-    <ol class="st-steps">${steps.map(x => `<li class="${x === last ? 'now' : ''}"><span class="st-dot"></span><div><b>${esc(x.label)}</b><span><code>${x.code}</code> · ${fmt(x.at)}</span></div></li>`).join('')}</ol>
+    <div class="st-head"><span class="st-ic ${a.status === 'DECLINED' ? 'bad' : ''}">${svg(a.status === 'DECLINED' ? 'close' : 'check', 'ic sm')}</span>
+      <div><b>${title}</b><span>${o.lines.map(l => `${l.qty}× ${esc(l.name)}`).join(', ')} · ${money(a.fixed_total_aed)} · sandbox merchant</span></div><span class="st-pill">${esc(a.status.replace('_', ' '))}</span></div>
+    <ol class="st-steps">${steps.map(x => `<li class="done"><span class="st-dot">${svg('check', 'ic xs')}</span><div><b>${esc(x.label)}</b><span>${fmt(x.at)}</span></div></li>`).join('')}${waiting && !done ? `<li class="now"><span class="st-dot"></span><div><b>${waiting}</b><span>No status changes until the shop taps</span></div></li>` : ''}</ol>
     ${conflict}${pending}${remind}
     <p class="st-ref">${a.evidence ? `Ref ${esc(a.evidence.reference)} · ` : ''}the price can’t change now</p>
   </div>`;
