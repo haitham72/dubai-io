@@ -97,7 +97,7 @@ Founder correction: all services must use the agentic loop in `PLAN.md` §7.8. A
 - Current `apps/api`: Python **3.13** (local venv: 3.13.16), FastAPI, Pydantic v2, LangGraph and the OpenAI SDK. Serves `apps/web` directly at `/`.
 - Planned `apps/widgets`: static widget bundles served from a **different origin**. The lab currently uses sandboxed `srcdoc`; this is not the completed widget-host gate.
 - Planned `packages/contracts`: Pydantic models are the source of truth, exported to JSON Schema and generated TS. Current Luna schema lives in `apps/api/app/luna/schema.py`; never hand-edit generated TS once codegen exists.
-- Planned PostgreSQL 16 + pgvector. Current told facts use `apps/api/data/memory.json`; the checkpointer is in memory. No Redis, no PostGIS, no microservices.
+- PostgreSQL 16 + pgvector (Docker, `apps/api/docker-compose.yml`) via `DATABASE_URL`; SQLite fallback for tests/offline (`app/db.py`). Profile in `user_profile` + `profile_facts` (JSONB); Luna checkpoints in Postgres. No Redis, no PostGIS, no microservices.
 - Current LLM: OpenAI through `apps/api/app/config.py` (`LUNA_MODEL`, `LUNA_EFFORT`, `LUNA_TIMEOUT_S`). `LLM_PROVIDER` exists in config but does not implement provider switching. Defaults are `gpt-6-luna` / `high`; alternate model/effort can be configured. Keys stay server-side. Never hard-code model IDs outside config.
 
 ## Commands

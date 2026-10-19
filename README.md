@@ -23,7 +23,14 @@ dubai-io/
 
 ### 1. Start the API Backend & Web Host
 
-From the repository root:
+Start Postgres once (Docker Desktop; values in `apps/api/.env`):
+
+```powershell
+cd apps/api
+docker compose --env-file .env up -d
+```
+
+Then, from the repository root:
 
 ```powershell
 cd apps/api

@@ -15,7 +15,9 @@ cd apps/api
 | `http://<host>:8000/merchant.html` | Sandbox merchant inbox + operator Demo triggers. PIN: `MERCHANT_PIN`, or generated into `apps/api/data/merchant.pin` at startup |
 | `http://<host>:8001/miniapps/…` | Separate widget origin (same process; `WIDGET_PORT`, 0 disables) |
 
-`.env` (in `apps/api`, not committed): `OPENAI_API_KEY`, `GOOGLE_PLACES_KEY` (Places + Routes), optional `LUNA_EFFORT` (local is `low`: median 2.3 s vs 4.7 s at `high`, same 4/4 accuracy on the bench), `MERCHANT_PIN`. Web assets are served `no-cache`, so phones pick up edits on reload.
+**Database:** Postgres 16 + pgvector in Docker: `cd apps/api; docker compose --env-file .env up -d` (password + `DATABASE_URL` in `.env`). Without `DATABASE_URL` the API falls back to SQLite in `data/`. Copy old SQLite data once: `.venv\Scripts\python -m app.migrate_sqlite`.
+
+`.env` (in `apps/api`, not committed): `OPENAI_API_KEY`, `GOOGLE_PLACES_KEY` (Places + Routes), `TVLY_API_KEY` + `SERPAPI_KEY` (web answers), `FINNHUB_API_KEY` (quotes), `PG_PASSWORD` + `DATABASE_URL`, optional `LUNA_EFFORT` (local is `low`: median 2.3 s vs 4.7 s at `high`, same 4/4 accuracy on the bench), `MERCHANT_PIN`. Web assets are served `no-cache`, so phones pick up edits on reload.
 
 ## 2. What works end to end (verified in a browser, 19 Oct)
 
@@ -30,12 +32,14 @@ cd apps/api
 9. **User profile** (`user_profile.py`): `user_profile` (typed core + growing `attributes` JSON) projected from bi-temporal `profile_facts` (told or confirmed only); old `memory.json` auto-imported; `/api/profile/me`.
 10. **Luna memory:** SQLite checkpointer (threads survive restart); `order_status` intent answers from the order record; requests/incidents are not stored as facts.
 11. **Stage:** `#demo` shows the "Scripted demo" label; the taxi sheet captures the hotel area that later requests reuse.
-12. **UI rule:** no shadows; AI text plain, user turn tinted box, actions in white rounded boxes (`stage-v3.css` "clean chat").
+12. **Research tools:** `info_question` → Tavily/SerpAPI, answer cited from sources only (civic questions refused); `market_quote` → Finnhub template.
+13. **Postgres:** all backend tables (orders, merchant, outbox, profile with JSONB + pgvector column) and Luna checkpoints; suite also runs on Postgres with `TEST_DATABASE_URL`.
+14. **UI rule:** no shadows; AI text plain, user turn tinted box, actions in white rounded boxes (`stage-v3.css` "clean chat").
 
 ## 3. Tests
 
-`cd apps/api; .\.venv\Scripts\python -m pytest -q tests` → **69 passed, 11 skipped** (live Luna golden set; `$env:RUN_LIVE=1` before rehearsals).
-`node apps/web/tests/{profile,recovery,luna-client}.test.mjs` → 92 + 8 + 10.
+`cd apps/api; .\.venv\Scripts\python -m pytest -q tests` → **75 passed, 11 skipped** (same suite on Postgres: set `TEST_DATABASE_URL`) (live Luna golden set; `$env:RUN_LIVE=1` before rehearsals).
+`node apps/web/tests/{profile,recovery,luna-client}.test.mjs` → 92 + 8 + 11.
 
 ## 4. Remaining (see adjudication §7)
 
