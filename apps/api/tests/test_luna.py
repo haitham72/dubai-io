@@ -8,7 +8,9 @@ import os
 import pytest
 
 from app.luna import graph as luna
-from app.luna.graph import FactStore, validate
+from app.actions import ActionStore
+from app.luna.graph import validate
+from app.user_profile import ProfileStore
 
 
 def base(**kw):
@@ -44,12 +46,13 @@ def test_greeting_is_not_gated_by_confidence():
 
 
 def test_fact_store_supersedes_and_forgets(tmp_path):
-    s = FactStore(tmp_path / "m.json")
+    store = ActionStore(tmp_path / "a.sqlite3")
+    s = ProfileStore(lambda: store)
     s.add("u", "area", "JLT", "I live in JLT")
     s.add("u", "area", "Dubai Marina", "I moved to the Marina")
     cur = s.current("u")
     assert [f["value"] for f in cur] == ["Dubai Marina"] and cur[0]["provenance"] == "user_supplied"
-    assert len(s.data["u"]) == 2  # history kept
+    assert len(s.history("u", "area")) == 2  # history kept
     assert s.forget("u", "area") == 2 and s.current("u") == []
 
 

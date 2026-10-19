@@ -15,9 +15,17 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from .actions import COOKIE, engine
 
+
+def profile_store():
+    from .luna.graph import facts  # the shared ProfileStore (user_profile + profile_facts)
+    return facts
+
 router = APIRouter(tags=["profile"])
 # Mirrors HYPOTHESES in apps/web/data.js. Adding one is a reviewed code change, never model output.
-HYPOTHESES = {"order_in_weeknight", "eat_out_friday", "price_unless_deadline", "specialty_coffee", "haircut_4w", "prefers_closest"}
+HYPOTHESES = {"order_in_weeknight": ("routine", "Late on weeknights you order in"), "eat_out_friday": ("routine", "On Friday lunch you eat out"),
+              "price_unless_deadline": ("preference", "You pick the cheapest, unless a deadline is at risk"),
+              "specialty_coffee": ("like", "You like specialty coffee around Al Quoz"), "haircut_4w": ("routine", "You get a haircut about every 4 weeks"),
+              "prefers_closest": ("preference", "You pick the closest provider")}
 WEIGHTS = {0.5, 1, 2}  # view/dwell 0.5 · dismissal 1 · choice 2 (told facts live in memory, not here)
 KINDS = {"view", "choice", "dismissal"}
 STATUSES = {"confirmed", "rejected", "forgotten"}
@@ -94,6 +102,12 @@ def set_override(hypothesis: str, body: OverrideIn, request: Request):
                 kept = [e for e in json.loads(ev) if e["h"] != hypothesis]
                 store.db.execute("UPDATE episodes SET ev=? WHERE id=?", (json.dumps(kept), eid))
         store.db.commit()
+    # Only a confirmed hypothesis becomes a profile fact (user_supplied); Not true / Forget remove it.
+    facet, label = HYPOTHESES[hypothesis]
+    if body.status == "confirmed":
+        profile_store().add(owner, hypothesis, label, "You confirmed: " + label, facet=facet, status="confirmed")
+    else:
+        profile_store().forget(owner, hypothesis)
     return {"hypothesis": hypothesis, "status": body.status}
 
 
@@ -103,4 +117,13 @@ def clear_override(hypothesis: str, request: Request):
     with store.lock:
         store.db.execute("DELETE FROM profile_overrides WHERE owner=? AND hypothesis=?", (owner, hypothesis))
         store.db.commit()
+    profile_store().forget(owner, hypothesis)
     return {"hypothesis": hypothesis, "status": None}
+
+
+@router.get("/api/profile/me")
+def profile_document(request: Request):
+    """The growing profile document plus its current facts (all user_supplied: told or confirmed)."""
+    store, owner = owner_of(request)
+    facts = profile_store()
+    return {**facts.document(owner), "facts": facts.current(owner)}

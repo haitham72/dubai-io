@@ -18,15 +18,15 @@ from hashlib import sha256
 import operator
 import re
 import time
-from datetime import datetime, timezone
-from threading import Lock
 from typing import Annotated, Optional, TypedDict
 
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.graph import END, START, StateGraph
 from openai import OpenAI
 
+from ..actions import engine as action_engine
 from ..config import settings
+from ..user_profile import ProfileStore
 from .schema import Understanding
 
 INSTRUCTIONS = """You are Luna, the understanding step of Dubai-io, a companion app for people living in or visiting Dubai.
@@ -77,39 +77,7 @@ class LunaState(TypedDict, total=False):
 
 
 # ---------------------------------------------------------------- long-term memory (stated facts)
-class FactStore:
-    """Tiny JSON store until Postgres arrives with the profiler (step P)."""
-
-    def __init__(self, path):
-        self.path = path
-        self.lock = Lock()
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        self.data = json.loads(self.path.read_text("utf-8")) if self.path.exists() else {}
-
-    def add(self, user_id: str, key: str, value: str, source: str) -> dict:
-        fact = {"key": key, "value": value, "provenance": "user_supplied", "as_of": datetime.now(timezone.utc).isoformat(timespec="seconds"), "source": source[:140]}
-        with self.lock:
-            facts = self.data.setdefault(user_id, [])
-            for old in facts:  # a newer statement supersedes the old one; keep history
-                if old["key"] == key and old.get("valid_to") is None and old["value"] != value:
-                    old["valid_to"] = fact["as_of"]
-            if not any(f["key"] == key and f["value"] == value and f.get("valid_to") is None for f in facts):
-                facts.append(fact)
-            self.path.write_text(json.dumps(self.data, indent=1, ensure_ascii=False), "utf-8")
-        return fact
-
-    def current(self, user_id: str) -> list[dict]:
-        return [f for f in self.data.get(user_id, []) if f.get("valid_to") is None]
-
-    def forget(self, user_id: str, key: str) -> int:
-        with self.lock:
-            before = len(self.data.get(user_id, []))
-            self.data[user_id] = [f for f in self.data.get(user_id, []) if f["key"] != key]
-            self.path.write_text(json.dumps(self.data, indent=1, ensure_ascii=False), "utf-8")
-            return before - len(self.data[user_id])
-
-
-facts = FactStore(settings.data_dir / "memory.json")
+facts = ProfileStore(lambda: action_engine().store, legacy_json=settings.data_dir / "memory.json")
 _client: Optional[OpenAI] = None
 
 
