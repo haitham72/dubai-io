@@ -12,11 +12,11 @@ Dubai-io is a chat-first AI companion for people living in or visiting Dubai, bu
 
 Civic guidance (official sources, citations) is LATER, not in the contest build.
 
-**Stage: Phase 0 complete; redesign lab + early API slice.** Current branch: `redesign`. `demo/` is the legacy scripted prototype; `demo/lab/` is the cyan Home v2 lab. `apps/api/` serves the lab and exposes Luna, stated-fact memory, and Places/Routes endpoints. Lab chat calls Luna on the API origin and falls back to the labelled router. Local anonymous sessions and SQLite request drafts/approvals are implemented; browser history saves plain text and report data. The configured Google OAuth connector is prepared but credentials are absent (ARCHITECTURE.md §§13–14). No live provider adapter is registered. `apps/web`, `apps/widgets`, `packages/contracts`, Postgres and the persistent profiler are not built.
+**Stage: Phase 0 complete; apps/web + early API slice.** Current branch: `redesign`. `apps/web/` is the active cyan frontend (with Wi-Fi captive arrival, coverflow onboarding, airport guide, services catalog, and Luna chat). `apps/api/` serves the web app and exposes Luna, stated-fact memory, and Places/Routes endpoints. Web chat calls Luna on the API origin and falls back to the labelled router. Local anonymous sessions and SQLite request drafts/approvals are implemented; browser history saves plain text and report data. The configured Google OAuth connector is prepared but credentials are absent (ARCHITECTURE.md §§13–14). No live provider adapter is registered.
 
 ## Research status
 
-* Paper trail (research, reviews, decisions, visitor evidence, handoff archive) lives on `main`. The current `redesign` branch contains the four canon files, `demo/`, references and `apps/api/`.
+* Paper trail (research, reviews, decisions, visitor evidence, handoff archive) lives on `main` and `docs/`. The current `redesign` branch contains the four canon files, `apps/`, `design/`, and `docs/`.
 * Do NOT re-run forum research. Remaining task: verify contest facts on the official portal only (`dubaichamberdigital.com`, Dubai Media Office / WAM): submission deadline (Dec 2026 vs Jan 2027 conflict), final (first week May 2027), artifacts, judging criteria (no rubric published), IP terms. Then re-anchor `PLAN.md §4` dates.
 
 ## Docs (highest authority first)
@@ -26,15 +26,13 @@ Civic guidance (official sources, citations) is LATER, not in the contest build.
 | `CLAUDE.md` (this) | Hard rules for agents |
 | `PLAN.md` | **The single plan**: scope (IN / LATER / NEVER), demo arc, phases, gates |
 | `ARCHITECTURE.md` | Build architecture, contracts, state machine |
-| `demo/_ref/handoff.md` | Current implementation status and remaining work; cannot override the canon |
-| `demo/_ref/redesign.md` | Screen references and historical prompts; current navigation follows `PLAN.md` §§6.4, 7.5 |
-| `demo/_ref/visuals-libraries.md` | Visual effect references; supplied prompts are preserved verbatim |
-| `demo/run.md` | Current PowerShell setup, lab entry point, API and test commands |
-| `demo/` | Legacy scripted prototype; `demo/lab/` = active cyan HTML lab (no build) |
-| `demo/_ref/services/` | **Services list (`cases.md`) + intake guide (`intake.md`).** New ideas go here, never into `PLAN.md` |
-| `main` branch | Paper trail: `docs/` (decisions, design, visitors, vision, research, reviews) + `archive/` (handoff, old reviews) |
+| `docs/handoff.md` | Current implementation status and remaining work; cannot override the canon |
+| `docs/references/redesign.md` | Screen references and historical prompts; current navigation follows `PLAN.md` §§6.4, 7.5 |
+| `docs/references/visuals-libraries.md` | Visual effect references; supplied prompts are preserved verbatim |
+| `docs/services/` | **Services list (`cases.md`) + intake guide (`intake.md`).** New ideas go here, never into `PLAN.md` |
+| `docs/` | Product review, engineering evaluations (`gemini-review.md`), decisions |
 
-Read order: this file → `PLAN.md` → `ARCHITECTURE.md` → `demo/_ref/handoff.md`; follow the routed references for the task. Newer explicit founder decisions in `PLAN.md` supersede older reference prompts. Historical fixtures do not promote LATER features into scope.
+Read order: this file → `PLAN.md` → `ARCHITECTURE.md` → `docs/handoff.md`; follow the routed references for the task. Newer explicit founder decisions in `PLAN.md` supersede older reference prompts. Historical fixtures do not promote LATER features into scope.
 
 If a request needs something that `PLAN.md` lists as **LATER** or **NEVER**, stop and ask. Do not build a "small version" of it.
 
@@ -43,23 +41,29 @@ If a request needs something that `PLAN.md` lists as **LATER** or **NEVER**, sto
 ```
 dubai-io/  (current branch: redesign; paper trail on main)
 ├── CLAUDE.md / PLAN.md / ARCHITECTURE.md / README.md  # canon
-├── demo/
-│   ├── index.html / app.js / data.js / styles.css  # legacy v1 prototype
-│   ├── miniapps/ / maps/                       # v1 fixtures, placeholder maps
-│   ├── lab/                                   # active cyan HTML lab
-│   │   ├── home-v2-cyan.html / app.js / stage*.css
+├── apps/
+│   ├── web/                                   # active cyan frontend (HTML/CSS/ES modules)
+│   │   ├── index.html / app.js / stage*.css
+│   │   ├── arrival.js                         # Wi-Fi captive sign-in & app install flow
 │   │   ├── chat.js / guide.js / offers.js / map.js / profile.js
-│   │   ├── data.js                             # categories, places, profile fixtures
+│   │   ├── data.js                            # categories, places, profile fixtures
 │   │   └── miniapps/ / fixtures/ / media/ / tests/
-│   ├── _ref/                                  # handoff, prompts, service cases
-│   └── run.md                                 # current setup and commands
-├── apps/api/                                  # FastAPI + LangGraph API slice
-│   ├── app/main.py / config.py / google_maps.py / luna/
-│   └── data/ / tests/ / requirements.txt
-└── planned: apps/web / apps/widgets / packages/contracts
+│   └── api/                                   # FastAPI + LangGraph API backend
+│       ├── app/main.py / config.py / google_maps.py / luna/
+│       └── data/ / tests/ / requirements.txt
+├── design/
+│   ├── references/                            # visual reference images & flow specs
+│   └── screens/                               # UI design mocks & montage exports
+├── docs/
+│   ├── handoff.md                             # current status & review prompts
+│   ├── DUBAI-IO_Product_Enhancement_Review.md # comprehensive strategic review
+│   ├── gemini-review.md                       # architectural review & next steps
+│   ├── references/                            # redesign.md, visuals-libraries.md
+│   └── services/                              # cases.md, intake.md
+└── output/                                    # test logs, screenshots
 ```
 
-Rules: never add top-level `*.md` beyond the four canon files. Current code lives in `demo/` and `apps/api/`; scaffold the remaining packages only for their planned steps.
+Rules: never add top-level `*.md` beyond the four canon files. Current code lives in `apps/web/` and `apps/api/`.
 
 ## Non-negotiable rules
 
@@ -80,18 +84,17 @@ Founder correction: all services must use the agentic loop in `PLAN.md` §7.8. A
 
 ## Service intake
 
-**New ideas and services.** When the user adds an idea, a service or a reference image, follow [`demo/_ref/services/intake.md`](demo/_ref/services/intake.md).
-- File it under `demo/_ref/services/<shops|service>/<category>/`.
-- The default outcome is a category-registry row: filed cases are ~1% of the app, and the generic engine covers the rest. Add or extend a case in `demo/_ref/services/cases.md` (status `idea`) only when the idea needs a new pattern, rule or data source, or is a demo moment.
+**New ideas and services.** When the user adds an idea, a service or a reference image, follow [`docs/services/intake.md`](docs/services/intake.md).
+- File it under `docs/services/<shops|service>/<category>/`.
+- The default outcome is a category-registry row: filed cases are ~1% of the app, and the generic engine covers the rest. Add or extend a case in `docs/services/cases.md` (status `idea`) only when the idea needs a new pattern, rule or data source, or is a demo moment.
 - Never write a case into `PLAN.md`.
 - If the idea is unclear (category, the user's ask, what is sold or done, who confirms), ask before filing.
 - If it touches a NEVER item, stop and say so.
 
 ## Stack (current slice and planned scaffold)
 
-- Current frontend: `demo/lab/`, plain HTML/CSS + ES modules; cyan selected on 13 Oct.
-- Planned `apps/web`: **Vite + React + TypeScript** (founder decision 12 Oct), mobile-first PWA for iPhone Safari. Routes `/` (user), `/merchant` (inbox), `/ops` (onboarding review). Built-in assets may live in `public/`; provider widgets use the separate origin required by rule 10.
-- Current `apps/api`: Python **3.13** (local venv: 3.13.16), FastAPI, Pydantic v2, LangGraph and the OpenAI SDK. SQLAlchemy 2 + Alembic are planned.
+- Current frontend: `apps/web/`, plain HTML/CSS + ES modules; cyan theme with Wi-Fi arrival flow.
+- Current `apps/api`: Python **3.13** (local venv: 3.13.16), FastAPI, Pydantic v2, LangGraph and the OpenAI SDK. Serves `apps/web` directly at `/`.
 - Planned `apps/widgets`: static widget bundles served from a **different origin**. The lab currently uses sandboxed `srcdoc`; this is not the completed widget-host gate.
 - Planned `packages/contracts`: Pydantic models are the source of truth, exported to JSON Schema and generated TS. Current Luna schema lives in `apps/api/app/luna/schema.py`; never hand-edit generated TS once codegen exists.
 - Planned PostgreSQL 16 + pgvector. Current told facts use `apps/api/data/memory.json`; the checkpointer is in memory. No Redis, no PostGIS, no microservices.

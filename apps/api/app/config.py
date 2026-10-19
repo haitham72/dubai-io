@@ -7,7 +7,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 ROOT = Path(__file__).resolve().parents[3]
-for env_file in (ROOT / "apps" / "api" / ".env", ROOT / "demo" / ".env"):
+for env_file in (ROOT / "apps" / "api" / ".env",):
     load_dotenv(env_file, override=False)
 
 # A stale CA-bundle path set elsewhere on this machine breaks TLS; ignore it.
@@ -32,7 +32,8 @@ class Settings:
     google_oauth_client_secret = os.getenv("GOOGLE_OAUTH_CLIENT_SECRET", "")
     google_oauth_redirect_uri = os.getenv("GOOGLE_OAUTH_REDIRECT_URI", "")
     oauth_token_key = os.getenv("OAUTH_TOKEN_KEY", "")
-    lab_dir = ROOT / "demo" / "lab"
+    web_dir = ROOT / "apps" / "web"
+    lab_dir = web_dir  # backward compatibility alias
     data_dir = ROOT / "apps" / "api" / "data"
 
 

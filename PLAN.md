@@ -1,17 +1,17 @@
 # Dubai-io — Plan
 
-**Updated:** 13 Oct 2026 (step 00 alignment + visual feedback) · **Status:** **Plan v1.6** · handoff: `demo/_ref/handoff.md` (Home v2 + temporal profiler + services loop in §7) · **Owner:** Haitham
-This is the single plan. Scope, demo and phases live here, and nowhere else. (Decision log lives on `main`; current working branch is `redesign`.)
+**Updated:** 19 Oct 2026 (monorepo cleanup + docs review) · **Status:** **Plan v1.7** · handoff: `docs/handoff.md` (Home v2 + temporal profiler + services loop in §7) · **Owner:** Haitham
+This is the single plan. Scope, demo and phases live here, and nowhere else. (Decision log lives on `main` and `docs/`; current working branch is `redesign`.)
 **Founder lock (10 Oct, final): bidding/quote is ABSOLUTELY REJECTED. Every service opens as a modal HTML mini-app (services / shops / stores / rides) with published fixed prices.**
 **Founder decision (12 Oct): the Resident/VIP arc (items 10–11) moves from LATER to IN, built after the visitor redesign. Providers answer slot/availability requests at published fixed prices. The quote lock above is unchanged.**
 **Founder decisions (13 Oct):**
 - The **temporal profiler is core** (visible hypotheses, `ARCHITECTURE.md §12`).
 - **Home v2** (shader coverflow, soft reveal) and the universal **Services surface** come first.
-- Service cases live in `demo/_ref/services/cases.md`, are picked one at a time (§7), and are ~1% of the app; the generic engine covers the rest.
+- Service cases live in `docs/services/cases.md`, are picked one at a time (§7), and are ~1% of the app; the generic engine covers the rest.
 - The quote lock is unchanged.
 - **Palette: cyan selected.** C1’s laser/chromatic reflection is the approved style for every stage card, at 70% of its previous intensity. This does not select the chromatic page/theme.
 
-**Current implementation:** Phase 0 is complete. The active frontend is `demo/lab/`; `demo/` remains the legacy v1 prototype. `apps/api/` implements Luna, JSON stated-fact memory and Google Places/Routes proxies. The lab chat is still the keyword router. `apps/web`, `apps/widgets`, `packages/contracts`, Postgres and the persistent temporal profiler are not built; no Phase 1–4 gate is claimed complete.
+**Current implementation:** Phase 0 is complete. The active frontend is `apps/web/` (with Wi-Fi captive arrival and coverflow onboarding); `apps/api/` serves `apps/web` directly at `/` and implements Luna, SQLite persistence, JSON stated-fact memory and Google Places/Routes proxies. The obsolete legacy prototype in `demo/` has been retired.
 
 ---
 
@@ -41,7 +41,7 @@ Contest: Create AI Agents Championship, category **Best Personal AI Agent**. Off
 | 8 | Memory payoff: "I left my bag in the taxi" → report pre-filled with RTA's fields (time, pickup/drop-off, roof colour, plate, receipt photo) from saved trip details, asks only for what's missing, hands off to the official channels (call centre / chat agent / app), stays "not recovered" | Companion |
 | 9 | Merchant onboarding: price-list photo → AI-generated mini-app → operator approves → live | Platform |
 | 10 | **Resident/VIP arc** (second arc, after the visitor redesign): a goal ("renew my car licence") becomes a plan. Agents read provider sites / APIs / MCP tools, prepare each step and send **slot requests at published fixed prices**: papers check (user-supplied facts only) → provider rows → runner proposal → insurance choice → provider-confirmed done, with a per-step calendar timeline to the second. A private runner makes the visit; Dubai-io never submits to RTA/Tasjeel | Resident |
-| 11 | **Service cases:** picked from `demo/_ref/services/cases.md` by C-ID (maid with visa, cloth try-on, barber, pets, food, video → map, …). Fixed prices, fictional demo providers | Services |
+| 11 | **Service cases:** picked from `docs/services/cases.md` by C-ID (maid with visa, cloth try-on, barber, pets, food, video → map, …). Fixed prices, fictional demo providers | Services |
 | 12 | **Temporal profile:** visible hypotheses that learn over time, "You, over time" card, "Because…" on every re-rank (`ARCHITECTURE.md §12`) | Companion |
 | 13 | **Services surface:** data-driven category registry, map ↔ list, one bottom sheet for any provider (§7.3) | Services |
 
@@ -151,7 +151,7 @@ Rehearse 10×, record a fallback video, deck, deploy, small user test, honest me
 
 ## 6. Redesign build plan (`apps/web`, Vite + React + TS)
 
-**Handoff for the build agent.** Read order: `CLAUDE.md` → this section → `demo/_ref/redesign.md` (prompts and exact copy) → the images in `demo/_ref/`. Branch `redesign`. This section replaces the Next.js front-end assumptions in Phases 1–3; the backend phases are unchanged. Build the **visitor redesign to parity first**, then the Resident/VIP arc (items 10–11).
+**Handoff for the build agent.** Read order: `CLAUDE.md` → this section → `docs/references/redesign.md` (prompts and exact copy) → the images in `design/references/`. Branch `redesign`. This section replaces the Next.js front-end assumptions in Phases 1–3; the backend phases are unchanged. Build the **visitor redesign to parity first**, then the Resident/VIP arc (items 10–11).
 
 ### 6.1 Definition of done
 
@@ -162,33 +162,26 @@ Rehearse 10×, record a fallback video, deck, deploy, small user test, honest me
 
 ### 6.2 Structure
 
-**Target structure, not the current tree.** Only `apps/api/` exists today; the lab remains the frontend. Historical community/ticket/faith entries below are reference candidates, subject to §2 scope. Provider widget bundles use `apps/widgets` on a separate origin (§6 of `ARCHITECTURE.md`); host-owned assets stay in `public/`.
+**Target structure, not the current tree.** Current active code lives in `apps/web/` and `apps/api/`. Historical community/ticket/faith entries below are reference candidates, subject to §2 scope. Provider widget bundles use `apps/widgets` on a separate origin (§6 of `ARCHITECTURE.md`); host-owned assets stay in `public/`.
 
 ```
 apps/web/
   index.html            viewport-fit=cover, theme-color, apple-mobile-web-app-*, apple-touch-icon (orb)
-  public/miniapps/      dxb-guide.html, community.html, shop.html, merchants (copy from demo/miniapps)
-  public/maps/          copy of demo/maps
-  src/styles/           tokens.css (demo/styles.css tokens + glass), base.css
-  src/data/             fixtures.ts  (from demo/data.js)
-  src/luna/             client.ts (API first, mock fallback), mock.ts (from demo/luna.js, same contract)
-  src/motion/           scroll reveal, spring + gesture, reduced-motion helpers (6.8)
-  src/shaders/          HeroField.tsx + GLSL (WebGL2 canvas behind the Home hero) (6.8)
-  src/bridge/           host.ts (scopes, handler table), MiniAppSheet.tsx (iframe sandbox="allow-scripts")
-  src/state/            store.ts (one reducer or zustand; epoch guard, dedupe map)
-  src/components/       AppBar, AISearch, GlassTabBar, Composer, Bubble, Card, Chip, Pill, StatusTag, Sheet, Banner
-  src/screens/          io (Home), Maps, Services, Me, Backstage
-  src/flows/            journey, rows, join, purchase, recovery, triggers, laundry, tickets, faith
-apps/api/               existing Luna + stated-fact memory + Places/Routes proxies (6.9)
+  miniapps/             bloom, foldpress, marinaexpress, nightowl, palmleaf, palmquick, provider
+  fixtures/             dubai-map.json, profile-vectors.json
+  media/                app photography and icons
+  arrival.js            Wi-Fi settings, captive portal, install mock
+  app.js / chat.js      stage coverflow, companion chat
+apps/api/               FastAPI + LangGraph Luna + stated memory + Places/Routes proxies (6.9)
 ```
 
-Dependencies (web): `react`, `react-dom`, `vite`, `typescript`, `vitest`, `@playwright/test`, a spring/gesture lib (`framer-motion` or `@use-gesture/react` + `react-spring`), a tiny WebGL helper (`ogl`, or raw WebGL2), founder-supplied effect libraries `border-beam`, `voice-glow`, `thinking-orbs`, plus `metal-fx` (silver only), `img-fx` (+`three`, lazy-loaded) and `liquid-gooey` (all npm-verified, MIT; pin exact versions, see `demo/_ref/visuals-libraries.md`), `zustand` optional. Plain CSS (CSS modules). No UI kit.
+Dependencies (web): `react`, `react-dom`, `vite`, `typescript`, `vitest`, `@playwright/test`, a spring/gesture lib (`framer-motion` or `@use-gesture/react` + `react-spring`), a tiny WebGL helper (`ogl`, or raw WebGL2), founder-supplied effect libraries `border-beam`, `voice-glow`, `thinking-orbs`, plus `metal-fx` (silver only), `img-fx` (+`three`, lazy-loaded) and `liquid-gooey` (all npm-verified, MIT; pin exact versions, see `docs/references/visuals-libraries.md`), `zustand` optional. Plain CSS (CSS modules). No UI kit.
 
 ### 6.3 Reference map
 
 | Screen / state | Reference | Build as |
 |---|---|---|
-| Home / Services | `01-home.png`, left half of `01a-chat-takeover.png` | Home uses the cyan coverflow (§7.2); `01-home.png` hero/card layout becomes the top of Services (§7.5). One bottom composer |
+| Home / Services | `01-home.png`, left half of `01a-chat-takeover.png` in `design/references/` | Home uses the cyan coverflow (§7.2); `01-home.png` hero/card layout becomes the top of Services (§7.5). One bottom composer |
 | Chat active | right half of `01a-chat-takeover.png`, `02-rows.png` | compact header + back chevron, Composer replaces the tab bar, LunaChip, RowsCard |
 | Guide (built-in mini-app) | `01c-guide-states.png`; spec only: prompt 1b in `redesign.md` (no image for stop 1) | `dxb-guide.html`, restyled; stop media from `public/maps` |
 | Partner sheet (historical community fixture) | `02a-partner-sheet.png` | visual sheet anatomy only until §2 scope/bridge decision |
@@ -201,13 +194,13 @@ Dependencies (web): `react`, `react-dom`, `vite`, `typescript`, `vitest`, `@play
 | Backstage (≥ 1100 px) | `06-backstage.png` | inbox, trigger panel, tools status, event log |
 | Arrival notification | `x-arrival-notification.png` | in-app Banner on first load (web cannot do Live Activities) |
 | First-run tour | `x-home-onboarding.png` | coach-mark hierarchy adapted to the current bottom composer |
-| Chat effects: Beam, Voice, Orb + ShipSwift `SWMetal` shader ideas | `demo/_ref/visuals-libraries.md` (prompts copied as supplied; our notes in Part 3) | Composer `BorderBeam` / `VoiceBeam`, bot avatar `ThinkingOrb`, GLSL ideas for L3 |
+| Chat effects: Beam, Voice, Orb + ShipSwift `SWMetal` shader ideas | `docs/references/visuals-libraries.md` (prompts copied as supplied; our notes in Part 3) | Composer `BorderBeam` / `VoiceBeam`, bot avatar `ThinkingOrb`, GLSL ideas for L3 |
 | Dark theme + map pin + permission card | `x-location-geofence-darkmode.jpg` (Apple Find My / Maps screenshot, **style reference only**, third-party names must not appear) | dark token set (`prefers-color-scheme` + manual), guide lightbox pin with an "approximate" ring, Me → Permissions "Notifications are off" card, detail-sheet pattern (title, status, two actions) |
 | Resident/VIP | R-series prompts, no images yet | after visitor parity |
-| Home v2 stage | `demo/_ref/carousel/carousel*.jpg` (aura above, glow below), `carousel/holographi ccards.mp4` (holo finishes), ShipSwift `SWMetal` (MIT) | §7.2 |
-| Services surface + cases | `demo/_ref/services/` tree (pets = surface pattern; cloth, coffee, restaurants, "Pulled data services") | §7.3, `cases.md` |
+| Home v2 stage | `design/references/carousel/carousel*.jpg` (aura above, glow below), `carousel/holographi ccards.mp4` (holo finishes), ShipSwift `SWMetal` (MIT) | §7.2 |
+| Services surface + cases | `docs/services/` tree (pets = surface pattern; cloth, coffee, restaurants, "Pulled data services") | §7.3, `cases.md` |
 
-Ignore `demo/_ref/_rejected/`. Fix on the way: `06` shows the real brand "Carrefour Express" (use "Marina Fresh (demo)"); `00`'s button reads "Indoor nav" (use "Arrival guide"; no indoor-position claims).
+Ignore `design/references/_rejected/`. Fix on the way: `06` shows the real brand "Carrefour Express" (use "Marina Fresh (demo)"); `00`'s button reads "Indoor nav" (use "Arrival guide"; no indoor-position claims).
 
 ### 6.4 Navigation model (decided)
 
@@ -247,7 +240,7 @@ Bridge: scopes in each manifest AND a handler in the host table; unknown or out-
 | 3 | Recovery, Services / Me, merchant + onboarding | cash and card paths end at `READY` or `PREPARED_NOT_FILED`; order accepted → ready-time |
 | 4 | Backstage, tour, retouch list | triggers fire once; log filters |
 | 5 | Resident/VIP arc (R-series) | Gate R in §4 |
-| loop | **Next picked case** from `demo/_ref/services/cases.md` (§7.4) | that case's checks in `cases.md` |
+| loop | **Next picked case** from `docs/services/cases.md` (§7.4) | that case's checks in `cases.md` |
 
 Audits at every gate: bridge audit `rg "quote\.|QUOTED|cart\.request|rx\.request|pickup\.request|payment\.charge"` returns nothing · no `allow-same-origin` · every price says `(demo)` · status codes follow `ARCHITECTURE.md` §4; success words follow CLAUDE.md rule 1 · no real brands.
 
@@ -297,14 +290,14 @@ Purpose: real user-understanding behind the lab router. The backend and local fr
 ## 7. Home v2 + services loop (13 Oct)
 
 ### 7.1 Platform order
-- **HTML lab first** (`demo/lab/`, ES modules, no build; edit → reload → private Artifact link on the iPhone). Modules are laid out like `apps/web/src/{shaders,motion,…}`, so the port is a copy.
-- **Vite + React second:** the picked shell and accepted cases are ported into `apps/web`.
+- **HTML web app first** (`apps/web/`, ES modules, served directly by `apps/api` at `/`). Modules are laid out like `apps/web/src/{shaders,motion,…}`, so any future React port is a copy.
+- **Vite + React second:** the picked shell and accepted cases are ported into `apps/web` if needed.
 - **Swift later** (needs a Mac + Xcode).
 - Shaders match native (Safari runs WebGL2 on Metal). Native-only upgrades, kept for later: real Liquid Glass refraction, 120 Hz, haptics, share-sheet target, Live Activities.
 
-### 7.2 Home v2 shell (lab: `demo/lab/home-v2-cyan.html`)
+### 7.2 Home v2 shell (`apps/web/index.html`)
 - **Layout:** brand row · **coverflow stage** · swatch rail · caption line · bottom composer above the idle glass tab bar (§6.4). **No "Good morning {name}" + card list.**
-- **Onboarding:** soft reveal, one card at a time (blur → sharp). Current lab uses its own shader sweep; `img-fx` is a React-port option. Founder feedback below requires slower, smoother card motion.
+- **Onboarding:** soft reveal, one card at a time (blur → sharp). Current web app uses its own shader sweep; `img-fx` is a React-port option. Founder feedback below requires slower, smoother card motion.
 - **"You, over time" card:** the profile with a timeline scrubber; chips glow by confidence.
 - **"Try:" cards** come from `cases.md`.
 - **Stage shader:** one WebGL2 canvas behind the DOM cards.
@@ -320,10 +313,10 @@ Purpose: real user-understanding behind the lab router. The backend and local fr
   - `metal-fx` silver on the one primary CTA
   - One glow at a time.
 - **Palette:** cyan selected on 13 Oct, with the approved purple fringe. The chromatic page/branches remain only until cleanup. C1’s reflection style is approved on all stage cards at 70% of its former `0.55` strength (`0.385`); keep the cyan theme.
-- **Implemented flags:** `?tune`, `?fps`, `?nogl`, `?intro`, `?wifi`, `?services`, `?maps`, `?guide`, `?profile` (or dot-separated hash flags). `?scene=<case>` and `?asof=<iso>` are planned; the current lab does not parse their values.
+- **Implemented flags:** `?tune`, `?fps`, `?nogl`, `?intro`, `?wifi`, `?services`, `?maps`, `?guide`, `?profile` (or dot-separated hash flags). `?scene=<case>` and `?asof=<iso>` are planned; the current app does not parse their values.
 
 ### 7.3 Services surface (universal; from the pets ref's app style)
-- **Current category registry:** `CATEGORIES` in `demo/lab/data.js`; competing service/provider data is `SERVICE_GROUPS` in `demo/lab/offers.js`. `fixtures/categories.json` does not exist. Planned `registry.categories` fields: id, group `shops|service`, label, glyph, subcategories, sources, answer types, linked case. Add categories as data rows and match their `keywords`/`subKeys` in the current router; new answer types/actions may still need code or a plan change.
+- **Current category registry:** `CATEGORIES` in `apps/web/data.js`; competing service/provider data is `SERVICE_GROUPS` in `apps/web/offers.js`. `fixtures/categories.json` does not exist. Planned `registry.categories` fields: id, group `shops|service`, label, glyph, subcategories, sources, answer types, linked case. Add categories as data rows and match their `keywords`/`subKeys` in the current router; new answer types/actions may still need code or a plan change.
 - **Surface:** glass category menu (All + categories + subcategories, searchable) · map ↔ list toggle (glyph pins / photo tiles) · one bottom sheet for any place.
   - The sheet shows: photo, name, category chip, ★ · Google, distance estimate, "Partner (demo)".
   - Its actions depend on what the provider supports: Directions / Call / Book / Order / Open app.
@@ -334,16 +327,16 @@ Purpose: real user-understanding behind the lab router. The backend and local fr
 | Step | Who | What | Done when |
 |---|---|---|---|
 | 1 Pick shell | Founder | Cyan selected on 13 Oct; review remaining motion/reference details on the iPhone | Palette recorded; remaining UI notes logged |
-| 2 Pick next case | Founder | Claude asks with `idea` / `rebuild` cases from `demo/_ref/services/cases.md` | `picked` |
-| 3 Build | Claude | implemented lab flow flags (scene IDs remain planned), media, episodes → profile, Artifact republished, audits | `built`, link sent |
+| 2 Pick next case | Founder | Claude asks with `idea` / `rebuild` cases from `docs/services/cases.md` | `picked` |
+| 3 Build | Claude | implemented web flow flags (scene IDs remain planned), media, episodes → profile, Artifact republished, audits | `built`, link sent |
 | 4 Review | Founder | On the iPhone; notes by message or Artifact comments | Logged in the case, `in review` |
 | 5 Rebuild | Claude | Apply notes, re-audit, same link | Accept → `accepted`; else back to 4 |
 
-New ideas follow `demo/_ref/services/intake.md` (see CLAUDE.md "Service intake"). A case enters this plan only as "needs plan change", after the founder agrees.
+New ideas follow `docs/services/intake.md` (see CLAUDE.md "Service intake"). A case enters this plan only as "needs plan change", after the founder agrees.
 
 ### 7.5 Gaps found by the founder (13 Oct, end of session): do these next
 
-The lab rebuilt onboarding, the chat flows and the map, but most of the approved `demo/_ref/` screens were never carried over. **This was not by design. Every lab surface must match its reference image.**
+The web app rebuilt onboarding, the chat flows and the map, but most of the approved `design/references/` screens were never carried over. **This was not by design. Every surface must match its reference image.**
 
 1. **Home reference (`01-home.png`) becomes the top of Services.** Use its hero and its card layout. Swiping up reveals more services. Drop the repeated "AI assistant" boxes in that image: the one composer at the bottom is the only chat input.
 2. **Services are too verbose.** Group them logically as in `01-home.png`, with short labels and few words per card. Keep competing offers one level down.

@@ -3,7 +3,7 @@
 **Updated:** 13 Oct 2026 (step 00: current slice versus target architecture) · **Scope source:** `PLAN.md` (phases referenced as Phase 1–5) · Reference implementation of the UI: `demo/`
 **Founder lock (10 Oct, final): bidding/quote ABSOLUTELY REJECTED. `quote.request`, `quote.read`, `QUOTED`, `QUOTE_ACCEPTED` do not exist. Every service opens as a modal HTML mini-app with fixed prices.**
 
-This document defines the **target** contest architecture; its tables, modules and gates are requirements, not claims that they already exist. Current code: cyan ES-module lab in `demo/lab/` and a Python 3.13 FastAPI/LangGraph slice in `apps/api/` (Luna, JSON told-fact memory, Places/Routes proxies). The lab now calls Luna on the API origin with a labelled router fallback. Local action/session persistence uses SQLite; browser conversation/report snapshots contain plain text and structured data. `apps/web`, `apps/widgets`, `packages/contracts`, Postgres, production account/role handling, SSE, transactional outbox and persistent profiler are not built. Google connection code is prepared but credentials are absent.
+This document defines the **target** contest architecture; its tables, modules and gates are requirements, not claims that they already exist. Current code: cyan ES-module lab in `apps/web/` and a Python 3.13 FastAPI/LangGraph slice in `apps/api/` (Luna, JSON told-fact memory, Places/Routes proxies). The lab now calls Luna on the API origin with a labelled router fallback. Local action/session persistence uses SQLite; browser conversation/report snapshots contain plain text and structured data. `apps/web`, `apps/widgets`, `packages/contracts`, Postgres, production account/role handling, SSE, transactional outbox and persistent profiler are not built. Google connection code is prepared but credentials are absent.
 
 Long-term vision items (community, media vault, native sensors, indoor maps, ticket wallet) remain LATER. Historical fixtures/reference prompts do not override `PLAN.md` §2; its scope conflicts must be resolved before porting affected flows.
 
@@ -11,7 +11,7 @@ Long-term vision items (community, media vault, native sensors, indoor maps, tic
 
 ## 1. Shape
 
-Target: one modular monolith (one Python API, one Vite + React + TypeScript PWA) plus a static widget origin and one Postgres database. Current lab hosting is documented in `demo/run.md`.
+Target: one modular monolith (one Python API, one Vite + React + TypeScript PWA) plus a static widget origin and one Postgres database. Current lab hosting is documented in `README.md`.
 
 ```
 ┌──────────────────────── apps/web (Vite + React PWA) ────────────────────────┐
@@ -203,7 +203,7 @@ labelled "Demo trigger")                                ▼
 
 - Tabs (13 Oct): **io · Maps · Services · Me**. `io` is Home (card stage + composer); `Maps` is the full-screen map with floating glass menus and a results sheet; `Services` uses the `01-home.png` hero/card layout above grouped service categories, with competing offers one level down (`PLAN.md` §7.5); `Me` holds the profile. Civic is not in the nav (LATER). Community is not in the nav.
 - Card renderer: a `switch` on `card.type` over a component registry. Unknown types fall back to `text_note`. Validation is generated from the contracts.
-- Visual system (founder decision 9 Oct, replaces Editorial Luxury gold): **iOS light mode with a cyan tint**. System font (SF Pro / -apple-system), grouped background `#F2F2F7`, white cards radius 16px, separators `#E5E5EA`, tint `#0A9CC2`, iMessage-style bubbles (bot `#E9E9EB`, user = tint). Merchant mini-apps keep their own branding. Legacy tokens: `demo/styles.css`; current cyan lab: `demo/lab/stage.css`, `stage-v3.css`, `data.js`. Required pills: `Demo data`, `Sandbox`, `User-supplied`, `Estimate`, `Demo trigger`, `Official source`.
+- Visual system (founder decision 9 Oct, replaces Editorial Luxury gold): **iOS light mode with a cyan tint**. System font (SF Pro / -apple-system), grouped background `#F2F2F7`, white cards radius 16px, separators `#E5E5EA`, tint `#0A9CC2`, iMessage-style bubbles (bot `#E9E9EB`, user = tint). Merchant mini-apps keep their own branding. Legacy tokens: `demo/styles.css`; current cyan lab: `apps/web/stage.css`, `stage-v3.css`, `data.js`. Required pills: `Demo data`, `Sandbox`, `User-supplied`, `Estimate`, `Demo trigger`, `Official source`.
 - RTL readiness: use logical CSS properties (`margin-inline-start`) from day one. Full Arabic RTL UI remains LATER in `PLAN.md` §2.
 
 ---
@@ -271,7 +271,7 @@ Facets v1:
 - **Conditional facts** carry a `condition`, e.g. `{deadline_slack_days: {lt: 7}}`, as in "minimise price subject to deadline".
 - **As-of reads:** `profile_at(user, valid_t, known_t)`.
 - **Routines:** ≥ 3 inter-arrival samples give period ± jitter.
-- **One shared vector file** (`packages/contracts/profile-vectors.json`; `demo/lab/fixtures/` until scaffolded) tests the Python and JS implementations.
+- **One shared vector file** (`packages/contracts/profile-vectors.json`; `apps/web/fixtures/` until scaffolded) tests the Python and JS implementations.
 
 ### 12.4 Graph (`apps/api/app/profiler/`)
 

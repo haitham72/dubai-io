@@ -123,7 +123,8 @@ async def route(body: RouteIn):
 
 @app.get("/")
 def root():
-    return RedirectResponse("/lab/home-v2-cyan.html")
+    return RedirectResponse("/index.html")
 
 
-app.mount("/lab", StaticFiles(directory=settings.lab_dir, html=True), name="lab")
+app.mount("/lab", StaticFiles(directory=settings.web_dir, html=True), name="lab")
+app.mount("/", StaticFiles(directory=settings.web_dir, html=True), name="web")
