@@ -3,7 +3,7 @@
 // marketplace), its published price and any offer the provider published.
 // Mini-apps open in <iframe sandbox="allow-scripts"> and can only ask; the
 // host shows the approval and rebuilds the order from its own price table.
-import { $, svg, esc, toast, openSheet, closeSheet } from './ui.js';
+import { $, svg, esc, toast, openSheet, closeSheet, told } from './ui.js';
 import { reviewOrder } from './orders.js';
 import { recordEpisode } from './profile-store.js';
 
@@ -141,6 +141,8 @@ function renderOffers() {
       ${badges ? `<div class="or-badges">${badges}</div>` : ''}
     </article>`;
   }).join('');
+  $('#offersList').insertAdjacentHTML('beforeend', `<section class="live-near" id="liveNear" aria-live="polite"><h4>Also nearby on Google</h4><p class="fine">Looking up places near ${esc(told.area || 'Dubai Marina')}…</p></section>`);
+  liveNearby(g);
   $('#offersFine').textContent = 'Fictional providers. Prices, offers and times are demo data; every offer is the provider’s own published offer. Mini-apps can only ask for your approval; websites and marketplaces open outside Dubai-io and nothing is sent for you.';
 }
 
@@ -220,4 +222,20 @@ function observeChoice(group, p, sent) {
   if (!ev.length) return;
   const why = [closest && 'closest', cheapest ? 'cheapest' : 'not the cheapest', deadline && `deadline ${deadline}`].filter(Boolean).join(', ');
   recordEpisode('choice', `Chose ${p.name} (${why})`, ev, 'order:' + sent.id);
+}
+
+// Live Google Places: discovery only. No prices or turnaround (Places has none), no pins on
+// the non-Google map, no persistent cache; attribution shown (Places policy, rule 2).
+const liveCache = new Map();
+async function liveNearby(g) {
+  const area = told.area || 'Dubai Marina', key = g.id + '|' + area;
+  try {
+    if (!liveCache.has(key)) liveCache.set(key, fetch('/api/places/search', { method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(8000),
+      body: JSON.stringify({ query: `${g.label} near ${area}` }) }).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }));
+    const data = await liveCache.get(key);
+    const box = $('#liveNear'); if (!box || current !== g) return;
+    const at = new Date(data.as_of).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    box.innerHTML = `<h4>Also nearby on Google</h4>${data.places.slice(0, 5).map(p => `<article class="live-row"><div><b>${esc(p.name)}</b><span>${p.rating ? `★ ${p.rating.toFixed(1)} (${p.ratings || 0})` : 'No rating'} · ${esc((p.address || '').split(' - ').slice(0, 2).join(', '))}</span></div>${p.maps_url && /^https:\/\/maps\.google\.com\//.test(p.maps_url) ? `<a class="btn sm" href="${esc(p.maps_url)}" target="_blank" rel="noopener noreferrer">Maps</a>` : ''}</article>`).join('') || '<p class="fine">No places found.</p>'}
+      <p class="fine">Live from Google Maps, ${at}. Not partners: no published prices here, and nothing is sent to them. Dubai-io orders only go to partner mini-apps above.</p>`;
+  } catch { liveCache.delete(key); const box = $('#liveNear'); if (box) box.innerHTML = '<p class="fine">Live Google results are unavailable right now. The partner list above still works.</p>'; }
 }

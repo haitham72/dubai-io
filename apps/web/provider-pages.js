@@ -44,7 +44,7 @@ export function initProviderPages() {
   makeCardsClickable();
   // The current offers renderer owns this footer; keep it aligned after sorts.
   const fine = document.querySelector('#offersFine');
-  const text = 'Demo providers, prices and times. Tap anywhere on a card to open it. Live service execution is not connected yet; nothing is sent by opening a card.';
+  const text = 'Demo providers, prices and times. Tap anywhere on a card to open it. Opening a card sends nothing. Partner mini-app orders go to a sandbox merchant only after your one approval; website and marketplace rows are not connected.';
   const alignFooter = () => { if (fine.textContent !== text) fine.textContent = text; };
   new MutationObserver(alignFooter).observe(fine, { childList: true });
   alignFooter();

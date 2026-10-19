@@ -126,8 +126,10 @@ export async function handle(text) {
   if(!r||ep!==threadEpoch)return;
   update(id,it=>{it.pending=false;it.r=r;});
   const factKeys={area:'area',hotel:'hotel',terminal:'terminal',taxi_plate:'plate',taxi_roof:'roof',deadline:'deadline',pet:'pet',language:'language',other:'other'};
-  for(const fact of r.remembered||[])if(factKeys[fact.key])told[factKeys[fact.key]]=fact.value.slice(0,80);
-  if(r.remembered?.length)await botSay('<p class="told">You told me: '+r.remembered.map(f=>esc(f.key.replaceAll('_',' '))+': '+esc(f.value)).join(' · ')+'</p>');
+  // Show only facts that are new or changed this turn; known ones are already in "You told me".
+  const fresh=(r.remembered||[]).filter(f=>factKeys[f.key]&&told[factKeys[f.key]]!==f.value.slice(0,80));
+  for(const fact of fresh)told[factKeys[fact.key]]=fact.value.slice(0,80);
+  if(fresh.length)await botSay('<p class="told">You told me: '+fresh.map(f=>esc(f.key.replaceAll('_',' '))+': '+esc(f.value)).join(' · ')+'</p>');
   if(ep!==threadEpoch)return;
   switch (r.intent) {
     case 'lost_item': return startRecovery({ item: r.item, where: r.where });

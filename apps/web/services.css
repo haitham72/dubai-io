@@ -60,3 +60,10 @@
 .ord-when { display: flex; gap: 8px; } .ord-when > * { flex: 1; }
 .msg.status .pill { margin-left: auto; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 999px; background: #E3F6FB; color: #07627A; white-space: nowrap; }
 .msg .warn { color: #B4540A; font-weight: 600; font-size: 14px; margin: 8px 0 6px; }
+
+/* Live Google Places list (discovery only) */
+.live-near { margin: 18px 0 8px; }
+.live-near h4 { margin: 0 0 8px; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--label-3); }
+.live-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; background: #fff; border-radius: 14px; margin-bottom: 8px; }
+.live-row div { display: grid; gap: 2px; min-width: 0; } .live-row span { font-size: 13px; color: var(--label-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.live-row a.btn { flex: none; text-decoration: none; color: var(--tint-ink); background: #E8F1F4; border-radius: 10px; padding: 7px 12px; font-weight: 600; font-size: 13.5px; }
