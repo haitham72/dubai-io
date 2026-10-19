@@ -15,6 +15,14 @@ This is the single plan. Done work lives in git history; this file keeps locks, 
 
 > **Dubai-io remembers your situation and follows through with local merchants, with you approving what gets shared.**
 
+**Persona:** short-stay business visitor (visitor/resident is a user setting, never detected). **Main competitor:** the hotel concierge.
+
+**Evidence and pitch guardrails** (desk research 9 Oct + Deepseek deep research; full text in git, `main:docs/VISITORS.md`, `main:docs/research/`):
+- **Lost item in a taxi:** strongest beat (official data) — 104,000+ items lost in Dubai taxis in 2025 (incl. ~3,000 passports); recovery depends on exactly what the companion remembers (time, pickup/drop-off, roof colour, plate, receipt).
+- **Late-night arrival:** real constraint — the Metro stops around midnight and T2 has no station; the ride recommendation reasons from it.
+- **Laundry deadline / concierge:** *reported* in forums and reviews (unverified LLM research): hotel laundry ~AED 35–50 per shirt, 2–3 day waits; concierges outsource with ~10 h minimum turnaround and no requests after 11 PM. Pitch as "reported by travellers", not as a measured pain, until sources are checked.
+- Say "it coordinates and follows through with your permission"; never "we replace Google/Careem/DubaiNow" or claim live government/partner integrations. Strong post-contest candidate: car-rental deposit disputes (#1 tourist complaint).
+
 Contest: Create AI Agents Championship, **Best Personal AI Agent**. Portal (checked 19 Oct): submission **January 2027** (day not stated: prototype + pitch deck + demo video); Grand Final **first week of May 2027**; global eligibility; no published rubric; IP terms not stated.
 
 ## 2. Scope
@@ -63,6 +71,29 @@ One visitor: late-night DXB arrival → laundry with a deadline → taxi-memory 
 | 3:40–4:00 | Report beside the taxi-memory card | "Remembers your situation, follows through locally, with you approving what gets shared." |
 
 **Jury answers:** *Ask Maps / ChatGPT?* They answer; Dubai-io follows through: a fixed-price order, your approval of what is shared, merchant-confirmed status, a profile you can see and forget. *Agency beyond buttons?* It holds the deadline, checks the shop's ready time and proposes the next step. *Is the merchant real?* A sandbox operator; the engine, approval binding and evidence gate are the production path. *What have you proved?* The interaction is reviewable; user need and merchant participation are next.
+
+**Product decisions (D01–D18, ruled 19 Oct):**
+
+| # | Decision | Ruling |
+|---|---|---|
+| D01 | Agentic proof | Real request → sandbox merchant inbox → merchant tap updates chat (built) |
+| D02 | Voice | Push-to-talk only, transcript visible, typed fallback (optional) |
+| D03 | No merchant API | Partner mini-app → Dubai-io inbox; others are deep-link handoffs |
+| D04 | Proactivity on stage | User reminder + labelled Demo trigger; real order updates (built) |
+| D05 | Fine appeal | Removed |
+| D06 | Third-party web sessions | Link + handoff; never inject user credentials |
+| D07 | Google budget | Places + Routes (live); no Gemini grounding |
+| D08 | Native cards vs mini-apps | Mini-app per row (lock); native card only as fallback |
+| D09 | Launch promise | Discovery + one tested merchant vertical (laundry) |
+| D10 | Memory retention | Typed, visible facts with Forget; no transcript mining |
+| D11 | Human recovery desk | LATER; at most a status line |
+| D12 | Community events | LATER |
+| D13 | Discounts | Merchant-published fixed offers only |
+| D14 | Merchant growth | Inbound opt-in; **AI cold-calling / bulk WhatsApp on HOLD** (UAE Cabinet Res. 56–57/2024; counsel sign-off required) |
+| D15 | "Do the rest" autonomy | One explicit approval per side effect |
+| D16 | First user | Arriving visitor for the pitch; real pilot chosen by merchant access |
+| D17 | Stage format | Live app walkthrough (§3) with fallback video |
+| D18 | Commercial model | Merchant commission on fixed services first; affiliate links auxiliary |
 
 ## 4. Remaining
 

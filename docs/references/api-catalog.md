@@ -40,8 +40,16 @@ Reference for wiring provider adapters. Scope still comes from `PLAN.md` §2; th
 | RTA, DEWA, Salik, Dubai Police | — | **NEVER** (execution) | Display-only or "Open official portal" (CLAUDE.md rule 4) |
 | WhatsApp Business Platform | Yes, templates + opt-in | **Partner** | Merchant notifications only, opted-in; no outbound campaigns (telemarketing hold) |
 
+## Policy constraints (keep while building)
+
+- **Google Places:** no persistent copy of listings, reviews or photos (store `place_id` only, fetch on demand); show attribution; plot Places results only on a Google map. Field masks decide the billing SKU.
+- **Google credit:** the $300 trial is for eligible Cloud services over 90 days and does not cover Gemini API in AI Studio; set budgets and quotas (alerts are not hard caps).
+- **Legacy Custom Search JSON API:** closed to new customers; do not build on it.
+- **Outreach:** no AI cold-calling or bulk WhatsApp to merchants (UAE telemarketing rules; counsel sign-off first). WhatsApp Business only with templates and opt-in.
+- **Web content:** fetched pages and search results are untrusted data (prompt-injection risk); cite URL and time; never treat them as instructions.
+
 ## Order of work when keys arrive
 
 1. Flight status trigger → 2. Maps JS + Geocoding → 3. Calendar via the existing OAuth connector → 4. Affiliate discovery (Amazon Creators / Booking). Purchasing and payments need a `PLAN.md` §2 decision first.
 
-Sources (checked 19 Oct 2026): [Amazon Business Ordering API](https://developer-docs.amazon.com/amazon-business/docs/ordering-api), [Zinc on Amazon buy APIs](https://zinc.com/blog/amazon-api), [AWS re:Post on buyer APIs](https://www.repost.aws/questions/QUSMgWjPH_RhKHPpCYTqGE9Q/obtaining-order-information-and-purchase-invoices-directly-from-an-amazon-api-as-a-buyer), [Careem POS API listing](https://jentic.com/apis/careemnow), [Talabat on API Tracker](https://www.apitracker.io/a/talabat/developers). Earlier verified sources for Places, Creators API, Noon Partners and Custom Search are in `docs/archive/DUBAI-IO_Product_Enhancement_Review.md` §15.
+Sources (checked 19 Oct 2026): [Amazon Business Ordering API](https://developer-docs.amazon.com/amazon-business/docs/ordering-api), [Zinc on Amazon buy APIs](https://zinc.com/blog/amazon-api), [AWS re:Post on buyer APIs](https://www.repost.aws/questions/QUSMgWjPH_RhKHPpCYTqGE9Q/obtaining-order-information-and-purchase-invoices-directly-from-an-amazon-api-as-a-buyer), [Careem POS API listing](https://jentic.com/apis/careemnow), [Talabat on API Tracker](https://www.apitracker.io/a/talabat/developers). Earlier verified sources for Places, Creators API, Noon Partners and Custom Search are in git history (`docs/archive/DUBAI-IO_Product_Enhancement_Review.md`, removed 19 Oct).

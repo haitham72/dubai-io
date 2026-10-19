@@ -6,7 +6,7 @@ A chat-first AI companion for Dubai visitors and residents, built for the Create
 apps/web/   frontend (HTML/CSS/ES modules), served by the API
 apps/api/   FastAPI + LangGraph (Luna), action engine, merchant inbox, outbox, profile; Postgres via Docker
 design/     reference screens
-docs/       handoff, review guide, references, service cases, archive
+docs/       handoff, review guide, references, service cases
 ```
 
 ## Run
@@ -34,4 +34,4 @@ node ../web/tests/profile.test.mjs; node ../web/tests/recovery.test.mjs; node ..
 
 ## Docs
 
-[CLAUDE.md](CLAUDE.md) (agent rules) → [PLAN.md](PLAN.md) (scope, demo arc, remaining) → [ARCHITECTURE.md](ARCHITECTURE.md) → [docs/handoff.md](docs/handoff.md) (run + state) · [Review guide](docs/user-app-review-guide.md) · [API catalog](docs/references/api-catalog.md) · [Cases](docs/services/cases.md) · [Archive](docs/archive/)
+[CLAUDE.md](CLAUDE.md) (agent rules) → [PLAN.md](PLAN.md) (scope, demo arc, remaining) → [ARCHITECTURE.md](ARCHITECTURE.md) → [docs/handoff.md](docs/handoff.md) (run + state) · [Review guide](docs/user-app-review-guide.md) · [API catalog](docs/references/api-catalog.md) · [Cases](docs/services/cases.md)

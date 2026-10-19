@@ -23,7 +23,6 @@ Civic guidance is LATER. **Status:** the contest loop works end to end on `redes
 | `docs/user-app-review-guide.md` | Founder review checklist |
 | `docs/references/` | `redesign.md` (screen references), `visuals-libraries.md` (supplied prompts, verbatim), `api-catalog.md` |
 | `docs/services/` | `cases.md` + `intake.md`. New ideas go here, never into `PLAN.md` |
-| `docs/archive/` | Frozen reviews and the 19 Oct adjudication |
 
 If a request needs something `PLAN.md` lists as **LATER** or **NEVER**, stop and ask. Don't build a "small version" of it. Never add top-level `*.md` beyond the four canon files; keep docs short and current (done work lives in git).
 
