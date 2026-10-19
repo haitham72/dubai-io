@@ -1,55 +1,29 @@
 # Services list (cases)
 
-The menu for every "pick next case" step. `PLAN.md` names only the C-IDs and statuses below. Everything about a case lives here.
-New ideas are filed by following [`intake.md`](intake.md). Refs live under `services/<group>/<category>/`. Groups: `shops/` (things you buy) and `service/` (someone does it for you).
+Menu for picking the next case **after the January submission** (cases are frozen until then, `PLAN.md`). New ideas: follow [`intake.md`](intake.md). Cases are ~1% of the app; the generic engine (category registry, Services surface, profile) covers the rest. A case earns an entry only for a new pattern, rule, data source or demo moment.
 
-**These cases are about 1% of the app at launch.** They are showcases and test fixtures, not the product. The other 99% of asks, including categories nobody has named yet, must work through the generic engine with no new code:
-- **category registry**: a data row per category, or "Other"
-- **pattern library**: below
-- **Services surface**: category menu, map ↔ list, one bottom sheet (`PLAN.md` §7)
-- **temporal profiler**: domain-agnostic
+**Status flow:** `idea → picked → built → in review → accepted`
 
-A case earns an entry only when it proves something the engine can't do yet (a new pattern, a new rule, a new data source) or is a demo moment. Everything else is just a registry row.
-
-**Status flow:** `idea → picked → built → in review → rebuild → accepted`
-
-`built` means a fixture/flow exists, not that reference parity or live integration passed. Current C5 is a lab guide awaiting full reference parity; C6’s local draft/card-cash fixtures pass technical checks, but its manual handoff was rejected; C6 is `rebuild` pending agentic execution and phone/reference approval. V1 community fixtures remain historical pending `PLAN.md` §2 scope resolution.
-
-## Shared rules (every case)
-
-- Fixed published prices. Offers come only from what the merchant has published. No quotes, bids or negotiation.
-- Approval before anything leaves the phone (photo, personal data, order).
-- Status words only on a provider/merchant event (never "Verified" without one). No government submission or payment.
-- `(demo)` on every price. No real brands on screen (real names may appear in the pitch only).
-- Generated images say "AI preview". Try-on accepts only the user's own photo, 18+.
-- Google attribution on Places data. Places results on a map go on a Google Map (live mode).
-- Every step writes a chat message **and a profile episode**.
-- Profile hypotheses follow the tier table in `ARCHITECTURE.md` §12.1: they may re-rank (with a "Because…" chip), but never pre-fill, appear on an approval card or trigger a proactive message.
-
-**Scene IDs:** `?scene=C…` entries below describe planned case routes, not working query flags. Current lab entry flags are listed in `PLAN.md` §7.2.
-
-**Entry template:** status · refs `services/<group>/<category>/` · scene `?scene=<id>` · patterns · ask · steps · money · media slots · **profile: reads / teaches** · checks · open questions · review log.
+**Shared rules:** fixed published prices only (no quotes, bids or negotiation) · one approval before anything leaves the phone · status words only on a merchant/provider event · `(demo)` on every price, no real brands on screen · generated images say "AI preview"; try-on only with the user's own photo, 18+ · Google attribution on Places data · hypotheses only re-rank, with a "Because…" chip.
 
 ## Index
 
-| ID | Case | `services/…` | Patterns | Status |
-|---|---|---|---|---|
-| C1 | Maid hire with visa (bundle: maid + office + visa + insurance) | `service/maid/` | lanes, deadline-check, holo-choice, approval, events | idea |
-| C2 | Clothing: facet browse + Try It On | `shops/cloth/` ✓ ref | facets, tryon, approval, order | idea |
-| C3 | Barber | `service/barber/` | nearby-rows, tryon, add-ons, published-offer, book-slot, route, rate-after | idea |
-| C4 | Laundry with a deadline | `service/laundry/` | nearby-rows, approval, deadline-check, events | built (v1 demo) |
-| C5 | DXB arrival guide + ride | `companion/arrival/` ⚑ | guide | built (lab; reference parity pending) |
-| C6 | Lost item (wallet, bag, phone) in a taxi / Metro / shop | `companion/lost-item/` ⚑ | recovery | rebuild (draft UI built; agentic execution/handoff rejected) |
-| C7 | Car licence renewal (R2–R5 in `../redesign.md`) | `service/car-licence/` | lanes, book-slot, holo-choice, events | idea |
-| C8 | Fix it / AC / renovation (R6 in `../redesign.md`) | `service/fix-it/` | nearby-rows, book-slot | idea |
-| C9 | Community + shopping rows | `shops/community/` | nearby-rows, sign-in | built (v1; community scope/bridge decision pending) |
-| C10 | Merchant joins from a price-list photo | `platform/onboarding/` ⚑ | onboarding | built (v1 demo) |
-| C11 | Share a video → map | `shops/coffee/` ✓ ref | video-ingest, map-browse | idea |
-| C12 | Pets: vet / 24h / pet shop / boarding / grooming / photo | `service/pets/` ✓ ref | map-browse, book-slot, route, bundle | idea |
-| C14 | Visitor arrival via a sponsored airport Wi-Fi page → Dubai-io intro | `companion/arrival-wifi/` ⚑ (ref: `../01 - Visitor onboarding/01 - visitor wifi.jpg`) | onboarding | built (lab) |
-| C13 | Food: share a photo/video or ask → recipe · videos · nearby restaurants · delivery apps with offers, **ranked by intent** | `shops/restaurants/` ✓ ref | video-ingest, intent-mix, nearby-rows, published-offer, handoff | idea · **needs plan change** |
-
-⚑ = proposed new group (`companion/`, `platform/`) for things that are not merchant services. The founder confirms it before any folder is created. C4–C10 are specified in `PLAN.md` §3 and `../redesign.md`; their entries here stay short until one is picked.
+| ID | Case | Status |
+|---|---|---|
+| C1 | Maid hire with visa (bundle) | idea |
+| C2 | Clothing: facet browse + Try It On | idea |
+| C3 | Barber | idea |
+| C4 | Laundry with a deadline | built (live loop: approval → merchant inbox → deadline) |
+| C5 | DXB arrival guide + ride | built (reference-image parity pending) |
+| C6 | Lost item in a taxi | built (contest form: prefilled report + official handoff, not recovered) |
+| C7 | Car licence renewal (Resident arc) | idea · LATER for January |
+| C8 | Fix it / AC / renovation | idea |
+| C9 | Community + shopping rows | v1 only (old `build` branch); community is LATER |
+| C10 | Merchant joins from a price-list photo | deferred (May-final candidate) |
+| C11 | Share a video → map | idea |
+| C12 | Pets | idea |
+| C13 | Food: share or ask → the right kind of answer | idea · needs plan change |
+| C14 | Visitor arrival via sponsored airport Wi-Fi | built |
 
 ## Pattern library
 
@@ -133,29 +107,11 @@ status: idea · refs `service/barber/` · scene `?scene=C3`
 - **Profile:** reads distance tolerance, min ★. Teaches the haircut routine. After ≥ 3 visits: "I noticed you go about every 4 weeks — remind you?" A reminder exists only after Yes.
 - **Checks:** total 70 → +40 → bundle 90; Booked only after the event; rating prompt fires once.
 
-## C4 · Laundry with a deadline
-status: built (v1 demo) · spec `PLAN.md` §3 · `demo/app.js` `laundryDeadline`, `laundryMerchantFlow`
-
-## C5 · DXB arrival guide + ride ⚑
-status: built (lab; reference parity pending) · current `demo/lab/guide.js` · legacy reference `demo/miniapps/dxb-guide.html` · spec `PLAN.md` §3
-
-## C6 · Lost bag in a taxi ⚑
-status: rebuild (agentic execution required; manual handoff rejected) · current `demo/lab/recovery.js`, `recovery-state.js`, `page-host.js` · reference `04`/`04a` and v1 card/cash flows · spec `PLAN.md` §§3, 7.5
-
-- Built: where/payment choices, simulated card/cash match and no-match, cancellation, fictional driver detail/local chat, report preparation from known or explicitly typed facts, optional manual copy and shared saved-request preparation. The rejected static official guidance page is removed. Fixture plate/driver details never prefill the report; missing facts stay missing. Report status stays `PREPARED_NOT_FILED`, item not recovered.
-- Verified: 8 report-state tests; phone-sized Chromium cash/report/Back and card failure paths. Reference/actual iPhone approval and publication pending. RTA’s live portal requires explicit browser continuation because it blocks framing.
-
 ## C7 · Car licence renewal
 status: idea · spec `../redesign.md` R2–R5
 
 ## C8 · Fix it / AC / renovation
 status: idea · spec `../redesign.md` R6
-
-## C9 · Community + shopping rows
-status: built (v1; community scope/bridge decision pending in `PLAN.md` §2) · `demo/app.js` `providerRows`, `joinApproval`, `purchaseReported`
-
-## C10 · Merchant joins from a price-list photo ⚑
-status: built (v1 demo) · spec `PLAN.md` §3 (2:45–3:05)
 
 ## C11 · Share a video → map
 status: idea · refs `shops/coffee/` (`coffee.jpg`) + `Pulled data services for agents - app.jpg` (logic only; its colour scheme is rejected) · scene `?scene=C11`
@@ -170,7 +126,7 @@ status: idea · refs `shops/coffee/` (`coffee.jpg`) + `Pulled data services for 
 ## C12 · Pets
 status: idea · refs `service/pets.jpg` (logic only; the ref's real clinic name is not reused) · scene `?scene=C12`
 
-The pets ref also defines the universal **Services surface** (`PLAN.md` §7). This case is the pets-specific part.
+The pets ref also defines the universal **Services surface** (already built). This case is the pets-specific part.
 - **Ask** (a bundle): "My dog needs grooming and a check-up this week."
 - **Map-first browse:** glass category menu All · Vet · 24h · Pet shop · Boarding · Grooming · Photo (one SVG icon set). Pins distinguished by glyph, colours from tokens. Places (attribution) + partner merchants.
 - **Bottom sheet:** name, category chip, address, distance (estimate), **"Partner (demo)" chip, never a verified tick**. Directions (handoff) · Call (`tel:`) · **Book** (partners only → mini-app; e.g. "Bath + trim, medium dog · AED 180 (demo)", "Wellness check · AED 250 (demo)").
@@ -197,25 +153,3 @@ status: idea · **needs plan change** · refs `shops/restaurants/` (`food.jpg`; 
 - **Needs plan change:** recipe/video search in 1b (Claude `web_search` server tool with citations + a video-search API key, server-side). Founder to agree before it enters `PLAN.md`.
 - **Open questions:** (1) order in-app for partner restaurants only? Default yes, others hand off. (2) Creator rail from the ref? Default out.
 - Lab: scripted photo → "Looks like koshari" → 4 cards, with a time toggle (Fri 13:00 / Tue 22:40) that reorders them live.
-
----
-
-## C14 · Visitor arrival via sponsored airport Wi-Fi
-status: built (lab) · ref `../01 - Visitor onboarding/01 - visitor wifi.jpg` · scene `#wifi`
-
-- System notification "Sign in to Wi-Fi network" → captive-portal page → "Get online now" → a **Sponsored** Dubai-io card → "Open Dubai-io" → the soft card-by-card intro.
-- **Unbranded on purpose:** "Airport Free Wi-Fi (demo)", no airport or telecom logos (CLAUDE.md rule 5; a look-alike of a real operator's page would be impersonation). The sponsorship is a concept to pitch, not a claim.
-- A real captive-portal browser is limited and can only hand off to the app (App Store / web link); the lab shows the ideal path.
-
-## Review log
-
-| Date | Case | Founder note | What changed |
-|---|---|---|---|
-| 13 Oct 2026 | C1 / shared stage styling | Founder loves C1’s laser/chromatic reflection; use it on all cards at 70% intensity. "cards flying up in onbording should be smoother and slower, now they are super fast" | Shared reflection `0.385`, slower reveals/spring and eased staggered exit; phone review pending |
-| 13 Oct 2026 | C6 | Chat-only report is a stub; rebuild to `04`/`04a` and v1 cash/card flows | Rebuilt card/cash traces and reports; status now `in review`, phone/reference approval pending |
-
-| 13 Oct 2026 | Shared HTML pages / C6 | Open pages inside the app, with centrally reused account connections; OAuth client is not configured | Shared host navigation and connection metadata prepared. Google remains unconfigured; official guidance opens in-app, live portal continuation is explicit |
-
-| 13 Oct 2026 | All services / C6 | Required copying and static “Official guidance” pages are not agentic; requirement applies to all services | Shared executor requirement recorded; C6 returns to rebuild. Current live adapter/session/execution support is absent |
-
-| 13 Oct 2026 | Shared service engine / C6 | Finish what can work without OAuth | Luna frontend wiring, shared durable request preparation/approval foundation, session/history/report continuity, saved details and configured Google connector implemented. Live provider adapters and OAuth consent remain pending |

@@ -1,85 +1,37 @@
 # Dubai-io
 
-A chat-first AI companion for Dubai visitors and residents, built for the Create AI Agents Championship.
-
-## Architecture
-
-The repository is structured as a standard monorepo:
+A chat-first AI companion for Dubai visitors and residents, built for the Create AI Agents Championship (Best Personal AI Agent).
 
 ```
-dubai-io/
-├── apps/
-│   ├── web/                    # Frontend UI (Wi-Fi captive sign-in, onboarding, guide, services, chat)
-│   └── api/                    # Backend API (FastAPI, LangGraph Luna agent, Places/Routes)
-├── design/                     # Design mockups, flow references, UI assets
-├── docs/                       # Specifications, architecture reviews, handoff, service cases
-├── CLAUDE.md                   # Agent rules and repository layout
-├── PLAN.md                     # Contest plan, scope boundaries, and phases
-├── ARCHITECTURE.md             # Target architecture and contracts
-└── README.md
+apps/web/   frontend (HTML/CSS/ES modules), served by the API
+apps/api/   FastAPI + LangGraph (Luna), action engine, merchant inbox, outbox, profile; Postgres via Docker
+design/     reference screens
+docs/       handoff, review guide, references, service cases, archive
 ```
 
-## Running the Application
-
-### 1. Start the API Backend & Web Host
-
-Start Postgres once (Docker Desktop; values in `apps/api/.env`):
+## Run
 
 ```powershell
 cd apps/api
-docker compose --env-file .env up -d
-```
-
-Then, from the repository root:
-
-```powershell
-cd apps/api
+docker compose --env-file .env up -d                                   # Postgres 16 + pgvector (once)
 .\.venv\Scripts\python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
-Open `http://localhost:8000` (or `http://<your-ip>:8000` on mobile on the same Wi-Fi).
-
-- The backend serves `apps/web` directly at `/` (and `/index.html`).
-- Sandbox merchant inbox + operator Demo triggers: `http://localhost:8000/merchant.html` (PIN from `MERCHANT_PIN`, or generated into `apps/api/data/merchant.pin`). Use a second device on the same Wi-Fi on stage.
-- Mini-apps load from a separate widget origin on port `8001` (`WIDGET_PORT`), started by the same process.
-- `apps/api/.env`: `OPENAI_API_KEY`, `GOOGLE_PLACES_KEY` (Places + Routes), optional `LUNA_EFFORT` (`low` ≈ 2.3 s per turn).
-- To jump straight to specific stage flows, use hash flags:
-  - `http://localhost:8000/#wifi` — Replays the full airport arrival & Wi-Fi captive portal sign-in flow.
-  - `http://localhost:8000/#intro` — Replays the card onboarding intro.
-  - `http://localhost:8000/#services` — Opens the services catalog directly.
-  - `http://localhost:8000/#guide` — Opens the airport guide.
-
-### 2. Testing
-
-```powershell
-# Backend tests (Python / pytest)
-cd apps/api
-.\.venv\Scripts\python -m pytest -q tests
-
-# Frontend tests (Node.js) — 107 checks across 3 files
-node apps/web/tests/profile.test.mjs
-node apps/web/tests/recovery.test.mjs
-node apps/web/tests/luna-client.test.mjs
-```
-
-The 11 skipped backend tests are the live Luna golden cases. Run them before a rehearsal:
-
-```powershell
-$env:RUN_LIVE=1
-.\.venv\Scripts\python -m pytest -q tests
-```
-
-## Documentation Map
-
-Agents and contributors should read: `CLAUDE.md` → `PLAN.md` → `ARCHITECTURE.md` → `docs/handoff.md`.
-
-| Document | Purpose |
+| Open | What |
 |---|---|
-| [CLAUDE.md](CLAUDE.md) | Agent non-negotiables, engineering rules, repo map |
-| [PLAN.md](PLAN.md) | Single plan: scope (IN / LATER / NEVER), demo arc, phases |
-| [ARCHITECTURE.md](ARCHITECTURE.md) | Target architecture, state machine, trust boundary |
-| [Handoff](docs/handoff.md) | Current implementation status and active review prompts |
-| [Product Review](docs/DUBAI-IO_Product_Enhancement_Review.md) | Strategic & technical product evaluation |
-| [Gemini Review](docs/gemini-review.md) | Architectural critique, roadmap, and alignment notes (see its correction banner — repo paths reconciled 19 Oct) |
-| [Independent Review](docs/space-bunny_review.md) | Third peer review: scope arbitration, live-proof gap analysis, sprint plan |
-| [Cases](docs/services/cases.md) / [Intake](docs/services/intake.md) | Service catalog cases and intake rules |
+| `http://<pc-ip>:8000/#demo.wifi` | The app from the arrival flow, with the "Scripted demo" label (`#intro`, `#services`, `#guide`, `#profile` also work) |
+| `http://<pc-ip>:8000/merchant.html` | Sandbox merchant inbox + operator Demo triggers (PIN in `apps/api/data/merchant.pin` or `MERCHANT_PIN`) |
+
+`apps/api/.env` (not committed): `OPENAI_API_KEY`, `GOOGLE_PLACES_KEY`, `TVLY_API_KEY`, `SERPAPI_KEY`, `FINNHUB_API_KEY`, `PG_PASSWORD`, `DATABASE_URL`, optional `LUNA_EFFORT`, `MERCHANT_PIN`, `WIDGET_PORT` (default 8001).
+
+## Test
+
+```powershell
+cd apps/api
+.\.venv\Scripts\python -m pytest -q tests          # 75 passed, 11 live cases skipped ($env:RUN_LIVE=1 to run)
+node ../web/tests/profile.test.mjs; node ../web/tests/recovery.test.mjs; node ../web/tests/luna-client.test.mjs
+```
+
+## Docs
+
+[CLAUDE.md](CLAUDE.md) (agent rules) → [PLAN.md](PLAN.md) (scope, demo arc, remaining) → [ARCHITECTURE.md](ARCHITECTURE.md) → [docs/handoff.md](docs/handoff.md) (run + state) · [Review guide](docs/user-app-review-guide.md) · [API catalog](docs/references/api-catalog.md) · [Cases](docs/services/cases.md) · [Archive](docs/archive/)

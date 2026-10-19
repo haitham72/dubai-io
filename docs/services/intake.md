@@ -49,7 +49,7 @@ Otherwise note which rules the case touches.
 
 ## 5b. Registry row
 
-If the idea is a new category or subcategory, add a row to `CATEGORIES` in `demo/lab/data.js` (current registry), including `keywords`/`subKeys` for the router. Competing service/provider data lives in `SERVICE_GROUPS` in `demo/lab/offers.js`; use an existing mini-app/action pattern. `fixtures/categories.json` does not exist. Later these become the `registry` module. A data row extends existing patterns; a new answer type, action or data source still needs a case/plan change.
+If the idea is a new category or subcategory, add a row to `CATEGORIES` in `apps/web/data.js` (current registry), including `keywords`/`subKeys` for the router. Competing service/provider data lives in `SERVICE_GROUPS` in `apps/web/offers.js` (orderable items and prices: `apps/api/app/catalog.py`); use an existing mini-app/action pattern. `fixtures/categories.json` does not exist. Later these become the `registry` module. A data row extends existing patterns; a new answer type, action or data source still needs a case/plan change.
 
 ## 6. Write the entry
 

@@ -1,6 +1,6 @@
 # Visual effect references (founder-supplied)
 
-Part 1 and Part 2 are copied **as supplied**. Part 3 is our own notes. Pointed to from `PLAN.md` §6.8.
+Part 1 and Part 2 are copied **as supplied**. Part 3 is our own notes. Pointed to from `PLAN.md` §4 (reference parity).
 
 **Current overrides (13 Oct):** cyan selected; the C1 laser/chromatic reflection style is approved on every stage card at 70% of its former intensity (`0.385`). The chromatic theme remains retired pending cleanup. The later ShipSwift MIT/notice update supersedes the earlier do-not-copy note. Package versions/licences below record previous research; no external package/licence verification was rerun during step 00.
 
@@ -145,7 +145,7 @@ All three come from `github.com/Jakubantalik/Libraries.dev`. Pin exact versions 
 
 ### ShipSwift `SWMetal`: what to learn from (33 effects, Swift + Metal)
 
-Technique ideas for the WebGL2 layer (PLAN.md §6.8, L3). Re-implement in GLSL; **do not copy code** before checking ShipSwift's licence.
+Technique ideas for the WebGL2 layer (PLAN.md §4 (reference parity), L3). Re-implement in GLSL; **do not copy code** before checking ShipSwift's licence.
 
 | Our need | Look at |
 |---|---|
@@ -171,4 +171,4 @@ ShipSwift is **MIT**, so porting is allowed as long as the licence notice is kep
 - **Holographic set** (`demo/_ref/carousel/holographi ccards.mp4`): `SWFoil`, `SWGlitter`, `SWIntenseBling`, `SWChromaticGlass`, `SWPolishedAluminum`, drag/tilt-driven.
 - **Gradient source:** `SWGrainGradient`, `SWAnimatedMeshGradient` (`SWAnimation/`).
 
-Mapping is in `PLAN.md` §7.2. The native app later uses the Swift originals.
+Mapping is in `PLAN.md` §4 (reference parity). The native app later uses the Swift originals.
