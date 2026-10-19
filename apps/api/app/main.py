@@ -37,8 +37,11 @@ async def revalidate_app_files(request: Request, call_next):
 
 
 @app.on_event("startup")
-def _merchant_pin():
+def _startup():
     merchant_pin()  # sandbox merchant PIN: MERCHANT_PIN, or generated into data/merchant.pin
+    if settings.widget_port:  # mini-apps on their own origin (rule 10)
+        from .widgets import serve_in_background
+        serve_in_background("0.0.0.0", settings.widget_port)
 
 
 class TurnIn(BaseModel):
@@ -66,7 +69,7 @@ class RouteIn(BaseModel):
 @app.get("/api/health")
 def health():
     return {"ok": True, "luna": settings.luna_model, "effort": settings.luna_effort,
-            "openai_key": bool(settings.openai_api_key), "google_key": bool(settings.google_key)}
+            "openai_key": bool(settings.openai_api_key), "google_key": bool(settings.google_key), "widget_port": settings.widget_port}
 
 
 @app.post("/api/luna/turn")

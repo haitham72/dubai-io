@@ -53,6 +53,7 @@
     document.querySelectorAll("[data-s]").forEach(b => b.onclick = () => { slot = +b.dataset.s; draw(); });
   }
   window.addEventListener("message", e => {
+    if (e.source !== parent) return; // only the host frame may talk to this app
     const m = e.data;
     if (!m || m.v !== 1) return;
     if (m.kind === "host.context" && m.payload && m.payload.provider) { P = m.payload.provider; qty[P.items[P.items.length - 1].id] = 1; draw(); }

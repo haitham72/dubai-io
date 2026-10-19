@@ -167,12 +167,23 @@ async function openMini(p) {
     <iframe class="mini-frame" id="miniFrame" sandbox="allow-scripts" title="${esc(p.name)} mini-app"></iframe>`, () => { mini = null; });
   const frame = body.querySelector('#miniFrame');
   mini = { p, frame };
-  try {
-    const html = await fetch(url).then(r => { if (!r.ok) throw new Error(r.status); return r.text(); });
-    frame.srcdoc = html; // inline document: no network access, no same-origin
-  } catch {
-    frame.replaceWith(Object.assign(document.createElement('p'), { className: 'empty', textContent: 'This mini-app could not load. The provider list still works.' }));
-  }
+  const fail = () => { if (mini?.frame === frame && frame.isConnected) frame.replaceWith(Object.assign(document.createElement('p'), { className: 'empty', textContent: 'This mini-app could not load. The provider list still works.' })); };
+  const origin = await widgetOrigin();
+  if (!origin) return fail();
+  // Separate widget origin + sandbox without allow-same-origin: opaque origin, CSP connect-src 'none' (rule 10).
+  let ready = false;
+  frame.addEventListener('load', () => { ready = true; }, { once: true });
+  frame.src = `${origin}/${url}`;
+  setTimeout(() => { if (!ready) fail(); }, 3000);
+}
+
+// The widget origin is the same host on the API-reported widget port.
+let widgetOriginPromise = null;
+function widgetOrigin() {
+  widgetOriginPromise ||= fetch('/api/health', { signal: AbortSignal.timeout(3000) }).then(r => r.json())
+    .then(h => h.widget_port ? `${location.protocol}//${location.hostname}:${h.widget_port}` : null)
+    .catch(() => { widgetOriginPromise = null; return null; });
+  return widgetOriginPromise;
 }
 
 function onBridge(e) {
