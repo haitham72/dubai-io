@@ -13,7 +13,7 @@ import { PALETTES, ONBOARDING, CASES, PROFILE_CARD, CATEGORIES, PLACES, SOURCES,
 import { profileAt } from './profile.js';
 import { createMap, km } from './map.js';
 import { $, svg, esc, toast, openSheet, closeSheet, reduced, told } from './ui.js';
-import { initChat, wireChat, handle, post, update, hasThread, resetChat } from './chat.js';
+import { initChat, wireChat, handle, post, update, hasThread, resetChat, trackOrder } from './chat.js';
 import { initOffers, wireOffers, openOffers, closeOffers } from './offers.js';
 import { initPageHost, resetPageHost, registerPage, openPage } from './page-host.js';
 import { initProviderPages } from './provider-pages.js';
@@ -710,7 +710,7 @@ $('#svcGrid').addEventListener('click', e => {
 
 // ---------------------------------------------------------------- chat, composer, tabs
 initChat({ enterResults, openOffers, startGuide, showChat });
-initOffers({ post, update, showChat });
+initOffers({ post, update, showChat, trackOrder });
 wireChat(); wireOffers(); wireGuide(); initPageHost(); initProviderPages();
 $('#chatBack').addEventListener('click', () => setView('home'));
 

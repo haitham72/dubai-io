@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0A9CC2">
+<title>Merchant inbox · Dubai-io sandbox</title>
+<style>
+  :root { --tint: #0A9CC2; --bg: #F2F2F7; --card: #fff; --line: #E5E5EA; --ink: #14202A; --mute: #6B7785; --warn: #B4540A; --ok: #1F7A4D; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 16px/1.4 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif; background: var(--bg); color: var(--ink); }
+  header { position: sticky; top: 0; background: rgba(242,242,247,.92); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); padding: max(12px, env(safe-area-inset-top)) 16px 10px; border-bottom: 1px solid var(--line); }
+  header h1 { margin: 0; font-size: 19px; }
+  .tag { display: inline-block; font-size: 12px; font-weight: 600; color: var(--warn); background: #FFF3E6; border-radius: 999px; padding: 2px 8px; margin-top: 4px; }
+  main { padding: 12px 16px 40px; max-width: 640px; margin: 0 auto; }
+  .card { background: var(--card); border-radius: 16px; padding: 14px; margin-bottom: 12px; }
+  label { display: block; font-size: 13px; color: var(--mute); margin: 8px 0 4px; }
+  input, select { width: 100%; font: inherit; font-size: 16px; padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+  button { font: inherit; font-weight: 600; border: 0; border-radius: 12px; padding: 11px 14px; min-height: 44px; background: #E9EEF2; color: var(--ink); }
+  button.primary { background: var(--tint); color: #fff; }
+  button:disabled { opacity: .5; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .row > * { flex: 1 1 auto; }
+  .status { font-size: 12px; font-weight: 700; letter-spacing: .02em; padding: 3px 8px; border-radius: 999px; background: #E3F6FB; color: #07627A; float: right; }
+  .lines { margin: 6px 0; } .total { font-weight: 700; }
+  .meta { color: var(--mute); font-size: 14px; }
+  .ask { background: #FFF3E6; color: var(--warn); border-radius: 10px; padding: 8px 10px; margin-top: 8px; font-size: 14px; }
+  .empty { color: var(--mute); text-align: center; padding: 30px 0; }
+  .err { color: #B42318; font-size: 14px; min-height: 1em; }
+</style>
+</head>
+<body>
+<header>
+  <h1 id="title">Merchant inbox</h1>
+  <span class="tag">Sandbox merchant · test operator · fictional shop</span>
+</header>
+<main>
+  <form class="card" id="login" hidden>
+    <label for="provider">Shop</label>
+    <select id="provider"></select>
+    <label for="pin">Sandbox PIN</label>
+    <input id="pin" inputmode="numeric" autocomplete="off" maxlength="20">
+    <p class="err" id="loginErr" role="alert"></p>
+    <button class="primary" type="submit">Open inbox</button>
+  </form>
+  <section id="inbox" aria-live="polite"></section>
+</main>
+<script type="module" src="merchant.js"></script>
+</body>
+</html>

@@ -7,8 +7,10 @@ import { openServiceRequest } from './service-workflow.js';
 // status: reports are "prepared, not filed"; items stay "not recovered".
 import { $, svg, esc, toast, told, wait } from './ui.js';
 import { CATEGORIES } from './data.js';
-import { SERVICE_GROUPS, matchService } from './offers.js';
+import { SERVICE_GROUPS, matchService, byNear } from './offers.js';
 import { createLunaClient } from './luna-client.js';
+import { orderCardHTML, watchOrder, requestEarlier } from './orders.js';
+import { api } from './service-workflow.js';
 import { identity, getMessages, saveMessages, resetSession } from './session-state.js';
 import { initRecovery, startRecovery, resetRecovery, handleRecoveryClick, restoreReport } from './recovery.js';
 
@@ -24,11 +26,12 @@ export function initChat(c) {
   ctx = c; initRecovery({ say: botSay, post, update, near: () => ctx.enterResults({ cat: 'all' }) });
   for(const saved of getMessages()) {
     if(!['me','bot'].includes(saved?.who)||typeof saved.text!=='string')continue;
+    if(saved.who==='bot'&&typeof saved.actionId==='string'){const id=++seq;items.push({id,who:'bot',type:'order',actionId:saved.actionId,action:null,text:saved.text});follow(id,saved.actionId);continue;}
     items.push({id:++seq,who:saved.who,text:saved.text.slice(0,6000),r:saved.who==='me'?saved.r:null,html:saved.who==='bot'?'<p>'+esc(saved.text.slice(0,6000))+'</p>':null,recoveryReport:saved.recoveryReport});
   }
   render();
 }
-export function resetChat() { threadEpoch++; luna.reset(); resetSession(); for(const key of Object.keys(told))delete told[key]; items.length = 0; resetRecovery(); render(); }
+export function resetChat() { threadEpoch++; for(const stop of watchers.values())stop(); watchers.clear(); luna.reset(); resetSession(); for(const key of Object.keys(told))delete told[key]; items.length = 0; resetRecovery(); render(); }
 
 // ---------------------------------------------------------------- router
 const LOST_VERB = /\b(lost|lose|losing|left|forgot|forgotten|missing|can'?t find|cannot find|dropped)\b/;
@@ -65,6 +68,15 @@ export function post(it) { it.id = ++seq; items.push(it); render(); return it.id
 export function update(id, fn) { const it = items.find(i => i.id === id); if (it) { fn(it); render(); } }
 export const hasThread = () => items.length > 0;
 
+// Orders render from the server record and follow its change stream across reloads.
+const watchers = new Map();
+function follow(itemId, actionId) {
+  watchers.get(itemId)?.();
+  api('/api/actions/' + encodeURIComponent(actionId)).then(a => update(itemId, it => { it.action = a; })).catch(() => update(itemId, it => { it.missing = true; }));
+  watchers.set(itemId, watchOrder(actionId, a => update(itemId, it => { it.action = a; })));
+}
+export function trackOrder(action) { const id = post({ who: 'bot', type: 'order', actionId: action.id, action }); follow(id, action.id); return id; }
+
 async function botSay(html, extra = {}) {
   const ep = threadEpoch, typing = post({ who: 'bot', typing: true });
   await wait(520);
@@ -82,25 +94,16 @@ function render() {
   const list = $('#chatList'); if (!list) return;
   saveMessages(items.filter(it=>!it.typing).map(it=>{
     const box=document.createElement('div');box.innerHTML=it.html||'';
-    const text=it.who==='me'?it.text:it.type==='status'?'Demo order timeline paused after refresh. '+it.provider.name+' · AED '+it.total+' (demo)':box.textContent;
-    return {who:it.who==='me'?'me':'bot',text,r:it.r||null,recoveryReport:it.recoveryReport||null};
+    const text=it.who==='me'?it.text:it.type==='order'?'Order '+(it.action?.recipient||''):box.textContent;
+    return {who:it.who==='me'?'me':'bot',text,r:it.r||null,recoveryReport:it.recoveryReport||null,...(it.type==='order'?{actionId:it.actionId}:{})};
   }));
   list.innerHTML = items.map(it => {
     if (it.who === 'me') return `<div class="msg me"><p>${esc(it.text)}</p>${it.pending ? '<span class="luna">Luna is understanding your request…</span>' : ''}${it.r ? `<span class="luna">${svg('orb', 'ic xs')} ${esc(it.r.via === 'langgraph' ? 'LangGraph · ' + it.r.model : 'Lab router')} · ${esc(it.r.intent)}${it.r.item ? ` · item: ${esc(it.r.item)}` : ''}${it.r.service ? ` · ${esc(it.r.service)}` : ''}${it.r.cat ? ` · ${esc(it.r.cat)}${it.r.sub ? ' › ' + esc(it.r.sub) : ''}` : ''} · ${Math.round(it.r.conf * 100)}%${it.r.ms != null ? ' · ' + (it.r.ms/1000).toFixed(1) + ' s' : ''}${it.r.fallback_reason ? ' · ' + esc(it.r.fallback_reason) : ''}</span>` : ''}</div>`;
     if (it.typing) return `<div class="msg bot typing"><span class="orbdot"></span><span class="orbdot"></span><span class="orbdot"></span></div>`;
-    if (it.type === 'status') return statusHTML(it);
+    if (it.type === 'order') return it.missing ? `<div class="msg bot"><p>This order is no longer available on this device.</p></div>` : orderCardHTML(it.action);
     return `<div class="msg bot ${it.wide ? 'wide' : ''}">${it.html}${it.recoveryReport ? `<button class="btn sm" data-restored-report="${it.id}">Review saved report</button>` : ''}</div>`;
   }).join('');
   requestAnimationFrame(() => { const s = $('#chatScroll'); if (s) s.scrollTop = s.scrollHeight; });
-}
-
-function statusHTML(s) {
-  const last = s.steps[s.steps.length - 1];
-  return `<div class="msg bot wide status">
-    <div class="st-head"><span class="logo" style="background:${s.provider.color}">${esc(s.provider.logo)}</span><div><b>${esc(s.provider.name)}</b><span>${s.lines.map(l => `${l.qty}× ${esc(l.name)}`).join(', ')} · AED ${s.total.toLocaleString('en-US')} (demo)</span></div></div>
-    <ol class="st-steps">${s.steps.map(x => `<li class="${x === last ? 'now' : ''}"><span class="st-dot"></span><div><b>${esc(x.label)}</b><span><code>${x.code}</code> · ${fmtT(x.at)}${x.sim ? ' · merchant role, simulated' : ''}</span></div></li>`).join('')}</ol>
-    <p class="st-ref">Ref ${esc(s.ref)} · the price can’t change now</p>
-  </div>`;
 }
 
 // ---------------------------------------------------------------- entry
@@ -136,8 +139,8 @@ const chips = list => `<div class="qchips">${list.map(t => `<button data-say="${
 // ---------------------------------------------------------------- flows
 async function offers(id,request) {
   const g = SERVICE_GROUPS.find(x => x.id === id);
-  const top = [...g.providers].sort((a, b) => a.from - b.from).slice(0, 3);
-  await botSay(`<p>${g.providers.length} providers compete for <b>${esc(g.label.toLowerCase())}</b>. Cheapest first; every offer is the provider’s own published one.</p>
+  const top = [...g.providers].sort(byNear).slice(0, 3);
+  await botSay(`<p>${g.providers.length} providers compete for <b>${esc(g.label.toLowerCase())}</b>. Closest first, then rating; every price is the provider’s own published one.</p>
     <div class="mini-rows">${top.map(p => `<div class="mr"><span class="logo" style="background:${p.color}">${esc(p.logo)}</span><span class="mr-t"><b>${esc(p.name)}</b><em>from AED ${p.from.toLocaleString('en-US')} ${esc(p.unit)} (demo) · ${esc(p.eta)} (demo)</em></span>${p.offer ? `<span class="mr-o">${svg('tag', 'ic xs')}</span>` : ''}</div>`).join('')}</div>
     <button class="btn primary sm" data-service-request="${g.id}" data-request-text="${esc(request||'')}">Plan this request</button>
     <button class="btn sm" data-offers="${g.id}">See all ${g.providers.length} offers ${svg('chev', 'ic xs')}</button>`);
@@ -165,6 +168,8 @@ export function wireChat() {
   $('#chatList').addEventListener('click', e => {
     if (handleRecoveryClick(e)) return;
     const saved=e.target.closest('[data-restored-report]');if(saved){const it=items.find(i=>i.id===Number(saved.dataset.restoredReport));if(it?.recoveryReport)restoreReport(it.recoveryReport);return;}
+    const early = e.target.closest('[data-earlier]');
+    if (early) { early.disabled = true; requestEarlier(early.dataset.earlier, early.dataset.target).catch(err => { toast(err.message); early.disabled = false; }); return; }
     const say = e.target.closest('[data-say]');
     if (say) { handle(say.dataset.say); return; }
     const f = e.target.closest('[data-flow]');

@@ -10,7 +10,7 @@ const FIELD_KEYS={request:['request','area','provider'],recovery:['description',
 const completeFields=(capability,fields)=>Object.fromEntries(FIELD_KEYS[capability==='recovery.rta'?'recovery':'request'].map(key=>[key,fields?.[key]||'']));
 const REQUIRED={request:['request','area'],recovery:['description','when','from','to']};
 const SERVICES={laundry:'Laundry',cleaning:'Home cleaning',ac:'AC service',grooming:'Pet grooming',carwash:'Car wash',pharmacy:'Pharmacy',maid:'Maid hire'};
-async function api(url, options={}) {
+export async function api(url, options={}) {
   if(!sessionPromise)sessionPromise=fetch('/api/session',{credentials:'same-origin',signal:AbortSignal.timeout(4000)}).then(r=>{if(!r.ok)throw new Error('Session unavailable');return r.json();}).catch(e=>{sessionPromise=null;throw e;});
   await sessionPromise;
   const r=await fetch(url,{...options,credentials:'same-origin',signal:AbortSignal.timeout(5000),headers:{'Content-Type':'application/json',...options.headers}});
