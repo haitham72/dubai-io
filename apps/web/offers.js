@@ -5,6 +5,7 @@
 // host shows the approval and rebuilds the order from its own price table.
 import { $, svg, esc, toast, openSheet, closeSheet } from './ui.js';
 import { reviewOrder } from './orders.js';
+import { recordEpisode } from './profile-store.js';
 
 export const SERVICE_GROUPS = [
   { id: 'laundry', label: 'Laundry & pressing', glyph: 'drop', img: 'media/laundry.jpg', blurb: 'Pickup, wash and press',
@@ -146,7 +147,7 @@ function renderOffers() {
 export function wireOffers() {
   $('#offers').addEventListener('click', e => {
     const s = e.target.closest('[data-sort]');
-    if (s) { sort = s.dataset.sort; renderOffers(); return; }
+    if (s) { sort = s.dataset.sort; renderOffers(); if (sort === 'near') recordEpisode('view', `Sorted ${current.label.toLowerCase()} by closest`, [{ h: 'prefers_closest', w: 0.5 }], `sort-near:${current.id}:${new Date().toDateString()}`); return; }
     const o = e.target.closest('[data-open]');
     if (o) { openMini(current.providers.find(p => p.id === o.dataset.open)); return; }
     const v = e.target.closest('[data-visit]');
@@ -203,5 +204,20 @@ function onBridge(e) {
   }
   // The server rebuilds items and total from its own catalog; widget prices are dropped.
   closeSheet();
-  setTimeout(() => reviewOrder(p, m.payload || {}, sent => { closeOffers(); ctx.trackOrder(sent); ctx.showChat(); }), 340);
+  setTimeout(() => reviewOrder(p, m.payload || {}, sent => { observeChoice(current, p, sent); closeOffers(); ctx.trackOrder(sent); ctx.showChat(); }), 340);
+}
+
+// A sent order is a choice episode (weight 2). Evidence only for allowlisted hypotheses.
+function observeChoice(group, p, sent) {
+  if (!group) return;
+  const others = group.providers.filter(x => x.entry);
+  const closest = Math.min(...others.map(x => x.km)) === p.km;
+  const cheapest = Math.min(...others.map(x => x.from)) === p.from;
+  const deadline = sent.fields?.deadline?.value;
+  const ev = [];
+  if (closest) ev.push({ h: 'prefers_closest', w: 2 });
+  if (cheapest || deadline) ev.push({ h: 'price_unless_deadline', w: 2 });
+  if (!ev.length) return;
+  const why = [closest && 'closest', cheapest ? 'cheapest' : 'not the cheapest', deadline && `deadline ${deadline}`].filter(Boolean).join(', ');
+  recordEpisode('choice', `Chose ${p.name} (${why})`, ev, 'order:' + sent.id);
 }

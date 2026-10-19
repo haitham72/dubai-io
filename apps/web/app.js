@@ -10,7 +10,8 @@ import { openSavedRequests } from './service-workflow.js';
 import { createRenderer } from './gl.js';
 import { VARIANT } from './shaders.js';
 import { PALETTES, ONBOARDING, CASES, PROFILE_CARD, CATEGORIES, PLACES, SOURCES, EPISODES, HYPOTHESES, TOLD_LABELS } from './data.js';
-import { profileAt } from './profile.js';
+import { profileAt, allowed } from './profile.js';
+import { loadProfile, profileEpisodes, setOverride } from './profile-store.js';
 import { createMap, km } from './map.js';
 import { $, svg, esc, toast, openSheet, closeSheet, reduced, told } from './ui.js';
 import { initChat, wireChat, handle, post, update, hasThread, resetChat, trackOrder } from './chat.js';
@@ -123,7 +124,7 @@ const renderer = flags.has('nogl') ? null : createRenderer(canvas, palette);
 if (!renderer) app.classList.add('nogl');
 
 // ---------------------------------------------------------------- state
-const T0 = Date.parse('2026-10-01T00:00:00'), T1 = Date.parse('2026-10-13T23:00:00');
+const T0 = Date.parse('2026-10-01T00:00:00'), T1 = Math.max(Date.parse('2026-10-13T23:00:00'), Date.now());
 const S = {
   mode: 'onboard', onboardingExit: false, deck: [], pos: 0, vel: 0, target: 0, drag: null,
   tilt: [0, 0], tiltTarget: [0, 0], view: 'home', from: 'home', maxDpr: 3,
@@ -264,11 +265,12 @@ function finishOnboarding() {
   }, reduced ? 0 : end + 40);
 }
 function homeOrder() {
-  const p = profileAt(EPISODES, HYPOTHESES, S.asOf, S.overrides);
+  const p = profileAt(profileEpisodes(), HYPOTHESES, S.asOf, S.overrides);
   const byId = Object.fromEntries([...p.noticed, ...p.confirmed].map(h => [h.id, h]));
   return CASES.map((c, k) => {
     const h = c.because && byId[c.because];
-    const boost = h && (h.surfaced || h.provenance === 'user_supplied') ? h.conf : 0;
+    // Tier rule: hypotheses may only re-rank, with a visible Because chip (allowed(h, 'rerank')).
+    const boost = h && allowed(h, 'rerank') && (h.surfaced || h.provenance === 'user_supplied') ? h.conf : 0;
     return { c, h: boost ? h : null, score: boost * 10 - k };
   }).sort((a, b) => b.score - a.score);
 }
@@ -293,7 +295,7 @@ function captionFor(c) {
 }
 function renderYouMini() {
   const ul = $('#youMini'); if (!ul) return;
-  const p = profileAt(EPISODES, HYPOTHESES, S.asOf, S.overrides);
+  const p = profileAt(profileEpisodes(), HYPOTHESES, S.asOf, S.overrides);
   const rows = [
     ...p.told.slice(0, 1).map(t => ({ label: `${TOLD_LABELS[t.key] || t.key}: ${t.value}`, tag: 'You told me', conf: 1 })),
     ...p.noticed.filter(h => h.surfaced).slice(0, 3).map(h => ({ label: h.label, tag: `${Math.round(h.conf * 100)}%`, conf: h.conf })),
@@ -476,7 +478,7 @@ function openProfile() {
 }
 function renderProfile() {
   $('#asofLbl').textContent = fmtDate(S.asOf);
-  const p = profileAt(EPISODES, HYPOTHESES, S.asOf, S.overrides);
+  const p = profileAt(profileEpisodes(), HYPOTHESES, S.asOf, S.overrides);
   const told = [
     ...p.told.map(t => `<li class="fact"><div><b>${esc(TOLD_LABELS[t.key] || t.key)}</b> ${esc(t.value)}</div><span class="src">You told me · ${esc(fmtDate(Date.parse(t.at)))}</span></li>`),
     ...p.confirmed.map(h => `<li class="fact"><div>${esc(h.label)}</div><span class="src">You confirmed</span></li>`),
@@ -497,9 +499,12 @@ function renderProfile() {
     : `<li class="fact"><div><b>${esc(TOLD_LABELS[c.key] || c.key)}</b> ${esc(c.from)} → ${esc(c.to)}</div><span class="src">${esc(fmtDate(Date.parse(c.at)))}</span></li>`).join('') || '<li class="empty">No changes yet.</li>';
   $('#prof').innerHTML = `<h4>You told me</h4><ul class="list">${told}</ul><h4>I noticed</h4><ul class="list">${noticed}</ul><h4>Changed</h4><ul class="list">${changed}</ul>`;
   $('#prof').querySelectorAll('.acts button').forEach(b => b.addEventListener('click', () => {
-    S.overrides[b.dataset.h] = b.dataset.o;
-    toast({ confirmed: 'Confirmed. It now counts as something you told me.', rejected: 'Marked not true.', forgotten: 'Forgotten, with its evidence.' }[b.dataset.o]);
-    renderProfile();
+    const { h, o } = b.dataset;
+    setOverride(h, o).then(() => {
+      S.overrides[h] = o;
+      toast({ confirmed: 'Confirmed. It now counts as something you told me.', rejected: 'Marked not true. Saved.', forgotten: 'Forgotten, with its evidence on this device.' }[o]);
+      renderProfile(); refreshHomeCaptions();
+    }).catch(err => toast('Not saved: ' + err.message));
   }));
 }
 function refreshHomeCaptions() {
@@ -711,6 +716,7 @@ $('#svcGrid').addEventListener('click', e => {
 // ---------------------------------------------------------------- chat, composer, tabs
 initChat({ enterResults, openOffers, startGuide, showChat });
 initOffers({ post, update, showChat, trackOrder });
+loadProfile().then(o => { Object.assign(S.overrides, o); refreshHomeCaptions(); });
 wireChat(); wireOffers(); wireGuide(); initPageHost(); initProviderPages();
 $('#chatBack').addEventListener('click', () => setView('home'));
 

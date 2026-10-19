@@ -19,6 +19,7 @@ from .actions import COOKIE, engine, router as action_router
 from .config import settings
 from .merchant import merchant_pin, router as merchant_router
 from .proactive import router as proactive_router
+from .profile import router as profile_router
 from .luna import graph as luna
 from .luna.schema import FactKey
 
@@ -27,6 +28,7 @@ app.include_router(auth_router)
 app.include_router(action_router)
 app.include_router(merchant_router)
 app.include_router(proactive_router)
+app.include_router(profile_router)
 
 
 @app.middleware("http")

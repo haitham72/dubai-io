@@ -111,6 +111,7 @@ export const HYPOTHESES = [
   { id: 'price_unless_deadline', label: 'You pick the cheapest, unless a deadline is at risk', facet: 'decision style', halfLifeDays: 90 },
   { id: 'specialty_coffee', label: 'You like specialty coffee around Al Quoz', facet: 'interests', halfLifeDays: 60 },
   { id: 'haircut_4w', label: 'You get a haircut about every 4 weeks', facet: 'routine', halfLifeDays: 120 },
+  { id: 'prefers_closest', label: 'You pick the closest provider', facet: 'decision style', halfLifeDays: 90 },
 ];
 
 export const EPISODES = [
