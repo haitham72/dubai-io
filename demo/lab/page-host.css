@@ -1,0 +1,44 @@
+.page-host-bar { position: sticky; top: -4px; z-index: 2; display: flex; align-items: center; gap: 12px; padding: 10px 0 16px; background: rgba(255,255,255,.96); border-bottom: 1px solid rgba(28,62,77,.09); }
+.page-host-bar > div { flex: 1; min-width: 0; }
+.page-host-bar h2 { margin: 0; font: 700 21px/1.15 var(--font-display); letter-spacing: -.02em; }
+.page-host-bar div > span { display: block; font-size: 11px; margin-top: 5px; color: var(--label-3); }
+.page-host-mark { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 14px; background: #e5f6fc; color: #167899; }
+.page-host-bar button { flex: none; width: 44px; height: 44px; }
+.page-host-content { padding-top: 16px; }
+.page-handoff, .account-page { display: grid; gap: 16px; }
+.page-handoff p, .account-page p { margin: 0; line-height: 1.5; }
+.page-tag { justify-self: start; border-radius: 20px; padding: 5px 10px; background: #e5f6fc; font-size: 11px; }
+.page-web-frame { width: 100%; height: min(60vh, 600px); border: 0; border-radius: 16px; background: #f0f5f7; }
+.account-page h3 { margin: 0; }
+.account-card { display: flex; align-items: center; gap: 12px; padding: 16px 12px; background: white; border: 1px solid #e4ebef; border-radius: 20px; }
+.account-card > div { flex: 1; }
+.account-card h4 { margin: 0 0 6px; text-transform: none; font-size: 16px; letter-spacing: 0; color: inherit; }
+.account-card div > span { display: block; font-size: 12px; color: var(--label-3); }
+.account-icon { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 12px; background: #e5f6fc; }
+.account-card button:disabled { opacity: .5; cursor: default; }
+
+.offer-row.provider-card { width: 100%; text-align: left; cursor: pointer; touch-action: manipulation; }
+.provider-card > .or-top, .provider-card > .or-meta, .provider-card > .or-offer { width: 100%; }
+.provider-card:focus-visible { outline: 3px solid var(--tint); outline-offset: 3px; }
+.provider-card:active { background: #f0f8fb; }
+
+.request-workflow { display:grid; gap:16px; }
+.request-workflow p { margin:0; font-size:14px; line-height:1.5; }
+.request-workflow form { display:grid; gap:14px; }
+.request-workflow label { display:grid; gap:7px; font-size:13px; font-weight:600; }
+.request-workflow input,.request-workflow textarea { width:100%; border:1px solid #dce7eb; border-radius:12px; padding:12px; font:16px/1.4 var(--font); background:white; color:inherit; }
+.request-workflow textarea { min-height:100px; resize:vertical; }
+.request-required { font-size:11px; color:var(--label-3); font-weight:400; }
+#serviceRequestError { color:#a23636; } #serviceRequestError:empty { display:none; }
+.request-result { display:grid; gap:12px; padding:16px; background:#eaf5fa; border-radius:20px; }
+.request-result h3 { margin:0; font-size:20px; }
+.request-result dl { margin:0; display:grid; gap:10px; }
+.request-result dl div { display:grid; gap:3px; }
+.request-result dt { font-size:11px; color:var(--label-3); }
+.request-result dd { margin:0; font-size:14px; white-space:pre-wrap; overflow-wrap:anywhere; }
+#savedRequests { display:grid; gap:12px; }
+
+.saved-detail { padding:14px 0; border-bottom:1px solid #e0e8eb; }
+
+/* The fixed app is a viewport, not a scroll container. Sheets own scrolling. */
+@supports (overflow: clip) { #app { overflow: clip; } }

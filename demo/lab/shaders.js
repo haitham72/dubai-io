@@ -188,10 +188,10 @@ void main(){
   vec3 col;
   if (uVariant == 0) col = silk(uv);
   else if (uVariant == 1) col = mesh(uv);
-  else if (uVariant == 2) col = foilOver(uv, silk(uv) * .85, 1.);
+  else if (uVariant == 2) col = silk(uv) * .85;
   else if (uVariant == 3) col = alu(uv);
   else col = photo(uv);
-  if (uHolo > 0. && uVariant != 2) col = foilOver(uv, col, uHolo);
+  if (uHolo > 0.) col = foilOver(uv, col, uHolo);
 
   // reveal: a soft diagonal ink sweep with a thin-film leading edge
   float v = uv.x * .42 + (1. - uv.y) * .58 + .22 * fbm(uv * 3.2 + uSeed);

@@ -1,25 +1,27 @@
 # Dubai-io — Build Architecture (contest MVP)
 
-**Updated:** 13 Oct 2026 (temporal profiler §12, category registry) · **Scope source:** `PLAN.md` (phases referenced as Phase 1–5) · Reference implementation of the UI: `demo/`
+**Updated:** 13 Oct 2026 (step 00: current slice versus target architecture) · **Scope source:** `PLAN.md` (phases referenced as Phase 1–5) · Reference implementation of the UI: `demo/`
 **Founder lock (10 Oct, final): bidding/quote ABSOLUTELY REJECTED. `quote.request`, `quote.read`, `QUOTED`, `QUOTE_ACCEPTED` do not exist. Every service opens as a modal HTML mini-app with fixed prices.**
 
-This document covers only what the contest build needs. Long-term vision items (community, media vault, native sensors, indoor maps, ticket wallet) are **not** built here.
+This document defines the **target** contest architecture; its tables, modules and gates are requirements, not claims that they already exist. Current code: cyan ES-module lab in `demo/lab/` and a Python 3.13 FastAPI/LangGraph slice in `apps/api/` (Luna, JSON told-fact memory, Places/Routes proxies). The lab now calls Luna on the API origin with a labelled router fallback. Local action/session persistence uses SQLite; browser conversation/report snapshots contain plain text and structured data. `apps/web`, `apps/widgets`, `packages/contracts`, Postgres, production account/role handling, SSE, transactional outbox and persistent profiler are not built. Google connection code is prepared but credentials are absent.
+
+Long-term vision items (community, media vault, native sensors, indoor maps, ticket wallet) remain LATER. Historical fixtures/reference prompts do not override `PLAN.md` §2; its scope conflicts must be resolved before porting affected flows.
 
 ---
 
 ## 1. Shape
 
-One modular monolith (one Python API, one Next.js app) plus a static widget origin and one Postgres database.
+Target: one modular monolith (one Python API, one Vite + React + TypeScript PWA) plus a static widget origin and one Postgres database. Current lab hosting is documented in `demo/run.md`.
 
 ```
-┌──────────────────────── apps/web (Next.js PWA) ────────────────────────┐
+┌──────────────────────── apps/web (Vite + React PWA) ────────────────────────┐
 │  /            Companion chat · card renderer · widget host (iframe)    │
 │  /merchant    Merchant inbox (accept / decline / mark ready / confirm) — fixed orders only, no quoting │
 │  /ops         Provider onboarding review                               │
 └───────────────┬───────────────────────────────▲────────────────────────┘
                 │ REST (commands)               │ SSE (per-conversation, per-merchant streams)
 ┌───────────────▼───────────────────────────────┴────────────────────────┐
-│                      apps/api (FastAPI, Python 3.12)                    │
+│                      apps/api (FastAPI, Python 3.13)                    │
 │                                                                         │
 │  chat ──► agent (LangGraph, read-only tools) ──► cards ──► messages     │
 │                    │ proposes                                           │
@@ -42,7 +44,7 @@ apps/widgets  ── separate origin (e.g. widgets.<domain>), static HTML/JS onl
 
 ---
 
-## 2. Modules (`apps/api/app/`)
+## 2. Planned modules (`apps/api/app/`)
 
 | Module | Owns | Must not |
 |---|---|---|
@@ -64,9 +66,9 @@ apps/widgets  ── separate origin (e.g. widgets.<domain>), static HTML/JS onl
 
 ---
 
-## 3. Contracts (`packages/contracts`)
+## 3. Planned shared contracts (`packages/contracts`)
 
-Pydantic v2 is the single source. `make contracts` exports JSON Schema, generates `apps/web/src/contracts/*.ts`, and a CI check fails if the generated files are stale.
+Target: Pydantic v2 is the single source. Planned `make contracts` exports JSON Schema, generates `apps/web/src/contracts/*.ts`, and CI checks freshness. None of this tooling exists yet. The current Luna contract is `apps/api/app/luna/schema.py` plus the response metadata in `graph.py`; see `PLAN.md` §6.9.
 
 ### 3.1 Shared primitives
 
@@ -140,11 +142,12 @@ adapter error with unknown outcome ─► UNKNOWN_STATUS
 - Each transition is a row in `action_events` (actor, from, to, source, payload hash, at). The `service_requests.status` column is derived from it and updated in the same transaction.
 - Each transition writes one outbox row → `action_status` message in the user's conversation and an inbox update for the merchant.
 - **Idempotency:** `POST /actions/{id}/approve` and every merchant command take an `Idempotency-Key`. A replay returns the original result.
-- `OPTIONS_READY` and `QUOTED`/`QUOTE_ACCEPTED` from `04 §6` are dropped. Price is fixed at submit time from the merchant's published price list.
+- Legacy `OPTIONS_READY` and `QUOTED`/`QUOTE_ACCEPTED` are dropped. Price is fixed at submit time from the merchant's published price list.
+- Current lab `offers.js` emits `SLOT_CONFIRMED` in its simulated track; it is not a canonical lifecycle state above. Align slot confirmation as provider-event metadata/wording without inventing a new lifecycle state.
 
 ---
 
-## 5. Data model (MVP tables)
+## 5. Planned data model (MVP tables)
 
 `users`, `user_context`, `conversations`, `messages` (role, `card` JSONB, `client_msg_id` unique), `providers` (status `draft|approved|suspended`, `is_fixture`), `capabilities` (provider_id, capability_id, level `L1..L3`, input_schema), `widget_manifests`, `service_requests`, `action_events`, `approvals`, `outbox` (dedupe_key unique, available_at, delivered_at), `reminders`, `parking_memories`, `evidence_assets`, `knowledge_sources` (issuer, url, version_date, jurisdiction, license_note), `knowledge_chunks` (embedding vector, section_ref), `audit_log`, `categories`, and the profiler tables `episodes`, `profile_facts`, `intents`, `routines`, `profile_snapshots` (§12).
 
@@ -152,21 +155,21 @@ The system of record is **these tables**, not the LangGraph checkpointer. On eac
 
 ---
 
-## 6. Widget host (the "WeChat inner-HTML" part)
+## 6. Target widget host (the "WeChat inner-HTML" part)
 
 The render order is: Talabat-normal card first, modal HTML widget second, fallback always available.
 
 1. The agent emits `service_comparison` (closest + ★ + price-from + turnaround). Every row offers `Open` → that provider's **modal** HTML mini-app (services / shops / stores / rides — same pattern for all four).
 2. The host loads `https://widgets.<domain>/<provider>/<version>/index.html` in `<iframe sandbox="allow-scripts">`. **Never add `allow-same-origin`**: together with `allow-scripts` on a same-site origin, it lets the frame strip its own sandbox. The widget origin is a separate site.
 3. Widget CSP: `default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'`. The widget cannot call the API.
-4. Bridge: `postMessage` with a strict `origin` check on both sides. The host accepts only `{v:1, kind, payload}`, where `kind ∈ manifest.bridge_scopes` (MVP: `order.request` ONLY). `order.request` makes the **host** build an `action_approval` card with the fixed total. The widget never submits anything.
+4. Bridge: allowlist the widget URL/origin before loading. With `sandbox="allow-scripts"`, the child has an opaque origin (`event.origin` is `"null"`); comparing it with the widget URL origin is not a valid authentication check. The host must verify `event.source === activeFrame.contentWindow`, protocol, per-frame session token and payload schema. The child checks the configured host origin/source; replies to the opaque child require `targetOrigin: "*"` on that exact window. Business scope is `order.request` ONLY; `app.ready` / `host.context` / `host.error` are control messages, not extra business capabilities. The **host** rebuilds items and totals from its approved catalog and creates an approval card. The widget never submits anything.
 5. If the manifest is missing or unapproved, the iframe fails to load within 3 s, or the client is offline, render `fallback_card`.
 
-For the MVP, Dubai-io writes the single widget (`laundry-order`). Merchant-authored HTML is out of scope.
+Widgets are app-owned templates for approved providers (laundry first). Merchant-authored HTML remains out of scope. The lab uses fetched HTML in sandboxed `srcdoc`; separate-origin hosting, full payload validation and host-owned prices for every template are unfinished gates. Legacy reference scopes such as sign-in, join, purchase-report and policy selection need the `PLAN.md` §2 scope decision before implementation.
 
 ---
 
-## 7. Proactive pipeline (the "Jarvis" part, honest version)
+## 7. Planned proactive pipeline (the "Jarvis" part, honest version)
 
 ```
 trigger source ──► reminders / demo trigger API ──► outbox(dedupe_key, available_at)
@@ -198,16 +201,16 @@ labelled "Demo trigger")                                ▼
 
 ## 9. Frontend
 
-- Tabs (13 Oct): **io · Maps · Services · Me**. `io` is Home (card stage + composer); `Maps` is the full-screen map with floating glass menus and a results sheet; `Services` is a grid generated from the category registry; `Me` holds the profile. Civic is not in the nav (LATER). Community is not in the nav.
+- Tabs (13 Oct): **io · Maps · Services · Me**. `io` is Home (card stage + composer); `Maps` is the full-screen map with floating glass menus and a results sheet; `Services` uses the `01-home.png` hero/card layout above grouped service categories, with competing offers one level down (`PLAN.md` §7.5); `Me` holds the profile. Civic is not in the nav (LATER). Community is not in the nav.
 - Card renderer: a `switch` on `card.type` over a component registry. Unknown types fall back to `text_note`. Validation is generated from the contracts.
-- Visual system (founder decision 9 Oct, replaces Editorial Luxury gold): **iOS light mode with a cyan tint**. System font (SF Pro / -apple-system), grouped background `#F2F2F7`, white cards radius 16px, separators `#E5E5EA`, tint `#0A9CC2`, iMessage-style bubbles (bot `#E9E9EB`, user = tint). Merchant mini-apps keep their own branding. Reference implementation: `demo/styles.css`. Required pills: `Demo data`, `Sandbox`, `User-supplied`, `Estimate`, `Demo trigger`, `Official source`.
-- RTL readiness: use logical CSS properties (`margin-inline-start`) from day one. A full Arabic UI is a stretch goal.
+- Visual system (founder decision 9 Oct, replaces Editorial Luxury gold): **iOS light mode with a cyan tint**. System font (SF Pro / -apple-system), grouped background `#F2F2F7`, white cards radius 16px, separators `#E5E5EA`, tint `#0A9CC2`, iMessage-style bubbles (bot `#E9E9EB`, user = tint). Merchant mini-apps keep their own branding. Legacy tokens: `demo/styles.css`; current cyan lab: `demo/lab/stage.css`, `stage-v3.css`, `data.js`. Required pills: `Demo data`, `Sandbox`, `User-supplied`, `Estimate`, `Demo trigger`, `Official source`.
+- RTL readiness: use logical CSS properties (`margin-inline-start`) from day one. Full Arabic RTL UI remains LATER in `PLAN.md` §2.
 
 ---
 
-## 10. Security and privacy (MVP level)
+## 10. Planned security and privacy gates (MVP level)
 
-- Roles enforced in API dependencies. Merchants see only their own requests. There is a test for this.
+- Required: roles enforced in API dependencies and a merchant-isolation test. Neither exists in the current slice; its `user_id` and `thread_id` are caller-supplied. Treat it as a local demo until isolation is implemented.
 - Uploads: size/type limits, EXIF GPS stripped, served by short-lived signed URL, scoped to the owner.
 - Approval cards list the exact fields shared (`CardAction.shares`). The merchant receives only those fields.
 - Secrets live in env; `.env` is never committed. Prompts never contain user secrets.
@@ -221,9 +224,11 @@ Native geofencing/motion, background location, indoor maps, ticket wallet, payme
 
 ---
 
-## 12. Temporal profiler (founder priority, 13 Oct)
+## 12. Planned temporal profiler (founder priority, 13 Oct)
 
-The profile learns from what the user does over time, and stays honest by keeping every inference **visible**. It is event-sourced and bi-temporal: the Graphiti model (valid time + transaction time, invalidate rather than delete) implemented in Postgres + pgvector, with no graph database.
+Step P is not built. The lab’s `profile.js` replays synthetic `data.js` episodes; Luna’s JSON store contains model-extracted told facts. Neither is the persistent profiler below.
+
+Target: the profile learns from what the user does over time, and stays honest by keeping every inference **visible**. It is event-sourced and bi-temporal: the Graphiti model (valid time + transaction time, invalidate rather than delete) implemented in Postgres + pgvector, with no graph database.
 
 ### 12.1 Honesty tiers
 
@@ -292,3 +297,23 @@ Facets v1:
 - **Tier-leak test:** no hypothesis ever reaches an approval, a pre-fill or a proactive send.
 - **Property tests:** monotonic decay; confirmed dominance; idempotent ingestion; rebuild == incremental.
 - **LLM-judge** on held-out extraction cases.
+
+## 13. Host pages and Google connection
+
+Host-owned pages use page-host.js. Provider cards are native full-card Open buttons; website/marketplace rows route to service-workflow.js. Merchant iframes retain their own sandbox and order-only bridge. A host page is UI, not execution evidence; arbitrary website embedding is not promised.
+
+GoogleOAuth in oauth.py implements a configured server flow: session-bound one-time state, PKCE, exact owned callback/origin, server code exchange and verified Google userinfo. Grants are encrypted with Fernet and owned by the private local session. OAuth tokens never enter cards, URLs, callback HTML or localStorage. Backend access_token checks granted scopes and serializes refresh; disconnect revokes and deletes the grant. Callback postMessage is a refresh signal only. Missing credentials leave Connect disabled.
+
+Configuration: GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET, GOOGLE_OAUTH_REDIRECT_URI; optional OAUTH_TOKEN_KEY. The lab creates an ignored local oauth.key when configured if no key is supplied. Deployment must provide a managed key and proper production sessions/roles. Identity scopes are openid/email/profile; additional provider capabilities need explicit incremental scopes, not inferred permission. This connects Google to the current browser session; cross-device account merging/login is not implemented. [Google server flow](https://developers.google.com/identity/protocols/oauth2/web-server), [Google token practices](https://developers.google.com/identity/protocols/oauth2/resources/best-practices), [Fernet](https://cryptography.io/en/latest/fernet/).
+
+## 14. Shared local action engine
+
+Implemented in actions.py, with SQLite lab tables for sessions, actions, preparation keys and approval results. Capabilities declare allowed/required user-supplied fields, recipient, effect, optional server-published total and an adapter. Seven service categories plus taxi recovery are registered for preparation; every runtime adapter is absent. This is local infrastructure, not completed production/provider integration.
+
+prepare validates the capability/fields, preserves missing facts, deduplicates retries and saves DRAFT, BLOCKED or AWAITING_APPROVAL. approve binds snapshot hash and revision plus current recipient/effect/published cost. It persists DISPATCHING before the adapter call, prevents duplicate/concurrent dispatch and accepts SUBMITTED only on registered provider evidence. Exceptions/unverified responses/interrupted dispatch become UNKNOWN_STATUS and cannot automatically resend. Discard only affects unsent drafts; dispatched cancellation needs a provider-specific capability. Timestamped events and drafts survive restart.
+
+The frontend reviews exact fields/effect, preserves per-provider edits, exposes saved requests and does not offer Send for unconnected capabilities. Taxi's rejected static official-guidance page is removed. Manual copying is secondary only. Nothing has been filed or ordered through a live adapter.
+
+Luna calls remain understanding-only. The cookie session owner scopes its thread and stated-fact API; legacy caller-supplied IDs/routes remain local-demo compatibility, not production authorization. User-given facts can be viewed, edited or forgotten. Conversation snapshots save plain text and structured report data, never raw HTML or OAuth credentials; server transcript replay and full checkpoint forgetting are still planned.
+
+Remaining gates: production Postgres/roles, approved catalog/bridge integration, live adapters with evidence parsing/reconciliation, cross-device auth, actual provider cancellation, SSE/outbox, persistent profiler and device review. The existing government execution restriction remains; a narrow validated RTA capability is required before enabling submission.

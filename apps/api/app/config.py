@@ -28,6 +28,10 @@ class Settings:
     luna_timeout_s = float(os.getenv("LUNA_TIMEOUT_S", "20"))
     openai_api_key = os.getenv("OPENAI_API_KEY", "")
     google_key = os.getenv("GOOGLE_PLACES_KEY", "")
+    google_oauth_client_id = os.getenv("GOOGLE_OAUTH_CLIENT_ID", "")
+    google_oauth_client_secret = os.getenv("GOOGLE_OAUTH_CLIENT_SECRET", "")
+    google_oauth_redirect_uri = os.getenv("GOOGLE_OAUTH_REDIRECT_URI", "")
+    oauth_token_key = os.getenv("OAUTH_TOKEN_KEY", "")
     lab_dir = ROOT / "demo" / "lab"
     data_dir = ROOT / "apps" / "api" / "data"
 

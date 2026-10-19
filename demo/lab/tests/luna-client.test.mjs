@@ -1,0 +1,13 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { createLunaClient, mapUnderstanding } from '../luna-client.js';
+const fallback=()=>({intent:'unclear',conf:.3});
+const value={via:'langgraph',intent:'service_offers',confidence:.9,service:'cleaning',model:'configured model (effort)',ms:1234,remembered:[]};
+const response=v=>({ok:true,json:async()=>v});
+test('actual contract maps service, slots, source and latency',()=>{assert.deepEqual(mapUnderstanding(value).service,'cleaning');assert.equal(mapUnderstanding(value).ms,1234);assert.equal(mapUnderstanding({...value,intent:'lost_item',item:'wallet',where_lost:'taxi'}).where,'taxi');});
+test('unknown capabilities and malformed confidences reject',()=>{assert.throws(()=>mapUnderstanding({...value,service:'invented'}));assert.throws(()=>mapUnderstanding({...value,confidence:2}));assert.equal(mapUnderstanding({...value,confidence:.3}).intent,'unclear');});
+test('only user-supplied remembered facts are surfaced',()=>{assert.equal(mapUnderstanding({...value,remembered:[{key:'area',value:'Marina',provenance:'inferred'}]}).remembered.length,0);});
+test('unavailable API falls back once',async()=>{let calls=0;const c=createLunaClient({fetcher:async()=>{calls++;throw new Error('offline');}});assert.equal((await c.understand('hello',fallback)).via,'lab router');assert.equal(calls,1);});
+test('timeout ignores a late result even when fetch ignores abort',async()=>{let done;const c=createLunaClient({timeoutMs:5,fetcher:()=>new Promise(r=>done=r)});const result=await c.understand('hello',fallback);assert.equal(result.via,'lab router');done(response(value));await new Promise(r=>setTimeout(r,1));assert.equal(result.via,'lab router');});
+test('reset cancels an old understanding without dispatching fallback',async()=>{let started;const ready=new Promise(r=>started=r);const c=createLunaClient({fetcher:(_,o)=>{started();return new Promise((_,reject)=>o.signal.addEventListener('abort',()=>reject(new Error('aborted'))));}});const result=c.understand('hello',fallback);await ready;c.reset();assert.equal(await result,null);});
+test('turns are serialized and use stable identity',async()=>{let active=0,max=0;const bodies=[];const c=createLunaClient({identity:()=>({thread_id:'thread',user_id:'user'}),fetcher:async(_,o)=>{bodies.push(JSON.parse(o.body));active++;max=Math.max(max,active);await new Promise(r=>setTimeout(r,2));active--;return response(value);}});await Promise.all([c.understand('one',fallback),c.understand('two',fallback)]);assert.equal(max,1);assert.deepEqual(bodies.map(b=>b.thread_id),['thread','thread']);});

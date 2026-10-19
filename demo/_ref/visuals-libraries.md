@@ -2,6 +2,8 @@
 
 Part 1 and Part 2 are copied **as supplied**. Part 3 is our own notes. Pointed to from `PLAN.md` §6.8.
 
+**Current overrides (13 Oct):** cyan selected; the C1 laser/chromatic reflection style is approved on every stage card at 70% of its former intensity (`0.385`). The chromatic theme remains retired pending cleanup. The later ShipSwift MIT/notice update supersedes the earlier do-not-copy note. Package versions/licences below record previous research; no external package/licence verification was rerun during step 00.
+
 ---
 
 ## 01. Prompts for visuals
@@ -158,7 +160,7 @@ Technique ideas for the WebGL2 layer (PLAN.md §6.8, L3). Re-implement in GLSL; 
 
 | Package | Version | Licence | Peer | Use in Dubai-io |
 |---|---|---|---|---|
-| `metal-fx` | 2.0.11 | MIT | react, react-dom ≥ 18; WebGL2 (falls back to the plain child) | `MetalFx preset="silver"` on the one primary CTA. **No `gold`** (R0: no gold). `chromatic` only if the founder picks the chromatic palette. `reflectionTargets` lets neighbouring cards catch the metal |
+| `metal-fx` | 2.0.11 | MIT | react, react-dom ≥ 18; WebGL2 (falls back to the plain child) | `MetalFx preset="silver"` on the one primary CTA. **No `gold`** (R0: no gold). Cyan theme selected; use the approved C1 reflection style without switching the page palette. `reflectionTargets` lets neighbouring cards catch the metal |
 | `img-fx` | 0.5.1 | MIT | react, react-dom ≥ 18, `three` ≥ 0.149 | `ImageGeneration`: `sweep-gradient` for the onboarding soft reveal; `pixels-organic` only where an image is really generated (try-on). Lazy-load (three is heavy) |
 | `liquid-gooey` | 0.2.2 | MIT | react, react-dom ≥ 18 | `Liquid` merges: agent-lane pills → one total; fitting-tray pill |
 | `bot-avatars` | 0.2.2 | MIT | react ≥ 18 (2D canvas) | Not used (the ThinkingOrb is the avatar) |

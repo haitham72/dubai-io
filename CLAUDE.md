@@ -12,11 +12,11 @@ Dubai-io is a chat-first AI companion for people living in or visiting Dubai, bu
 
 Civic guidance (official sources, citations) is LATER, not in the contest build.
 
-**Stage: sketch (Phase 0).** The only code is the clickable HTML prototype in `demo/`.
+**Stage: Phase 0 complete; redesign lab + early API slice.** Current branch: `redesign`. `demo/` is the legacy scripted prototype; `demo/lab/` is the cyan Home v2 lab. `apps/api/` serves the lab and exposes Luna, stated-fact memory, and Places/Routes endpoints. Lab chat calls Luna on the API origin and falls back to the labelled router. Local anonymous sessions and SQLite request drafts/approvals are implemented; browser history saves plain text and report data. The configured Google OAuth connector is prepared but credentials are absent (ARCHITECTURE.md §§13–14). No live provider adapter is registered. `apps/web`, `apps/widgets`, `packages/contracts`, Postgres and the persistent profiler are not built.
 
-## Research status (build branch — code-only)
+## Research status
 
-* Paper trail (research, reviews, decisions, visitor evidence, handoff archive) lives on `main`. This branch keeps the 4 canon files + `demo/` only.
+* Paper trail (research, reviews, decisions, visitor evidence, handoff archive) lives on `main`. The current `redesign` branch contains the four canon files, `demo/`, references and `apps/api/`.
 * Do NOT re-run forum research. Remaining task: verify contest facts on the official portal only (`dubaichamberdigital.com`, Dubai Media Office / WAM): submission deadline (Dec 2026 vs Jan 2027 conflict), final (first week May 2027), artifacts, judging criteria (no rubric published), IP terms. Then re-anchor `PLAN.md §4` dates.
 
 ## Docs (highest authority first)
@@ -26,28 +26,40 @@ Civic guidance (official sources, citations) is LATER, not in the contest build.
 | `CLAUDE.md` (this) | Hard rules for agents |
 | `PLAN.md` | **The single plan**: scope (IN / LATER / NEVER), demo arc, phases, gates |
 | `ARCHITECTURE.md` | Build architecture, contracts, state machine |
-| `demo/` | Clickable prototype (static, no build): chat, journey, Talabat list → modal, fixed-order machine; `demo/lab/` = Home v2 visual lab |
+| `demo/_ref/handoff.md` | Current implementation status and remaining work; cannot override the canon |
+| `demo/_ref/redesign.md` | Screen references and historical prompts; current navigation follows `PLAN.md` §§6.4, 7.5 |
+| `demo/_ref/visuals-libraries.md` | Visual effect references; supplied prompts are preserved verbatim |
+| `demo/run.md` | Current PowerShell setup, lab entry point, API and test commands |
+| `demo/` | Legacy scripted prototype; `demo/lab/` = active cyan HTML lab (no build) |
 | `demo/_ref/services/` | **Services list (`cases.md`) + intake guide (`intake.md`).** New ideas go here, never into `PLAN.md` |
 | `main` branch | Paper trail: `docs/` (decisions, design, visitors, vision, research, reviews) + `archive/` (handoff, old reviews) |
+
+Read order: this file → `PLAN.md` → `ARCHITECTURE.md` → `demo/_ref/handoff.md`; follow the routed references for the task. Newer explicit founder decisions in `PLAN.md` supersede older reference prompts. Historical fixtures do not promote LATER features into scope.
 
 If a request needs something that `PLAN.md` lists as **LATER** or **NEVER**, stop and ask. Do not build a "small version" of it.
 
 ## Repo layout (schema — where things go, don't invent new top-level docs)
 
 ```
-dubai-io/  (branch: build — code-only; paper trail lives on main)
-├── CLAUDE.md / PLAN.md / ARCHITECTURE.md / README.md  # canon, this order
-├── demo/                        # clickable prototype (static, no build)
-│   ├── index.html               # phone + backstage shell, modal sheets
-│   ├── app.js                   # chat, journey, Talabat list → modal, fixed-order machine
-│   ├── data.js                  # fixtures only (merchants, bridge_scopes=[order.request])
-│   ├── styles.css               # iOS light + cyan tokens (single source for Phase 1)
-│   ├── miniapps/*.html          # one modal HTML mini-app per merchant (own branding)
-│   └── maps/*                   # PLACEHOLDERS — replace with arrival-side maps
-└── (Phase 1 scaffolds) apps/web + apps/api + apps/widgets, packages/contracts
+dubai-io/  (current branch: redesign; paper trail on main)
+├── CLAUDE.md / PLAN.md / ARCHITECTURE.md / README.md  # canon
+├── demo/
+│   ├── index.html / app.js / data.js / styles.css  # legacy v1 prototype
+│   ├── miniapps/ / maps/                       # v1 fixtures, placeholder maps
+│   ├── lab/                                   # active cyan HTML lab
+│   │   ├── home-v2-cyan.html / app.js / stage*.css
+│   │   ├── chat.js / guide.js / offers.js / map.js / profile.js
+│   │   ├── data.js                             # categories, places, profile fixtures
+│   │   └── miniapps/ / fixtures/ / media/ / tests/
+│   ├── _ref/                                  # handoff, prompts, service cases
+│   └── run.md                                 # current setup and commands
+├── apps/api/                                  # FastAPI + LangGraph API slice
+│   ├── app/main.py / config.py / google_maps.py / luna/
+│   └── data/ / tests/ / requirements.txt
+└── planned: apps/web / apps/widgets / packages/contracts
 ```
 
-Rules: never add top-level `*.md` beyond the four canon files (paper trail lives on `main`); never write code outside `demo/` until Phase 1 scaffold exists.
+Rules: never add top-level `*.md` beyond the four canon files. Current code lives in `demo/` and `apps/api/`; scaffold the remaining packages only for their planned steps.
 
 ## Non-negotiable rules
 
@@ -62,6 +74,10 @@ Rules: never add top-level `*.md` beyond the four canon files (paper trail lives
 9. **Memory is user-given or visibly inferred.** Facts the user states are `user_supplied` and shown as "You told me". The temporal profiler may store inferences only as **hypotheses** (`provenance: inferred`, confidence, evidence, valid time). Each one is listed under "I noticed" with Confirm / Edit / Not true / Forget. An unconfirmed hypothesis may re-rank options only, with a visible "Because…" chip. It never pre-fills a field, appears on an approval card, triggers a proactive message or sets a status. Nothing about the user is stored where they can't see it. Health, religion, ethnicity, nationality-as-trait, gender, sexuality and politics are never inferred. See `ARCHITECTURE.md §12`.
 10. **Widget sandbox:** provider HTML runs only from the separate widget origin, inside `<iframe sandbox="allow-scripts">`, with `connect-src 'none'`. It reaches the host only through the allowlisted `postMessage` bridge. See `ARCHITECTURE.md §6`.
 
+## Shared service execution
+
+Founder correction: all services must use the agentic loop in `PLAN.md` §7.8. A guidance page, copy/paste report or fictional provider preview is not completion. Prepare from confirmed facts, get approval for the exact side effect, execute through a registered supported adapter, and show provider evidence. If the integration is unavailable, state that blocker. The local executor is implemented; live provider adapters are not connected; existing execution and widget-scope rules still apply.
+
 ## Service intake
 
 **New ideas and services.** When the user adds an idea, a service or a reference image, follow [`demo/_ref/services/intake.md`](demo/_ref/services/intake.md).
@@ -71,25 +87,40 @@ Rules: never add top-level `*.md` beyond the four canon files (paper trail lives
 - If the idea is unclear (category, the user's ask, what is sold or done, who confirms), ask before filing.
 - If it touches a NEVER item, stop and say so.
 
-## Stack (for Phase 1+, pin versions at scaffold)
+## Stack (current slice and planned scaffold)
 
-- `apps/web`: **Vite + React + TypeScript** (founder decision 12 Oct, replaces Next.js), mobile-first PWA viewed in iPhone Safari, no native iOS build. Routes `/` (user), `/merchant` (inbox), `/ops` (onboarding review). Mini-apps stay sandboxed HTML (`<iframe sandbox="allow-scripts">`) served from `public/miniapps/`.
-- `apps/api`: Python 3.12, FastAPI, Pydantic v2, LangGraph, SQLAlchemy 2 + Alembic.
-- `apps/widgets`: static widget bundles served from a **different origin**.
-- `packages/contracts`: Pydantic models are the source of truth. A script exports JSON Schema, and TS types are generated from it. Never hand-edit generated TS.
-- PostgreSQL 16 + pgvector. No Redis, no PostGIS, no microservices.
-- LLM: Anthropic Claude through config (`LLM_MODEL`). Never hard-code model IDs outside config.
+- Current frontend: `demo/lab/`, plain HTML/CSS + ES modules; cyan selected on 13 Oct.
+- Planned `apps/web`: **Vite + React + TypeScript** (founder decision 12 Oct), mobile-first PWA for iPhone Safari. Routes `/` (user), `/merchant` (inbox), `/ops` (onboarding review). Built-in assets may live in `public/`; provider widgets use the separate origin required by rule 10.
+- Current `apps/api`: Python **3.13** (local venv: 3.13.16), FastAPI, Pydantic v2, LangGraph and the OpenAI SDK. SQLAlchemy 2 + Alembic are planned.
+- Planned `apps/widgets`: static widget bundles served from a **different origin**. The lab currently uses sandboxed `srcdoc`; this is not the completed widget-host gate.
+- Planned `packages/contracts`: Pydantic models are the source of truth, exported to JSON Schema and generated TS. Current Luna schema lives in `apps/api/app/luna/schema.py`; never hand-edit generated TS once codegen exists.
+- Planned PostgreSQL 16 + pgvector. Current told facts use `apps/api/data/memory.json`; the checkpointer is in memory. No Redis, no PostGIS, no microservices.
+- Current LLM: OpenAI through `apps/api/app/config.py` (`LUNA_MODEL`, `LUNA_EFFORT`, `LUNA_TIMEOUT_S`). `LLM_PROVIDER` exists in config but does not implement provider switching. Defaults are `gpt-6-luna` / `high`; alternate model/effort can be configured. Keys stay server-side. Never hard-code model IDs outside config.
 
 ## Commands
 
-- Demo: `cd demo && python -m http.server 8765`, then open http://localhost:8765
-- App (`apps/web`, once scaffolded): `cd apps/web && npm install && npm run dev -- --host`, then open `http://<pc-ip>:5173` on the iPhone (same Wi-Fi) and Add to Home Screen. HTTPS (tunnel or deploy) is needed for the live compass.
-- API / tests / migrate / seed: Phase 1 fills in.
+PowerShell setup and troubleshooting: [`demo/run.md`](demo/run.md). From the repository root:
+
+```powershell
+node demo/lab/tests/profile.test.mjs
+cd apps/api
+.\.venv\Scripts\python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
+
+Open http://localhost:8000 (cyan lab); health is `/api/health`. This serves the API, but lab chat remains the keyword router until wired. In another terminal, from `apps/api`:
+
+```powershell
+.\.venv\Scripts\python -m pytest -q
+```
+
+- Legacy v1: `cd demo`, then `python -m http.server 8765`; open http://localhost:8765.
+- Planned React app, once scaffolded: from `apps/web`, `npm install`, then `npm run dev -- --host`. HTTPS is needed for phone microphone/compass permissions.
+- Migrate / seed / contracts commands are not implemented yet.
 
 ## Working conventions
 
-- Repo: `github.com/haitham72/dubai-io` (private), branch `main`.
-- Contracts change first (`packages/contracts`), then the generated types, then the code. A card or state change without a contract change is a bug.
+- Repo: `github.com/haitham72/dubai-io` (private). Current working branch: `redesign`; `main` holds the paper trail.
+- Current Luna contract changes start in `apps/api/app/luna/schema.py`. Once scaffolded, shared contracts change in `packages/contracts`, then generated types, then consumers.
 - Every workflow ships with fixtures, a happy-path test and a failure-path test (provider timeout, merchant decline, empty retrieval, duplicate submit).
-- Design tokens live in `demo/styles.css` on this branch (iOS light mode, cyan tint; `docs/DESIGN.md` on `main`). Do not invent new palettes.
+- Palette: cyan with the approved purple fringe. Lab tokens/styles live in `demo/lab/stage.css`, `stage-v3.css` and `data.js`; legacy v1 tokens live in `demo/styles.css`. The chromatic variant remains only pending cleanup. Do not invent new palettes.
 - Keep the docs short. Tick `PLAN.md` checkboxes, and don't create new planning docs.

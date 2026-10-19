@@ -14,6 +14,7 @@ Luna returns understanding only. It never acts, writes HTML or URLs, or sets a
 status (CLAUDE.md rules 1 and 7).
 """
 import json
+from hashlib import sha256
 import operator
 import re
 import time
@@ -57,6 +58,7 @@ ALLOWED_SUBS = {
 }
 URL = re.compile(r"https?://\S+|www\.\S+", re.I)
 DIGITS = re.compile(r"\+?\d[\d\s-]{6,}\d")
+CLAIMS = re.compile(r"\b(booked|confirmed|filed|paid|delivered|verified|submitted|sent|found)\b|تم(?:\s+)?(?:الحجز|التأكيد|الإرسال|الدفع|التسليم)|درهم|\b(?:AED|USD|GBP)\b|[$£€]", re.I)
 
 
 class Turn(TypedDict):
@@ -162,7 +164,9 @@ def validate(state: LunaState) -> dict:
         u["intent"] = "unclear"
         u["clarify"] = u.get("clarify") or "Do you want a place near you, a service done for you, help at the airport, or help with something you lost?"
     # the reply is display text only: strip anything that looks like a link or a phone number
-    u["reply"] = DIGITS.sub("", URL.sub("", u.get("reply") or "")).strip()
+    for field in ("reply", "clarify"):
+        text = DIGITS.sub("", URL.sub("", u.get(field) or "")).strip()
+        u[field] = "How can I help with your next step?" if CLAIMS.search(text) else text
     return {"understanding": u}
 
 
@@ -189,7 +193,7 @@ graph = build()
 
 
 def turn(thread_id: str, user_id: str, text: str) -> dict:
-    out = graph.invoke({"user_id": user_id, "text": text}, config={"configurable": {"thread_id": thread_id}})
+    out = graph.invoke({"user_id": user_id, "text": text}, config={"configurable": {"thread_id": sha256(json.dumps([user_id, thread_id]).encode()).hexdigest()}})
     return {
         **out["understanding"],
         "via": "langgraph",

@@ -1,3 +1,5 @@
+import { openSavedDetails } from './saved-details.js';
+import { openSavedRequests } from './service-workflow.js';
 // Home v2 lab. Flow: iPhone Wi-Fi sign-in -> install + open Dubai-io -> soft
 // card-by-card intro -> io: card stage + chat with the composer at the bottom.
 // Asking lifts the cards away into the chat; the answer can be a recovery
@@ -10,11 +12,19 @@ import { VARIANT } from './shaders.js';
 import { PALETTES, ONBOARDING, CASES, PROFILE_CARD, CATEGORIES, PLACES, SOURCES, EPISODES, HYPOTHESES, TOLD_LABELS } from './data.js';
 import { profileAt } from './profile.js';
 import { createMap, km } from './map.js';
-import { $, svg, esc, toast, openSheet, closeSheet, reduced } from './ui.js';
-import { initChat, wireChat, handle, post, update, hasThread } from './chat.js';
-import { initOffers, wireOffers, openOffers, closeOffers, renderServiceGrid } from './offers.js';
+import { $, svg, esc, toast, openSheet, closeSheet, reduced, told } from './ui.js';
+import { initChat, wireChat, handle, post, update, hasThread, resetChat } from './chat.js';
+import { initOffers, wireOffers, openOffers, closeOffers } from './offers.js';
+import { initPageHost, resetPageHost, registerPage, openPage } from './page-host.js';
+import { initProviderPages } from './provider-pages.js';
+import { openConnections } from './accounts.js';
+import { renderServicesLanding } from './services.js';
 import { startGuide, wireGuide } from './guide.js';
 import { startArrival } from './arrival.js';
+
+// C1 used 0.55: apply 70% of that reflection to every stage card.
+const CARD_REFLECTION_STRENGTH = 0.55 * 0.70;
+const INTRO_MOTION = { first: 2000, next: 1800, exit: 1500, stagger: 90, lift: 1500 };
 
 // ---------------------------------------------------------------- setup
 const flags = (() => {
@@ -37,7 +47,7 @@ document.body.insertAdjacentHTML('beforeend', `
 <div id="app" class="mode-home ${reduced ? 'reduced' : ''}">
   <canvas id="gl" aria-hidden="true"></canvas>
   <header class="top">
-    <div class="brand"><button class="brand-btn" id="brandBtn" aria-label="Dubai-io. Tap to restart the demo"><b>Dubai-io</b></button><span class="area">${svg('pin', 'ic xs')} Dubai Marina · you told me</span></div>
+    <div class="brand"><button class="brand-btn" id="brandBtn" aria-label="Dubai-io. Tap to restart the demo"><b>Dubai-io</b></button><span class="area">${svg('pin', 'ic xs')} Dubai Marina · demo area</span></div>
     <span class="pill demo" title="Everything here is demo data">Demo data</span>
   </header>
   <main id="stage" aria-roledescription="carousel" aria-label="Home cards"></main>
@@ -47,7 +57,7 @@ document.body.insertAdjacentHTML('beforeend', `
   <section class="chatv" id="chat" aria-label="Chat">
     <div class="c-top">
       <button class="round glass" id="chatBack" aria-label="Back to cards">${svg('back')}</button>
-      <div class="c-title"><button class="brand-btn" id="brandBtn2" aria-label="Dubai-io. Tap to restart the demo"><b>Dubai-io</b></button><span>Luna in this lab is a keyword router; the LangGraph service replaces it</span></div>
+      <div class="c-title"><button class="brand-btn" id="brandBtn2" aria-label="Dubai-io. Tap to restart the demo"><b>Dubai-io</b></button><span>Luna understands requests · service actions require approval</span></div>
     </div>
     <div class="c-scroll" id="chatScroll"><div class="c-list" id="chatList"></div></div>
   </section>
@@ -68,10 +78,7 @@ document.body.insertAdjacentHTML('beforeend', `
     </section>
   </section>
 
-  <section class="svcgrid" id="svcGrid" aria-label="Services">
-    <div class="sg-head"><h2>Services</h2><p>Providers compete for each service: partner mini-apps, websites and marketplaces, at their published prices. Places near you live in Maps.</p></div>
-    <div class="sg-grid" id="sgGrid"></div>
-  </section>
+  <section class="svcgrid" id="svcGrid" aria-label="Services"></section>
 
   <form class="composer glass" id="composer" role="search" autocomplete="off">
     <label class="sr" for="q">Ask Dubai-io</label>
@@ -118,7 +125,7 @@ if (!renderer) app.classList.add('nogl');
 // ---------------------------------------------------------------- state
 const T0 = Date.parse('2026-10-01T00:00:00'), T1 = Date.parse('2026-10-13T23:00:00');
 const S = {
-  mode: 'onboard', deck: [], pos: 0, vel: 0, target: 0, drag: null,
+  mode: 'onboard', onboardingExit: false, deck: [], pos: 0, vel: 0, target: 0, drag: null,
   tilt: [0, 0], tiltTarget: [0, 0], view: 'home', from: 'home', maxDpr: 3,
   tune: { ribs: 8.5, foil: 1, grain: 0.07, aura: 0.95 },
   shape: { falloff: 2.4, height: 0.85, glow: 0.24 },
@@ -128,8 +135,8 @@ const S = {
 };
 const G = {};
 window.__lab = { S, G };
-let seedN = 1;
-const mkCard = def => ({ ...def, variant: VARIANT[def.kind] ?? 0, seed: (seedN++ * 7.31) % 13, rev: reduced ? 1 : 0, revStart: 0, revDur: 1100, out: false, el: null });
+let seedN = 1, onboardingExitTimer = 0;
+const mkCard = def => ({ ...def, holo: CARD_REFLECTION_STRENGTH, variant: VARIANT[def.kind] ?? 0, seed: (seedN++ * 7.31) % 13, rev: reduced ? 1 : 0, revStart: 0, revDur: 1100, out: false, outFrom: 1, exitProgress: 0, el: null });
 
 // ---------------------------------------------------------------- views
 const VIEWS = ['home', 'chat', 'results', 'services'];
@@ -164,6 +171,7 @@ function layout() {
 }
 
 const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const smooth = t => t * t * t * (t * (t * 6 - 15) + 10);
 function params(i) {
   const d = i - S.pos, ad = Math.abs(d), sg = Math.sign(d);
   const c = S.deck[i];
@@ -173,7 +181,7 @@ function params(i) {
   return {
     d, ad, fl,
     tx: sg * (Math.min(ad, 1) * G.spacing + Math.max(ad - 1, 0) * G.cw * 0.26),
-    ty: (1 - e) * 26 - fl * (G.H * 0.72),
+    ty: (1 - e) * 26 - c.exitProgress * G.ch * 0.45 - fl * (G.H * 0.72),
     rot: -sg * Math.min(ad, 1) * 18 * Math.PI / 180,
     sc: (1 - 0.13 * Math.min(ad, 1) - 0.05 * Math.max(ad - 1, 0)) * (1 + 0.07 * fl),
   };
@@ -211,7 +219,7 @@ function appendCard(c) {
   c.el = stageEl.lastElementChild;
   buildRail();
 }
-function reveal(c, delay = 0, dur = 1100) { c.out = false; c.revStart = performance.now() + delay; c.revDur = dur; if (reduced) c.rev = 1; }
+function reveal(c, delay = 0, dur = 1100) { c.out = false; c.exitProgress = 0; c.revStart = performance.now() + delay; c.revDur = dur; if (reduced) c.rev = 1; }
 function buildRail() {
   railEl.innerHTML = S.deck.map((c, i) => {
     const bg = c.img ? `background-image:url('${c.img}')` : `background:radial-gradient(circle at 30% 30%, ${palette.ramp[3]}, ${palette.ramp[1]} 60%, ${palette.ramp[0]})`;
@@ -221,26 +229,39 @@ function buildRail() {
 
 // ---------------------------------------------------------------- flows: intro, home
 function startOnboarding() {
+  clearTimeout(onboardingExitTimer);
+  S.onboardingExit = false;
   S.mode = 'onboard';
   S.deck = [mkCard(ONBOARDING[0])];
   S.pos = S.target = 0; S.vel = 0;
   mountDeck();
-  reveal(S.deck[0], 200, 1400);
+  reveal(S.deck[0], 200, INTRO_MOTION.first);
 }
 function advance() {
-  if (S.mode !== 'onboard') return;
+  if (S.mode !== 'onboard' || S.onboardingExit) return;
   const at = Math.round(S.pos);
   if (at < S.deck.length - 1) { S.target = at + 1; return; }
   if (S.deck.length < ONBOARDING.length) {
     const c = mkCard(ONBOARDING[S.deck.length]);
-    appendCard(c); reveal(c, 160, 1200); S.target = S.deck.length - 1;
+    appendCard(c); reveal(c, 180, INTRO_MOTION.next); S.target = S.deck.length - 1;
   } else finishOnboarding();
 }
 function finishOnboarding() {
+  if (S.onboardingExit) return;
+  S.onboardingExit = true;
   store.set('onboarded', '1');
-  const now = performance.now();
-  S.deck.forEach(c => { c.out = true; c.revStart = now; c.revDur = 520; });
-  setTimeout(buildHome, reduced ? 0 : 560);
+  const now = performance.now(), deck = S.deck, active = Math.round(S.pos);
+  let end = 0;
+  deck.forEach((c, i) => {
+    const delay = Math.abs(i - active) * INTRO_MOTION.stagger;
+    c.out = true; c.outFrom = c.rev; c.exitProgress = 0;
+    c.revStart = now + delay; c.revDur = INTRO_MOTION.exit;
+    end = Math.max(end, delay + c.revDur);
+  });
+  onboardingExitTimer = setTimeout(() => {
+    // A replay/restart may have replaced the deck while the cards were leaving.
+    if (S.deck === deck) buildHome();
+  }, reduced ? 0 : end + 40);
 }
 function homeOrder() {
   const p = profileAt(EPISODES, HYPOTHESES, S.asOf, S.overrides);
@@ -252,6 +273,8 @@ function homeOrder() {
   }).sort((a, b) => b.score - a.score);
 }
 function buildHome() {
+  clearTimeout(onboardingExitTimer);
+  S.onboardingExit = false;
   S.mode = 'home';
   S.deck = [mkCard(PROFILE_CARD), ...homeOrder().map(o => mkCard({ ...o.c, becauseHyp: o.h }))];
   S.pos = S.target = 1; S.vel = 0;
@@ -286,7 +309,9 @@ function frame(now) {
   if (!S.drag) {
     if (reduced) { S.pos = S.target; S.vel = 0; }
     else {
-      const a = -210 * (S.pos - S.target) - 27 * S.vel;
+      const stiffness = S.mode === 'onboard' ? 90 : 210;
+      const damping = S.mode === 'onboard' ? 20 : 27;
+      const a = -stiffness * (S.pos - S.target) - damping * S.vel;
       S.vel += a * dt; S.pos += S.vel * dt;
       if (Math.abs(S.pos - S.target) < 1e-4 && Math.abs(S.vel) < 1e-3) { S.pos = S.target; S.vel = 0; }
     }
@@ -309,7 +334,8 @@ function frame(now) {
     const c = S.deck[i];
     if (!reduced && now >= c.revStart) {
       const t = Math.min(1, (now - c.revStart) / c.revDur);
-      c.rev = c.out ? 1 - t : t;
+      c.exitProgress = c.out ? smooth(t) : 0;
+      c.rev = c.out ? c.outFrom * (1 - c.exitProgress) : S.mode === 'onboard' ? smooth(t) : t;
     }
     const p = params(i);
     const el = c.el;
@@ -360,11 +386,11 @@ function frame(now) {
   }
   requestAnimationFrame(frame);
 }
-function setLift(to) { if (S.liftTo === to) return; S.liftFrom = S.lift; S.liftTo = to; S.liftStart = performance.now(); }
+function setLift(to) { if (S.liftTo === to) return; S.liftDur = S.mode === 'onboard' ? INTRO_MOTION.lift : 820; S.liftFrom = S.lift; S.liftTo = to; S.liftStart = performance.now(); }
 
 // ---------------------------------------------------------------- stage input
 function onDown(e) {
-  if (S.view !== 'home' || e.button > 0 || e.target.closest('button')) return;
+  if (S.view !== 'home' || S.onboardingExit || e.button > 0 || e.target.closest('button')) return;
   S.drag = { x: e.clientX, pos: S.pos, lastX: e.clientX, lastT: performance.now(), v: 0, moved: false, id: e.pointerId, card: e.target.closest('.card') };
   stageEl.setPointerCapture(e.pointerId);
   const r = S.drag.card;
@@ -402,11 +428,12 @@ stageEl.addEventListener('pointermove', onMove);
 stageEl.addEventListener('pointerup', onUp);
 stageEl.addEventListener('pointercancel', onUp);
 stageEl.addEventListener('click', e => { if (e.target.closest('[data-act="next"]')) { e.stopPropagation(); advance(); } });
-railEl.addEventListener('click', e => { const d = e.target.closest('.dot'); if (d) S.target = +d.dataset.i; });
+railEl.addEventListener('click', e => { const d = e.target.closest('.dot'); if (d && !S.onboardingExit) S.target = +d.dataset.i; });
 addEventListener('keydown', e => {
   if (e.target.closest?.('input')) return;
   if (!$('#sheet').hidden) { if (e.key === 'Escape') closeSheet(); return; }
   if (S.view !== 'home') { if (e.key === 'Escape') goBack(); return; }
+  if (S.onboardingExit) { if (['ArrowLeft', 'ArrowRight', 'Enter'].includes(e.key)) e.preventDefault(); return; }
   if (e.key === 'ArrowRight') { if (S.mode === 'onboard' && Math.round(S.pos) === S.deck.length - 1) advance(); else S.target = Math.min(S.deck.length - 1, Math.round(S.pos) + 1); }
   if (e.key === 'ArrowLeft') S.target = Math.max(0, Math.round(S.pos) - 1);
   if (e.key === 'Enter') openCard(S.deck[Math.round(S.pos)]);
@@ -672,17 +699,19 @@ function setSnap(name, instant) {
 })();
 
 // ---------------------------------------------------------------- Services: competing offers
-function enterServices() { closeSheet(); renderServiceGrid($('#sgGrid')); setView('services'); }
-$('#sgGrid').addEventListener('click', e => {
-  const b = e.target.closest('.sg-card'); if (!b) return;
-  if (b.dataset.ask) { $('#q').focus(); return; }
-  openOffers(b.dataset.svc);
+function enterServices() { closeSheet(); renderServicesLanding($('#svcGrid'), told.area); setView('services'); }
+$('#svcGrid').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.area) { told.area = b.dataset.area; renderServicesLanding($('#svcGrid'), told.area); return; }
+  if (b.dataset.servicesAsk) { $('#q').focus(); return; }
+  if (b.dataset.servicesSay) { handle(b.dataset.servicesSay); return; }
+  if (b.dataset.svc) openOffers(b.dataset.svc);
 });
 
 // ---------------------------------------------------------------- chat, composer, tabs
 initChat({ enterResults, openOffers, startGuide, showChat });
 initOffers({ post, update, showChat });
-wireChat(); wireOffers(); wireGuide();
+wireChat(); wireOffers(); wireGuide(); initPageHost(); initProviderPages();
 $('#chatBack').addEventListener('click', () => setView('home'));
 
 const placeholders = ['I lost my wallet', 'Guide me through the airport', 'Home cleaning prices', 'Coffee near me', 'A groomer for my dog'];
@@ -691,6 +720,8 @@ setInterval(() => { const q = $('#q'); if (!q.value && document.activeElement !=
 $('#composer').addEventListener('submit', e => {
   e.preventDefault();
   const text = $('#q').value.trim(); if (!text) return;
+  // Explicit input owns the transition; cancel the exit before dispatching chat.
+  if (S.onboardingExit) buildHome();
   $('#q').value = ''; $('#q').blur();
   if (S.mode === 'onboard') { store.set('onboarded', '1'); }
   closeOffers();
@@ -700,29 +731,37 @@ $('#mic').addEventListener('click', () => toast('Voice needs a secure page and a
 document.querySelector('.tabbar').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
   const t = b.dataset.tab;
+  if (S.onboardingExit) buildHome();
   closeOffers();
   if (t === 'home') setView(hasThread() && S.view === 'home' ? 'chat' : 'home');
   else if (t === 'maps') enterResults({ cat: 'all' });
   else if (t === 'services') enterServices();
   else if (t === 'me') openMe();
 });
-function openMe() {
-  openSheet(`
-    <h3 id="sheetTitle">Me</h3>
+registerPage('account.me', { title: 'Me', source: 'Dubai-io', render: () => `
     <p class="lead">Lab build · palette: ${esc(paletteName)}</p>
     <div class="actions col">
+      <button class="btn" id="meDetails">${svg('person', 'ic sm')} Your saved details</button>
+      <button class="btn" id="meRequests">${svg('bag', 'ic sm')} Saved requests</button>
+      <button class="btn" id="meConnections">${svg('lock', 'ic sm')} Connected accounts</button>
       <button class="btn" id="meProfile">${svg('person', 'ic sm')} You, over time</button>
       <button class="btn" id="meIntro">${svg('orb', 'ic sm')} Replay the intro</button>
       <button class="btn" id="meWifi">${svg('wifi', 'ic sm')} Replay landing and Wi-Fi sign-in</button>
     </div>
-    <p class="fine">Flags: add #fps, #tune or #nogl to the link (join with dots, e.g. #fps.tune).</p>`);
+    <p class="fine">Flags: add #fps, #tune or #nogl to the link (join with dots, e.g. #fps.tune).</p>`, mount: () => {
+  $('#meDetails').addEventListener('click', openSavedDetails);
+  $('#meRequests').addEventListener('click', openSavedRequests);
+  $('#meConnections').addEventListener('click', () => openConnections());
   $('#meProfile').addEventListener('click', () => { closeSheet(); setTimeout(openProfile, 340); });
   $('#meIntro').addEventListener('click', () => { closeSheet(); setView('home'); startOnboarding(); });
   $('#meWifi').addEventListener('click', () => { closeSheet(); setView('home'); S.deck = []; stageEl.innerHTML = ''; railEl.innerHTML = ''; startArrival(() => startOnboarding()); });
-}
+} });
+function openMe() { openPage('account.me'); }
 
 // Tapping the Dubai-io logo restarts the demo from the airport Wi-Fi.
 function restartDemo() {
+  resetChat(); resetPageHost();
+  clearTimeout(onboardingExitTimer); S.onboardingExit = false;
   closeSheet(); closeOffers(); setView('home');
   try { localStorage.removeItem('dubaiio.lab.onboarded'); } catch { /* private mode */ }
   S.deck = []; stageEl.innerHTML = ''; railEl.innerHTML = ''; captionEl.textContent = '';

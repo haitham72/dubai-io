@@ -1,3 +1,4 @@
+import { getFacts, saveFacts } from './session-state.js';
 // Shared UI helpers for the lab modules. DOM lookups are lazy, so modules can
 // import this before app.js has inserted the shell.
 export const ICON = {
@@ -56,26 +57,54 @@ export function toast(msg) {
   toastTimer = setTimeout(() => { t.classList.remove('show'); setTimeout(() => { t.hidden = true; }, 250); }, 2800);
 }
 
-let sheetOnClose = null;
+let sheetOnClose = null, sheetHideTimer = 0, sheetGeneration = 0, sheetReturnFocus = null;
 export function openSheet(html, onClose) {
   const sheet = $('#sheet'), scrim = $('#scrim'), body = $('#sheetBody');
+  clearTimeout(sheetHideTimer);
+  const generation = ++sheetGeneration;
+  if (sheet.hidden || !sheet.classList.contains('open')) sheetReturnFocus = document.activeElement;
   body.innerHTML = html; sheetOnClose = onClose || null;
   sheet.hidden = false; scrim.hidden = false;
-  requestAnimationFrame(() => { sheet.classList.add('open'); scrim.classList.add('open'); });
+  requestAnimationFrame(() => {
+    if (generation !== sheetGeneration) return;
+    sheet.classList.add('open'); scrim.classList.add('open');
+    if (!body.contains(document.activeElement)) (body.querySelector('[autofocus], .page-host-back, .page-host-close, button, input, textarea, a[href]') || $('#sheetClose')).focus({ preventScroll: true });
+  });
   body.scrollTop = 0;
   return body;
 }
 export function closeSheet() {
   const sheet = $('#sheet'), scrim = $('#scrim');
   if (!sheet || sheet.hidden) return;
+  const generation = ++sheetGeneration;
   sheet.classList.remove('open'); scrim.classList.remove('open');
-  setTimeout(() => { sheet.hidden = true; scrim.hidden = true; }, reduced ? 0 : 320);
+  clearTimeout(sheetHideTimer);
+  sheetHideTimer = setTimeout(() => {
+    if (generation !== sheetGeneration) return;
+    sheet.hidden = true; scrim.hidden = true;
+    if (sheetReturnFocus?.isConnected) sheetReturnFocus.focus({ preventScroll: true });
+    sheetReturnFocus = null;
+  }, reduced ? 0 : 320);
   const f = sheetOnClose; sheetOnClose = null; f?.();
 }
+// Keep keyboard navigation inside whichever host/provider sheet is open.
+document.addEventListener('keydown', e => {
+  const sheet = $('#sheet'); if (!sheet || sheet.hidden || !sheet.classList.contains('open')) return;
+  if (e.key === 'Escape') { e.preventDefault(); closeSheet(); return; }
+  if (e.key !== 'Tab') return;
+  const controls = [...sheet.querySelectorAll('button, a[href], input, textarea, select, iframe, [tabindex]')]
+    .filter(el => !el.disabled && el.tabIndex >= 0 && el.getClientRects().length && !el.closest('[hidden]'));
+  const first = controls[0], last = controls.at(-1);
+  if (!first) { e.preventDefault(); return; }
+  if (e.shiftKey && (document.activeElement === first || !sheet.contains(document.activeElement))) { e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && (document.activeElement === last || !sheet.contains(document.activeElement))) { e.preventDefault(); first.focus(); }
+});
 
 // A tiny in-memory store for what the user told us during this session
 // (belt, taxi plate). Shown back with "You told me"; never inferred.
-export const told = {};
+const restoredFacts = getFacts();
+if (typeof restoredFacts.trip?.at === 'string') { const date = new Date(restoredFacts.trip.at); restoredFacts.trip.at = Number.isFinite(date.getTime()) ? date : null; }
+export const told = new Proxy(restoredFacts, { set(target,key,value){target[key]=value;saveFacts(target);return true;},deleteProperty(target,key){delete target[key];saveFacts(target);return true;} });
 
 // Dubai local time for time-aware advice.
 export function dubaiNow() {

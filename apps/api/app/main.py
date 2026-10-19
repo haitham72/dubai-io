@@ -8,16 +8,21 @@ Then open http://<pc-ip>:8000/lab/home-v2-cyan.html
 import uuid
 
 import httpx
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from . import google_maps
+from .auth import router as auth_router
+from .actions import COOKIE, engine, router as action_router
 from .config import settings
 from .luna import graph as luna
+from .luna.schema import FactKey
 
 app = FastAPI(title="Dubai-io API", version="0.1.0")
+app.include_router(auth_router)
+app.include_router(action_router)
 
 
 class TurnIn(BaseModel):
@@ -49,13 +54,41 @@ def health():
 
 
 @app.post("/api/luna/turn")
-def luna_turn(body: TurnIn):
+def luna_turn(body: TurnIn, request: Request):
     if not settings.openai_api_key:
         raise HTTPException(503, "OPENAI_API_KEY is not set")
     try:
-        return luna.turn(body.thread_id, body.user_id, body.text)
+        owner = engine().store.owner(request.cookies.get(COOKIE)) if request.cookies.get(COOKIE) else body.user_id
+        return luna.turn(body.thread_id, owner, body.text)
+    except HTTPException:
+        raise
     except Exception as err:  # the web falls back to its lab router
         raise HTTPException(502, f"Luna failed: {type(err).__name__}") from err
+
+
+class FactEdit(BaseModel):
+    value: str = Field(min_length=1, max_length=80)
+
+
+@app.get("/api/session/memory")
+def session_memory(request: Request):
+    owner = engine().store.owner(request.cookies.get(COOKIE))
+    return {"told": luna.facts.current(owner)}
+
+
+@app.put("/api/session/memory/{key}")
+def edit_session_fact(key: FactKey, body: FactEdit, request: Request):
+    owner = engine().store.owner(request.cookies.get(COOKIE))
+    value = body.value.strip()
+    if not value:
+        raise HTTPException(422, "Enter a value")
+    return {"fact": luna.facts.add(owner, key, value, f"User edited saved detail: {key}={value}")}
+
+
+@app.delete("/api/session/memory/{key}")
+def forget_session_fact(key: FactKey, request: Request):
+    owner = engine().store.owner(request.cookies.get(COOKIE))
+    return {"forgotten": luna.facts.forget(owner, key)}
 
 
 @app.get("/api/memory/{user_id}")

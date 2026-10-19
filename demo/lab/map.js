@@ -6,7 +6,6 @@ import { PLACES, AREA_LABELS, HOME, CATEGORIES } from './data.js';
 
 const LOOK = {
   cyan: { land: '#EDF1F3', sea: '#BDE3EE', water: '#C7E8F1', park: '#DCEAE3', beach: '#F2EBDC', road: '#FFFFFF', casing: '#D2DCE2', accent: '#79D2E8', bld: ['#E4EAED', '#D6E3E9', '#C8E2EC'] },
-  chromatic: { land: '#F0EEF4', sea: '#CFD3F5', water: '#D8DAF7', park: '#E2E8E4', beach: '#F3ECE0', road: '#FFFFFF', casing: '#DCD8E6', accent: '#B28CFF', bld: ['#E8E5EF', '#DDD7EC', '#D3C8EE'] },
 };
 
 export function createMap(el, paletteName, svg, onPick) {

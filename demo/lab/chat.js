@@ -1,3 +1,5 @@
+import { labFetch } from './api-client.js';
+import { openServiceRequest } from './service-workflow.js';
 // io chat. A lab stand-in for Luna: a deterministic intent router (clearly
 // labelled "lab router") until the LangGraph service in apps/api replaces it.
 // Intents: lost item -> recovery, airport -> guide, service -> competing offers,
@@ -6,12 +8,24 @@
 import { $, svg, esc, toast, told, wait } from './ui.js';
 import { CATEGORIES } from './data.js';
 import { SERVICE_GROUPS, matchService } from './offers.js';
+import { createLunaClient } from './luna-client.js';
+import { identity, getMessages, saveMessages, resetSession } from './session-state.js';
+import { initRecovery, startRecovery, resetRecovery, handleRecoveryClick, restoreReport } from './recovery.js';
 
 let ctx = null; // { enterResults, openOffers, startGuide, showChat }
 const items = [];
-let seq = 0;
+let seq = 0, threadEpoch = 0;
+const luna = createLunaClient({fetcher:labFetch,enabled:location.pathname.startsWith('/lab/'),identity});
 
-export function initChat(c) { ctx = c; }
+export function initChat(c) {
+  ctx = c; initRecovery({ say: botSay, post, update, near: () => ctx.enterResults({ cat: 'all' }) });
+  for(const saved of getMessages()) {
+    if(!['me','bot'].includes(saved?.who)||typeof saved.text!=='string')continue;
+    items.push({id:++seq,who:saved.who,text:saved.text.slice(0,6000),r:saved.who==='me'?saved.r:null,html:saved.who==='bot'?'<p>'+esc(saved.text.slice(0,6000))+'</p>':null,recoveryReport:saved.recoveryReport});
+  }
+  render();
+}
+export function resetChat() { threadEpoch++; luna.reset(); resetSession(); for(const key of Object.keys(told))delete told[key]; items.length = 0; resetRecovery(); render(); }
 
 // ---------------------------------------------------------------- router
 const LOST_VERB = /\b(lost|lose|losing|left|forgot|forgotten|missing|can'?t find|cannot find|dropped)\b/;
@@ -25,7 +39,8 @@ export function route(text) {
   const q = text.toLowerCase().trim();
   if (LOST_VERB.test(q)) {
     const m = q.match(LOST_ITEM);
-    return { intent: 'lost_item', item: m ? m[1].replace(/s$/, '') : 'item', conf: m ? 0.92 : 0.7 };
+    const where = /\b(taxi|cab)\b/.test(q) ? 'taxi' : /\bmetro\b/.test(q) ? 'metro' : /\b(shop|mall)\b/.test(q) ? 'shop' : null;
+    return { intent: 'lost_item', item: m ? m[1].replace(/s$/, '') : 'item', where, conf: m ? 0.92 : 0.7 };
   }
   if (AIRPORT.test(q)) return { intent: 'airport_guide', conf: 0.9 };
   const svc = matchService(q);
@@ -48,9 +63,11 @@ export function update(id, fn) { const it = items.find(i => i.id === id); if (it
 export const hasThread = () => items.length > 0;
 
 async function botSay(html, extra = {}) {
-  const typing = post({ who: 'bot', typing: true });
+  const ep = threadEpoch, typing = post({ who: 'bot', typing: true });
   await wait(520);
+  if (ep !== threadEpoch) return null;
   const it = items.find(i => i.id === typing);
+  if (!it) return null;
   Object.assign(it, { typing: false, html, ...extra });
   render();
   return typing;
@@ -60,11 +77,16 @@ const fmtT = d => d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-di
 
 function render() {
   const list = $('#chatList'); if (!list) return;
+  saveMessages(items.filter(it=>!it.typing).map(it=>{
+    const box=document.createElement('div');box.innerHTML=it.html||'';
+    const text=it.who==='me'?it.text:it.type==='status'?'Demo order timeline paused after refresh. '+it.provider.name+' · AED '+it.total+' (demo)':box.textContent;
+    return {who:it.who==='me'?'me':'bot',text,r:it.r||null,recoveryReport:it.recoveryReport||null};
+  }));
   list.innerHTML = items.map(it => {
-    if (it.who === 'me') return `<div class="msg me"><p>${esc(it.text)}</p>${it.r ? `<span class="luna">${svg('orb', 'ic xs')} Luna (lab router) · ${esc(it.r.intent)}${it.r.item ? ` · item: ${esc(it.r.item)}` : ''}${it.r.service ? ` · ${esc(it.r.service)}` : ''}${it.r.cat ? ` · ${esc(it.r.cat)}${it.r.sub ? ' › ' + esc(it.r.sub) : ''}` : ''} · ${Math.round(it.r.conf * 100)}%</span>` : ''}</div>`;
+    if (it.who === 'me') return `<div class="msg me"><p>${esc(it.text)}</p>${it.pending ? '<span class="luna">Luna is understanding your request…</span>' : ''}${it.r ? `<span class="luna">${svg('orb', 'ic xs')} ${esc(it.r.via === 'langgraph' ? 'LangGraph · ' + it.r.model : 'Lab router')} · ${esc(it.r.intent)}${it.r.item ? ` · item: ${esc(it.r.item)}` : ''}${it.r.service ? ` · ${esc(it.r.service)}` : ''}${it.r.cat ? ` · ${esc(it.r.cat)}${it.r.sub ? ' › ' + esc(it.r.sub) : ''}` : ''} · ${Math.round(it.r.conf * 100)}%${it.r.ms != null ? ' · ' + (it.r.ms/1000).toFixed(1) + ' s' : ''}${it.r.fallback_reason ? ' · ' + esc(it.r.fallback_reason) : ''}</span>` : ''}</div>`;
     if (it.typing) return `<div class="msg bot typing"><span class="orbdot"></span><span class="orbdot"></span><span class="orbdot"></span></div>`;
     if (it.type === 'status') return statusHTML(it);
-    return `<div class="msg bot">${it.html}</div>`;
+    return `<div class="msg bot ${it.wide ? 'wide' : ''}">${it.html}${it.recoveryReport ? `<button class="btn sm" data-restored-report="${it.id}">Review saved report</button>` : ''}</div>`;
   }).join('');
   requestAnimationFrame(() => { const s = $('#chatScroll'); if (s) s.scrollTop = s.scrollHeight; });
 }
@@ -80,32 +102,42 @@ function statusHTML(s) {
 
 // ---------------------------------------------------------------- entry
 export async function handle(text) {
-  const r = route(text);
-  post({ who: 'me', text, r });
-  ctx.showChat();
+  text=String(text).trim();if(!text)return;
+  if(text.length>600){toast('Keep this message under 600 characters.');return;}
+  const ep=threadEpoch, id=post({who:'me',text,pending:true});ctx.showChat();
+  const r=await luna.understand(text,route);
+  if(!r||ep!==threadEpoch)return;
+  update(id,it=>{it.pending=false;it.r=r;});
+  const factKeys={area:'area',hotel:'hotel',terminal:'terminal',taxi_plate:'plate',taxi_roof:'roof',deadline:'deadline',pet:'pet',language:'language',other:'other'};
+  for(const fact of r.remembered||[])if(factKeys[fact.key])told[factKeys[fact.key]]=fact.value.slice(0,80);
+  if(r.remembered?.length)await botSay('<p class="told">You told me: '+r.remembered.map(f=>esc(f.key.replaceAll('_',' '))+': '+esc(f.value)).join(' · ')+'</p>');
+  if(ep!==threadEpoch)return;
   switch (r.intent) {
-    case 'lost_item': return lost(r.item);
-    case 'airport_guide': return airport();
-    case 'service_offers': return offers(r.service);
+    case 'lost_item': return startRecovery({ item: r.item, where: r.where });
+    case 'airport_guide': return r.terminal ? startGuideFlow(r.terminal) : airport();
+    case 'service_offers': return offers(r.service,text);
     case 'places_near': {
       await botSay(`<p>Here’s what’s near you, closest first. Opening the map.</p>`);
       await wait(500);
+      if(ep!==threadEpoch)return;
       return ctx.enterResults({ ask: text, cat: r.cat, sub: r.sub });
     }
     case 'greeting': return botSay(`<p>Hi! Ask me for a service, a place nearby or help at the airport, or tell me if you’ve lost something.</p>${chips(['Guide me through the airport', 'Home cleaning prices', 'Coffee near me', 'I lost my wallet'])}`);
+    case 'smalltalk': return botSay('<p>'+esc(r.reply||'How can I help?')+'</p>');
     case 'thanks': return botSay(`<p>Anytime.</p>`);
-    default: return botSay(`<p>I’m not sure I got that. Which of these is closest?</p>${chips(['Find a place near me', 'Compare a service', 'I lost something', 'Help at the airport'])}<p class="hint">I’d rather ask than guess.</p>`);
+    default: return botSay(`<p>${esc(r.clarify || 'I’m not sure I got that. Which of these is closest?')}</p>${chips(['Find a place near me', 'Compare a service', 'I lost something', 'Help at the airport'])}<p class="hint">I’d rather ask than guess.</p>`);
   }
 }
 const chips = list => `<div class="qchips">${list.map(t => `<button data-say="${esc(t)}">${esc(t)}</button>`).join('')}</div>`;
 
 // ---------------------------------------------------------------- flows
-async function offers(id) {
+async function offers(id,request) {
   const g = SERVICE_GROUPS.find(x => x.id === id);
   const top = [...g.providers].sort((a, b) => a.from - b.from).slice(0, 3);
   await botSay(`<p>${g.providers.length} providers compete for <b>${esc(g.label.toLowerCase())}</b>. Cheapest first; every offer is the provider’s own published one.</p>
-    <div class="mini-rows">${top.map(p => `<div class="mr"><span class="logo" style="background:${p.color}">${esc(p.logo)}</span><span class="mr-t"><b>${esc(p.name)}</b><em>from AED ${p.from.toLocaleString('en-US')} ${esc(p.unit)} · ${esc(p.eta)}</em></span>${p.offer ? `<span class="mr-o">${svg('tag', 'ic xs')}</span>` : ''}</div>`).join('')}</div>
-    <button class="btn primary sm" data-offers="${g.id}">See all ${g.providers.length} offers ${svg('chev', 'ic xs')}</button>`);
+    <div class="mini-rows">${top.map(p => `<div class="mr"><span class="logo" style="background:${p.color}">${esc(p.logo)}</span><span class="mr-t"><b>${esc(p.name)}</b><em>from AED ${p.from.toLocaleString('en-US')} ${esc(p.unit)} (demo) · ${esc(p.eta)} (demo)</em></span>${p.offer ? `<span class="mr-o">${svg('tag', 'ic xs')}</span>` : ''}</div>`).join('')}</div>
+    <button class="btn primary sm" data-service-request="${g.id}" data-request-text="${esc(request||'')}">Plan this request</button>
+    <button class="btn sm" data-offers="${g.id}">See all ${g.providers.length} offers ${svg('chev', 'ic xs')}</button>`);
 }
 
 async function airport() {
@@ -124,72 +156,12 @@ async function startGuideFlow(term) {
   });
 }
 
-async function lost(item) {
-  const what = item === 'item' ? 'something' : `your ${item}`;
-  await botSay(`<p>I’m sorry. Losing ${esc(what)} is stressful. Let’s go step by step.</p><p>Where did you last have it?</p>
-    <div class="qchips"><button data-flow="lost:taxi:${esc(item)}">In a taxi</button><button data-flow="lost:metro:${esc(item)}">On the Metro</button><button data-flow="lost:shop:${esc(item)}">In a shop or mall</button><button data-flow="lost:unsure:${esc(item)}">Not sure</button></div>`);
-}
-
-async function lostWhere(where, item) {
-  const label = item === 'item' ? 'Item' : item[0].toUpperCase() + item.slice(1);
-  if (where === 'shop') {
-    await botSay(`<p>Go back to the shop first, then the mall’s customer service desk; malls keep lost property.</p><button class="btn sm" data-near="1">${svg('map', 'ic xs')} Show me what’s nearby</button>${cardsTip(item)}`);
-    return;
-  }
-  if (where === 'unsure') {
-    await botSay(`<p>Let’s retrace. Check these, most likely first:</p>
-      <ol class="checklist"><li>The last place you paid for something</li><li>The taxi or Metro you took (RTA lost and found covers both)</li><li>Your hotel reception</li></ol>
-      <div class="qchips"><button data-flow="lost:taxi:${esc(item)}">It might be the taxi</button><button data-flow="lost:metro:${esc(item)}">It might be the Metro</button></div>${cardsTip(item)}`);
-    return;
-  }
-  const isTaxi = where === 'taxi';
-  const trip = told.trip;
-  const rows = isTaxi ? [
-    ['When', trip ? `${trip.at.toLocaleString('en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit' })} (you told me)` : null, 'when'],
-    ['Pickup', trip ? `${trip.from} (you told me)` : null, 'from'],
-    ['Drop-off', trip ? `${trip.to} (you told me)` : null, 'to'],
-    ['Taxi plate', told.plate ? `${told.plate} (you told me)` : null, 'plate'],
-    ['Roof colour', told.roof ? `${told.roof} (you told me)` : null, 'roof'],
-  ] : [
-    ['When', null, 'when'], ['Line and station', null, 'station'],
-  ];
-  const id = await botSay(reportHTML({ label, isTaxi, rows, desc: null, done: false }));
-  wireReport(id, { label, isTaxi, rows, item });
-}
-
-function reportHTML({ label, isTaxi, rows, desc, done }) {
-  return `<div class="report">
-    <div class="rp-head">${svg(isTaxi ? 'taxi' : 'train', 'ic sm')}<b>Report for RTA lost and found</b><span class="pill-st ${done ? 'ready' : ''}">${done ? 'Prepared · not filed' : 'Draft'}</span></div>
-    <ul class="rp-rows">
-      <li><span>${esc(label)}</span><b>${desc ? esc(desc) : '<em>Describe it below</em>'}</b></li>
-      ${rows.map(([k, v, key]) => `<li><span>${esc(k)}</span>${v ? `<b>${esc(v)}</b>` : `<input data-f="${key}" placeholder="${k === 'When' ? 'e.g. today 22:10' : 'add if you know'}" />`}</li>`).join('')}
-    </ul>
-    ${done ? `<div class="rp-next">
-        <p><b>Not recovered yet.</b> Send this to RTA through their official channels; I can’t file it for you.</p>
-        <div class="callbox"><span>RTA call centre</span><b>800 9090</b><button class="btn sm" data-copy="8009090">Copy</button></div>
-        <button class="btn sm" data-official="rta">${svg('globe', 'ic xs')} Open RTA lost and found (official)</button>
-      </div>` : `<form class="rp-desc" data-desc="1"><input placeholder="Colour, size, what was inside (no card numbers)" /><button class="btn primary sm">Prepare</button></form>
-      <p class="hint">I only ask for what I don’t already know.</p>`}
-  </div>`;
-}
-function wireReport(id, st) {
-  const it = items.find(i => i.id === id);
-  it.after = form => {
-    const vals = {};
-    form.closest('.report').querySelectorAll('[data-f]').forEach(i => { if (i.value.trim()) vals[i.dataset.f] = i.value.trim(); });
-    const desc = form.querySelector('input').value.trim();
-    if (!desc) { toast('Describe it in a few words first.'); return; }
-    const rows = st.rows.map(([k, v, key]) => [k, v || (vals[key] ? `${vals[key]} (you told me)` : 'not given'), key]);
-    it.html = reportHTML({ ...st, rows, desc, done: true }) + cardsTip(st.item);
-    render();
-  };
-}
-const cardsTip = item => (['wallet', 'purse', 'card', 'bag', 'handbag'].includes(item)
-  ? `<p class="hint">${svg('shield', 'ic xs')} If bank cards were inside, freeze them in your bank’s app now. If your Emirates ID or passport was inside, report it through the official channels.</p>` : '');
-
 // ---------------------------------------------------------------- clicks inside the thread
 export function wireChat() {
+  $('#sheetBody').addEventListener('click', handleRecoveryClick);
   $('#chatList').addEventListener('click', e => {
+    if (handleRecoveryClick(e)) return;
+    const saved=e.target.closest('[data-restored-report]');if(saved){const it=items.find(i=>i.id===Number(saved.dataset.restoredReport));if(it?.recoveryReport)restoreReport(it.recoveryReport);return;}
     const say = e.target.closest('[data-say]');
     if (say) { handle(say.dataset.say); return; }
     const f = e.target.closest('[data-flow]');
@@ -198,22 +170,14 @@ export function wireChat() {
       f.closest('.qchips')?.querySelectorAll('button').forEach(x => { x.disabled = true; x.classList.toggle('picked', x === f); });
       post({ who: 'me', text: f.textContent.trim() });
       if (kind === 'guide') startGuideFlow(a);
-      if (kind === 'lost') lostWhere(a, b);
       return;
     }
+    const plan=e.target.closest('[data-service-request]');if(plan){openServiceRequest(plan.dataset.serviceRequest,{request:plan.dataset.requestText});return;}
     const o = e.target.closest('[data-offers]');
     if (o) { ctx.openOffers(o.dataset.offers); return; }
     if (e.target.closest('[data-near]')) { ctx.enterResults({ cat: 'all' }); return; }
     const c = e.target.closest('[data-copy]');
     if (c) { navigator.clipboard?.writeText(c.dataset.copy).then(() => toast('Number copied.'), () => toast('Select the number to copy it.')); return; }
     if (e.target.closest('[data-official]')) { toast('Opens RTA’s official lost-and-found page. Dubai-io doesn’t file anything.'); }
-  });
-  $('#chatList').addEventListener('submit', e => {
-    const form = e.target.closest('[data-desc]'); if (!form) return;
-    e.preventDefault();
-    const msg = form.closest('.msg');
-    const idx = [...$('#chatList').children].indexOf(msg);
-    const it = items[idx];
-    it?.after?.(form);
   });
 }

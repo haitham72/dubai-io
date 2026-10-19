@@ -13,6 +13,8 @@ A case earns an entry only when it proves something the engine can't do yet (a n
 
 **Status flow:** `idea → picked → built → in review → rebuild → accepted`
 
+`built` means a fixture/flow exists, not that reference parity or live integration passed. Current C5 is a lab guide awaiting full reference parity; C6’s local draft/card-cash fixtures pass technical checks, but its manual handoff was rejected; C6 is `rebuild` pending agentic execution and phone/reference approval. V1 community fixtures remain historical pending `PLAN.md` §2 scope resolution.
+
 ## Shared rules (every case)
 
 - Fixed published prices. Offers come only from what the merchant has published. No quotes, bids or negotiation.
@@ -24,6 +26,8 @@ A case earns an entry only when it proves something the engine can't do yet (a n
 - Every step writes a chat message **and a profile episode**.
 - Profile hypotheses follow the tier table in `ARCHITECTURE.md` §12.1: they may re-rank (with a "Because…" chip), but never pre-fill, appear on an approval card or trigger a proactive message.
 
+**Scene IDs:** `?scene=C…` entries below describe planned case routes, not working query flags. Current lab entry flags are listed in `PLAN.md` §7.2.
+
 **Entry template:** status · refs `services/<group>/<category>/` · scene `?scene=<id>` · patterns · ask · steps · money · media slots · **profile: reads / teaches** · checks · open questions · review log.
 
 ## Index
@@ -34,11 +38,11 @@ A case earns an entry only when it proves something the engine can't do yet (a n
 | C2 | Clothing: facet browse + Try It On | `shops/cloth/` ✓ ref | facets, tryon, approval, order | idea |
 | C3 | Barber | `service/barber/` | nearby-rows, tryon, add-ons, published-offer, book-slot, route, rate-after | idea |
 | C4 | Laundry with a deadline | `service/laundry/` | nearby-rows, approval, deadline-check, events | built (v1 demo) |
-| C5 | DXB arrival guide + ride | `companion/arrival/` ⚑ | guide | built (lab v3) |
-| C6 | Lost item (wallet, bag, phone) in a taxi / Metro / shop | `companion/lost-item/` ⚑ | recovery | built (lab v3) |
+| C5 | DXB arrival guide + ride | `companion/arrival/` ⚑ | guide | built (lab; reference parity pending) |
+| C6 | Lost item (wallet, bag, phone) in a taxi / Metro / shop | `companion/lost-item/` ⚑ | recovery | rebuild (draft UI built; agentic execution/handoff rejected) |
 | C7 | Car licence renewal (R2–R5 in `../redesign.md`) | `service/car-licence/` | lanes, book-slot, holo-choice, events | idea |
 | C8 | Fix it / AC / renovation (R6 in `../redesign.md`) | `service/fix-it/` | nearby-rows, book-slot | idea |
-| C9 | Community + shopping rows | `shops/community/` | nearby-rows, sign-in | built (v1 demo) |
+| C9 | Community + shopping rows | `shops/community/` | nearby-rows, sign-in | built (v1; community scope/bridge decision pending) |
 | C10 | Merchant joins from a price-list photo | `platform/onboarding/` ⚑ | onboarding | built (v1 demo) |
 | C11 | Share a video → map | `shops/coffee/` ✓ ref | video-ingest, map-browse | idea |
 | C12 | Pets: vet / 24h / pet shop / boarding / grooming / photo | `service/pets/` ✓ ref | map-browse, book-slot, route, bundle | idea |
@@ -133,10 +137,13 @@ status: idea · refs `service/barber/` · scene `?scene=C3`
 status: built (v1 demo) · spec `PLAN.md` §3 · `demo/app.js` `laundryDeadline`, `laundryMerchantFlow`
 
 ## C5 · DXB arrival guide + ride ⚑
-status: built (v1 demo) · spec `PLAN.md` §3 · `demo/miniapps/dxb-guide.html`
+status: built (lab; reference parity pending) · current `demo/lab/guide.js` · legacy reference `demo/miniapps/dxb-guide.html` · spec `PLAN.md` §3
 
 ## C6 · Lost bag in a taxi ⚑
-status: built (v1 demo) · spec `PLAN.md` §3 · `demo/app.js` `recovery`
+status: rebuild (agentic execution required; manual handoff rejected) · current `demo/lab/recovery.js`, `recovery-state.js`, `page-host.js` · reference `04`/`04a` and v1 card/cash flows · spec `PLAN.md` §§3, 7.5
+
+- Built: where/payment choices, simulated card/cash match and no-match, cancellation, fictional driver detail/local chat, report preparation from known or explicitly typed facts, optional manual copy and shared saved-request preparation. The rejected static official guidance page is removed. Fixture plate/driver details never prefill the report; missing facts stay missing. Report status stays `PREPARED_NOT_FILED`, item not recovered.
+- Verified: 8 report-state tests; phone-sized Chromium cash/report/Back and card failure paths. Reference/actual iPhone approval and publication pending. RTA’s live portal requires explicit browser continuation because it blocks framing.
 
 ## C7 · Car licence renewal
 status: idea · spec `../redesign.md` R2–R5
@@ -145,7 +152,7 @@ status: idea · spec `../redesign.md` R2–R5
 status: idea · spec `../redesign.md` R6
 
 ## C9 · Community + shopping rows
-status: built (v1 demo) · `demo/app.js` `providerRows`, `joinApproval`, `purchaseReported`
+status: built (v1; community scope/bridge decision pending in `PLAN.md` §2) · `demo/app.js` `providerRows`, `joinApproval`, `purchaseReported`
 
 ## C10 · Merchant joins from a price-list photo ⚑
 status: built (v1 demo) · spec `PLAN.md` §3 (2:45–3:05)
@@ -204,4 +211,11 @@ status: built (lab) · ref `../01 - Visitor onboarding/01 - visitor wifi.jpg` ·
 
 | Date | Case | Founder note | What changed |
 |---|---|---|---|
-| | | | |
+| 13 Oct 2026 | C1 / shared stage styling | Founder loves C1’s laser/chromatic reflection; use it on all cards at 70% intensity. "cards flying up in onbording should be smoother and slower, now they are super fast" | Shared reflection `0.385`, slower reveals/spring and eased staggered exit; phone review pending |
+| 13 Oct 2026 | C6 | Chat-only report is a stub; rebuild to `04`/`04a` and v1 cash/card flows | Rebuilt card/cash traces and reports; status now `in review`, phone/reference approval pending |
+
+| 13 Oct 2026 | Shared HTML pages / C6 | Open pages inside the app, with centrally reused account connections; OAuth client is not configured | Shared host navigation and connection metadata prepared. Google remains unconfigured; official guidance opens in-app, live portal continuation is explicit |
+
+| 13 Oct 2026 | All services / C6 | Required copying and static “Official guidance” pages are not agentic; requirement applies to all services | Shared executor requirement recorded; C6 returns to rebuild. Current live adapter/session/execution support is absent |
+
+| 13 Oct 2026 | Shared service engine / C6 | Finish what can work without OAuth | Luna frontend wiring, shared durable request preparation/approval foundation, session/history/report continuity, saved details and configured Google connector implemented. Live provider adapters and OAuth consent remain pending |

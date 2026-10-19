@@ -1,117 +1,70 @@
-# Handoff: 13 Oct 2026 session (branch `redesign`)
+# Handoff: Dubai-io local build, 13 Oct 2026
 
-Read `CLAUDE.md` → `PLAN.md` (§7) → `demo/_ref/services/cases.md` + `intake.md` → this file.
-(Kept under `demo/_ref/` because CLAUDE.md allows only four top-level .md files.)
+Branch: redesign. Changes are local/uncommitted; private Artifacts have not been republished. Read CLAUDE.md → PLAN.md → ARCHITECTURE.md, then routed case/reference files.
 
-## Done
+## Implemented locally
 
-**Docs (committed)**
-- CLAUDE.md:
-  - rule 9 = visible hypotheses
-  - `inferred` provenance
-  - "Service intake" rule → `demo/_ref/services/intake.md`
-- ARCHITECTURE.md:
-  - §12 temporal profiler (honesty tiers, tables, decay math, LangGraph hot/cold path, eval gate)
-  - `categories` registry
-  - tabs io · Maps · Services · Me
-- PLAN.md v1.5:
-  - floor items 12–13
-  - step 0 = Home v2, step P = profiler
-  - §7 loop (pick shell → pick case → build → review → rebuild)
-  - Ask Maps jury objection
-- `demo/_ref/services/cases.md`: C1–C14 + pattern library. Cases are ~1% of the app; the engine (registry + patterns + surfaces + profiler) does the rest.
+- Cyan Services hero, area choices, short suggestions and grouped categories. Provider cards have one native whole-card Open action, keyboard Enter/Space and sorting support. The temporary provider-pages.js rendering wrapper leaves offers.js/miniapps untouched for the other LLM.
+- Slower onboarding and shared C1 reflection 0.55 × 0.70 = 0.385. Founder quote: "cards flying up in onbording should be smoother and slower, now they are super fast". Reveal/exit timers, keyboard exit guard, input-owned transition, reduced motion and replay checks pass locally.
+- chat.js calls Luna on the API origin; luna-client.js validates the actual contract, serializes turns, shows source/model/latency and falls back once after 15 s/unavailability. Late/reset results cannot dispatch another flow. Luna display text cannot claim execution/prices. User/thread checkpoint keys are scoped; the browser client bootstraps a private local cookie session.
+- session-state.js stores same-browser plain-text history and structured reports, not HTML or tokens. Reports reopen after refresh. Your saved details supports scoped view/edit/forget through the API. Existing backend FactStore JSON remains the told-fact store; full checkpoint forgetting/server transcript replay remain pending.
+- actions.py implements eight preparation capabilities, typed user-supplied fields, private anonymous sessions, SQLite persistence, payload-bound preparation retries, snapshot/revision/terms-bound approval, duplicate/concurrent dispatch protection, provider evidence gating and UNKNOWN_STATUS for ambiguous outcomes/restart. Unsent drafts can be discarded; dispatched cancellation requires a provider adapter.
+- service-workflow.js provides shared request preparation/review, per-provider edits and Me → Saved requests. Runtime provider adapters are all absent, so requests stay draft/blocked with no fake Send. Taxi Continue uses this flow; the rejected “Official guidance / Your report stays here” page is removed. Copy is an optional manual alternative, not required completion.
+- oauth.py/auth.py prepare Google browser start/callback with state+PKCE, verified userinfo, encrypted server-side grants, scope checks, serialized refresh and revocation. Connect remains disabled because credentials are missing. This is a connection to the local browser session, not completed production/cross-device account login.
+- Retired chromatic HTML/palette/map/CSS branches removed. Cyan reflection remains.
 
-**Lab (`demo/lab/`, static, published as two private Artifacts)**
-- Links: cyan https://claude.ai/artifact/YZgGtUTmXuarcz97FvGH1w · chromatic https://claude.ai/artifact/DukxEKh196BPzRaREFuKqe (v3 published; the two edits below are not yet republished)
-- **Home stage:** WebGL2 coverflow (silk / mesh / foil / alu / photo bands), top aura + bottom glow, soft card-by-card intro, profile-ranked "Try" cards with a "Because…" chip.
-- **Arrival (C14):** iPhone Wi-Fi settings → captive sign-in (sponsor strip) → install sheet GET → progress → OPEN → icon expands. Unbranded.
-- **io chat** (`chat.js`), currently a labelled keyword router:
-  - lost item → RTA report pre-filled from "you told me", prepared · not filed · not recovered (C6)
-  - airport → guide
-  - service → offers
-  - place → map
-  - unclear → clarify chips
-- **Airport guide (C5)** (`guide.js`):
-  - signage-based steps; "I'm lost" by landmark
-  - belt the user types
-  - ride step reasons from Dubai time and terminal (no Metro at T2)
-  - taxi plate/roof saved and reused by C6
-- **Services** (`offers.js`), separate from Maps:
-  - competing partner / merchant mini-apps, websites and marketplaces; published offers; Best price / Fastest holo badges
-  - mini-apps in `iframe sandbox="allow-scripts"` via srcdoc; scoped bridge; the host rebuilds prices
-  - single approval → merchant events (simulated) in chat
-- **Maps** (`map.js`):
-  - MapLibre on a bundled OpenStreetMap extract (`fixtures/dubai-map.json`, ODbL, 3D buildings), 27 fictional geolocated places
-  - glass chips, draggable sheet (carousel → "Picked up from" → Good spots grid → detail)
-- **Profile:** `profile.js` + `fixtures/profile-vectors.json`; `node demo/lab/tests/profile.test.mjs` → 92/92.
-- **Media:** all sources and licences in `demo/lab/media.json` (Unsplash + OSM).
+## Configuration needed next
 
-**Backend slice (`apps/api`, committed)**
-- FastAPI app; serves the lab at `/lab` (same origin, so the phone needs no extra setup).
-- **Luna** = LangGraph `normalize → understand (OpenAI responses.parse, Pydantic schema) → validate → remember`.
-  - Short-term memory: LangGraph `InMemorySaver` per thread.
-  - Long-term memory: stated facts only (`data/memory.json`, user_supplied, supersede + forget).
-- `/api/places/search` and `/api/route` (Google Places New / Routes, server-side key, no caching).
-- **Tests:**
-  - 6 offline pass.
-  - Live golden set (11 cases, incl. Arabic + typos) passes on both `gpt-6-luna` (high) and `gpt-6.1-sol` (medium).
-- **Latency:**
-  - luna-high: 6–9 s per turn.
-  - sol-medium: 3–11 s per turn (most 4–8 s).
-  - Both too slow for chat without streaming or a cheaper first pass. Decide.
-- **Run:** `cd apps/api && .venv/Scripts/python -m uvicorn app.main:app --host 0.0.0.0 --port 8000`, then open `http://<pc-ip>:8000/lab/home-v2-cyan.html`.
+For Google web OAuth, set these in apps/api/.env, then restart the API:
+- GOOGLE_OAUTH_CLIENT_ID
+- GOOGLE_OAUTH_CLIENT_SECRET (server only)
+- GOOGLE_OAUTH_REDIRECT_URI (exact registered URI ending /api/auth/google/callback)
 
-**Keys and models (verified 13 Oct)**
-- `demo/.env` (gitignored) holds `OPENAI_API_KEY` and `GOOGLE_PLACES_KEY`; `config.py` reads `apps/api/.env`, then `demo/.env`.
-- Real model IDs: `gpt-6-luna`, `gpt-6.1-sol` (also `gpt-6-sol`, `gpt-6-astra`). "luna-6" / "sol-6.1" are not IDs.
-- Google key works for Places (New) and Routes (DXB T3 → Marina: 37.6 min, 40.9 km).
-- This machine has a stale `REQUESTS_CA_BUNDLE` (points at a deleted file in another project). It breaks pip; `config.py` ignores it at runtime. To fix it permanently, remove that environment variable.
+Optional OAUTH_TOKEN_KEY supplies the encryption key. The local lab creates ignored data/oauth.key if configured without one; production needs a managed key/session deployment. HTTP localhost callbacks are supported; a phone/public callback needs the approved HTTPS origin. Places/Routes API keys are separate from OAuth. Identity scopes do not authorize Gmail/Calendar or merchant website sessions.
 
-## Pending / not finished
+No real OAuth/provider/model calls were made in these checks. Mock credentials/grants only exist in temporary test stores; no real Connected or submitted status is claimed.
 
-1. ~~Republish~~ done (v4 has the flat bubbles and the logo restart).
-2. **Wire `chat.js` to `/api/luna/turn`:**
-   - Call it when served from `/lab` on the API host, with a ~15 s timeout and the lab router as fallback.
-   - Show "Luna · gpt-6-luna (high) · intent · ms".
-   - Show stated facts from the response as "You told me".
-   - The published Artifacts cannot reach the API (sandbox CSP); live AI runs only when served locally.
-3. **Latency decision** (founder):
-   - option A: stream the reply
-   - option B: Sol medium per turn + Luna high only for plans/bundles (e.g. C1)
-   - option C: keep the lab router as an instant first guess, then Luna confirms
+## Verification
 
-   Also consider prompt caching for the static instructions.
-4. **Live Places on a map:** the Places policy requires a Google map. Do this in the Vite app with the Maps JS key; the lab keeps OSM + fixtures. A second browser key (Maps JavaScript API only, website-restricted to `localhost:5173` and the LAN IP) is still to be created. The current key is effectively the server key: restrict it to Places (New) + Routes.
-5. **Founder to pick the shell palette** (cyan vs chromatic) on the iPhone. Not yet verified on device: whether the MapLibre worker and the srcdoc mini-apps run inside the Artifact sandbox. If either is blank, add a fallback.
-6. **Step P (profiler on Postgres + pgvector)** is not started. Luna's FactStore JSON is a stand-in for told facts only.
-7. **Google Agent Platform / Agent Registry** (GA 18 Jun 2026): not adopted. Our agents are LangGraph in `apps/api`, and Google APIs are tools. Revisit only if we need A2A interop. The extra APIs enabled by its setup wizard (Compute Engine, Notebooks, Model Armor, …) are unused; the founder may disable them.
-8. **Vite + React port (`apps/web`)** of the picked shell and accepted cases: not started.
-9. **CLAUDE.md stack line still says Anthropic Claude.** The founder switched to OpenAI models on 13 Oct; the PLAN.md §6.9 note records it. Update the CLAUDE.md line when the founder confirms that is permanent.
-10. **WaveSpeed images:** the founder will provide the API later. Every slot in `demo/lab/media.json` has a `wavespeed_prompt` field (several still empty); swap images under the same slot ids and set `provenance: generated`. C1 candidate portraits go first.
-11. **How to start the demo:**
-    - tap the Dubai-io logo (top-left on Home, or in the chat header), or
-    - Me → "Replay landing and Wi-Fi sign-in", or
-    - add `#wifi` to the link.
+- Offline API suite: 40 tests (Luna validation/scoping, action safety/durability/private sessions/memory, OAuth exchange/refresh/revocation). 11 paid golden cases remain deselected.
+- JS: 7 Luna-client + 8 recovery-state tests; existing profile suite 92 checks.
+- Chromium 390 × 844: WebGL active; slower intro exit/input, whole provider cards, shared request saving/missing-field editing, same-browser chat/report refresh and no required copy/no fake Send pass. Saved-details edit/forget and Connected-account disconnect were checked with mocked responses in a fresh browser context; real unconfigured Google stays disabled. Whole provider cards reach shared preparation, and discarded drafts remain discarded. Luna browser responses were mocked; the action API/store were real local code.
+- Screenshots under ignored output/playwright/: services-after.png, intro-after.png, c1-reflection-after.png, cleaning-full-cards.png, shared-request-prepared.png. Earlier official/provider-preview screenshots describe rejected flows, not current acceptance.
+- Syntax/diff checks pass. Local API is running on 8000 from the verified project venv. No permanent firewall settings changed.
 
-    A refresh skips the intro once it has been seen (stored per browser).
-12. **Untracked:** `demo/_ref/01 - Visitor onboarding/` (founder ref). Commit it with the next commit.
+## Remaining
 
-## Founder decisions and issues (end of session)
+1. Supply OAuth configuration and verify real Google consent/return/refresh/revocation on the approved origin.
+2. Connect a supported live provider adapter and approval/evidence path. OAuth alone does not provide merchant or RTA integration access. Government execution remains disabled pending a narrow validated capability.
+3. Step 03 branch 0a85715 reviewed: **edit before merge**, still unmerged. Original sandbox messages throw SecurityError at bridge.js:256; session validation is absent. Diagnostic-only browser probes also found dismissed approvals stuck and old dispatch cleanup closing newer sheets. Fix approval ownership, idempotency/error cleanup, strict entry/payload checks, confirmed area and unapproved pharmacy prices. Detailed local report/paste prompt: output/playwright/bridge-review-report.md and bridge-followup.txt.
+4. Remaining reference parity: guide/chat/approval-events/map detail/merchant screens and laundry deadline arc. C6 remains rebuild until real agentic recovery integration and phone approval.
+5. Production React + separate widget hosting, Postgres/roles/server transcript replay, SSE/outbox, persistent profiler, cross-device auth and live Google Maps. The lab's SQLite/local storage is not those production gates.
+6. iPhone review, then publish the reviewed local build. Earlier private Artifact links remain historical; nothing auto-republishes.
 
-- **Palette: cyan (picked 13 Oct).** Delete `demo/lab/home-v2-chromatic.html` and the `chromatic` branches in CSS/JS when convenient; keep cyan + purple fringe only.
-- **API won't start on the founder's PC:** `ImportError: cannot import name 'ArgsKwargs' from 'pydantic_core._pydantic_core'`, with `F:\Anaconda\Lib` in the traceback while `(base)` was active.
-  - Likely cause: the venv was rebuilt or run against Anaconda's Python, while its packages were built for Python 3.13. The pydantic_core binary doesn't match.
-  - Fix:
+## Manual prompt: other LLM, step 03
 
-    ```powershell
-    conda deactivate
-    cd G:\Haitham\VsCode\contest\apps\api
-    Remove-Item -Recurse -Force .venv
-    py -3.13 -m venv .venv
-    $env:REQUESTS_CA_BUNDLE = ""
-    .\.venv\Scripts\python -m pip install -r requirements.txt
-    .\.venv\Scripts\python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
-    ```
+The founder manually pastes this; do not auto-spawn agents.
 
-  - If `py -3.13` isn't found, use `"C:\Program Files\Python313\python.exe" -m venv .venv`.
-  - Add this to `demo/run.md` once verified.
+```text
+Claim step 03 only. Use a separate checkout/worktree on feat/miniapp-bridge from redesign; never switch the main directory branch or include its uncommitted changes. Read CLAUDE.md, PLAN.md §2 and ARCHITECTURE.md §§4,6. Write only demo/lab/offers.js, demo/lab/miniapps/*.html, your bridge/catalog module/fixtures and bridge tests.
+
+Keep initOffers/wireOffers/openOffers/closeOffers, SERVICE_GROUPS and data-open/data-visit hooks compatible. The main agent owns app/chat/page/workflow/API/account/memory/docs files. Current host wrappers provide uniform full-card Open and shared preparation; coordinate their later removal/migration when reviewing your diff.
+
+Implement host-owned published prices for EVERY template, strict payload/action/source/session validation, duplicate approval protection and honest lifecycle transitions. Business scope remains order.request only, sandbox allow-scripts without allow-same-origin. No OAuth tokens/new auth business scopes.
+
+No secrets/memory reads, live/paid calls, publication, merge or commits of the main agent's changes. Return branch/base, claimed files and bounded approach first, then progress, concrete diff/commits, offline validation and limitations. We decide merge/edit/cancel after review.
+```
+
+A test cleanup deletion was rejected by automatic approval review because it could remove saved data. It was not performed; final memory checks used an isolated browser context with mocked edits/deletions. Saved data was preserved.
+
+The fixed app viewport now uses overflow clipping where supported so focus does not scroll the whole shell; sheets retain their own scroll area. Final 390 × 844 geometry check confirms root scroll zero and a visible sheet header.
+
+## Stop handoff — 13 Oct 2026
+
+Founder requested stop after step 03 review. No merge, cherry-pick or implementation edits were made to the delegated branch or its nine files in the primary workspace. Primary redesign changes remain uncommitted.
+
+Reviewed candidate: feat/miniapp-bridge, commit 0a85715cde317542d9c2596d30b30a9138b0e0ae, base 77715514022b02b91a279cc9aceecb2fa2181e97; isolated worktree C:/Users/h.ibrahim/AppData/Local/Temp/opencode/dubaiio-bridge. Decision: edit before merge.
+
+Next owner: founder manually sends output/playwright/bridge-followup.txt to the other LLM. It fixes its own branch and returns a new commit/report; main agent then re-reviews against current host and wires reset/shared-workflow integration. Do not merge the current candidate. Original real sandbox fails at bridge.js:256 (cross-origin WindowProxy property access); deeper approval findings were tested only after bypassing that one read in temporary HTTP responses, not by editing either branch. Existing 241 bridge and 92 profile checks pass despite those bugs.
+
+Evidence: output/playwright/bridge-review-report.md, bridge-dismiss-retry.png, bridge-late-close.png. Local review server/browser are being closed at stop; main API on port 8000 is left running. No live/paid/provider/OAuth calls or saved-data deletions were performed in this review. OAuth credentials, live adapters, iPhone review and publication remain pending as listed above.

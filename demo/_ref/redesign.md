@@ -1,5 +1,14 @@
 # Dubai-io: redesign prompt series (GPT Image 2)
 
+**Historical screen prompts, with current overrides (13 Oct).** Use these for visual anatomy and exact copy only where consistent with `CLAUDE.md` and `PLAN.md`. Supplied prompt blocks below are preserved; they do not override newer founder decisions.
+
+- Current tabs: **io · Maps · Services · Me**; Civic remains LATER. Idle has one bottom composer above the tab bar; active chat hides the bar. Top-search/no-idle-composer instructions below are superseded (`PLAN.md` §6.4).
+- Home is the cyan coverflow stage. The `01-home.png` hero/card layout now belongs at the top of Services (`PLAN.md` §7.5); remove duplicate assistant inputs.
+- Cyan is selected. Every stage card uses C1’s preferred laser/chromatic reflection at 70% of its previous strength; onboarding card movement must be slower and smoother (`PLAN.md` §7.6).
+- Community/tickets and extra reference bridge scopes are unresolved scope candidates, not automatic build requirements (`PLAN.md` §2). Order requests remain the only approved business bridge action.
+- References are not evidence of completed functionality. C6 recovery still needs the driver/report sheets and cash/card paths; compare each approved surface at 390 px. Arabic RTL and dark-mode implementation are not approved by the retouch table alone.
+
+
 One chat, in order. The shape is always the same: **context first, then a screen, then the popups that
 belong to that screen, then the next screen.** Same chat = same style, so later prompts just say "same
 app, same style".

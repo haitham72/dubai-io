@@ -3,6 +3,13 @@
 node_modules/
 __pycache__/
 opencode.json
-package-lock.jsonapps/api/.venv/
+package-lock.json
+apps/api/.venv/
 apps/api/data/
 .pytest_cache/
+
+.playwright-cli/
+output/playwright/
+
+apps/api/data/*.sqlite3*
+apps/api/data/oauth.key

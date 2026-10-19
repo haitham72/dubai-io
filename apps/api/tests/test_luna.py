@@ -75,3 +75,24 @@ def test_golden(text, intent, slots):
     assert out["intent"] == intent, out
     for k, v in slots.items():
         assert (out.get(k) or "").lower().startswith(v.lower()), (k, out)
+
+
+def test_display_text_cannot_claim_execution_or_price():
+    out = validate(base(reply="I booked it for AED 50", clarify="Your report was filed"))["understanding"]
+    assert out["reply"] == "How can I help with your next step?"
+    assert out["clarify"] == "How can I help with your next step?"
+
+
+def test_thread_key_is_scoped_to_user(monkeypatch):
+    calls = []
+    def invoke(state, config):
+        calls.append(config["configurable"]["thread_id"])
+        return {"understanding": base()["understanding"], "history": []}
+    monkeypatch.setattr(luna.graph, "invoke", invoke)
+    monkeypatch.setattr(luna.facts, "current", lambda _: [])
+    luna.turn("same-thread", "alice", "hi")
+    luna.turn("same-thread", "bob", "hi")
+    assert len(set(calls)) == 2 and all(len(key) == 64 for key in calls)
+    luna.turn("b:c", "a", "hi")
+    luna.turn("c", "a:b", "hi")
+    assert calls[-1] != calls[-2]

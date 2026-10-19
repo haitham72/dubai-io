@@ -11,12 +11,6 @@ export const PALETTES = {
     chroma: 0,
     bg: '#F3F6F8',
   },
-  chromatic: {
-    ramp: ['#0E0730', '#3A16B0', '#C0168C', '#FF6B3D', '#FFEBDD'],
-    fringe: ['#20D3FF', '#9B5CFF', '#FF4FA3'],
-    chroma: 1,
-    bg: '#F4F3F7',
-  },
 };
 
 // Card kinds map to shader variants in shaders.js.
@@ -51,7 +45,7 @@ export const CASES = [
   { id: 'C6', kind: 'photo', img: 'media/guide-taxi.jpg', eyebrow: 'Try · C6', title: '“I lost my wallet.”',
     body: 'Prepares the lost-and-found report from what you told me and asks only for what is missing. Never “filed”.',
     meta: ['[Recovery]', '[built]'], ask: 'I lost my wallet', caption: 'Built in the lab. Tap to try it.' },
-  { id: 'C1', kind: 'photo', holo: 0.55, img: 'media/home.jpg', category: 'home-help',
+  { id: 'C1', kind: 'photo', img: 'media/home.jpg', category: 'home-help',
     eyebrow: 'Try · C1', title: '“A new maid with visa, before 1 Nov.”',
     body: 'Three agents check maids, offices and visa services at once. From AED 7,443 (demo).',
     meta: ['[3 lanes]', '[idea]'], caption: 'Best price wears foil. Fastest wears aluminium.' },

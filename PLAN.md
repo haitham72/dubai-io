@@ -1,7 +1,7 @@
 # Dubai-io — Plan
 
-**Updated:** 13 Oct 2026 (late) · **Status:** **Plan v1.5** · handoff: `demo/_ref/handoff.md` (Home v2 + temporal profiler + services loop in §7) · **Owner:** Haitham
-This is the single plan. Scope, demo and phases live here, and nowhere else. (Decision log lives on `main`; `build` is code-only.)
+**Updated:** 13 Oct 2026 (step 00 alignment + visual feedback) · **Status:** **Plan v1.6** · handoff: `demo/_ref/handoff.md` (Home v2 + temporal profiler + services loop in §7) · **Owner:** Haitham
+This is the single plan. Scope, demo and phases live here, and nowhere else. (Decision log lives on `main`; current working branch is `redesign`.)
 **Founder lock (10 Oct, final): bidding/quote is ABSOLUTELY REJECTED. Every service opens as a modal HTML mini-app (services / shops / stores / rides) with published fixed prices.**
 **Founder decision (12 Oct): the Resident/VIP arc (items 10–11) moves from LATER to IN, built after the visitor redesign. Providers answer slot/availability requests at published fixed prices. The quote lock above is unchanged.**
 **Founder decisions (13 Oct):**
@@ -9,6 +9,9 @@ This is the single plan. Scope, demo and phases live here, and nowhere else. (De
 - **Home v2** (shader coverflow, soft reveal) and the universal **Services surface** come first.
 - Service cases live in `demo/_ref/services/cases.md`, are picked one at a time (§7), and are ~1% of the app; the generic engine covers the rest.
 - The quote lock is unchanged.
+- **Palette: cyan selected.** C1’s laser/chromatic reflection is the approved style for every stage card, at 70% of its previous intensity. This does not select the chromatic page/theme.
+
+**Current implementation:** Phase 0 is complete. The active frontend is `demo/lab/`; `demo/` remains the legacy v1 prototype. `apps/api/` implements Luna, JSON stated-fact memory and Google Places/Routes proxies. The lab chat is still the keyword router. `apps/web`, `apps/widgets`, `packages/contracts`, Postgres and the persistent temporal profiler are not built; no Phase 1–4 gate is claimed complete.
 
 ---
 
@@ -47,6 +50,8 @@ Contest: Create AI Agents Championship, category **Best Personal AI Agent**. Off
 ### LATER (vision, not in the contest build)
 
 Civic RAG with citations · resident bills and Salik/DEWA displays · community · background geofencing · ticket wallet · payments · media memory · Arabic RTL UI (Arabic answers are fine) · native app (Swift; ShipSwift originals, Liquid Glass, haptics, share extension) · live AR try-on · marketplace feeds via affiliate APIs.
+
+**Scope conflicts to resolve before porting affected flows:** §6 and `redesign.md` contain historical community and ticket fixtures, although community and ticket wallet remain LATER here. Their presence in v1 does not approve production features or make them parity gates. Likewise, reference scopes `auth.signin`, `community.join_request`, `purchase.report` and `policy.select` are not approved additions to the order-only business bridge. Resolve these in this scope section before implementing them.
 
 ### NEVER
 
@@ -98,7 +103,7 @@ Gates are binary. Dates are relative until the contest deadline is verified; the
 **Carried into Phase 1 (non-blocking):**
 - [x] ✅ Forum/first-hand research DONE (on `main`). Do NOT re-run.
 - [ ] Verify contest rules on the official portal ONLY (`dubaichamberdigital.com`, Dubai Media Office / WAM): deadline (Dec 2026 vs Jan 2027 conflict), artifacts (prototype + deck + video + summary report?), judging criteria (no rubric published), IP (non-exclusive licence claim), eligibility (global vs licence), physical attendance + security. Then re-anchor phase dates
-- [ ] Update the sketch to arc v2: deadline-conflict branch, time-aware ride reasoning, RTA fields in the lost-item report, cyan host strip, remove Civic tab, compact backstage, "Scripted demo" label
+- [ ] Complete lab parity with arc v2: deadline-conflict branch, time-aware ride reasoning, full recovery sheets and RTA fields, cyan host strip, compact backstage and "Scripted demo" label. V1 implementations and lab stubs are not completion of this gate.
 - [ ] Replace placeholder maps with arrival-side maps
 - [ ] Optional validation: visitor interviews and laundry tabletop (script on `main`)
 
@@ -151,11 +156,13 @@ Rehearse 10×, record a fallback video, deck, deploy, small user test, honest me
 ### 6.1 Definition of done
 
 - Runs in **iPhone Safari at 390 × 844**, and Add to Home Screen works. No native iOS build. The only server is the small Luna API (6.9); the app still works without it (mock fallback).
-- Same story as §3 (arrival → laundry deadline → taxi memory), plus Luna rows (community, shopping), the waypoint guide and the lost-item cash/card paths, all in the redesigned look.
+- Same story as §3 (arrival → laundry deadline → taxi memory), the waypoint guide and the lost-item cash/card paths, all in the redesigned look. Historical community/ticket flows require the scope resolution in §2 before becoming required parity work.
 - Every rule in `CLAUDE.md` still holds (truth in status, fixed prices, sandbox, approvals, no government execution, no quotes).
 - Gates in 6.6 pass, with screenshots next to the reference images.
 
 ### 6.2 Structure
+
+**Target structure, not the current tree.** Only `apps/api/` exists today; the lab remains the frontend. Historical community/ticket/faith entries below are reference candidates, subject to §2 scope. Provider widget bundles use `apps/widgets` on a separate origin (§6 of `ARCHITECTURE.md`); host-owned assets stay in `public/`.
 
 ```
 apps/web/
@@ -172,7 +179,7 @@ apps/web/
   src/components/       AppBar, AISearch, GlassTabBar, Composer, Bubble, Card, Chip, Pill, StatusTag, Sheet, Banner
   src/screens/          io (Home), Maps, Services, Me, Backstage
   src/flows/            journey, rows, join, purchase, recovery, triggers, laundry, tickets, faith
-apps/api/               Luna only: FastAPI + LangGraph (6.9). Not needed to run the web app
+apps/api/               existing Luna + stated-fact memory + Places/Routes proxies (6.9)
 ```
 
 Dependencies (web): `react`, `react-dom`, `vite`, `typescript`, `vitest`, `@playwright/test`, a spring/gesture lib (`framer-motion` or `@use-gesture/react` + `react-spring`), a tiny WebGL helper (`ogl`, or raw WebGL2), founder-supplied effect libraries `border-beam`, `voice-glow`, `thinking-orbs`, plus `metal-fx` (silver only), `img-fx` (+`three`, lazy-loaded) and `liquid-gooey` (all npm-verified, MIT; pin exact versions, see `demo/_ref/visuals-libraries.md`), `zustand` optional. Plain CSS (CSS modules). No UI kit.
@@ -181,19 +188,19 @@ Dependencies (web): `react`, `react-dom`, `vite`, `typescript`, `vitest`, `@play
 
 | Screen / state | Reference | Build as |
 |---|---|---|
-| Home, idle | `01-home.png`, left half of `01a-chat-takeover.png` | AISearch top, GlassTabBar, HeroCard, QuestionCard, TryAsking |
+| Home / Services | `01-home.png`, left half of `01a-chat-takeover.png` | Home uses the cyan coverflow (§7.2); `01-home.png` hero/card layout becomes the top of Services (§7.5). One bottom composer |
 | Chat active | right half of `01a-chat-takeover.png`, `02-rows.png` | compact header + back chevron, Composer replaces the tab bar, LunaChip, RowsCard |
 | Guide (built-in mini-app) | `01c-guide-states.png`; spec only: prompt 1b in `redesign.md` (no image for stop 1) | `dxb-guide.html`, restyled; stop media from `public/maps` |
-| Partner sheet | `02a-partner-sheet.png` | `community.html` (sign-in then signed in) |
-| Shop sheet | no image; derive from `02a` + prompt 2b | `shop.html` |
+| Partner sheet (historical community fixture) | `02a-partner-sheet.png` | visual sheet anatomy only until §2 scope/bridge decision |
+| Shop sheet | no image; derive from `02a` + prompt 2b | fixed-order mini-app; historical `purchase.report` scope needs §2 decision |
 | Approval + events | `03-approve-events.png` | ApprovalCard, StatusTrack, UpdateBubble, CalendarCard |
 | Banner | `03a-banner.png` (Home behind it must show the glass bar) | Banner |
 | Lost item | `04-lost-item.png`, `04a-driver-rta.png` | RecoveryFlow, DriverSheet, ReportSheet |
-| Services / Me | `05-services-me.png` (add AI search + glass bar per 6.4) | ServicesScreen, MeScreen |
+| Services / Me | `05-services-me.png` (apply current bottom-composer navigation in 6.4) | ServicesScreen, MeScreen |
 | Merchant + onboarding | `05a-merchant-onboarding.png` | merchant mini-app, shop review sheet |
 | Backstage (≥ 1100 px) | `06-backstage.png` | inbox, trigger panel, tools status, event log |
 | Arrival notification | `x-arrival-notification.png` | in-app Banner on first load (web cannot do Live Activities) |
-| First-run tour | `x-home-onboarding.png` | 3-step coach marks over the AI search |
+| First-run tour | `x-home-onboarding.png` | coach-mark hierarchy adapted to the current bottom composer |
 | Chat effects: Beam, Voice, Orb + ShipSwift `SWMetal` shader ideas | `demo/_ref/visuals-libraries.md` (prompts copied as supplied; our notes in Part 3) | Composer `BorderBeam` / `VoiceBeam`, bot avatar `ThinkingOrb`, GLSL ideas for L3 |
 | Dark theme + map pin + permission card | `x-location-geofence-darkmode.jpg` (Apple Find My / Maps screenshot, **style reference only**, third-party names must not appear) | dark token set (`prefers-color-scheme` + manual), guide lightbox pin with an "approximate" ring, Me → Permissions "Notifications are off" card, detail-sheet pattern (title, status, two actions) |
 | Resident/VIP | R-series prompts, no images yet | after visitor parity |
@@ -204,27 +211,27 @@ Ignore `demo/_ref/_rejected/`. Fix on the way: `06` shows the real brand "Carref
 
 ### 6.4 Navigation model (decided)
 
-1. **Idle (13 Oct):** brand row on top, the **composer docked at the bottom** above a floating Liquid Glass tab bar **io · Maps · Services · Me** (Civic removed from the nav; civic stays LATER). Asking flies the Home cards up into the full-screen map (§7.3).
-2. **Chat active** (typed, or a suggestion tapped): compact header (back chevron, "Dubai-io", search icon); the glass **Composer replaces** the tab bar. Never show both.
+1. **Idle (13 Oct):** brand row on top, the **composer docked at the bottom** above a floating Liquid Glass tab bar **io · Maps · Services · Me** (Civic removed from the nav; civic stays LATER). Asking lifts the Home cards into chat; place results can then open Maps (§7.3).
+2. **Chat active** (typed, or a suggestion tapped): compact header (back chevron, "Dubai-io", search icon); the glass **Composer replaces** the tab bar. Never show the tab bar during active chat. Idle deliberately has the composer above the tab bar.
 3. **Back chevron:** returns to idle.
 4. Sheets cover the bar; banners slide over the top.
-5. Companion keeps its label and the orb icon (as in the references). Rename to "Home" only if the founder says so.
-6. Home chrome follows `01a` (left); the skyline art lives inside the hero card, not as a full-bleed background.
+5. Tab labels are **io · Maps · Services · Me**, with the orb on io. Older Companion/Civic labels in image prompts are superseded.
+6. Home uses the coverflow stage (§7.2). The older hero/card layout from `01-home.png` belongs at the top of Services (§7.5).
 
 ### 6.5 Port the logic, don't redesign it
 
-Source of truth for behaviour is `demo/app.js`, `demo/data.js`, `demo/luna.js`. Port as typed modules:
+Current shell/flows live in `demo/lab/`. Use `demo/app.js`, `demo/data.js`, `demo/luna.js` as legacy behaviour references for missing approved flows, especially laundry and recovery. Port as typed modules only after lab review:
 
 | Behaviour | Demo source | Notes |
 |---|---|---|
 | Journey: setStep, confirmWaypoint, I'm lost | `app.js` journey section | state is host-owned, pushed down to the iframe |
-| Luna first (API, then mock), regex router as fallback | `luna.js`, composer `onsubmit` | keep confidence ≥ 0.6, 22 fallback cards; log `via: langgraph \| mock-luna` |
-| Rows: community + shopping, sign-in, join approval, purchase event → calendar | `providerRows`, `joinApproval`, `purchaseReported`, `signIn` | prices `AED x (demo)`; dedupe by order ref |
+| Luna API integration (local wiring implemented) | `lab/chat.js` router + `apps/api/app/luna/schema.py` | map the actual contract in 6.9; keep confidence ≥ 0.6; distinguish `langgraph` from `lab router` |
+| Historical community + shopping rows | `providerRows`, `joinApproval`, `purchaseReported`, `signIn` | subject to §2 scope and bridge decisions; not automatic parity requirements |
 | Approval + fixed-order machine | `approval`, `createRequest`, `transition`, `FLOW`/`ALLOWED` | single approval, idempotent |
 | Laundry deadline loop | `laundryDeadline`, `laundryMerchantFlow` | no re-quote |
 | Recovery (card + cash, RTA report) | `recovery`, `traceByCard`, `traceByCash`, `rtaReport` | epoch guard; cash outcome alternates |
 | Triggers + dedupe 2500 ms | `TRIGGERS`, `fireTrigger` | same-window messages only |
-| Faith, parking, photo search, departure, day plan, tickets, onboarding sim | matching sections | keep fixtures |
+| Other legacy fixtures: faith, parking, photo search, departure, day plan, tickets, onboarding sim | matching sections | port only approved scope; fixture presence does not promote LATER features |
 
 Bridge: scopes in each manifest AND a handler in the host table; unknown or out-of-scope kinds log `BLOCKED` and reply `host.error`. Sandbox stays `allow-scripts` only; no `allow-same-origin`.
 
@@ -234,21 +241,21 @@ Bridge: scopes in each manifest AND a handler in the host table; unknown or out-
 |---|---|---|
 | 0 | **Home v2 lab → picked shell** (§7.2) ported in: scaffold, tokens, coverflow stage + shaders, soft reveal, "You, over time", Services surface | founder picked the shell on the iPhone; aura + glow visible; fallbacks work |
 | P | **`apps/api` scaffold + temporal profiler** (`ARCHITECTURE.md §12`) before any other backend feature | golden timelines, property tests and tier-leak test pass; hot path p95 ≤ 300 ms |
-| 1 | Chat takeover + **motion L2 (gesture + spring)**, Luna mock, rows, partner + shop sheets | composer replaces bar with a continuous, interruptible transition; rows match `02`; sign-in → signed in; purchase → calendar card |
-| 1b | **Luna API** (`apps/api`, LangGraph) behind `LUNA.understand` | golden set passes; web works with the API off; `via` shows in the log |
+| 1 | Chat takeover + **motion L2 (gesture + spring)**, lab router, approved provider rows and order sheets | composer replaces bar continuously; rows match `02`; any extra sign-in/purchase scope waits for §2 decision |
+| 1b | **Wire the existing Luna API** (`apps/api`, LangGraph) using the 6.9 contract | golden set passes; web works with the API off; source shows in the log |
 | 2 | Guide, approvals + events, banner | six waypoints any order; belt saved; approval lists shared / never shared |
 | 3 | Recovery, Services / Me, merchant + onboarding | cash and card paths end at `READY` or `PREPARED_NOT_FILED`; order accepted → ready-time |
 | 4 | Backstage, tour, retouch list | triggers fire once; log filters |
 | 5 | Resident/VIP arc (R-series) | Gate R in §4 |
 | loop | **Next picked case** from `demo/_ref/services/cases.md` (§7.4) | that case's checks in `cases.md` |
 
-Audits at every gate: bridge audit `rg "quote\.|QUOTED|cart\.request|rx\.request|pickup\.request|payment\.charge"` returns nothing · no `allow-same-origin` · every price says `(demo)` · status words only from the CLAUDE.md list · no real brands.
+Audits at every gate: bridge audit `rg "quote\.|QUOTED|cart\.request|rx\.request|pickup\.request|payment\.charge"` returns nothing · no `allow-same-origin` · every price says `(demo)` · status codes follow `ARCHITECTURE.md` §4; success words follow CLAUDE.md rule 1 · no real brands.
 
 ### 6.7 iPhone requirements
 
 `viewport-fit=cover` and `env(safe-area-inset-*)` · `100dvh`, never `100vh` · `-webkit-backdrop-filter` beside `backdrop-filter` · inputs ≥ 16 px (no zoom) · `overscroll-behavior: none` on the shell · 44 px targets · no hover-only affordances · live compass needs HTTPS and a tap (`DeviceOrientationEvent.requestPermission`), so fall back to the manual bearing.
 
-View it: `cd apps/web && npm run dev -- --host`, then `http://10.5.3.228:5173` on the iPhone (same Wi-Fi; allow the Windows firewall prompt), then Share → Add to Home Screen. HTTPS (tunnel or deploy) only when testing the compass or sharing a link.
+View it: `cd apps/web && npm run dev -- --host`, then `http://<pc-ip>:5173` on the iPhone (same Wi-Fi; allow the Windows firewall prompt), then Share → Add to Home Screen. HTTPS (tunnel or deploy) only when testing the compass or sharing a link.
 
 ### 6.8 Motion (Home): all three levels (founder: "use all")
 
@@ -262,27 +269,30 @@ Goal: scrolling and swiping Home feels fluid, with content coming into place und
 
 Constraints: 60 fps target on iPhone 12 or newer; a single canvas; text contrast stays AA over the field (keep it low-contrast under cards); honour `prefers-reduced-motion` (no parallax, no ripple, static gradient); fall back to a static gradient if WebGL2 is missing or the frame budget is blown; no layout-thrashing reads in scroll handlers; `will-change` only during motion. Add a `?fps` overlay for on-device checks (there is no Mac Inspector assumed). The glass bar keeps `backdrop-filter` as its fallback look.
 
-**Effect libraries (founder-supplied, copied as-is in `demo/_ref/visuals-libraries.md`):** `BorderBeam` (composer / goal-plan card while working), `VoiceBeam` + `useMicrophone` (mic button; needs HTTPS and a tap, so keep a typed fallback), `ThinkingOrb` (bot avatar and inline "working", replacing typing dots). Rules: palette locked (use `ocean` / `mono` or token `colors`), one glow at a time, pause under reduced motion, never imply a result. ShipSwift `SWMetal` is a learning source for L3 shader techniques only (re-implement in GLSL; check its licence before reusing code).
+**Effect libraries (founder-supplied, copied as-is in `demo/_ref/visuals-libraries.md`):** `BorderBeam` (composer / goal-plan card while working), `VoiceBeam` + `useMicrophone` (mic button; needs HTTPS and a tap, so keep a typed fallback), `ThinkingOrb` (bot avatar and inline "working", replacing typing dots). Rules: palette locked (use `ocean` / `mono` or token `colors`), one glow at a time, pause under reduced motion, never imply a result. ShipSwift `SWMetal` is the shader reference; the later MIT/notice note in `demo/_ref/visuals-libraries.md` supersedes its earlier do-not-copy note.
 
 ### 6.9 Luna service (LangGraph, `apps/api`)
 
-Purpose: real user-understanding behind `LUNA.understand`. The web app is still a demo that works offline.
+Purpose: real user-understanding behind the lab router. The backend and local frontend wiring are implemented, with serial turns and an explicit 15 s fallback. This contract differs from the legacy `demo/luna.js` mock.
 
-- **Endpoint:** `POST /luna/understand` with `{ text, context? }` → `{ intent, category, interests[], origin, item, trace, confidence, via, matched[] }`, **the same shape as `luna.js`**. Intents are a registry allowlist (`community.find`, `shopping.buy`, `lost_item.taxi`, `none`, later the resident/VIP intents). Luna returns understanding only; no actions, no HTML, no URLs (CLAUDE.md rule 7).
-- **Graph v1:** `normalize` (language, light transliteration) → `understand` (one LLM node, structured output with a Pydantic model) → `validate` (clamp to the allowlist, drop unknown slots, set `confidence`). Specialist subgraphs and a supervisor come later (see `ARCHITECTURE.md`: read-only and propose-only, no interrupt/resume).
-- **Config:** provider and model from config (`LLM_PROVIDER`, `LUNA_MODEL`, `LUNA_EFFORT`), keys server-side only, never in the web bundle or in git; log text redacted. **Founder decision 13 Oct: OpenAI `gpt-6-luna` (high reasoning) or `gpt-6.1-sol` (medium).** Slice built in `apps/api` (LangGraph, stated-fact memory, Places/Routes proxy); golden set 11/11 on both; latency 4–9 s per turn, so streaming or a cheaper first pass is needed (see `demo/_ref/handoff.md`).
-- **Web client:** `src/luna/client.ts` tries the API (`VITE_LUNA_URL`, via the Vite dev proxy `/api` so the iPhone needs no CORS or mixed-content), waits at most 2.5 s, then uses `mock.ts`. The log shows `via: langgraph` or `mock-luna`. Same dispatch, same 0.6 threshold, regex router still behind it.
-- **Run:** `uvicorn app.main:app --host 0.0.0.0 --port 8000` in `apps/api`; Vite proxies `/api` to it.
-- **Tests:** a golden set (the 19 router routes, community/shopping/lost phrasings, typos such as `egyutians` / `taksi`, Arabic) as pytest; a contract test against the TS type. The API is optional: all web gates must pass with it off.
+- **Implemented endpoint:** `POST /api/luna/turn`, input `{ text, thread_id?, user_id? }`; text is 1–600 characters. The client must retain a stable thread id to continue a conversation; omitting it creates a new thread. `user_id` is currently caller-supplied with default `demo-user` (local demo only; auth/isolation remain planned).
+- **Output:** `intent`, `confidence`, `item`, `where_lost`, `service`, `category`, `subcategory`, `terminal`, `stated_facts`, `reply`, `clarify`, plus `via: "langgraph"`, `model`, `ms`, `remembered`, `told`, `turns`. Source: `apps/api/app/luna/schema.py` and `graph.py`. Intents: `lost_item`, `airport_guide`, `service_offers`, `places_near`, `greeting`, `smalltalk`, `unclear`.
+- **Graph:** `normalize` (whitespace/length) → `understand` (OpenAI structured output) → `validate` (intent slots, allowed subcategories, confidence gate, URL/phone stripping) → `remember` (model-extracted stated facts). Reply/status and stated-fact restrictions also exist in the prompt; deterministic enforcement is incomplete and must not be described as guaranteed.
+- **Current memory:** `InMemorySaver` per thread and `apps/api/data/memory.json` for told facts. `GET /api/memory/{user_id}` reads current facts; `DELETE /api/memory/{user_id}/{key}` removes that key from the JSON store. Same-browser plain-text chat/report continuity and durable local SQLite action drafts are implemented. Server chat persistence and the temporal profiler remain planned; full forgetting across checkpoint history is not implemented.
+- **Config:** OpenAI SDK in `apps/api/app/config.py`, using `LUNA_MODEL`, `LUNA_EFFORT`, `LUNA_TIMEOUT_S` (default 20 s). `LLM_PROVIDER` does not yet implement provider switching; `FAST_MODEL`/`FAST_EFFORT` are not a routed fast pass. Keys stay server-side. Defaults: `gpt-6-luna` / `high`; configurable alternative `gpt-6.1-sol` / `medium`. The handoff reports earlier live 11/11 runs and multi-second latency; these were not rerun during step 00.
+- **Client to build:** call the same-origin endpoint when served by the API; retain the lab router as fallback. Use the handoff’s **15 s client wait budget** initially, with a working indicator; the older 2.5 s proposal is superseded. Map API `confidence/category/subcategory` to the lab’s `conf/cat/sub`, handle all allowed intents, and prevent late replies from dispatching a second flow after fallback. Frontend cancellation alone does not cancel server work or memory writes; streaming/fast-pass behavior still needs a decision.
+- **React port later:** add a Vite `/api` proxy; no Vite client/proxy exists today. Published Artifacts remain the scripted lab.
+- **Other implemented endpoints:** `/api/health`, `/api/places/search`, `/api/route`; `/` redirects to `/lab/home-v2-cyan.html`. Live Places/map wiring remains pending.
+- **Run/tests:** see `demo/run.md`. Current offline coverage is recorded in the handoff; 11 optional live golden cases remain separate; profile JS suite: 92 checks. TS contract testing, browser parity and persistent-profiler gates are not implemented.
 
 ### 6.10 Open items (defaults apply unless the founder overrides)
 
 - Missing references: `01b-guide` (stop 1 open) and `02b-shop-sheet`: derive from `01c` and `02a`.
-- Tab label **Companion** vs **Home**: default Companion.
+- Tab labels are decided: **io · Maps · Services · Me**. Older Companion/Civic prompts are historical.
 - No motion reference exists (the founder's "Wapi" example could not be identified): build from 6.8 and review on the phone; adjust easing and stagger by eye.
 - **Dark mode:** not in the first pass. Reference captured (`x-location-geofence-darkmode.jpg`); build tokens as CSS variables so a dark set drops in at step 4 if the founder says go.
 - **Location / geofencing:** the web app has no background geofencing (CLAUDE.md rule 8) and never claims an indoor position (rule 3). Proximity scenes stay operator-fired `Demo trigger`s; an optional foreground `navigator.geolocation` button may be added behind explicit consent, labelled as approximate. The pin on any map is a place the user confirmed.
-- Out of scope here: memory persistence / checkpointer, Arabic RTL, real arrival-side maps and image licensing (retouch list in `redesign.md`).
+- Durable chat memory and the persistent temporal profiler are IN (§2, step P); the lab currently uses fixtures and the API uses JSON/in-memory stand-ins. Arabic RTL stays LATER. Arrival-side maps and image licensing remain unfinished verification tasks.
 
 ## 7. Home v2 + services loop (13 Oct)
 
@@ -292,9 +302,9 @@ Purpose: real user-understanding behind `LUNA.understand`. The web app is still 
 - **Swift later** (needs a Mac + Xcode).
 - Shaders match native (Safari runs WebGL2 on Metal). Native-only upgrades, kept for later: real Liquid Glass refraction, 120 Hz, haptics, share-sheet target, Live Activities.
 
-### 7.2 Home v2 shell (lab: `demo/lab/home-v2-cyan.html`, `home-v2-chromatic.html`)
-- **Layout:** glass AI search · **coverflow stage** · swatch rail · caption line · glass tab bar / composer. **No "Good morning {name}" + card list.**
-- **Onboarding:** soft reveal, one card at a time (blur → sharp, `img-fx` sweep).
+### 7.2 Home v2 shell (lab: `demo/lab/home-v2-cyan.html`)
+- **Layout:** brand row · **coverflow stage** · swatch rail · caption line · bottom composer above the idle glass tab bar (§6.4). **No "Good morning {name}" + card list.**
+- **Onboarding:** soft reveal, one card at a time (blur → sharp). Current lab uses its own shader sweep; `img-fx` is a React-port option. Founder feedback below requires slower, smoother card motion.
 - **"You, over time" card:** the profile with a timeline scrubber; chips glow by confidence.
 - **"Try:" cards** come from `cases.md`.
 - **Stage shader:** one WebGL2 canvas behind the DOM cards.
@@ -309,11 +319,11 @@ Purpose: real user-understanding behind `LUNA.understand`. The web app is still 
   - LiquidChrome: totals
   - `metal-fx` silver on the one primary CTA
   - One glow at a time.
-- **Palette:** two lab pages, cyan+purple vs chromatic (chromatic only inside shader media). The founder picks; if chromatic wins, the CLAUDE.md palette line is updated.
-- **Dev flags:** `?tune` · `?fps` · `?scene=<case>` · `?asof=<iso>`.
+- **Palette:** cyan selected on 13 Oct, with the approved purple fringe. The chromatic page/branches remain only until cleanup. C1’s reflection style is approved on all stage cards at 70% of its former `0.55` strength (`0.385`); keep the cyan theme.
+- **Implemented flags:** `?tune`, `?fps`, `?nogl`, `?intro`, `?wifi`, `?services`, `?maps`, `?guide`, `?profile` (or dot-separated hash flags). `?scene=<case>` and `?asof=<iso>` are planned; the current lab does not parse their values.
 
 ### 7.3 Services surface (universal; from the pets ref's app style)
-- **Category registry** is data (`demo/lab/fixtures/categories.json` → `registry.categories`): id, group `shops|service`, label, glyph, subcategories, sources (Places types / partners), answer types, linked case. A new category is a row, not code.
+- **Current category registry:** `CATEGORIES` in `demo/lab/data.js`; competing service/provider data is `SERVICE_GROUPS` in `demo/lab/offers.js`. `fixtures/categories.json` does not exist. Planned `registry.categories` fields: id, group `shops|service`, label, glyph, subcategories, sources, answer types, linked case. Add categories as data rows and match their `keywords`/`subKeys` in the current router; new answer types/actions may still need code or a plan change.
 - **Surface:** glass category menu (All + categories + subcategories, searchable) · map ↔ list toggle (glyph pins / photo tiles) · one bottom sheet for any place.
   - The sheet shows: photo, name, category chip, ★ · Google, distance estimate, "Partner (demo)".
   - Its actions depend on what the provider supports: Directions / Call / Book / Order / Open app.
@@ -323,9 +333,9 @@ Purpose: real user-understanding behind `LUNA.understand`. The web app is still 
 ### 7.4 The loop
 | Step | Who | What | Done when |
 |---|---|---|---|
-| 1 Pick shell | Founder | Opens both lab Artifacts on the iPhone | Palette recorded |
+| 1 Pick shell | Founder | Cyan selected on 13 Oct; review remaining motion/reference details on the iPhone | Palette recorded; remaining UI notes logged |
 | 2 Pick next case | Founder | Claude asks with `idea` / `rebuild` cases from `demo/_ref/services/cases.md` | `picked` |
-| 3 Build | Claude | `?scene=<id>`, media, episodes → profile, Artifact republished, audits | `built`, link sent |
+| 3 Build | Claude | implemented lab flow flags (scene IDs remain planned), media, episodes → profile, Artifact republished, audits | `built`, link sent |
 | 4 Review | Founder | On the iPhone; notes by message or Artifact comments | Logged in the case, `in review` |
 | 5 Rebuild | Claude | Apply notes, re-audit, same link | Accept → `accepted`; else back to 4 |
 
@@ -337,6 +347,45 @@ The lab rebuilt onboarding, the chat flows and the map, but most of the approved
 
 1. **Home reference (`01-home.png`) becomes the top of Services.** Use its hero and its card layout. Swiping up reveals more services. Drop the repeated "AI assistant" boxes in that image: the one composer at the bottom is the only chat input.
 2. **Services are too verbose.** Group them logically as in `01-home.png`, with short labels and few words per card. Keep competing offers one level down.
-3. **The lost-item / transport story is lost and too rigid.** Rebuild C6 to `04-lost-item.png` and `04a-driver-rta.png`: the driver detail sheet, the RTA report sheet, and the card and cash trace paths from v1 (`demo/app.js` `recovery`, `traceByCard`, `traceByCash`, `rtaReport`). The current chat-only report is a stub.
+3. **The lost-item / transport story is lost and too rigid.** Rebuild C6 to `04-lost-item.png` and `04a-driver-rta.png`: the driver detail sheet, the RTA report sheet, and the card and cash trace paths from v1 (`demo/app.js` `recovery`, `traceByCard`, `traceByCash`, `rtaReport`). The initial chat-only report was a stub. The local draft/simulation exists (§7.7), but the founder rejected its manual handoff (§7.8); C6 is back in rebuild pending supported agentic execution and phone/reference approval.
 4. **Port the rest of the reference set** (`01a`–`06`, `x-*`) to the §6.3 reference map. Check each screen against its image with a 390 px screenshot before calling it done.
 5. **Palette: cyan, picked by the founder on 13 Oct.** Remove the chromatic page and its branches.
+
+### 7.6 Step 00 and current visual feedback
+
+- [x] Step 00: align canon, handoff, routed references and run instructions with the actual lab/API state; keep scope conflicts in §2 explicit.
+- Founder note (verbatim): "cards flying up in onbording should be smoother and slower, now they are super fast".
+- Founder reference: `Try · C1`, "A new maid with visa, before 1 Nov.", has the preferred laser/chromatic reflection. Apply the same effect to every stage card at **70% of its previous intensity**, including C1.
+- Local implementation: first intro reveal 2.0 s, subsequent reveal 1.8 s, slower onboarding spring, eased upward exit 1.5 s with 90 ms staggering; onboarding-to-chat lift 1.5 s. Reduced motion remains immediate. Reflection strength is `0.55 × 0.70 = 0.385`, with a static no-WebGL fallback.
+- Phone review remains pending; local file changes do not republish the private Artifacts.
+
+### 7.7 In-app pages and account connections (13 Oct founder decision)
+
+- Apply one navigation policy throughout the host: registered HTML pages open inside Dubai-io; ordinary external HTTPS links first open an in-app page/handoff. Back preserves host form values. Browser continuation must be explicit. Provider widget navigation still belongs to the separately owned sandbox/bridge task.
+- Local implementation: `page-host.js` owns registered pages/destinations, Back/Close and host link routing; Me and C6 use it; `provider-pages.js` gives provider cards a uniform whole-card Open action and routes website/marketplace cards into shared request preparation. `accounts.js` consumes provider metadata from `/api/auth/connections`. Google is visibly **not configured**, Connect is disabled and `/api/auth/google/start` returns 503. Other OAuth providers can join the metadata registry. The configured connector can save encrypted grants; no live grant has been created in this development session.
+- Founder answer: **Prepare the integration; OAuth client is not configured yet.** Live Google connection now needs the public client ID, web-client secret in the server environment and registered callback. Anonymous local sessions and the tested encrypted connector are implemented; production account/role handling remains pending. API keys for Places/Routes are separate from Google OAuth.
+- Reuse each provider’s authorized grants across host capabilities with appropriate consent/scopes. App sign-in does not confer third-party website cookies or authorize every merchant. Tokens never enter HTML cards, srcdoc, URLs or localStorage. Additional scopes require provider consent.
+- PWA boundary: RTA’s official page returns `X-Frame-Options: SAMEORIGIN`; its host-owned HTML guidance stays in-app, while the real portal is an explicit continuation. Google prohibits embedded user agents for OAuth: use its secure browser flow, then return to the app. An unrestricted Instagram-style website viewer requires a native browser container; native packaging remains outside the current contest PWA.
+- C6 rebuilt locally: card/cash simulated match and no-match paths, cancellable trace, fictional driver details/chat, user-supplied report facts, prepared report and the shared saved-request flow. The rejected static guidance page was removed; manual copy is secondary only. No government filing or recovered claim. Reference/phone review remains pending. Services landing rebuilt around the visitor hero, area choices, short suggestions and fixed-price categories.
+- Separate LLM owns step 03 on an isolated `feat/miniapp-bridge` branch: `offers.js`, provider mini-apps and bridge validation/tests. Do not edit or merge that work until its progress/diff/report is reviewed.
+- Local browser checks: 390 × 844 Chromium, WebGL active; nested navigation/report preservation and input during intro exit pass. iPhone review and private Artifact publication remain pending.
+
+### 7.8 Shared agentic execution requirement (founder correction, 13 Oct)
+
+- Applies to **all services**, including taxi lost items. The founder rejected the “Official guidance / Your report stays here” substitute and a required copy/paste report. §7.7 describes existing scaffolding, not acceptance of that flow.
+- Required loop: understand the outcome → reuse confirmed facts → ask only for missing data → select a registered provider capability → prepare the action → show recipient, exact data, cost and effect for approval → execute via a supported API or browser adapter → return provider evidence/reference and track the outcome in chat. HTML cards are controls for this work, not pretend provider pages.
+- Prefer provider APIs; use a registered server-side browser adapter where supported. Preserve provider-specific authorized sessions centrally. User interaction is limited to facts, consent/approval and authentication challenges the adapter cannot complete. A website opening or successful field fill is not a submitted order/report.
+- Manual copy/paste, generic guidance and fictional website previews cannot fulfill this gate. Optional manual alternatives may remain secondary, explicitly manual. When no adapter is available, report the specific blocker and retain the prepared action; never show a fake working Submit/Agent button or infer success.
+- The local shared action engine, draft persistence and anonymous sessions are implemented (§7.9); production provider adapters and cross-device account sessions remain pending. Google OAuth is still unconfigured. C6 remains a draft/simulation; its current handoff is rejected and requires another rebuild. Browser rendering checks do not establish agentic completion.
+- This direction supersedes manual handoffs as the default service product. It does not authorize an actual transaction/report in this development session. The existing government-execution restriction needs a narrowly registered, reviewed capability before any future RTA submission; other government payments/bookings are not implicitly added.
+- Build the shared executor/capability contract once, then add adapters per service. Keep the separately assigned order-only mini-app bridge isolated; no new widget auth/business scopes are implied.
+
+### 7.9 OAuth-independent implementation completed locally
+
+- `chat.js` + `luna-client.js`: real `/api/luna/turn` client on the API origin, stable thread, serialized requests, allowlist/confidence mapping, labelled 15 s fallback and stale-response/reset guards. Source/model/latency and remembered facts are visible. Browser integration was checked with an offline response; no paid model call was made.
+- `actions.py`: eight registered preparation capabilities (seven service categories + taxi report), typed user-supplied inputs, private anonymous cookie sessions, durable local SQLite drafts and events, payload-bound preparation retries, snapshot/revision/recipient/effect/price-bound approval, single dispatch, evidence gate and UNKNOWN_STATUS after ambiguous outcomes/restart. Discard is allowed only before dispatch. No live adapter is registered.
+- `service-workflow.js`: shared preparation/review UI, missing-field handling, per-provider local drafts and Me → Saved requests. Taxi Continue uses this flow. Unsupported execution reports its blocker; there is no fake Send action or required copying. Existing merchant widget orders stay in the separately owned bridge scope.
+- `session-state.js` + saved details: same-browser plain-text conversation/report continuity, restored report controls, persistent user-given details and scoped view/edit/forget API. Luna checkpoints are scoped to the cookie owner when present and to the thread. Production server transcript replay/roles are still pending.
+- `oauth.py` + `auth.py`: Google state/PKCE browser flow, exact callback/origin check, verified userinfo, encrypted grants, backend-only token reuse/scope checks, serialized refresh and revocation. Google remains unconfigured until server credentials/callback are supplied. Identity scopes alone do not authorize other Google services or merchant websites.
+- Cyan cleanup: removed the retired chromatic entry point and CSS/map/palette branches; the approved cyan reflection remains.
+- Still required: live provider/RTA adapter validation, bridge branch review, remaining reference screens, iPhone review/publication, production React/Postgres/widget hosting/SSE/outbox/profiler and cross-device auth. OAuth credentials alone do not supply merchant/RTA execution access.
