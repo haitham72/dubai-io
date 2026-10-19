@@ -11,6 +11,14 @@ This is the single plan. Scope, demo and phases live here, and nowhere else. (De
 - The quote lock is unchanged.
 - **Palette: cyan selected.** C1’s laser/chromatic reflection is the approved style for every stage card, at 70% of its previous intensity. This does not select the chromatic page/theme.
 
+**Founder decisions (19 Oct, from `docs/main-llm-adjudication.md` §9):**
+- **One order path.** Mini-app approvals go through the server action engine (`/api/actions/*`); no client-simulated merchant states. The `feat/miniapp-bridge` ownership of `offers.js` is void (branch deleted).
+- **Fine appeal removed** from the entry. Demo arc §3 stays canonical.
+- **C6 for the contest = item 8:** prefilled report + official handoff + "not recovered". §7.8's agentic-execution demand does not apply to RTA (rule 4).
+- **Sequencing:** merchant loop first; the temporal profile (item 12) is a completion gate met by the JS math + SQLite episodes/overrides. No Postgres/pgvector for the contest.
+- **Scope for the January submission:** Resident/VIP (item 10) → LATER; photo onboarding (item 9) out of the submission cut (May-final candidate); no new cases (item 11).
+- **Google:** live Routes (ride ETA) first, then an attributed Places list (never plotted on the MapLibre map). Contest portal (19 Oct): submission January 2027, prototype + deck + demo video; final first week of May 2027.
+
 **Current implementation:** Phase 0 is complete. The active frontend is `apps/web/` (with Wi-Fi captive arrival and coverflow onboarding); `apps/api/` serves `apps/web` directly at `/` and implements Luna, SQLite persistence, JSON stated-fact memory and Google Places/Routes proxies. The obsolete legacy prototype in `demo/` has been retired.
 
 ---
@@ -200,7 +208,7 @@ Dependencies (web): `react`, `react-dom`, `vite`, `typescript`, `vitest`, `@play
 | Home v2 stage | `design/references/carousel/carousel*.jpg` (aura above, glow below), `carousel/holographi ccards.mp4` (holo finishes), ShipSwift `SWMetal` (MIT) | §7.2 |
 | Services surface + cases | `docs/services/` tree (pets = surface pattern; cloth, coffee, restaurants, "Pulled data services") | §7.3, `cases.md` |
 
-Ignore `design/references/_rejected/`. Fix on the way: `06` shows the real brand "Carrefour Express" (use "Marina Fresh (demo)"); `00`'s button reads "Indoor nav" (use "Arrival guide"; no indoor-position claims).
+Rejected references were removed on 19 Oct. Fix on the way: `06` shows the real brand "Carrefour Express" (use "Marina Fresh (demo)"); `00`'s button reads "Indoor nav" (use "Arrival guide"; no indoor-position claims).
 
 ### 6.4 Navigation model (decided)
 
@@ -360,7 +368,7 @@ The web app rebuilt onboarding, the chat flows and the map, but most of the appr
 - Reuse each provider’s authorized grants across host capabilities with appropriate consent/scopes. App sign-in does not confer third-party website cookies or authorize every merchant. Tokens never enter HTML cards, srcdoc, URLs or localStorage. Additional scopes require provider consent.
 - PWA boundary: RTA’s official page returns `X-Frame-Options: SAMEORIGIN`; its host-owned HTML guidance stays in-app, while the real portal is an explicit continuation. Google prohibits embedded user agents for OAuth: use its secure browser flow, then return to the app. An unrestricted Instagram-style website viewer requires a native browser container; native packaging remains outside the current contest PWA.
 - C6 rebuilt locally: card/cash simulated match and no-match paths, cancellable trace, fictional driver details/chat, user-supplied report facts, prepared report and the shared saved-request flow. The rejected static guidance page was removed; manual copy is secondary only. No government filing or recovered claim. Reference/phone review remains pending. Services landing rebuilt around the visitor hero, area choices, short suggestions and fixed-price categories.
-- Separate LLM owns step 03 on an isolated `feat/miniapp-bridge` branch: `offers.js`, provider mini-apps and bridge validation/tests. Do not edit or merge that work until its progress/diff/report is reviewed.
+- ~~Separate LLM owns step 03 on `feat/miniapp-bridge`~~ Void (19 Oct): branch deleted; `offers.js`, mini-apps and bridge are in scope on `redesign`.
 - Local browser checks: 390 × 844 Chromium, WebGL active; nested navigation/report preservation and input during intro exit pass. iPhone review and private Artifact publication remain pending.
 
 ### 7.8 Shared agentic execution requirement (founder correction, 13 Oct)

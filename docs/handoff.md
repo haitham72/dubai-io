@@ -72,9 +72,7 @@ dubai-io/
 
 1. **Review Strategic Docs:**
    - Read [`docs/DUBAI-IO_Product_Enhancement_Review.md`](DUBAI-IO_Product_Enhancement_Review.md) (comprehensive product review) and [`docs/gemini-review.md`](gemini-review.md) (architectural recommendations).
-2. **Execute the Single Live Agentic Proof:**
-   - Connect the chat UI in `apps/web/chat.js` to `apps/api` so a natural language request (e.g. laundry pickup or barber) prompts Luna to return a structured **Approval Card**.
-   - User tapping **"Approve and send"** dispatches the request to the backstage merchant inbox (`/merchant` or backstage sheet).
-   - Simulating the merchant tapping **"Accept"** sends a verified event back to the chat thread with a confirmed status.
-3. **Stage Demo Rehearsal (4-Minute Cut):**
-   - Ensure the sequence *Wi-Fi captive sign-in → Coverflow intro → Service ask → Approval card → Merchant dispatch → Fine appeal twist (simulated)* runs smoothly within 4 minutes.
+2. **Follow the critical path in [`main-llm-adjudication.md`](main-llm-adjudication.md) §7** (approved 19 Oct; decisions in `PLAN.md` header):
+   - Luna is understanding-only; the host (not Luna) builds the approval card from the server catalog.
+   - Approve → registered adapter → merchant inbox on a second device → a **real merchant tap** changes status in chat. Never simulate the merchant.
+3. **Stage cut = `PLAN.md` §3** (arrival → laundry deadline → taxi memory). The fine appeal is removed.
