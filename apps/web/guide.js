@@ -3,6 +3,27 @@
 // "I'm lost" resumes from a landmark the user can see. The ride step reasons
 // from Dubai time and terminal (Metro serves T1 and T3, not T2).
 import { $, svg, esc, toast, openSheet, closeSheet, told, dubaiNow } from './ui.js';
+import { HOME, AREA_LABELS } from './places.js';
+
+// Public terminal kerb coordinates (approximate) and the user's stated area -> live Google drive time.
+const TERMINALS = { '1': { latitude: 25.2486, longitude: 55.3527 }, '2': { latitude: 25.2620, longitude: 55.3716 }, '3': { latitude: 25.2443, longitude: 55.3640 } };
+function destination() {
+  const area = String(told.area || HOME.label).toUpperCase();
+  const hit = AREA_LABELS.find(([name]) => area.includes(name)) || ['DUBAI MARINA', HOME.lat, HOME.lng];
+  return { label: told.area || HOME.label, latLng: { latitude: hit[1], longitude: hit[2] } };
+}
+async function liveEta() {
+  const el = $('#gEta'); if (!el) return;
+  const dest = destination();
+  try {
+    const r = await fetch('/api/route', { method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(6000),
+      body: JSON.stringify({ origin: TERMINALS[G.terminal] || TERMINALS['3'], destination: dest.latLng }) });
+    if (!r.ok) throw new Error();
+    const d = await r.json();
+    const at = new Date(d.as_of).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    if (el.isConnected) el.innerHTML = `To ${esc(dest.label)} · ~${d.minutes} min, ${d.km} km by road now <span class="src-pill">Estimate · Google, ${at}</span>`;
+  } catch { if (el.isConnected) el.textContent = `To ${dest.label} · 35–45 min typical (estimate; live time unavailable)`; }
+}
 
 const STEPS = [
   { id: 'gate', title: 'Off the plane', img: 'media/guide-gate.jpg', look: 'Gate numbers, "Arrivals" signs',
@@ -74,7 +95,7 @@ function rideHTML() {
   return `
     <p class="g-reason">${svg('clock', 'ic xs')} ${esc(reason)}</p>
     <div class="g-opts">
-      <button class="g-opt ${!metroOk ? 'best' : ''}" data-ride="taxi">${svg('taxi', 'ic')}<span><b>Official taxi rank</b><em>To Dubai Marina · 35–45 min · AED 110–150 (estimate)</em><em>Use the rank outside arrivals. Don’t take rides offered inside the hall.</em></span></button>
+      <button class="g-opt ${!metroOk ? 'best' : ''}" data-ride="taxi">${svg('taxi', 'ic')}<span><b>Official taxi rank</b><em id="gEta">To ${esc(destination().label)} · checking live drive time…</em><em>AED 110–150 (estimate)</em><em>Use the rank outside arrivals. Don’t take rides offered inside the hall.</em></span></button>
       <button class="g-opt ${metroOk ? '' : 'off'}" data-ride="metro" ${metroOk ? '' : 'aria-disabled="true"'}>${svg('train', 'ic')}<span><b>Metro, Red Line ${metroOk ? '' : '· not now'}</b><em>55–70 min · AED 7–9 + Nol card (estimate)</em><em>${noMetroHere ? 'Not at Terminal 2.' : ms.running ? `Runs until ${ms.until}. Luggage size rules apply.` : `Stopped. Opens at ${ms.opens}.`}</em></span></button>
       <button class="g-opt" data-ride="app">${svg('app', 'ic')}<span><b>Ride-hailing app</b><em>Opens your app. Dubai-io doesn’t book it.</em></span></button>
     </div>
@@ -83,6 +104,7 @@ function rideHTML() {
 }
 
 function wireRide() {
+  liveEta();
   $('#gDemo')?.addEventListener('click', () => { G.demoNight = !G.demoNight; render(); });
   document.querySelectorAll('[data-ride]').forEach(b => b.addEventListener('click', () => {
     const r = b.dataset.ride;
@@ -122,11 +144,13 @@ function finish(mode) {
 
 export function wireGuide() {
   $('#gNext').addEventListener('click', () => {
+    if (!G) return; // the guide panel is not running
     if (G.i < STEPS.length - 1) { G.i++; render(); $('#gCard').scrollTop = 0; }
     else finish('Done');
   });
   $('#gClose').addEventListener('click', () => finish(null));
   $('#gLost').addEventListener('click', () => {
+    if (!G) return;
     openSheet(`
       <h3 id="sheetTitle">What can you see right now?</h3>
       <p class="lead">Pick what’s around you and I’ll resume from there. I don’t track where you are.</p>

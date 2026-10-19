@@ -27,6 +27,15 @@ app.include_router(action_router)
 app.include_router(merchant_router)
 
 
+@app.middleware("http")
+async def revalidate_app_files(request: Request, call_next):
+    """Phones and rehearsal browsers must pick up edited modules: revalidate HTML/JS/CSS (ETag keeps it cheap)."""
+    response = await call_next(request)
+    if request.url.path.endswith((".html", ".js", ".css", "/")):
+        response.headers["Cache-Control"] = "no-cache"
+    return response
+
+
 @app.on_event("startup")
 def _merchant_pin():
     merchant_pin()  # sandbox merchant PIN: MERCHANT_PIN, or generated into data/merchant.pin
