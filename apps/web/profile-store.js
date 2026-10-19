@@ -1,7 +1,6 @@
 // Live profile inputs: episodes from what the user did on this device, plus persisted
 // Confirm / Not true / Forget. Beliefs are computed by profile.js (same math as the tests).
 // Fixture history stays visibly labelled as demo data and is never sent to the server.
-import { EPISODES } from './data.js';
 import { api } from './service-workflow.js';
 
 let live = [], overrides = {};
@@ -12,7 +11,7 @@ export async function loadProfile() {
 }
 
 export function profileEpisodes() {
-  return [...EPISODES.map(e => ({ ...e, text: e.text + ' · demo history' })), ...live.map(e => ({ ...e, text: e.text + ' · on this device' }))];
+  return live.map(e => ({ ...e, text: e.text + ' · on this device' }));
 }
 
 

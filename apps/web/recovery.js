@@ -50,7 +50,7 @@ async function chooseWhere(s, where) {
   s.fields = tripFields(told);
   const saved = s.fields.filter(f => f.value);
   if (saved.length) {
-    await ctx.say(`<div class="rec-memory"><span class="rec-pill told">You told me</span><h3>Your saved taxi details</h3><dl>${saved.map(f => `<div><dt>${esc(f.label)}</dt><dd>${esc(f.value)}</dd></div>`).join('')}</dl><div class="rec-choices">${reportButton(s)}${button('Try a simulated trace', () => paymentChoice(s), 'sm')}</div></div>`, { wide: true });
+    await ctx.say(`<div class="rec-memory"><span class="rec-pill told">You told me</span><h3>Your saved taxi details</h3><dl>${saved.map(f => `<div><dt>${esc(f.label)}</dt><dd>${esc(f.value)}</dd></div>`).join('')}</dl><div class="rec-choices">${reportButton(s)}</div></div>`, { wide: true });
   } else await paymentChoice(s);
 }
 async function paymentChoice(s) {

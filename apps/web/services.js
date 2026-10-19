@@ -31,7 +31,7 @@ export function renderServicesLanding(el, area) {
   el.innerHTML = 
     '<header class="services-brand"><div><b>Dubai<span>-io</span></b><p>Your Dubai companion</p></div><span class="visitor-pill">' + svg('person', 'ic sm') + ' Visitor</span></header>' +
     '<article class="services-hero"><div class="services-skyline"></div>' +
-      '<div class="hero-top"><span>' + svg('orb', 'ic sm') + ' Dubai-io</span><span class="pill demo">Demo data</span></div>' +
+      '<div class="hero-top"><span>' + svg('orb', 'ic sm') + ' Dubai-io</span><span class="pill demo">Sandbox partners</span></div>' +
       '<div class="hero-copy"><h1>Hello, visitor.</h1><p>One companion.<br>Your next step in Dubai.</p>' +
       '<button class="hero-guide" data-services-say="Guide me through the airport">' + svg('plane', 'ic sm') + ' Guide me to arrivals ' + svg('chev', 'ic sm') + '</button></div></article>' +
     '<section class="services-stay" aria-label="Your area"><span class="services-orb">' + svg('orb') + '</span><div><h2>Where are you staying?</h2>' +
