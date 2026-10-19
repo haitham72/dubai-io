@@ -32,6 +32,7 @@ One pass, about 20 minutes. Tick each box; write anything off in `docs/handoff.m
 
 - [ ] "Is my shirt ready?" → shows the real order card (status from the shop, not from Luna).
 - [ ] "Is the Dubai Frame open on Mondays?" → short answer with numbered, clickable sources.
+- [ ] "Coffee near me" → real Google places with photos on a Google map; tap one → Directions / Call / Website work.
 - [ ] "Find me shampoo" → 10 Amazon.ae cards with images, AED prices, ratings; tapping one opens Amazon.
 - [ ] "Apple stock price?" → price with a time and "Finnhub".
 - [ ] "How much is a Salik fine?" → refuses and points to the official portal.

@@ -97,13 +97,15 @@ One visitor: late-night DXB arrival → laundry with a deadline → taxi-memory 
 
 ## 4. Remaining
 
+0. **iOS is the next step**, blocked until the founder's final test.
 1. **Founder review** with `docs/user-app-review-guide.md`; log notes in `docs/handoff.md`.
 2. **Rehearsal:** 10 timed runs ≤ 4:00 on phone + second device; record the fallback video. Gate: 10 clean runs.
 3. **Submission package** (target Fri 18 Dec 2026): deck, demo video, hosting (or tunnel), small user test.
-4. **Reference-image parity** for the screens in `design/references/` (`docs/references/redesign.md`), checked at 390 px.
+4. **Reference-image parity:** chat surfaces done (`02-rows`, `03-approve-events`); remaining: `01-home` (Services top), `01c` guide, `04`/`04a` lost item, `05` Services/Me, `x-*`. Keep: no shadows, AI text unboxed unless dynamic output.
 5. **Keys-dependent (optional):** real flight-landed trigger, Google Maps JS + pins, Calendar via OAuth (`docs/references/api-catalog.md`).
 6. **Optional:** push-to-talk voice (transcript visible, typed fallback).
 7. **Try for one real merchant** before the May final (§5).
+8. **Founder access requests:** Amazon Associates (affiliate → Creators API); official portals (RTA, DEWA…) for API permission. Services get added where real data is blocked.
 
 ## 5. Not code, but critical
 
