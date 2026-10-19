@@ -155,7 +155,7 @@ def test_http_sessions_isolate_actions_and_fail_closed(store, monkeypatch):
     assert b.get('/api/actions/' + action['id']).status_code == 404
     assert b.get('/api/actions').json() == {"actions": []}
     assert a.post('/api/actions/' + action['id'] + '/approve', json=approval(action).model_dump(), headers={"Idempotency-Key": "approval1"}).status_code == 409
-    assert all(not c['execution_available'] for c in a.get('/api/actions/capabilities').json()['capabilities'])
+    assert {c['id'] for c in a.get('/api/actions/capabilities').json()['capabilities'] if c['execution_available']} == {'order.request'}
 
 
 def test_preparation_retry_is_idempotent_and_payload_bound(store):
