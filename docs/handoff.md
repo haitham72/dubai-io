@@ -27,14 +27,19 @@ cd apps/api
 6. **Proactive** (`proactive.py`): outbox with `dedupe_key`, consent, quiet hours 23:00–07:00 Dubai. "Remind me before it's ready" schedules a user reminder; operator triggers (`fast_forward_reminders`, `flight_landed`) arrive labelled **Demo trigger**.
 7. **Profile** (`profile.py` + `profile-store.js`): real choices become episodes (allowlisted hypotheses only; sensitive traits cannot be stored); Confirm / Not true / Forget persist; Forget unlinks evidence. Fixture history is labelled "demo history".
 8. **Google live:** Routes ETA in the ride card ("Estimate · Google"); Places "Also nearby on Google" list on offers (discovery only, attributed, no prices, no map pins).
-9. **UI rule:** no shadows; AI text plain, user turn tinted box, actions in white rounded boxes (`stage-v3.css` "clean chat").
+9. **User profile** (`user_profile.py`): `user_profile` (typed core + growing `attributes` JSON) projected from bi-temporal `profile_facts` (told or confirmed only); old `memory.json` auto-imported; `/api/profile/me`.
+10. **Luna memory:** SQLite checkpointer (threads survive restart); `order_status` intent answers from the order record; requests/incidents are not stored as facts.
+11. **Stage:** `#demo` shows the "Scripted demo" label; the taxi sheet captures the hotel area that later requests reuse.
+12. **UI rule:** no shadows; AI text plain, user turn tinted box, actions in white rounded boxes (`stage-v3.css` "clean chat").
 
 ## 3. Tests
 
-`cd apps/api; .\.venv\Scripts\python -m pytest -q tests` → **62 passed, 11 skipped** (live Luna golden set; `$env:RUN_LIVE=1` before rehearsals).
-`node apps/web/tests/{profile,recovery,luna-client}.test.mjs` → 92 + 8 + 9.
+`cd apps/api; .\.venv\Scripts\python -m pytest -q tests` → **69 passed, 11 skipped** (live Luna golden set; `$env:RUN_LIVE=1` before rehearsals).
+`node apps/web/tests/{profile,recovery,luna-client}.test.mjs` → 92 + 8 + 10.
 
 ## 4. Remaining (see adjudication §7)
+
+- APIs: `docs/references/api-catalog.md` (what is live, what needs keys, what is impossible or blocked). Native iOS: `PLAN.md` §8 (plan only).
 
 - Taxi-memory payoff check on the stage path (step 11) and the "Scripted demo" label.
 - Rehearsal: 10 timed 4:00 runs on phone + second device; record the fallback video (step 15).

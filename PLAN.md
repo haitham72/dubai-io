@@ -390,3 +390,24 @@ The web app rebuilt onboarding, the chat flows and the map, but most of the appr
 - `oauth.py` + `auth.py`: Google state/PKCE browser flow, exact callback/origin check, verified userinfo, encrypted grants, backend-only token reuse/scope checks, serialized refresh and revocation. Google remains unconfigured until server credentials/callback are supplied. Identity scopes alone do not authorize other Google services or merchant websites.
 - Cyan cleanup: removed the retired chromatic entry point and CSS/map/palette branches; the approved cyan reflection remains.
 - Still required: live provider/RTA adapter validation, bridge branch review, remaining reference screens, iPhone review/publication, production React/Postgres/widget hosting/SSE/outbox/profiler and cross-device auth. OAuth credentials alone do not supply merchant/RTA execution access.
+
+## 8. Native iOS app (LATER — plan only, founder request 19 Oct)
+
+Not built now. The web app stays the contest build; the Swift app is a second client of the same `apps/api`, so nothing in the backend is throwaway.
+
+**Stack:** SwiftUI, iOS 26 (Liquid Glass), no shadows (same UI rule as web), components from ShipSwift (`signerlabs/ShipSwift`, MIT, notice kept) and patterns from Libraries.dev (`docs/references/visuals-libraries.md`). Needs a Mac + Xcode.
+
+| Web piece today | Native equivalent |
+|---|---|
+| `/openapi.json` (FastAPI) | `swift-openapi-generator` client; contract changes start in the Pydantic models |
+| Cookie sessions | Sign in with Apple / passkeys → short-lived bearer token (backend change: token auth beside cookies) |
+| SSE (`/api/actions/{id}/stream`, `/api/messages/stream`) | `URLSession` async bytes in foreground; **APNs** pushed from the outbox when backgrounded (deduped, consented, quiet hours) |
+| Order card | Live Activity + Dynamic Island for ready time (ActivityKit), updated only by merchant events |
+| Mini-apps in sandboxed iframe | `WKWebView` with non-persistent data store, `WKContentRuleList` blocking all network, `WKScriptMessageHandler` allowlist (`order.request` only) |
+| Composer / Luna | Same `/api/luna/turn`; push-to-talk via Speech framework; App Intents ("Is my shirt ready?" → `order_status`) |
+| Profile "You, over time" | Native view over `/api/profile/me` + `/api/profile` (Confirm / Not true / Forget) |
+| Demo trigger geofence stand-in | Real region monitoring (CoreLocation) — still consent-gated; background geofencing stays LATER until approved |
+
+**Backend prerequisites (do on the web build first):** token auth + roles, APNs sender behind the outbox, Postgres when multi-device, stable versioned API (`/v1`).
+
+**Order when started:** (1) API client + auth, (2) chat + order card + SSE, (3) mini-app host in WKWebView, (4) APNs + Live Activity, (5) profile, (6) voice + App Intents. Gate: the §3 stage arc runs on device against the same API with no web view for host UI.
