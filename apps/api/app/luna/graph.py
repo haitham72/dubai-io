@@ -29,6 +29,7 @@ from openai import OpenAI
 from ..actions import engine as action_engine
 from ..config import settings
 from ..user_profile import ProfileStore
+from .research import research as run_research
 from .schema import Understanding
 
 INSTRUCTIONS = """You are Luna, the understanding step of Dubai-io, a companion app for people living in or visiting Dubai.
@@ -43,6 +44,8 @@ Intents:
 - places_near: they want a place nearby to go to. category is one of:
   pets, food, coffee, barber, home-help, laundry, clothing, fix-it. subcategory if obvious (e.g. Grooming, Vet, 24h, Restaurants).
 - order_status: they ask about an order or request they already sent (is it ready, accepted, when). Never state its status yourself; the app reads it from the order record.
+- info_question: a factual question that needs current public information (opening hours, events, what something is, weather, news). Set query to a short search query. Not for services, places to go, orders or lost items.
+- market_quote: they ask for a stock or crypto price. Set symbol to the ticker.
 - greeting, smalltalk: hello, thanks, chit-chat.
 - unclear: you cannot tell. Then ask one short clarifying question in `clarify`.
 
@@ -76,6 +79,7 @@ class LunaState(TypedDict, total=False):
     text: str
     history: Annotated[list[Turn], operator.add]
     understanding: dict
+    research: dict
     remembered: list[dict]
     ms: int
     model: str
@@ -125,8 +129,8 @@ def understand(state: LunaState) -> dict:
 def validate(state: LunaState) -> dict:
     u = dict(state["understanding"])
     # keep slots only where they belong to the intent
-    keep = {"lost_item": {"item", "where_lost"}, "airport_guide": {"terminal"}, "service_offers": {"service"}, "places_near": {"category", "subcategory"}}.get(u["intent"], set())
-    for slot in ("item", "where_lost", "service", "category", "subcategory", "terminal"):
+    keep = {"lost_item": {"item", "where_lost"}, "airport_guide": {"terminal"}, "service_offers": {"service"}, "places_near": {"category", "subcategory"}, "info_question": {"query"}, "market_quote": {"symbol"}}.get(u["intent"], set())
+    for slot in ("item", "where_lost", "service", "category", "subcategory", "terminal", "query", "symbol"):
         if slot not in keep:
             u[slot] = None
     if u.get("subcategory") and u.get("subcategory") not in ALLOWED_SUBS.get(u.get("category") or "", set()):
@@ -149,6 +153,14 @@ def remember(state: LunaState) -> dict:
     return {"remembered": saved, "history": [{"role": "user", "text": state["text"]}, {"role": "luna", "text": state["understanding"].get("reply", "")}]}
 
 
+RESEARCH = {"info_question", "market_quote"}
+
+
+def research(state: LunaState) -> dict:
+    """Tool node: web search or market quote, answered only from what the tools returned."""
+    return {"research": run_research(state["understanding"], state["text"], client())}
+
+
 def build():
     g = StateGraph(LunaState)
     g.add_node("normalize", normalize)
@@ -157,8 +169,11 @@ def build():
     g.add_node("remember", remember)
     g.add_edge(START, "normalize")
     g.add_edge("normalize", "understand")
+    g.add_node("research", research)
     g.add_edge("understand", "validate")
-    g.add_edge("validate", "remember")
+    # Route: questions that need outside facts go through the read-only tools; everything else is understanding only.
+    g.add_conditional_edges("validate", lambda s: "research" if s["understanding"]["intent"] in RESEARCH else "remember", ["research", "remember"])
+    g.add_edge("research", "remember")
     g.add_edge("remember", END)
     return g.compile(checkpointer=checkpointer())
 
@@ -187,6 +202,8 @@ def turn(thread_id: str, user_id: str, text: str) -> dict:
         "model": out.get("model"),
         "ms": out.get("ms"),
         "remembered": out.get("remembered", []),
+        **({"answer": out["research"]["answer"], "sources": out["research"]["sources"], "tool": out["research"]["tool"]}
+           if out["understanding"]["intent"] in RESEARCH and out.get("research") else {}),
         "told": facts.current(user_id),
         "turns": len(out.get("history", [])) // 2,
     }
