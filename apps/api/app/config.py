@@ -32,12 +32,12 @@ class Settings:
     google_oauth_client_secret = os.getenv("GOOGLE_OAUTH_CLIENT_SECRET", "")
     google_oauth_redirect_uri = os.getenv("GOOGLE_OAUTH_REDIRECT_URI", "")
     oauth_token_key = os.getenv("OAUTH_TOKEN_KEY", "")
-    database_url = os.getenv("DATABASE_URL", "")  # Postgres 16 + pgvector; empty -> SQLite in data/
+    database_url = os.getenv("DATABASE_URL", "").strip()  # whitespace explicitly selects SQLite on Windows
     widget_port = int(os.getenv("WIDGET_PORT", "8001"))  # separate mini-app origin; 0 disables
     merchant_pin = os.getenv("MERCHANT_PIN", "")  # sandbox merchant sign-in; generated into data/ when unset
     web_dir = ROOT / "apps" / "web"
     lab_dir = web_dir  # backward compatibility alias
-    data_dir = ROOT / "apps" / "api" / "data"
+    data_dir = Path(os.getenv("APP_DATA_DIR", str(ROOT / "apps" / "api" / "data")))
 
 
 settings = Settings()

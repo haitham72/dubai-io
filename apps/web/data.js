@@ -17,7 +17,7 @@ export const PALETTES = {
 export const ONBOARDING = [
   {
     id: 'o1', kind: 'silk', eyebrow: 'Dubai-io', title: "I'm Dubai-io.",
-    body: 'A companion for living in Dubai. I remember what matters to you, I follow through with local shops, and I show you what I am doing.',
+    body: 'Your companion for a stay in Dubai. I remember the details you share, help with your next step, and keep you in control.',
     meta: ['[Companion]', '[1 / 4]'], next: 'Next',
   },
   {
@@ -26,9 +26,9 @@ export const ONBOARDING = [
     meta: ['[You told me]', '[2 / 4]'], next: 'Next',
   },
   {
-    id: 'o3', kind: 'photo', img: 'media/home.jpg', eyebrow: 'Agents', title: 'I send agents. You approve.',
-    body: 'They check providers in parallel and come back with one thing for you to approve. Nothing leaves your phone before that.',
-    meta: ['[Parallel]', '[3 / 4]'], next: 'Next',
+    id: 'o3', kind: 'photo', img: 'media/home.jpg', eyebrow: 'Your approval', title: 'You choose what gets shared.',
+    body: 'I prepare a fixed-price request. You review the shop, total and shared details before sending. The demo uses a sandbox merchant.',
+    meta: ['[You approve]', '[3 / 4]'], next: 'Next',
   },
   {
     id: 'o4', kind: 'foil', eyebrow: 'Prices', title: 'Published prices. Never haggled.',

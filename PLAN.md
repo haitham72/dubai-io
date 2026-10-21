@@ -1,6 +1,6 @@
 # Dubai-io — Plan
 
-**Updated:** 19 Oct 2026 · **Owner:** Haitham · **Branch:** `redesign` · Status of record: `docs/handoff.md` · Review checklist: `docs/user-app-review-guide.md`
+**Updated:** 21 Oct 2026 · **Owner:** Haitham · **Branches:** `redesign` (web baseline), `ios-swift` (native work) · Status of record: `handoff.md` · Review checklist: `docs/user-app-review-guide.md`
 This is the single plan. Done work lives in git history; this file keeps locks, scope, the demo arc and what remains.
 
 ## Founder locks and decisions
@@ -10,6 +10,7 @@ This is the single plan. Done work lives in git history; this file keeps locks, 
 - **Cyan palette** with the approved purple fringe; C1 reflection on stage cards at 0.385 (13 Oct).
 - **No shadows anywhere;** chat looks like ChatGPT/Claude: plain AI text, tinted user box, white rounded action boxes (19 Oct).
 - **19 Oct:** one order path through the server engine · fine appeal removed · C6 (lost item) = prefilled report + official handoff + "not recovered" · Postgres + pgvector for the backend · Resident/VIP arc and photo onboarding out of the January submission (May-final candidates) · no new service cases before submission.
+- **21 Oct:** founder authorized starting native Swift iOS on `ios-swift` after documenting and pushing the current web baseline. Founder has a Mac and iPhone 13 Pro Max. Supabase is the selected backend direction; migration remains pending. Preserve the native in-app browser requirement, Wi-Fi/gradient onboarding and browse-to-chat transition. Other queued features remain in `docs/request-backlog.md`.
 
 ## 1. What we're building
 
@@ -43,11 +44,12 @@ Contest: Create AI Agents Championship, **Best Personal AI Agent**. Portal (chec
 | 10 | Resident/VIP arc | ⏸ LATER for January |
 | 11 | Service cases from `docs/services/cases.md` | ⏸ frozen until after submission |
 | 12 | Temporal profile, visible hypotheses, "Because…" | ✅ |
-| 13 | Services surface (registry, list, sheets) | ✅ (live Places list; Google map with pins pending) |
+| 13 | Services surface (registry, list, sheets) | ✅ (live Places and Google 2D map with pins; separate 3D demo) |
+| 14 | Native iOS client | Authorized 21 Oct; first slice on `ios-swift`, not feature parity or device acceptance |
 
 ### LATER
 
-Civic RAG with citations · resident bills and Salik/DEWA displays · community · background geofencing · ticket wallet · **payments and third-party purchasing** · media memory · Arabic RTL UI · **native iOS app** (§6) · live AR try-on · affiliate marketplace feeds.
+Civic RAG with citations · resident bills and Salik/DEWA displays · community · background geofencing · ticket wallet · **payments and third-party purchasing** · media memory · Arabic RTL UI · live AR try-on · affiliate marketplace feeds. Native iOS moved to active work on 21 Oct (§6).
 
 ### NEVER
 
@@ -97,12 +99,12 @@ One visitor: late-night DXB arrival → laundry with a deadline → taxi-memory 
 
 ## 4. Remaining
 
-0. **iOS is the next step**, blocked until the founder's final test.
-1. **Founder review** with `docs/user-app-review-guide.md`; log notes in `docs/handoff.md`.
+0. **Native iOS authorized:** snapshot/push web baseline, branch `ios-swift`, implement and compile the first slice. Detailed plan: `docs/references/ios-swift-plan.md`. Founder web review remains outstanding but no longer blocks starting native work.
+1. **Founder review** with `docs/user-app-review-guide.md`; log notes in `handoff.md`. Current assessment: `docs/review-findings-2026-10-21.md`.
 2. **Rehearsal:** 10 timed runs ≤ 4:00 on phone + second device; record the fallback video. Gate: 10 clean runs.
 3. **Submission package** (target Fri 18 Dec 2026): deck, demo video, hosting (or tunnel), small user test.
 4. **Reference-image parity:** chat surfaces done (`02-rows`, `03-approve-events`); remaining: `01-home` (Services top), `01c` guide, `04`/`04a` lost item, `05` Services/Me, `x-*`. Keep: no shadows, AI text unboxed unless dynamic output.
-5. **Keys-dependent (optional):** real flight-landed trigger, Google Maps JS + pins, Calendar via OAuth (`docs/references/api-catalog.md`).
+5. **Keys-dependent (optional):** real flight-landed trigger, interactive Google Maps JS upgrade, Calendar scopes/connector via OAuth (`docs/references/api-catalog.md`).
 6. **Optional:** push-to-talk voice (transcript visible, typed fallback).
 7. **Try for one real merchant** before the May final (§5).
 8. **Founder access requests:** Amazon Associates (affiliate → Creators API); official portals (RTA, DEWA…) for API permission. Services get added where real data is blocked.
@@ -116,18 +118,19 @@ One visitor: late-night DXB arrival → laundry with a deadline → taxi-memory 
 | Hosting + domain | submission | Local + tunnel |
 | Purchasing / payments decision | before any purchase feature | Deep-link handoff only |
 
-## 6. Native iOS app (LATER, plan only)
+## 6. Native iOS app (authorized 21 Oct)
 
-A second client of the same `apps/api`. SwiftUI, iOS 26 Liquid Glass, no shadows, components from ShipSwift (`signerlabs/ShipSwift`, MIT) and Libraries.dev patterns. Needs a Mac + Xcode.
+A second client of the same `apps/api`. SwiftUI, iOS 26 Liquid Glass, no added shadows, with ShipSwift (`signerlabs/ShipSwift`, MIT) and Libraries.dev retained as references. Use platform components first; add dependencies only when justified. The founder has a Mac + iPhone. Current authoring environment is Windows without Swift/Xcode; compilation must be verified on a macOS runner or Mac. Detailed slices, browser policy and validation gates: `docs/references/ios-swift-plan.md`.
 
 | Web today | Native |
 |---|---|
-| `/openapi.json` | `swift-openapi-generator` client |
-| Cookie sessions | Sign in with Apple / passkeys → bearer token (backend change) |
+| `/openapi.json` | Small typed URLSession client for initial endpoints; code generation can follow when contracts stabilize |
+| Cookie sessions | Existing anonymous session for first read/chat slice; Supabase Auth/bearer identity and ownership migration before production |
 | SSE streams | `URLSession` async bytes; APNs from the outbox when backgrounded |
 | Order card | Live Activity + Dynamic Island, updated only by merchant events |
 | Sandboxed mini-apps | `WKWebView`, non-persistent store, `WKContentRuleList` blocking network, `order.request`-only message handler |
 | Luna | Same API; Speech framework push-to-talk; App Intents ("Is my shirt ready?") |
 | Profile | Native view over `/api/profile/me` |
+| Third-party links | Safari browsing sheet; dedicated authentication session for sign-in; custom WebKit only when needed |
 
-Backend first: token auth + roles, APNs sender behind the outbox, versioned API. Build order: API client + auth → chat + order card → mini-app host → APNs + Live Activity → profile → voice + App Intents. Gate: the §3 arc runs on device.
+Build order: typed API/session foundation + native onboarding/browse/chat/discovery/browser → production auth/roles and migration → approved mini-app/order/SSE parity → APNs/Live Activity → voice/App Intents. The first slice does not pretend to implement merchant execution or account migration. Full parity gate remains the §3 arc on the founder's iPhone with provider evidence and explicit approvals.

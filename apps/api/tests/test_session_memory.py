@@ -43,3 +43,22 @@ def test_luna_uses_cookie_owner_instead_of_supplied_user_id(clients,monkeypatch)
     for client in (a,b):
         assert client.post('/api/luna/turn',json={'text':'hi','thread_id':'shared','user_id':'someone-else'}).status_code==200
     assert [c[1] for c in calls]==[first,second]
+
+
+def test_legacy_memory_cannot_read_or_delete_another_session(clients):
+    a, b = clients
+    assert a.get('/api/memory/demo-user').status_code == 401
+    owner = a.get('/api/session').json()['user_id']
+    b.get('/api/session')
+    a.put('/api/session/memory/area', json={'value': 'JLT'})
+    assert b.get(f'/api/memory/{owner}').status_code == 404
+    assert b.delete(f'/api/memory/{owner}/area').status_code == 404
+    assert a.get(f'/api/memory/{owner}').json()['told'][0]['value'] == 'JLT'
+    assert a.delete(f'/api/memory/{owner}/area').json() == {'forgotten': 1}
+
+
+def test_luna_rejects_client_supplied_identity_without_session(clients, monkeypatch):
+    a, _ = clients
+    monkeypatch.setattr(main.settings, 'openai_api_key', 'offline-test-key')
+    monkeypatch.setattr(main.luna, 'turn', lambda *args: pytest.fail('unauthenticated turn executed'))
+    assert a.post('/api/luna/turn', json={'text': 'hi', 'user_id': 'victim'}).status_code == 401

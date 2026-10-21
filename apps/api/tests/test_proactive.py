@@ -17,6 +17,7 @@ def world(tmp_path, monkeypatch):
     monkeypatch.setattr(merchant, "_pin", "246810")
     now = {"t": datetime(2026, 10, 19, 21, 0, tzinfo=proactive.DUBAI)}
     monkeypatch.setattr(proactive, "clock", lambda: now["t"])
+    monkeypatch.setattr(actions, "now", lambda: now["t"].isoformat())
     app = FastAPI()
     for module in (actions, merchant, proactive):
         app.include_router(module.router)

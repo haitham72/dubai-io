@@ -1,6 +1,6 @@
 # Dubai-io — Architecture
 
-**Updated:** 19 Oct 2026 · Scope: `PLAN.md` · Status: `docs/handoff.md`
+**Updated:** 21 Oct 2026 · Scope: `PLAN.md` · Status: `handoff.md`
 **Lock:** no bidding/quote. `quote.request`, `QUOTED`, `QUOTE_ACCEPTED` do not exist.
 
 **Core rule:** the LLM reads and proposes; it never mutates. Every side effect goes through the deterministic action engine after a user tap (approval) or a merchant tap (inbox). Truth in status holds by construction.
@@ -100,3 +100,9 @@ Payments/escrow, third-party purchasing, government write actions, background ge
 - Semantic recall over `profile_facts.embedding` (column reserved, nothing writes it).
 - Full forgetting across old LangGraph checkpoints.
 - Contract codegen (`packages/contracts` → TS/Swift) when a second client starts.
+
+## 12. Native client boundary (21 Oct)
+
+`apps/ios` is a SwiftUI client, not a web-app wrapper. Initial native discovery/chat uses the existing cookie session over URLSession; production Supabase Auth/roles and anonymous-owner migration are a separate gate. Models and transport live in a small Swift package; UI state is owned by focused main-actor observable models. Backend LLM/provider keys remain server-side.
+
+Third-party browsing uses a Safari sheet and preserves chat/focus on return. Authentication requires a dedicated authentication session and compatible backend callbacks. General websites never receive the mini-app action bridge. Native Google Places results remain on a Google-provided map; a separate illustrative MapKit 3D preview contains no Google Places pins. Native approvals/status updates must use the existing server engine when that slice is implemented. See `docs/references/ios-swift-plan.md`.

@@ -18,6 +18,7 @@ from hashlib import sha256
 import operator
 import re
 import time
+from threading import RLock
 from typing import Annotated, Optional, TypedDict
 
 import sqlite3
@@ -192,7 +193,22 @@ def checkpointer():
     return SqliteSaver(sqlite3.connect(settings.data_dir / "luna_checkpoints.sqlite3", check_same_thread=False))
 
 
-graph = build()
+class LazyGraph:
+    """Do not connect to the checkpoint database while importing routes or tests."""
+
+    def __init__(self):
+        self._graph = None
+        self._lock = RLock()
+
+    def invoke(self, *args, **kwargs):
+        with self._lock:
+            if self._graph is None:
+                self._graph = build()
+            graph = self._graph
+        return graph.invoke(*args, **kwargs)
+
+
+graph = LazyGraph()
 
 
 def turn(thread_id: str, user_id: str, text: str) -> dict:

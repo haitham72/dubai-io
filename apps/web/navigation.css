@@ -1,0 +1,117 @@
+/* Browse with a floating dock; composing replaces the dock with a single input. */
+:root { --dock-motion: cubic-bezier(.22, 1, .36, 1); }
+.browse-dock {
+  position: absolute; z-index: 32; left: 16px; right: 16px;
+  bottom: calc(var(--safe-b) + 14px); display: flex; gap: 10px; align-items: center;
+  transform-origin: right center;
+  transition: transform .46s var(--dock-motion), opacity .24s ease, visibility 0s;
+}
+.browse-dock .glass, .composer.glass {
+  background: rgba(255,255,255,.78); border: 1px solid rgba(255,255,255,.9);
+  -webkit-backdrop-filter: blur(28px) saturate(160%); backdrop-filter: blur(28px) saturate(160%);
+}
+.browse-dock .tabbar {
+  position: relative; inset: auto; flex: 1; min-width: 0; height: 64px; padding: 5px;
+  opacity: 1; transform: none; pointer-events: auto; isolation: isolate;
+}
+.tab-selection {
+  position: absolute; z-index: -1; left: 5px; top: 5px; bottom: 5px;
+  width: calc((100% - 10px) / 4); border-radius: 26px;
+  background: rgba(10,156,194,.12); border: 1px solid rgba(10,156,194,.06);
+  transform: translateX(calc(var(--tab-index, 0) * 100%));
+  transition: transform .44s var(--dock-motion);
+}
+.browse-dock .tabbar button { min-width: 0; gap: 3px; transition: color .2s ease, transform .2s ease; }
+.browse-dock .tabbar button[aria-current] { background: transparent; color: var(--tint-ink); }
+.browse-dock .tabbar button:active { transform: scale(.94); }
+.chat-launch {
+  flex: none; width: 64px; height: 64px; border-radius: 50%; display: flex;
+  flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  color: var(--label); font-size: 10.5px; font-weight: 600;
+  transition: transform .28s var(--dock-motion), background .2s ease;
+}
+.chat-launch:active { transform: scale(.92); background: var(--tint-soft); }
+.mode-chat .browse-dock, .mode-portal .browse-dock {
+  transform: translateY(22px) scale(.86); opacity: 0; visibility: hidden; pointer-events: none;
+  transition: transform .4s var(--dock-motion), opacity .18s ease, visibility 0s linear .4s;
+}
+.composer {
+  bottom: calc(var(--safe-b) + var(--keyboard-inset, 0px) + 14px);
+  opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(18px) scale(.95);
+  height: 56px; border-radius: 28px;
+  transition: transform .44s var(--dock-motion), opacity .2s ease, visibility 0s linear .44s;
+}
+.mode-chat .composer {
+  bottom: calc(var(--safe-b) + var(--keyboard-inset, 0px) + 14px);
+  opacity: 1; visibility: visible; pointer-events: auto; transform: none;
+  transition: transform .44s var(--dock-motion), opacity .25s ease .08s, visibility 0s;
+}
+.mode-results .composer { bottom: calc(var(--safe-b) + 14px); }
+.keyboard-open.mode-chat .composer { bottom: calc(var(--keyboard-inset, 0px) + 8px); }
+.composer input { font-size: 16px; }
+.composer input:focus-visible { outline: none !important; }
+.composer:has(input:focus-visible) { outline: 2px solid var(--tint); outline-offset: 2px; }
+.chatv { bottom: var(--keyboard-inset, 0px); }
+.mode-chat .chatv { transition: opacity .3s ease .06s, transform .46s var(--dock-motion), visibility 0s; }
+.c-top { gap: 9px; padding: calc(var(--safe-t) + 14px) 16px 12px; }
+.c-title { flex: 1; }
+.c-title b { font-size: 22px; }
+.c-title span { font-size: 12px; padding-top: 2px; }
+.c-top .round { width: 42px; height: 42px; flex: none; }
+.c-orb { display: none; }
+.c-scroll { padding: 12px 18px calc(var(--safe-b) + 92px); }
+.c-scroll:has(.chat-empty:not([hidden])) { display: flex; flex-direction: column; }
+.chat-empty {
+  margin: auto 0; padding: 24px 8px 42px; text-align: center; animation: chat-welcome .4s ease both;
+}
+.chat-empty-orb {
+  display: block; width: 54px; height: 54px; margin: 0 auto 20px; border-radius: 50%;
+  background: radial-gradient(circle at 32% 25%, #E3F6FB 0%, #79D2E8 25%, #0A9CC2 54%, #07607D 82%);
+}
+.chat-empty > p { margin: 0 0 7px; color: var(--label-3); font-size: 13px; }
+.chat-empty h1 { margin: 0; font: 700 clamp(25px, 7.2vw, 31px)/1.15 var(--font-display); letter-spacing: -.035em; }
+.chat-starters { display: grid; gap: 8px; margin: 28px auto 0; max-width: 310px; text-align: left; }
+.chat-starters button {
+  display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 12px 14px;
+  background: #fff; border: .5px solid var(--sep); border-radius: 16px;
+  font-size: 14px; font-weight: 500; text-align: left;
+}
+.chat-starters button > .ic:first-child { color: var(--tint-ink); }
+.chat-starters button > .ic:last-child { margin-left: auto; color: var(--label-3); }
+.chat-starters button:active { background: var(--tint-soft); }
+.mode-services .svcgrid { padding-bottom: calc(var(--safe-b) + 108px); }
+.svcgrid { scrollbar-width: none; }
+.svcgrid::-webkit-scrollbar { display: none; }
+.mode-results .rsheet { padding-bottom: calc(var(--safe-b) + 100px); }
+.services-hero { min-height: 290px; color: #fff; display: flex; flex-direction: column; justify-content: space-between; }
+.services-skyline { background: linear-gradient(180deg,rgba(4,41,58,.18),rgba(4,41,58,.2) 25%,rgba(4,41,58,.86)), url('media/marina.jpg') center / cover; }
+.hero-top > span:first-child { color: rgba(255,255,255,.88); }
+.hero-copy h1 { font-size: 35px; margin-top: 36px; }
+.hero-copy p { color: rgba(255,255,255,.88); font-size: 17px; }
+.hero-guide { color: var(--label); background: rgba(255,255,255,.87); }
+.services-group { margin-bottom: 22px; }
+.services-group h3 { font-size: 19px; font-weight: 700; letter-spacing: -.02em; color: var(--label); margin-bottom: 10px; }
+.service-category-grid {
+  display: grid; grid-auto-flow: column; grid-template-columns: none; grid-auto-columns: 68%;
+  overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none;
+  margin-inline: -18px; padding: 3px 18px 10px; scroll-padding-inline: 18px;
+  scroll-snap-type: x proximity; gap: 12px;
+}
+.service-category-grid::-webkit-scrollbar { display: none; }
+.service-category { min-height: 178px; scroll-snap-align: start; border-radius: 22px; transition: transform .28s var(--dock-motion); }
+.service-category:active { transform: scale(.97); }
+.service-label b { font-size: 22px; letter-spacing: -.025em; }
+.service-label > span { font-size: 12px; }
+.services-shortcuts button { transition: transform .25s var(--dock-motion); }
+.services-shortcuts button:active { transform: scale(.96); }
+@keyframes chat-welcome { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-transparency: reduce) {
+  .browse-dock .glass, .composer.glass { background: #fff; -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+@media (max-height: 560px) {
+  .chat-empty { padding-block: 12px; }
+  .chat-empty-orb { width: 36px; height: 36px; margin-bottom: 12px; }
+  .chat-starters { margin-top: 16px; }
+  .chat-starters button { min-height: 42px; padding-block: 9px; }
+  .keyboard-open .chat-starters { display: none; }
+}

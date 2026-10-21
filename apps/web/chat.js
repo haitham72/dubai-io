@@ -105,6 +105,7 @@ const fmtT = d => d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-di
 
 function render() {
   const list = $('#chatList'); if (!list) return;
+  const empty = $('#chatEmpty'); if (empty) empty.hidden = items.length > 0;
   saveMessages(items.filter(it=>!it.typing).map(it=>{
     const box=document.createElement('div');box.innerHTML=it.html||'';
     const text=it.who==='me'?it.text:it.type==='order'?'Order '+(it.action?.recipient||''):box.textContent;

@@ -13,7 +13,7 @@ from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import google_maps
+from . import catalog, google_maps
 from .auth import router as auth_router
 from .actions import COOKIE, engine, router as action_router
 from .config import settings
@@ -76,12 +76,22 @@ def health():
             "openai_key": bool(settings.openai_api_key), "google_key": bool(settings.google_key), "widget_port": settings.widget_port}
 
 
+@app.get("/api/catalog")
+def published_catalog():
+    """Both clients read the same published fixture catalog; prices stay host-owned."""
+    return {"provenance": catalog.PROVENANCE, "as_of": catalog.AS_OF, "providers": [
+        {"id": key, "name": name, "service": service,
+         "items": [{"id": item, "name": label, "price_aed": price} for item, (label, price) in items.items()],
+         "slots": slots}
+        for key, (name, service, items, slots) in catalog.PROVIDERS.items()]}
+
+
 @app.post("/api/luna/turn")
 def luna_turn(body: TurnIn, request: Request):
     if not settings.openai_api_key:
         raise HTTPException(503, "OPENAI_API_KEY is not set")
     try:
-        owner = engine().store.owner(request.cookies.get(COOKIE)) if request.cookies.get(COOKIE) else body.user_id
+        owner = engine().store.owner(request.cookies.get(COOKIE))
         return luna.turn(body.thread_id, owner, body.text)
     except HTTPException:
         raise
@@ -114,14 +124,20 @@ def forget_session_fact(key: FactKey, request: Request):
     return {"forgotten": luna.facts.forget(owner, key)}
 
 
-@app.get("/api/memory/{user_id}")
-def memory(user_id: str):
-    return {"told": luna.facts.current(user_id)}
+@app.get("/api/memory/{user_id}", deprecated=True)
+def memory(user_id: str, request: Request):
+    owner = engine().store.owner(request.cookies.get(COOKIE))
+    if user_id != owner:
+        raise HTTPException(404, "Memory not found")
+    return {"told": luna.facts.current(owner)}
 
 
-@app.delete("/api/memory/{user_id}/{key}")
-def forget(user_id: str, key: str):
-    return {"forgotten": luna.facts.forget(user_id, key)}
+@app.delete("/api/memory/{user_id}/{key}", deprecated=True)
+def forget(user_id: str, key: FactKey, request: Request):
+    owner = engine().store.owner(request.cookies.get(COOKIE))
+    if user_id != owner:
+        raise HTTPException(404, "Memory not found")
+    return {"forgotten": luna.facts.forget(owner, key)}
 
 
 @app.post("/api/places/search")

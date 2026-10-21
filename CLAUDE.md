@@ -1,6 +1,6 @@
 # CLAUDE.md — Dubai-io (contest build)
 
-Instructions for any coding agent in this repo. Read order: this file → `PLAN.md` → `ARCHITECTURE.md` → `docs/handoff.md`.
+Instructions for any coding agent in this repo. Read order: this file → `PLAN.md` → `ARCHITECTURE.md` → `handoff.md`.
 
 ## What this is
 
@@ -10,7 +10,7 @@ A chat-first AI companion for people living in or visiting Dubai, entered in the
 2. **Services (Talabat-normal):** a list sorted closest + ★ + price-from + turnaround; each row opens its **own sandboxed modal HTML mini-app**. Fixed published prices only. **Bidding / quote / negotiation is FORBIDDEN in any form.** A real merchant tap updates the chat.
 3. **Platform:** a shop joins from a photo of its price list (deferred past the January submission).
 
-Civic guidance is LATER. **Status:** the contest loop works end to end on `redesign` (details: `docs/handoff.md`; what remains: `PLAN.md` §4).
+Civic guidance is LATER. **Status:** web demo is ready for founder walkthrough with documented gaps (`handoff.md`). Native iOS was authorized on 21 Oct and starts on `ios-swift`; source/build/device validation are separate statuses.
 
 ## Docs
 
@@ -19,7 +19,8 @@ Civic guidance is LATER. **Status:** the contest loop works end to end on `redes
 | `CLAUDE.md` | Hard rules for agents |
 | `PLAN.md` | The single plan: locks, scope (IN / LATER / NEVER), demo arc, remaining |
 | `ARCHITECTURE.md` | Architecture, contracts, state machine |
-| `docs/handoff.md` | How to run, current state, open notes; cannot override the canon |
+| `handoff.md` | How to run, current state, open notes; cannot override the canon |
+| `docs/request-backlog.md` | Ordered requests, clarifications and outstanding work |
 | `docs/user-app-review-guide.md` | Founder review checklist |
 | `docs/references/` | `redesign.md` (screen references), `visuals-libraries.md` (supplied prompts, verbatim), `api-catalog.md` |
 | `docs/services/` | `cases.md` + `intake.md`. New ideas go here, never into `PLAN.md` |
@@ -34,6 +35,7 @@ apps/web/   HTML/CSS/ES modules: app.js, chat.js, orders.js, offers.js, guide.js
 apps/api/   FastAPI + LangGraph: app/{main,actions,merchant,proactive,profile,user_profile,catalog,
             db,widgets,google_maps,oauth,auth}.py, app/luna/{graph,schema,research}.py, tests/,
             docker-compose.yml (Postgres 16 + pgvector)
+apps/ios/   Native SwiftUI client and checked-in Xcode project (ios-swift branch)
 design/     references/ (screen images), screens/
 docs/       see above
 ```
@@ -79,6 +81,7 @@ node ../web/tests/profile.test.mjs; node ../web/tests/recovery.test.mjs; node ..
 
 ## Working conventions
 
+- Keep the founder's requests and execution order in `docs/request-backlog.md`. Finish the active item before moving on. Treat new messages as clarifications or queued requests, not automatic replacement tasks. State and log any logical reordering in the same session. Preserve unfinished work across handoffs. On 21 Oct the founder explicitly lifted the iOS hold: docs/status → commit/push redesign → create ios-swift → start native client.
 - Repo `github.com/haitham72/dubai-io` (private); branch `redesign`; `main` holds the old paper trail.
 - Every workflow ships with fixtures, a happy-path test and a failure-path test.
 - Stop the dev server by its PID only (never kill all `python.exe`).

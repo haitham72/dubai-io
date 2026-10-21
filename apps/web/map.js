@@ -1,7 +1,7 @@
 // Full-screen in-app map (Uber / Talabat style) on MapLibre GL, drawn from a
 // bundled OpenStreetMap extract (fixtures/dubai-map.json, ODbL). No tile
 // server, no API key: the lab must run inside a sandboxed Artifact page.
-// The live build swaps this for Google Maps (Places results need a Google map).
+// This is an explicitly selected 3D demo. Live Places uses a separate Google 2D view.
 import { PLACES, AREA_LABELS, HOME, CATEGORIES } from './data.js';
 
 const LOOK = {
@@ -60,7 +60,7 @@ export function createMap(el, paletteName, svg, onPick) {
     new maplibregl.Marker({ element: e, anchor: 'center' }).setLngLat([lng, lat]).addTo(map);
   }
   // "you" dot: the area you told me, not a live position
-  const me = document.createElement('div'); me.className = 'me-dot'; me.title = 'Dubai Marina (you told me)';
+  const me = document.createElement('div'); me.className = 'me-dot'; me.title = 'Dubai Marina · demo area';
   me.innerHTML = '<span></span>';
   new maplibregl.Marker({ element: me }).setLngLat([HOME.lng, HOME.lat]).addTo(map);
 
@@ -85,18 +85,18 @@ export function createMap(el, paletteName, svg, onPick) {
     select(id, padBottom) {
       for (const [k, r] of markers) r.e.classList.toggle('sel', k === id);
       const r = markers.get(id); if (!r) return;
-      map.easeTo({ center: [r.p.lng, r.p.lat], zoom: Math.max(map.getZoom(), 15.4), duration: 900, padding: { bottom: padBottom + 20, top: 150, left: 0, right: 0 } });
+      map.easeTo({ center: [r.p.lng, r.p.lat], zoom: Math.max(map.getZoom(), 15.4), duration: matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 650, padding: { bottom: padBottom + 20, top: 150, left: 0, right: 0 } });
     },
     fit(ids, padBottom, withHome = true) {
       const pts = [...ids].map(id => markers.get(id)).filter(Boolean).map(r => [r.p.lng, r.p.lat]);
       if (withHome) pts.push([HOME.lng, HOME.lat]);
       if (!pts.length) return;
-      if (pts.length === 1) { map.easeTo({ center: pts[0], zoom: 15, duration: 900, padding: { bottom: padBottom + 30, top: 160, left: 0, right: 0 } }); return; }
+      if (pts.length === 1) { map.easeTo({ center: pts[0], zoom: 15, duration: matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 650, padding: { bottom: padBottom + 30, top: 160, left: 0, right: 0 } }); return; }
       const b = pts.reduce((bb, p) => bb.extend(p), new maplibregl.LngLatBounds(pts[0], pts[0]));
       const pad = { top: 160, bottom: padBottom + 30, left: 36, right: 36 };
       const cam = map.cameraForBounds(b, { padding: pad, bearing: -32 });
       const zoom = Math.min(15.5, Math.max(12.9, (cam ? cam.zoom : 13.5) + 0.25));
-      map.easeTo({ center: b.getCenter(), zoom, padding: pad, pitch: 45, bearing: -32, duration: 1100 });
+      map.easeTo({ center: b.getCenter(), zoom, padding: pad, pitch: 45, bearing: -32, duration: matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 650 });
     },
     resize() { map.resize(); },
   };

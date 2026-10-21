@@ -1,7 +1,7 @@
 import { openSavedDetails } from './saved-details.js';
 import { openSavedRequests } from './service-workflow.js';
 // Home v2 lab. Flow: iPhone Wi-Fi sign-in -> install + open Dubai-io -> soft
-// card-by-card intro -> io: card stage + chat with the composer at the bottom.
+// card-by-card intro -> browse dock -> focused chat with its own composer.
 // Asking lifts the cards away into the chat; the answer can be a recovery
 // report, the airport guide, competing service offers (Services) or places
 // near you (Maps, full-screen).
@@ -60,28 +60,43 @@ document.body.insertAdjacentHTML('beforeend', `
   <nav class="rail" id="rail" aria-label="Cards"></nav>
   <p class="caption" id="caption" aria-live="polite"></p>
 
-  <section class="chatv" id="chat" aria-label="Chat">
+  <section class="chatv" id="chat" aria-label="Chat" inert>
     <div class="c-top">
-      <button class="round glass" id="chatBack" aria-label="Back to cards">${svg('back')}</button>
+      <button class="round glass" id="chatBack" aria-label="Back to browsing">${svg('back')}</button>
       <span class="c-orb" aria-hidden="true"></span>
       <div class="c-title"><button class="brand-btn" id="brandBtn2" aria-label="Dubai-io. Tap to restart the demo"><b>Dubai-<i>io</i></b></button><span>Your Dubai companion</span></div>
-      <button class="c-mode" id="chatMode" aria-label="Mode: visitor">${svg('person', 'ic xs')} Visitor ${svg('chev', 'ic xs')}</button>
       <button class="round" id="chatSearch" aria-label="Browse services">${svg('search')}</button>
     </div>
-    <div class="c-scroll" id="chatScroll"><div class="c-list" id="chatList"></div></div>
+    <div class="c-scroll" id="chatScroll">
+      <div class="chat-empty" id="chatEmpty">
+        <span class="chat-empty-orb" aria-hidden="true"></span>
+        <p>Your Dubai companion</p><h1>What’s your next step?</h1>
+        <div class="chat-starters" aria-label="Start a conversation">
+          <button data-chat-ask="Guide me through the airport">${svg('plane', 'ic sm')} Guide me to arrivals ${svg('chev', 'ic xs')}</button>
+          <button data-chat-ask="I need a shirt pressed by 9 tomorrow">${svg('drop', 'ic sm')} Press a shirt ${svg('chev', 'ic xs')}</button>
+          <button data-chat-ask="Coffee near me">${svg('cup', 'ic sm')} Find coffee nearby ${svg('chev', 'ic xs')}</button>
+        </div>
+      </div>
+      <div class="c-list" id="chatList"></div>
+    </div>
   </section>
 
   <section id="results" class="results" aria-label="Map near you">
-    <div id="mapEl" class="mapbox"></div>
+    <div id="mapEl" class="mapbox" hidden></div>
     <img id="gmap" class="gmap" alt="" hidden>
+    <div id="mapPlaceholder" class="map-placeholder" role="status"><span>${svg('map')}</span><p>Finding places…</p></div>
     <div class="map-fallback" id="mapFallback" hidden>Map needs WebGL. The list below has every place.</div>
     <div class="r-top">
       <button class="round glass" id="back" aria-label="Back">${svg('back')}</button>
       <div class="ask glass" id="ask" hidden></div>
-      <span class="pill demo" id="rDemo">Demo data</span>
+      <div class="map-views glass" id="mapViews" role="group" aria-label="Map view">
+        <button data-map-view="2d" aria-pressed="true" aria-label="2D live Google map">2D <small>Live</small></button>
+        <button data-map-view="3d" aria-pressed="false" aria-label="3D demo map">3D <small>Demo</small></button>
+      </div>
     </div>
-    <div class="r-chips" id="rChips"></div>
-    <div class="r-chips sub" id="rSubs"></div>
+    <nav class="r-chips" id="rChips" aria-label="Map categories"></nav>
+    <p class="map-notice" id="mapNotice" role="status"></p>
+    <span class="pill demo map-demo-label" id="rDemo" hidden>Demo data</span>
     <section class="rsheet" id="rsheet" aria-label="Results">
       <button class="grab" id="rGrab" aria-label="Expand or collapse results"><span></span></button>
       <div class="rs-scroll" id="rsScroll"></div>
@@ -90,19 +105,23 @@ document.body.insertAdjacentHTML('beforeend', `
 
   <section class="svcgrid" id="svcGrid" aria-label="Services"></section>
 
-  <form class="composer glass" id="composer" role="search" autocomplete="off">
+  <form class="composer glass" id="composer" aria-label="Message Dubai-io" autocomplete="off" inert>
     <label class="sr" for="q">Ask Dubai-io</label>
-    <input id="q" name="q" type="text" placeholder="Ask Dubai-io" enterkeyhint="send" />
+    <input id="q" name="q" type="text" placeholder="Message Dubai-io" enterkeyhint="send" maxlength="600" />
     <button type="button" class="c-mic" id="mic" aria-label="Voice (typed in this lab)">${svg('mic', 'ic sm')}</button>
     <button type="submit" class="c-send" aria-label="Send">${svg('up', 'ic sm')}</button>
   </form>
 
+  <div class="browse-dock" id="browseDock">
   <nav class="tabbar glass" aria-label="Tabs">
+    <span class="tab-selection" aria-hidden="true"></span>
     <button data-tab="home" aria-current="page">${svg('orb')}<span>io</span></button>
     <button data-tab="maps">${svg('map')}<span>Maps</span></button>
     <button data-tab="services">${svg('grid')}<span>Services</span></button>
     <button data-tab="me">${svg('person')}<span>Me</span></button>
   </nav>
+  <button class="chat-launch glass" id="chatLaunch" aria-label="Search or chat with Dubai-io">${svg('search')}<span>Ask</span></button>
+  </div>
 
   <section class="offers" id="offers" aria-label="Offers">
     <div class="of-top"><button class="round glass" id="offersBack" aria-label="Back">${svg('back')}</button><span class="pill demo">Sandbox partners</span></div>
@@ -141,7 +160,7 @@ const S = {
   shape: { falloff: 2.4, height: 0.85, glow: 0.24 },
   overrides: {}, asOf: T1, active: -1,
   lift: 0, liftFrom: 0, liftTo: 0, liftStart: 0, liftDur: 820,
-  ask: null, cat: 'all', sub: null, src: null, detail: null, snap: 'peek',
+  ask: null, cat: 'all', sub: null, src: null, detail: null, snap: 'peek', chatReturn: 'home', mapMode: '2d',
 };
 const G = {};
 window.__lab = { S, G };
@@ -150,15 +169,55 @@ const mkCard = def => ({ ...def, holo: CARD_REFLECTION_STRENGTH, variant: VARIAN
 
 // ---------------------------------------------------------------- views
 const VIEWS = ['home', 'chat', 'results', 'services'];
+let restoringView = false;
 function setView(v) {
+  if (v === 'chat' && S.view !== 'chat') {
+    S.chatReturn = S.view;
+    if (!restoringView) history.pushState({ ...history.state, dubaiioChat: S.chatReturn }, '');
+  } else if (v !== 'chat' && history.state?.dubaiioChat && !restoringView) {
+    history.replaceState({ ...history.state, dubaiioChat: null }, '');
+  }
   if (S.view !== v) S.from = S.view;
   S.view = v;
   for (const x of VIEWS) app.classList.toggle('mode-' + x, x === v);
   setTab(v === 'results' ? 'maps' : v === 'services' ? 'services' : 'home');
+  $('#browseDock').inert = v === 'chat';
+  $('#composer').inert = v !== 'chat';
+  $('#chat').inert = v !== 'chat';
+  stageEl.inert = v !== 'home';
+  railEl.inert = v !== 'home';
+  $('#svcGrid').inert = v !== 'services';
+  $('#results').inert = v !== 'results';
+  document.querySelector('.top').inert = v !== 'home';
+  if (v !== 'chat') $('#q').blur();
   setLift(v === 'home' ? 0 : 1);
 }
 function showChat() { closeOffers(); if (S.view !== 'chat') setView('chat'); }
-function setTab(t) { document.querySelectorAll('.tabbar button').forEach(b => b.toggleAttribute('aria-current', b.dataset.tab === t)); }
+function setTab(t) {
+  const buttons = [...document.querySelectorAll('.tabbar button')];
+  buttons.forEach(b => { if (b.dataset.tab === t) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+  document.querySelector('.tabbar').style.setProperty('--tab-index', Math.max(0, buttons.findIndex(b => b.dataset.tab === t)));
+}
+function beginChat() {
+  if (S.onboardingExit) buildHome();
+  showChat();
+  $('#q').focus({ preventScroll: true });
+}
+function leaveChat() {
+  if (history.state?.dubaiioChat) { history.back(); return; }
+  setView(S.chatReturn);
+  $('#chatLaunch').focus({ preventScroll: true });
+}
+addEventListener('popstate', e => {
+  restoringView = true;
+  if (e.state?.dubaiioChat) {
+    showChat();
+    S.chatReturn = e.state.dubaiioChat;
+  } else if (S.view === 'chat') {
+    leaveChat();
+  }
+  restoringView = false;
+});
 
 // ---------------------------------------------------------------- layout
 function layout() {
@@ -294,7 +353,7 @@ function buildHome() {
 }
 function captionFor(c) {
   if (!c) return '';
-  if (S.mode === 'onboard') return c.next === 'Start' ? 'Tap Start, or just ask below.' : 'Swipe, or tap Next. Or just ask below.';
+  if (S.mode === 'onboard') return c.next === 'Start' ? 'Tap Start, or tap Ask to chat.' : 'Swipe, tap Next, or tap Ask to chat.';
   if (c.becauseHyp) {
     const h = c.becauseHyp;
     const tag = h.provenance === 'user_supplied' ? 'you confirmed' : `I noticed, ${Math.round(h.conf * 100)}%`;
@@ -529,11 +588,15 @@ window.__lab.map = () => MAP;
 const rsheet = $('#rsheet'), rsScroll = $('#rsScroll');
 function ensureMap() {
   if (MAP !== null) return;
-  MAP = createMap($('#mapEl'), paletteName, svg, id => openDetail(id));
+  try { MAP = createMap($('#mapEl'), paletteName, svg, id => openDetail(id)); }
+  catch { MAP = undefined; }
   if (!MAP) { MAP = undefined; $('#mapFallback').hidden = false; }
+  MAP?.ready.catch(() => { if (S.mapMode === '3d') { $('#mapFallback').textContent = 'The 3D preview could not load. Demo places are still listed below.'; $('#mapFallback').hidden = false; } });
 }
-// ---- live Google Places (real data); the fixture list is only a labelled fallback
+// Explicit views: live Google content stays on its Google map; the separate 3D preview uses demo places.
 const placeCache = new Map();
+let cameraGeneration = 0, lastCameraKey = '';
+const cameraKey = () => `${S.cat}|${S.sub || ''}|${S.src || ''}|${S.detail || ''}`;
 function areaCenter() {
   const area = String(told.area || HOME.label).toUpperCase();
   const hit = AREA_LABELS.find(([name]) => area.includes(name));
@@ -542,6 +605,7 @@ function areaCenter() {
 const liveKey = () => `${S.cat}|${S.sub || ''}|${areaCenter().label}`;
 function liveState() { return placeCache.get(liveKey()); }
 function loadLive() {
+  if (S.mapMode !== '2d') return;
   const key = liveKey();
   if (placeCache.has(key)) return;
   const c = areaCenter(), cat = catOf(S.cat);
@@ -555,13 +619,16 @@ function loadLive() {
       area: x.short_address || x.address || '', address: x.address, cat: S.cat, sub: S.sub, open: x.open_now, phone: x.phone, website: x.website, maps: x.maps_url,
       img: x.photo ? '/api/places/photo?w=480&name=' + encodeURIComponent(x.photo) : null, photoBy: (x.photo_by || [])[0] || '' })) }))
     .catch(() => placeCache.set(key, { status: 'error' }))
-    .finally(() => { if (S.view === 'results' && liveKey() === key) { renderResults(); refit(); } });
+    .finally(() => { if (S.view === 'results' && S.mapMode === '2d' && liveKey() === key) { renderResults(); refit(); } });
 }
 const kmFrom = (c, p) => { const R = 6371, dLat = (p.lat - c.lat) * Math.PI / 180, dLng = (p.lng - c.lng) * Math.PI / 180;
   const a = Math.sin(dLat / 2) ** 2 + Math.cos(c.lat * Math.PI / 180) * Math.cos(p.lat * Math.PI / 180) * Math.sin(dLng / 2) ** 2; return Math.round(2 * R * Math.asin(Math.sqrt(a)) * 10) / 10; };
 function filtered() {
   const live = liveState();
-  if (live?.status === 'ok') { const c = areaCenter(); return live.places.map(p => ({ ...p, km: kmFrom(c, p) })).sort((a, b) => a.km - b.km || b.rating - a.rating); }
+  if (S.mapMode === '2d') {
+    if (live?.status !== 'ok') return [];
+    const c = areaCenter(); return live.places.map(p => ({ ...p, km: kmFrom(c, p) })).sort((a, b) => a.km - b.km || b.rating - a.rating);
+  }
   return PLACES.filter(p => (S.cat === 'all' || p.cat === S.cat) && (!S.sub || p.sub === S.sub) && (!S.src || p.why === S.src))
     .map(p => ({ ...p, km: km(p) }))
     .sort((a, b) => (a.km ?? 99) - (b.km ?? 99) || b.rating - a.rating);
@@ -570,46 +637,93 @@ function enterResults({ ask = null, cat = 'all', sub = null } = {}) {
   S.ask = ask; S.cat = cat; S.sub = sub; S.src = null; S.detail = null;
   closeSheet(); closeOffers();
   setView('results');
-  ensureMap();
   setSnap('peek', true);
   loadLive();
   renderResults();
-  setTimeout(() => { MAP?.resize(); refit(); }, reduced ? 0 : 380);
+  refit();
 }
 function goBack() {
+  if (S.view === 'chat') { leaveChat(); return; }
   if (S.view === 'results' && S.detail) { backToList(); return; }
+  if (S.view === 'results' && S.cat !== 'all') {
+    const category = S.cat;
+    selectMapCategory('all');
+    $('#rChips').querySelector(`[data-cat="${category}"]`)?.focus({ preventScroll: true });
+    return;
+  }
   if (S.view === 'results' && S.from === 'chat') { setView('chat'); return; }
   setView('home');
 }
 function showGoogleMap(list, one) {
-  const g = $('#gmap'), live = liveState()?.status === 'ok';
-  $('#mapEl').style.visibility = live ? 'hidden' : '';
-  $('#rDemo').hidden = live;
-  if (!live) { g.hidden = true; return; }
+  const g = $('#gmap'), live = liveState();
+  g.hidden = true;
+  if (S.mapMode !== '2d') return;
+  $('#mapPlaceholder').hidden = false;
+  $('#mapPlaceholder p').textContent = live?.status === 'error' ? 'Places are unavailable right now.' : live?.status === 'ok' ? 'Loading your 2D map…' : 'Finding places…';
+  if (live?.status !== 'ok') return;
   const c = areaCenter(), pins = (one ? [one] : list.slice(0, 9)).map(p => `${p.lat.toFixed(6)},${p.lng.toFixed(6)}`).join('|');
   const src = `/api/staticmap?s=tall&c=${c.lat},${c.lng}&m=${encodeURIComponent(pins)}${one ? '&z=16' : ''}`;
-  if (g.getAttribute('src') !== src) g.src = src;
-  g.alt = one ? `Google map: ${one.name}` : 'Google map of the results'; g.hidden = false;
+  g.alt = one ? `Google map: ${one.name}` : 'Google map of the results';
+  if (g.getAttribute('src') !== src) { g.dataset.loaded = ''; g.dataset.failed = ''; g.src = src; }
+  if (g.dataset.loaded === src) { g.hidden = false; $('#mapPlaceholder').hidden = true; }
+  if (g.dataset.failed === src) { $('#mapPlaceholder p').textContent = 'The 2D map is unavailable. You can still use the places below.'; }
 }
 function refit() {
-  if (liveState()?.status === 'ok') { showGoogleMap(filtered()); return; }
-  showGoogleMap([]);
-  if (!MAP) return;
+  const is3D = S.mapMode === '3d', generation = ++cameraGeneration;
+  $('#mapEl').hidden = !is3D;
+  $('#gmap').hidden = true;
+  $('#mapPlaceholder').hidden = is3D;
+  $('#mapFallback').hidden = true;
+  $('#rDemo').hidden = !is3D;
+  $('#mapNotice').textContent = is3D ? '3D preview · Dubai Marina · fictional places' : 'Google Maps · live places · 2D map';
+  $('#mapViews').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.mapView === S.mapMode));
+  if (!is3D) { const one = S.detail && filtered().find(p => p.id === S.detail); showGoogleMap(filtered(), one || undefined); return; }
+  ensureMap();
+  if (!MAP) { $('#mapFallback').textContent = 'The 3D preview needs WebGL. Demo places are still listed below.'; $('#mapFallback').hidden = false; return; }
+  MAP.resize();
   const list = filtered().filter(p => p.lat != null);
   MAP.filter(new Set(list.map(p => p.id)));
-  MAP.ready.then(() => MAP.fit(new Set(list.slice(0, 4).map(p => p.id)), G.snaps.peek));
+  const key = cameraKey();
+  MAP.ready.then(() => {
+    if (generation !== cameraGeneration || S.view !== 'results' || S.mapMode !== '3d' || cameraKey() !== key || lastCameraKey === key) return;
+    lastCameraKey = key;
+    if (S.detail) MAP.select(S.detail, G.snaps.half);
+    else MAP.fit(new Set(list.slice(0, 4).map(p => p.id)), G.snaps.peek);
+  }).catch(() => {});
 }
+$('#gmap').addEventListener('load', () => {
+  const g = $('#gmap'); g.dataset.loaded = g.getAttribute('src');
+  if (S.mapMode === '2d' && liveState()?.status === 'ok') { g.hidden = false; $('#mapPlaceholder').hidden = true; }
+});
+$('#gmap').addEventListener('error', () => {
+  const g = $('#gmap'); g.dataset.failed = g.getAttribute('src');
+  if (S.mapMode === '2d') { g.hidden = true; $('#mapPlaceholder').hidden = false; $('#mapPlaceholder p').textContent = 'The 2D map is unavailable. You can still use the places below.'; }
+});
+$('#mapViews').addEventListener('click', e => {
+  const b = e.target.closest('[data-map-view]'); if (!b || b.dataset.mapView === S.mapMode) return;
+  MAP?.map.stop();
+  S.mapMode = b.dataset.mapView; S.detail = null; S.src = null;
+  lastCameraKey = '';
+  setSnap('peek'); loadLive(); renderResults(); refit();
+});
 function renderChips() {
-  $('#rChips').innerHTML = [
-    `<button class="chip glass ${S.cat === 'all' ? 'on' : ''}" data-cat="all">${svg('grid', 'ic xs')} All</button>`,
-    ...CATEGORIES.map(c => `<button class="chip glass ${S.cat === c.id ? 'on' : ''}" data-cat="${c.id}">${svg(c.glyph, 'ic xs')} ${esc(c.label)}</button>`),
-  ].join('');
   const cat = catOf(S.cat);
-  $('#rSubs').innerHTML = cat && cat.subs.length
-    ? [`<button class="chip glass ${!S.sub ? 'on' : ''}" data-sub="">All ${esc(cat.label.toLowerCase())}</button>`, ...cat.subs.map(s => `<button class="chip glass ${S.sub === s ? 'on' : ''}" data-sub="${esc(s)}">${esc(s)}</button>`)].join('')
-    : '';
-  $('#rSubs').hidden = !$('#rSubs').innerHTML;
-  const on = $('#rChips .on'); if (on) on.parentElement.scrollLeft = on.offsetLeft - 16;
+  const row = $('#rChips');
+  row.setAttribute('aria-label', cat ? `${cat.label} options` : 'Map categories');
+  row.innerHTML = cat ? [
+    `<button class="chip glass ${!S.sub ? 'on' : ''}" data-sub="" aria-pressed="${!S.sub}">${svg(cat.glyph, 'ic xs')} All ${esc(cat.label.toLowerCase())}</button>`,
+    ...cat.subs.map(s => `<button class="chip glass ${S.sub === s ? 'on' : ''}" data-sub="${esc(s)}" aria-pressed="${S.sub === s}">${esc(s)}</button>`),
+  ].join('') : [
+    `<button class="chip glass on" data-cat="all" aria-pressed="true">${svg('grid', 'ic xs')} All</button>`,
+    ...CATEGORIES.map(c => `<button class="chip glass" data-cat="${c.id}">${svg(c.glyph, 'ic xs')} ${esc(c.label)}</button>`),
+  ].join('');
+  $('#back').setAttribute('aria-label', S.detail ? 'Back to results' : cat ? 'Back to categories' : 'Back');
+  const on = row.querySelector('.on');
+  row.scrollLeft = on ? Math.max(0, on.offsetLeft - 12) : 0;
+}
+function selectMapCategory(cat, sub = null) {
+  S.cat = cat; S.sub = sub; S.src = null; S.detail = null; S.ask = null;
+  loadLive(); renderResults(); refit();
 }
 const WHY = {
   video: p => `${svg('play', 'ic xs')} ${esc(p.video.handle)} · ${esc(p.video.at)}`,
@@ -628,7 +742,7 @@ function renderResults() {
   } else ask.hidden = true;
   if (S.detail) { renderDetail(); return; }
   const live = liveState();
-  if (live?.status === 'ok' || live?.status === 'loading') { renderLiveResults(live); return; }
+  if (S.mapMode === '2d') { renderLiveResults(live || { status: 'loading' }); return; }
   const list = filtered();
   const cat = catOf(S.cat);
   const what = S.sub ? S.sub.toLowerCase() : cat ? cat.label.toLowerCase() : 'places';
@@ -666,6 +780,10 @@ function renderLiveResults(live) {
   const cat = catOf(S.cat), c = areaCenter();
   const what = S.sub ? S.sub.toLowerCase() : cat ? cat.label.toLowerCase() : 'places';
   if (live.status === 'loading') { rsScroll.innerHTML = `<div class="rs-head"><h3>Finding ${esc(what)} near ${esc(c.label)}…</h3><p>Live from Google Maps</p></div>`; return; }
+  if (live.status === 'error') {
+    rsScroll.innerHTML = `<div class="rs-head"><h3>Live places are unavailable</h3><p>Try again, or choose the separate 3D demo above.</p></div><button class="btn wide" data-retry-places>Try again</button>`;
+    return;
+  }
   const list = filtered();
   const at = live.at ? new Date(live.at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '';
   const credits = [...new Set(list.map(p => p.photoBy).filter(Boolean))].slice(0, 4).join(', ');
@@ -713,7 +831,7 @@ function openDetail(id) {
   renderResults();
   setSnap('half');
   rsScroll.scrollTop = 0;
-  MAP?.ready.then(() => MAP.select(id, G.snaps.half));
+  refit();
 }
 function renderDetail() {
   if (String(S.detail).startsWith('g:')) { const p = filtered().find(x => x.id === S.detail); if (p) renderLiveDetail(p); return; }
@@ -750,10 +868,14 @@ function renderDetail() {
 function backToList() { S.detail = null; renderResults(); setSnap('peek'); refit(); }
 
 $('#back').addEventListener('click', goBack);
-$('#rChips').addEventListener('click', e => { const b = e.target.closest('[data-cat]'); if (!b) return; S.cat = b.dataset.cat; S.sub = null; S.src = null; S.detail = null; S.ask = null; loadLive(); renderResults(); refit(); });
-$('#rSubs').addEventListener('click', e => { const b = e.target.closest('[data-sub]'); if (!b) return; S.sub = b.dataset.sub || null; S.detail = null; loadLive(); renderResults(); refit(); });
+$('#rChips').addEventListener('click', e => {
+  const b = e.target.closest('[data-cat], [data-sub]'); if (!b) return;
+  selectMapCategory(b.dataset.cat ?? S.cat, b.dataset.sub || null);
+  $('#rChips [aria-pressed="true"]')?.focus({ preventScroll: true });
+});
 rsScroll.addEventListener('click', e => {
   if (rsheet.dataset.dragged === '1') return;
+  if (e.target.closest('[data-retry-places]')) { placeCache.delete(liveKey()); loadLive(); renderResults(); refit(); return; }
   const s = e.target.closest('[data-src]');
   if (s) { S.src = S.src === s.dataset.src ? null : s.dataset.src; renderResults(); refit(); return; }
   const t = e.target.closest('[data-p]');
@@ -812,7 +934,7 @@ function enterServices() { closeSheet(); renderServicesLanding($('#svcGrid'), to
 $('#svcGrid').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
   if (b.dataset.area) { told.area = b.dataset.area; renderServicesLanding($('#svcGrid'), told.area); return; }
-  if (b.dataset.servicesAsk) { $('#q').focus(); return; }
+  if (b.dataset.servicesAsk) { beginChat(); return; }
   if (b.dataset.servicesSay) { handle(b.dataset.servicesSay); return; }
   if (b.dataset.svc) openOffers(b.dataset.svc);
 });
@@ -822,17 +944,18 @@ initChat({ enterResults, openOffers, startGuide, showChat });
 initOffers({ post, update, showChat, trackOrder });
 loadProfile().then(o => { Object.assign(S.overrides, o); refreshHomeCaptions(); });
 wireChat(); wireOffers(); wireGuide(); initPageHost(); initProviderPages();
-$('#chatBack').addEventListener('click', () => setView('home'));
+$('#chatBack').addEventListener('click', leaveChat);
+$('#chatLaunch').addEventListener('click', beginChat);
+$('#q').addEventListener('focus', showChat);
+$('#q').addEventListener('keydown', e => { if (e.key === 'Escape') { e.preventDefault(); leaveChat(); } });
+$('#chatEmpty').addEventListener('click', e => { const b = e.target.closest('[data-chat-ask]'); if (b) { $('#q').blur(); handle(b.dataset.chatAsk); } });
 
-const placeholders = ['I lost my wallet', 'Guide me through the airport', 'Home cleaning prices', 'Coffee near me', 'A groomer for my dog'];
-let phI = 0;
-setInterval(() => { const q = $('#q'); if (!q.value && document.activeElement !== q) q.placeholder = placeholders[phI++ % placeholders.length]; }, 3200);
 $('#composer').addEventListener('submit', e => {
   e.preventDefault();
   const text = $('#q').value.trim(); if (!text) return;
   // Explicit input owns the transition; cancel the exit before dispatching chat.
   if (S.onboardingExit) buildHome();
-  $('#q').value = ''; $('#q').blur();
+  $('#q').value = '';
   if (S.mode === 'onboard') { store.set('onboarded', '1'); }
   closeOffers();
   handle(text);
@@ -894,8 +1017,20 @@ if (flags.has('tune')) {
 
 // ---------------------------------------------------------------- boot
 addEventListener('resize', layout);
+// iOS resizes the visual viewport for the keyboard while the layout viewport stays tall.
+const viewport = window.visualViewport;
+function fitChatViewport() {
+  const open = document.activeElement === $('#q') && viewport && Math.abs(viewport.scale - 1) < .01 && viewport.height < innerHeight - 100;
+  app.classList.toggle('keyboard-open', !!open);
+  app.style.setProperty('--keyboard-inset', open ? Math.max(0, innerHeight - viewport.height - viewport.offsetTop) + 'px' : '0px');
+}
+viewport?.addEventListener('resize', fitChatViewport);
+viewport?.addEventListener('scroll', fitChatViewport);
+$('#q').addEventListener('focus', fitChatViewport);
+$('#q').addEventListener('blur', fitChatViewport);
 document.addEventListener('visibilitychange', () => { last = performance.now(); });
 layout();
+setView('home');
 const firstRun = !store.get('onboarded');
 const direct = ['intro', 'services', 'maps', 'guide', 'profile'].some(f => flags.has(f));
 if (flags.has('wifi') || (firstRun && !direct)) startArrival(() => startOnboarding());

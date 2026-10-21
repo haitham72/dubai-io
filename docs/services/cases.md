@@ -18,12 +18,13 @@ Menu for picking the next case **after the January submission** (cases are froze
 | C6 | Lost item in a taxi | built (contest form: prefilled report + official handoff, not recovered) |
 | C7 | Car licence renewal (Resident arc) | idea · LATER for January |
 | C8 | Fix it / AC / renovation | idea |
-| C9 | Community + shopping rows | v1 only (old `build` branch); community is LATER |
+| C9 | Community + shopping rows; interest-based event discovery | v1 only (old `build` branch); event discovery idea · needs plan change |
 | C10 | Merchant joins from a price-list photo | deferred (May-final candidate) |
 | C11 | Share a video → map | idea |
 | C12 | Pets | idea |
 | C13 | Food: share or ask → the right kind of answer | idea · needs plan change |
 | C14 | Visitor arrival via sponsored airport Wi-Fi | built |
+| C15 | Temporal shopping and celebrations | idea · needs plan change |
 
 ## Pattern library
 
@@ -50,6 +51,10 @@ Cases are composed from these. A new pattern gets a name in its case. If it need
 | `sign-in` | Partner sign-in inside the mini-app |
 | `bundle` | One ask spanning several cases/categories, sequenced against one deadline/route |
 | `intent-mix` | One input → several answer *types*, ordered by profile hypotheses, each with a "Because…" chip |
+| `context-focus` | Selected entity/card/fragment + active task/plan + relevant user context accompany a turn; never treated as execution authority |
+| `sponsored-result` | Explicitly labelled paid placement matched to the current task and confirmed preferences, alongside organic choices |
+| `temporal-suggestion` | Date-relevant suggestions from user-given milestones; proactive delivery only with consent through the outbox |
+| `event-discovery` | Interest + area + future date → sourced event options; ticket availability checked separately |
 | `handoff` | Open a third-party app/site at the right screen; nothing submitted on the user's behalf |
 | `guide`, `recovery`, `onboarding` | Legacy one-offs (C5, C6, C10) |
 
@@ -153,3 +158,55 @@ status: idea · **needs plan change** · refs `shops/restaurants/` (`food.jpg`; 
 - **Needs plan change:** recipe/video search in 1b (Claude `web_search` server tool with citations + a video-search API key, server-side). Founder to agree before it enters `PLAN.md`.
 - **Open questions:** (1) order in-app for partner restaurants only? Default yes, others hand off. (2) Creator rail from the ref? Default out.
 - Lab: scripted photo → "Looks like koshari" → 4 cards, with a time toggle (Fri 13:00 / Tue 22:40) that reorders them live.
+
+### C13 extension — relevant sponsored restaurants (21 Oct)
+
+Founder request, verbatim:
+> sponsered restaurants if user is in 'restaurant' thread as he clicked on food in the maps, based on user recommendations, for example seafood if google analytics about that user signed in with his g account mentioned he is more interested in {location:restaurant, dish:fish}
+
+- **Status:** idea · needs plan change; extends `shops/restaurants/`, not a separate case. Patterns: `context-focus`, `sponsored-result`, `intent-mix`.
+- Entering Food/restaurant context makes restaurant suggestions eligible. If the user told/confirmed “I like seafood”, rank relevant seafood places within the requested area/budget. Paid placement always says **Sponsored** and explains its relevance; it must not masquerade as an organic recommendation or suppress all organic results. No invented live sponsors: fixture placements say **Sponsored demo**.
+- **Data correction:** Google sign-in/Analytics cannot supply a private per-user dish-interest record. Use confirmed Dubai-io preferences and explicitly connected data. Do not send profile, calendar or browsing history to advertisers. Dismiss and mute options persist; commercial placement cannot override a stated requirement.
+- **Ask/actions:** “Find seafood for dinner near my hotel.” Discovery only until a real adapter exists; provider confirms availability, fixed prices and any booking. Only the fields on an approval card are shared. These are the default assumptions.
+- **Profile reads/teaches:** reads confirmed cuisine/dish preferences; choices may teach a visible hypothesis. Dietary/health/religious restrictions are supplied by the user, never inferred.
+- **Checks:** sponsor label and reason visible; irrelevant sponsor excluded; organic choices remain; dismiss persists; no provider action without the approved path.
+
+### C9 extension — events matched to interests (21 Oct)
+
+Founder request, verbatim:
+> events happening near me: user like festivals? show global village opening, likes parties? show a tour by singer. like a specific singer? show he is visiting dubai next week from news api
+
+- **Status:** idea · needs plan change; extends the existing C9 event/community direction. Discovery and planning are separate from community posting, ticket wallets and ticket purchasing. Patterns: `event-discovery`, `context-focus`, `temporal-suggestion`, `handoff`.
+- **Ask:** “What is happening near me next week that I would enjoy?” Match a confirmed festival/music/artist interest against an explicit area (or consented location), dates, schedule and budget. Examples: Global Village's next officially announced season opening; an artist's announced Dubai show; a food festival during a visitor's stay. These are examples, not assertions of current events.
+- **Sources:** existing Tavily/SerpAPI can discover news and official event pages without a new NewsAPI dependency. Verify venue, future event date and cancellation status with the organizer/venue where available. Show source + checked time; distinguish an article's publication date from the event date. Ticket stock and prices require ticket-provider evidence, otherwise official handoff.
+- **Profile reads/teaches:** reads confirmed artists, genres and festival preferences. Ordinary browsing can suggest a visible hypothesis, not cause unsolicited reminders. Avoid inferring sensitive affiliations from event choices.
+- **Sharing/status:** discovery shares no personal data with the venue; a later booking uses its own approval. Only the provider can confirm a booking or ticket. Remind/follow-artist notifications require consent, dedupe and quiet hours.
+- **Checks:** past/cancelled events excluded; two events with similar names not merged; relevant dates/area shown; no “tickets available” from news alone; no unconsented proactive messages.
+
+## C15 · Temporal shopping and celebrations
+status: idea · **needs plan change** · refs `shops/gifts/`, `shops/books/`, existing `shops/restaurants/` (proposed locations; no media folders created) · scene `?scene=C15` · patterns `context-focus`, `temporal-suggestion`, `intent-mix`, `handoff`
+
+Founder request, verbatim:
+> temporal suggestions, for example user has birthday? show birthday cake shops or places to celebrate. school? show book shops. be creative
+
+**Ask:** “Help me prepare for what is coming up.” Default: in-session suggestions; proactive delivery is a separate opt-in. Dates/occasions come from what the user tells us or an explicitly authorized calendar. Never infer parenthood, a child's school, age or a birthday from unrelated browsing.
+
+| Trigger supplied by user | Useful suggestion | Timing/context |
+|---|---|---|
+| Birthday coming up | Cake pickup/delivery, dinner, activity, a gift within the stated budget | Account for the cake shop's published lead time and the party date |
+| School term starts | Bookshops, required supplies, uniform services, transport planning | Use a user-supplied list and term date; ask for missing details |
+| Friends/family visiting | Airport pickup reminder, rooms, meals and interests-based outings | Fit around confirmed arrival/departure and existing commitments |
+| Anniversary | Restaurant, flowers, a shared activity | Preserve existing bookings; use stated preferences and budget |
+| Conference or important meeting | Shirt pressing, charger/adapter, route, breakfast | Work backwards from the stated deadline using the existing laundry flow |
+| Returning from travel | Laundry, groceries and a home service if requested | Suggest a convenient window; no order until approval |
+
+- **Profile reads/teaches:** confirmed milestones/dates and preferences; editable, forgettable facts. An occasion is not a licence to infer sensitive traits. Explain “Your birthday is next week—you told me” or “From the calendar you connected”.
+- **Flow:** relevant occasion → 2–4 useful cards → source/lead time shown → fit into the draft plan → provider handoff or an approved registered action. Fixed published amounts only; prices and promotional fixtures say `(demo)`.
+- **Media:** reuse existing food, book/product and service imagery where relevant; event/occasion art is illustrative, never proof of availability.
+- **Sharing/status:** no milestone/profile shared with a shop during discovery; only explicit order fields after approval. Provider confirms stock/slot/order. No fake reservation or purchase.
+- **Checks:** incorrect date can be edited; no sensitive inference; local Dubai dates; lead times respected; duplicates suppressed; paid options labelled; reminders withdrawn when consent is revoked.
+- **Assumptions:** discovery and draft planning first; payments/ticket purchases remain deferred. Calendar OAuth, structured plan state, sponsorship inventory and temporal suggestion rules are new work, not completed features. Technical context requirements: `../references/assistant-context.md`.
+
+| Review date | Entry | Outcome |
+|---|---|---|
+| 21 Oct 2026 | C13 sponsorship, C9 event discovery, C15 temporal suggestions | Founder ideas captured; current contest implementation scope unchanged; context contract and data-source constraints documented |

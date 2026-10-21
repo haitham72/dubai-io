@@ -1,8 +1,8 @@
 # User app review guide
 
-One pass, about 20 minutes. Tick each box; write anything off in `docs/handoff.md` → Review notes.
+One pass, about 20 minutes. Tick each box; write anything off in `handoff.md` → Review notes. Read its current-status section first: the preview uses separate SQLite review data while original Postgres recovery remains unresolved.
 
-**Setup:** server running (`docs/handoff.md` → Run). Phone: `http://<pc-ip>:8000/#demo.wifi`. Second device (or tab): `http://<pc-ip>:8000/merchant.html`, sign in as **Marina Express Laundry** with the PIN in `apps/api/data/merchant.pin`.
+**Setup:** server running (`handoff.md` → Run). Phone: `http://<pc-ip>:8000/#demo.wifi`. Second device (or tab): `http://<pc-ip>:8000/merchant.html`, sign in as **Marina Express Laundry** with the PIN in the active data directory's `merchant.pin` (`output/review-data` for the current preview).
 
 ## A. Stage script (follows `PLAN.md` §3)
 
@@ -51,5 +51,5 @@ One pass, about 20 minutes. Tick each box; write anything off in `docs/handoff.m
 
 ## F. After the review
 
-- [ ] Notes written in `docs/handoff.md`.
+- [ ] Notes written in `handoff.md`.
 - [ ] Decide: purchasing/payments (`PLAN.md` §5), keys for flight status / Google Maps JS (`docs/references/api-catalog.md`).

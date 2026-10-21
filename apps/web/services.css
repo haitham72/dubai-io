@@ -1,4 +1,4 @@
-/* Services landing, adapted from 01-home; a single shared composer stays below. */
+/* Services landing, adapted from 01-home; navigation.css supplies the browse dock. */
 .svcgrid { padding: calc(var(--safe-t) + 20px) 18px calc(var(--safe-b) + 170px); background: linear-gradient(180deg, #E3F2FA 0, #F3F6F8 590px); }
 .services-brand { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .services-brand b { font: 800 32px/1 var(--font-display); letter-spacing: -.045em; }
