@@ -30,7 +30,7 @@ final class SessionModel {
             let candidate = APIClient(address: address)
             let identity = try await candidate.connect()
             let health = try await candidate.health()
-            if baseAddress != address.url.absoluteString { revision = UUID() }
+            if baseAddress != address.url.absoluteString || info?.userId != identity.userId { revision = UUID() }
             baseAddress = address.url.absoluteString
             UserDefaults.standard.set(baseAddress, forKey: "apiAddress")
             client = candidate

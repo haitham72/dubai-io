@@ -38,7 +38,9 @@ public struct BackendAddress: Sendable {
 
     private static func isLocal(_ host: String) -> Bool {
         if ["localhost", "127.0.0.1", "::1", "[::1]"].contains(host.lowercased()) || host.lowercased().hasSuffix(".local") { return true }
-        let octets = host.split(separator: ".").compactMap { Int($0) }
+        let parts = host.split(separator: ".")
+        guard parts.count == 4 else { return false }
+        let octets = parts.compactMap { Int($0) }
         guard octets.count == 4, octets.allSatisfy({ (0...255).contains($0) }) else { return false }
         return octets[0] == 10 || (octets[0] == 192 && octets[1] == 168) || (octets[0] == 172 && (16...31).contains(octets[1]))
     }

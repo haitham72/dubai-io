@@ -22,6 +22,7 @@ private actor StubTransport: HTTPTransport {
     #expect(throws: APIError.invalidBackend) { try BackendAddress("https://user:secret@example.com") }
     #expect(throws: APIError.invalidBackend) { try BackendAddress("https://example.com?token=secret") }
     #expect(throws: APIError.invalidBackend) { try BackendAddress("http://10.1.2.3") }
+    #expect(throws: APIError.invalidBackend) { try BackendAddress("http://10.bad.1.2.3", allowLocalHTTP: true) }
     #expect(try BackendAddress("http://192.168.1.10:8000", allowLocalHTTP: true).url.host == "192.168.1.10")
 }
 

@@ -148,6 +148,7 @@ struct ProfileView: View {
                     }.disabled(session.isConnecting || address.isEmpty)
                     if session.info != nil {
                         Label("Connected · preview session", systemImage: "checkmark.circle").foregroundStyle(Theme.ink)
+                        Text(session.baseAddress).font(.caption).foregroundStyle(.secondary)
                     }
                     if let error = session.error { Text(error).font(.footnote).foregroundStyle(.red) }
                     Notice(text: "For a local server, use its network address. On your iPhone, localhost refers to the phone.")

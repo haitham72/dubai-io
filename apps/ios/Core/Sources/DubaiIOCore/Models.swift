@@ -37,8 +37,12 @@ public struct PublishedItem: Decodable, Identifiable, Sendable {
         id = try values.decode(String.self, forKey: .id)
         name = try values.decode(String.self, forKey: .name)
         // The host catalog publishes fixed decimal prices as JSON strings.
-        let price = (try? values.decode(Double.self, forKey: .priceAed))
-            ?? Double(try values.decode(String.self, forKey: .priceAed))
+        let price: Double?
+        if let numeric = try? values.decode(Double.self, forKey: .priceAed) {
+            price = numeric
+        } else {
+            price = Double(try values.decode(String.self, forKey: .priceAed))
+        }
         guard let price, price.isFinite, price >= 0 else {
             throw DecodingError.dataCorruptedError(forKey: .priceAed, in: values, debugDescription: "Invalid published price")
         }
