@@ -1,6 +1,6 @@
 # Handoff — 21 Oct 2026
 
-**Branch** `redesign`. Scope and remaining work: `PLAN.md` (§4). Architecture: `ARCHITECTURE.md`. Review checklist: `docs/user-app-review-guide.md`.
+**Branches:** `redesign` (web snapshot `feb4163`, pushed), `ios-swift` (active native development). Scope and remaining work: `PLAN.md` (§4). Architecture: `ARCHITECTURE.md`. Review checklist: `docs/user-app-review-guide.md`.
 
 ## Current status before founder review
 
@@ -9,6 +9,12 @@ The web demo is ready for a founder walkthrough, with documented limits; it is n
 The original Postgres database remains unresolved. Port 8000 currently uses separate SQLite review data under `output/review-data`, not a recovered copy of the original records. Supabase migration/Auth, the broad temporal recommender, selected-card/itinerary context and event/sponsorship features are planned, not implemented. Full findings: `docs/review-findings-2026-10-21.md`; access/demo assessment: `docs/references/api-catalog.md`.
 
 Native iOS is now explicitly authorized. First snapshot/push `redesign`, then create `ios-swift` and begin the first native slice described in `docs/references/ios-swift-plan.md`. The founder has a Mac and iPhone 13 Pro Max; this Windows workspace has no Swift/Xcode. Report native source, macOS build, Simulator and device validation separately. No native compilation has been verified at this documentation checkpoint.
+
+## Native first-slice status
+
+`ios-swift` is published from the pushed web baseline. `apps/ios` now contains a checked-in Xcode project/shared scheme, a local Swift package with API DTOs/URL validation/session handling and contract tests, and SwiftUI source for arrival/gradients, browse/chat, catalog, Google 2D discovery/separate MapKit 3D preview, saved details and Safari browsing sheets. No external Swift dependencies or project generator are required to open it on the Mac.
+
+Compilation is being checked with the `Native iOS` macOS workflow; no passing build or device run is claimed yet. Setup: `apps/ios/README.md`. Merchant approval/mini-app/SSE parity, production Auth and APNs/Live Activity remain pending. This is a native first slice, not a completed conversion.
 
 ## Run
 

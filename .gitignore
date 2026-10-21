@@ -15,3 +15,11 @@ apps/api/data/*.sqlite3*
 apps/api/data/oauth.key
 output/
 .uvicorn.log
+
+# Native build and local signing/IDE state
+.build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+*.xcresult/
+apps/ios/Local.xcconfig
