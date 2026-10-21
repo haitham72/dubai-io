@@ -19,11 +19,12 @@ export function mapUnderstanding(value) {
   if(r.intent==='places_near'){if(!CATEGORIES.has(value.category))throw new Error('Unknown category');r.cat=value.category;r.sub=typeof value.subcategory==='string'?value.subcategory.slice(0,80):null;}
   return r;
 }
-export function createLunaClient({fetcher=globalThis.fetch,timeoutMs=15000,enabled=true,identity=()=>({})}={}) {
+export function createLunaClient({fetcher=globalThis.fetch,timeoutMs=15000,enabled=true,identity=()=>({}),context=()=>({})}={}) {
   let generation=0, active=null, queue=Promise.resolve();
   return {
     reset(){generation++;active?.abort();active=null;queue=Promise.resolve();},
     understand(text,fallback){
+      const requestContext=context();
       const owner=generation;
       const work=async()=>{
         if(owner!==generation)return null;
@@ -35,7 +36,7 @@ export function createLunaClient({fetcher=globalThis.fetch,timeoutMs=15000,enabl
         try{
           // Promise.race also bounds fetch implementations that ignore abort.
           const timeout=new Promise((_,reject)=>{timer=setTimeout(()=>{controller.abort();reject(new Error('timeout'));},timeoutMs);});
-          const call=(async()=>{const response=await fetcher('/api/luna/turn',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({text,...identity()}),signal:controller.signal});if(!response.ok)throw new Error('API unavailable');return mapUnderstanding(await response.json());})();
+          const call=(async()=>{const response=await fetcher('/api/luna/turn',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({text,...identity(),...requestContext}),signal:controller.signal});if(!response.ok)throw new Error('API unavailable');return mapUnderstanding(await response.json());})();
           const result=await Promise.race([call,timeout]);return owner===generation?result:null;
         }catch(error){return owner===generation?{...fallback(text),via:'lab router',fallback_reason:error.message==='timeout'?'Luna timed out':'Luna unavailable'}:null;}
         finally{clearTimeout(timer);if(active===controller)active=null;}

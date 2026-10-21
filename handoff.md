@@ -1,51 +1,39 @@
-# Handoff — 21 Oct 2026
+# Handoff - 21 Oct 2026
 
-**Branches:** `redesign` (web snapshot `feb4163`, pushed), `ios-swift` (native first slice handed off; backend work resumes on `redesign`). Scope and remaining work: `PLAN.md` (§4). Architecture: `ARCHITECTURE.md`. Review checklist: `docs/user-app-review-guide.md`.
+The primary continuity artifact is **PLAN.md**, with nested tasks and acceptance gates in **docs/implementation-plan.md**. The request ledger is docs/request-backlog.md. **Next task: REC-02, finish recommender controls and explainability.** Do not restart Supabase setup or resume native features.
 
-## Current status before founder review
+## Running now
 
-The web demo is ready for a founder walkthrough, with documented limits; it is not declared production ready or physically verified on iPhone. Start at `http://<pc-ip>:8000/#demo.wifi` to see Wi-Fi and gradient onboarding. Browse/chat transitions, fixed-price sandbox merchant approval/status loop, live discovery and explicit 2D/3D Maps with one cyan category row have browser coverage.
+- Branch redesign: local API at port 8000 and isolated widget origin 8001 use the dedicated Supabase project dubai-io. Existing anonymous tester cookies own data; Google OAuth is explicitly last.
+- Supabase API 15421, Postgres 15422, Studio 15423, test mail 15424, Edge inspector 15428. Windows reserves the earlier 554xx range. All active Dubai-io containers were healthy/running at verification; CLI status returned success.
+- Backend-only schema dubaiio is excluded from the Data API. Anonymous/authenticated/service-role SQL access was denied. FastAPI still performs owner checks; this is not production Supabase Auth integration.
+- The review SQLite records (sessions/actions/approvals/profile/recommender records) were backed up and imported. API session creation was verified in Supabase. Ignored apps/api/.env now selects that target and keeps existing provider keys. Active local file directory remains output/review-data (including merchant.pin).
+- Original dubaiio-db remains unhealthy and its volume untouched. This migration is not recovery of its records. Old review SQLite LangGraph checkpoints are archived, not imported; new model thread context starts on Postgres. Browser-local chat remains on its device.
 
-The original Postgres database remains unresolved. Port 8000 currently uses separate SQLite review data under `output/review-data`, not a recovered copy of the original records. Supabase migration/Auth, the broad temporal recommender, selected-card/itinerary context and event/sponsorship features are planned, not implemented. Full findings: `docs/review-findings-2026-10-21.md`; access/demo assessment: `docs/references/api-catalog.md`.
+## Resume the app
 
-Native first-slice source is handed off in `handoff-ios.md`. The founder will test on a Mac and iPhone 13 Pro Max; further native features are parked while Supabase/recommender work resumes. Google OAuth is deferred until last; the existing tester cookie session remains the development identity.
+1. From repository root: tools/start-supabase.ps1 -UseCachedImages on this Windows workstation. See supabase/README.md for pinned versions, standard CLI startup and hosted setup boundaries.
+2. cd apps/api; .venv/Scripts/python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+3. Open http://<pc-ip>:8000/#demo.wifi for Wi-Fi/gradients; #maps/#services bypass onboarding. Merchant: /merchant.html with the PIN from output/review-data/merchant.pin. Never print or commit that PIN or .env values.
+4. Stop only the app's owning PID if restarting; do not kill all Python or restart other projects' containers.
 
-## Native first-slice status
+## Implemented checkpoint
 
-`ios-swift` is published from the pushed web baseline. `apps/ios` now contains a checked-in Xcode project/shared scheme, a local Swift package with API DTOs/URL validation/session handling and contract tests, and SwiftUI source for arrival/gradients, browse/chat, catalog, Google 2D discovery/separate MapKit 3D preview, saved details and Safari browsing sheets. No external Swift dependencies or project generator are required to open it on the Mac.
+- Moderate server recommender first slice: reviewed topics, owner-bound events, dedupe/per-kind repetition cap, session/long-term decay, organic-only projections, stable home-card boosts/reasons and live-map click ingestion. Me -> You, over time exposes Confirm/Not true/Forget/Resume. Edit, richer evidence, wider eligibility/surfaces and measurement remain REC-02/03/04.
+- Whole-place chat focus with visible Clear, 30-minute expiry and ephemeral LangGraph runtime context. Recent stored history is bounded to 24 messages; understanding reads the last 12. Research answer text supports follow-ups. Selected fragments and server-validated plan context remain CTX-02.
+- Forget removes owner checkpoints as well as canonical facts/evidence so old model history cannot recreate a forgotten detail. Other owners survive. Multi-worker turn/forget coordination remains a release task.
+- Pet-specific queries and captured category/subcategory metadata fix the map review findings. Existing single category row, cyan, explicit 2D/3D and single-composer chat remain intact.
+- Native handoff was pushed on ios-swift (eba81b7). Build cfb65a4 passed seven Swift contract tests and unsigned Simulator build, run 39585052919. Mac/device UI testing and substantial parity remain parked; see handoff-ios.md.
 
-macOS CI run 39585052919 passed seven package tests and the unsigned Simulator build at `cfb65a4`. No Simulator UI or device run is claimed. Setup: `apps/ios/README.md`. Merchant approval/mini-app/SSE parity, production Auth and APNs/Live Activity remain pending. This is a native first slice, not a completed conversion.
+## Verification
 
-## Run
+- Backend: **97 passed, 11 live cases skipped on SQLite; 97 passed, 11 skipped on Supabase Postgres**. Two known FastAPI startup deprecation warnings remain.
+- Existing JavaScript: profile 92, recovery 8, Luna client 12 passed.
+- Five browser acceptance checks passed for pet-query context, place-to-chat focus/single composer, real profiler ingestion, Clear and visible Forget/Resume. Google/Luna responses were controlled test data, not a new live-provider claim. Artifact: output/playwright/live-interests.png.
+- Import tests verify backup, identical replay, conflict rejection and unmapped-table refusal. Private schema access checks and real API-to-Supabase session persistence passed.
 
-1. `cd apps/api; docker compose --env-file .env up -d` (Postgres 16 + pgvector; without `DATABASE_URL` the API uses SQLite in `data/`).
-2. `.\.venv\Scripts\python -m uvicorn app.main:app --host 0.0.0.0 --port 8000` (also starts the widget origin on `:8001`).
-3. Phone: `http://<pc-ip>:8000/#demo.wifi`. Second device: `http://<pc-ip>:8000/merchant.html`, PIN in `apps/api/data/merchant.pin`.
-4. One-off after switching to Postgres: `.\.venv\Scripts\python -m app.migrate_sqlite` copies old SQLite data (already done on this PC).
+## Still pending
 
-`.env` keys: OpenAI, Google (Places + Routes), Tavily, SerpAPI, Finnhub, Postgres. `LUNA_EFFORT=medium` (bench: high 4.7 s · medium 3.5 s · low 2.3 s per turn, same accuracy). Web assets are `no-cache`, so phones pick up edits on reload.
+Follow the detailed plan in order: REC-02/03/04 -> CTX-02/PLAN-01 -> SUG-01/EVT-01 -> ADS-01 -> REV-01/02/03. Draft itineraries, event/occasion feeds and sponsored placements are not implemented. Public proxy quotas and merchant throttling/roles, physical-device review, original-data recovery, hosted deployment and production identity remain visible. Google OAuth is last; no provider outreach/application was submitted.
 
-## State
-
-Working end to end (browser-verified 19 Oct): Luna at `/` · one order path (server catalog prices → one approval → sandbox merchant inbox → live SSE card) · deadline loop (10:00 → ask 08:30 → merchant confirms) · reminders + labelled Demo triggers (dedupe, consent, quiet hours) · taxi memory → prefilled lost-item report · profile learning from real choices (Confirm / Not true / Forget persist) · profile document + bi-temporal facts in Postgres · Luna research tools (Tavily/SerpAPI cited answers, Finnhub quotes, civic questions refused) · product search (live Amazon.ae results via SerpAPI, links only) · live Google Routes ETA · **Maps view on real Google Places** (photos, open now, phone, website, Directions) on a server-proxied Google static map · chat restyled to `02-rows`/`03-approve-events` (flat, AI text unboxed) · rich results survive reload · profile learns from real use only.
-
-Latest web baseline: 81 backend passed on SQLite, 11 live cases skipped; earlier PostgreSQL coverage predates the local runtime failure; JS 92 + 8 + 12.
-
-## Known limits (cannot be real yet)
-
-- Partner mini-apps, their prices and the merchant are sandbox (no real merchant joined). Arrival Wi-Fi captive portal is a staged concept (no airport partnership). Guide photos are illustrative (no licensed DXB imagery). Taxi fare range is a fixed estimate (no verified tariff source). RTA lost-item has no API (report is prepared + official handoff only).
-
-- Sandbox merchant (no real shop yet); anonymous cookie sessions; merchant PIN doubles as operator access.
-- Google 2D map pins are implemented; flight "landed" is a Demo trigger until a flight API key exists.
-- Research answers take ~6–9 s (search + a second model call).
-- Purchasing/payments are not available (`docs/references/api-catalog.md`).
-
-## Review notes
-
-- **Request order:** `docs/request-backlog.md` tracks every open request. Founder lifted the native hold: docs/status → commit/push redesign → ios-swift branch → first native slice. Recommender/Supabase/memory implementation remains pending.
-- **Reviewer assessment:** `docs/review-findings-2026-10-21.md` lists the reliability/privacy/deployment gaps, map query/async metadata issues, remaining visual differences and physical-phone validation limits. Assessment is delivered; fixes are not implied by that status.
-- **API/demo review:** `docs/references/api-catalog.md` now distinguishes no-key/developer/OAuth/affiliate/partner/business-verification gates and recommends live discovery + labelled sandbox merchant + official handoffs. Careem MCP is a newly documented reviewed-access option (company/team optional on its access form); no access request or integration was performed.
-- **Maps, 21 Oct:** live Google 2D and illustrative 3D are explicit modes. Loading/errors/late responses do not switch engines. One category row drills into category options; Back returns to categories. Selected chips use cyan tokens. Browser checks cover drill-down, theme, retries, late responses and hidden-camera stability. Screenshot: `output/playwright/maps-single-row-cyan.png`.
-- **21 Oct:** Browse has a floating category dock plus Ask. Ask enters chat with one composer; the dock is hidden and inert. Back/Escape restore browsing, scroll and the unsent draft. Services use horizontal category rows. Keyboard viewport handling and reduced-motion/transparency fallbacks added. Desktop browser checks at 320–430 px passed; physical iPhone keyboard validation is still needed.
-- **Database:** original Postgres container stalled after a server-process crash; its normal restart also stalled. No volume reset. Port 8000 currently uses separate SQLite review data under `output/review-data`, not the original database. See `docs/references/backend-options.md` for evidence and the Supabase proposal.
-- Founder: add review notes here.
+Backups, status logs and screenshots live under ignored output/. They contain local/private state and must not be committed. Relevant implementation files are named in the detailed plan; compare them before marking any task complete.

@@ -33,6 +33,7 @@ class Settings:
     google_oauth_redirect_uri = os.getenv("GOOGLE_OAUTH_REDIRECT_URI", "")
     oauth_token_key = os.getenv("OAUTH_TOKEN_KEY", "")
     database_url = os.getenv("DATABASE_URL", "").strip()  # whitespace explicitly selects SQLite on Windows
+    database_schema = os.getenv("DATABASE_SCHEMA", "").strip()  # Supabase backend-only schema; empty preserves existing deployments
     widget_port = int(os.getenv("WIDGET_PORT", "8001"))  # separate mini-app origin; 0 disables
     merchant_pin = os.getenv("MERCHANT_PIN", "")  # sandbox merchant sign-in; generated into data/ when unset
     web_dir = ROOT / "apps" / "web"

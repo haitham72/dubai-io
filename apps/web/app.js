@@ -1,4 +1,5 @@
 import { openSavedDetails } from './saved-details.js';
+import { selectFocus } from './assistant-context.js';
 import { openSavedRequests } from './service-workflow.js';
 // Home v2 lab. Flow: iPhone Wi-Fi sign-in -> install + open Dubai-io -> soft
 // card-by-card intro -> browse dock -> focused chat with its own composer.
@@ -12,6 +13,7 @@ import { VARIANT } from './shaders.js';
 import { PALETTES, ONBOARDING, CASES, PROFILE_CARD, CATEGORIES, PLACES, SOURCES, EPISODES, HYPOTHESES, TOLD_LABELS, HOME, AREA_LABELS } from './data.js';
 import { profileAt, allowed } from './profile.js';
 import { loadProfile, profileEpisodes, setOverride } from './profile-store.js';
+import { topicFor, observe, homeRank, refreshRecommendations, renderInterests } from './recommendation-client.js';
 import { createMap, km } from './map.js';
 import { $, svg, esc, toast, openSheet, closeSheet, reduced, told } from './ui.js';
 import { initChat, wireChat, handle, post, update, hasThread, resetChat, trackOrder } from './chat.js';
@@ -77,7 +79,7 @@ document.body.insertAdjacentHTML('beforeend', `
           <button data-chat-ask="Coffee near me">${svg('cup', 'ic sm')} Find coffee nearby ${svg('chev', 'ic xs')}</button>
         </div>
       </div>
-      <div class="c-list" id="chatList"></div>
+      <div class="chat-focus" id="chatFocus" hidden></div><div class="c-list" id="chatList"></div>
     </div>
   </section>
 
@@ -336,6 +338,8 @@ function homeOrder() {
   const p = profileAt(profileEpisodes(), HYPOTHESES, S.asOf, S.overrides);
   const byId = Object.fromEntries([...p.noticed, ...p.confirmed].map(h => [h.id, h]));
   return CASES.map((c, k) => {
+    const recommendation = homeRank(c.id);
+    if (recommendation?.reason) return { c, h: { reason: recommendation.reason, provenance: recommendation.provenance }, score: 100 + recommendation.score };
     const h = c.because && byId[c.because];
     // Tier rule: hypotheses may only re-rank, with a visible Because chip (allowed(h, 'rerank')).
     const boost = h && allowed(h, 'rerank') && (h.surfaced || h.provenance === 'user_supplied') ? h.conf : 0;
@@ -356,6 +360,7 @@ function captionFor(c) {
   if (S.mode === 'onboard') return c.next === 'Start' ? 'Tap Start, or tap Ask to chat.' : 'Swipe, tap Next, or tap Ask to chat.';
   if (c.becauseHyp) {
     const h = c.becauseHyp;
+    if (h.reason) return `${esc(h.reason)} <span class="tag">${h.provenance === 'user_supplied' ? 'you confirmed' : 'inferred from choices'}</span>`;
     const tag = h.provenance === 'user_supplied' ? 'you confirmed' : `I noticed, ${Math.round(h.conf * 100)}%`;
     return `<span class="because">Because</span> ${esc(h.label.toLowerCase())} <span class="tag">${tag}</span>`;
   }
@@ -537,12 +542,13 @@ function openProfile() {
     <div class="scrub"><label for="asof">As of <b id="asofLbl"></b></label>
       <input type="range" id="asof" min="${T0}" max="${T1}" step="3600000" value="${S.asOf}" />
       <div class="scrub-ends"><span>1 Oct</span><span>13 Oct</span></div></div>
-    <div id="prof"></div>
+    <div id="liveInterests"></div><div id="prof"></div>
     <p class="fine">Things I noticed can reorder suggestions, always with a “Because” note. They never fill a form, reach a shop or send you a reminder until you confirm them. Health, religion, ethnicity, nationality, gender, sexuality and politics are never inferred.</p>
   `, () => { renderYouMini(); refreshHomeCaptions(); });
   const input = $('#asof');
   input.addEventListener('input', () => { S.asOf = +input.value; renderProfile(); });
   renderProfile();
+  renderInterests($('#liveInterests'), () => refreshRecommendations(CASES));
 }
 function renderProfile() {
   $('#asofLbl').textContent = fmtDate(S.asOf);
@@ -608,15 +614,16 @@ function loadLive() {
   if (S.mapMode !== '2d') return;
   const key = liveKey();
   if (placeCache.has(key)) return;
-  const c = areaCenter(), cat = catOf(S.cat);
-  const what = S.sub || (cat ? cat.label : 'Popular places');
+  const c = areaCenter(), category = S.cat, subcategory = S.sub, cat = catOf(category);
+  const petQueries = { Vet: 'veterinary clinic', '24h': '24-hour veterinary clinic', 'Pet shop': 'pet shop', Boarding: 'pet boarding', Grooming: 'pet grooming', Photo: 'pet photography' };
+  const what = category === 'pets' && subcategory ? petQueries[subcategory] : subcategory ? `${subcategory} ${cat?.label || ''}` : (cat ? cat.label : 'Popular places');
   placeCache.set(key, { status: 'loading' });
   fetch('/api/places/search', { method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(9000),
     body: JSON.stringify({ query: `${what} near ${c.label}`, lat: c.lat, lng: c.lng }) })
     .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
     .then(d => placeCache.set(key, { status: 'ok', at: d.as_of, places: d.places.filter(x => x.lat != null).map(x => ({
       id: 'g:' + x.id, live: true, name: x.name, rating: x.rating || 0, count: x.ratings || 0, lat: x.lat, lng: x.lng,
-      area: x.short_address || x.address || '', address: x.address, cat: S.cat, sub: S.sub, open: x.open_now, phone: x.phone, website: x.website, maps: x.maps_url,
+      area: x.short_address || x.address || '', address: x.address, cat: category, sub: subcategory, open: x.open_now, phone: x.phone, website: x.website, maps: x.maps_url,
       img: x.photo ? '/api/places/photo?w=480&name=' + encodeURIComponent(x.photo) : null, photoBy: (x.photo_by || [])[0] || '' })) }))
     .catch(() => placeCache.set(key, { status: 'error' }))
     .finally(() => { if (S.view === 'results' && S.mapMode === '2d' && liveKey() === key) { renderResults(); refit(); } });
@@ -722,7 +729,9 @@ function renderChips() {
   row.scrollLeft = on ? Math.max(0, on.offsetLeft - 12) : 0;
 }
 function selectMapCategory(cat, sub = null) {
+  selectFocus(null);
   S.cat = cat; S.sub = sub; S.src = null; S.detail = null; S.ask = null;
+  if (S.mapMode === '2d') observe('category', topicFor(cat, sub), 'category:' + cat + (sub ? ':' + sub.replace(/[^A-Za-z0-9_-]/g, '_') : '')).then(ok => { if (ok) refreshRecommendations(CASES); });
   loadLive(); renderResults(); refit();
 }
 const WHY = {
@@ -821,11 +830,18 @@ function renderLiveDetail(p) {
     </ul>
     ${p.maps ? `<a class="btn primary wide big" href="${esc(p.maps)}" target="_blank" rel="noopener noreferrer">${svg('nav', 'ic sm')} Directions in Google Maps</a>` : ''}
     <div class="actions">${p.phone ? `<a class="btn" href="tel:${esc(p.phone.replace(/[^+0-9]/g, ''))}">${svg('phone', 'ic sm')} Call</a>` : ''}${p.website ? `<a class="btn" href="${esc(p.website)}" target="_blank" rel="noopener noreferrer">${svg('globe', 'ic sm')} Website</a>` : ''}</div>
+    <button class="btn wide" id="askPlace">Ask about this place</button>
     <p class="fine">Live from Google Maps. Not a Dubai-io partner: nothing is ordered or shared here.${p.photoBy ? ' Photo: ' + esc(p.photoBy) + ' (Google Maps).' : ''}</p>`;
   $('#dBack').addEventListener('click', backToList);
+  $('#askPlace').addEventListener('click', beginChat);
 }
 function openDetail(id) {
-  if (String(id).startsWith('g:')) { S.detail = id; renderResults(); setSnap('half'); rsScroll.scrollTop = 0; return; }
+  if (String(id).startsWith('g:')) {
+    const place = filtered().find(p => p.id === id);
+    if (place) selectFocus({ entity_id: id, entity_name: place.name, source: 'google', card: 'place_detail', area: areaCenter().label });
+    observe('detail', topicFor(S.cat, S.sub), id).then(ok => { if (ok) refreshRecommendations(CASES); });
+    S.detail = id; renderResults(); setSnap('half'); rsScroll.scrollTop = 0; return;
+  }
   if (S.view !== 'results') enterResults({ cat: PLACES.find(p => p.id === id).cat });
   S.detail = id;
   renderResults();
@@ -945,6 +961,11 @@ initOffers({ post, update, showChat, trackOrder });
 loadProfile().then(o => { Object.assign(S.overrides, o); refreshHomeCaptions(); });
 wireChat(); wireOffers(); wireGuide(); initPageHost(); initProviderPages();
 $('#chatBack').addEventListener('click', leaveChat);
+addEventListener('dubaiio:focus', e => {
+  const el = $('#chatFocus'); el.hidden = !e.detail;
+  el.innerHTML = e.detail ? '<span>About ' + esc(e.detail.entity_name) + '</span><button class="btn sm" aria-label="Clear selected place">Clear</button>' : '';
+  el.querySelector('button')?.addEventListener('click', () => selectFocus(null));
+});
 $('#chatLaunch').addEventListener('click', beginChat);
 $('#q').addEventListener('focus', showChat);
 $('#q').addEventListener('keydown', e => { if (e.key === 'Escape') { e.preventDefault(); leaveChat(); } });
@@ -966,7 +987,10 @@ document.querySelector('.tabbar').addEventListener('click', e => {
   const t = b.dataset.tab;
   if (S.onboardingExit) buildHome();
   closeOffers();
-  if (t === 'home') setView(hasThread() && S.view === 'home' ? 'chat' : 'home');
+  if (t === 'home') {
+    if (['results','services'].includes(S.view)) buildHome();
+    setView(hasThread() && S.view === 'home' ? 'chat' : 'home');
+  }
   else if (t === 'maps') enterResults({ cat: 'all' });
   else if (t === 'services') enterServices();
   else if (t === 'me') openMe();
@@ -1030,6 +1054,7 @@ $('#q').addEventListener('focus', fitChatViewport);
 $('#q').addEventListener('blur', fitChatViewport);
 document.addEventListener('visibilitychange', () => { last = performance.now(); });
 layout();
+refreshRecommendations(CASES);
 setView('home');
 const firstRun = !store.get('onboarded');
 const direct = ['intro', 'services', 'maps', 'guide', 'profile'].some(f => flags.has(f));

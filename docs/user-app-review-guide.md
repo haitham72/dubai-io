@@ -1,6 +1,6 @@
 # User app review guide
 
-One pass, about 20 minutes. Tick each box; write anything off in `handoff.md` → Review notes. Read its current-status section first: the preview uses separate SQLite review data while original Postgres recovery remains unresolved.
+One pass, about 20 minutes. Tick each box; write anything off in `handoff.md` → Review notes. Read its current-status section first: the preview now uses local Supabase with imported SQLite review records; original Postgres recovery remains unresolved.
 
 **Setup:** server running (`handoff.md` → Run). Phone: `http://<pc-ip>:8000/#demo.wifi`. Second device (or tab): `http://<pc-ip>:8000/merchant.html`, sign in as **Marina Express Laundry** with the PIN in the active data directory's `merchant.pin` (`output/review-data` for the current preview).
 
@@ -53,3 +53,12 @@ One pass, about 20 minutes. Tick each box; write anything off in `handoff.md` �
 
 - [ ] Notes written in `handoff.md`.
 - [ ] Decide: purchasing/payments (`PLAN.md` §5), keys for flight status / Google Maps JS (`docs/references/api-catalog.md`).
+
+## Current recommender/context checks
+
+- [ ] Explore two distinct live food places; re-enter Home and inspect any explained category ranking. Current maps keep closest ordering. Do not mistake broad category adaptation for complete restaurant-item personalization.
+- [ ] Me -> You, over time -> Live interests: Confirm, Not true, Forget and Resume persist. Edit/richer evidence is the next implementation task.
+- [ ] Open a place -> Ask about this place -> chat shows the selected place and one composer; Clear removes the context. A selected listing is not a confirmed fact or live ticket inventory.
+- [ ] Forget a saved detail, then ask again in the old thread: old server model checkpoints must not restore the detail. Old browser chat display is separate from model memory.
+
+Detailed future acceptance tasks are in implementation-plan.md; native device testing stays on the Mac under ios-swift. Google OAuth is deferred for the single tester.

@@ -21,6 +21,7 @@ Civic guidance is LATER. **Status:** web demo is ready for founder walkthrough w
 | `ARCHITECTURE.md` | Architecture, contracts, state machine |
 | `handoff.md` | How to run, current state, open notes; cannot override the canon |
 | `docs/request-backlog.md` | Ordered requests, clarifications and outstanding work |
+| `docs/implementation-plan.md` | Nested implementation tasks and acceptance gates under PLAN.md |
 | `docs/user-app-review-guide.md` | Founder review checklist |
 | `docs/references/` | `redesign.md` (screen references), `visuals-libraries.md` (supplied prompts, verbatim), `api-catalog.md` |
 | `docs/services/` | `cases.md` + `intake.md`. New ideas go here, never into `PLAN.md` |
@@ -63,7 +64,7 @@ When the user adds an idea, a service or a reference image, follow [`docs/servic
 
 - Web: plain HTML/CSS + ES modules, cyan theme (`apps/web/stage.css`, `stage-v3.css`, `data.js`). Don't invent palettes.
 - API: Python 3.13, FastAPI, Pydantic v2, LangGraph, OpenAI SDK; serves `apps/web` at `/`; widget origin on `WIDGET_PORT`.
-- DB: PostgreSQL 16 + pgvector via `DATABASE_URL` (`apps/api/docker-compose.yml`); SQLite fallback for tests/offline. No Redis, PostGIS or microservices.
+- DB: local Supabase PostgreSQL 17 + pgvector via `DATABASE_URL`, backend-only `DATABASE_SCHEMA=dubaiio` (`supabase/`). Old Postgres 16 compose volume is preserved for recovery. SQLite fallback for tests/offline. No Redis, PostGIS or microservices.
 - LLM: `LUNA_MODEL` / `LUNA_EFFORT` / `LUNA_TIMEOUT_S` in `app/config.py`; never hard-code model IDs elsewhere. Keys stay server-side.
 - Luna contract changes start in `apps/api/app/luna/schema.py`.
 
@@ -85,3 +86,7 @@ node ../web/tests/profile.test.mjs; node ../web/tests/recovery.test.mjs; node ..
 - Repo `github.com/haitham72/dubai-io` (private); branch `redesign`; `main` holds the old paper trail.
 - Every workflow ships with fixtures, a happy-path test and a failure-path test.
 - Stop the dev server by its PID only (never kill all `python.exe`).
+
+## Latest execution direction (21 Oct)
+
+Native features are parked for the founder's Mac/iPhone testing. Local Supabase and review-record migration are verified; do not restart that setup. Follow PLAN.md and docs/implementation-plan.md, starting at REC-02. Finish recommender controls/coverage, then assistant context and draft itineraries, events/occasions, sponsorship and remaining review fixes. Google OAuth is explicitly last for the single tester; retain cookie ownership and cross-user isolation. Never infer a public tester-owner bypass. Keep root handoff short; the detailed plan is the primary continuity artifact.

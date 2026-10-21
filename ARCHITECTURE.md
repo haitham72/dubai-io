@@ -22,7 +22,7 @@ apps/api (FastAPI, Python 3.13)
   google_maps Places (discovery) · Routes (estimates)
   widgets     separate origin :8001 for mini-apps (CSP connect-src 'none')
         ▼
-PostgreSQL 16 + pgvector (DATABASE_URL; Docker) — SQLite fallback for tests/offline (app/db.py)
+Supabase PostgreSQL 17 + pgvector (DATABASE_URL, DATABASE_SCHEMA=dubaiio; dedicated local stack) — SQLite fallback for tests/offline (app/db.py)
 ```
 
 ## 2. Contracts
@@ -53,7 +53,7 @@ ambiguous adapter outcome / interrupted dispatch ─► UNKNOWN_STATUS (no autom
 
 ## 4. Data (Postgres)
 
-`actions` (JSON record + provider), `sessions`, `preparations`, `approvals`, `merchant_sessions`, `merchant_commands`, `consent`, `outbox` (unique owner+dedupe_key), `episodes`, `profile_overrides`, `user_profile` (typed core + `attributes` JSONB), `profile_facts` (JSONB value/evidence, validity window, `embedding vector(1536)` reserved), OAuth grant tables, LangGraph checkpoints. SQL is written once (`?` placeholders); `app/db.py` translates for Postgres. Tests run on both (`TEST_DATABASE_URL`).
+`actions` (JSON record + provider), `sessions`, `preparations`, `approvals`, `merchant_sessions`, `merchant_commands`, `consent`, `outbox` (unique owner+dedupe_key), `episodes`, `profile_overrides`, `user_profile` (typed core + `attributes` JSONB), `profile_facts` (JSONB value/evidence, validity window, `embedding vector(1536)` reserved), OAuth grant tables, recommendation_events, profile_interests, recommendation_runs and LangGraph checkpoints. Supabase backend tables/checkpoints are in private schema dubaiio; browser roles have no access. SQL is written once (`?` placeholders); `app/db.py` translates for Postgres. Tests run on both (`TEST_DATABASE_URL`).
 
 ## 5. Widget host
 
@@ -98,7 +98,7 @@ Payments/escrow, third-party purchasing, government write actions, background ge
 - Production auth and roles (token auth for native, operator role separate from merchant), cross-device accounts.
 - Real provider adapters beyond the sandbox inbox; provider cancellation.
 - Semantic recall over `profile_facts.embedding` (column reserved, nothing writes it).
-- Full forgetting across old LangGraph checkpoints.
+- Production multi-worker coordination for turn/forget and scheduled retention cleanup; single-tester checkpoint forgetting is implemented and tested.
 - Contract codegen (`packages/contracts` → TS/Swift) when a second client starts.
 
 ## 12. Native client boundary (21 Oct)
@@ -106,3 +106,11 @@ Payments/escrow, third-party purchasing, government write actions, background ge
 `apps/ios` is a SwiftUI client, not a web-app wrapper. Initial native discovery/chat uses the existing cookie session over URLSession; production Supabase Auth/roles and anonymous-owner migration are a separate gate. Models and transport live in a small Swift package; UI state is owned by focused main-actor observable models. Backend LLM/provider keys remain server-side.
 
 Third-party browsing uses a Safari sheet and preserves chat/focus on return. Authentication requires a dedicated authentication session and compatible backend callbacks. General websites never receive the mini-app action bridge. Native Google Places results remain on a Google-provided map; a separate illustrative MapKit 3D preview contains no Google Places pins. Native approvals/status updates must use the existing server engine when that slice is implemented. See `docs/references/ios-swift-plan.md`.
+
+## 13. Implemented temporal recommender and context checkpoint
+
+recommendations.py owns reviewed topics, server-weighted organic-only events, owner dedupe and per-kind/item caps, session (30-minute half-life / 24-hour expiry) and long-term (30-day half-life / 90-day expiry) projections, stable ranking runs and visible controls. Current candidate ranking accepts bounded caller IDs/topics: trusted provider eligibility, wider surfaces and variety remain REC-03. Behavioral evidence never authorizes sharing, prefill, proactivity or status. Confirmation alone writes a canonical user_supplied preference. Legacy six hypotheses coexist; fixture episodes are never training data.
+
+FocusContext is bounded transient selected UI reference data, passed through LangGraph runtime context rather than storing the focus object. Whole-place chat selection is implemented; fragments, server-validated entity/plan ownership and revisioned itineraries remain planned. Recent checkpointed history is bounded to 24 messages, with 12 used by understanding. Forget deletes all checkpoint versions for the owner under a single-process turn/forget lock; production coordination remains outstanding.
+
+Authoritative execution order, gaps and acceptance gates are in PLAN.md and docs/implementation-plan.md. Google OAuth is explicitly last for the single tester. Supabase Auth/Storage/Edge services being available locally does not mean app identity, file upload or webhook integrations exist.

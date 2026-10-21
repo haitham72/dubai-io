@@ -32,7 +32,7 @@ class ProfileStore:
 
     def __init__(self, store_provider, legacy_json: Path | None = None):
         """store_provider returns the ActionStore, so profile writes share its connection and lock."""
-        self._store, self.legacy, self._ready = store_provider, legacy_json, False
+        self._store, self.legacy, self._ready = store_provider, legacy_json, None
 
     @property
     def lock(self):
@@ -41,7 +41,7 @@ class ProfileStore:
     @property
     def db(self):
         db = self._store().db
-        if not self._ready:
+        if self._ready is not db:
             db.execute("""CREATE TABLE IF NOT EXISTS user_profile (owner TEXT PRIMARY KEY, display_name TEXT, home_area TEXT, language TEXT,
                 mode TEXT, attributes JSON NOT NULL DEFAULT '{}', version INTEGER NOT NULL DEFAULT 0, created_at TEXT, updated_at TEXT)""")
             db.execute("""CREATE TABLE IF NOT EXISTS profile_facts (id TEXT PRIMARY KEY, owner TEXT NOT NULL, facet TEXT NOT NULL, key TEXT NOT NULL,
@@ -52,7 +52,7 @@ class ProfileStore:
                 db.execute("ALTER TABLE profile_facts ADD COLUMN IF NOT EXISTS embedding vector(1536)")
                 db.execute("CREATE INDEX IF NOT EXISTS profile_facts_attributes ON user_profile USING gin (attributes)")
             db.commit()
-            self._ready = True
+            self._ready = db
             self._import_legacy(db)
         return db
 

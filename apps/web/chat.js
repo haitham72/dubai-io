@@ -1,4 +1,5 @@
 import { labFetch } from './api-client.js';
+import { requestContext, selectFocus } from './assistant-context.js';
 import { openServiceRequest } from './service-workflow.js';
 // io chat. A lab stand-in for Luna: a deterministic intent router (clearly
 // labelled "lab router") until the LangGraph service in apps/api replaces it.
@@ -20,7 +21,7 @@ let seq = 0, threadEpoch = 0;
 // Luna runs wherever the API answers with a configured model key; one probe, re-tried after a failure.
 let health=null, healthAt=0;
 const lunaReady=()=>{if(!health||(health.failed&&Date.now()-healthAt>30000)){healthAt=Date.now();health=fetch('/api/health',{signal:AbortSignal.timeout(3000)}).then(r=>r.ok?r.json():null).then(h=>!!h?.openai_key).catch(()=>false);health.then(ok=>{health.failed=!ok;});}return health;};
-const luna = createLunaClient({fetcher:labFetch,enabled:lunaReady,identity});
+const luna = createLunaClient({fetcher:labFetch,enabled:lunaReady,identity,context:requestContext});
 
 export function initChat(c) {
   ctx = c; initRecovery({ say: botSay, post, update, near: () => ctx.enterResults({ cat: 'all' }) });
@@ -34,7 +35,7 @@ export function initChat(c) {
   render();
   followMessages();
 }
-export function resetChat() { threadEpoch++; for(const stop of watchers.values())stop(); watchers.clear(); luna.reset(); resetSession(); for(const key of Object.keys(told))delete told[key]; items.length = 0; resetRecovery(); render(); }
+export function resetChat() { selectFocus(null); threadEpoch++; for(const stop of watchers.values())stop(); watchers.clear(); luna.reset(); resetSession(); for(const key of Object.keys(told))delete told[key]; items.length = 0; resetRecovery(); render(); }
 
 // ---------------------------------------------------------------- router
 const LOST_VERB = /\b(lost|lose|losing|left|forgot|forgotten|missing|can'?t find|cannot find|dropped)\b/;

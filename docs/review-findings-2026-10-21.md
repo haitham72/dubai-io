@@ -1,5 +1,8 @@
 # Reviewer findings — 21 Oct 2026
 
+**Follow-up checkpoint:** local Supabase and review-record import are verified; the original Postgres remains unrecovered. Owner checkpoint forgetting and map query/async metadata findings are fixed and tested. A first moderate server recommender and whole-place context are implemented; their broader proposed coverage remains pending. Public proxy quotas, merchant throttling/roles and physical-device/visual checks remain open. 97 backend tests passed on SQLite and 97 on Supabase, 11 live tests skipped per run; five browser acceptance checks used controlled provider data. The table below preserves the original assessment; use PLAN.md / docs/implementation-plan.md for current task states.
+
+
 Assessment of the current web/Python app before founder review. The demo has a reviewable core, but the app is not yet ready for unrestricted public use. Native iOS was subsequently authorized on `ios-swift`; it does not imply these web/backend gaps are fixed. This is a code/UI review, not a production security certification or physical-iPhone performance measurement.
 
 ## Findings, in priority order

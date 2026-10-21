@@ -20,8 +20,9 @@ from .config import settings
 from .merchant import merchant_pin, router as merchant_router
 from .proactive import router as proactive_router
 from .profile import router as profile_router
+from .recommendations import router as recommendations_router
 from .luna import graph as luna
-from .luna.schema import FactKey
+from .luna.schema import FactKey, FocusContext
 
 app = FastAPI(title="Dubai-io API", version="0.1.0")
 app.include_router(auth_router)
@@ -29,6 +30,7 @@ app.include_router(action_router)
 app.include_router(merchant_router)
 app.include_router(proactive_router)
 app.include_router(profile_router)
+app.include_router(recommendations_router)
 
 
 @app.middleware("http")
@@ -52,6 +54,7 @@ class TurnIn(BaseModel):
     text: str = Field(min_length=1, max_length=600)
     thread_id: str = Field(default_factory=lambda: uuid.uuid4().hex, max_length=64)
     user_id: str = Field(default="demo-user", max_length=64)
+    focus: FocusContext | None = None
 
 
 class PlacesIn(BaseModel):
@@ -92,7 +95,7 @@ def luna_turn(body: TurnIn, request: Request):
         raise HTTPException(503, "OPENAI_API_KEY is not set")
     try:
         owner = engine().store.owner(request.cookies.get(COOKIE))
-        return luna.turn(body.thread_id, owner, body.text)
+        return luna.turn(body.thread_id, owner, body.text, **({"focus":body.focus} if body.focus else {}))
     except HTTPException:
         raise
     except Exception as err:  # the web falls back to its lab router
@@ -121,7 +124,7 @@ def edit_session_fact(key: FactKey, body: FactEdit, request: Request):
 @app.delete("/api/session/memory/{key}")
 def forget_session_fact(key: FactKey, request: Request):
     owner = engine().store.owner(request.cookies.get(COOKIE))
-    return {"forgotten": luna.facts.forget(owner, key)}
+    return {"forgotten": luna.forget_fact(owner, key)}
 
 
 @app.get("/api/memory/{user_id}", deprecated=True)
@@ -137,7 +140,7 @@ def forget(user_id: str, key: FactKey, request: Request):
     owner = engine().store.owner(request.cookies.get(COOKIE))
     if user_id != owner:
         raise HTTPException(404, "Memory not found")
-    return {"forgotten": luna.facts.forget(owner, key)}
+    return {"forgotten": luna.forget_fact(owner, key)}
 
 
 @app.post("/api/places/search")

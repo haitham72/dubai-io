@@ -10,7 +10,10 @@ This is the single plan. Done work lives in git history; this file keeps locks, 
 - **Cyan palette** with the approved purple fringe; C1 reflection on stage cards at 0.385 (13 Oct).
 - **No shadows anywhere;** chat looks like ChatGPT/Claude: plain AI text, tinted user box, white rounded action boxes (19 Oct).
 - **19 Oct:** one order path through the server engine · fine appeal removed · C6 (lost item) = prefilled report + official handoff + "not recovered" · Postgres + pgvector for the backend · Resident/VIP arc and photo onboarding out of the January submission (May-final candidates) · no new service cases before submission.
-- **21 Oct:** founder authorized starting native Swift iOS on `ios-swift` after documenting and pushing the current web baseline. Founder has a Mac and iPhone 13 Pro Max. Supabase is the selected backend direction; migration remains pending. Preserve the native in-app browser requirement, Wi-Fi/gradient onboarding and browse-to-chat transition. Other queued features remain in `docs/request-backlog.md`.
+- **21 Oct:** founder authorized starting native Swift iOS on `ios-swift` after documenting and pushing the current web baseline. Founder has a Mac and iPhone 13 Pro Max. Supabase is the selected backend; local database integration and review-record import are now verified. Hosted deployment and production identity remain pending. Preserve the native in-app browser requirement, Wi-Fi/gradient onboarding and browse-to-chat transition. Other queued features remain in `docs/request-backlog.md`.
+
+- **21 Oct, latest priorities:** native feature work is parked for Mac/iPhone testing; local Supabase is now running and the API uses it. Continue the moderate recommender, then selected-card context/draft plans, events/occasion suggestions, sponsored food discovery and remaining review fixes. Google OAuth is last for the single tester. These explicit requests authorize their read-only discovery/planning work; purchases, government execution and other NEVER items remain excluded.
+- **Durable execution detail:** [docs/implementation-plan.md](docs/implementation-plan.md) contains nested tasks, dependencies, implemented-versus-pending status and acceptance gates. It is subordinate to this plan. **Next task: REC-02 (finish recommender controls/explainability).**
 
 ## 1. What we're building
 
@@ -97,17 +100,18 @@ One visitor: late-night DXB arrival → laundry with a deadline → taxi-memory 
 | D17 | Stage format | Live app walkthrough (§3) with fallback video |
 | D18 | Commercial model | Merchant commission on fixed services first; affiliate links auxiliary |
 
-## 4. Remaining
+## 4. Remaining, in execution order
 
-0. **Native iOS authorized:** snapshot/push web baseline, branch `ios-swift`, implement and compile the first slice. Detailed plan: `docs/references/ios-swift-plan.md`. Founder web review remains outstanding but no longer blocks starting native work.
-1. **Founder review** with `docs/user-app-review-guide.md`; log notes in `handoff.md`. Current assessment: `docs/review-findings-2026-10-21.md`.
-2. **Rehearsal:** 10 timed runs ≤ 4:00 on phone + second device; record the fallback video. Gate: 10 clean runs.
-3. **Submission package** (target Fri 18 Dec 2026): deck, demo video, hosting (or tunnel), small user test.
-4. **Reference-image parity:** chat surfaces done (`02-rows`, `03-approve-events`); remaining: `01-home` (Services top), `01c` guide, `04`/`04a` lost item, `05` Services/Me, `x-*`. Keep: no shadows, AI text unboxed unless dynamic output.
-5. **Keys-dependent (optional):** real flight-landed trigger, interactive Google Maps JS upgrade, Calendar scopes/connector via OAuth (`docs/references/api-catalog.md`).
-6. **Optional:** push-to-talk voice (transcript visible, typed fallback).
-7. **Try for one real merchant** before the May final (§5).
-8. **Founder access requests:** Amazon Associates (affiliate → Creators API); official portals (RTA, DEWA…) for API permission. Services get added where real data is blocked.
+The detailed, nested task breakdown and acceptance gates are in [docs/implementation-plan.md](docs/implementation-plan.md). Completed work and requests remain traceable in `docs/request-backlog.md`.
+
+1. **ACTIVE - moderate recommender:** REC-01 is implemented on Supabase. Finish REC-02 Edit/evidence controls, aggregate repetition caps and timeline labels; then REC-03 trusted candidate constraints, wider surfaces, variety/stability, followed by REC-04 measurements/retention. Do not call the entire proposed recommender complete.
+2. **Assistant context and draft plans:** CTX-01 whole-place focus, bounded recent history and checkpoint forgetting are implemented. Finish CTX-02 selected fragments, server entity/plan validation and ticket-availability guard; then PLAN-01 revision-bound itinerary proposals, locked constraints, explicit assumptions and reviewable before/after changes. No external booking/purchase is implied.
+3. **Suggestions/events:** SUG-01 confirmed occasions and EVT-01 dated, sourced future events. Reuse configured search first; distinguish organizer verification from news and live ticket stock. Use existing consent/dedupe/quiet-hours rules for any notification.
+4. **Sponsored food discovery:** ADS-01 relevant food context, clear Sponsored/Why labels, organic alternatives, caps/dismissal and separate eligible first-party evidence. Current observations are organic-only. Empty inventory means no sponsored card.
+5. **Review/release:** REV-01 public proxy quotas and merchant login throttling/roles, REV-02 visual/device validation, REV-03 demo/provider access. Founder walkthrough, ten clean <=4-minute rehearsals and fallback video remain pending.
+6. **Independent database follow-up:** DB-02 recover/export the original unhealthy Postgres without resetting its volume. Current Supabase contains imported SQLite review records, not the original Postgres data. DB-03 hosted setup and production identity require deliberate configuration; Google OAuth is explicitly last.
+7. **Native work PARKED:** first slice built on `ios-swift` with seven package tests and unsigned Simulator build passing; Mac/iPhone visual testing and substantial feature parity remain. See `handoff-ios.md`. No Windows Swift/Expo workaround is required.
+8. **Submission package:** internal target Fri 18 Dec 2026 for deck, demo video, hosting/tunnel and small user test; submission January 2027. Try for one real merchant before the May final. Optional voice, real flight feed and Calendar remain credential/device-dependent work, not automatic blockers.
 
 ## 5. Not code, but critical
 
@@ -118,7 +122,7 @@ One visitor: late-night DXB arrival → laundry with a deadline → taxi-memory 
 | Hosting + domain | submission | Local + tunnel |
 | Purchasing / payments decision | before any purchase feature | Deep-link handoff only |
 
-## 6. Native iOS app (authorized 21 Oct)
+## 6. Native iOS app (authorized, now parked for Mac testing)
 
 A second client of the same `apps/api`. SwiftUI, iOS 26 Liquid Glass, no added shadows, with ShipSwift (`signerlabs/ShipSwift`, MIT) and Libraries.dev retained as references. Use platform components first; add dependencies only when justified. The founder has a Mac + iPhone. Current authoring environment is Windows without Swift/Xcode; compilation must be verified on a macOS runner or Mac. Detailed slices, browser policy and validation gates: `docs/references/ios-swift-plan.md`.
 
@@ -133,4 +137,4 @@ A second client of the same `apps/api`. SwiftUI, iOS 26 Liquid Glass, no added s
 | Profile | Native view over `/api/profile/me` |
 | Third-party links | Safari browsing sheet; dedicated authentication session for sign-in; custom WebKit only when needed |
 
-Build order: typed API/session foundation + native onboarding/browse/chat/discovery/browser → production auth/roles and migration → approved mini-app/order/SSE parity → APNs/Live Activity → voice/App Intents. The first slice does not pretend to implement merchant execution or account migration. Full parity gate remains the §3 arc on the founder's iPhone with provider evidence and explicit approvals.
+When native work resumes, build order: typed API/session foundation + native onboarding/browse/chat/discovery/browser → production auth/roles and migration → approved mini-app/order/SSE parity → APNs/Live Activity → voice/App Intents. The first slice does not pretend to implement merchant execution or account migration. Full parity gate remains the §3 arc on the founder's iPhone with provider evidence and explicit approvals.

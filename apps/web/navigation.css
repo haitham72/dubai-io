@@ -49,6 +49,9 @@
 .mode-results .composer { bottom: calc(var(--safe-b) + 14px); }
 .keyboard-open.mode-chat .composer { bottom: calc(var(--keyboard-inset, 0px) + 8px); }
 .composer input { font-size: 16px; }
+.chat-focus { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:12px 20px; padding:8px 12px; background:var(--tint-soft); border-radius:16px; color:var(--ink); }
+.chat-focus[hidden] { display:none; }
+#liveInterests .src { display:block; margin-top:4px; }
 .composer input:focus-visible { outline: none !important; }
 .composer:has(input:focus-visible) { outline: 2px solid var(--tint); outline-offset: 2px; }
 .chatv { bottom: var(--keyboard-inset, 0px); }

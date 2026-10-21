@@ -1,0 +1,169 @@
+# Detailed implementation plan
+
+Execution detail for the authoritative [PLAN.md](../PLAN.md). This is the durable task breakdown, not a second scope document. Updated 21 Oct 2026 after the local Supabase switchover. Consult code to establish progress against these tasks; never infer that a proposal or a service case is implemented.
+
+## 0. Decisions that survive a session change
+
+1. Build a **Dubai personal assistant**, coordinating places, services, products and draft plans. Maps is one surface. A localized encyclopedia is not the product.
+2. Finish an active task before moving to another. New messages refine it or enter the request ledger. Record any logical reordering in the same session. Answer questions before treating them as implementation instructions.
+3. **Current order:** finish the moderate recommender -> assistant context and draft itineraries -> events/occasion suggestions -> sponsored restaurant discovery -> remaining reviewer/deployment fixes. Dependencies may be fixed within the active task. Supabase foundation and iOS handoff have reached their checkpoints; they are not reasons to restart the roadmap.
+4. **Google OAuth is last.** There is one tester. Existing server-owned cookie sessions remain valid; never introduce a public `tester` owner override. Missing Google sign-in credentials must not block profiling, planning or discovery. Google API keys are separate from OAuth.
+5. **Native features are parked.** The founder will test on a Mac and iPhone 13 Pro Max. Do not install Windows Swift, force Expo, or divert back to native work. `ios-swift` contains the first client; `handoff-ios.md` records its remaining parity work.
+6. Preserve Wi-Fi concept onboarding, slow gradients, cyan and approved purple fringe, no shadows, one category row with Back, explicit 2D/3D selection, and the browse dock that collapses into one chat composer.
+7. Keep FastAPI/LangGraph, the deterministic action engine, fixed published prices, approval snapshots, idempotency, outbox and SSE. Supabase supplies Postgres and later Auth/Storage/Edge integrations. Do not rewrite orchestration into Edge Functions just to use another service.
+8. No bidding, purchasing/payments, government execution, invented locations/statuses or fake provider integrations. Provider access limits produce a truthful draft/handoff, not a fake Send or a dead TBD button. No provider applications/outreach without an explicit request.
+
+## 1. Database foundation — local checkpoint reached
+
+### DB-01. Local Supabase [implemented and verified]
+
+- Dedicated project `dubai-io`; API 15421, Postgres 15422, Studio 15423, mail 15424, Edge inspector 15428. Original `dubaiio-db` and other projects are separate.
+- Versioned migrations in `supabase/migrations`; backend-only `dubaiio` schema excluded from the Data API. Browser roles cannot read it. RLS is enabled on the versioned business tables; checkpoint tables remain protected by private schema permissions.
+- `app/db.py` applies `DATABASE_SCHEMA`, preserves explicit connection options, includes `extensions` on the Supabase path, and bounds connection establishment. LangGraph uses the same backend schema.
+- Local API at port 8000 uses this database. SQLite review records, including owner sessions and approvals, were backed up and imported. A new API session was verified in Supabase itself.
+- Cached official images were pinned through CLI version files after registry downloads stalled. Reproduction: `tools/start-supabase.ps1 -UseCachedImages`; service versions and normal startup are documented in `supabase/README.md`.
+- Verification: 97 backend tests passed on SQLite and 97 on Supabase Postgres; 11 live-model tests skipped in each run. Import tests verify backup, identical replay, conflict rejection and unmapped-table rejection. Anonymous/authenticated/service-role database reads of the private schema were denied.
+
+### DB-02. Preserve and distinguish old data [outstanding, independent of current development]
+
+- The original Postgres container is still unhealthy; its volume has not been reset or deleted. Recovery cause is unresolved. Supabase is a new target, not recovery of those original records.
+- Review-data SQLite files and backups remain under ignored `output/`. Its records were imported; old SQLite LangGraph checkpoints were **archived, not imported**. New model conversation context starts on Postgres. Browser chat snapshots remain on their original device.
+- Next recovery work: obtain a consistent export if the old server can recover, inventory owners/actions/facts/outbox/checkpoints, compare with the new target, and design a conflict report before any import. Never overwrite new records or merge owners by a display name.
+- Acceptance: recoverable source is backed up; source/target counts and conflicts are reported; owner/order/approval evidence remains intact. If the old source cannot be read, document the limit without destructive repair.
+
+### DB-03. Hosted Supabase and production identity [deferred, no credentials assumed]
+
+- Hosted development project, reviewed migrations and TLS database connection. Use direct connection or a session pooler for persistent Python/LangGraph; do not blindly use transaction pooling.
+- Keep database passwords/service keys out of clients. Preserve private schema boundaries; add deliberate RLS only for tables intentionally exposed later.
+- Then Supabase Auth, proof-based anonymous-owner transfer, separate visitor/merchant/operator roles, cross-device state and native bearer verification.
+- Google sign-in and optional Calendar/People scopes come last. Local OAuth is supported but phones/webhooks need reachable URLs. Existing OAuth connector scopes are only `openid email profile`; no Google Ads private-interest export exists.
+- Edge Functions: add an authenticated function only for a concrete webhook/provider need, with signature verification, replay protection and idempotency. Running the Edge service is not an implemented function.
+
+## 2. Moderate temporal recommender — ACTIVE
+
+Design rationale and intended scoring: [recommender-plan.md](references/recommender-plan.md). Current code: `apps/api/app/recommendations.py`, `apps/web/recommendation-client.js`; migrations `20261021000200_recommender.sql`.
+
+### REC-01. Current behavior [implemented and verified]
+
+- Reviewed app-owned topic taxonomy; client cannot supply weights, owners, sensitive topics or a completed-order event.
+- Server timestamps, owner-scoped dedupe, per-kind/item repetition caps and cross-process Postgres advisory locking for ingestion.
+- Session projection: 30-minute half-life, 24-hour expiry; long-term projection: 30-day half-life, 90-day inferred expiry. Events retain at most 90 days; ranking runs at most 24 hours. Expired rows are removed during subsequent activity; no scheduled cleanup job exists yet.
+- Explicit current intent has the strongest score. Closest/price modes preserve input order. Inferred boosts require distinct evidence and a displayed reason. No LLM call per click.
+- Client observations are **all organic-only**. They do not feed sponsorship. No Google listing names/photos/reviews/attributes or full transcripts are retained in recommender events; permitted provider IDs and app-owned selection topics are used.
+- Real live-map category/detail clicks are ingested. Food has a Seafood drill-down. Cached home-card ranking/reasons are applied when entering Home again; cards do not reshuffle under a finger. Existing distance sorting remains intact.
+- Me -> You, over time has live interests and Confirm / Not true / Forget / Resume learning. Confirmation creates a `user_supplied` preference. Forget removes observations/projections/runs, clears model checkpoints and leaves a visible learning pause until Resume.
+- Existing six legacy hypotheses/JS math coexist. Their scripted fixture episodes must never be uploaded as real observations.
+- Tests cover two distinct choices, explicit intent precedence, repetition, decay, expiry, owner isolation, sensitive-topic rejection, concurrent replay, confirmation and forgetting. Browser acceptance used controlled provider responses and actual profiler endpoints.
+
+### REC-02. Finish controls and explainability [NEXT TASK]
+
+1. Add **Edit** for a learned interest, restricted to reviewed topics. Editing must be an explicit user choice, invalidate old ranking caches and evidence as appropriate, and update canonical confirmed facts consistently.
+2. Show recent evidence kinds/timestamps and meaningful reasons using permitted IDs or fresh provider resolution; do not persist restricted listing snapshots to improve the UI.
+3. Show session influence versus long-term influence, learning/expiry state, provenance and user controls. Keep live state visibly separate from the older timeline.
+4. Review aggregate repetition: current caps are per kind/item, so multiple kinds on one item can contribute separately. Prevent repeated/reclassified taps from dominating distinct meaningful choices.
+5. Fix the old timeline's hard-coded end labels to agree with its actual time range. Do not replace the approved visual design.
+6. Acceptance: edit/forget/resume survives reload, cannot affect another owner, cannot silently convert an inference into a fact, invalidates cached reasons, and passes one browser flow with an honest offline/error path.
+
+### REC-03. Candidate eligibility and more surfaces [pending]
+
+1. Move candidate retrieval/eligibility into trusted server paths where provider attributes matter. The current general rank endpoint accepts bounded caller candidate IDs/topics; it does **not** verify prices, stock, dates or opening hours and must not authorize actions.
+2. Apply explicit area/date/budget/service/open-now constraints before scoring. Missing information is unknown, not fabricated. New explicit intent must immediately override old interests.
+3. Extend to service/product/place candidates with permitted tags. Broad home-category adaptation is implemented; individualized restaurant/item ranking across all surfaces is not complete.
+4. Respect user-selected closest/price sorting; add controlled variety within constraints and stable ranking snapshots. Never reorder during a pending tap.
+5. Wire verified server completion signals only from authoritative action-engine events; never accept client `completed` claims. Do not learn sensitive pharmacy/medical traits.
+6. Acceptance: a small repeatable seafood sequence improves the next relevant list; an unrelated request wins immediately; event replays do not inflate weights; provider failures preserve browsing and status truth.
+
+### REC-04. Measurement and lifecycle [pending]
+
+- Measure cached-batch ranking p50/p95, with the proposed <150 ms p95 treated as a target until measured. Compare useful selections, dismissals, constraint adherence and variety with the distance/category baseline; do not optimize clicks alone.
+- Add scheduled retention cleanup, bounded run/event storage, concurrency/failure tests across processes and source-permission review before public use.
+- Keep canonical confirmed facts in `profile_facts`; do not duplicate them in a second LangGraph Store. Semantic embeddings are optional, not a prerequisite.
+
+## 3. Assistant context, short/long memory and draft plans
+
+### CTX-01. Current context/memory [implemented, bounded scope]
+
+- `luna/schema.py:FocusContext` accepts a selected entity, source, card/fragment, timestamp and optional draft-plan identifiers. Place detail -> Ask shows a removable chip and sends the selected place without requiring the user to repeat its name.
+- Focus expires after 30 minutes and is passed through LangGraph runtime context rather than checkpointing the focus object. It is untrusted reference data, never an instruction or a stated fact.
+- Recent checkpointed history is bounded to 24 messages; understanding reads the last 12; research answer text is retained for follow-up understanding. Confirmed facts remain the cross-thread source of truth. This is bounded recent history, not a semantic long-term transcript search or implemented summary system.
+- Forget deletes all old checkpoint versions for that owner so earlier conversation text cannot reintroduce a deleted fact. Other owners are preserved. Current turn/forget serialization is a single-tester process lock; production multi-worker coordination still needs work.
+- Pet 24h/Boarding queries retain their category meaning; responses normalize with the original category/subcategory rather than mutable UI state.
+
+### CTX-02. Complete selected-card follow-ups [pending]
+
+1. Resolve entity/card IDs and plan ownership/revision on the server; current focus strings and plan fields are bounded caller context, not authoritative provider or saved-plan records.
+2. Wire selected **fragments**, not just whole-place detail. Museum example: the user tapped fact 3, which reports tickets sell out quickly. Preserve the exact fragment and its provenance/as-of in request context without promoting it to a fact about the user.
+3. Include the current Dubai date/time, explicit dates, party size, budget and task constraints. Keep data minimal and mark unknowns. Do not infer birthday, school enrollment or other milestones from casual browsing.
+4. Resolve ambiguous entities such as “green house in Deira” before planning travel. Do not merge a similarly named venue automatically.
+5. **Ticket-availability guard:** comments/news/search snippets are not live ticket inventory. If no authoritative inventory adapter exists, say availability is unverified and offer a sourced booking-page handoff. Do not claim tickets are available from a review saying they sell out.
+6. Acceptance: “Are tickets available?” resolves to the selected Museum of the Future; stale/cleared focus does not leak into a new thread; injected fragment instructions cannot write memory, invoke a capability or set status.
+
+### PLAN-01. Versioned itinerary drafts [pending]
+
+1. Create owner-scoped draft-plan storage with plan ID/revision, user-confirmed constraints, selected place IDs, explicit visit durations, locked items and source/as-of for estimates. A plan is not a booking.
+2. Separate proposed edits from the accepted draft. Generate a deterministic before/after diff bound to the base revision; reject a stale revision.
+3. Museum example: propose a two-hour visit, a route estimate to the resolved greenhouse, and the resulting lunch change. Mark the visit duration/travel time as assumptions or estimates. Keep a locked lunch unchanged; ask about a conflict rather than silently moving it.
+4. Show the changed times and assumptions before accepting the draft edit. Accepting a local plan edit must not share data, purchase tickets, book restaurants or mark an external action confirmed.
+5. Obtain fresh permitted route estimates/opening information where possible; missing provider coverage stays visible. Define time zone, midnight crossings, travel buffer and unavailable-source behavior.
+6. Acceptance: revision conflict, ambiguous destination, locked lunch, uncertain duration, route failure and cross-owner access tests; one reviewable browser itinerary diff. External execution stays behind the existing explicit approval/capability engine.
+
+## 4. Temporal suggestions and nearby events
+
+Detailed product requirements: [assistant-context.md](references/assistant-context.md); service cases C9/C13/C15 in `docs/services/cases.md`. These features are **not implemented at this checkpoint**.
+
+### SUG-01. Confirmed occasion context
+
+- Add visible, editable occasion records: birthday/celebration, school start, visiting family, conference, departure or an explicit date the user saved. Store date, recurrence/time zone, provenance, validity and consent separately from inferred interests.
+- Suggest useful choices: cakes/dinner/gifts for a birthday; books/uniform supplies for a confirmed school occasion; family activities for a saved visit; chargers/printing/laundry around a conference; packing/laundry around departure.
+- Avoid sensitive inferences, presumed children or milestones, and notifications based only on a hypothesis. An in-app suggestion and a proactive outbox notification are different permissions.
+- Test date boundaries, recurring dates, forgotten occasions, explicit opt-out and unavailable providers. Reuse existing dedupe, quiet hours and consent for any proactive message.
+
+### EVT-01. Source-backed future events
+
+- Reuse configured search tools first; NewsAPI is optional and its developer tier is not a production feed. Do not add a key dependency when existing sources suffice.
+- Retrieve festivals, performances/exhibitions and artist visits relevant to an explicit area/date/topic. For a specific singer, store a preference only when confirmed or keep it as a visible organic hypothesis.
+- Normalize event identity, venue, local start/end, timezone, source URL, publication date, event date, verification state and checked-at. Confirm dates with organizer/venue/ticketing sources before presenting a scheduled event as verified.
+- Examples are queries, not fixture facts: Global Village opening, a singer touring Dubai next week, a nearby festival. Do not assume this year's opening date or treat a past news item as upcoming.
+- Separate relevance from eligibility, duplicate news reports, stale/cancelled events, unverified announcements and ticket stock. A news report is not booking availability.
+- Render a clean carousel with reason/date/source, dismiss and handoff; no fake ticket purchase or external confirmation. Test timezone/date changes, duplicates, cancellation and empty results.
+
+## 5. Sponsored restaurant discovery
+
+### ADS-01. Controlled, labelled placement [pending]
+
+- Show only within a relevant restaurant/food thread or surface. Match explicit current cuisine/area/budget and **eligible first-party** preferences. Keep organic choices visible.
+- Sponsored card must identify the sponsor, display a clear Sponsored label and an intelligible “Why this ad” reason, and offer dismiss/less-like-this controls. Do not silently mix paid placement into organic relevance scores.
+- Separate eligibility, targeting evidence, budget/frequency caps, impression/click audit and organic ranking. Empty sponsor inventory means no sponsored card; do not invent an advertiser.
+- The current recommender marks all observations organic-only. Define separate consented sponsored-eligible evidence before using behavioral personalization for ads. Never use Google Workspace data, sensitive traits, raw transcripts or restricted Google-derived profiling.
+- Google sign-in offers basic identity and separately granted scopes; it does not export Google's private ad-interest profile. Google Ads audience selection is not permission to read those user profiles.
+- Acceptance: no sponsorship outside food context, visible label and organic alternatives, no ineligible evidence crossing the boundary, caps/dismissal/privacy isolation. Merchant-side campaign management, billing and external ad operations need their own future scope.
+
+## 6. Remaining review and release work
+
+### REV-01. Security/reliability
+
+- Paid Places/Routes/static map/photo proxies still need deployment-appropriate owner checks, quotas/rate limits, bounded validation and honest upstream timeout/failure handling. An API key working does not settle public abuse controls.
+- Sandbox merchant PIN needs attempt throttling before public exposure; production merchant and operator roles are separate work. Do not weaken ownership checks because there is one tester.
+- Keep route/price/stock facts authoritative and dated; keep provider errors distinguishable from sandbox/mocked failure tests.
+- Improve connection lifecycle and multi-worker turn/forget coordination before claiming production readiness. Backend startup still uses deprecated FastAPI startup hooks; migration to lifespan is maintenance, not a feature gate for the single tester.
+
+### REV-02. Code/UI and device review
+
+- Remaining visual references: Home/Services arrival composition, guide, lost-item surfaces and Me. Preserve the approved current navigation, cyan, no shadows, Wi-Fi and gradients; do not restore excluded features just to copy an old reference.
+- Recheck map drill-down, 2D/3D mode stability, late responses and pet query context after subsequent changes.
+- Physical iPhone Safari/native keyboard, safe areas, VoiceOver, Dynamic Type, reduced motion and frame pacing remain unverified. Founder has a Mac/iPhone; the native unsigned build is not device acceptance.
+- The native in-app browser uses a Safari sheet; production OAuth callbacks, isolated merchant bridge, approval/order cards, SSE, guide/recovery parity, APNs/Live Activity and voice remain parked on `ios-swift`.
+
+### REV-03. Demo and provider access
+
+- Keep live configured discovery/search APIs, clearly labelled sandbox merchant execution and official/in-app-browser handoffs for unsupported transactions. No blanket assumption that every API requires a company.
+- API catalog preserves Careem MCP reviewed-access path, Uber privileged approval, affiliate/marketplace tiers and provider-specific unknowns. Registering/applying/production grants are external work, not implemented adapters.
+- Founder walkthrough, ten clean <=4-minute rehearsals, fallback video, deck/hosting/small user test remain pending. Submission target remains January 2027, with the internal package target recorded in `PLAN.md`.
+
+## 7. How the next LLM should execute
+
+1. Read `CLAUDE.md`, `PLAN.md`, this document and `docs/request-backlog.md`; use `handoff.md` only for current runtime/checkpoint details.
+2. Start at **REC-02**, compare its requirements with code, and complete it before CTX-02/PLAN-01. Do not restart Supabase setup, re-research settled OAuth answers or resume native features.
+3. Mark each task implemented and verified separately. Record changed contracts, migrations, test evidence and remaining limits before committing. Update the plan if the founder changes scope/order.
+4. Keep tests proportional: deterministic/profile/privacy/action changes need meaningful tests; browser acceptance must distinguish mocked provider data from live provider verification.
+5. Commit and push to `redesign` at coherent checkpoints; native branch remains `ios-swift`. Never commit `.env`, database contents, backups, provider keys or local signing state.
