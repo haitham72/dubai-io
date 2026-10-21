@@ -60,3 +60,7 @@ The current web/PWA cannot guarantee this for arbitrary websites because provide
 ## Founder review before native parity
 
 Web walkthrough is available before the full native client. Known gaps: original Postgres recovery unresolved; preview uses separate SQLite review data; production identity/roles and complete forgetting across checkpoints are unfinished; broad recommender/context features are planned; physical Safari/phone validation remains. Existing configured Google/search/product APIs were live checked. Native source, successful compilation, Simulator run and device acceptance must be recorded separately in the handoff.
+
+## Handoff checkpoint
+
+Native feature work is parked at the founder's request. `cfb65a4` passed seven package tests and the unsigned Simulator build in macOS CI run 39585052919; physical UI review is still pending. See root `handoff-ios.md` for Mac steps and remaining parity. Backend/recommender work resumes on `redesign`; Google OAuth is deferred until last for the single tester.

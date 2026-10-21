@@ -6,7 +6,7 @@ Execution ledger for the founder's requests; scope remains in `PLAN.md`. Require
 
 Finish the active task before taking the next. New messages refine the active task or enter this backlog; questions get an answer without replacing the task. Reorder only when the founder explicitly changes priorities or the agent explains a logical reordering in the same session and updates this ledger. Preserve unresolved requests across handoffs. The founder explicitly lifted the native iOS hold on 21 Oct.
 
-**Active order, founder instruction:** detailed docs/status → commit/push current `redesign` → create `ios-swift` → implement and verify the first native slice. The table below retains earlier requests; its unfinished backend/features are not silently completed or discarded. Native plan: [ios-swift-plan.md](references/ios-swift-plan.md).
+**Active order, latest founder instruction:** iOS handoff ? Supabase/backend gaps ? moderate recommender ? assistant context/draft plans ? events, occasion suggestions and sponsored discovery ? remaining review fixes. Native device testing moves to the founder's Mac; further native feature work is parked. Google OAuth goes last; one tester uses the existing cookie session. These changes reorder the queue without discarding requests. See [iOS handoff](../handoff-ios.md).
 
 ## Current sequence
 
@@ -21,7 +21,7 @@ Finish the active task before taking the next. New messages refine the active ta
 | 7 | Context-aware Dubai assistant across places/services/products/plans; museum-card follow-up example | Requirements/proposal in [assistant-context.md](references/assistant-context.md); structured focus and itinerary implementation pending. The product is a personal assistant, with Maps as one surface. |
 | 8 | Sponsored food results; birthday/school/occasion suggestions; nearby festivals and artist events | Captured in [service cases](services/cases.md), C9/C13/C15. Requirements only. Preserve labeling, dates/sources, user controls, provider access and existing scope decisions before implementation. |
 | 9 | Open third-party websites in an in-app browser, like Instagram/X | Detailed native browser policy in [iOS plan](references/ios-swift-plan.md). Safari sheet in the first native slice; native authentication and custom browser are distinct later integrations. Web/PWA framing limits remain. |
-| Active | Convert to native Swift iOS | **Start authorized**, superseding the earlier hold. Founder has a Mac and iPhone 13 Pro Max. Snapshot/push baseline, create `ios-swift`, then first native slice. This workspace has no Swift/Xcode; actual macOS build results must be reported separately. |
+| Parked | Convert to native Swift iOS | `redesign` snapshot `feb4163` pushed; `ios-swift` created/published. First Swift package/Xcode project and native onboarding/browse/chat/discovery/Safari source written in `apps/ios`. Seven package tests and the unsigned Simulator build passed on macOS at `cfb65a4` (run 39585052919). Simulator UI/device review and full order/Auth parity remain; handoff written in `handoff-ios.md`. See [native setup](../apps/ios/README.md). |
 
 The queue lists implementation requests separately from completed planning. Items requiring external credentials or a scope decision remain visible rather than being treated as completed.
 
@@ -41,3 +41,5 @@ The queue lists implementation requests separately from completed planning. Item
 
 - 21 Oct: consolidated the drifting requests. Finish Maps, then the recommender plan, then full code/UI review and API/demo assessment. Supabase decisions refine the backend/recommender plan; they do not replace the queue. Native iOS explicitly held by the founder.
 - 21 Oct, later founder instruction: document full plan/status, commit/push/sync current work, create `ios-swift`, start native iOS. This explicitly lifts the native hold and moves that work ahead of pending Supabase/recommender implementation. Other requests remain tracked above.
+
+- 21 Oct, latest founder instruction: park substantial remaining iOS work with `handoff-ios.md`; resume Supabase, recommender and all pending requests. Test on the founder's Mac without forcing a Windows toolchain. Google OAuth is explicitly last; preserve the single-tester cookie session and owner isolation.
