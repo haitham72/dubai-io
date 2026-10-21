@@ -1,6 +1,6 @@
 # Handoff — 21 Oct 2026
 
-**Branches:** `redesign` (web snapshot `feb4163`, pushed), `ios-swift` (active native development). Scope and remaining work: `PLAN.md` (§4). Architecture: `ARCHITECTURE.md`. Review checklist: `docs/user-app-review-guide.md`.
+**Branches:** `redesign` (web snapshot `feb4163`, pushed), `ios-swift` (native first slice handed off; backend work resumes on `redesign`). Scope and remaining work: `PLAN.md` (§4). Architecture: `ARCHITECTURE.md`. Review checklist: `docs/user-app-review-guide.md`.
 
 ## Current status before founder review
 
@@ -8,13 +8,13 @@ The web demo is ready for a founder walkthrough, with documented limits; it is n
 
 The original Postgres database remains unresolved. Port 8000 currently uses separate SQLite review data under `output/review-data`, not a recovered copy of the original records. Supabase migration/Auth, the broad temporal recommender, selected-card/itinerary context and event/sponsorship features are planned, not implemented. Full findings: `docs/review-findings-2026-10-21.md`; access/demo assessment: `docs/references/api-catalog.md`.
 
-Native iOS is now explicitly authorized. First snapshot/push `redesign`, then create `ios-swift` and begin the first native slice described in `docs/references/ios-swift-plan.md`. The founder has a Mac and iPhone 13 Pro Max; this Windows workspace has no Swift/Xcode. Report native source, macOS build, Simulator and device validation separately. No native compilation has been verified at this documentation checkpoint.
+Native first-slice source is handed off in `handoff-ios.md`. The founder will test on a Mac and iPhone 13 Pro Max; further native features are parked while Supabase/recommender work resumes. Google OAuth is deferred until last; the existing tester cookie session remains the development identity.
 
 ## Native first-slice status
 
 `ios-swift` is published from the pushed web baseline. `apps/ios` now contains a checked-in Xcode project/shared scheme, a local Swift package with API DTOs/URL validation/session handling and contract tests, and SwiftUI source for arrival/gradients, browse/chat, catalog, Google 2D discovery/separate MapKit 3D preview, saved details and Safari browsing sheets. No external Swift dependencies or project generator are required to open it on the Mac.
 
-Compilation is being checked with the `Native iOS` macOS workflow; no passing build or device run is claimed yet. Setup: `apps/ios/README.md`. Merchant approval/mini-app/SSE parity, production Auth and APNs/Live Activity remain pending. This is a native first slice, not a completed conversion.
+macOS CI run 39585052919 passed seven package tests and the unsigned Simulator build at `cfb65a4`. No Simulator UI or device run is claimed. Setup: `apps/ios/README.md`. Merchant approval/mini-app/SSE parity, production Auth and APNs/Live Activity remain pending. This is a native first slice, not a completed conversion.
 
 ## Run
 
@@ -29,14 +29,14 @@ Compilation is being checked with the `Native iOS` macOS workflow; no passing bu
 
 Working end to end (browser-verified 19 Oct): Luna at `/` · one order path (server catalog prices → one approval → sandbox merchant inbox → live SSE card) · deadline loop (10:00 → ask 08:30 → merchant confirms) · reminders + labelled Demo triggers (dedupe, consent, quiet hours) · taxi memory → prefilled lost-item report · profile learning from real choices (Confirm / Not true / Forget persist) · profile document + bi-temporal facts in Postgres · Luna research tools (Tavily/SerpAPI cited answers, Finnhub quotes, civic questions refused) · product search (live Amazon.ae results via SerpAPI, links only) · live Google Routes ETA · **Maps view on real Google Places** (photos, open now, phone, website, Directions) on a server-proxied Google static map · chat restyled to `02-rows`/`03-approve-events` (flat, AI text unboxed) · rich results survive reload · profile learns from real use only.
 
-Tests: 79 backend passed (also on Postgres with `TEST_DATABASE_URL`), 11 live cases skipped; JS 92 + 8 + 12.
+Latest web baseline: 81 backend passed on SQLite, 11 live cases skipped; earlier PostgreSQL coverage predates the local runtime failure; JS 92 + 8 + 12.
 
 ## Known limits (cannot be real yet)
 
 - Partner mini-apps, their prices and the merchant are sandbox (no real merchant joined). Arrival Wi-Fi captive portal is a staged concept (no airport partnership). Guide photos are illustrative (no licensed DXB imagery). Taxi fare range is a fixed estimate (no verified tariff source). RTA lost-item has no API (report is prepared + official handoff only).
 
 - Sandbox merchant (no real shop yet); anonymous cookie sessions; merchant PIN doubles as operator access.
-- Places results are a list only (no Google map pins yet); flight "landed" is a Demo trigger until a flight API key exists.
+- Google 2D map pins are implemented; flight "landed" is a Demo trigger until a flight API key exists.
 - Research answers take ~6–9 s (search + a second model call).
 - Purchasing/payments are not available (`docs/references/api-catalog.md`).
 
