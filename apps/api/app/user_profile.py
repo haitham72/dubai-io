@@ -71,7 +71,8 @@ class ProfileStore:
         self.legacy.rename(self.legacy.with_suffix(".json.migrated"))
 
     # ------------------------------------------------------------ writes
-    def add(self, owner: str, key: str, value: str, source: str, facet: str | None = None, status: str = "told", evidence=None) -> dict:
+    def add(self, owner: str, key: str, value: str, source: str, facet: str | None = None, status: str = "told", evidence=None, *, commit: bool = True) -> dict:
+        """Save a stated fact; initialized callers can share a transaction with commit=False."""
         facet = facet or KEY_FACET.get(key, "context")
         if facet not in FACETS:
             raise ValueError("Unknown facet")
@@ -87,15 +88,18 @@ class ProfileStore:
             db.execute("INSERT INTO profile_facts VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,NULL)",
                        (new_id, owner, facet, key, json.dumps(value), "user_supplied", status, 1.0, source[:140], json.dumps(evidence or []), at, None, at))
             self._project(db, owner)
-            db.commit()
+            if commit:
+                db.commit()
             return self._as_fact(db.execute("SELECT * FROM profile_facts WHERE id=?", (new_id,)).fetchone())
 
-    def forget(self, owner: str, key: str) -> int:
+    def forget(self, owner: str, key: str, *, commit: bool = True) -> int:
+        """Remove a key's history, optionally inside the caller's transaction."""
         with self.lock:
             db = self.db
             n = db.execute("DELETE FROM profile_facts WHERE owner=? AND key=?", (owner, key)).rowcount
             self._project(db, owner)
-            db.commit()
+            if commit:
+                db.commit()
             return n
 
     def _project(self, db, owner):

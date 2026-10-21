@@ -1,6 +1,6 @@
 # Handoff - 21 Oct 2026
 
-The primary continuity artifact is **PLAN.md**, with nested tasks and acceptance gates in **docs/implementation-plan.md**. The request ledger is docs/request-backlog.md. **Next task: REC-02, finish recommender controls and explainability.** Do not restart Supabase setup or resume native features.
+The primary continuity artifact is **PLAN.md**, with nested tasks and acceptance gates in **docs/implementation-plan.md**. The request ledger is docs/request-backlog.md. **Next task: REC-03, trusted candidate eligibility and wider recommendation surfaces.** Do not restart Supabase setup or resume native features.
 
 ## Running now
 
@@ -19,7 +19,7 @@ The primary continuity artifact is **PLAN.md**, with nested tasks and acceptance
 
 ## Implemented checkpoint
 
-- Moderate server recommender first slice: reviewed topics, owner-bound events, dedupe/per-kind repetition cap, session/long-term decay, organic-only projections, stable home-card boosts/reasons and live-map click ingestion. Me -> You, over time exposes Confirm/Not true/Forget/Resume. Edit, richer evidence, wider eligibility/surfaces and measurement remain REC-02/03/04.
+- Moderate server recommender first slice: reviewed topics, owner-bound events, dedupe/aggregate per-option repetition cap, session/long-term decay, organic-only projections, stable home-card boosts/reasons and live-map click ingestion. Me -> You, over time exposes Confirm/Edit/Not true/Forget/Resume, separate visit/long-term influence and dated evidence. REC-02 is verified complete, including atomic edits, capped upgrades, stale-cache invalidation and corrected timeline labels. Wider eligibility/surfaces and measurements remain REC-03/04.
 - Whole-place chat focus with visible Clear, 30-minute expiry and ephemeral LangGraph runtime context. Recent stored history is bounded to 24 messages; understanding reads the last 12. Research answer text supports follow-ups. Selected fragments and server-validated plan context remain CTX-02.
 - Forget removes owner checkpoints as well as canonical facts/evidence so old model history cannot recreate a forgotten detail. Other owners survive. Multi-worker turn/forget coordination remains a release task.
 - Pet-specific queries and captured category/subcategory metadata fix the map review findings. Existing single category row, cyan, explicit 2D/3D and single-composer chat remain intact.
@@ -27,13 +27,19 @@ The primary continuity artifact is **PLAN.md**, with nested tasks and acceptance
 
 ## Verification
 
-- Backend: **97 passed, 11 live cases skipped on SQLite; 97 passed, 11 skipped on Supabase Postgres**. Two known FastAPI startup deprecation warnings remain.
-- Existing JavaScript: profile 92, recovery 8, Luna client 12 passed.
+- Backend: **109 passed, 11 live cases skipped on SQLite; 109 passed, 11 skipped on Supabase Postgres**. Two known FastAPI startup deprecation warnings remain.
+- JavaScript: profile 92, recovery 8, Luna client 12 and recommendation-cache 5 passed.
 - Five browser acceptance checks passed for pet-query context, place-to-chat focus/single composer, real profiler ingestion, Clear and visible Forget/Resume. Google/Luna responses were controlled test data, not a new live-provider claim. Artifact: output/playwright/live-interests.png.
 - Import tests verify backup, identical replay, conflict rejection and unmapped-table refusal. Private schema access checks and real API-to-Supabase session persistence passed.
 
 ## Still pending
 
-Follow the detailed plan in order: REC-02/03/04 -> CTX-02/PLAN-01 -> SUG-01/EVT-01 -> ADS-01 -> REV-01/02/03. Draft itineraries, event/occasion feeds and sponsored placements are not implemented. Public proxy quotas and merchant throttling/roles, physical-device review, original-data recovery, hosted deployment and production identity remain visible. Google OAuth is last; no provider outreach/application was submitted.
+Follow the detailed plan in order: REC-03/04 -> CTX-02/PLAN-01 -> SUG-01/EVT-01 -> ADS-01 -> REV-01/02/03. Draft itineraries, event/occasion feeds and sponsored placements are not implemented. Public proxy quotas and merchant throttling/roles, physical-device review, original-data recovery, hosted deployment and production identity remain visible. Google OAuth is last; no provider outreach/application was submitted.
 
 Backups, status logs and screenshots live under ignored output/. They contain local/private state and must not be committed. Relevant implementation files are named in the detailed plan; compare them before marking any task complete.
+
+## REC-02 completion checkpoint
+
+Edit requires explicit Save, clears old evidence, pauses the corrected old topic and confirms the replacement. Facts/projections commit together; owner isolation and rollback are tested. The UI exposes dated recent evidence, session/long-term influence and expiry. Aggregate weights reconcile from retained events, with strongest-signal caps per option/visit. Existing local projections were backed up and reconciled to temporal-v2 before restarting the API; no schema change was needed.
+
+Eight browser acceptance checks passed for evidence/scopes, timeline labels, Cancel, failed-save retry and stale reason clearing, edit/reload, Not true/Resume, Forget/reload and outage/recovery. These used seeded profiler observations and deliberate 503 responses, not new live-provider data. Screenshot: output/playwright/rec02-evidence.png. Continue at REC-03 without revisiting native or OAuth.

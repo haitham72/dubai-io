@@ -1,6 +1,6 @@
 # Moderate recommender and memory plan — 21 Oct 2026
 
-**Implementation checkpoint:** REC-01 first slice is implemented and verified; the full proposal below is not all implemented. REC-02 Edit/evidence controls is next, followed by trusted candidate eligibility/wider surfaces and measurement. See ../implementation-plan.md for nested task states and acceptance gates. Current retention is 24 hours for ranking runs and 90 days for events, with cleanup on activity; all client observations are organic-only. Google OAuth is last.
+**Implementation checkpoint:** REC-01 first slice is implemented and verified; the full proposal below is not all implemented. REC-02 Edit/evidence controls, aggregate caps, atomic facts and cache invalidation are implemented and verified. REC-03 trusted candidate eligibility/wider surfaces is next, followed by REC-04 measurements. See ../implementation-plan.md for nested task states and acceptance gates. Current retention is 24 hours for ranking runs and 90 days for events, with cleanup on activity; all client observations are organic-only. Google OAuth is last.
 
 
 **Planning deliverable; not implemented.** Target: Supabase Postgres/Auth, with the existing FastAPI/LangGraph service. Execution order and outstanding requests: [request backlog](../request-backlog.md). Existing contest scope remains in `PLAN.md`.

@@ -12,7 +12,7 @@ from typing import Literal
 from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException, Request
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from .actions import COOKIE, engine
 
@@ -27,7 +27,7 @@ TOPICS = {
 }
 WEIGHTS = {"category": .25, "detail": .5, "choose": 1., "save": 1.5, "less_like_this": -1.5, "dismiss": 0.}
 DAY = 86400
-RANKER = "temporal-v1"
+RANKER = "temporal-v2"
 
 
 def clock():
@@ -86,7 +86,17 @@ class Rank(Strict):
 
 
 class Control(Strict):
-    action: Literal["confirm", "reject", "forget", "resume"]
+    action: Literal["confirm", "edit", "reject", "forget", "resume"]
+    replacement_topic: str | None = None
+
+    @model_validator(mode="after")
+    def valid_replacement(self):
+        if self.action == "edit":
+            if self.replacement_topic not in TOPICS:
+                raise ValueError("Choose a reviewed replacement interest")
+        elif self.replacement_topic is not None:
+            raise ValueError("Only Edit accepts a replacement interest")
+        return self
 
 
 def setup(store):
@@ -123,27 +133,77 @@ class Recommender:
             self.store.db.execute(f"DELETE FROM {table} WHERE expires_at<=?", (at,))
         self.store.db.execute("DELETE FROM profile_interests WHERE expires_at<=? AND status='active'", (at,))
 
-    def _project(self, owner, event, delta, at):
+    def _rebuild_topic(self, owner, topic, at):
+        """Replay retained observations with one strongest positive/negative per item/visit.
+
+        Rebuilding also reconciles v1's per-kind weights without discarding real
+        evidence. Canonical confirmed facts and paused learning are preserved.
+        """
         db = self.store.db
-        for scope, key, half_life, lifetime in (("session", event.session_id, 1800, DAY), ("long_term", "all", 30 * DAY, 90 * DAY)):
-            row = db.execute("""SELECT positive,negative,evidence_count,last_decay,evidence,status FROM profile_interests
-                WHERE owner=? AND topic=? AND scope=? AND context_key=? AND usage_class='organic_only'""", (owner,event.topic,scope,key)).fetchone()
-            if row and row[5] in {"rejected", "forgotten"}:
+        override = db.execute("""SELECT status,last_decay,expires_at FROM profile_interests WHERE owner=? AND topic=?
+            AND scope='long_term' AND context_key='all' AND usage_class='organic_only'""", (owner,topic)).fetchone()
+        if override and override[0] in {"rejected","forgotten"}:
+            return
+        rows = db.execute("""SELECT id,session_id,entity_id,kind,received_at,weight FROM recommendation_events
+            WHERE owner=? AND topic=? AND usage_class='organic_only' AND expires_at>? ORDER BY received_at,id""", (owner,topic,at)).fetchall()
+        caps, buckets = {}, {}
+        for eid,session,entity,kind,received,stored_weight in rows:
+            desired = WEIGHTS.get(kind,0.)
+            cap_key = (session,entity,desired < 0)
+            previous = caps.get(cap_key,0.)
+            delta = math.copysign(max(0.,abs(desired)-previous),desired)
+            caps[cap_key] = max(previous,abs(desired))
+            if not math.isclose(delta,stored_weight,abs_tol=1e-6):
+                db.execute("UPDATE recommendation_events SET weight=? WHERE id=? AND owner=?", (delta,eid,owner))
+            if not delta:
                 continue
-            decay = .5 ** (max(0, at - row[3]) / half_life) if row else 1
-            positive, negative = (row[0] * decay, row[1] * decay) if row else (0.,0.)
-            evidence = json.loads(row[4]) if row else []
-            entity_key = sha256(event.entity_id.encode()).hexdigest()[:20]
-            count = (row[2] if row else 0) + int(entity_key not in evidence)
-            evidence = list(dict.fromkeys([*evidence,entity_key]))[-32:]
-            db.execute("""INSERT INTO profile_interests VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
-                ON CONFLICT(owner,topic,scope,context_key,usage_class) DO UPDATE SET
-                positive=excluded.positive,negative=excluded.negative,evidence_count=excluded.evidence_count,
-                last_decay=excluded.last_decay,expires_at=excluded.expires_at,evidence=excluded.evidence""",
-                (owner,event.topic,scope,key,"organic_only",positive + max(delta,0),negative + max(-delta,0),count,at,at+lifetime,json.dumps(evidence),row[5] if row else "active"))
+            for scope,key,half_life,lifetime in (("session",session,1800,DAY),("long_term","all",30*DAY,90*DAY)):
+                bucket = buckets.setdefault((scope,key),{"p":0.,"n":0.,"entities":{},"last":received,"lifetime":lifetime})
+                weighted = delta * .5 ** (max(0,at-received)/half_life)
+                bucket["p"] += max(weighted,0.)
+                bucket["n"] += max(-weighted,0.)
+                bucket["entities"][entity] = received
+                bucket["last"] = max(bucket["last"],received)
+        db.execute("DELETE FROM profile_interests WHERE owner=? AND topic=? AND usage_class='organic_only'", (owner,topic))
+        for (scope,key),bucket in buckets.items():
+            status = "confirmed" if scope == "long_term" and override and override[0] == "confirmed" else "active"
+            expiry = bucket["last"] + bucket["lifetime"]
+            if expiry <= at and status == "active":
+                continue
+            evidence = [sha256(e.encode()).hexdigest()[:20] for e in sorted(bucket["entities"],key=bucket["entities"].get)[-32:]]
+            db.execute("INSERT INTO profile_interests VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+                (owner,topic,scope,key,"organic_only",bucket["p"],bucket["n"],len(bucket["entities"]),at,expiry,json.dumps(evidence),status))
+        if override and override[0] == "confirmed" and not buckets:
+            db.execute("INSERT INTO profile_interests VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+                (owner,topic,"long_term","all","organic_only",0.,0.,0,override[1],override[2],"[]","confirmed"))
+
+    def rebuild(self):
+        """Explicit maintenance for existing v1 evidence; safe to replay on either DB."""
+        at = clock()
+        with self.store.lock:
+            try:
+                self._prune(at)
+                pairs = self.store.db.execute("SELECT DISTINCT owner,topic FROM recommendation_events ORDER BY owner,topic").fetchall()
+                for owner,topic in pairs:
+                    self._lock_owner(owner)
+                    self._rebuild_topic(owner,topic,at)
+                    self.store.db.execute("DELETE FROM recommendation_runs WHERE owner=?", (owner,))
+                self.store.db.commit()
+                return len(pairs)
+            except Exception:
+                self.store.db.conn.rollback()
+                raise
 
     def record(self, owner, events):
-        at, recorded = clock(), 0
+        with self.store.lock:
+            try:
+                return self._record(owner,events)
+            except Exception:
+                self.store.db.conn.rollback()
+                raise
+
+    def _record(self, owner, events):
+        at, recorded, touched = clock(), 0, set()
         with self.store.lock:
             db = self.store.db
             self._lock_owner(owner)
@@ -153,73 +213,97 @@ class Recommender:
                     AND scope='long_term' AND context_key='all' AND usage_class='organic_only'""", (owner,event.topic)).fetchone()
                 if override and override[0] in {"rejected", "forgotten"}:
                     continue
-                weight = WEIGHTS[event.kind]
-                # A replay with a new key still cannot inflate one item indefinitely.
-                previous = db.execute("""SELECT COALESCE(SUM(weight),0) FROM recommendation_events
-                    WHERE owner=? AND session_id=? AND entity_id=? AND topic=? AND kind=?""",
-                    (owner,event.session_id,event.entity_id,event.topic,event.kind)).fetchone()[0]
-                delta = math.copysign(max(0,abs(weight)-abs(previous)), weight)
                 cur = db.execute("INSERT OR IGNORE INTO recommendation_events VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
-                    (uuid4().hex,owner,event.event_key,event.session_id,event.thread_id,event.kind,event.topic,event.entity_id,delta,at,at+90*DAY,"organic_only"))
+                    (uuid4().hex,owner,event.event_key,event.session_id,event.thread_id,event.kind,event.topic,event.entity_id,0.,at,at+90*DAY,"organic_only"))
                 if cur.rowcount:
                     recorded += 1
-                    if delta:
-                        self._project(owner,event,delta,at)
+                    touched.add(event.topic)
+            for topic in touched:
+                self._rebuild_topic(owner,topic,at)
             db.commit()
         return recorded
 
-    def interests(self, owner, session_id=None):
+    def interests(self, owner, session_id=None, *, commit=True):
         at, result = clock(), []
         with self.store.lock:
             rows = self.store.db.execute("""SELECT topic,scope,context_key,positive,negative,evidence_count,last_decay,expires_at,status
                 FROM profile_interests WHERE owner=? AND usage_class='organic_only' ORDER BY topic,scope""", (owner,)).fetchall()
-            self.store.db.commit()
+            observations = self.store.db.execute("""SELECT topic,session_id,entity_id,kind,received_at,weight FROM recommendation_events
+                WHERE owner=? AND usage_class='organic_only' AND expires_at>? AND weight<>0 ORDER BY received_at DESC,id DESC""", (owner,at)).fetchall()
+            if commit:
+                self.store.db.commit()
         for topic,scope,key,positive,negative,count,last,expiry,status in rows:
             if scope == "session" and key != session_id or expiry <= at and status == "active":
                 continue
             decay = .5 ** (max(0,at-last)/(1800 if scope == "session" else 30*DAY))
             p,n = positive*decay,negative*decay
+            recent = [{"kind":kind,"entity_id":entity,"at":datetime.fromtimestamp(received,timezone.utc).isoformat(),
+                       "impact":"less_like_this" if weight < 0 else "interest"}
+                      for t,s,entity,kind,received,weight in observations if t == topic and (scope == "long_term" or s == key)][:5]
+            learning = "confirmed" if status == "confirmed" else "paused" if status in {"rejected","forgotten"} else "ready" if count >= 2 and (p+1)/(p+n+2) >= .6 else "learning"
             result.append({"topic":topic,"label":TOPICS[topic],"scope":scope,"status":status,
                 "provenance":"user_supplied" if status == "confirmed" else "inferred",
                 "confidence":round((p+1)/(p+n+2),4),"evidence_count":count,
-                "signal":round(p/(p+n+2),4),"as_of":datetime.fromtimestamp(last,timezone.utc).isoformat(),
+                "signal":round(p/(p+n+2),4),"as_of":datetime.fromtimestamp(expiry-(DAY if scope == "session" else 90*DAY),timezone.utc).isoformat(),
+                "evidence":recent,"learning_state":learning,"half_life_seconds":1800 if scope == "session" else 30*DAY,
+                "expires_at":datetime.fromtimestamp(expiry,timezone.utc).isoformat() if status == "active" else None,
                 "usage_class":"organic_only"})
         return result
 
-    def control(self, owner, topic, action):
+    def control(self, owner, topic, action, replacement_topic=None):
+        if topic not in TOPICS:
+            raise HTTPException(404,"Unknown interest")
+        if action == "edit" and (replacement_topic not in TOPICS or replacement_topic == topic):
+            raise HTTPException(422,"Choose a different reviewed interest")
         from .luna.graph import clear_conversation, memory_lock
         with memory_lock:
             if action != "confirm":
                 clear_conversation(owner)
-            return self._control(owner,topic,action)
+            return self._control(owner,topic,action,replacement_topic)
 
-    def _control(self, owner, topic, action):
-        if topic not in TOPICS:
-            raise HTTPException(404,"Unknown interest")
+    def _control(self, owner, topic, action, replacement_topic):
         at = clock()
-        status = {"confirm":"confirmed","reject":"rejected","forget":"forgotten","resume":"active"}[action]
-        with self.store.lock:
-            db = self.store.db
-            self._lock_owner(owner)
-            db.execute("DELETE FROM recommendation_events WHERE owner=? AND topic=?", (owner,topic))
-            db.execute("DELETE FROM profile_interests WHERE owner=? AND topic=?", (owner,topic))
-            db.execute("DELETE FROM recommendation_runs WHERE owner=?", (owner,))
-            if action != "resume":
-                db.execute("INSERT INTO profile_interests VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
-                    (owner,topic,"long_term","all","organic_only",0.,0.,0,at,at+90*DAY,"[]",status))
-            db.commit()
-        # Confirmation is an explicit user decision, not promotion by an LLM.
+        status = {"confirm":"confirmed","edit":"forgotten","reject":"rejected","forget":"forgotten","resume":"active"}[action]
         from .user_profile import ProfileStore
         facts = ProfileStore(lambda:self.store)
-        key = "interest:" + topic
-        if action == "confirm":
-            facts.add(owner,key,TOPICS[topic],"You confirmed this interest",facet="preference",status="confirmed")
-        else:
-            facts.forget(owner,key)
-        return {"topic":topic,"status":status}
+        with self.store.lock:
+            db = facts.db  # Initialize its schema before the owner transaction.
+            try:
+                self._lock_owner(owner)
+                for changed in [topic,*([replacement_topic] if action == "edit" else [])]:
+                    db.execute("DELETE FROM recommendation_events WHERE owner=? AND topic=?", (owner,changed))
+                    db.execute("DELETE FROM profile_interests WHERE owner=? AND topic=?", (owner,changed))
+                db.execute("DELETE FROM recommendation_runs WHERE owner=?", (owner,))
+                if action != "resume":
+                    db.execute("INSERT INTO profile_interests VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+                        (owner,topic,"long_term","all","organic_only",0.,0.,0,at,at+90*DAY,"[]",status))
+                if action == "confirm":
+                    facts.add(owner,"interest:"+topic,TOPICS[topic],"You confirmed this interest",facet="preference",status="confirmed",commit=False)
+                else:
+                    facts.forget(owner,"interest:"+topic,commit=False)
+                if action == "edit":
+                    db.execute("INSERT INTO profile_interests VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+                        (owner,replacement_topic,"long_term","all","organic_only",0.,0.,0,at,at+90*DAY,"[]","confirmed"))
+                    facts.add(owner,"interest:"+replacement_topic,TOPICS[replacement_topic],"You edited your interest from "+TOPICS[topic],facet="preference",status="confirmed",commit=False)
+                db.commit()
+            except Exception:
+                db.conn.rollback()
+                raise
+        return {"topic":topic,"status":status,**({"replacement_topic":replacement_topic,"replacement_status":"confirmed"} if action == "edit" else {})}
 
     def rank(self, owner, body):
-        interests = self.interests(owner,body.session_id)
+        # A control change cannot invalidate runs and then have a stale in-flight
+        # ranking write its old evidence back after that transaction commits.
+        with self.store.lock:
+            self._lock_owner(owner)
+            try:
+                return self._rank(owner,body)
+            except Exception:
+                self.store.db.conn.rollback()
+                raise
+
+    def _rank(self, owner, body):
+        interests = self.interests(owner,body.session_id,commit=False)
         visible = [i for i in interests if i["status"] in {"active","confirmed"}]
         indexed = {(i["topic"],i["scope"]):i for i in visible}
         version = sha256(json.dumps(interests,sort_keys=True).encode()).hexdigest()[:16]
@@ -281,4 +365,11 @@ def list_interests(request: Request, session_id: str | None = None):
 @router.put("/api/profile/interests/{topic}")
 def control_interest(topic: str, body: Control, request: Request):
     rec,owner = owned(request)
-    return rec.control(owner,topic,body.action)
+    return rec.control(owner,topic,body.action,body.replacement_topic)
+
+
+if __name__ == "__main__":
+    store = engine().store
+    with store.lock:
+        setup(store)
+    print({"rebuilt_owner_topics":Recommender(store).rebuild(),"ranker_version":RANKER})

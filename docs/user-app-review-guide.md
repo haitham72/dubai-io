@@ -57,8 +57,10 @@ One pass, about 20 minutes. Tick each box; write anything off in `handoff.md` â†
 ## Current recommender/context checks
 
 - [ ] Explore two distinct live food places; re-enter Home and inspect any explained category ranking. Current maps keep closest ordering. Do not mistake broad category adaptation for complete restaurant-item personalization.
-- [ ] Me -> You, over time -> Live interests: Confirm, Not true, Forget and Resume persist. Edit/richer evidence is the next implementation task.
+- [ ] Me -> You, over time -> Live interests: Confirm, Edit, Not true, Forget and Resume persist. Edit requires explicit Save and removes old evidence. This visit / Across visits show dated evidence, decay and expiry; failed saves remain retryable.
 - [ ] Open a place -> Ask about this place -> chat shows the selected place and one composer; Clear removes the context. A selected listing is not a confirmed fact or live ticket inventory.
 - [ ] Forget a saved detail, then ask again in the old thread: old server model checkpoints must not restore the detail. Old browser chat display is separate from model memory.
 
 Detailed future acceptance tasks are in implementation-plan.md; native device testing stays on the Mac under ios-swift. Google OAuth is deferred for the single tester.
+
+- [ ] REC-02: Edit a learned topic to another reviewed topic, Cancel once, then Save. Reload: old topic stays paused; replacement says You confirmed and has no transplanted evidence. Not true/Forget remove the saved preference; Resume starts clean. Repeated taps/reclassifications on one option do not inflate distinct-option counts or resurrect an old Home reason.

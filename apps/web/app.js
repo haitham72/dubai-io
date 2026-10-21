@@ -541,14 +541,14 @@ function openProfile() {
     <p class="lead">Everything I believe about you, and why. Drag the timeline to see it change.</p>
     <div class="scrub"><label for="asof">As of <b id="asofLbl"></b></label>
       <input type="range" id="asof" min="${T0}" max="${T1}" step="3600000" value="${S.asOf}" />
-      <div class="scrub-ends"><span>1 Oct</span><span>13 Oct</span></div></div>
+      <div class="scrub-ends"><span>${esc(new Date(T0).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }))}</span><span>${esc(new Date(T1).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }))}</span></div></div>
     <div id="liveInterests"></div><div id="prof"></div>
     <p class="fine">Things I noticed can reorder suggestions, always with a “Because” note. They never fill a form, reach a shop or send you a reminder until you confirm them. Health, religion, ethnicity, nationality, gender, sexuality and politics are never inferred.</p>
   `, () => { renderYouMini(); refreshHomeCaptions(); });
   const input = $('#asof');
   input.addEventListener('input', () => { S.asOf = +input.value; renderProfile(); });
   renderProfile();
-  renderInterests($('#liveInterests'), () => refreshRecommendations(CASES));
+  renderInterests($('#liveInterests'), ({ refresh = true } = {}) => { refreshHomeCaptions(); if (refresh) refreshRecommendations(CASES); });
 }
 function renderProfile() {
   $('#asofLbl').textContent = fmtDate(S.asOf);

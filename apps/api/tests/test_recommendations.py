@@ -135,3 +135,134 @@ def test_concurrent_duplicate_observations_record_once(client):
         counts = list(pool.map(lambda _:recommender.record(owner,[rec.Event(**event())]),range(8)))
     assert sum(counts) == 1
     assert recommender.interests(owner,"session-one")[0]["evidence_count"] == 1
+
+
+def test_edit_is_explicit_durable_and_does_not_transfer_evidence(client):
+    from app.user_profile import ProfileStore
+    c,store = client
+    owner = c.get("/api/session").json()["user_id"]
+    c.put("/api/profile/interests/food.restaurants",json={"action":"confirm"})
+    record(c,event("old-item",topic="food.restaurants"),event("new-item",topic="food.seafood"))
+    rank(c)
+    response = c.put("/api/profile/interests/food.restaurants",json={"action":"edit","replacement_topic":"food.seafood"})
+    assert response.status_code == 200
+    reopened = TestClient(c.app)
+    reopened.cookies.update(c.cookies)
+    rows = reopened.get("/api/profile/interests?session_id=session-one").json()["interests"]
+    old = next(r for r in rows if r["topic"] == "food.restaurants")
+    new = next(r for r in rows if r["topic"] == "food.seafood")
+    assert old["status"] == "forgotten" and old["learning_state"] == "paused"
+    assert new["status"] == "confirmed" and new["provenance"] == "user_supplied"
+    assert new["evidence_count"] == 0 and new["evidence"] == []
+    assert record(c,event("old-again",topic="food.restaurants")) == 0
+    assert store.db.execute("SELECT COUNT(*) FROM recommendation_runs WHERE owner=?",(owner,)).fetchone()[0] == 0
+    facts = ProfileStore(lambda:store).current(owner)
+    assert [(f["key"],f["value"],f["status"]) for f in facts] == [("interest:food.seafood","seafood","confirmed")]
+    assert rank(c)["results"][0]["reason"] == "Because you confirmed an interest in seafood"
+
+
+def test_edit_and_evidence_do_not_affect_another_owner(client):
+    c,store = client
+    other = TestClient(c.app)
+    other.get("/api/session")
+    record(other,event("other-private-item",topic="food.restaurants"))
+    record(c,event("own-item",topic="food.restaurants"))
+    c.put("/api/profile/interests/food.restaurants",json={"action":"edit","replacement_topic":"food.seafood"})
+    mine = c.get("/api/profile/interests").json()
+    theirs = other.get("/api/profile/interests").json()
+    assert "other-private-item" not in str(mine)
+    assert theirs["interests"][0]["topic"] == "food.restaurants"
+    assert theirs["interests"][0]["evidence"][0]["entity_id"] == "other-private-item"
+
+
+@pytest.mark.parametrize("body",[
+    {"action":"edit"},
+    {"action":"edit","replacement_topic":"health.condition"},
+    {"action":"edit","replacement_topic":"food.restaurants"},
+    {"action":"confirm","replacement_topic":"food.seafood"},
+])
+def test_invalid_edits_do_not_purge_conversation_or_profile(client,monkeypatch,body):
+    from app.luna import graph as luna
+    c,_ = client
+    record(c,event("own-item",topic="food.restaurants"))
+    monkeypatch.setattr(luna,"clear_conversation",lambda _:pytest.fail("Invalid edit purged history"))
+    assert c.put("/api/profile/interests/food.restaurants",json=body).status_code == 422
+    assert c.put("/api/profile/interests/unknown",json={"action":"forget"}).status_code == 404
+    assert c.get("/api/profile/interests").json()["interests"][0]["evidence_count"] == 1
+
+
+def test_edit_rolls_back_projection_and_canonical_fact_together(client,monkeypatch):
+    from app.user_profile import ProfileStore
+    c,store = client
+    owner = c.get("/api/session").json()["user_id"]
+    c.put("/api/profile/interests/food.restaurants",json={"action":"confirm"})
+    record(c,event("old-item",topic="food.restaurants"))
+    rank(c)
+    original_add = ProfileStore.add
+    def fail_after_fact_write(self,*args,**kwargs):
+        original_add(self,*args,**kwargs)
+        raise RuntimeError("Injected storage failure")
+    monkeypatch.setattr(ProfileStore,"add",fail_after_fact_write)
+    with pytest.raises(RuntimeError,match="Injected storage failure"):
+        c.put("/api/profile/interests/food.restaurants",json={"action":"edit","replacement_topic":"food.seafood"})
+    rows = c.get("/api/profile/interests").json()["interests"]
+    assert [(r["topic"],r["status"]) for r in rows] == [("food.restaurants","confirmed")]
+    assert ProfileStore(lambda:store).current(owner)[0]["key"] == "interest:food.restaurants"
+    assert store.db.execute("SELECT COUNT(*) FROM recommendation_events WHERE owner=?",(owner,)).fetchone()[0] == 1
+    assert store.db.execute("SELECT COUNT(*) FROM recommendation_runs WHERE owner=?",(owner,)).fetchone()[0] == 1
+
+
+def test_evidence_shows_visit_scope_dates_and_bounded_recent_observations(client,monkeypatch):
+    c,_ = client
+    at = 1792500000.
+    monkeypatch.setattr(rec,"clock",lambda:at)
+    for n in range(7):
+        record(c,event("g:item-"+str(n),session="session-one" if n < 3 else "session-two"))
+        at += 1
+    rows = c.get("/api/profile/interests?session_id=session-one").json()["interests"]
+    session = next(r for r in rows if r["scope"] == "session")
+    long = next(r for r in rows if r["scope"] == "long_term")
+    assert session["evidence_count"] == 3 and long["evidence_count"] == 7
+    assert len(long["evidence"]) == 5 and len(session["evidence"]) == 3
+    assert all(e["entity_id"] in {"g:item-0","g:item-1","g:item-2"} for e in session["evidence"])
+    assert all(e["at"].endswith("+00:00") and e["kind"] == "detail" for e in long["evidence"])
+    assert session["half_life_seconds"] == 1800 and long["half_life_seconds"] == 30*rec.DAY
+    assert session["expires_at"] < long["expires_at"]
+    assert session["learning_state"] == "ready"
+
+
+@pytest.mark.parametrize("kinds",[
+    ["category","detail","choose","save"],
+    ["save","choose","detail","category"],
+])
+def test_reclassifying_one_item_is_capped_at_its_strongest_signal(client,kinds):
+    c,store = client
+    record(c,*(event("same-item",kind=k,key="kind-key-"+k) for k in kinds))
+    record(c,*(event("same-item",kind=k,key="replay-key-"+k) for k in kinds))
+    assert store.db.execute("SELECT SUM(weight) FROM recommendation_events").fetchone()[0] == 1.5
+    rows = c.get("/api/profile/interests").json()["interests"]
+    assert rows[0]["evidence_count"] == 1
+    assert rank(c)["results"][0]["reason"] is None
+
+
+def test_projection_rebuild_reconciles_old_weights_without_discarding_evidence(client):
+    c,store = client
+    record(c,*(event("same-item",kind=k,key="old-event-"+k) for k in ["category","detail","choose","save"]))
+    for kind,weight in rec.WEIGHTS.items():
+        store.db.execute("UPDATE recommendation_events SET weight=? WHERE kind=?",(weight,kind))
+    store.db.execute("UPDATE profile_interests SET positive=100")
+    store.db.commit()
+    assert rec.Recommender(store).rebuild() == 1
+    assert store.db.execute("SELECT COUNT(*) FROM recommendation_events").fetchone()[0] == 4
+    assert store.db.execute("SELECT SUM(weight) FROM recommendation_events").fetchone()[0] == 1.5
+    assert c.get("/api/profile/interests").json()["interests"][0]["evidence_count"] == 1
+
+
+def test_failed_ingestion_does_not_leave_half_written_evidence(client,monkeypatch):
+    c,store = client
+    def fail(*args):
+        raise RuntimeError("Injected projection failure")
+    monkeypatch.setattr(rec.Recommender,"_rebuild_topic",fail)
+    with pytest.raises(RuntimeError,match="Injected projection failure"):
+        record(c,event())
+    assert store.db.execute("SELECT COUNT(*) FROM recommendation_events").fetchone()[0] == 0

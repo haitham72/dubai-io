@@ -52,6 +52,19 @@
 .chat-focus { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:12px 20px; padding:8px 12px; background:var(--tint-soft); border-radius:16px; color:var(--ink); }
 .chat-focus[hidden] { display:none; }
 #liveInterests .src { display:block; margin-top:4px; }
+#liveInterests .interest { display:block; }
+.interest h5 { margin:0; font:inherit; font-weight:650; }
+.interest-scope { margin-top:12px; padding:10px 12px; background:var(--tint-soft); border-radius:14px; }
+.interest-scope small { display:block; margin-top:6px; line-height:1.5; }
+.interest-scope summary { cursor:pointer; margin-top:8px; }
+.interest-evidence { padding-left:18px; font-size:12px; line-height:1.6; }
+.interest-evidence a { color:#076E89; text-underline-offset:2px; }
+.interest .acts { flex-wrap:wrap; }
+.interest-editor { margin-top:12px; }
+.interest-editor label { display:grid; gap:8px; }
+.interest-editor select { width:100%; padding:10px; border:1px solid var(--tint); border-radius:10px; background:var(--tint-soft); color:inherit; font:inherit; font-size:16px; }
+.interest-error { font-size:13px; line-height:1.5; }
+.interest-error:empty { display:none; }
 .composer input:focus-visible { outline: none !important; }
 .composer:has(input:focus-visible) { outline: 2px solid var(--tint); outline-offset: 2px; }
 .chatv { bottom: var(--keyboard-inset, 0px); }

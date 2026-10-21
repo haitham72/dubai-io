@@ -46,25 +46,26 @@ Design rationale and intended scoring: [recommender-plan.md](references/recommen
 ### REC-01. Current behavior [implemented and verified]
 
 - Reviewed app-owned topic taxonomy; client cannot supply weights, owners, sensitive topics or a completed-order event.
-- Server timestamps, owner-scoped dedupe, per-kind/item repetition caps and cross-process Postgres advisory locking for ingestion.
+- Server timestamps, owner-scoped dedupe, aggregate per-option/visit repetition caps and cross-process Postgres advisory locking for ingestion. REC-02 reconciles earlier per-kind weights from retained evidence.
 - Session projection: 30-minute half-life, 24-hour expiry; long-term projection: 30-day half-life, 90-day inferred expiry. Events retain at most 90 days; ranking runs at most 24 hours. Expired rows are removed during subsequent activity; no scheduled cleanup job exists yet.
 - Explicit current intent has the strongest score. Closest/price modes preserve input order. Inferred boosts require distinct evidence and a displayed reason. No LLM call per click.
 - Client observations are **all organic-only**. They do not feed sponsorship. No Google listing names/photos/reviews/attributes or full transcripts are retained in recommender events; permitted provider IDs and app-owned selection topics are used.
 - Real live-map category/detail clicks are ingested. Food has a Seafood drill-down. Cached home-card ranking/reasons are applied when entering Home again; cards do not reshuffle under a finger. Existing distance sorting remains intact.
-- Me -> You, over time has live interests and Confirm / Not true / Forget / Resume learning. Confirmation creates a `user_supplied` preference. Forget removes observations/projections/runs, clears model checkpoints and leaves a visible learning pause until Resume.
+- Me -> You, over time has live interests and Confirm / Edit / Not true / Forget / Resume learning. Confirmation or explicitly saving an edit creates a `user_supplied` preference. Forget removes observations/projections/runs, clears model checkpoints and leaves a visible learning pause until Resume.
 - Existing six legacy hypotheses/JS math coexist. Their scripted fixture episodes must never be uploaded as real observations.
 - Tests cover two distinct choices, explicit intent precedence, repetition, decay, expiry, owner isolation, sensitive-topic rejection, concurrent replay, confirmation and forgetting. Browser acceptance used controlled provider responses and actual profiler endpoints.
 
-### REC-02. Finish controls and explainability [NEXT TASK]
+### REC-02. Finish controls and explainability [implemented and verified]
 
-1. Add **Edit** for a learned interest, restricted to reviewed topics. Editing must be an explicit user choice, invalidate old ranking caches and evidence as appropriate, and update canonical confirmed facts consistently.
-2. Show recent evidence kinds/timestamps and meaningful reasons using permitted IDs or fresh provider resolution; do not persist restricted listing snapshots to improve the UI.
-3. Show session influence versus long-term influence, learning/expiry state, provenance and user controls. Keep live state visibly separate from the older timeline.
-4. Review aggregate repetition: current caps are per kind/item, so multiple kinds on one item can contribute separately. Prevent repeated/reclassified taps from dominating distinct meaningful choices.
-5. Fix the old timeline's hard-coded end labels to agree with its actual time range. Do not replace the approved visual design.
-6. Acceptance: edit/forget/resume survives reload, cannot affect another owner, cannot silently convert an inference into a fact, invalidates cached reasons, and passes one browser flow with an honest offline/error path.
+1. **Edit:** a reviewed replacement selector and explicit Save/Cancel. Saving removes old evidence, leaves the corrected old topic paused, and confirms the replacement. Projection/control changes and canonical facts commit together; injected storage failures roll them back together. No old inference is transplanted into the new interest.
+2. **Evidence:** the five recent contributing observations expose action kinds, timestamps and permitted place-ID handoff links. No provider listing snapshots are persisted. Session evidence is restricted to that visit; long-term evidence spans retained visits. Cross-owner access remains isolated.
+3. **Influence:** separate This visit / Across visits panels show inferred confidence, distinct-option counts, learning state, decay and expiry. Confirmed preferences and paused learning are labelled explicitly. Live interests remain separate from the legacy timeline.
+4. **Repetition:** one option/topic/visit contributes at most its strongest positive signal (currently save = 1.5), with an independent bounded negative signal. Category/detail/choose/save reclassification and replay cannot add four positive weights or inflate the distinct-option count. Upgrades contribute only the difference. A deterministic replay reconciles existing v1 weights while preserving retained observation records and confirmed/paused controls.
+5. **Caches/timeline:** corrections clear applied Home reasons and cached/in-flight ranking responses. Loads pause during mutations; late responses cannot restore forgotten inferences. Ranking reads/writes share owner serialization with controls. Timeline end labels derive from the actual range, preserving the existing visual design.
+6. **Acceptance passed:** 109 backend tests on SQLite and 109 on Supabase Postgres, with 11 live-model cases skipped per run; five JS cache tests cover stale/in-flight/overlapping/failure behavior. Eight browser checks cover scopes/evidence, timeline labels, Cancel, a failed-save retry with reason invalidation, edit/reload/canonical facts, Not true/Resume, Forget/reload and a visible profile outage/recovery. Browser observations were seeded test inputs; injected 503s were expected failure checks. Artifact: `output/playwright/rec02-evidence.png`.
+7. **Deployment checkpoint:** existing local recommender data was backed up under ignored `output/backups`, reconciled to `temporal-v2`, and the API restarted. No schema change or original-database reset was needed. Maintenance command when required: `python -m app.recommendations` from `apps/api`, using the configured database. The current API already runs this version.
 
-### REC-03. Candidate eligibility and more surfaces [pending]
+### REC-03. Candidate eligibility and more surfaces [NEXT TASK]
 
 1. Move candidate retrieval/eligibility into trusted server paths where provider attributes matter. The current general rank endpoint accepts bounded caller candidate IDs/topics; it does **not** verify prices, stock, dates or opening hours and must not authorize actions.
 2. Apply explicit area/date/budget/service/open-now constraints before scoring. Missing information is unknown, not fabricated. New explicit intent must immediately override old interests.
@@ -163,7 +164,7 @@ Detailed product requirements: [assistant-context.md](references/assistant-conte
 ## 7. How the next LLM should execute
 
 1. Read `CLAUDE.md`, `PLAN.md`, this document and `docs/request-backlog.md`; use `handoff.md` only for current runtime/checkpoint details.
-2. Start at **REC-02**, compare its requirements with code, and complete it before CTX-02/PLAN-01. Do not restart Supabase setup, re-research settled OAuth answers or resume native features.
+2. Start at **REC-03**, compare its requirements with code, then complete REC-04 before CTX-02/PLAN-01. REC-02 is verified complete; do not rebuild it, restart Supabase setup, re-research settled OAuth answers or resume native features.
 3. Mark each task implemented and verified separately. Record changed contracts, migrations, test evidence and remaining limits before committing. Update the plan if the founder changes scope/order.
 4. Keep tests proportional: deterministic/profile/privacy/action changes need meaningful tests; browser acceptance must distinguish mocked provider data from live provider verification.
 5. Commit and push to `redesign` at coherent checkpoints; native branch remains `ios-swift`. Never commit `.env`, database contents, backups, provider keys or local signing state.
