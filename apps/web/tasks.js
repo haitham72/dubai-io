@@ -269,6 +269,12 @@ export async function trackReport(report) {
   changed(); openTask(result.task.id); return result.task;
 }
 
+// Not now on a decision: keep the source on Today's Needs you without approving it.
+export async function keepForLater(actionId) {
+  const result = await request('/api/tasks/from-action', { action_id: actionId });
+  changed(); return result.task;
+}
+
 // Source IDs are resolved by the owner on the server. Repeated taps reopen the
 // same task, including after an ambiguous response; no action is dispatched.
 document.addEventListener('click', async event => {
@@ -283,6 +289,9 @@ document.addEventListener('click', async event => {
   if (task) openTask(task.dataset.chatTask);
   if (event.target.closest('[data-chat-task-list]')) openPage('tasks.list');
 });
+
+// A row in Needs you opens the linked source, where the shared decision card lives.
+const decisionRow = task => `<button class="task-row has-decision" data-open-decision="${esc(task.decision.action_id)}"><span class="task-row-icon">${svg('orb', 'ic sm')}</span><span class="task-row-copy"><b>${esc(task.outcome)}</b><span class="decision-ask">${esc(task.decision.title)}</span><small>${esc(task.decision.detail)}</small></span>${svg('chev', 'ic sm')}</button>`;
 
 export function createToday(root, startNewTask) {
   let generation = 0, visible = false, summaryGeneration = 0, historyRows = [], nextOffset = null, historyBusy = false;
@@ -340,13 +349,14 @@ export function createToday(root, startNewTask) {
       if (mine !== generation || !visible || !root.isConnected) return;
       ++summaryGeneration; announceSummary(data);
       const focus = root.contains(document.activeElement) ? document.activeElement.closest('button') : null;
-      const attr = focus && ['data-open-task','data-create-task','data-all-tasks','data-refresh-today','data-start-new-task'].find(name => focus.hasAttribute(name));
+      const attr = focus && ['data-open-decision','data-open-task','data-create-task','data-all-tasks','data-refresh-today','data-start-new-task'].find(name => focus.hasAttribute(name));
       const selector = attr ? `[${attr}="${CSS.escape(focus.getAttribute(attr))}"]` : null;
       const scroll = root.closest('.home-feed'), scrollTop = scroll?.scrollTop || 0;
       const pausedOpen = root.querySelector('.today-paused')?.open;
       const day = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Dubai', weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());
       historyRows = history.tasks; nextOffset = history.next_offset; historyBusy = false;
       root.innerHTML = `<header class="today-header"><p>${esc(day)} · Dubai</p><div><h1>Tasks</h1><button class="today-all" data-all-tasks>History ${svg('chev', 'ic xs')}</button></div></header>
+        ${data.needs_you.tasks.length ? `<section class="today-lane"><header><h2>Needs you</h2>${data.needs_you.has_more ? '<button data-all-tasks>See all</button>' : ''}</header>${data.needs_you.tasks.map(decisionRow).join('')}</section>` : ''}
         <section class="today-lane"><header><h2>Running</h2></header>${data.running.tasks.length ? data.running.tasks.map(task => row({...task, source_status: task.source_status})).join('') : '<p class="today-quiet">No tasks are in progress.</p>'}</section>
         <section class="today-lane"><header><h2>Scheduled</h2></header><p class="today-quiet">No scheduled follow-ups. Automatic check-backs are coming next.</p></section>
         <section class="today-lane"><header><h2>On your list</h2>${data.on_list.has_more ? '<button data-all-tasks>See all</button>' : ''}</header>${data.on_list.tasks.length ? data.on_list.tasks.map(row).join('') : '<p class="today-quiet">Nothing to keep track of yet. Add something when you need it.</p>'}</section>
@@ -373,6 +383,8 @@ export function createToday(root, startNewTask) {
   changed = () => { if (visible && root.isConnected) refresh(); else refreshSummary(); window.dispatchEvent(new CustomEvent('dubaiio:tasks-changed')); };
   wireRows(root);
   root.addEventListener('click', event => {
+    const decision = event.target.closest('[data-open-decision]');
+    if (decision) { openPage('service.action', { id: decision.dataset.openDecision }); return; }
     if (event.target.closest('[data-create-task]')) openPage('tasks.new');
     if (event.target.closest('[data-all-tasks]')) { const history = root.querySelector('[data-task-history]'); history?.scrollIntoView({ behavior: reduced ? 'instant' : 'smooth', block: 'start' }); history?.focus({ preventScroll: true }); }
     if (event.target.closest('[data-more-history]')) loadMoreHistory();

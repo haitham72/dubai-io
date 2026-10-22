@@ -354,3 +354,73 @@ def test_change_review_rejects_cross_owner_terminal_and_execution_fields(client)
         assert c.post(path,json={"expected_revision":1,"changes":changes}).status_code == 422
     cancelled = command(c,task,"cancel").json()["task"]
     assert c.post(path,json={"expected_revision":cancelled["revision"],"changes":{"details":"Stale proposal"}}).status_code == 409
+
+
+def tracked_order(c, **fields):
+    action = c.post("/api/actions/prepare",json={"capability_id":"order.request",
+        "fields":{"area":{"value":"JLT"}, **{k:{"value":v} for k,v in fields.items()}},
+        "order":{"provider_id":"marinaexpress","items":[{"name":"Shirt wash + press","qty":1}]}}).json()
+    task = c.post("/api/tasks/from-action",json={"action_id":action["id"]}).json()["task"]
+    return action, task
+
+
+def test_needs_you_lists_only_real_decisions_on_tracked_sources(client):
+    c, store, owner, _ = client
+    create(c, outcome="A manual note is never a decision")
+    c.post("/api/actions/prepare",json={"capability_id":"order.request", "fields":{"area":{"value":"JLT"}},
+        "order":{"provider_id":"marinaexpress","items":[{"name":"Shirt wash + press","qty":1}]}})  # opened, never kept
+    action, task = tracked_order(c)
+    today = c.get("/api/today").json()
+    assert today["counts"]["needs_you"] == 1
+    [row] = today["needs_you"]["tasks"]
+    decision = row["decision"]
+    assert row["id"] == task["id"] and decision["kind"] == "approve"
+    assert decision["action_id"] == action["id"] and decision["revision"] == action["revision"]
+    assert decision["snapshot_hash"] == action["snapshot_hash"] and decision["amount_aed"] == action["fixed_total_aed"]
+    assert today["counts"]["on_list"] == 1 and task["id"] not in [t["id"] for t in today["on_list"]["tasks"]]
+    assert store.db.execute("SELECT COUNT(*) FROM approvals").fetchone()[0] == 0
+    other = TestClient(c.app); other.get("/api/session")
+    assert other.get("/api/today").json()["needs_you"]["tasks"] == []
+    command(c, task, "pause")
+    assert c.get("/api/today").json()["counts"]["needs_you"] == 0
+
+
+def test_decision_follows_authoritative_source_state(client):
+    c, store, owner, _ = client
+    action, task = tracked_order(c, deadline="Tomorrow 09:00")
+    action = store.get(owner, action["id"])
+    action["status"], action["ready_at"] = "ACCEPTED", "Tomorrow 10:00"; store.put(owner, action)
+    [row] = c.get("/api/today").json()["needs_you"]["tasks"]
+    assert row["decision"]["kind"] == "deadline" and row["decision"]["earlier_target"] == "Tomorrow 08:30"
+    assert c.get("/api/today").json()["running"]["tasks"] == []  # shown once, as the decision
+    assert c.post(f'/api/actions/{action["id"]}/request-earlier', json={"target":"Tomorrow 08:30"}).status_code == 200
+    today = c.get("/api/today").json()
+    assert today["needs_you"]["tasks"] == [] and today["running"]["tasks"][0]["id"] == task["id"]
+    action = store.get(owner, action["id"]); action["status"] = "UNKNOWN_STATUS"; store.put(owner, action)
+    assert c.get("/api/today").json()["needs_you"]["tasks"][0]["decision"]["kind"] == "check"
+    action["status"] = "COMPLETED"; store.put(owner, action)
+    assert c.get("/api/today").json()["counts"]["needs_you"] == 0
+    assert c.get(f'/api/tasks/{task["id"]}').json()["task"]["status"] == "WAITING_USER"
+
+
+def test_unsendable_report_stays_quietly_on_the_list(client):
+    c, store, *_ = client
+    task = c.post("/api/tasks/from-report",json={"fields":report_fields()}).json()["task"]
+    today = c.get("/api/today").json()
+    assert today["needs_you"]["tasks"] == [] and today["counts"]["needs_you"] == 0
+    assert [t["id"] for t in today["on_list"]["tasks"]] == [task["id"]] and today["counts"]["on_list"] == 1
+    assert store.db.execute("SELECT COUNT(*) FROM approvals").fetchone()[0] == 0
+
+
+def test_stale_decision_binding_cannot_approve_a_changed_draft(client):
+    c, store, *_ = client
+    action, task = tracked_order(c)
+    old = c.get("/api/today").json()["needs_you"]["tasks"][0]["decision"]
+    changed = c.post("/api/actions/prepare",json={"capability_id":"order.request","draft_id":action["id"],
+        "fields":{"area":{"value":"Deira"}},"order":{"provider_id":"marinaexpress","items":[{"name":"Shirt wash + press","qty":2}]}}).json()
+    fresh = c.get("/api/today").json()["needs_you"]["tasks"][0]["decision"]
+    assert fresh["revision"] == changed["revision"] != old["revision"]
+    stale = c.post(f'/api/actions/{action["id"]}/approve', headers={"Idempotency-Key":uuid4().hex},
+                   json={"snapshot_hash":old["snapshot_hash"],"revision":old["revision"]})
+    assert stale.status_code == 409
+    assert store.db.execute("SELECT COUNT(*) FROM approvals").fetchone()[0] == 0

@@ -301,6 +301,37 @@ def presented_result(result):
     return {**result, "task": present(result["task"])}
 
 
+def earlier_than(deadline):
+    """'Tomorrow 09:00' -> 'Tomorrow 08:30': 30 minutes of slack, never across midnight."""
+    day, hm = deadline.split()
+    minutes = int(hm[:2]) * 60 + int(hm[3:]) - 30
+    return f"{day} {minutes // 60:02d}:{minutes % 60:02d}" if minutes >= 0 else None
+
+
+def decision_for(action):
+    """The crucial choice a tracked source is stopped on, or None.
+
+    Only points where going on could spend money, duplicate a send or miss the user's
+    deadline. Prepared-but-unsendable items stay quietly on the list. Derived from
+    canonical Action state on every read; approval binds the revision/snapshot shown."""
+    status, order = action["status"], action.get("order") or {}
+    who = order.get("provider") or action["recipient"]
+    base = {"action_id": action["id"], "revision": action["revision"], "source_status": status}
+    if status == "AWAITING_APPROVAL" and action.get("execution_available"):
+        return {**base, "kind": "approve", "title": "Approve and send" + (f" · AED {action['fixed_total_aed']}" if action.get("fixed_total_aed") else ""),
+                "detail": "Fixed published price. Nothing is sent until you approve.",
+                "amount_aed": action.get("fixed_total_aed"), "snapshot_hash": action["snapshot_hash"]}
+    if status == "UNKNOWN_STATUS":
+        return {**base, "kind": "check", "title": f"Check with {who} before resending",
+                "detail": "The send outcome is not known. Resending could duplicate the order."}
+    check = action.get("deadline_check")
+    if status == "ACCEPTED" and check and not check["meets"] and not action.get("earlier_request"):
+        return {**base, "kind": "deadline", "title": f"Ready {check['ready_at']} misses your {check['deadline']} deadline",
+                "detail": "Confirmed by the shop. You can ask for an earlier time at the same price.",
+                "earlier_target": earlier_than(check["deadline"])}
+    return None
+
+
 def resolve_context(store, owner, reference):
     """Resolve IDs, ownership and revision before supplying transient model context."""
     if not 0 <= (clock() - reference.selected_at).total_seconds() <= 1800:
@@ -376,9 +407,26 @@ def today(request: Request, response: Response):
             ORDER BY CASE WHEN {source_status} IN ('DISPATCHING','SUBMITTED','ACCEPTED','READY') THEN 0 ELSE 1 END,
               t.updated_at DESC,t.id DESC LIMIT 6""", (owner,)).fetchall()
         current = [{"task": present(json.loads(t), at), "source": annotate(json.loads(a))} for t, a in current_rows[:5]]
+        # Decisions come only from tracked, active sources; a draft merely opened is not one.
+        decisions = []
+        for t, a in tasks.store.db.execute(f"""SELECT t.data,a.data FROM tasks t
+                JOIN actions a ON a.id={source_id} AND a.owner=t.owner
+                WHERE t.owner=? AND t.status='WAITING_USER'
+                  AND {source_status} IN ('AWAITING_APPROVAL','UNKNOWN_STATUS','ACCEPTED')
+                ORDER BY t.updated_at DESC,t.id DESC""", (owner,)).fetchall():
+            decision = decision_for(annotate(json.loads(a)))
+            if decision:
+                decisions.append({**present(json.loads(t), at), "source_status": decision["source_status"], "decision": decision})
+        deciding = {row["id"] for row in decisions}
+        groups["needs_you"] = {"tasks": decisions[:3], "has_more": len(decisions) > 3}
+        if deciding:  # each task shows in one lane only
+            rows = [r for r in tasks.store.db.execute(f"SELECT data FROM tasks WHERE owner=? AND status='WAITING_USER' ORDER BY {priority} LIMIT ?",
+                                                      (owner, 4 + len(deciding))).fetchall() if json.loads(r[0])["id"] not in deciding]
+            groups["on_list"] = {"tasks": [present(json.loads(r[0]), at) for r in rows[:3]], "has_more": len(rows) > 3}
         groups["running"] = {"tasks": [{**item["task"], "source_status": item["source"]["status"]} for item in current
-            if item["source"]["status"] in {"DISPATCHING", "SUBMITTED", "ACCEPTED", "READY"}], "has_more": len(current_rows) > 5}
-        return {**groups, "counts": {"needs_you": 0, "on_list": totals.get("WAITING_USER", 0), "paused": totals.get("PAUSED", 0)},
+            if item["source"]["status"] in {"DISPATCHING", "SUBMITTED", "ACCEPTED", "READY"} and item["task"]["id"] not in deciding],
+            "has_more": len(current_rows) > 5}
+        return {**groups, "counts": {"needs_you": len(decisions), "on_list": totals.get("WAITING_USER", 0) - len(decisions), "paused": totals.get("PAUSED", 0)},
                 "current_work": current, "mode": "manual", "monitoring_active": False, "as_of": at.isoformat()}
 
 

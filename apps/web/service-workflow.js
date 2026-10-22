@@ -95,7 +95,9 @@ registerPage('service.action', {
             required:action.capability_id==='recovery.rta'?REQUIRED.recovery:REQUIRED.request,draft_id:action.id,result:action},{replace:true});
           return;
         }
-        const {orderCardHTML}=await import('./orders.js');
+        const {orderCardHTML,orderDecisionHTML}=await import('./orders.js');
+        c.action=action.status==='AWAITING_APPROVAL'?action:null;
+        if(c.action){if(body.isConnected)body.innerHTML=orderDecisionHTML(action,{yes:'decisionYes',later:'decisionLater',discard:'decisionDiscard'});return;}
         if(body.isConnected)body.innerHTML=orderCardHTML(action)+'<button class="btn wide" data-source-refresh>Refresh from the shop</button><p class="fine">Status comes from the saved order. Tracking and task completion do not change the order.</p>';
       } catch(error) {if(body.isConnected)body.innerHTML='<p role="alert">'+esc(error.message)+'</p><button class="btn wide" data-source-refresh>Try again</button>';}
       finally {busy=false;}
@@ -103,6 +105,14 @@ registerPage('service.action', {
     body.addEventListener('click',async event=>{
       const button=event.target.closest('button'); if(!button||busy)return;
       if(button.hasAttribute('data-source-refresh'))return load();
+      if(c.action&&['decisionLater','decisionDiscard'].includes(button.id)){const orders=await import('./orders.js');return button.id==='decisionLater'?orders.later(c.action,button):orders.discard(c.action,button);}
+      if(c.action&&button.id==='decisionYes'){
+        // Approves exactly the revision/snapshot on screen; a changed draft is rejected by the server.
+        button.disabled=true; c.approvalKey||=crypto.randomUUID();
+        try{const sent=await api('/api/actions/'+encodeURIComponent(c.id)+'/approve',{method:'POST',headers:{'Idempotency-Key':c.approvalKey},body:JSON.stringify({snapshot_hash:c.action.snapshot_hash,revision:c.action.revision})});c.action=null;dispatchEvent(new CustomEvent('dubaiio:source-changed',{detail:{id:c.id}}));await load(sent);}
+        catch(error){toast(error.message);if(button.isConnected)button.disabled=false;}
+        return;
+      }
       if(button.hasAttribute('data-earlier')||button.hasAttribute('data-remind')) {
         button.disabled=true;
         try {

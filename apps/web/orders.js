@@ -5,6 +5,7 @@
 import { $, svg, esc, toast, told, openSheet, closeSheet } from './ui.js';
 import { api } from './service-workflow.js';
 import { statusLabel } from './status-labels.js';
+import { decisionHTML } from './decision.js';
 
 const DAY_RE = /\btoday\b/i;
 // "by 9 tomorrow" -> "Tomorrow 09:00"; returns '' when no time is stated.
@@ -58,20 +59,38 @@ async function prepare() {
   } catch (err) { if (review === r) $('#ordReview').innerHTML = `<p class="empty">${esc(err.message)}. Nothing was sent.</p>`; }
 }
 
+// The exact snapshot the user approves; shared by the review sheet and Today's Needs you.
+export function orderDecisionHTML(a, ids) {
+  const o = a.order, f = a.fields, shop = a.recipient.replace(' (sandbox merchant)', '');
+  const shared = [`${o.lines.map(l => `${l.qty}× ${l.name}`).join(', ')} · total`, o.slot && `pickup ${o.slot}`,
+    f.area && `area: ${f.area.value} (you told me)`, f.deadline && `needed by ${f.deadline.value} (you told me)`].filter(Boolean).join(' · ');
+  return decisionHTML({ context: 'Fixed-price order · sandbox merchant', amount: a.fixed_total_aed, meta: `${shop}’s published price`,
+    title: a.status === 'DRAFT' ? `Add ${a.missing.join(', ')} to continue` : `Send this order to ${shop}?`,
+    rows: [{ label: 'Will be shared', value: shared }, { label: 'Never shared', value: 'Your name · phone number · profile and anything I noticed · other orders' }],
+    note: 'Nothing is sent until you approve. The shop accepts or declines; the price can’t change.',
+    primary: { label: 'Approve and send', attrs: { id: ids.yes }, disabled: a.status !== 'AWAITING_APPROVAL' },
+    defer: { label: 'Not now', attrs: { id: ids.later } }, discard: { label: 'Discard draft', attrs: { id: ids.discard } },
+    fine: `Prices from the shop’s published list (${o.provenance.replace('_', ' ')}, as of ${o.as_of}), not from the mini-app.` });
+}
+
 function renderReview(a) {
-  const o = a.order, f = a.fields;
-  const shared = [`${o.lines.map(l => `${l.qty}× ${esc(l.name)}`).join(', ')} · total`, o.slot && `pickup ${esc(o.slot)}`,
-    f.area && `area: ${esc(f.area.value)} (you told me)`, f.deadline && `needed by ${esc(f.deadline.value)} (you told me)`].filter(Boolean).join(' · ');
-  $('#ordReview').innerHTML = `
-    <div class="ap-total"><span>Total at ${esc(a.recipient.replace(' (sandbox merchant)', ''))}’s published prices</span><b>${money(a.fixed_total_aed)}</b></div>
-    <div class="ap-box"><span class="ap-ic">${svg('arrow', 'ic sm')}</span><div><h5>Will be shared</h5><p>${shared}</p></div></div>
-    <div class="ap-box"><span class="ap-ic">${svg('lock', 'ic sm')}</span><div><h5>Never shared</h5><p>Your name · phone number · profile and anything I noticed · other orders</p></div></div>
-    ${a.status === 'DRAFT' ? `<p class="hint">Add ${a.missing.map(esc).join(', ')} to continue.</p>` : ''}
-    <p class="ap-info">${svg('shield', 'ic xs')} Nothing is sent until you tap. The shop accepts or declines; the price can’t change.</p>
-    <div class="ap-actions"><button class="btn primary" id="ordYes" ${a.status === 'AWAITING_APPROVAL' ? '' : 'disabled'}>Approve and send</button><button class="btn" id="ordNo">Cancel</button></div>
-    <p class="fine">Prices from the shop’s published list (${esc(o.provenance.replace('_', ' '))}, as of ${esc(o.as_of)}), not from the mini-app. Sandbox merchant.</p>`;
-  $('#ordNo').addEventListener('click', () => { closeSheet(); toast('Nothing was sent.'); });
+  $('#ordReview').innerHTML = orderDecisionHTML(a, { yes: 'ordYes', later: 'ordLater', discard: 'ordDiscard' });
+  $('#ordLater').addEventListener('click', e => later(a, e.target));
+  $('#ordDiscard').addEventListener('click', e => discard(a, e.target));
   $('#ordYes').addEventListener('click', approve);
+}
+
+// Not now keeps a ready order on Today; an incomplete draft is simply left unsent.
+export async function later(a, control) {
+  if (a.status !== 'AWAITING_APPROVAL') { closeSheet(); toast('Nothing was sent.'); return; }
+  control.disabled = true;
+  try { const { keepForLater } = await import('./tasks.js'); await keepForLater(a.id); closeSheet(); toast('Kept on Today under Needs you. Nothing was sent.'); }
+  catch (err) { toast(err.message); if (control.isConnected) control.disabled = false; }
+}
+export async function discard(a, control) {
+  control.disabled = true;
+  try { await api(`/api/actions/${encodeURIComponent(a.id)}/cancel`, { method: 'POST' }); closeSheet(); toast('Draft discarded. Nothing was sent.'); dispatchEvent(new CustomEvent('dubaiio:source-changed', { detail: { id: a.id } })); }
+  catch (err) { toast(err.message); if (control.isConnected) control.disabled = false; }
 }
 
 async function approve(e) {

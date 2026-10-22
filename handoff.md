@@ -1,5 +1,26 @@
 # Handoff - 22 Oct 2026
 
+## Finish-before-iOS plan - active, 22 Oct (Mac)
+
+Founder: plan every open item, finish the current web app; the native iOS client comes next. Learn from Claude Duet (interaction patterns, not its layout or branding). Founder direction: tasks follow the user's request and stop only at crucial decisions; do not bug the user. Permission modes Auto / Ask / Learn are requested; the rule-compliant reading is used until the founder changes rule 6 (a send or share still needs a tap).
+
+**Build locally, in order (each slice verified, documented, committed):**
+
+| ID | Slice | Acceptance |
+|---|---|---|
+| FIN-01 | Gate C Decisions + shared decision card | Needs you lists only crucial stops on tracked sources: approve a send, unknown send outcome, missed deadline. Unsendable/incomplete items stay On your list. Card: context, amount, shared/never shared, Approve, Not now (keeps it), Discard. Approval binds revision/snapshot. |
+| FIN-02 | Result card (Duet artifact) | Prepared report and order receipt render as one card: title, verdict line, Updated time, Pin to Home, Open. Pin is device-local and never changes the source. |
+| FIN-03 | Summary line + morning brief | Home and an on-demand chat brief state "N moving · N need you" from Today; one line per tracked item, each opens it. Deterministic; no model text changes status. |
+| FIN-04 | TAXI-02 staged recovery | Quick replies: I have a receipt / Paid cash / Not sure. Cash or unknown confirms route and time first. Official handoff, staged replies labelled Staged, collection-only choice (delivery shown unavailable). No unchosen "driver en route". |
+| FIN-05 | Gate B check-backs | User-chosen check time with consent, persisted, deduped, quiet hours, outbox message; cancel/reschedule suppresses pending ones; Scheduled lane shows real ones. |
+| FIN-06 | Permission modes | Per-user Auto / Ask / Learn. Auto: consented check-backs/reminders run without asking each time. Ask: confirm each. Learn: after repeated identical approvals, offer a standing rule the user must confirm; it may re-rank and pre-select confirmed choices only. Sends/shares always need a tap. |
+| FIN-07 | Gate F routine: morning brief | Optional daily brief at a chosen time, built on FIN-05, stored as a chat message; activation, pause and expiry are explicit. |
+| FIN-08 | iOS handoff | `docs/references/ios-swift-plan.md` lists the endpoints and card contracts the native client must reuse. |
+
+**Blocked outside this Mac (stay explicit, never claimed):** PostgreSQL/Supabase adoption (local Supabase + founder `.env`); physical iPhone gestures and screen-reader output; Gate E connector (Google OAuth, founder setup, OAuth last); real provider adapters/APIs; VIS-02 licensed imagery; hosted deployment/budget; live Luna golden cases (no model key on this Mac).
+
+**Preserved for after iOS unless re-prioritised:** CTX-02, PLAN-01, SUG-01, EVT-01, ADS-01, REC-03C/REC-04, Reading Gate D broader acceptance, shop join from a price-list photo (deferred past January).
+
 ## Project workspaces checkpoint - verified, 22 Oct
 
 Home/feed/navigation baseline `212b82c` is pushed. PROJECT-01 is now implemented: owner-scoped persistent workspaces, name/shared-context editing, saved task links, device-local chat references, new project chat, opening previous project chats, unlink, archive/restore, revision fences and replay-safe command receipts. Organization never starts/approves/cancels a task or provider request. Removing a link and archiving preserve the underlying records. The Ask sidebar now has working Tasks / Projects / New chat / Chats entries; project chats are grouped under Projects.
