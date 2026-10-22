@@ -25,9 +25,21 @@ async function request(path, body) {
   return response.json();
 }
 
+const short = value => new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Dubai', weekday: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(value));
+// One line per task: what it is, and the single thing worth knowing now.
+function rowMeta(task) {
+  if (task.due_state === 'overdue') return ['Overdue', 'warn'];
+  if (task.source_status) return [statusLabel(task.source_status), ''];
+  if (task.status === 'PAUSED') return ['Paused', ''];
+  if (task.status === 'COMPLETED') return ['Done', 'done'];
+  if (task.status === 'CANCELLED') return ['Stopped', ''];
+  if (task.check_back_at) return ['Check back ' + short(task.check_back_at), ''];
+  if (task.due_at) return ['Due ' + short(task.due_at), task.due_state ? 'warn' : ''];
+  return ['On your list', 'quiet'];
+}
 function row(task) {
-  const state = task.source_status ? statusLabel(task.source_status) : labels[task.status] || 'Status unavailable';
-  return `<button class="task-row" data-open-task="${esc(task.id)}"><span class="task-row-icon">${svg(task.status === 'COMPLETED' ? 'check' : task.status === 'PAUSED' ? 'clock' : 'orb', 'ic sm')}</span><span class="task-row-copy"><b>${esc(task.outcome)}</b>${task.next_step && task.next_step !== 'Add an update when you are ready.' ? `<span>${esc(task.next_step)}</span>` : ''}<small>${esc(state)}</small>${task.check_back_at ? `<small>Check back ${esc(date(task.check_back_at))} · Dubai time</small>` : ''}${task.due_at ? `<small class="${task.due_state ? 'task-due-flag' : ''}">${task.due_state === 'overdue' ? 'Overdue · ' : task.due_state === 'due_soon' ? 'Due within 24h · ' : 'Due '}${esc(date(task.due_at))} · Dubai time</small>` : ''}</span>${svg('chev', 'ic sm')}</button>`;
+  const [meta, tone] = rowMeta(task);
+  return `<button class="task-row compact" data-open-task="${esc(task.id)}"><span class="task-row-icon">${svg(task.status === 'COMPLETED' ? 'check' : task.status === 'PAUSED' ? 'clock' : 'orb', 'ic sm')}</span><b>${esc(task.outcome)}</b><small class="task-meta ${tone}">${esc(meta)}</small></button>`;
 }
 
 function fields(task = {}, compact = false) {
@@ -365,7 +377,7 @@ registerPage('tasks.lane', {
 });
 
 // A row in Needs you opens the linked source, where the shared decision card lives.
-const decisionRow = task => `<button class="task-row has-decision" data-open-decision="${esc(task.decision.action_id)}"><span class="task-row-icon">${svg('orb', 'ic sm')}</span><span class="task-row-copy"><b>${esc(task.outcome)}</b><span class="decision-ask">${esc(task.decision.title)}</span><small>${esc(task.decision.detail)}</small></span>${svg('chev', 'ic sm')}</button>`;
+const decisionRow = task => `<button class="task-row compact has-decision" data-open-decision="${esc(task.decision.action_id)}"><span class="task-row-icon">${svg('orb', 'ic sm')}</span><b>${esc(task.outcome)}</b><small class="task-meta act">${esc(task.decision.kind === 'approve' ? 'Approve' + (task.decision.amount_aed != null ? ' · AED ' + Number(task.decision.amount_aed).toFixed(2) : '') : task.decision.kind === 'deadline' ? 'Misses deadline' : 'Check status')}</small></button>`;
 
 let startTask = () => {};
 export function createToday(root, startNewTask) {
@@ -408,7 +420,7 @@ export function createToday(root, startNewTask) {
   async function refresh() {
     if (!visible || !root.isConnected) return;
     const mine = ++generation;
-    const cached = !!root.querySelector('.today-header');
+    const cached = !!root.querySelector('.today-card');
     if (!cached) root.innerHTML = '<p class="today-loading" role="status">Loading your day…</p>';
     root.setAttribute('aria-busy', 'true');
     try {
@@ -425,22 +437,22 @@ export function createToday(root, startNewTask) {
       if (mine !== generation || !visible || !root.isConnected) return;
       ++summaryGeneration; announceSummary(data);
       const focus = root.contains(document.activeElement) ? document.activeElement.closest('button') : null;
-      const attr = focus && ['data-lane','data-open-decision','data-open-task','data-create-task','data-all-tasks','data-refresh-today','data-start-new-task'].find(name => focus.hasAttribute(name));
+      const attr = focus && ['data-add-menu','data-lane','data-open-decision','data-open-task','data-create-task','data-all-tasks','data-refresh-today','data-start-new-task'].find(name => focus.hasAttribute(name));
       const selector = attr ? `[${attr}="${CSS.escape(focus.getAttribute(attr))}"]` : null;
       const scroll = root.closest('.home-feed'), scrollTop = scroll?.scrollTop || 0;
       const day = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Dubai', weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());
       historyRows = history.tasks; nextOffset = history.next_offset; historyBusy = false;
-      root.innerHTML = `<header class="today-header"><p>${esc(day)} · Dubai</p><div><h1>Tasks</h1><button class="today-all" data-all-tasks>History ${svg('chev', 'ic xs')}</button></div></header>
-        ${data.needs_you.tasks.length ? laneHTML('needs_you', data.counts.needs_you, data.needs_you.tasks.map(decisionRow).join('')) : ''}
-        ${laneHTML('running', data.counts.running, data.running.tasks.map(row).join(''))}
-        ${laneHTML('scheduled', data.scheduled.tasks.length && data.scheduled.tasks.length + (data.scheduled.has_more ? '+' : ''), data.scheduled.tasks.map(row).join(''))}
-        ${laneHTML('on_list', data.counts.on_list, data.on_list.tasks.map(row).join(''))}
-        ${data.paused.count ? laneHTML('paused', data.paused.count, data.paused.tasks.map(row).join('')) : ''}
-        ${laneHTML('completed', data.completed.tasks.length && data.completed.tasks.length + (data.completed.has_more ? '+' : ''), data.completed.tasks.map(row).join(''))}
-        <button class="today-new-task" data-start-new-task>Start a new task ${svg('arrow', 'ic sm')}</button>
-        <button class="today-note" data-create-task>Or keep a note on your list</button>
-        <section class="today-lane task-history" data-task-history tabindex="-1"></section>
-        <p class="today-refresh-error" role="alert" hidden></p><footer class="today-footer"><span>Updates stay with your tasks.</span><button aria-label="Refresh Today" data-refresh-today>Refresh</button></footer>`;
+      const n = data.counts, parts = [n.needs_you && `${n.needs_you} ${n.needs_you === 1 ? 'needs' : 'need'} you`, n.running && `${n.running} moving`, data.scheduled.tasks.length && `${data.scheduled.tasks.length}${data.scheduled.has_more ? '+' : ''} scheduled`].filter(Boolean);
+      const top = [...data.needs_you.tasks.map(decisionRow), ...data.running.tasks.map(row), ...data.on_list.tasks.filter(t => t.due_state).map(row), ...data.on_list.tasks.filter(t => !t.due_state).map(row)].slice(0, 3);
+      const chips = [['needs_you', n.needs_you], ['running', n.running], ['scheduled', data.scheduled.tasks.length], ['on_list', n.on_list], ['paused', data.paused.count], ['completed', data.completed.tasks.length]]
+        .filter(([lane, count]) => count || lane === 'on_list').map(([lane, count]) => `<button class="lane-chip ${lane === 'needs_you' ? 'act' : ''}" data-lane="${lane}">${LANES[lane][0]}<b>${count}${['scheduled', 'completed'].includes(lane) && data[lane].has_more ? '+' : ''}</b></button>`).join('');
+      root.innerHTML = `<section class="today-card"><header><div><p>${esc(day)}</p><h1>Tasks</h1></div><button class="round" data-add-menu aria-expanded="false" aria-label="Add a task">${svg('plus')}</button></header>
+        <div class="today-add" data-add-options hidden><button data-start-new-task>${svg('grid', 'ic sm')} Start a task in Services</button><button data-create-task>${svg('keep', 'ic sm')} Keep a note on your list</button></div>
+        <p class="today-brief">${parts.length ? esc(parts.join(' · ')) : 'All clear. Nothing needs you.'}</p>
+        <div class="lane-chips" role="list">${chips}</div>
+        ${top.length ? `<div class="today-top">${top.join('')}</div>` : ''}
+        <p class="today-refresh-error" role="alert" hidden></p></section>
+        <section class="today-lane task-history" data-task-history tabindex="-1"></section>`;
       renderHistory();
       if (scroll) scroll.scrollTop = scrollTop;
       if (selector) root.querySelector(selector)?.focus({ preventScroll: true });
@@ -457,6 +469,8 @@ export function createToday(root, startNewTask) {
   changed = () => { if (visible && root.isConnected) refresh(); else refreshSummary(); window.dispatchEvent(new CustomEvent('dubaiio:tasks-changed')); };
   wireRows(root);
   root.addEventListener('click', event => {
+    const add = event.target.closest('[data-add-menu]');
+    if (add) { const open = add.getAttribute('aria-expanded') !== 'true'; add.setAttribute('aria-expanded', open); root.querySelector('[data-add-options]').hidden = !open; return; }
     if (event.target.closest('[data-create-task]')) openPage('tasks.new');
     const lane = event.target.closest('[data-lane]'); if (lane) { openPage('tasks.lane', { lane: lane.dataset.lane }); return; }
     if (event.target.closest('[data-all-tasks]')) { const history = root.querySelector('[data-task-history]'); history?.scrollIntoView({ behavior: reduced ? 'instant' : 'smooth', block: 'start' }); history?.focus({ preventScroll: true }); }

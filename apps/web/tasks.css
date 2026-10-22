@@ -198,3 +198,27 @@
 .reading-thumb { grid-column: 2; grid-row: 1 / span 4; margin: 0; align-self: start; }
 .reading-thumb img { display: block; width: 96px; height: 96px; object-fit: cover; border-radius: 14px; background: var(--tint-soft); }
 .reading-thumb figcaption { margin-top: 4px; font-size: 10px; color: var(--label-3); line-height: 1.3; overflow-wrap: anywhere; }
+
+/* Compact Today (23 Oct): one card, one-line rows, lane chips. */
+.today-card { background: #fff; border: 1px solid var(--sep); border-radius: 22px; padding: 14px 14px 10px; margin-bottom: 18px; display: grid; gap: 10px; }
+.today-card > header { display: flex; justify-content: space-between; align-items: center; }
+.today-card > header p { margin: 0; font-size: 12px; color: var(--label-3); }
+.today-card > header h1 { margin: 0; font-size: 24px; letter-spacing: -.03em; }
+.today-card > header .round { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--tint-soft); color: var(--tint-ink); }
+.today-add { display: grid; gap: 6px; }
+.today-add button { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; border-radius: 14px; background: var(--tint-soft); color: var(--tint-ink); font-weight: 600; font-size: 14px; }
+.today-add[hidden] { display: none; }
+.today-brief { margin: 0; font-size: 15px; font-weight: 600; }
+.lane-chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+.lane-chip { flex: none; display: inline-flex; gap: 6px; align-items: center; min-height: 34px; padding: 0 12px; border-radius: 17px; border: 1px solid var(--sep); font-size: 13px; color: var(--label-2); background: #fff; }
+.lane-chip b { color: var(--label); }
+.lane-chip.act { border-color: var(--tint); color: var(--tint-ink); }
+.today-top { display: grid; border-top: 1px solid var(--sep); }
+.task-row.compact { display: grid; grid-template-columns: 22px 1fr auto; gap: 10px; align-items: center; min-height: 48px; padding: 8px 4px; margin: 0; border: 0; border-bottom: 1px solid var(--sep); border-radius: 0; background: transparent; }
+.today-top .task-row.compact:last-child { border-bottom: 0; }
+.task-row.compact b { font-size: 14.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.task-meta { font-size: 12px; color: var(--label-2); white-space: nowrap; }
+.task-meta.act { color: var(--tint-ink); font-weight: 600; }
+.task-meta.warn { color: #B4540A; font-weight: 600; }
+.task-meta.done, .task-meta.quiet { color: var(--label-3); }
+.task-history .task-row.compact, [data-lane-list] .task-row.compact { background: #fff; border: 1px solid var(--sep); border-radius: 14px; margin-bottom: 6px; padding: 8px 12px; }
