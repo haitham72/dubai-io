@@ -57,6 +57,23 @@ The current web/PWA cannot guarantee this for arbitrary websites because provide
 | Context/recommendations | Bounded focus/task context and moderate temporal recommender | See `assistant-context.md` and `recommender-plan.md`; no transcript-to-fact promotion |
 | Expansion | Voice, App Intents, event/occasion suggestions and sponsorship | Separate source permissions/scope decisions and physical-device checks |
 
+## Web contracts the native client must reuse (23 Oct, FIN-08)
+
+The web app on `redesign` is the reference implementation. Native screens call the same endpoints and keep the same rules; nothing below is re-decided in Swift.
+
+| Surface | Endpoint(s) | Contract |
+|---|---|---|
+| Today / Needs you | `GET /api/today` | `needs_you.tasks[].decision` = `{kind: approve\|check\|deadline, title, detail, action_id, revision, snapshot_hash?, amount_aed?, earlier_target?}`. Only crucial stops; each task appears in one lane. `counts` = `needs_you, running, on_list, paused`. `scheduled.tasks` carry `check_back_at`. |
+| Decision card | `GET /api/actions/{id}`, `POST /api/actions/{id}/approve` (Idempotency-Key, `snapshot_hash`, `revision`), `POST /api/actions/{id}/cancel`, `POST /api/tasks/from-action` (Not now) | Anatomy: context chip, amount, title, Will be shared / Never shared, note, Approve, Not now, Discard. Approve sends the exact revision on screen; 409 means reload. |
+| Result card | — (client) | Context, title, verdict first, `Updated hh:mm`, Keep on Today (`/api/tasks/from-action` or `/from-report`), open. |
+| Brief | `GET /api/today`, `GET/PUT /api/routines/brief` | "N moving and N need you", one line per item led by a chip. Deterministic; never model text. Daily routine: opt-in, 07:00–22:59, 30-day expiry. |
+| Task commands | `POST /api/tasks/{id}/commands` | Kinds: edit, pause, resume, cancel, complete, `check_back` (`at` or null), `staged_next`, `collect`. Always `expected_revision` + `command_key`. |
+| Messages | `GET /api/messages`, `/api/messages/stream` | Outbox only (consented, deduped, quiet hours). `task_checkback` carries `task_id`. Native maps these to APNs later; no LLM decides timing. |
+| Follow-up mode | `GET/PUT /api/assist` | `ask \| auto \| learn`; `offer_auto` drives Learn's one-time offer. No mode sends, shares or pays. |
+| Lost item (TAXI-02) | task commands above | Receipt-first quick replies; trip confirmed before the report; staged replies labelled at every step; collection only, delivery shown unavailable. |
+
+**Mac toolchain (23 Oct):** Xcode 26.3 with iPhone 17 Pro / Pro Max / Air simulators is installed on the founder's Mac, so SwiftUI Previews and Simulator runs are available locally. Resume from `origin/ios-swift` (`eba81b7`) after rebasing or merging `redesign`.
+
 ## Founder review before native parity
 
 Web walkthrough is available before the full native client. Known gaps: original Postgres recovery unresolved; preview uses separate SQLite review data; production identity/roles and complete forgetting across checkpoints are unfinished; broad recommender/context features are planned; physical Safari/phone validation remains. Existing configured Google/search/product APIs were live checked. Native source, successful compilation, Simulator run and device acceptance must be recorded separately in the handoff.
