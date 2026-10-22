@@ -148,3 +148,7 @@ Previously requested food sponsorship remains in the ledger. It should follow or
 2. Which two recurring responsibilities matter enough to test over multiple weeks? Select after the audience choice rather than use a generic feature checklist.
 3. Should the first connected loop use calendar context, inbox follow-up or a real service partner? Depends on access and the chosen job. No connector is required just to understand or try manual task delegation.
 4. The revised contest demo and commercial model need to follow observed value; the old visitor pitch and merchant-commission-first assumption should not silently determine them.
+
+## 10. Subsequent authorization / review continuity
+
+Founder authorized building from the reconciled review; Gate A manual tasks/Today is now source-implemented and SQLite verified, with later worker/connector/briefing gates still pending. Read `assistant-review-decisions.md` and current handoff before treating earlier proposed sequence/objects as authoritative. Native remains parked. Staged taxi replies first, Gmail later, freely licensed imagery and all 12 Duet design references are logged. New design/interaction/use-case report must be separate from the first critique; use `assistant-design-interaction-review-prompt.md`.

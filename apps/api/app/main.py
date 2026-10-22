@@ -22,6 +22,7 @@ from .proactive import router as proactive_router
 from .profile import router as profile_router
 from .recommendations import router as recommendations_router
 from .discovery import router as discovery_router
+from .tasks import router as tasks_router
 from .luna import graph as luna
 from .luna.schema import FactKey, FocusContext
 
@@ -33,6 +34,7 @@ app.include_router(proactive_router)
 app.include_router(profile_router)
 app.include_router(recommendations_router)
 app.include_router(discovery_router)
+app.include_router(tasks_router)
 
 
 @app.middleware("http")

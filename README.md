@@ -1,6 +1,8 @@
 # Dubai-io
 
-A chat-first AI companion for Dubai visitors and residents, built for the Create AI Agents Championship (Best Personal AI Agent).
+A personal assistant for everyday life and work in Dubai, built for the Create AI Agents Championship (Best Personal AI Agent).
+
+**22 Oct working checkpoint:** visual/photo Home and Wi-Fi/gradient onboarding are preserved; Today opens from its own swipe/tap handle. Manual tasks, due/paused semantics, keyboard focus/announcements and everyday/status wording are implemented on `redesign`. Open `http://localhost:8010/index.html#home` and refresh for web changes; widgets use 8011 and separate SQLite data. SQLite: 145 passed/11 skipped, including 17 task checks; both requested phone sizes and motion settings browser-verified. Physical iPhone gestures/screen-reader output and Supabase adoption remain unverified. [PLAN.md](PLAN.md) and [handoff.md](handoff.md) record exact scope. Both independent reviews remain unchanged; native is parked. Keep-track bridge, taxi staged replies, Reading, worker and Gmail are outside this pass.
 
 ```
 apps/web/   frontend (HTML/CSS/ES modules), served by the API
@@ -34,4 +36,4 @@ node ../web/tests/profile.test.mjs; node ../web/tests/recovery.test.mjs; node ..
 
 ## Docs
 
-[CLAUDE.md](CLAUDE.md) (agent rules) → [PLAN.md](PLAN.md) (scope, demo arc, remaining) → [ARCHITECTURE.md](ARCHITECTURE.md) → [docs/handoff.md](docs/handoff.md) (run + state) · [Review guide](docs/user-app-review-guide.md) · [API catalog](docs/references/api-catalog.md) · [Cases](docs/services/cases.md)
+[CLAUDE.md](CLAUDE.md) (agent rules) → [PLAN.md](PLAN.md) (scope, demo arc, remaining) → [ARCHITECTURE.md](ARCHITECTURE.md) → [docs/handoff.md](handoff.md) (run + state) · [Review guide](docs/user-app-review-guide.md) · [API catalog](docs/references/api-catalog.md) · [Cases](docs/services/cases.md)

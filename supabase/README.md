@@ -22,3 +22,9 @@ The old database volume remains untouched. The isolated SQLite review database i
 The API on port 8000 now uses this target. 97 backend tests passed on Supabase Postgres and 97 on SQLite (11 live cases skipped each). The SQLite review records were backed up and imported with app.migrate_supabase; the old Postgres volume is untouched and SQLite checkpoints were archived rather than imported. Current ignored .env keeps existing provider keys and selects DATABASE_SCHEMA=dubaiio.
 
 Registry downloads stalled, so this workstation uses CLI-supported version files for already-cached official images. Reproduce with tools/start-supabase.ps1 -UseCachedImages: Postgres 17.11.0.002, GoTrue v2.197.0, PostgREST v16.4, Storage v1.79.28, Realtime v2.140.3, Edge Runtime v1.77.1, Studio 2026.09.28-sha-5e59b60, pg-meta v0.99.0. These are explicit development pins, not renamed images. Normal CLI startup on a new machine can download the configured CLI defaults. Windows reserves 55335-55434 on this host; dedicated ports 15421-15429 avoid it.
+
+## 22 Oct adoption limit and task migration
+
+The checkpoint above describes 21 Oct verification. On 22 Oct reads succeeded but writes/schema creation stalled (WALWrite/locks); no destructive repair or runtime adoption is claimed. Current review uses separate SQLite preview 8010/8011, without changing the configured `.env`.
+
+`20261022000100_tasks.sql` adds private backend Task/Event records, RLS and browser-role revocations. It is checked in source only, not verified as applied. Restore write health, back up existing records, apply reviewed migrations, verify role isolation and run PostgreSQL tests before adopting. Gate A's 143 SQLite passes do not establish this PostgreSQL gate.

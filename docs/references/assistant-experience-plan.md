@@ -1,6 +1,6 @@
 # Extended assistant experience and delivery plan — 22 Oct 2026
 
-Status: **planning detail for review; application features below are not implemented**. Subordinate to PLAN.md and docs/implementation-plan.md. Product rationale: [personal-assistant-direction.md](personal-assistant-direction.md). Founder requested the expansion, an explanation of redesign needs, and a swipe-up personalized news/newsletter briefing. Implementation remains on hold for this planning/review task; `ios-swift` stays parked.
+Status: **original expanded proposal, partially superseded by the reconciled build. Gate A manual tasks/Today is implemented with SQLite checks; later features remain proposals.** Subordinate to PLAN.md and docs/implementation-plan.md. Product rationale: [personal-assistant-direction.md](personal-assistant-direction.md). Founder requested the expansion, an explanation of redesign needs, and a swipe-up personalized news/newsletter briefing. The founder subsequently authorized implementation from the [reconciled review](assistant-review-decisions.md). Gate A (manual tasks + Today) is active; later features below remain proposals. `ios-swift` stays parked.
 
 ## 1. Product and scope decisions
 
@@ -36,7 +36,7 @@ Wi-Fi/gradient onboarding remains available, with copy reflecting everyday assis
 - Needs you: a small ordered list of actionable decisions. Each gives the change, consequence, source/time and next action. Unknown evidence cannot manufacture urgency.
 - In progress / Waiting: concise task rows showing outcome and next expected step. Distinguish waiting on the user, a provider and a failed source.
 - Recently completed: usable results with relevant evidence, not a count of generated answers.
-- All tasks: searchable/filterable list; sensible open/completed/paused views. New users get one clear delegation prompt, not a mandatory profile wizard.
+- All tasks: initial bounded list/detail with pagination; full search/filter is deferred. Later open/completed/paused views may follow evidence of need. New users get one clear delegation prompt, not a mandatory profile wizard.
 - Briefing handle: “Your briefing” preview above the browse dock, with a tap and swipe-up entrance. Keep urgent decisions visible before optional reading.
 - Required states: empty, loading, stale/offline, no urgent decisions, several concurrent tasks, failed task, pending approval and deferred item. Avoid skeletons/spinners that imply continuing work after the worker has stopped.
 
@@ -188,3 +188,14 @@ This order is a proposed delivery sequence, not a promise to implement every row
 ## 9. Remaining choices for review
 
 First pilot cohort/two jobs; exact Today density; whether Tasks later merits a tab; initial licensed/public source set; published briefing versus optional email newsletters; first connected source; retention choices and hosting budget. These are open decisions, not reasons to abandon the plan or invent access. The requested external LLM review should challenge them before implementation.
+
+## 10. Current delivery and design-review update
+
+The [reconciliation](assistant-review-decisions.md) and latest founder decision take precedence over older navigation/full-platform assumptions above. Gate A implements manual task CRUD, user-reported completion, revisions/idempotency and activity. **Preserve full visual Home and Wi-Fi/gradient onboarding; Today opens as a sheet from its own handle** with tap/keyboard alternatives, actual saved-task counts, due-sorted On your list and paused visibility. Empty Needs you/Running stay hidden; DX-14's hide-deck premise is superseded. SQLite: 145 passed/11 skipped (17 task checks); both requested phone sizes/motion settings and keyboard/browser checks passed. Physical iPhone gestures, screen-reader output and PostgreSQL adoption remain unverified. Keep-track bridge, taxi staged replies, Reading, cron/worker and Gmail are explicitly excluded from this pass. No scheduler, monitoring, decision/execution bridge or briefing is built; their specifications above remain future proposals.
+
+Founder confirmed staged taxi-recovery replies first and Gmail later; requested freely licensed content-photo replacements; supplied 12 Duet frames for visual/interaction/use-case review. TAXI-02/VIS-02 are nested in the reconciliation. Use [the new Claude prompt](assistant-design-interaction-review-prompt.md); output a new `assistant-design-interaction-review.md`, preserving the prior critique.
+
+
+## 11. Second review quality correction
+
+The new design/interaction/use-case critique is delivered, with detailed DX findings and a verified distinction between implemented contract quality and weak Home/task integration. Read the review and reconciliation assessment. Proposed amendments: On your list for manual tasks, Needs you for decisions, paused visibility/due prioritization, restored compact photo/gradient Home and visible recommendation reasons, reference-only task links, and the receipt-first staged recovery journey. These corrections are pending, not an implemented redesign. The first critique and founder-supplied design references remain preserved.

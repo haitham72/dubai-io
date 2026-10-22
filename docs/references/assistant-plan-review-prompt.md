@@ -1,5 +1,7 @@
 # External review prompt
 
+Historical first product/architecture review prompt. For the founder's subsequent Claude review of visual design, interaction, UI/UX, use cases and the 12 Duet frames, use [the new review prompt](assistant-design-interaction-review-prompt.md). Its report must be a separate `assistant-design-interaction-review.md`; preserve the earlier critique.
+
 Copy the following into the reviewing LLM. Supply the repository or referenced documents if available; otherwise the context below is self-contained.
 
 ---

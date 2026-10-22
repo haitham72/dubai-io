@@ -4,6 +4,7 @@
 // delivered over /api/actions/{id}/stream. Nothing here simulates a merchant.
 import { $, svg, esc, toast, told, openSheet, closeSheet } from './ui.js';
 import { api } from './service-workflow.js';
+import { statusLabel } from './status-labels.js';
 
 const DAY_RE = /\btoday\b/i;
 // "by 9 tomorrow" -> "Tomorrow 09:00"; returns '' when no time is stated.
@@ -138,10 +139,11 @@ export function orderCardHTML(a) {
   const pending = a.status === 'UNKNOWN_STATUS' ? `<p class="warn">${esc(a.blocked_reason || 'Outcome unknown.')}</p>` : '';
   const done = ['COMPLETED', 'DECLINED', 'CANCELLED'].includes(a.status);
   const waiting = a.status === 'SUBMITTED' ? 'Waiting for the shop to accept…' : a.status === 'ACCEPTED' ? 'Waiting for the shop to mark it ready…' : a.status === 'READY' ? 'Ready for pickup; waiting for the shop to mark it done…' : '';
-  const title = a.status === 'DECLINED' ? `${esc(o.provider)} declined` : a.status === 'COMPLETED' ? `Done at ${esc(o.provider)}` : `Order sent to ${esc(o.provider)}`;
+  const title = a.status === 'DECLINED' ? `${esc(o.provider)} declined` : a.status === 'COMPLETED' ? `Done at ${esc(o.provider)}`
+    : ['SUBMITTED', 'ACCEPTED', 'READY'].includes(a.status) ? `Order sent to ${esc(o.provider)}` : `Order with ${esc(o.provider)}`;
   return `<div class="msg bot wide status" data-order="${esc(a.id)}">
     <div class="st-head"><span class="st-ic ${a.status === 'DECLINED' ? 'bad' : ''}">${svg(a.status === 'DECLINED' ? 'close' : 'check', 'ic sm')}</span>
-      <div><b>${title}</b><span>${o.lines.map(l => `${l.qty}× ${esc(l.name)}`).join(', ')} · ${money(a.fixed_total_aed)} · sandbox merchant</span></div><span class="st-pill">${esc(a.status.replace('_', ' '))}</span></div>
+      <div><b>${title}</b><span>${o.lines.map(l => `${l.qty}× ${esc(l.name)}`).join(', ')} · ${money(a.fixed_total_aed)} · sandbox merchant</span></div><span class="st-pill" data-status="${esc(a.status)}">${esc(statusLabel(a.status))}</span></div>
     <ol class="st-steps">${steps.map(x => `<li class="done"><span class="st-dot">${svg('check', 'ic xs')}</span><div><b>${esc(x.label)}</b><span>${fmt(x.at)}</span></div></li>`).join('')}${waiting && !done ? `<li class="now"><span class="st-dot"></span><div><b>${waiting}</b><span>No status changes until the shop taps</span></div></li>` : ''}</ol>
     ${conflict}${pending}${remind}
     <p class="st-ref">${a.evidence ? `Ref ${esc(a.evidence.reference)} · ` : ''}the price can’t change now</p>

@@ -29,12 +29,12 @@ export function renderServicesLanding(el, area) {
   const extra = SERVICE_GROUPS.filter(g => !used.has(g.id));
   if (extra.length) sections.push({ label: 'More services', rows: extra });
   el.innerHTML = 
-    '<header class="services-brand"><div><b>Dubai<span>-io</span></b><p>Your Dubai companion</p></div><span class="visitor-pill">' + svg('person', 'ic sm') + ' Visitor</span></header>' +
+    '<header class="services-brand"><div><b>Dubai<span>-io</span></b><p>Your Dubai assistant</p></div><span class="visitor-pill">' + svg('person', 'ic sm') + ' Your day</span></header>' +
     '<article class="services-hero"><div class="services-skyline"></div>' +
       '<div class="hero-top"><span>' + svg('orb', 'ic sm') + ' Dubai-io</span><span class="pill demo">Sandbox partners</span></div>' +
-      '<div class="hero-copy"><h1>Hello, visitor.</h1><p>One companion.<br>Your next step in Dubai.</p>' +
-      '<button class="hero-guide" data-services-say="Guide me through the airport">' + svg('plane', 'ic sm') + ' Guide me to arrivals ' + svg('chev', 'ic sm') + '</button></div></article>' +
-    '<section class="services-stay" aria-label="Your area"><span class="services-orb">' + svg('orb') + '</span><div><h2>Where are you staying?</h2>' +
+      '<div class="hero-copy"><h1>A little help,<br>every day.</h1><p>Your next step in Dubai.</p>' +
+      '<button class="hero-guide" data-services-say="Coffee near me">' + svg('cup', 'ic sm') + ' Find a place nearby ' + svg('chev', 'ic sm') + '</button></div></article>' +
+    '<section class="services-stay" aria-label="Your area"><span class="services-orb">' + svg('orb') + '</span><div><h2>Which area works for you?</h2>' +
       '<div class="stay-options">' + ['Business Bay', 'Dubai Marina'].map(a => '<button data-area="' + esc(a) + '" aria-pressed="' + (area === a) + '">' + svg(a === 'Dubai Marina' ? 'nav' : 'home', 'ic sm') + esc(a) + '</button>').join('') + '</div>' +
       (area ? '<p class="services-area">' + svg('check', 'ic xs') + ' ' + esc(area) + ' · you told me</p>' : '') + '</div></section>' +
     '<section class="services-try" aria-label="Try asking"><h2>Try asking</h2><div class="services-shortcuts">' +
@@ -42,5 +42,5 @@ export function renderServicesLanding(el, area) {
         '<button data-services-say="' + esc(x.ask) + '"><span>' + svg(x.icon) + '</span><b>' + esc(x.title) + '</b><small>' + esc(x.hint) + '</small>' + svg('chev', 'ic sm') + '</button>').join('') + '</div></section>' +
     '<div class="services-categories"><div class="services-section-head"><h2>Services</h2><span>Fixed prices · demo</span></div>' +
     sections.filter(g => g.rows.length).map(g => '<section class="services-group"><h3>' + esc(g.label) + '</h3><div class="service-category-grid">' + g.rows.map(category).join('') + '</div></section>').join('') +
-    '<button class="services-anything" data-services-ask="1">' + svg('spark') + '<span><b>Something else?</b><small>Ask your companion.</small></span>' + svg('chev', 'ic sm') + '</button></div>';
+    '<button class="services-anything" data-services-ask="1">' + svg('spark') + '<span><b>Something else?</b><small>Ask your assistant.</small></span>' + svg('chev', 'ic sm') + '</button></div>';
 }

@@ -69,7 +69,7 @@ export function openSheet(html, onClose) {
   requestAnimationFrame(() => {
     if (generation !== sheetGeneration) return;
     sheet.classList.add('open'); scrim.classList.add('open');
-    if (!body.contains(document.activeElement)) (body.querySelector('[autofocus], .page-host-back, .page-host-close, button, input, textarea, a[href]') || $('#sheetClose')).focus({ preventScroll: true });
+    if (!body.contains(document.activeElement)) (body.querySelector('[autofocus]') || body.querySelector('.page-host-back, .page-host-close, button, input, textarea, a[href]') || $('#sheetClose')).focus({ preventScroll: true });
   });
   body.scrollTop = 0;
   return body;
@@ -83,6 +83,7 @@ export function closeSheet() {
   sheetHideTimer = setTimeout(() => {
     if (generation !== sheetGeneration) return;
     sheet.hidden = true; scrim.hidden = true;
+    document.dispatchEvent(new CustomEvent('dubaiio:sheet-closed'));
     if (sheetReturnFocus?.isConnected) sheetReturnFocus.focus({ preventScroll: true });
     sheetReturnFocus = null;
   }, reduced ? 0 : 320);

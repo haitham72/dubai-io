@@ -24,6 +24,7 @@ import { openConnections } from './accounts.js';
 import { renderServicesLanding } from './services.js';
 import { startGuide, wireGuide } from './guide.js';
 import { startArrival } from './arrival.js';
+import { createToday } from './tasks.js';
 
 // C1 used 0.55: apply 70% of that reflection to every stage card.
 const CARD_REFLECTION_STRENGTH = 0.55 * 0.70;
@@ -61,20 +62,22 @@ document.body.insertAdjacentHTML('beforeend', `
   <main id="stage" aria-roledescription="carousel" aria-label="Home cards"></main>
   <nav class="rail" id="rail" aria-label="Cards"></nav>
   <p class="caption" id="caption" aria-live="polite"></p>
+  <section class="today" id="today" aria-label="Today" hidden inert></section>
+  <button class="today-launch glass" id="todayLaunch" aria-controls="today" aria-expanded="false" aria-label="Open Today tasks"><span class="today-launch-grab" aria-hidden="true"></span><span><b id="todayHandleLabel">Today</b><small>Swipe up or tap for tasks</small></span>${svg('up', 'ic sm')}</button>
 
   <section class="chatv" id="chat" aria-label="Chat" inert>
     <div class="c-top">
       <button class="round glass" id="chatBack" aria-label="Back to browsing">${svg('back')}</button>
       <span class="c-orb" aria-hidden="true"></span>
-      <div class="c-title"><button class="brand-btn" id="brandBtn2" aria-label="Dubai-io. Tap to restart the demo"><b>Dubai-<i>io</i></b></button><span>Your Dubai companion</span></div>
+      <div class="c-title"><button class="brand-btn" id="brandBtn2" aria-label="Dubai-io. Tap to restart the demo"><b>Dubai-<i>io</i></b></button><span>Your Dubai assistant</span></div>
       <button class="round" id="chatSearch" aria-label="Browse services">${svg('search')}</button>
     </div>
     <div class="c-scroll" id="chatScroll">
       <div class="chat-empty" id="chatEmpty">
         <span class="chat-empty-orb" aria-hidden="true"></span>
-        <p>Your Dubai companion</p><h1>What’s your next step?</h1>
+        <p>For your life and work in Dubai</p><h1>What’s your next step?</h1>
         <div class="chat-starters" aria-label="Start a conversation">
-          <button data-chat-ask="Guide me through the airport">${svg('plane', 'ic sm')} Guide me to arrivals ${svg('chev', 'ic xs')}</button>
+          <button data-chat-task>${svg('cal', 'ic sm')} Keep track of something ${svg('chev', 'ic xs')}</button>
           <button data-chat-ask="I need a shirt pressed by 9 tomorrow">${svg('drop', 'ic sm')} Press a shirt ${svg('chev', 'ic xs')}</button>
           <button data-chat-ask="Coffee near me">${svg('cup', 'ic sm')} Find coffee nearby ${svg('chev', 'ic xs')}</button>
         </div>
@@ -117,7 +120,7 @@ document.body.insertAdjacentHTML('beforeend', `
   <div class="browse-dock" id="browseDock">
   <nav class="tabbar glass" aria-label="Tabs">
     <span class="tab-selection" aria-hidden="true"></span>
-    <button data-tab="home" aria-current="page">${svg('orb')}<span>io</span></button>
+    <button data-tab="home" aria-current="page">${svg('orb')}<span>Home</span></button>
     <button data-tab="maps">${svg('map')}<span>Maps</span></button>
     <button data-tab="services">${svg('grid')}<span>Services</span></button>
     <button data-tab="me">${svg('person')}<span>Me</span></button>
@@ -165,6 +168,7 @@ const S = {
   ask: null, cat: 'all', sub: null, src: null, detail: null, snap: 'peek', chatReturn: 'home', mapMode: '2d',
 };
 const G = {};
+const today = createToday($('#today'));
 window.__lab = { S, G };
 let seedN = 1, onboardingExitTimer = 0;
 const mkCard = def => ({ ...def, holo: CARD_REFLECTION_STRENGTH, variant: VARIANT[def.kind] ?? 0, seed: (seedN++ * 7.31) % 13, rev: reduced ? 1 : 0, revStart: 0, revDur: 1100, out: false, outFrom: 1, exitProgress: 0, el: null });
@@ -188,6 +192,7 @@ function setView(v) {
   $('#chat').inert = v !== 'chat';
   stageEl.inert = v !== 'home';
   railEl.inert = v !== 'home';
+  $('#todayLaunch').inert = v !== 'home' || S.mode !== 'home';
   $('#svcGrid').inert = v !== 'services';
   $('#results').inert = v !== 'results';
   document.querySelector('.top').inert = v !== 'home';
@@ -300,6 +305,11 @@ function buildRail() {
 
 // ---------------------------------------------------------------- flows: intro, home
 function startOnboarding() {
+  app.classList.remove('has-today-entry');
+  $('#todayLaunch').inert = true;
+  today.show(false);
+  stageEl.inert = false; railEl.inert = false;
+  setLift(0);
   clearTimeout(onboardingExitTimer);
   S.onboardingExit = false;
   S.mode = 'onboard';
@@ -343,13 +353,18 @@ function homeOrder() {
     const h = c.because && byId[c.because];
     // Tier rule: hypotheses may only re-rank, with a visible Because chip (allowed(h, 'rerank')).
     const boost = h && allowed(h, 'rerank') && (h.surfaced || h.provenance === 'user_supplied') ? h.conf : 0;
-    return { c, h: boost ? h : null, score: boost * 10 - k };
+    return { c, h: boost ? h : null, score: boost * 10 - (c.id === 'C5' ? 100 : k) };
   }).sort((a, b) => b.score - a.score);
 }
 function buildHome() {
   clearTimeout(onboardingExitTimer);
   S.onboardingExit = false;
   S.mode = 'home';
+  app.classList.add('has-today-entry');
+  stageEl.inert = S.view !== 'home'; railEl.inert = S.view !== 'home';
+  $('#todayLaunch').inert = S.view !== 'home';
+  setLift(S.view === 'home' ? 0 : 1);
+  today.refreshSummary();
   S.deck = [mkCard(PROFILE_CARD), ...homeOrder().map(o => mkCard({ ...o.c, becauseHyp: o.h }))];
   S.pos = S.target = 1; S.vel = 0;
   mountDeck();
@@ -505,7 +520,7 @@ stageEl.addEventListener('pointercancel', onUp);
 stageEl.addEventListener('click', e => { if (e.target.closest('[data-act="next"]')) { e.stopPropagation(); advance(); } });
 railEl.addEventListener('click', e => { const d = e.target.closest('.dot'); if (d && !S.onboardingExit) S.target = +d.dataset.i; });
 addEventListener('keydown', e => {
-  if (e.target.closest?.('input')) return;
+  if (e.defaultPrevented || e.target.closest?.('input,textarea,select,button,a,summary,[contenteditable="true"]')) return;
   if (!$('#sheet').hidden) { if (e.key === 'Escape') closeSheet(); return; }
   if (S.view !== 'home') { if (e.key === 'Escape') goBack(); return; }
   if (S.onboardingExit) { if (['ArrowLeft', 'ArrowRight', 'Enter'].includes(e.key)) e.preventDefault(); return; }
@@ -970,10 +985,9 @@ function setSnap(name, instant) {
 })();
 
 // ---------------------------------------------------------------- Services: competing offers
-// Chat header: search opens Services; the mode pill explains that resident mode comes later.
+// Chat header search opens Services.
 document.addEventListener('click', e => {
   if (e.target.closest('#chatSearch')) enterServices();
-  if (e.target.closest('#chatMode')) toast('Visitor mode. Resident mode comes after the contest build.');
 });
 function enterServices() { closeSheet(); renderServicesLanding($('#svcGrid'), told.area); setView('services'); }
 $('#svcGrid').addEventListener('click', e => {
@@ -996,9 +1010,45 @@ addEventListener('dubaiio:focus', e => {
   el.querySelector('button')?.addEventListener('click', () => selectFocus(null));
 });
 $('#chatLaunch').addEventListener('click', beginChat);
+function openToday() {
+  if (S.view !== 'home' || S.mode !== 'home') return;
+  today.open(); $('#todayLaunch').setAttribute('aria-expanded', 'true');
+}
+$('#todayLaunch').addEventListener('click', e => {
+  if (todaySwipeClick) { todaySwipeClick = false; e.preventDefault(); return; }
+  openToday();
+});
+let todayGesture = null, todaySwipeClick = false;
+$('#todayLaunch').addEventListener('pointerdown', e => {
+  if (!e.isPrimary || e.button !== 0) return;
+  todaySwipeClick = false; todayGesture = { x: e.clientX, y: e.clientY, at: performance.now() };
+  e.currentTarget.setPointerCapture(e.pointerId);
+});
+$('#todayLaunch').addEventListener('pointerup', e => {
+  const start = todayGesture; todayGesture = null;
+  if (start && start.y - e.clientY > 35 && Math.abs(start.x - e.clientX) < 60 && performance.now() - start.at < 1000) {
+    e.preventDefault(); todaySwipeClick = true; openToday();
+    setTimeout(() => { todaySwipeClick = false; }, 500);
+  }
+});
+$('#todayLaunch').addEventListener('pointercancel', () => { todayGesture = null; });
+$('#todayLaunch').addEventListener('keydown', e => {
+  if (e.key === 'ArrowUp') { e.preventDefault(); e.stopPropagation(); openToday(); }
+});
+document.addEventListener('dubaiio:sheet-closed', () => $('#todayLaunch').setAttribute('aria-expanded', 'false'));
+addEventListener('dubaiio:today-summary', e => {
+  const counts = e.detail?.counts, parts = ['Today'];
+  if (counts?.needs_you > 0) parts.push(counts.needs_you + (counts.needs_you === 1 ? ' needs you' : ' need you'));
+  if (counts?.on_list > 0) parts.push(counts.on_list + ' on your list');
+  $('#todayHandleLabel').textContent = parts.join(' · ');
+  $('#todayLaunch').setAttribute('aria-label', 'Open Today tasks' + (parts.length > 1 ? ': ' + parts.slice(1).join(', ') : ''));
+});
 $('#q').addEventListener('focus', showChat);
 $('#q').addEventListener('keydown', e => { if (e.key === 'Escape') { e.preventDefault(); leaveChat(); } });
-$('#chatEmpty').addEventListener('click', e => { const b = e.target.closest('[data-chat-ask]'); if (b) { $('#q').blur(); handle(b.dataset.chatAsk); } });
+$('#chatEmpty').addEventListener('click', e => {
+  if (e.target.closest('[data-chat-task]')) { $('#q').blur(); openPage('tasks.new'); return; }
+  const b = e.target.closest('[data-chat-ask]'); if (b) { $('#q').blur(); handle(b.dataset.chatAsk); }
+});
 
 $('#composer').addEventListener('submit', e => {
   e.preventDefault();
@@ -1017,8 +1067,8 @@ document.querySelector('.tabbar').addEventListener('click', e => {
   if (S.onboardingExit) buildHome();
   closeOffers();
   if (t === 'home') {
-    if (['results','services'].includes(S.view)) buildHome();
-    setView(hasThread() && S.view === 'home' ? 'chat' : 'home');
+    if (S.mode !== 'home') { store.set('onboarded', '1'); buildHome(); }
+    setView('home');
   }
   else if (t === 'maps') enterResults({ cat: 'all' });
   else if (t === 'services') enterServices();
@@ -1086,10 +1136,11 @@ layout();
 refreshRecommendations(CASES);
 setView('home');
 const firstRun = !store.get('onboarded');
-const direct = ['intro', 'services', 'maps', 'guide', 'profile'].some(f => flags.has(f));
+const direct = ['home', 'today', 'intro', 'services', 'maps', 'guide', 'profile'].some(f => flags.has(f));
 if (flags.has('wifi') || (firstRun && !direct)) startArrival(() => startOnboarding());
 else if (flags.has('intro')) startOnboarding();
 else buildHome();
+if (flags.has('today')) requestAnimationFrame(openToday);
 if (flags.has('services')) { if (S.mode === 'onboard') buildHome(); enterServices(); }
 if (flags.has('maps')) { if (S.mode === 'onboard') buildHome(); enterResults({ cat: 'pets' }); }
 if (flags.has('guide')) { if (S.mode === 'onboard') buildHome(); handle('Guide me through the airport'); }
