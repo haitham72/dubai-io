@@ -19,6 +19,13 @@ from .actions import COOKIE, InputValue, PrepareIn, annotate, engine, fingerprin
 router = APIRouter(tags=["tasks"])
 clock = lambda: datetime.now(timezone.utc)
 ACTIVE = {"WAITING_USER", "PAUSED"}
+# TAXI-02 staged replies (founder chose staged first). Host-owned script, never
+# client text; every reply is a demo fixture and nothing here means recovered.
+STAGED_REPLIES = (
+    ("RTA lost & found", "Your report details were received for checking. This is a staged reply, not a real RTA response."),
+    ("Taxi company", "An item matching “{item}” was found in the back seat and is held at the company’s lost property desk. Staged reply."),
+)
+COLLECT_STEP = "Collect it in person from the lost property desk named in the reply. Confirm the place with RTA first (staged location), then mark this task done."
 DDL = (
     """CREATE TABLE IF NOT EXISTS tasks (
         id TEXT PRIMARY KEY, owner TEXT NOT NULL, creation_key TEXT NOT NULL, payload_hash TEXT NOT NULL,
@@ -91,7 +98,7 @@ class TaskChanges(BaseModel):
 
 class TaskCommand(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    kind: Literal["edit", "pause", "resume", "cancel", "complete"]
+    kind: Literal["edit", "pause", "resume", "cancel", "complete", "staged_next", "collect"]
     expected_revision: int = Field(ge=1)
     command_key: str = Field(min_length=8, max_length=100)
     changes: TaskChanges | None = None
@@ -255,6 +262,26 @@ class Tasks:
             elif kind == "cancel":
                 task["status"] = "CANCELLED"
                 task["cancelled_at"] = clock().isoformat()
+            elif kind in ("staged_next", "collect"):
+                item = self.linked_item(owner, task)
+                if not item or item["capability_id"] != "recovery.rta" or task["status"] != "WAITING_USER":
+                    raise HTTPException(409, "Staged replies apply only to an active lost-item report")
+                shown = self.store.db.execute("SELECT kind FROM task_events WHERE owner=? AND task_id=? AND kind IN ('staged_reply','collection_chosen')",
+                                              (owner, task_id)).fetchall()
+                replies, chosen = sum(r[0] == "staged_reply" for r in shown), any(r[0] == "collection_chosen" for r in shown)
+                if kind == "staged_next":
+                    if replies >= len(STAGED_REPLIES):
+                        raise HTTPException(409, "There are no more staged replies")
+                    sender, text = STAGED_REPLIES[replies]
+                    event_data = {"actor": "staged", "provenance": "demo_fixture", "sender": sender,
+                                  "text": text.format(item=(item["fields"].get("description") or {}).get("value", "your item")[:80])}
+                    if replies + 1 == len(STAGED_REPLIES):
+                        task["next_step"] = "Choose how to get it back."
+                else:
+                    if replies < len(STAGED_REPLIES) or chosen:
+                        raise HTTPException(409, "Collection can be chosen once, after the staged reply")
+                    task["next_step"] = COLLECT_STEP
+                    event_data["choice"] = "collect"
             elif kind == "complete":
                 task["status"] = "COMPLETED"
                 task["result"] = {"text": body.result, "provenance": "user_supplied", "as_of": clock().isoformat()}
@@ -267,7 +294,8 @@ class Tasks:
             if changed.rowcount != 1:
                 raise HTTPException(409, "This task changed. Reload it before applying your edit.")
             self.event(owner, task, body.command_key, digest, {"edit": "edited", "pause": "paused", "resume": "resumed",
-                       "cancel": "cancelled", "complete": "completed"}[kind], event_data)
+                       "cancel": "cancelled", "complete": "completed", "staged_next": "staged_reply",
+                       "collect": "collection_chosen"}[kind], event_data)
             return {"task": task, "replayed": False}
 
     def activity(self, owner, task_id, before=None):

@@ -1,4 +1,4 @@
-// Recovery facts are user-given; trace results are separate demo fixtures.
+// Recovery facts are user-given. Staged replies live on the saved task (server script).
 export const REPORT_FIELDS = [
   ['when', 'Date and time'], ['from', 'Pickup'], ['to', 'Drop-off'],
   ['plate', 'Taxi plate'], ['roof', 'Roof colour'], ['fare', 'Trip fare'],
@@ -12,17 +12,6 @@ export function tripFields(memory = {}) {
   const when = date && Number.isFinite(date.getTime()) ? new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Dubai', dateStyle: 'medium', timeStyle: 'short' }).format(date) : text(trip.when);
   const values = { when, from: text(trip.from), to: text(trip.to), plate: text(memory.plate), roof: text(memory.roof), fare: text(trip.fare), payment: text(trip.payment), booking: text(trip.booking) };
   return REPORT_FIELDS.map(([key, label]) => ({ key, label, value: values[key] || null, provenance: values[key] ? 'user_supplied' : null }));
-}
-
-export function validLastFour(value) {
-  return typeof value === 'string' && value.length === 4 && [...value].every(c => c >= '0' && c <= '9');
-}
-
-export function simulateTrace(payment, lastFour, cashRun = 0) {
-  if (!['card', 'cash'].includes(payment)) throw new Error('Choose card or cash.');
-  if (payment === 'card' && !validLastFour(lastFour)) throw new Error('Enter exactly four digits.');
-  const matched = payment === 'card' ? lastFour !== '0000' : cashRun % 2 === 0;
-  return { matched, provenance: 'demo_fixture', status: matched ? 'READY' : 'UNKNOWN_STATUS', driver: matched ? { name: 'Imran K.', plate: 'DXB-4471', eta: '12 min (demo estimate)' } : null };
 }
 
 export function prepareReport(item, fields, description, values = {}) {

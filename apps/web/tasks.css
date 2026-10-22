@@ -164,3 +164,12 @@
 .brief { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 8px; }
 .brief-line { display: block; width: 100%; text-align: left; font-size: 15.5px; line-height: 1.5; min-height: 44px; }
 .brief-chip { padding: 1px 7px; border-radius: 7px; background: var(--tint-soft); color: var(--tint-ink); font-weight: 600; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+
+.task-staged { display: grid; gap: 10px; margin: 14px 0; }
+.task-staged > span { font-size: 11.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--label-3); }
+.task-staged ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.task-staged li { border: 1px solid var(--sep); border-radius: 16px; padding: 12px; background: #fff; display: grid; gap: 4px; }
+.task-staged li p { margin: 0; font-size: 14px; line-height: 1.4; }
+.task-staged li small { font-size: 11px; color: var(--label-3); }
+.task-staged .rec-pill { justify-self: start; }
+.decision-actions .btn:disabled { opacity: .45; cursor: default; }

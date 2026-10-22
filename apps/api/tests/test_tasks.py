@@ -425,3 +425,36 @@ def test_stale_decision_binding_cannot_approve_a_changed_draft(client):
                    json={"snapshot_hash":old["snapshot_hash"],"revision":old["revision"]})
     assert stale.status_code == 409
     assert store.db.execute("SELECT COUNT(*) FROM approvals").fetchone()[0] == 0
+
+
+def test_staged_recovery_replies_are_scripted_ordered_and_never_recover(client):
+    c, store, *_ = client
+    task = c.post("/api/tasks/from-report",json={"fields":report_fields()}).json()["task"]
+    early = command(c, task, "collect")
+    assert early.status_code == 409  # no choice before the staged reply
+    for n in range(2):
+        response = command(c, task, "staged_next"); assert response.status_code == 200, response.text
+        task = response.json()["task"]
+    assert command(c, task, "staged_next").status_code == 409
+    events = c.get(f'/api/tasks/{task["id"]}').json()["events"]
+    staged = [e for e in events if e["kind"] == "staged_reply"]
+    assert len(staged) == 2 and all(e["actor"] == "staged" and e["provenance"] == "demo_fixture" for e in staged)
+    assert "Blue backpack" in staged[1]["text"] and "Staged" in staged[1]["text"]
+    task = command(c, task, "collect").json()["task"]
+    assert task["status"] == "WAITING_USER" and task["result"] is None and "Collect it in person" in task["next_step"]
+    assert command(c, task, "collect").status_code == 409
+    linked = c.get(f'/api/tasks/{task["id"]}').json()["linked_item"]
+    assert linked["status"] == "BLOCKED" and linked["evidence"] is None
+    assert store.db.execute("SELECT COUNT(*) FROM approvals").fetchone()[0] == 0
+
+
+def test_staged_replies_reject_orders_manual_tasks_and_other_owners(client):
+    c, *_ = client
+    manual = create(c)
+    assert command(c, manual, "staged_next").status_code == 409
+    _, order_task = tracked_order(c)
+    assert command(c, order_task, "staged_next").status_code == 409
+    task = c.post("/api/tasks/from-report",json={"fields":report_fields()}).json()["task"]
+    other = TestClient(c.app); other.get("/api/session")
+    assert command(other, task, "staged_next").status_code == 404
+    assert command(c, task, "staged_next", changes={"outcome":"x"}).status_code == 422

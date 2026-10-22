@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { tripFields, validLastFour, simulateTrace, prepareReport, reportText } from '../recovery-state.js';
+import { tripFields, prepareReport, reportText } from '../recovery-state.js';
 
 test('saved trip facts preserve values and Dubai time', () => {
   const fields = tripFields({ plate: '12345', roof: 'red', trip: { from: 'DXB T3', to: 'Business Bay', at: new Date('2026-10-12T20:40:00Z') } });
@@ -12,22 +12,9 @@ test('saved trip facts preserve values and Dubai time', () => {
 test('missing facts never become demo taxi details', () => {
   const empty = tripFields();
   assert.ok(empty.every(f => f.value === null));
-  simulateTrace('cash', null, 0);
   const report = prepareReport('bag', empty, 'Black backpack');
   assert.ok(report.fields.every(f => f.value === null));
   assert.ok(!reportText(report).includes('DXB-4471'));
-});
-test('card trace accepts exactly four digits without a silent default', () => {
-  assert.equal(validLastFour('4242'), true);
-  for (const x of ['', '123', '12345', '12a4', 4242]) assert.equal(validLastFour(x), false);
-  assert.throws(() => simulateTrace('card', ''), /four digits/);
-});
-test('card and cash failure paths stay unknown and labelled as fixtures', () => {
-  assert.equal(simulateTrace('card', '0000').status, 'UNKNOWN_STATUS');
-  assert.equal(simulateTrace('card', '4242').provenance, 'demo_fixture');
-  assert.equal(simulateTrace('cash', null, 0).matched, true);
-  assert.equal(simulateTrace('cash', null, 1).matched, false);
-  assert.throws(() => simulateTrace('transfer', null));
 });
 test('preparing a report requires an actual description', () => {
   assert.throws(() => prepareReport('bag', tripFields(), '  '), /Describe/);

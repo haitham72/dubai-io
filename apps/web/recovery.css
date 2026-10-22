@@ -79,3 +79,5 @@
 .rec-external { background: #F1F4F8; border-radius: 16px; padding: 14px; }
 .rec-external summary { min-height: 30px; color: var(--tint-ink); font-size: 13px; font-weight: 600; cursor: pointer; }
 .rec-external[open] p { margin: 8px 0 12px; }
+/* TAXI-02 quick replies (Duet F11): short, reversible answers. */
+.rec-choices.quick .btn::before { content: "↳"; margin-right: 6px; color: var(--tint-ink); }

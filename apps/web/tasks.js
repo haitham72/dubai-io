@@ -4,6 +4,7 @@ import { esc, svg, toast, closeSheet, reduced } from './ui.js';
 import { registerPage, openPage } from './page-host.js';
 import { selectTaskFocus } from './assistant-context.js';
 import { statusLabel } from './status-labels.js';
+import { decisionHTML } from './decision.js';
 
 const labels = { WAITING_USER: 'Waiting for your update', PAUSED: 'Paused', COMPLETED: 'Done · you reported', CANCELLED: 'Cancelled' };
 export const taskStateLabel = status => labels[status] || 'Status unavailable';
@@ -110,6 +111,19 @@ registerPage('tasks.list', {
   },
 });
 
+// TAXI-02: staged replies come from the server script and are labelled at every step.
+function stagedHTML(data) {
+  const t = data.task;
+  if (data.linked_item?.capability_id !== 'recovery.rta' || t.status !== 'WAITING_USER') return '';
+  const replies = data.events.filter(e => e.kind === 'staged_reply'), chosen = data.events.some(e => e.kind === 'collection_chosen');
+  const list = replies.map(e => `<li><span class="rec-pill demo">Staged · demo</span><b>${esc(e.sender)}</b><p>${esc(e.text)}</p><small>${esc(date(e.at))} · Dubai time</small></li>`).join('');
+  const next = replies.length < 2 ? `<button class="btn wide" data-task-command="staged_next">Show the next staged reply</button>`
+    : chosen ? '<p class="task-boundary">You chose to collect it. It is not recovered until you have it.</p>'
+    : decisionHTML({ context: 'Staged demo · lost item', title: 'How do you want it back?', note: 'No delivery service is connected, so delivery is not available.',
+        primary: { label: 'I’ll collect it', attrs: { 'data-task-command': 'collect' } }, defer: { label: 'Delivery · not available', attrs: {}, disabled: true } });
+  return `<section class="task-staged"><span>Replies · staged demo</span>${list ? `<ol>${list}</ol>` : '<p>No replies yet. Staged replies show how answers would arrive; nobody was contacted.</p>'}${next}</section>`;
+}
+
 function detailHTML(data) {
   const t = data.task;
   return `<article class="task-detail"><span class="task-state" data-status="${esc(t.status)}" tabindex="-1" role="status" aria-live="polite" aria-atomic="true">${esc(labels[t.status] || t.status)}</span><h3>${esc(t.outcome)}</h3>
@@ -119,10 +133,11 @@ function detailHTML(data) {
     ${t.result ? `<section class="task-next"><span>Result · you reported</span><p>${esc(t.result.text)}</p><small>${esc(date(t.result.as_of))} · Dubai time</small></section>` : ''}
     <p class="task-boundary">${t.status === 'CANCELLED' ? 'Tracking stopped. No request was sent from this task.' : 'Saved for your updates. Automatic checks and sending are not active yet.'}</p>
     ${t.source ? `<section class="task-next"><span>Linked ${data.linked_item?.capability_id === 'order.request' ? 'order' : 'request'}</span><p>${esc(data.linked_item ? statusLabel(data.linked_item.status) : 'The linked item is unavailable.')}</p>${data.linked_item ? `<button class="btn wide" data-open-linked-item="${esc(t.source.id)}">Open linked item ${svg('chev', 'ic xs')}</button>` : ''}<small>Tracking does not send, cancel or complete the linked item.</small></section>` : ''}
+    ${stagedHTML(data)}
     <button class="btn wide" data-task-chat>Discuss this task ${svg('orb', 'ic sm')}</button>
     <p role="alert" data-task-error hidden></p><div data-task-editor></div>
     ${active(t) ? `<div class="task-actions"><button class="btn" data-task-edit>Edit task</button><button class="btn" data-task-command="${t.status === 'PAUSED' ? 'resume' : 'pause'}">${t.status === 'PAUSED' ? 'Resume' : 'Pause'}</button><button class="btn primary" data-task-complete>Mark done</button><button class="task-cancel" data-task-command="cancel">Cancel task</button></div>` : ''}
-    <details class="task-activity"><summary>Activity</summary><ol>${data.events.map(e => `<li><b>${esc({created:'Saved by you',edited:'Details edited',paused:'Paused by you',resumed:'Resumed by you',cancelled:'Cancelled by you',completed:'Completion reported by you'}[e.kind] || e.kind)}</b><span>${esc(date(e.at))} · Dubai time</span>${e.fields ? `<small>Changed: ${esc(e.fields.join(', ').replaceAll('_', ' '))}</small>` : ''}</li>`).join('')}</ol>${data.before_seq ? '<button class="btn wide" data-older-events>Earlier activity</button>' : ''}</details>
+    <details class="task-activity"><summary>Activity</summary><ol>${data.events.map(e => `<li><b>${esc({created:'Saved by you',staged_reply:'Staged reply · demo',collection_chosen:'You chose to collect it',edited:'Details edited',paused:'Paused by you',resumed:'Resumed by you',cancelled:'Cancelled by you',completed:'Completion reported by you'}[e.kind] || e.kind)}</b><span>${esc(date(e.at))} · Dubai time</span>${e.fields ? `<small>Changed: ${esc(e.fields.join(', ').replaceAll('_', ' '))}</small>` : ''}</li>`).join('')}</ol>${data.before_seq ? '<button class="btn wide" data-older-events>Earlier activity</button>' : ''}</details>
     <p class="task-updated">Saved by you · updated ${esc(date(t.updated_at))} · Dubai time</p></article>`;
 }
 
@@ -152,7 +167,9 @@ registerPage('tasks.detail', {
       pending ||= { kind, ...extra, expected_revision: data.task.revision, command_key: key() };
       busy = true;
       announcement.textContent = '';
-      root.querySelectorAll('button,input,textarea').forEach(el => { el.disabled = true; });
+      // Re-enable only what this change locked; re-rendered controls keep their own state.
+      const locked = [...root.querySelectorAll('button:not([disabled]),input:not([disabled]),textarea:not([disabled])')];
+      locked.forEach(el => { el.disabled = true; });
       try {
         const result = await request('/api/tasks/' + encodeURIComponent(context.id) + '/commands', pending);
         changed();
@@ -168,7 +185,7 @@ registerPage('tasks.detail', {
           root.querySelector('[data-task-editor]').innerHTML = '<button class="btn wide" data-task-retry>Retry change</button><button class="btn wide" data-task-reload>Reload task</button>';
           root.querySelector('.task-actions')?.setAttribute('hidden', '');
         } else { errorLine(root, error.message); pending = null; }
-      } finally { busy = false; root.querySelectorAll('button,input,textarea').forEach(el => { el.disabled = false; }); }
+      } finally { busy = false; locked.forEach(el => { el.disabled = false; }); }
     }
     root.addEventListener('click', async event => {
       if (busy) return;
