@@ -1,4 +1,5 @@
-"""Pull-only headline discovery. No article bodies, images, model or scheduler.
+"""Pull-only headline discovery. No article bodies, model or scheduler. Thumbnails
+are the publisher's own link-preview image, proxied and never stored past the cache.
 
 Only public topic labels go to the existing search provider. Publisher metadata
 has a short shared cache; owner preferences are resolved afresh on every read.
@@ -7,6 +8,9 @@ from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 from hashlib import sha256
 import html
+import ipaddress
+import socket
+from concurrent.futures import ThreadPoolExecutor
 import json
 import os
 import re
@@ -100,6 +104,69 @@ def headlines(results, sources, at):
     return out[:8]
 
 
+OG_TAG = re.compile(r"<meta\b[^>]*(?:property|name)\s*=\s*[\"'](?:og:image(?::secure_url)?|twitter:image)[\"'][^>]*>", re.I)
+OG_CONTENT = re.compile(r"content\s*=\s*[\"']([^\"']+)[\"']", re.I)
+IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"}
+_thumbs = {}  # article id -> publisher preview URL; bounded, process-local like the headline cache
+UA = "DubaiIO-LinkPreview/1.0 (+headline thumbnails)"
+
+
+def public_https(url):
+    """Only https on port 443 to a host that resolves to public addresses (no SSRF to internal hosts)."""
+    try:
+        parts = urlsplit(url)
+        if parts.scheme != "https" or not parts.hostname or parts.username or parts.password or parts.port not in {None, 443}:
+            return False
+        return all(ipaddress.ip_address(info[4][0]).is_global for info in socket.getaddrinfo(parts.hostname, 443))
+    except (ValueError, OSError):
+        return False
+
+
+def preview_image(url):
+    """The publisher's declared link-preview image, read from the page head only."""
+    site = (urlsplit(url).hostname or "").removeprefix("www.")
+    head = b""
+    try:
+        for _ in range(3):  # at most two redirects, each staying on the same publisher
+            host = urlsplit(url).hostname or ""
+            if not public_https(url) or not (host == site or host.endswith("." + site)):
+                return None
+            with httpx.stream("GET", url, timeout=4, follow_redirects=False, headers={"User-Agent": UA}) as page:
+                if page.status_code in (301, 302, 303, 307, 308) and page.headers.get("location"):
+                    url = str(httpx.URL(url).join(page.headers["location"]))
+                    continue
+                if page.status_code != 200 or "html" not in page.headers.get("content-type", ""):
+                    return None
+                for chunk in page.iter_bytes():
+                    head += chunk
+                    if len(head) > 300_000 or b"</head>" in head.lower():
+                        break
+                break
+        else:
+            return None
+    except httpx.HTTPError:
+        return None
+    for tag in OG_TAG.findall(head.decode("utf-8", "ignore")):
+        found = OG_CONTENT.search(tag)
+        image = html.unescape(found.group(1)).strip() if found else ""
+        if image.startswith("https://") and len(image) < 2000:
+            return image
+    return None
+
+
+def add_thumbnails(articles):
+    with ThreadPoolExecutor(6) as pool:
+        images = list(pool.map(lambda a: preview_image(a["url"]), articles))
+    with _lock:
+        if len(_thumbs) > 400:
+            _thumbs.clear()
+        for article, image in zip(articles, images):
+            if image:
+                _thumbs[article["id"]] = image
+            article["thumbnail"] = {"url": f"/api/reading/thumbnails/{article['id']}", "credit": article["source"]} if image else None
+    return articles
+
+
 def fetch_headlines(topics, sources):
     key = os.getenv("TVLY_API_KEY", "")
     if not key:
@@ -146,7 +213,7 @@ def reading(request: Request, response: Response, topic: str = "for_you",
     state = "ready"
     if articles is None:
         try:
-            articles, checked_at = fetch_headlines(topics, sources), utcnow().isoformat()
+            articles, checked_at = add_thumbnails(fetch_headlines(topics, sources)), utcnow().isoformat()
             with _lock:
                 _cache[cache_key] = (now, articles, checked_at)
         except (httpx.HTTPError, RuntimeError, ValueError, TypeError):
@@ -159,3 +226,26 @@ def reading(request: Request, response: Response, topic: str = "for_you",
             "provenance": provenance, "checked_at": checked_at, "polling": False,
             "attribution": "Headlines via Tavily. Read the full story at its publisher.",
             "date_basis": "Dates reported by the search provider; check the publisher for updates."}
+
+
+@router.get("/api/reading/thumbnails/{article_id}")
+def thumbnail(article_id: str, request: Request):
+    """Serves only images for headlines this server admitted; the browser never contacts publishers."""
+    recommendations.owned(request)
+    with _lock:
+        image = _thumbs.get(article_id)
+    if not image or not public_https(image):
+        raise HTTPException(404, "No thumbnail")
+    try:
+        with httpx.stream("GET", image, timeout=5, follow_redirects=False, headers={"User-Agent": UA}) as got:
+            kind = got.headers.get("content-type", "").split(";")[0].strip().lower()
+            if got.status_code != 200 or kind not in IMAGE_TYPES:
+                raise HTTPException(404, "No thumbnail")
+            body = b""
+            for chunk in got.iter_bytes():
+                body += chunk
+                if len(body) > 2_000_000:
+                    raise HTTPException(404, "No thumbnail")
+    except httpx.HTTPError:
+        raise HTTPException(404, "No thumbnail")
+    return Response(body, media_type=kind, headers={"Cache-Control": "private, max-age=900", "X-Content-Type-Options": "nosniff"})

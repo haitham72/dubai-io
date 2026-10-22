@@ -13,7 +13,7 @@ export function createReading(root) {
     root.innerHTML=`<header class="reading-header"><div><p>For your day</p><h2>News</h2></div><button data-toggle-news>${enabled?'Hide news':'Show news'}</button></header>
       ${enabled ? `<div class="reading-topics" role="group" aria-label="News topics">${Object.entries(TOPICS).map(([key,label])=>`<button data-news-topic="${key}" aria-pressed="${key===topic}">${esc(label)}</button>`).join('')}</div>
       <p class="reading-reason">${esc(data?.reason||'Recent headlines from Dubai and topics you choose.')}</p>
-      <div class="reading-articles">${articles.map(article=>`<article>${article.provenance==='demo_fixture'?'<span class="pill demo">Demo data</span>':''}<p>${esc(article.source)} · <time datetime="${esc(article.published_at)}">${esc(date(article.published_at))} Dubai time</time></p><h3><a href="${esc(article.url)}">${esc(article.title)}</a></h3><button data-ask-news="${esc(article.id)}">Ask about this ${svg('arrow','ic xs')}</button></article>`).join('')}</div>
+      <div class="reading-articles">${articles.map(article=>`<article class="${article.thumbnail?'has-thumb':''}">${article.thumbnail?`<figure class="reading-thumb"><img src="${esc(article.thumbnail.url)}" alt="" loading="lazy" decoding="async" width="96" height="96"><figcaption>Image: ${esc(article.thumbnail.credit)}</figcaption></figure>`:''}${article.provenance==='demo_fixture'?'<span class="pill demo">Demo data</span>':''}<p>${esc(article.source)} · <time datetime="${esc(article.published_at)}">${esc(date(article.published_at))} Dubai time</time></p><h3><a href="${esc(article.url)}">${esc(article.title)}</a></h3><button data-ask-news="${esc(article.id)}">Ask about this ${svg('arrow','ic xs')}</button></article>`).join('')}</div>
       <p class="reading-status" role="status">${loading?'Finding recent headlines…':data?.status==='unavailable'?'News could not load right now. Try again shortly.':data?.status==='preferences_changed'?esc(data.reason):loaded&&!articles.length?'No recent headlines were returned for this selection.':''}</p>
       <footer><button data-refresh-news>Refresh news</button><small>${data?.checked_at?'Checked '+esc(date(data.checked_at))+' · Dubai time. ':''}${esc(data?.attribution||'Open a headline to read at its publisher.')} ${data?.date_basis?esc(data.date_basis):''}</small></footer>` : '<p class="today-quiet">News is hidden. Your tasks stay above.</p>'}`;
   }
@@ -26,7 +26,7 @@ export function createReading(root) {
       const data=await response.json();
       if(mine!==generation||!active||!eligible)return;
       if(!response.ok)throw new Error(typeof data.detail==='string'?data.detail:'News could not load.');
-      articles=(data.articles||[]).filter(article=>typeof article.title==='string'&&article.url?.startsWith('https://')&&Number.isFinite(Date.parse(article.published_at)));
+      articles=(data.articles||[]).filter(article=>typeof article.title==='string'&&article.url?.startsWith('https://')&&Number.isFinite(Date.parse(article.published_at))).map(article=>({...article,thumbnail:article.thumbnail?.url?.startsWith('/api/reading/thumbnails/')?article.thumbnail:null}));
       loaded=true;loading=false;render(data);
     } catch(error) {
       if(mine!==generation||!active)return;
@@ -34,6 +34,8 @@ export function createReading(root) {
     } finally {if(mine===generation){loading=false;root.removeAttribute('aria-busy');}}
   }
   render();
+  // A thumbnail that fails to load disappears; the headline stays.
+  root.addEventListener('error',event=>{const figure=event.target.closest?.('.reading-thumb');if(figure){figure.closest('article')?.classList.remove('has-thumb');figure.remove();}},true);
   const observer=new IntersectionObserver(entries=>{inView=entries.some(entry=>entry.isIntersecting);if(inView)load();},{root:root.closest('.home-feed'),rootMargin:'100px'});
   observer.observe(root);
   addEventListener('dubaiio:task-history-end',event=>{eligible=!!event.detail.exhausted;root.hidden=!eligible;if(eligible)load();else{generation++;loading=false;root.removeAttribute('aria-busy');}});

@@ -416,6 +416,19 @@ def create_task(body: CreateTask, request: Request, response: Response):
     return presented_result(tasks.create(owner, body))
 
 
+LANES = ("needs_you", "running", "scheduled", "on_list", "paused", "completed")
+
+
+@router.get("/api/today/lanes/{lane}")
+def today_lane(lane: str, request: Request, response: Response):
+    """One Today lane in full (up to 100), with the same rules as the preview."""
+    if lane not in LANES:
+        raise HTTPException(404, "Unknown lane")
+    tasks, owner = owned(request, response)
+    data = today_data(tasks, owner, preview=100)
+    return {"lane": lane, "tasks": data[lane]["tasks"], "has_more": data[lane]["has_more"], "as_of": data["as_of"]}
+
+
 @router.get("/api/tasks")
 def list_tasks(request: Request, response: Response, offset: int = Query(default=0, ge=0), limit: int = Query(default=30, ge=1, le=50)):
     tasks, owner = owned(request, response)
@@ -456,7 +469,9 @@ def today(request: Request, response: Response):
     return today_data(tasks, owner)
 
 
-def today_data(tasks, owner):
+def today_data(tasks, owner, preview=3):
+    """Today's lanes; `preview` rows per lane (a tapped lane asks for its full list)."""
+    n = preview
     with tasks.transaction(owner):
         at = clock()
         due = "json_extract(data, '$.due_at')" if tasks.store.db.dialect == "sqlite" else "(data::jsonb ->> 'due_at')"
@@ -464,9 +479,9 @@ def today_data(tasks, owner):
         groups = {"needs_you": {"tasks": [], "has_more": False}, "running": {"tasks": [], "has_more": False}}
         for key, status in (("on_list", "WAITING_USER"), ("paused", "PAUSED"), ("completed", "COMPLETED")):
             order = priority if status == "WAITING_USER" else "updated_at DESC,id DESC"
-            rows = tasks.store.db.execute(f"SELECT data FROM tasks WHERE owner=? AND status=? ORDER BY {order} LIMIT 4",
+            rows = tasks.store.db.execute(f"SELECT data FROM tasks WHERE owner=? AND status=? ORDER BY {order} LIMIT {n + 1}",
                                            (owner, status)).fetchall()
-            groups[key] = {"tasks": [present(json.loads(r[0]), at) for r in rows[:3]], "has_more": len(rows) > 3}
+            groups[key] = {"tasks": [present(json.loads(r[0]), at) for r in rows[:n]], "has_more": len(rows) > n}
         totals = dict(tasks.store.db.execute("SELECT status,COUNT(*) FROM tasks WHERE owner=? GROUP BY status", (owner,)).fetchall())
         groups["paused"]["count"] = totals.get("PAUSED", 0)
         extract = (lambda col, path: f"json_extract({col}, '$.{path}')") if tasks.store.db.dialect == "sqlite" else (lambda col, path: f"({col}::jsonb ->> '{path}')")
@@ -479,8 +494,8 @@ def today_data(tasks, owner):
             WHERE t.owner=? AND t.status='WAITING_USER'
               AND {source_status} IN ('AWAITING_APPROVAL','DISPATCHING','SUBMITTED','ACCEPTED','READY','UNKNOWN_STATUS')
             ORDER BY CASE WHEN {source_status} IN ('DISPATCHING','SUBMITTED','ACCEPTED','READY') THEN 0 ELSE 1 END,
-              t.updated_at DESC,t.id DESC LIMIT 6""", (owner,)).fetchall()
-        current = [{"task": present(json.loads(t), at), "source": annotate(json.loads(a))} for t, a in current_rows[:5]]
+              t.updated_at DESC,t.id DESC LIMIT {max(n, 5) + 1}""", (owner,)).fetchall()
+        current = [{"task": present(json.loads(t), at), "source": annotate(json.loads(a))} for t, a in current_rows[:max(n, 5)]]
         # Decisions come only from tracked, active sources; a draft merely opened is not one.
         decisions = []
         for t, a in tasks.store.db.execute(f"""SELECT t.data,a.data FROM tasks t
@@ -492,18 +507,18 @@ def today_data(tasks, owner):
             if decision:
                 decisions.append({**present(json.loads(t), at), "source_status": decision["source_status"], "decision": decision})
         deciding = {row["id"] for row in decisions}
-        groups["needs_you"] = {"tasks": decisions[:3], "has_more": len(decisions) > 3}
+        groups["needs_you"] = {"tasks": decisions[:n], "has_more": len(decisions) > n}
         check = extract("data", "check_back_at")
         scheduled = [present(json.loads(r[0]), at) for r in tasks.store.db.execute(
-            f"SELECT data FROM tasks WHERE owner=? AND status='WAITING_USER' AND {check} IS NOT NULL ORDER BY {check} LIMIT 4", (owner,)).fetchall()]
-        groups["scheduled"] = {"tasks": scheduled[:3], "has_more": len(scheduled) > 3}
+            f"SELECT data FROM tasks WHERE owner=? AND status='WAITING_USER' AND {check} IS NOT NULL ORDER BY {check} LIMIT {n + 1}", (owner,)).fetchall()]
+        groups["scheduled"] = {"tasks": scheduled[:n], "has_more": len(scheduled) > n}
         if deciding:  # each task shows in one lane only
             rows = [r for r in tasks.store.db.execute(f"SELECT data FROM tasks WHERE owner=? AND status='WAITING_USER' ORDER BY {priority} LIMIT ?",
-                                                      (owner, 4 + len(deciding))).fetchall() if json.loads(r[0])["id"] not in deciding]
-            groups["on_list"] = {"tasks": [present(json.loads(r[0]), at) for r in rows[:3]], "has_more": len(rows) > 3}
+                                                      (owner, n + 1 + len(deciding))).fetchall() if json.loads(r[0])["id"] not in deciding]
+            groups["on_list"] = {"tasks": [present(json.loads(r[0]), at) for r in rows[:n]], "has_more": len(rows) > n}
         groups["running"] = {"tasks": [{**item["task"], "source_status": item["source"]["status"]} for item in current
             if item["source"]["status"] in {"DISPATCHING", "SUBMITTED", "ACCEPTED", "READY"} and item["task"]["id"] not in deciding],
-            "has_more": len(current_rows) > 5}
+            "has_more": len(current_rows) > max(n, 5)}
         return {**groups, "counts": {"needs_you": len(decisions), "running": len(groups["running"]["tasks"]), "on_list": totals.get("WAITING_USER", 0) - len(decisions), "paused": totals.get("PAUSED", 0)},
                 "current_work": current, "mode": "manual", "monitoring_active": False, "as_of": at.isoformat()}
 

@@ -572,6 +572,28 @@ function onUp(e) {
   const t = Math.max(Math.round(d.pos) - 2, Math.min(Math.round(d.pos) + 2, Math.round(S.pos + fling * 0.18)));
   S.target = Math.max(0, Math.min(max, t));
 }
+// Trackpad two-finger swipe arrives as horizontal wheel deltas (including macOS
+// momentum). Treat it as a drag: the deck follows, then snaps when the swipe ends.
+let wheelEnd = 0;
+function onWheel(e) {
+  if (S.view !== 'home' || S.onboardingExit || !S.deck.length || Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+  e.preventDefault();
+  if (S.drag && !S.drag.wheel) return;
+  S.drag ||= { wheel: true, id: null, start: S.pos };
+  const max = S.deck.length - 1, step = e.deltaMode === 1 ? e.deltaX * 16 : e.deltaX;
+  let pos = S.pos + step / G.spacing;
+  if (pos < 0) pos = Math.max(-0.35, pos * 0.6); else if (pos > max) pos = Math.min(max + 0.35, max + (pos - max) * 0.6);
+  S.pos = pos;
+  clearTimeout(wheelEnd);
+  wheelEnd = setTimeout(() => {
+    const d = S.drag; if (!d?.wheel) return;
+    S.drag = null; S.vel = 0;
+    if (S.pendingDeck) refreshHomeCaptions();
+    const moved = S.pos - d.start;  // a deliberate swipe moves at least one card
+    S.target = Math.max(0, Math.min(max, Math.abs(moved) > 0.15 ? Math.round(d.start) + Math.sign(moved) * Math.max(1, Math.round(Math.abs(moved))) : Math.round(d.start)));
+  }, 140);
+}
+stageEl.addEventListener('wheel', onWheel, { passive: false });
 stageEl.addEventListener('pointerdown', onDown);
 stageEl.addEventListener('pointermove', onMove);
 stageEl.addEventListener('pointerup', onUp);

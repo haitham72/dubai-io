@@ -330,10 +330,46 @@ document.addEventListener('click', async event => {
   if (event.target.closest('[data-chat-task-list]')) openPage('tasks.list');
 });
 
+// Every lane is tappable: its header opens the full lane; an empty lane offers the next step.
+const LANES = {
+  needs_you: ['Needs you', 'Decisions only you can make: approving a send, an unknown outcome or a missed deadline.', ''],
+  running: ['Running', 'Work a shop or provider is doing for you right now.', '<button class="today-empty" data-start-new-task>Nothing is running. Start a new task</button>'],
+  scheduled: ['Scheduled', 'Check-backs you set. A message arrives in chat at that time.', '<button class="today-empty" data-lane="on_list">No check-backs yet. Pick a task to set one</button>'],
+  on_list: ['On your list', 'Things you are keeping track of. Nothing here is sent anywhere.', '<button class="today-empty" data-create-task>Your list is empty. Add a note</button>'],
+  paused: ['Paused', 'Set aside by you. Resume any time; check-backs stay off while paused.', ''],
+  completed: ['Finished', 'Done, as you reported. Kept for your history.', '<button class="today-empty" data-lane="completed">Nothing finished yet. See how this works</button>'],
+};
+function laneHTML(lane, count, rows) {
+  const [title] = LANES[lane];
+  return `<section class="today-lane"><header><button class="lane-open" data-lane="${lane}"><h2>${title}</h2>${count ? `<span class="lane-count">${esc(count)}</span>` : ''}${svg('chev', 'ic sm')}</button></header>${rows || LANES[lane][2]}</section>`;
+}
+registerPage('tasks.lane', {
+  title: c => LANES[c.lane][0], source: 'Your tasks', render: c => `<p class="lane-intro">${esc(LANES[c.lane][1])}</p><div data-lane-list><p role="status">Loading…</p></div>`,
+  mount(root, c) {
+    const list = root.querySelector('[data-lane-list]');
+    const load = () => request('/api/today/lanes/' + c.lane).then(data => {
+      if (!root.isConnected) return;
+      list.innerHTML = data.tasks.length ? data.tasks.map(c.lane === 'needs_you' ? decisionRow : row).join('') + (data.has_more ? '<p class="today-quiet">Showing the first 100. Older ones are in Task history.</p>' : '')
+        : (LANES[c.lane][2] || '<p class="today-quiet">Nothing here right now.</p>');
+    }).catch(() => { if (root.isConnected) list.innerHTML = '<p role="alert">This list could not load.</p><button class="btn wide" data-lane-retry>Try again</button>'; });
+    wireRows(root);
+    root.addEventListener('click', event => {
+      if (event.target.closest('[data-lane-retry]')) load();
+      if (event.target.closest('[data-create-task]')) openPage('tasks.new');
+      if (event.target.closest('[data-start-new-task]')) { closeSheet(); startTask(); return; }
+      const other = event.target.closest('[data-lane]'); if (other && other.dataset.lane !== c.lane) openPage('tasks.lane', { lane: other.dataset.lane });
+    });
+    root.addEventListener('dubaiio:page-restored', load);
+    load();
+  },
+});
+
 // A row in Needs you opens the linked source, where the shared decision card lives.
 const decisionRow = task => `<button class="task-row has-decision" data-open-decision="${esc(task.decision.action_id)}"><span class="task-row-icon">${svg('orb', 'ic sm')}</span><span class="task-row-copy"><b>${esc(task.outcome)}</b><span class="decision-ask">${esc(task.decision.title)}</span><small>${esc(task.decision.detail)}</small></span>${svg('chev', 'ic sm')}</button>`;
 
+let startTask = () => {};
 export function createToday(root, startNewTask) {
+  startTask = startNewTask;
   let generation = 0, visible = false, summaryGeneration = 0, historyRows = [], nextOffset = null, historyBusy = false;
   const historyObserver = new IntersectionObserver(entries => { if (visible && entries.some(entry => entry.isIntersecting)) loadMoreHistory(); }, { root: root.closest('.home-feed'), rootMargin: '160px' });
   function historyEnd() { dispatchEvent(new CustomEvent('dubaiio:task-history-end', { detail: { exhausted: nextOffset === null } })); }
@@ -389,25 +425,23 @@ export function createToday(root, startNewTask) {
       if (mine !== generation || !visible || !root.isConnected) return;
       ++summaryGeneration; announceSummary(data);
       const focus = root.contains(document.activeElement) ? document.activeElement.closest('button') : null;
-      const attr = focus && ['data-open-decision','data-open-task','data-create-task','data-all-tasks','data-refresh-today','data-start-new-task'].find(name => focus.hasAttribute(name));
+      const attr = focus && ['data-lane','data-open-decision','data-open-task','data-create-task','data-all-tasks','data-refresh-today','data-start-new-task'].find(name => focus.hasAttribute(name));
       const selector = attr ? `[${attr}="${CSS.escape(focus.getAttribute(attr))}"]` : null;
       const scroll = root.closest('.home-feed'), scrollTop = scroll?.scrollTop || 0;
-      const pausedOpen = root.querySelector('.today-paused')?.open;
       const day = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Dubai', weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());
       historyRows = history.tasks; nextOffset = history.next_offset; historyBusy = false;
       root.innerHTML = `<header class="today-header"><p>${esc(day)} · Dubai</p><div><h1>Tasks</h1><button class="today-all" data-all-tasks>History ${svg('chev', 'ic xs')}</button></div></header>
-        ${data.needs_you.tasks.length ? `<section class="today-lane"><header><h2>Needs you</h2>${data.needs_you.has_more ? '<button data-all-tasks>See all</button>' : ''}</header>${data.needs_you.tasks.map(decisionRow).join('')}</section>` : ''}
-        <section class="today-lane"><header><h2>Running</h2></header>${data.running.tasks.length ? data.running.tasks.map(task => row({...task, source_status: task.source_status})).join('') : '<p class="today-quiet">No tasks are in progress.</p>'}</section>
-        <section class="today-lane"><header><h2>Scheduled</h2>${data.scheduled.has_more ? '<button data-all-tasks>See all</button>' : ''}</header>${data.scheduled.tasks.length ? data.scheduled.tasks.map(row).join('') : '<p class="today-quiet">No check-backs scheduled. Open a task to set one.</p>'}</section>
-        <section class="today-lane"><header><h2>On your list</h2>${data.on_list.has_more ? '<button data-all-tasks>See all</button>' : ''}</header>${data.on_list.tasks.length ? data.on_list.tasks.map(row).join('') : '<p class="today-quiet">Nothing to keep track of yet. Add something when you need it.</p>'}</section>
-        ${data.paused.count ? `<details class="today-paused"><summary>Paused (${data.paused.count})</summary>${data.paused.tasks.map(row).join('')}${data.paused.has_more ? '<button class="btn wide" data-all-tasks>All paused tasks</button>' : ''}</details>` : ''}
-        <section class="today-lane today-completed"><header><h2>Finished</h2>${data.completed.has_more ? '<button data-all-tasks>See all</button>' : ''}</header>${data.completed.tasks.length ? data.completed.tasks.map(row).join('') : '<p class="today-quiet">Completed tasks will stay here.</p>'}</section>
+        ${data.needs_you.tasks.length ? laneHTML('needs_you', data.counts.needs_you, data.needs_you.tasks.map(decisionRow).join('')) : ''}
+        ${laneHTML('running', data.counts.running, data.running.tasks.map(row).join(''))}
+        ${laneHTML('scheduled', data.scheduled.tasks.length && data.scheduled.tasks.length + (data.scheduled.has_more ? '+' : ''), data.scheduled.tasks.map(row).join(''))}
+        ${laneHTML('on_list', data.counts.on_list, data.on_list.tasks.map(row).join(''))}
+        ${data.paused.count ? laneHTML('paused', data.paused.count, data.paused.tasks.map(row).join('')) : ''}
+        ${laneHTML('completed', data.completed.tasks.length && data.completed.tasks.length + (data.completed.has_more ? '+' : ''), data.completed.tasks.map(row).join(''))}
         <button class="today-new-task" data-start-new-task>Start a new task ${svg('arrow', 'ic sm')}</button>
         <button class="today-note" data-create-task>Or keep a note on your list</button>
         <section class="today-lane task-history" data-task-history tabindex="-1"></section>
         <p class="today-refresh-error" role="alert" hidden></p><footer class="today-footer"><span>Updates stay with your tasks.</span><button aria-label="Refresh Today" data-refresh-today>Refresh</button></footer>`;
       renderHistory();
-      if (pausedOpen && root.querySelector('.today-paused')) root.querySelector('.today-paused').open = true;
       if (scroll) scroll.scrollTop = scrollTop;
       if (selector) root.querySelector(selector)?.focus({ preventScroll: true });
     } catch {
@@ -424,6 +458,7 @@ export function createToday(root, startNewTask) {
   wireRows(root);
   root.addEventListener('click', event => {
     if (event.target.closest('[data-create-task]')) openPage('tasks.new');
+    const lane = event.target.closest('[data-lane]'); if (lane) { openPage('tasks.lane', { lane: lane.dataset.lane }); return; }
     if (event.target.closest('[data-all-tasks]')) { const history = root.querySelector('[data-task-history]'); history?.scrollIntoView({ behavior: reduced ? 'instant' : 'smooth', block: 'start' }); history?.focus({ preventScroll: true }); }
     if (event.target.closest('[data-more-history]')) loadMoreHistory();
     if (event.target.closest('[data-refresh-today]')) refresh();

@@ -563,3 +563,19 @@ def test_morning_brief_routine_is_opt_in_daily_fresh_and_expires(client, monkeyp
     assert c.get("/api/routines/brief").json()["active"] is False
     other = TestClient(c.app); other.get("/api/session")
     assert other.get("/api/messages").json()["messages"] == []
+
+
+def test_each_today_lane_opens_its_full_owned_list(client):
+    c, *_ = client
+    made = [create(c, outcome=f"Note {i}") for i in range(5)]
+    action, tracked = tracked_order(c)
+    preview = c.get("/api/today").json()
+    assert len(preview["on_list"]["tasks"]) == 3 and preview["on_list"]["has_more"]
+    full = c.get("/api/today/lanes/on_list").json()
+    assert {t["id"] for t in full["tasks"]} == {t["id"] for t in made} and not full["has_more"]
+    assert [t["id"] for t in c.get("/api/today/lanes/needs_you").json()["tasks"]] == [tracked["id"]]
+    command(c, made[0], "pause")
+    assert [t["id"] for t in c.get("/api/today/lanes/paused").json()["tasks"]] == [made[0]["id"]]
+    assert c.get("/api/today/lanes/everything").status_code == 404
+    other = TestClient(c.app); other.get("/api/session")
+    assert other.get("/api/today/lanes/on_list").json()["tasks"] == []
