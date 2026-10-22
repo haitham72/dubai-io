@@ -132,6 +132,286 @@ public struct LunaReply: Decodable, Sendable {
     }
 }
 
+// MARK: - Today / tasks (plan FIN-08: needs_you decisions, counts, check-backs)
+
+/// Tolerant AED amount: the host catalog publishes fixed prices as JSON
+/// strings while other endpoints use numbers. Accepts either; null/absent is nil.
+private func decodeMoney<CodingKeys: CodingKey>(
+    _ values: KeyedDecodingContainer<CodingKeys>, key: CodingKeys
+) throws -> Double? {
+    if values.contains(key) == false { return nil }
+    if (try? values.decodeNil(forKey: key)) == true { return nil }
+    if let amount = try? values.decode(Double.self, forKey: key) { return amount }
+    guard let raw = try? values.decode(String.self, forKey: key),
+          let amount = Double(raw), amount.isFinite, amount >= 0
+    else {
+        throw DecodingError.dataCorruptedError(
+            forKey: key, in: values, debugDescription: "Invalid AED amount")
+    }
+    return amount
+}
+
+public struct TaskDecision: Decodable, Sendable {
+    public let kind: String
+    public let title: String
+    public let detail: String?
+    public let actionID: String
+    public let revision: Int
+    public let snapshotHash: String?
+    public let amountAed: Double?
+    public let earlierTarget: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case kind, title, detail, actionID = "actionId", revision, snapshotHash, amountAed, earlierTarget
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        kind = try values.decode(String.self, forKey: .kind)
+        title = try values.decode(String.self, forKey: .title)
+        detail = try values.decodeIfPresent(String.self, forKey: .detail)
+        actionID = try values.decode(String.self, forKey: .actionID)
+        revision = try values.decode(Int.self, forKey: .revision)
+        snapshotHash = try values.decodeIfPresent(String.self, forKey: .snapshotHash)
+        amountAed = try decodeMoney(values, key: .amountAed)
+        earlierTarget = try values.decodeIfPresent(String.self, forKey: .earlierTarget)
+    }
+}
+
+public struct TodayTask: Decodable, Sendable {
+    public let id: String
+    public let title: String
+    public let lane: String?
+    public let status: String?
+    public let revision: Int
+    public let checkBackAt: String?
+    public let decision: TaskDecision?
+}
+
+public struct TodayCounts: Decodable, Sendable {
+    public let needsYou: Int
+    public let running: Int
+    public let onList: Int
+    public let paused: Int
+}
+
+public struct TodayLane: Decodable, Sendable {
+    public let tasks: [TodayTask]
+}
+
+public struct TodaySnapshot: Decodable, Sendable {
+    public let needsYou: TodayLane
+    public let scheduled: TodayLane?
+    public let counts: TodayCounts
+}
+
+public struct TaskDetail: Decodable, Sendable {
+    public let id: String
+    public let title: String
+    public let status: String
+    public let revision: Int
+    public let lane: String?
+    public let checkBackAt: String?
+}
+
+public struct TaskList: Decodable, Sendable {
+    public let tasks: [TaskDetail]
+}
+
+/// Wire body for `POST /api/tasks/{id}/commands`. The backend requires
+/// `expected_revision` + `command_key` on every command; this type makes
+/// them unskippable at the call site.
+public struct TaskCommand: Encodable, Sendable {
+    public let kind: String
+    public let expectedRevision: Int
+    public let commandKey: String
+    public let at: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case kind, expectedRevision = "expected_revision", commandKey = "command_key", at
+    }
+
+    public init(kind: String, expectedRevision: Int, commandKey: String, at: String? = nil) {
+        self.kind = kind
+        self.expectedRevision = expectedRevision
+        self.commandKey = commandKey
+        self.at = at
+    }
+}
+
+// MARK: - Decisions / orders (approval before any send or share)
+
+public struct ActionDetail: Decodable, Sendable {
+    public let id: String
+    public let title: String
+    public let revision: Int
+    public let snapshotHash: String?
+    public let amountAed: Double?
+    public let context: String?
+    public let note: String?
+    public let sharedFields: [String]?
+    public let status: String
+
+    private enum CodingKeys: String, CodingKey {
+        case id, title, revision, snapshotHash, amountAed, context, note, sharedFields, status
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        id = try values.decode(String.self, forKey: .id)
+        title = try values.decode(String.self, forKey: .title)
+        revision = try values.decode(Int.self, forKey: .revision)
+        snapshotHash = try values.decodeIfPresent(String.self, forKey: .snapshotHash)
+        amountAed = try decodeMoney(values, key: .amountAed)
+        context = try values.decodeIfPresent(String.self, forKey: .context)
+        note = try values.decodeIfPresent(String.self, forKey: .note)
+        sharedFields = try values.decodeIfPresent([String].self, forKey: .sharedFields)
+        status = (try? values.decodeIfPresent(String.self, forKey: .status)) ?? "unknown"
+    }
+}
+
+public struct Reminder: Decodable, Sendable {
+    public let id: String
+    public let taskID: String?
+    public let checkBackAt: String?
+    public let text: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case id, taskID = "taskId", checkBackAt, text
+    }
+}
+
+public struct ReminderList: Decodable, Sendable {
+    public let reminders: [Reminder]
+}
+
+// MARK: - Outbox messages / follow-up mode / brief (deterministic, never model text)
+
+public struct OutboxMessage: Decodable, Sendable {
+    public let id: String
+    public let kind: String
+    public let text: String?
+    public let taskID: String?
+    public let dedupeKey: String?
+    public let createdAt: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case id, kind, text, taskID = "taskId", dedupeKey, createdAt
+    }
+}
+
+public struct OutboxList: Decodable, Sendable {
+    public let messages: [OutboxMessage]
+}
+
+public struct AssistState: Decodable, Sendable {
+    public let mode: String
+    public let offerAuto: Bool?
+}
+
+public struct BriefLine: Decodable, Sendable {
+    public let chip: String
+    public let text: String
+}
+
+public struct Brief: Decodable, Sendable {
+    public let moving: Int
+    public let needsYou: Int
+    public let lines: [BriefLine]
+}
+
+// MARK: - Community / feed / chat (untrusted content; provenance stays visible)
+
+public struct Community: Decodable, Identifiable, Sendable {
+    public let id: String
+    public let name: String
+    public let memberCount: Int?
+    public let joined: Bool?
+    public let provenance: String?
+}
+
+public struct CommunityList: Decodable, Sendable {
+    public let communities: [Community]
+}
+
+public struct FeedPost: Decodable, Identifiable, Sendable {
+    public let id: String
+    public let communityID: String?
+    public let author: String?
+    public let body: String
+    public let provenance: String?
+    public let asOf: String?
+    public let commentCount: Int?
+
+    private enum CodingKeys: String, CodingKey {
+        case id, communityID = "communityId", author, body, provenance, asOf, commentCount
+    }
+}
+
+public struct FeedList: Decodable, Sendable {
+    public let posts: [FeedPost]
+}
+
+public struct PostComment: Decodable, Identifiable, Sendable {
+    public let id: String
+    public let author: String?
+    public let body: String
+    public let provenance: String?
+}
+
+public struct CommentList: Decodable, Sendable {
+    public let comments: [PostComment]
+}
+
+public struct HiddenPost: Decodable, Sendable {
+    public let id: String
+    public let hidden: Bool
+}
+
+public struct ChatThread: Decodable, Identifiable, Sendable {
+    public let id: String
+    public let title: String?
+    public let unread: Bool?
+    public let lastMessage: String?
+}
+
+public struct ChatList: Decodable, Sendable {
+    public let chats: [ChatThread]
+}
+
+public struct ChatMessage: Decodable, Identifiable, Sendable {
+    public let id: String
+    public let sender: String?
+    public let body: String
+    public let createdAt: String?
+}
+
+public struct ChatMessages: Decodable, Sendable {
+    public let messages: [ChatMessage]
+}
+
+public struct Contact: Decodable, Identifiable, Sendable {
+    public let id: String
+    public let name: String
+    public let phone: String?
+}
+
+public struct ContactList: Decodable, Sendable {
+    public let contacts: [Contact]
+}
+
+public struct CallEntry: Decodable, Identifiable, Sendable {
+    public let id: String
+    public let contact: String?
+    public let direction: String?
+    public let startedAt: String?
+    public let durationS: Int?
+}
+
+public struct CallList: Decodable, Sendable {
+    public let calls: [CallEntry]
+}
+
 public enum MapCategory: String, CaseIterable, Identifiable, Sendable {
     case all, pets, food, coffee, barber, homeHelp = "home-help", laundry, clothing, fixIt = "fix-it"
     public var id: String { rawValue }

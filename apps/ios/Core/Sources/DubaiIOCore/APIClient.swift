@@ -136,6 +136,143 @@ public actor APIClient {
         return try await request("api/places/search", body: JSONEncoder().encode(Input(query: query)))
     }
 
+    // MARK: - Today / tasks (plan FIN-08)
+
+    public func today() async throws -> TodaySnapshot {
+        _ = try await connect()
+        return try await request("api/today")
+    }
+
+    public func lane(_ lane: String) async throws -> TodayLane {
+        _ = try await connect()
+        return try await request("api/today/lanes/\(lane)")
+    }
+
+    public func tasks() async throws -> TaskList {
+        _ = try await connect()
+        return try await request("api/tasks")
+    }
+
+    public func task(id: String) async throws -> TaskDetail {
+        _ = try await connect()
+        return try await request("api/tasks/\(id)")
+    }
+
+    public func sendCommand(_ command: TaskCommand, taskID: String) async throws -> TaskDetail {
+        _ = try await connect()
+        return try await request(
+            "api/tasks/\(taskID)/commands", body: JSONEncoder().encode(command))
+    }
+
+    // MARK: - Decisions / orders
+
+    public func action(id: String) async throws -> ActionDetail {
+        _ = try await connect()
+        return try await request("api/actions/\(id)")
+    }
+
+    public func approveAction(
+        id: String, revision: Int, snapshotHash: String, idempotencyKey: String
+    ) async throws -> ActionDetail {
+        _ = try await connect()
+        struct Input: Encodable { let snapshot_hash: String; let revision: Int }
+        return try await request(
+            "api/actions/\(id)/approve",
+            headers: ["Idempotency-Key": idempotencyKey],
+            body: JSONEncoder().encode(Input(snapshot_hash: snapshotHash, revision: revision)))
+    }
+
+    public func cancelAction(id: String) async throws -> ActionDetail {
+        _ = try await connect()
+        return try await request("api/actions/\(id)/cancel", method: "POST")
+    }
+
+    public func reminders() async throws -> ReminderList {
+        _ = try await connect()
+        return try await request("api/reminders")
+    }
+
+    // MARK: - Outbox / follow-up mode / brief
+
+    public func messages() async throws -> OutboxList {
+        _ = try await connect()
+        return try await request("api/messages")
+    }
+
+    public func assist() async throws -> AssistState {
+        _ = try await connect()
+        return try await request("api/assist")
+    }
+
+    public func updateAssist(mode: String) async throws -> AssistState {
+        _ = try await connect()
+        struct Input: Encodable { let mode: String }
+        return try await request(
+            "api/assist", method: "PUT", body: JSONEncoder().encode(Input(mode: mode)))
+    }
+
+    public func brief() async throws -> Brief {
+        _ = try await connect()
+        return try await request("api/routines/brief")
+    }
+
+    // MARK: - Community / feed / chat
+
+    public func communities() async throws -> CommunityList {
+        _ = try await connect()
+        return try await request("api/communities")
+    }
+
+    public func joinCommunity(id: String) async throws -> Community {
+        _ = try await connect()
+        return try await request("api/communities/\(id)/join", method: "POST")
+    }
+
+    public func leaveCommunity(id: String) async throws -> Community {
+        _ = try await connect()
+        return try await request("api/communities/\(id)/leave", method: "POST")
+    }
+
+    public func communityPosts(id: String) async throws -> FeedList {
+        _ = try await connect()
+        return try await request("api/communities/\(id)/posts")
+    }
+
+    public func feed() async throws -> FeedList {
+        _ = try await connect()
+        return try await request("api/feed")
+    }
+
+    public func comments(postID: String) async throws -> CommentList {
+        _ = try await connect()
+        return try await request("api/posts/\(postID)/comments")
+    }
+
+    public func hidePost(postID: String) async throws -> HiddenPost {
+        _ = try await connect()
+        return try await request("api/posts/\(postID)/hide", method: "POST")
+    }
+
+    public func chats() async throws -> ChatList {
+        _ = try await connect()
+        return try await request("api/chats")
+    }
+
+    public func chatMessages(id: String) async throws -> ChatMessages {
+        _ = try await connect()
+        return try await request("api/chats/\(id)/messages")
+    }
+
+    public func contacts() async throws -> ContactList {
+        _ = try await connect()
+        return try await request("api/contacts")
+    }
+
+    public func calls() async throws -> CallList {
+        _ = try await connect()
+        return try await request("api/calls")
+    }
+
     public nonisolated func mapURL(places: [Place], center: (Double, Double) = (25.0805, 55.1403)) -> URL {
         let pins = places.prefix(9).compactMap { place -> String? in
             guard let lat = place.lat, let lng = place.lng else { return nil }
@@ -147,10 +284,13 @@ public actor APIClient {
         ])
     }
 
-    private func request<Output: Decodable & Sendable>(_ path: String, body: Data? = nil) async throws -> Output {
+    private func request<Output: Decodable & Sendable>(
+        _ path: String, method: String? = nil, headers: [String: String] = [:], body: Data? = nil
+    ) async throws -> Output {
         try Task.checkCancellation()
         var request = URLRequest(url: address.endpoint(path))
-        request.httpMethod = body == nil ? "GET" : "POST"
+        request.httpMethod = method ?? (body == nil ? "GET" : "POST")
+        for (field, value) in headers { request.setValue(value, forHTTPHeaderField: field) }
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         if let body {
             request.httpBody = body
