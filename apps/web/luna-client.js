@@ -17,7 +17,7 @@ export function mapUnderstanding(value) {
   if(r.intent==='product_search')r.products=(Array.isArray(value.products)?value.products:[]).filter(p=>p&&typeof p.link==='string'&&/^https:\/\/www\.amazon\.ae\//.test(p.link)&&typeof p.title==='string').slice(0,10)
     .map(p=>({title:p.title.slice(0,140),link:p.link,price:typeof p.price==='string'?p.price.slice(0,20):null,rating:Number.isFinite(p.rating)?p.rating:null,reviews:Number.isInteger(p.reviews)?p.reviews:null,
       thumbnail:typeof p.thumbnail==='string'&&/^https:\/\/m\.media-amazon\.com\//.test(p.thumbnail)?p.thumbnail:null,as_of:String(p.as_of||'')}));
-  if(r.intent==='places_near'){if(!CATEGORIES.has(value.category))throw new Error('Unknown category');r.cat=value.category;r.sub=typeof value.subcategory==='string'?value.subcategory.slice(0,80):null;}
+  if(r.intent==='places_near'){if(!CATEGORIES.has(value.category))throw new Error('Unknown category');r.cat=value.category;r.sub=typeof value.subcategory==='string'?value.subcategory.slice(0,80):null;r.query=typeof value.query==='string'&&/^[\w '&-]{1,60}$/.test(value.query.trim())?value.query.trim():null;}
   return r;
 }
 export function createLunaClient({fetcher=globalThis.fetch,timeoutMs=15000,enabled=true,identity=()=>({}),context=()=>({})}={}) {

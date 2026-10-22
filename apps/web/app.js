@@ -727,14 +727,14 @@ function areaCenter() {
   const hit = AREA_LABELS.find(([name]) => area.includes(name));
   return hit ? { lat: hit[1], lng: hit[2], label: told.area || HOME.label } : { lat: HOME.lat, lng: HOME.lng, label: told.area || HOME.label };
 }
-const liveKey = () => `${S.cat}|${S.sub || ''}|${areaCenter().lat},${areaCenter().lng}|${placeSort}|${placeOpen}|${placeRadius}|${browsingSession()}`;
+const liveKey = () => `${S.query || ''}|${S.cat}|${S.sub || ''}|${areaCenter().lat},${areaCenter().lng}|${placeSort}|${placeOpen}|${placeRadius}|${browsingSession()}`;
 function liveState() { return placeCache.get(liveKey()); }
 function loadLive(force = false) {
   if (S.mapMode !== '2d') return;
   const key = liveKey();
   const c = areaCenter();
   placeCache.refresh(key, { session_id: browsingSession(), category: S.cat, subcategory: S.sub, lat: c.lat, lng: c.lng,
-    sort: placeSort, open_now: placeOpen, radius_km: placeRadius }, force)
+    sort: placeSort, open_now: placeOpen, radius_km: placeRadius, ...(S.query ? { query: S.query } : {}) }, force)
     .finally(() => { if (S.view === 'results' && S.mapMode === '2d' && liveKey() === key) { renderResults(); refit(); } });
 }
 function filtered() {
@@ -754,8 +754,8 @@ function filtered() {
     .map(p => ({ ...p, km: km(p) }))
     .sort((a, b) => (a.km ?? 99) - (b.km ?? 99) || b.rating - a.rating);
 }
-function enterResults({ ask = null, cat = 'all', sub = null } = {}) {
-  S.ask = ask; S.cat = cat; S.sub = sub; S.src = null; S.detail = null;
+function enterResults({ ask = null, cat = 'all', sub = null, query = null } = {}) {
+  S.ask = ask; S.cat = cat; S.sub = sub; S.query = query; S.src = null; S.detail = null;
   closeSheet(); closeOffers();
   setView('results');
   setSnap('peek', true);
@@ -873,7 +873,7 @@ function renderResults() {
   if (S.ask) {
     const cat = catOf(S.cat);
     ask.hidden = false;
-    ask.innerHTML = `<span class="ask-q">${esc(S.ask)}</span><span class="ask-u">${svg('orb', 'ic xs')} ${cat ? `Near you · ${esc(cat.label)}${S.sub ? ' › ' + esc(S.sub) : ''}` : 'Near you · everything'}</span>`;
+    ask.innerHTML = `<span class="ask-q">${esc(S.ask)}</span><span class="ask-u">${svg('orb', 'ic xs')} ${cat ? `Near you · ${esc(cat.label)}${S.sub ? ' › ' + esc(S.sub) : ''}${S.query ? ' · ' + esc(S.query) : ''}` : 'Near you · everything'}</span>`;
   } else ask.hidden = true;
   if (S.detail) { renderDetail(); return; }
   const live = liveState();
@@ -913,7 +913,7 @@ function renderResults() {
 }
 function renderLiveResults(live) {
   const cat = catOf(S.cat), c = areaCenter();
-  const what = S.sub ? S.sub.toLowerCase() : cat ? cat.label.toLowerCase() : 'places';
+  const what = S.query ? S.query.toLowerCase() + (S.cat === 'food' ? ' places' : '') : S.sub ? S.sub.toLowerCase() : cat ? cat.label.toLowerCase() : 'places';
   if (live.status === 'loading') { rsScroll.innerHTML = `<div class="rs-head"><h3>Finding ${esc(what)} near ${esc(c.label)}…</h3><p>Live from Google Maps</p></div>`; return; }
   if (live.status === 'error') {
     rsScroll.innerHTML = `<div class="rs-head"><h3>Live places are unavailable</h3><p>Try again, or choose the separate 3D demo above.</p></div><button class="btn wide" data-retry-places>Try again</button>`;

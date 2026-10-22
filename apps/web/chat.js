@@ -73,6 +73,8 @@ export function route(text) {
     return { intent: 'lost_item', item: m ? m[1].replace(/s$/, '') : 'item', where, conf: m ? 0.92 : 0.7 };
   }
   if (AIRPORT.test(q)) return { intent: 'airport_guide', conf: 0.9 };
+  const dish = q.match(/^(?:i want to |i'?d like to |can you |please )?(?:order|get me|craving|deliver(?:y of)?)\s+(?:some |a |an )?([a-z][a-z '&-]{1,40})$/);
+  if (dish && !matchService(q)) return { intent: 'places_near', cat: 'food', sub: 'Delivery', query: dish[1].trim(), conf: 0.7 };
   const svc = matchService(q);
   const cat = CATEGORIES.find(c => c.keywords.some(k => q.includes(k)));
   if (svc && !NEAR.test(q)) return { intent: 'service_offers', service: svc.id, conf: 0.85 };
@@ -183,7 +185,7 @@ export async function handle(text) {
       await botSay(`<p>Here’s what’s near you, closest first. Opening the map.</p>`);
       await wait(500);
       if(ep!==threadEpoch)return;
-      return ctx.enterResults({ ask: text, cat: r.cat, sub: r.sub });
+      return ctx.enterResults({ ask: text, cat: r.cat, sub: r.sub, query: r.query || null });
     }
     case 'greeting': return botSay(`<p>Hi! I can help with a service, a place nearby or your saved tasks.</p>${chips(['Home cleaning prices', 'Coffee near me', 'I lost my wallet'])}<button class="btn sm" data-chat-task-list>View my tasks</button>`);
     case 'order_status': return orderStatus();

@@ -76,7 +76,7 @@ class Understanding(BaseModel):
     category: Optional[Category] = Field(description="places_near only")
     subcategory: Optional[str] = Field(description="places_near only, e.g. Grooming, Vet, 24h")
     terminal: Optional[Literal["1", "2", "3"]]
-    query: Optional[str] = Field(default=None, max_length=200, description="info_question: a short web search query; product_search: the product to search for, e.g. shampoo")
+    query: Optional[str] = Field(default=None, max_length=200, description="info_question: a short web search query; product_search: the product to search for, e.g. shampoo; places_near: the specific dish or thing they want, e.g. lasagna")
     symbol: Optional[str] = Field(default=None, max_length=15, description="market_quote only: the ticker symbol, e.g. AAPL, TSLA, BINANCE:BTCUSDT")
     stated_facts: list[StatedFact] = Field(description="Only facts the user explicitly stated about themselves. Never guesses.")
     reply: str = Field(max_length=300, description="One or two warm, plain sentences. No URLs, prices, phone numbers or order statuses.")

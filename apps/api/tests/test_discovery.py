@@ -122,3 +122,12 @@ def test_unsupported_or_tampered_claims_are_rejected_before_retrieval(source,ext
     c,store,data,calls = source
     assert discover(c,**extra).status_code == 422
     assert calls == []
+
+
+def test_a_dish_narrows_the_live_search_and_unsafe_text_is_rejected(source):
+    c,store,data,calls = source
+    assert discover(c,subcategory="Delivery",query="lasagna").status_code == 200
+    assert calls[-1][0] == "lasagna restaurant"
+    assert discover(c).status_code == 200 and calls[-1][0] == "restaurants"
+    assert discover(c,query="<script>").status_code == 422
+    assert discover(c,query="x"*61).status_code == 422

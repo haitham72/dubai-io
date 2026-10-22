@@ -46,8 +46,11 @@ Intents:
 - service_offers: they want a service done for them, comparing providers and prices. service is one of:
   laundry (washing, ironing, dry cleaning), cleaning (home cleaning), ac (air-conditioning repair or service),
   grooming (pet grooming at home), carwash (car wash at home), pharmacy (medicine delivery), maid (hiring a maid or nanny with a visa).
-- places_near: they want a place nearby to go to. category is one of:
-  pets, food, coffee, barber, home-help, laundry, clothing, fix-it. subcategory if obvious (e.g. Grooming, Vet, 24h, Restaurants).
+- places_near: they want a place nearby to go to, or a dish or meal (to eat out or have delivered). category is one of:
+  pets, food, coffee, barber, home-help, laundry, clothing, fix-it. subcategory if obvious (e.g. Grooming, Vet, 24h, Restaurants, Delivery).
+  For a dish or meal ("order lasagna", "craving sushi", "where can I get biryani"): category food, subcategory Delivery when they want it brought,
+  otherwise Restaurants, and query = the dish in plain English (fix spelling, e.g. "lazania" -> "lasagna"). The app shows real restaurants;
+  it does not place food orders, so never say an order was placed.
 - order_status: they ask about an order or request they already sent (is it ready, accepted, when). Never state its status yourself; the app reads it from the order record.
 - task_help: a question, update or planning request about the selected saved task. Suggest a useful next step; the app shows its canonical status. Never claim to edit, complete, monitor or send anything. Prefer this over starting a new lost-item flow when they discuss the selected task.
 - info_question: a factual question that needs current public information (opening hours, events, what something is, weather, news). Set query to a short search query. Not for services, places to go, orders or lost items.
@@ -57,7 +60,7 @@ Intents:
 - unclear: you cannot tell. Then ask one short clarifying question in `clarify`.
 
 Rules:
-- If the user wants something done at home or wants prices, prefer service_offers; if they want to go somewhere nearby, prefer places_near.
+- If the user wants a service done at home or wants service prices, prefer service_offers; if they want to go somewhere nearby or want food, prefer places_near.
 - stated_facts: only durable facts the user explicitly stated about themselves (where they stay, hotel, terminal, taxi plate/roof, a deadline they gave, pet, language). Never record the request or event itself (for example "lost a bag" or "needs laundry") as a fact. Never guess or infer.
 - reply: one or two warm, plain sentences in the user's language. Never include prices, phone numbers, URLs, or claim anything was booked, sent, filed, confirmed or found.
 - confidence: your honest probability that the intent is right.
@@ -158,7 +161,7 @@ def understand(state: LunaState, runtime: Runtime[AssistantContext]) -> dict:
 def validate(state: LunaState) -> dict:
     u = dict(state["understanding"])
     # keep slots only where they belong to the intent
-    keep = {"lost_item": {"item", "where_lost"}, "airport_guide": {"terminal"}, "service_offers": {"service"}, "places_near": {"category", "subcategory"}, "info_question": {"query"}, "market_quote": {"symbol"}, "product_search": {"query"}}.get(u["intent"], set())
+    keep = {"lost_item": {"item", "where_lost"}, "airport_guide": {"terminal"}, "service_offers": {"service"}, "places_near": {"category", "subcategory", "query"}, "info_question": {"query"}, "market_quote": {"symbol"}, "product_search": {"query"}}.get(u["intent"], set())
     for slot in ("item", "where_lost", "service", "category", "subcategory", "terminal", "query", "symbol"):
         if slot not in keep:
             u[slot] = None

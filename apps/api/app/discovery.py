@@ -43,6 +43,7 @@ class PlaceDiscovery(Strict):
     radius_km: float = Field(default=10, ge=.5, le=25, allow_inf_nan=False)
     open_now: bool = False
     sort: Literal["recommended", "closest"] = "recommended"
+    query: str | None = Field(default=None, max_length=60, pattern=r"^[\w '&-]+$")  # e.g. a dish: "lasagna"
 
     @model_validator(mode="after")
     def reviewed_context(self):
@@ -88,13 +89,21 @@ def matches_type(place, body):
     return True
 
 
+def search_text(body):
+    """The reviewed category query, narrowed by a specific dish/item when one was asked for."""
+    query = (body.query or "").strip()
+    if not query:
+        return QUERIES[body.category][body.subcategory]
+    return f"{query} restaurant" if body.category == "food" else f"{query} {QUERIES[body.category][body.subcategory]}"
+
+
 @router.post("/api/discovery/places")
 async def discover_places(body: PlaceDiscovery, request: Request, response: Response):
     rec, owner = owned(request)  # Establish ownership before a paid provider call.
     if not settings.google_key:
         raise HTTPException(503,"Live places are not configured")
     try:
-        batch = await google_maps.search_places(QUERIES[body.category][body.subcategory],body.lat,body.lng,
+        batch = await google_maps.search_places(search_text(body),body.lat,body.lng,
                                                radius_m=int(body.radius_km*1000),limit=20)
     except httpx.HTTPError as err:
         raise HTTPException(502,"Live places are unavailable. Try again.") from err

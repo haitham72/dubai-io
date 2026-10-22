@@ -22,7 +22,7 @@ class Settings:
     # Luna understands every turn. Founder choice (13 Oct): gpt-6-luna at high
     # reasoning effort; gpt-6.1-sol at medium is the faster alternative.
     luna_model = os.getenv("LUNA_MODEL", "gpt-6-luna")
-    luna_effort = os.getenv("LUNA_EFFORT", "high")
+    luna_effort = os.getenv("LUNA_EFFORT", "low")  # routing: low was 2-4 s vs ~9.5 s at high with the same intents (23 Oct check)
     fast_model = os.getenv("FAST_MODEL", "gpt-6.1-sol")
     fast_effort = os.getenv("FAST_EFFORT", "medium")
     luna_timeout_s = float(os.getenv("LUNA_TIMEOUT_S", "20"))
