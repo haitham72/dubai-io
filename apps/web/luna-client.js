@@ -8,6 +8,7 @@ export function mapUnderstanding(value) {
     reply:typeof value.reply==='string'?value.reply.slice(0,300):'', clarify:typeof value.clarify==='string'?value.clarify.slice(0,300):'',
     remembered:Array.isArray(value.remembered)?value.remembered.filter(f=>f?.provenance==='user_supplied'&&typeof f.key==='string'&&typeof f.value==='string'):[] };
   if(r.conf<.6 && !['greeting','smalltalk'].includes(r.intent))r.intent='unclear';
+  if(r.intent==='task_help')r.task_edits=Array.isArray(value.task_edits)&&value.task_edits.length<=4?value.task_edits.filter(e=>e&&['outcome','next_step','details','due_at'].includes(e.field)&&typeof e.value==='string').map(e=>({field:e.field,value:e.value.slice(0,1600)})):[];
   if(r.intent==='lost_item'){r.item=typeof value.item==='string'?value.item.slice(0,80):'item';r.where=['taxi','metro','shop'].includes(value.where_lost)?value.where_lost:null;}
   if(r.intent==='airport_guide')r.terminal=['1','2','3'].includes(value.terminal)?value.terminal:null;
   if(r.intent==='service_offers'){if(!SERVICES.has(value.service))throw new Error('Unknown service');r.service=value.service;}

@@ -53,6 +53,12 @@ class StatedFact(BaseModel):
     value: str = Field(max_length=80)
 
 
+class TaskEditSuggestion(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    field: Literal["outcome", "next_step", "details", "due_at"]
+    value: str = Field(max_length=1600, description="Requested replacement; empty clears an optional value. due_at must be an ISO timestamp with timezone, normally +04:00 for Dubai.")
+
+
 class Understanding(BaseModel):
     intent: Intent
     confidence: float = Field(ge=0, le=1)
@@ -67,3 +73,4 @@ class Understanding(BaseModel):
     stated_facts: list[StatedFact] = Field(description="Only facts the user explicitly stated about themselves. Never guesses.")
     reply: str = Field(max_length=300, description="One or two warm, plain sentences. No URLs, prices, phone numbers or order statuses.")
     clarify: Optional[str] = Field(description="If unclear: one short question that would resolve it")
+    task_edits: list[TaskEditSuggestion] = Field(default_factory=list, max_length=4, description="task_help only: explicit requested task-detail changes to propose for review. Empty unless the user requested a change. Never status, source or execution changes.")

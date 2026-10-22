@@ -14,7 +14,7 @@ import { orderCardHTML, watchOrder, requestEarlier, remindWhenReady } from './or
 import { api } from './service-workflow.js';
 import { identity, getMessages, saveMessages, resetSession } from './session-state.js';
 import { initRecovery, startRecovery, resetRecovery, handleRecoveryClick, restoreReport } from './recovery.js';
-import { taskStateLabel } from './tasks.js';
+import { taskStateLabel, reviewTaskChange } from './tasks.js';
 
 let ctx = null; // { enterResults, openOffers, startGuide, showChat }
 const items = [];
@@ -31,7 +31,7 @@ export function initChat(c) {
     if(saved.who==='bot'&&typeof saved.msgId==='string'){items.push({id:++seq,who:'bot',msgId:saved.msgId,msgSource:saved.msgSource,text:saved.text,html:proactiveHTML(saved.msgSource,saved.text.slice(0,600))});continue;}
     if(saved.who==='bot'&&saved.rich&&typeof saved.rich.kind==='string'){const html=richHTML(saved.rich);if(html){items.push({id:++seq,who:'bot',wide:true,rich:saved.rich,text:saved.text,html});continue;}}
     if(saved.who==='bot'&&typeof saved.actionId==='string'){const id=++seq;items.push({id,who:'bot',type:'order',actionId:saved.actionId,action:null,text:saved.text});follow(id,saved.actionId);continue;}
-    items.push({id:++seq,who:saved.who,text:saved.text.slice(0,6000),r:saved.who==='me'?saved.r:null,html:saved.who==='bot'?saved.text.slice(0,6000).split(/\n+/).filter(Boolean).map(line=>'<p>'+esc(line)+'</p>').join(''):null,recoveryReport:saved.recoveryReport,taskId:typeof saved.taskId==='string'?saved.taskId:null});
+    items.push({id:++seq,who:saved.who,text:saved.text.slice(0,6000),r:saved.who==='me'?saved.r:null,html:saved.who==='bot'?saved.text.slice(0,6000).split(/\n+/).filter(Boolean).map(line=>'<p>'+esc(line)+'</p>').join(''):null,recoveryReport:saved.recoveryReport,taskId:typeof saved.taskId==='string'?saved.taskId:null,taskProposal:saved.taskProposal&&typeof saved.taskProposal==='object'?saved.taskProposal:null});
   }
   render();
   followMessages();
@@ -114,13 +114,13 @@ function render() {
     // labels must not turn into unreadable words after reload. No HTML is saved.
     for(const block of box.querySelectorAll('p,div,li,h1,h2,h3,h4,dt,dd,small')){block.prepend('\n');block.append('\n');}
     const text=it.who==='me'?it.text:it.type==='order'?'Order '+(it.action?.recipient||''):box.textContent.replace(/\n{3,}/g,'\n\n').trim();
-    return {who:it.who==='me'?'me':'bot',text,r:it.r||null,recoveryReport:it.recoveryReport||null,...(it.taskId?{taskId:it.taskId}:{}),...(it.type==='order'?{actionId:it.actionId}:{}),...(it.msgId?{msgId:it.msgId,msgSource:it.msgSource,text:it.text}:{}),...(it.rich?{rich:it.rich}:{})};
+    return {who:it.who==='me'?'me':'bot',text,r:it.r||null,recoveryReport:it.recoveryReport||null,...(it.taskId?{taskId:it.taskId}:{}),...(it.taskProposal?{taskProposal:it.taskProposal}:{}),...(it.type==='order'?{actionId:it.actionId}:{}),...(it.msgId?{msgId:it.msgId,msgSource:it.msgSource,text:it.text}:{}),...(it.rich?{rich:it.rich}:{})};
   }));
   list.innerHTML = items.map(it => {
     if (it.who === 'me') return `<div class="msg me"><p>${esc(it.text)}</p></div>${it.pending ? `<div class="understood pending">${svg('spark', 'ic xs')}<span>Luna is understanding…</span></div>` : ''}${it.r ? understoodHTML(it) : ''}`;
     if (it.typing) return `<div class="msg bot typing"><span class="orbdot"></span><span class="orbdot"></span><span class="orbdot"></span></div>`;
     if (it.type === 'order') return it.missing ? `<div class="msg bot"><p>This order is no longer available on this device.</p></div>` : orderCardHTML(it.action);
-    return `<div class="msg bot ${it.wide ? 'wide' : ''} ${it.rich ? 'rich' : ''}">${it.html}${it.taskId ? `<button class="btn sm" data-chat-task="${esc(it.taskId)}">Open task</button>` : ''}${it.recoveryReport ? `<button class="btn sm" data-restored-report="${it.id}">Review saved report</button>` : ''}</div>`;
+    return `<div class="msg bot ${it.wide ? 'wide' : ''} ${it.rich ? 'rich' : ''}">${it.html}${it.taskProposal ? `<button class="btn sm" data-review-task-change="${it.id}">Review proposed task change</button>` : ''}${it.taskId ? `<button class="btn sm" data-chat-task="${esc(it.taskId)}">Open task</button>` : ''}${it.recoveryReport ? `<button class="btn sm" data-restored-report="${it.id}">Review saved report</button>` : ''}</div>`;
   }).join('');
   requestAnimationFrame(() => { const s = $('#chatScroll'); if (s) s.scrollTop = s.scrollHeight; });
 }
@@ -152,7 +152,7 @@ export async function handle(text) {
     }
     case 'greeting': return botSay(`<p>Hi! I can help with a service, a place nearby or your saved tasks.</p>${chips(['Home cleaning prices', 'Coffee near me', 'I lost my wallet'])}<button class="btn sm" data-chat-task-list>View my tasks</button>`);
     case 'order_status': return orderStatus();
-    case 'task_help': return taskHelp(taskFocus,r.reply);
+    case 'task_help': return taskHelp(taskFocus,r.reply,r.task_edits);
     case 'info_question': case 'market_quote': { const rich = { kind: 'answer', r: { answer: r.answer, reply: r.reply, sources: r.sources, tool: r.tool } }; return botSay(richHTML(rich), { rich }); }
     case 'product_search': { const rich = { kind: 'products', r: { answer: r.answer, products: r.products } }; return botSay(richHTML(rich), { wide: true, rich }); }
     case 'smalltalk': return botSay('<p>'+esc(r.reply||'How can I help?')+'</p>');
@@ -162,14 +162,16 @@ export async function handle(text) {
 }
 const chips = list => `<div class="qchips">${list.map(t => `<button data-say="${esc(t)}">${esc(t)}</button>`).join('')}</div>`;
 
-async function taskHelp(reference, reply) {
+async function taskHelp(reference, reply, edits=[]) {
   if(!reference)return botSay('<p>Open a saved task and choose Discuss this task to give me its context.</p><button class="btn sm" data-chat-task-list>View my tasks</button>');
   try {
     const {task}=await api('/api/tasks/'+encodeURIComponent(reference.task_id));
     if(requestContext().task_focus?.task_id===task.id)selectTaskFocus(task);
-    if(task.revision!==reference.revision)reply='The task changed. Here are its latest saved details.';
+    if(task.revision!==reference.revision){reply='The task changed. Here are its latest saved details.';edits=[];}
+    const changes=Object.fromEntries(edits.map(edit=>[edit.field,edit.field==='due_at'&&!edit.value?null:edit.value]));
+    const taskProposal=edits.length&&Object.keys(changes).length===edits.length?{task_id:task.id,expected_revision:task.revision,changes}:null;
     const at=new Date(task.as_of).toLocaleString('en-GB',{timeZone:'Asia/Dubai',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
-    return botSay(`${reply?'<p>'+esc(reply)+'</p>':''}<div class="task-next"><span>${esc(task.outcome)}</span><p>${esc(taskStateLabel(task.status))}</p>${task.next_step?'<p>Next step: '+esc(task.next_step)+'</p>':''}<small>Saved task · ${esc(at)} Dubai time. Review its details to make a change; this conversation has not sent or changed anything.</small></div>`,{taskId:task.id});
+    return botSay(`${reply?'<p>'+esc(reply)+'</p>':''}<div class="task-next"><span>${esc(task.outcome)}</span><p>${esc(taskStateLabel(task.status))}</p>${task.next_step?'<p>Next step: '+esc(task.next_step)+'</p>':''}<small>Saved task · ${esc(at)} Dubai time. Review its details to make a change; this conversation has not sent or changed anything.</small></div>`,{taskId:task.id,taskProposal});
   } catch {return botSay('<p>The saved task could not be loaded. Reopen its latest details or clear the task context and try again.</p>');}
 }
 
@@ -262,6 +264,8 @@ export function wireChat() {
   $('#sheetBody').addEventListener('click', handleRecoveryClick);
   $('#chatList').addEventListener('click', e => {
     if (handleRecoveryClick(e)) return;
+    const proposal=e.target.closest('[data-review-task-change]');
+    if(proposal){const item=items.find(it=>it.id===Number(proposal.dataset.reviewTaskChange));if(item?.taskProposal)reviewTaskChange(item.taskProposal);return;}
     const saved=e.target.closest('[data-restored-report]');if(saved){const it=items.find(i=>i.id===Number(saved.dataset.restoredReport));if(it?.recoveryReport)restoreReport(it.recoveryReport);return;}
     const tech = e.target.closest('[data-tech]');
     if (tech) { const it = items.find(i => i.id === Number(tech.dataset.tech)); if (it) { it.tech = !it.tech; render(); } return; }

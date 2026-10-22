@@ -109,6 +109,12 @@ class TaskCommand(BaseModel):
         return self
 
 
+class ChangeProposal(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    expected_revision: int = Field(ge=1)
+    changes: TaskChanges
+
+
 def values(body, **options):
     data = body.model_dump(mode="json", **options)
     # Persist one sortable, time-zone-aware representation; UI uses Dubai time.
@@ -382,3 +388,16 @@ def task_activity(task_id: str, request: Request, response: Response, before_seq
 def task_command(task_id: str, body: TaskCommand, request: Request, response: Response):
     tasks, owner = owned(request, response)
     return presented_result(tasks.command(owner, task_id, body))
+
+
+@router.post("/api/tasks/{task_id}/prepare-change")
+def prepare_change(task_id: str, body: ChangeProposal, request: Request, response: Response):
+    tasks, owner = owned(request, response)
+    with tasks.transaction(owner):
+        task = tasks.get(owner, task_id)
+        if task["revision"] != body.expected_revision or task["status"] not in ACTIVE:
+            raise HTTPException(409, "This task changed. Reopen its latest details before reviewing this proposal.")
+        changes = values(body.changes, exclude_unset=True)
+        return {"task_id": task_id, "expected_revision": task["revision"], "changes": changes,
+                "before": {field: task[field] for field in changes}, "after": changes,
+                "proposal_hash": fingerprint({"task_id": task_id, "revision": task["revision"], "changes": changes})}

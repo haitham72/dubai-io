@@ -288,3 +288,36 @@ def test_missing_source_does_not_hide_task_or_its_history(client):
     store.db.commit()
     detail = c.get(f'/api/tasks/{task["id"]}').json()
     assert detail["task"]["id"] == task["id"] and detail["linked_item"] is None and detail["events"]
+
+
+def test_reviewed_task_change_is_read_only_until_revision_bound_apply(client):
+    c, *_ = client
+    task = c.post("/api/tasks/from-report",json={"fields":report_fields()}).json()["task"]
+    changes = {"due_at":"2026-10-24T09:00:00+04:00", "next_step":"Check the official reporting options"}
+    proposal = c.post(f'/api/tasks/{task["id"]}/prepare-change',json={"expected_revision":1,"changes":changes}).json()
+    assert proposal["before"] == {"due_at":None,"next_step":""}
+    assert proposal["after"]["due_at"] == "2026-10-24T05:00:00+00:00" and proposal["proposal_hash"]
+    detail = c.get(f'/api/tasks/{task["id"]}').json()
+    assert detail["task"]["revision"] == 1 and len(detail["events"]) == 1
+    assert detail["linked_item"]["status"] == "BLOCKED"
+    applied = command(c,task,"edit",changes=proposal["changes"],command_key="apply-reviewed-change").json()["task"]
+    assert applied["revision"] == 2 and applied["due_at"] == proposal["after"]["due_at"]
+    assert command(c,task,"edit",changes=proposal["changes"],command_key="apply-reviewed-change").json()["task"] == applied
+    assert c.post(f'/api/tasks/{task["id"]}/prepare-change',json={"expected_revision":1,"changes":changes}).status_code == 409
+    assert command(c,task,"edit",changes=changes).status_code == 409
+    latest = c.get(f'/api/tasks/{task["id"]}').json()
+    assert latest["linked_item"] == detail["linked_item"] and len(latest["events"]) == 2
+
+
+def test_change_review_rejects_cross_owner_terminal_and_execution_fields(client):
+    c, *_ = client
+    task = create(c)
+    other = TestClient(c.app)
+    other.get("/api/session")
+    path = f'/api/tasks/{task["id"]}/prepare-change'
+    body = {"expected_revision":1,"changes":{"due_at":"2026-10-24T09:00:00+04:00"}}
+    assert other.post(path,json=body).status_code == 404
+    for changes in ({"status":"COMPLETED"},{"source":{"id":"other"}},{"due_at":"2026-10-24T09:00:00"},{"outcome":""}):
+        assert c.post(path,json={"expected_revision":1,"changes":changes}).status_code == 422
+    cancelled = command(c,task,"cancel").json()["task"]
+    assert c.post(path,json={"expected_revision":cancelled["revision"],"changes":{"details":"Stale proposal"}}).status_code == 409

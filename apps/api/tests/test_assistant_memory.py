@@ -82,3 +82,16 @@ def test_resolved_task_context_is_transient_and_does_not_become_memory(memory):
     luna.turn("one","alice","Hello again")
     assert "Task-only private reference" not in prompts[-1]
     assert luna.facts.current("alice") == []
+
+
+def test_task_scoped_date_does_not_overwrite_global_profile(memory,monkeypatch):
+    _,_prompts = memory
+    def parse(**_kwargs):
+        return SimpleNamespace(output_parsed=Understanding.model_validate({"intent":"task_help","confidence":1,
+            "item":None,"where_lost":None,"service":None,"category":None,"subcategory":None,"terminal":None,
+            "stated_facts":[{"key":"deadline","value":"25 Oct 10:00"}],"reply":"Here is a proposed change.","clarify":None}))
+    monkeypatch.setattr(luna,"client",lambda:SimpleNamespace(responses=SimpleNamespace(parse=parse)))
+    luna.facts.add("alice","deadline","Existing unrelated deadline","Keep my existing deadline")
+    result=luna.turn("one","alice","Move this task to 25 October at 10am",task_context={"task_id":"one","revision":1})
+    assert result["remembered"] == []
+    assert luna.facts.current("alice")[0]["value"] == "Existing unrelated deadline"

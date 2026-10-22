@@ -221,11 +221,45 @@ registerPage('tasks.detail', {
       }
     });
     root.addEventListener('dubaiio:page-restored', () => load());
-    load();
+    load(context.focusState === true, context.focusState ? 'Task details updated.' : '');
   },
 });
 
 function openTask(id) { openPage('tasks.detail', { id }); }
+
+registerPage('tasks.review-change', {
+  title:'Review task change', source:'Your task · nothing applied yet',
+  render:()=>'<p role="status">Preparing the before and after…</p>',
+  mount(root,context) {
+    let proposal,attempt,busy=false;
+    const names={outcome:'Title',next_step:'Next step',details:'Details',due_at:'Due · Dubai time'};
+    const display=(field,value)=>value?(field==='due_at'?date(value)+' · Dubai time':value):'Not set';
+    request('/api/tasks/'+encodeURIComponent(context.id)+'/prepare-change',{expected_revision:context.expected_revision,changes:context.changes}).then(data=>{
+      if(!root.isConnected)return; proposal=data;
+      root.innerHTML=Object.keys(data.changes).map(field=>`<section class="task-next"><span>${names[field]}</span><p>Current: ${esc(display(field,data.before[field]))}</p><p>Proposed: ${esc(display(field,data.after[field]))}</p></section>`).join('')+'<p class="task-boundary">This changes your saved task only. The linked request, order and shared details stay as they are.</p><p role="alert" data-task-error hidden></p><button class="btn primary wide" data-apply-task-change>Apply task changes</button><button class="btn wide" data-leave-task-change>Not now</button>';
+    }).catch(error=>{if(root.isConnected)root.innerHTML='<p role="alert">'+esc(error.message)+'</p><button class="btn wide" data-leave-task-change>Open latest task</button>';});
+    root.addEventListener('click',async event=>{
+      if(busy)return;
+      if(event.target.closest('[data-leave-task-change]'))return openPage('tasks.detail',{id:context.id},{replace:true});
+      if(!proposal||!event.target.closest('[data-apply-task-change]'))return;
+      attempt||={kind:'edit',changes:proposal.changes,expected_revision:proposal.expected_revision,command_key:key()};
+      busy=true;root.querySelectorAll('button').forEach(button=>button.disabled=true);
+      try {
+        await request('/api/tasks/'+encodeURIComponent(context.id)+'/commands',attempt);changed();
+        if(live(root))openPage('tasks.detail',{id:context.id,focusState:true},{replace:true});
+      } catch(error) {
+        if(!live(root))return;
+        errorLine(root,error.status?error.message:'The save could not be confirmed. Retry the same change, or open the latest task to check.');
+        if(error.status){proposal=null;root.querySelector('[data-apply-task-change]').hidden=true;root.querySelector('[data-leave-task-change]').textContent='Open latest task';}
+        else root.querySelector('[data-apply-task-change]').textContent='Retry same changes';
+      } finally {busy=false;if(root.isConnected)root.querySelectorAll('button').forEach(button=>button.disabled=false);}
+    });
+  },
+});
+
+export function reviewTaskChange(proposal) {
+  openPage('tasks.review-change',{id:proposal.task_id,expected_revision:proposal.expected_revision,changes:proposal.changes});
+}
 
 export async function trackReport(report) {
   const fields = { description: { value: report.description, provenance: 'user_supplied' } };
