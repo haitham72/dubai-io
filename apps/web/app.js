@@ -1,3 +1,5 @@
+import { createHub } from './hub.js';
+import { createFeed } from './feed.js';
 import { createLiveMap } from './gmap.js';
 import { notify, sourceMoment, allowNotifications } from './notify.js';
 import { initSimKeyboard } from './sim-keyboard.js';
@@ -69,6 +71,7 @@ document.body.insertAdjacentHTML('beforeend', `
   <canvas id="gl" aria-hidden="true"></canvas>
   <header class="top">
     <div class="brand"><button class="brand-btn" id="brandBtn" aria-label="Dubai-io. Tap to restart the demo"><b>Dubai-io</b></button><span class="area">${svg('pin', 'ic xs')} ${esc(told.area || 'Dubai')}${told.area ? ' · you told me' : ''}</span></div>
+    <button class="round glass" id="homeMe" aria-label="Your profile">${svg('person')}</button>
   </header>
   <main id="stage" aria-roledescription="carousel" aria-label="Home cards"></main>
   <nav class="rail" id="rail" aria-label="Cards"></nav>
@@ -131,6 +134,8 @@ document.body.insertAdjacentHTML('beforeend', `
   </section>
 
   <section class="svcgrid" id="svcGrid" aria-label="Services"></section>
+  <section class="tabview" id="chatHub" aria-label="Chat" inert></section>
+  <section class="tabview" id="feedView" aria-label="Feed" inert></section>
 
   <form class="composer glass" id="composer" aria-label="Message Dubai-io" autocomplete="off" inert>
     <label class="sr" for="q">Ask Dubai-io</label>
@@ -145,9 +150,9 @@ document.body.insertAdjacentHTML('beforeend', `
   <nav class="tabbar glass" aria-label="Tabs">
     <span class="tab-selection" aria-hidden="true"></span>
     <button data-tab="home" aria-current="page">${svg('orb')}<span>Home</span></button>
-    <button data-tab="maps">${svg('map')}<span>Maps</span></button>
+    <button data-tab="chat">${svg('bubble')}<span>Chat</span></button>
     <button data-tab="services">${svg('grid')}<span>Services</span></button>
-    <button data-tab="me">${svg('person')}<span>Me</span></button>
+    <button data-tab="feed">${svg('feed')}<span>Feed</span></button>
   </nav>
   <button class="chat-launch glass" id="chatLaunch" aria-label="Search or chat with Dubai-io">${svg('search')}<span>Ask</span></button>
   </div>
@@ -198,6 +203,8 @@ const today = createToday($('#today'), () => {
   enterServices();
 });
 const reading = createReading($('#reading'));
+const hub = createHub($('#chatHub'), { openAssistant: () => beginChat(), openMe: () => openMe() });
+const feed = createFeed($('#feedView'), { openMe: () => openMe() });
 const homeSourceWatchers = new Map();
 function followHomeSources(items) {
   const ids = new Set(items.map(item => item.source.id));
@@ -212,7 +219,7 @@ let seedN = 1, onboardingExitTimer = 0;
 const mkCard = def => ({ ...def, holo: CARD_REFLECTION_STRENGTH, variant: VARIANT[def.kind] ?? 0, seed: (seedN++ * 7.31) % 13, rev: reduced ? 1 : 0, revStart: 0, revDur: 1100, out: false, outFrom: 1, exitProgress: 0, el: null });
 
 // ---------------------------------------------------------------- views
-const VIEWS = ['home', 'chat', 'results', 'services'];
+const VIEWS = ['home', 'chat', 'results', 'services', 'hub', 'feed'];
 let restoringView = false;
 function setView(v) {
   if (v === 'chat' && S.view !== 'chat') {
@@ -227,7 +234,7 @@ function setView(v) {
   $('#browseToggle').setAttribute('aria-expanded', 'false');
   $('#browseToggle').inert = v !== 'chat';
   for (const x of VIEWS) app.classList.toggle('mode-' + x, x === v);
-  setTab(v === 'results' ? 'maps' : v === 'services' ? 'services' : 'home');
+  setTab(v === 'hub' ? 'chat' : v === 'feed' ? 'feed' : v === 'services' || v === 'results' ? 'services' : 'home');
   $('#browseDock').inert = v === 'chat' || S.mode === 'onboard';
   $('#composer').inert = v !== 'chat';
   $('#chat').inert = v !== 'chat';
@@ -238,6 +245,8 @@ function setView(v) {
   today.show(v === 'home');
   reading.show(v === 'home');
   $('#svcGrid').inert = v !== 'services';
+  $('#chatHub').inert = v !== 'hub'; hub.show(v === 'hub');
+  $('#feedView').inert = v !== 'feed'; feed.show(v === 'feed');
   $('#results').inert = v !== 'results';
   document.querySelector('.top').inert = v !== 'home';
   if (v !== 'chat') $('#q').blur();
@@ -1131,6 +1140,7 @@ addEventListener('dubaiio:focus', e => {
   el.querySelector('button')?.addEventListener('click', () => selectFocus(null));
 });
 $('#chatLaunch').addEventListener('click', beginChat);
+$('#homeMe').addEventListener('click', () => openMe());
 function setNavigationExpanded(expanded) {
   app.classList.toggle('nav-expanded', expanded);
   $('#browseToggle').setAttribute('aria-expanded', String(expanded));
@@ -1191,9 +1201,9 @@ document.querySelector('.tabbar').addEventListener('click', e => {
     setView('home');
     $('#homeFeed').scrollTo({ top: 0, behavior: 'instant' });
   }
-  else if (t === 'maps') enterResults({ cat: 'all' });
+  else if (t === 'chat') { closeSheet(); setView('hub'); }
   else if (t === 'services') enterServices();
-  else if (t === 'me') openMe();
+  else if (t === 'feed') { closeSheet(); setView('feed'); }
 });
 registerPage('account.me', { title: 'Me', source: 'Dubai-io', render: () => `
     <p class="lead">Lab build · palette: ${esc(paletteName)}</p>

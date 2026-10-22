@@ -26,6 +26,7 @@ from .discovery import router as discovery_router
 from .tasks import router as tasks_router
 from .reading import router as reading_router
 from .projects import router as projects_router
+from .communities import router as communities_router
 from .projects import resolve_context as resolve_project_context
 from .tasks import resolve_context as resolve_task_context
 from .luna import graph as luna
@@ -51,6 +52,7 @@ app.include_router(discovery_router)
 app.include_router(tasks_router)
 app.include_router(reading_router)
 app.include_router(projects_router)
+app.include_router(communities_router)
 
 
 @app.middleware("http")

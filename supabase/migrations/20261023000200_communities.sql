@@ -1,0 +1,27 @@
+-- Communities, chats and contacts (demo-grade, founder 23 Oct). Seed rows come from app/fixtures/community at startup.
+SET search_path TO dubaiio, extensions, public;
+CREATE TABLE IF NOT EXISTS personas (id TEXT PRIMARY KEY, name TEXT NOT NULL, handle TEXT NOT NULL, emoji TEXT NOT NULL, bio TEXT NOT NULL, area TEXT NOT NULL, provenance TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS communities (id TEXT PRIMARY KEY, name TEXT NOT NULL, handle TEXT NOT NULL, topic TEXT NOT NULL, about TEXT NOT NULL, image TEXT NOT NULL, members_base INTEGER NOT NULL, provenance TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS community_members (owner TEXT NOT NULL, community_id TEXT NOT NULL, joined_at TEXT NOT NULL, PRIMARY KEY(owner, community_id));
+CREATE TABLE IF NOT EXISTS posts (id TEXT PRIMARY KEY, community_id TEXT NOT NULL, owner TEXT, persona_id TEXT, author TEXT NOT NULL, kind TEXT NOT NULL, text TEXT NOT NULL, image TEXT, created_at TEXT NOT NULL, likes INTEGER NOT NULL, provenance TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS posts_feed ON posts(kind, created_at);
+CREATE TABLE IF NOT EXISTS comments (id TEXT PRIMARY KEY, post_id TEXT NOT NULL, owner TEXT, persona_id TEXT, author TEXT NOT NULL, text TEXT NOT NULL, created_at TEXT NOT NULL, likes INTEGER NOT NULL, provenance TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS comments_post ON comments(post_id, created_at);
+CREATE TABLE IF NOT EXISTS hidden_posts (owner TEXT NOT NULL, post_id TEXT NOT NULL, reason TEXT, at TEXT NOT NULL, PRIMARY KEY(owner, post_id));
+CREATE TABLE IF NOT EXISTS chat_threads (id TEXT NOT NULL, owner TEXT NOT NULL, kind TEXT NOT NULL, title TEXT NOT NULL, community_id TEXT, created_at TEXT NOT NULL, PRIMARY KEY(owner, id));
+CREATE TABLE IF NOT EXISTS chat_messages (id TEXT PRIMARY KEY, owner TEXT NOT NULL, thread_id TEXT NOT NULL, author TEXT NOT NULL, text TEXT NOT NULL, at TEXT NOT NULL, provenance TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS chat_messages_thread ON chat_messages(owner, thread_id, at);
+CREATE TABLE IF NOT EXISTS chat_reads (owner TEXT NOT NULL, thread_id TEXT NOT NULL, read_at TEXT NOT NULL, PRIMARY KEY(owner, thread_id));
+CREATE TABLE IF NOT EXISTS contacts (id TEXT PRIMARY KEY, owner TEXT NOT NULL, name TEXT NOT NULL, phone TEXT NOT NULL, created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS call_log (id TEXT PRIMARY KEY, owner TEXT NOT NULL, contact_id TEXT, name TEXT NOT NULL, phone TEXT NOT NULL, at TEXT NOT NULL);
+ALTER TABLE personas ENABLE ROW LEVEL SECURITY;
+ALTER TABLE communities ENABLE ROW LEVEL SECURITY;
+ALTER TABLE community_members ENABLE ROW LEVEL SECURITY;
+ALTER TABLE posts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE comments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE hidden_posts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE chat_threads ENABLE ROW LEVEL SECURITY;
+ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE chat_reads ENABLE ROW LEVEL SECURITY;
+ALTER TABLE contacts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE call_log ENABLE ROW LEVEL SECURITY;
