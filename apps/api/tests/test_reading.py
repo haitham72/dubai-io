@@ -169,3 +169,12 @@ def test_cached_headlines_keep_their_thumbnails_after_the_image_map_is_trimmed(c
     monkeypatch.setattr(reading, "fetch_headlines", lambda *a: pytest.fail("cache hit expected"))
     again = c.get("/api/reading?topic=dubai").json()["articles"][0]
     assert again["thumbnail"] == first["thumbnail"] and reading._thumbs[again["id"]] == "https://cdn.example.com/a.jpg"
+
+
+def test_front_pages_are_skipped_and_publisher_suffix_trimmed():
+    at = datetime.now(timezone.utc)
+    rows = reading.headlines([article(url="https://www.khaleejtimes.com/", title="Breaking News | Khaleej Times"),
+                              article(url="https://www.khaleejtimes.com/uae", title="UAE | Khaleej Times"),
+                              article(url="https://www.khaleejtimes.com/uae/new-metro-line", title="New metro line opens | Khaleej Times")],
+                             reading.PUBLISHERS, at)
+    assert [r["title"] for r in rows] == ["New metro line opens"]

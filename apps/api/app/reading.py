@@ -88,7 +88,10 @@ def headlines(results, sources, at):
                 continue
         except (ValueError, TypeError):
             continue
-        title = re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]*>", "", str(item.get("title") or "")))).strip()[:200]
+        if len([part for part in url.path.split("/") if part]) < 2:
+            continue  # a front or section page, not an article
+        title = re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]*>", "", str(item.get("title") or "")))).strip()
+        title = re.sub(r"\s*[|\-–]\s*" + re.escape(sources[host]) + r"\s*$", "", title, flags=re.I)[:200]  # drop " | Publisher"
         date = published(item.get("published_date"), at)
         if not title or not date:
             continue  # A recency filter is not a publication timestamp.
