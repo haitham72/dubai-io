@@ -1,0 +1,67 @@
+.page {
+  margin: 0 auto;
+  max-width: 760px;
+  padding: 64px 24px;
+}
+
+.eyebrow {
+  color: var(--muted);
+  font-size: 0.95rem;
+  margin: 0 0 12px;
+}
+
+.page h1 {
+  font-size: clamp(2rem, 5vw, 3rem);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin: 0 0 16px;
+}
+
+.lede {
+  color: var(--muted);
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin: 0 0 32px;
+}
+
+.neverList {
+  list-style: none;
+  counter-reset: never;
+  margin: 40px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 16px;
+}
+
+.neverList li {
+  counter-increment: never;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--band);
+  padding: 24px;
+}
+
+.neverList li::before {
+  content: "0" counter(never);
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.neverList h2 {
+  margin: 8px 0;
+  font-size: 1.25rem;
+  letter-spacing: -0.01em;
+}
+
+.neverList p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.closing {
+  margin-top: 40px;
+  color: var(--muted);
+  line-height: 1.65;
+}

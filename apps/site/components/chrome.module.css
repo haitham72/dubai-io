@@ -1,0 +1,198 @@
+/* Shared chrome: header, footer, labels, figures, state cards. No shadows. */
+
+.siteHeader {
+  border-bottom: 1px solid var(--line);
+}
+
+.siteHeaderInner {
+  margin: 0 auto;
+  max-width: var(--max-width);
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.wordmark {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--foreground);
+  text-decoration: none;
+}
+
+.siteNav {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  font-size: 0.95rem;
+}
+
+.siteNav a {
+  text-decoration: none;
+}
+
+.siteNav a:hover {
+  text-decoration: underline;
+}
+
+.navCta {
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  padding: 8px 20px;
+}
+
+.siteFooter {
+  border-top: 1px solid var(--line);
+  margin: 64px auto 0;
+  max-width: var(--max-width);
+  padding: 24px 24px 48px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 32px;
+  justify-content: space-between;
+}
+
+.siteFooter p {
+  max-width: 560px;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* Trust labels */
+
+.demoPill {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  border-radius: 999px;
+  padding: 2px 10px;
+  white-space: nowrap;
+}
+
+.provenance {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+/* Photography */
+
+.imageBand {
+  margin: 0;
+}
+
+.imageBand img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  border-radius: var(--radius);
+  background: var(--band);
+}
+
+.imageBand figcaption {
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.imageBand figcaption a {
+  color: inherit;
+}
+
+/* Data states */
+
+.stateNote {
+  color: var(--muted);
+  padding: 24px 0;
+}
+
+.stateCard {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--band);
+  padding: 24px;
+  margin: 16px 0;
+}
+
+.stateCard h3 {
+  margin: 0 0 8px;
+  font-size: 1.1rem;
+}
+
+.stateCard p {
+  margin: 0 0 12px;
+  color: var(--muted);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.retry {
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  border-radius: 999px;
+  padding: 8px 20px;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+/* Signed-in app */
+
+.backLink {
+  display: inline-block;
+  margin: 16px 0 4px;
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+.backLink:hover {
+  text-decoration: underline;
+}
+
+.sectionCard {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--background);
+  padding: 24px;
+  margin: 16px 0;
+}
+
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.sectionHead h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  letter-spacing: -0.01em;
+}
+
+.sectionHead a {
+  font-size: 0.9rem;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.sectionHead a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+  .sectionCard {
+    padding: 18px 16px;
+  }
+}
