@@ -453,6 +453,10 @@ def track_report(body: TrackReport, request: Request, response: Response):
 @router.get("/api/today")
 def today(request: Request, response: Response):
     tasks, owner = owned(request, response)
+    return today_data(tasks, owner)
+
+
+def today_data(tasks, owner):
     with tasks.transaction(owner):
         at = clock()
         due = "json_extract(data, '$.due_at')" if tasks.store.db.dialect == "sqlite" else "(data::jsonb ->> 'due_at')"
@@ -537,3 +541,31 @@ def prepare_change(task_id: str, body: ChangeProposal, request: Request, respons
         return {"task_id": task_id, "expected_revision": task["revision"], "changes": changes,
                 "before": {field: task[field] for field in changes}, "after": changes,
                 "proposal_hash": fingerprint({"task_id": task_id, "revision": task["revision"], "changes": changes})}
+
+
+def brief_line(counts):
+    parts = [counts["running"] and f"{counts['running']} moving",
+             counts["needs_you"] and f"{counts['needs_you']} {'needs' if counts['needs_you'] == 1 else 'need'} you"]
+    parts = [x for x in parts if x]
+    head = " and ".join(parts) + "." if parts else "Nothing is moving or waiting on you."
+    return f"Morning brief: {head} {counts['on_list']} on your list. Say “brief me” for each item."
+
+
+def materialize_brief(store, owner, now):
+    """Gate F routine: at most one brief per Dubai day, worded from the current Today
+    counts when it is released. Expired routines switch themselves off."""
+    row = store.db.execute("SELECT at_time, expires_at FROM routines WHERE owner=? AND kind='morning_brief' AND active=1", (owner,)).fetchone()
+    if not row:
+        return
+    at_time, expires = row
+    if now >= datetime.fromisoformat(expires):
+        store.db.execute("UPDATE routines SET active=0 WHERE owner=? AND kind='morning_brief'", (owner,))
+        return
+    slot = datetime.combine(now.date(), datetime.strptime(at_time, "%H:%M").time(), proactive.DUBAI)
+    key = f"brief:{now.date().isoformat()}"
+    if now < slot or store.db.execute("SELECT 1 FROM outbox WHERE owner=? AND dedupe_key=?", (owner, key)).fetchone():
+        return
+    proactive.enqueue(store, owner, key, "morning_brief", brief_line(today_data(Tasks(store), owner)["counts"]), "routine", slot)
+
+
+proactive.PRE_DELIVERY.append(materialize_brief)

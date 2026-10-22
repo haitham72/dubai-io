@@ -292,7 +292,7 @@ export async function trackReport(report) {
 // Duet-style brief: one sentence that splits moving work from what needs you,
 // then one line per item. Built only from /api/today; no model text, no status change.
 export async function briefHTML() {
-  const data = await request('/api/today'), n = data.counts;
+  const [data, routine] = await Promise.all([request('/api/today'), request('/api/routines/brief').catch(() => null)]), n = data.counts;
   const line = (task, ask, attr) => `<li><button class="brief-line" ${attr}><span class="brief-chip">${esc(task.outcome)}</span> ${esc(ask)}</button></li>`;
   const needs = data.needs_you.tasks.map(t => line(t, t.decision.title + '.', `data-open-decision="${esc(t.decision.action_id)}"`));
   const moving = data.running.tasks.map(t => line(t, statusLabel(t.source_status) + '.', `data-chat-task="${esc(t.id)}"`));
@@ -300,8 +300,12 @@ export async function briefHTML() {
   const parts = [n.running && `${n.running} moving`, n.needs_you && `${n.needs_you} ${n.needs_you === 1 ? 'needs' : 'need'} you`].filter(Boolean);
   const head = parts.length ? parts.join(' and ') + '.' : 'Nothing is moving or waiting on you.';
   const rows = [...needs, ...moving, ...list];
-  return `<p class="brief-label">${svg('check', 'ic xs')} Your brief · ${esc(new Date(data.as_of).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Dubai' }))}</p><p>${esc(head)}</p>${rows.length ? `<ul class="brief">${rows.join('')}</ul>` : '<p>Your list is empty. Start a task from Services when you need something.</p>'}${data.on_list.has_more ? '<button class="btn sm" data-chat-task-list>All tasks</button>' : ''}`;
+  return `<p class="brief-label">${svg('check', 'ic xs')} Your brief · ${esc(new Date(data.as_of).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Dubai' }))}</p><p>${esc(head)}</p>${rows.length ? `<ul class="brief">${rows.join('')}</ul>` : '<p>Your list is empty. Start a task from Services when you need something.</p>'}${data.on_list.has_more ? '<button class="btn sm" data-chat-task-list>All tasks</button>' : ''}${routine ? routineHTML(routine) : ''}`;
 }
+
+export const routineHTML = r => r.active
+  ? `<p class="hint">Daily brief at ${esc(r.at_time)} · Dubai, until ${esc(date(r.expires_at).split(',')[0])}.</p><div class="rec-choices quick"><button class="btn sm" data-brief-routine="off">Stop the daily brief</button></div>`
+  : '<div class="rec-choices quick"><button class="btn sm" data-brief-routine="on">Send this every morning at 08:00</button></div>';
 
 // Not now on a decision: keep the source on Today's Needs you without approving it.
 export async function keepForLater(actionId) {

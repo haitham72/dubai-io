@@ -534,3 +534,32 @@ def test_follow_up_modes_never_send_and_learn_offers_auto(client, monkeypatch):
     b = store.get(owner, action["id"]); b["ready_at"] = "Tomorrow 11:00"; store.put(owner, b)
     assert c.post("/api/reminders", json={"action_id":b["id"]}).json()["offer_auto"] is True
     assert c.put("/api/assist", json={"mode":"learn", "dismiss_offer":True}).json()["offer_auto"] is False
+
+
+def test_morning_brief_routine_is_opt_in_daily_fresh_and_expires(client, monkeypatch):
+    from app import proactive
+    c, store, owner, _ = client
+    c.app.include_router(proactive.router)
+    now = {"t": datetime(2026, 10, 24, 7, 30, tzinfo=proactive.DUBAI)}
+    monkeypatch.setattr(proactive, "clock", lambda: now["t"])
+    assert c.get("/api/messages").json()["messages"] == []  # nothing without opting in
+    assert c.put("/api/routines/brief", json={"active":True, "at_time":"23:30"}).status_code == 422  # quiet hours
+    routine = c.put("/api/routines/brief", json={"active":True, "at_time":"08:00"}).json()
+    assert routine["active"] and routine["at_time"] == "08:00"
+    assert c.get("/api/messages").json()["messages"] == []  # before 08:00
+    tracked_order(c)  # one decision exists by the time the brief is released
+    now["t"] = datetime(2026, 10, 24, 8, 5, tzinfo=proactive.DUBAI)
+    [brief] = c.get("/api/messages").json()["messages"]
+    assert brief["kind"] == "morning_brief" and brief["trigger_source"] == "routine" and "1 needs you" in brief["text"]
+    assert len(c.get("/api/messages").json()["messages"]) == 1  # once per day
+    now["t"] = datetime(2026, 10, 25, 9, 0, tzinfo=proactive.DUBAI)
+    assert len(c.get("/api/messages").json()["messages"]) == 2
+    c.put("/api/routines/brief", json={"active":False, "at_time":"08:00"})
+    now["t"] = datetime(2026, 10, 26, 9, 0, tzinfo=proactive.DUBAI)
+    assert len(c.get("/api/messages").json()["messages"]) == 2  # stopped
+    c.put("/api/routines/brief", json={"active":True, "at_time":"08:00"})
+    now["t"] = datetime(2026, 12, 1, 9, 0, tzinfo=proactive.DUBAI)  # past the 30-day expiry
+    assert len(c.get("/api/messages").json()["messages"]) == 2
+    assert c.get("/api/routines/brief").json()["active"] is False
+    other = TestClient(c.app); other.get("/api/session")
+    assert other.get("/api/messages").json()["messages"] == []

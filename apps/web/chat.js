@@ -15,7 +15,7 @@ import { orderCardHTML, watchOrder, requestEarlier, remindWhenReady } from './or
 import { api } from './service-workflow.js';
 import { identity, getMessages, saveMessages, resetSession, newConversation, switchConversation } from './session-state.js';
 import { initRecovery, startRecovery, resetRecovery, handleRecoveryClick, restoreReport } from './recovery.js';
-import { taskStateLabel, reviewTaskChange, briefHTML } from './tasks.js';
+import { taskStateLabel, reviewTaskChange, briefHTML, routineHTML } from './tasks.js';
 
 let ctx = null; // { enterResults, openOffers, startGuide, showChat }
 const items = [];
@@ -100,7 +100,7 @@ function follow(itemId, actionId) {
   api('/api/actions/' + encodeURIComponent(actionId)).then(a => update(itemId, it => { it.action = a; })).catch(() => update(itemId, it => { it.missing = true; }));
   watchers.set(itemId, watchOrder(actionId, a => update(itemId, it => { it.action = a; })));
 }
-const proactiveHTML = (source, text, kind) => `<p><span class="upd-pill">${svg(source === 'demo' ? 'spark' : 'clock', 'ic xs')} ${source === 'demo' ? 'Demo trigger' : kind === 'task_checkback' ? 'Check-back you asked for' : 'Reminder you asked for'}</span></p><p>${esc(text)}</p>`;
+const proactiveHTML = (source, text, kind) => `<p><span class="upd-pill">${svg(source === 'demo' ? 'spark' : 'clock', 'ic xs')} ${source === 'demo' ? 'Demo trigger' : source === 'routine' ? 'Your daily brief' : source === 'auto_follow_up' ? 'Automatic follow-up' : kind === 'task_checkback' ? 'Check-back you asked for' : 'Reminder you asked for'}</span></p><p>${esc(text)}</p>`;
 // Proactive messages: delivered by the server outbox (deduped, consented, quiet hours), shown once each.
 let messageStream = null;
 function followMessages() {
@@ -308,6 +308,14 @@ export function wireChat() {
     if (op) { const [g, pid] = op.dataset.openProvider.split('|'); openProvider(g, pid); return; }
     const rem = e.target.closest('[data-remind]');
     if (rem) { rem.disabled = true; remindWhenReady(rem.dataset.remind).then(r => { render(); if (r.offer_auto) botSay(offerAutoHTML()); }).catch(err => { toast(err.message); rem.disabled = false; }); return; }
+    const daily = e.target.closest('[data-brief-routine]');
+    if (daily) {
+      daily.disabled = true;
+      api('/api/routines/brief', { method: 'PUT', body: JSON.stringify({ active: daily.dataset.briefRoutine === 'on', at_time: '08:00' }) })
+        .then(r => { daily.closest('.rec-choices').outerHTML = routineHTML(r); toast(r.active ? 'Daily brief on at 08:00. Stop it any time.' : 'Daily brief stopped.'); })
+        .catch(err => { toast(err.message); daily.disabled = false; });
+      return;
+    }
     const offer = e.target.closest('[data-assist-offer]');
     if (offer) { offer.parentElement.querySelectorAll('button').forEach(b => { b.disabled = true; }); answerOffer(offer.dataset.assistOffer).catch(err => toast(err.message)); return; }
     const early = e.target.closest('[data-earlier]');

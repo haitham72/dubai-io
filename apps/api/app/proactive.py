@@ -31,7 +31,13 @@ def setup(store):
     # No mode can send, share or pay; those always wait for an approval tap.
     store.db.execute("""CREATE TABLE IF NOT EXISTS assist (owner TEXT PRIMARY KEY, mode TEXT NOT NULL,
         manual_reminders INTEGER NOT NULL, offer_dismissed INTEGER NOT NULL, updated_at TEXT NOT NULL)""")
+    # Reviewed routines (Gate F): explicit activation, a daily time and an expiry.
+    store.db.execute("""CREATE TABLE IF NOT EXISTS routines (owner TEXT NOT NULL, kind TEXT NOT NULL, at_time TEXT NOT NULL,
+        active INTEGER NOT NULL, expires_at TEXT NOT NULL, updated_at TEXT NOT NULL, PRIMARY KEY(owner, kind))""")
     store.commit()
+
+
+PRE_DELIVERY = []  # deterministic producers (e.g. the morning brief) run before release
 
 
 MODES = ("ask", "auto", "learn")
@@ -98,6 +104,8 @@ def enqueue(store, owner, dedupe_key, kind, text, source, available_at):
 def deliver_due(store, owner):
     """Dispatcher step: release due messages outside quiet hours, then return the delivered thread."""
     now = clock()
+    for produce in PRE_DELIVERY:
+        produce(store, owner, now)
     if not in_quiet_hours(now):
         store.db.execute("UPDATE outbox SET delivered_at=? WHERE owner=? AND delivered_at IS NULL AND available_at<=?",
                          (now.isoformat(), owner, now.isoformat()))
@@ -141,6 +149,49 @@ def remind_when_ready(body: ReminderIn, request: Request):
             save_assist(store, owner, manual_reminders=assist(store, owner)["manual_reminders"] + 1)
         store.commit()
         return {"scheduled_for": due.isoformat(), "created": created, "offer_auto": assist(store, owner)["offer_auto"]}
+
+
+class RoutineIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    active: bool
+    at_time: str = Field(default="08:00", pattern=r"^([01]\d|2[0-3]):[0-5]\d$")
+
+
+ROUTINE_DAYS = 30
+
+
+def routine(store, owner):
+    row = store.db.execute("SELECT at_time, active, expires_at FROM routines WHERE owner=? AND kind='morning_brief'", (owner,)).fetchone()
+    return {"kind": "morning_brief", "at_time": row[0], "active": bool(row[1]), "expires_at": row[2]} if row else {"kind": "morning_brief", "active": False}
+
+
+@router.get("/api/routines/brief")
+def get_brief_routine(request: Request):
+    store = engine().store
+    owner = store.owner(request.cookies.get(COOKIE))
+    with store.lock:
+        setup(store)
+        return routine(store, owner)
+
+
+@router.put("/api/routines/brief")
+def set_brief_routine(body: RoutineIn, request: Request):
+    """Turning it on is the consent; it runs for 30 days unless renewed, outside quiet hours only."""
+    if body.active and in_quiet_hours(datetime.combine(clock().date(), time.fromisoformat(body.at_time), DUBAI)):
+        raise HTTPException(422, "Choose a time between 07:00 and 22:59 Dubai")
+    store = engine().store
+    owner = store.owner(request.cookies.get(COOKIE))
+    with store.lock:
+        setup(store)
+        store.db.execute("DELETE FROM routines WHERE owner=? AND kind='morning_brief'", (owner,))
+        store.db.execute("INSERT INTO routines VALUES (?,?,?,?,?,?)", (owner, "morning_brief", body.at_time, int(body.active),
+                         (clock() + timedelta(days=ROUTINE_DAYS)).isoformat(), clock().isoformat()))
+        if body.active:
+            store.db.execute("INSERT OR IGNORE INTO consent VALUES (?,?)", (owner, clock().isoformat()))
+        else:  # stopping withdraws a brief not yet delivered
+            store.db.execute("DELETE FROM outbox WHERE owner=? AND kind='morning_brief' AND delivered_at IS NULL", (owner,))
+        store.db.commit()
+        return routine(store, owner)
 
 
 class AssistIn(BaseModel):
