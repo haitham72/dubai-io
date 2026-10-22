@@ -1,7 +1,9 @@
+import { notify, sourceMoment, allowNotifications } from './notify.js';
+import { initSimKeyboard } from './sim-keyboard.js';
 import { assistHTML, mountAssist } from './assist.js';
 import { openSavedDetails } from './saved-details.js';
 import { selectFocus } from './assistant-context.js';
-import { openSavedRequests } from './service-workflow.js';
+import { openSavedRequests, api } from './service-workflow.js';
 // Home v2 lab. Flow: iPhone Wi-Fi sign-in -> install + open Dubai-io -> soft
 // card-by-card intro -> browse dock -> focused chat with its own composer.
 // Asking lifts the cards away into the chat; the answer can be a recovery
@@ -198,7 +200,8 @@ const homeSourceWatchers = new Map();
 function followHomeSources(items) {
   const ids = new Set(items.map(item => item.source.id));
   for (const [id, stop] of homeSourceWatchers) if (!ids.has(id)) { stop(); homeSourceWatchers.delete(id); }
-  for (const id of ids) if (!homeSourceWatchers.has(id)) homeSourceWatchers.set(id, watchOrder(id, () => {}));
+  for (const item of items) if (!homeSourceWatchers.has(item.source.id))
+    homeSourceWatchers.set(item.source.id, watchOrder(item.source.id, action => sourceMoment(item.task, action, () => openTask(item.task.id))));
 }
 let sourceSummaryTimer;
 addEventListener('dubaiio:source-changed', () => { clearTimeout(sourceSummaryTimer); sourceSummaryTimer = setTimeout(() => today.refreshSummary(), 100); });
@@ -1186,10 +1189,22 @@ registerPage('account.me', { title: 'Me', source: 'Dubai-io', render: () => `
       <button class="btn" id="meProfile">${svg('person', 'ic sm')} You, over time</button>
       <button class="btn" id="meIntro">${svg('orb', 'ic sm')} Replay the intro</button>
       <button class="btn" id="meWifi">${svg('wifi', 'ic sm')} Replay landing and Wi-Fi sign-in</button>
+      <button class="btn" id="meNotify">${svg('clock', 'ic sm')} Allow notifications on this device</button>
+      <button class="btn" id="meNotifyDemo">${svg('spark', 'ic sm')} Preview a “task done” notification (demo)</button>
     </div>
     ${assistHTML()}
     <p class="fine">Flags: add #fps, #tune or #nogl to the link (join with dots, e.g. #fps.tune).</p>`, mount: root => {
   mountAssist(root);
+  $('#meNotify').addEventListener('click', async () => {
+    const result = await allowNotifications();
+    toast(result === 'granted' ? 'Notifications on. Done tasks reach you when the app is in the background.' : result === 'unsupported' ? 'This browser cannot show notifications.' : 'Notifications are off. Change it in your browser settings.');
+  });
+  $('#meNotifyDemo').addEventListener('click', async () => {
+    closeSheet();
+    let task = null;
+    try { task = (await api('/api/tasks?limit=1')).tasks[0] || null; } catch { /* offline: generic preview */ }
+    setTimeout(() => notify({ title: 'Task done: ' + (task?.outcome || 'Press three shirts'), body: 'A preview of how a finished task reaches you. Nothing changed.', demo: true, onOpen: () => task && openTask(task.id) }), 400);
+  });
   $('#meDetails').addEventListener('click', openSavedDetails);
   $('#meRequests').addEventListener('click', openSavedRequests);
   $('#meConnections').addEventListener('click', () => openConnections());
@@ -1230,6 +1245,7 @@ addEventListener('resize', layout);
 // iOS resizes the visual viewport for the keyboard while the layout viewport stays tall.
 const viewport = window.visualViewport;
 function fitChatViewport() {
+  if (app.classList.contains('sim-keyboard-open')) return;  // the preview keyboard owns the inset
   const open = document.activeElement === $('#q') && viewport && Math.abs(viewport.scale - 1) < .01 && viewport.height < innerHeight - 100;
   app.classList.toggle('keyboard-open', !!open);
   app.style.setProperty('--keyboard-inset', open ? Math.max(0, innerHeight - viewport.height - viewport.offsetTop) + 'px' : '0px');
@@ -1238,6 +1254,7 @@ viewport?.addEventListener('resize', fitChatViewport);
 viewport?.addEventListener('scroll', fitChatViewport);
 $('#q').addEventListener('focus', fitChatViewport);
 $('#q').addEventListener('blur', fitChatViewport);
+initSimKeyboard(app, $('#q'), $('#composer'));
 document.addEventListener('visibilitychange', () => { last = performance.now(); });
 layout();
 refreshRecommendations(CASES);
