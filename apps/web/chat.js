@@ -32,7 +32,7 @@ export function initChat(c) {
 function restoreMessages() {
   for(const saved of getMessages()) {
     if(!['me','bot'].includes(saved?.who)||typeof saved.text!=='string')continue;
-    if(saved.who==='bot'&&typeof saved.msgId==='string'){items.push({id:++seq,who:'bot',msgId:saved.msgId,msgSource:saved.msgSource,text:saved.text,html:proactiveHTML(saved.msgSource,saved.text.slice(0,600))});continue;}
+    if(saved.who==='bot'&&typeof saved.msgId==='string'){const checkTask=typeof saved.taskId==='string'?saved.taskId:null;items.push({id:++seq,who:'bot',msgId:saved.msgId,msgSource:saved.msgSource,text:saved.text,html:proactiveHTML(saved.msgSource,saved.text.slice(0,600),checkTask&&'task_checkback'),...(checkTask?{taskId:checkTask}:{})});continue;}
     if(saved.who==='bot'&&saved.rich&&typeof saved.rich.kind==='string'){const html=richHTML(saved.rich);if(html){items.push({id:++seq,who:'bot',wide:true,rich:saved.rich,text:saved.text,html});continue;}}
     if(saved.who==='bot'&&typeof saved.actionId==='string'){const id=++seq;items.push({id,who:'bot',type:'order',actionId:saved.actionId,action:null,text:saved.text});follow(id,saved.actionId);continue;}
     items.push({id:++seq,who:saved.who,text:saved.text.slice(0,6000),r:saved.who==='me'?saved.r:null,html:saved.who==='bot'?saved.text.slice(0,6000).split(/\n+/).filter(Boolean).map(line=>'<p>'+esc(line)+'</p>').join(''):null,recoveryReport:saved.recoveryReport,taskId:typeof saved.taskId==='string'?saved.taskId:null,taskProposal:saved.taskProposal&&typeof saved.taskProposal==='object'?saved.taskProposal:null});
@@ -99,12 +99,12 @@ function follow(itemId, actionId) {
   api('/api/actions/' + encodeURIComponent(actionId)).then(a => update(itemId, it => { it.action = a; })).catch(() => update(itemId, it => { it.missing = true; }));
   watchers.set(itemId, watchOrder(actionId, a => update(itemId, it => { it.action = a; })));
 }
-const proactiveHTML = (source, text) => `<p><span class="upd-pill">${svg(source === 'demo' ? 'spark' : 'clock', 'ic xs')} ${source === 'demo' ? 'Demo trigger' : 'Reminder you asked for'}</span></p><p>${esc(text)}</p>`;
+const proactiveHTML = (source, text, kind) => `<p><span class="upd-pill">${svg(source === 'demo' ? 'spark' : 'clock', 'ic xs')} ${source === 'demo' ? 'Demo trigger' : kind === 'task_checkback' ? 'Check-back you asked for' : 'Reminder you asked for'}</span></p><p>${esc(text)}</p>`;
 // Proactive messages: delivered by the server outbox (deduped, consented, quiet hours), shown once each.
 let messageStream = null;
 function followMessages() {
   if (messageStream) return;
-  const show = list => { for (const m of list || []) if (!items.some(it => it.msgId === m.id)) post({ who: 'bot', msgId: m.id, msgSource: m.trigger_source, text: m.text, html: proactiveHTML(m.trigger_source, m.text) }); };
+  const show = list => { for (const m of list || []) if (!items.some(it => it.msgId === m.id)) post({ who: 'bot', msgId: m.id, msgSource: m.trigger_source, text: m.text, html: proactiveHTML(m.trigger_source, m.text, m.kind), ...(m.task_id ? { taskId: m.task_id } : {}) }); };
   const start = () => { try { messageStream = new EventSource('/api/messages/stream'); messageStream.onmessage = e => { try { show(JSON.parse(e.data)); } catch { /* ignore */ } }; messageStream.onerror = () => { messageStream.close(); setTimeout(() => { messageStream = null; followMessages(); }, 5000); }; } catch { /* no SSE */ } };
   api('/api/session').then(start).catch(() => setTimeout(followMessages, 10000));
 }

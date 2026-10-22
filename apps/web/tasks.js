@@ -27,7 +27,7 @@ async function request(path, body) {
 
 function row(task) {
   const state = task.source_status ? statusLabel(task.source_status) : labels[task.status] || 'Status unavailable';
-  return `<button class="task-row" data-open-task="${esc(task.id)}"><span class="task-row-icon">${svg(task.status === 'COMPLETED' ? 'check' : task.status === 'PAUSED' ? 'clock' : 'orb', 'ic sm')}</span><span class="task-row-copy"><b>${esc(task.outcome)}</b>${task.next_step && task.next_step !== 'Add an update when you are ready.' ? `<span>${esc(task.next_step)}</span>` : ''}<small>${esc(state)}</small>${task.due_at ? `<small class="${task.due_state ? 'task-due-flag' : ''}">${task.due_state === 'overdue' ? 'Overdue · ' : task.due_state === 'due_soon' ? 'Due within 24h · ' : 'Due '}${esc(date(task.due_at))} · Dubai time</small>` : ''}</span>${svg('chev', 'ic sm')}</button>`;
+  return `<button class="task-row" data-open-task="${esc(task.id)}"><span class="task-row-icon">${svg(task.status === 'COMPLETED' ? 'check' : task.status === 'PAUSED' ? 'clock' : 'orb', 'ic sm')}</span><span class="task-row-copy"><b>${esc(task.outcome)}</b>${task.next_step && task.next_step !== 'Add an update when you are ready.' ? `<span>${esc(task.next_step)}</span>` : ''}<small>${esc(state)}</small>${task.check_back_at ? `<small>Check back ${esc(date(task.check_back_at))} · Dubai time</small>` : ''}${task.due_at ? `<small class="${task.due_state ? 'task-due-flag' : ''}">${task.due_state === 'overdue' ? 'Overdue · ' : task.due_state === 'due_soon' ? 'Due within 24h · ' : 'Due '}${esc(date(task.due_at))} · Dubai time</small>` : ''}</span>${svg('chev', 'ic sm')}</button>`;
 }
 
 function fields(task = {}, compact = false) {
@@ -131,13 +131,14 @@ function detailHTML(data) {
     ${t.details ? `<p class="task-notes">${esc(t.details)}</p>` : ''}
     ${active(t) && t.next_step && t.next_step !== 'Add an update when you are ready.' ? `<section class="task-next"><span>Your next step</span><p>${esc(t.next_step)}</p></section>` : ''}
     ${t.result ? `<section class="task-next"><span>Result · you reported</span><p>${esc(t.result.text)}</p><small>${esc(date(t.result.as_of))} · Dubai time</small></section>` : ''}
-    <p class="task-boundary">${t.status === 'CANCELLED' ? 'Tracking stopped. No request was sent from this task.' : 'Saved for your updates. Automatic checks and sending are not active yet.'}</p>
+    <p class="task-boundary">${t.status === 'CANCELLED' ? 'Tracking stopped. No request was sent from this task.' : 'Saved for your updates. Check-backs you set arrive in chat; nothing is sent to anyone.'}</p>
     ${t.source ? `<section class="task-next"><span>Linked ${data.linked_item?.capability_id === 'order.request' ? 'order' : 'request'}</span><p>${esc(data.linked_item ? statusLabel(data.linked_item.status) : 'The linked item is unavailable.')}</p>${data.linked_item ? `<button class="btn wide" data-open-linked-item="${esc(t.source.id)}">Open linked item ${svg('chev', 'ic xs')}</button>` : ''}<small>Tracking does not send, cancel or complete the linked item.</small></section>` : ''}
+    ${t.status === 'WAITING_USER' ? `<section class="task-next task-check"><span>Check back</span>${t.check_back_at ? `<p>${svg('clock', 'ic xs')} ${esc(date(t.check_back_at))} · Dubai time. A message arrives in chat then (quiet hours 23:00–07:00 wait), when the app is open.</p><button class="btn wide" data-clear-check-back>Clear check-back</button>` : '<p>Get a chat message to revisit this task. Nothing is sent to anyone.</p>'}<form class="task-form" data-check-back><label><span>${t.check_back_at ? 'Move it to' : 'When'} · Dubai time</span><input type="datetime-local" name="at" required value="${esc(localDate(t.check_back_at))}"></label><button class="btn wide" type="submit">${t.check_back_at ? 'Reschedule' : 'Set check-back'}</button></form></section>` : ''}
     ${stagedHTML(data)}
     <button class="btn wide" data-task-chat>Discuss this task ${svg('orb', 'ic sm')}</button>
     <p role="alert" data-task-error hidden></p><div data-task-editor></div>
     ${active(t) ? `<div class="task-actions"><button class="btn" data-task-edit>Edit task</button><button class="btn" data-task-command="${t.status === 'PAUSED' ? 'resume' : 'pause'}">${t.status === 'PAUSED' ? 'Resume' : 'Pause'}</button><button class="btn primary" data-task-complete>Mark done</button><button class="task-cancel" data-task-command="cancel">Cancel task</button></div>` : ''}
-    <details class="task-activity"><summary>Activity</summary><ol>${data.events.map(e => `<li><b>${esc({created:'Saved by you',staged_reply:'Staged reply · demo',collection_chosen:'You chose to collect it',edited:'Details edited',paused:'Paused by you',resumed:'Resumed by you',cancelled:'Cancelled by you',completed:'Completion reported by you'}[e.kind] || e.kind)}</b><span>${esc(date(e.at))} · Dubai time</span>${e.fields ? `<small>Changed: ${esc(e.fields.join(', ').replaceAll('_', ' '))}</small>` : ''}</li>`).join('')}</ol>${data.before_seq ? '<button class="btn wide" data-older-events>Earlier activity</button>' : ''}</details>
+    <details class="task-activity"><summary>Activity</summary><ol>${data.events.map(e => `<li><b>${esc({created:'Saved by you',staged_reply:'Staged reply · demo',check_back_set:'Check-back set by you',check_back_cleared:'Check-back cleared',collection_chosen:'You chose to collect it',edited:'Details edited',paused:'Paused by you',resumed:'Resumed by you',cancelled:'Cancelled by you',completed:'Completion reported by you'}[e.kind] || e.kind)}</b><span>${esc(date(e.at))} · Dubai time</span>${e.fields ? `<small>Changed: ${esc(e.fields.join(', ').replaceAll('_', ' '))}</small>` : ''}</li>`).join('')}</ol>${data.before_seq ? '<button class="btn wide" data-older-events>Earlier activity</button>' : ''}</details>
     <p class="task-updated">Saved by you · updated ${esc(date(t.updated_at))} · Dubai time</p></article>`;
 }
 
@@ -207,6 +208,7 @@ registerPage('tasks.detail', {
         return;
       }
       if (event.target.closest('[data-confirm-cancel]')) { send('cancel'); return; }
+      if (event.target.closest('[data-clear-check-back]')) { send('check_back', { at: null }); return; }
       if (event.target.closest('[data-keep-task]')) { content.innerHTML = detailHTML(data); root.querySelector('[data-task-command="cancel"]').focus(); return; }
       if (event.target.closest('[data-task-edit]')) {
         editor.innerHTML = `<form class="task-form" data-edit-task>${fields(data.task)}<button type="submit" class="btn primary wide">Save changes</button><button type="button" class="btn wide" data-edit-close>Keep current details</button></form>`;
@@ -231,6 +233,7 @@ registerPage('tasks.detail', {
       event.preventDefault(); if (busy) return;
       if (event.target.matches('[data-edit-task]')) send('edit', { changes: readFields(event.target) });
       if (event.target.matches('[data-complete-task]')) send('complete', { result: new FormData(event.target).get('result').trim() });
+      if (event.target.matches('[data-check-back]')) { const v = new FormData(event.target).get('at'); if (v) send('check_back', { at: new Date(v + '+04:00').toISOString() }); }
     });
     root.addEventListener('keydown', event => {
       if (event.key === 'Escape' && root.querySelector('[data-confirm-cancel]')) {
@@ -391,7 +394,7 @@ export function createToday(root, startNewTask) {
       root.innerHTML = `<header class="today-header"><p>${esc(day)} · Dubai</p><div><h1>Tasks</h1><button class="today-all" data-all-tasks>History ${svg('chev', 'ic xs')}</button></div></header>
         ${data.needs_you.tasks.length ? `<section class="today-lane"><header><h2>Needs you</h2>${data.needs_you.has_more ? '<button data-all-tasks>See all</button>' : ''}</header>${data.needs_you.tasks.map(decisionRow).join('')}</section>` : ''}
         <section class="today-lane"><header><h2>Running</h2></header>${data.running.tasks.length ? data.running.tasks.map(task => row({...task, source_status: task.source_status})).join('') : '<p class="today-quiet">No tasks are in progress.</p>'}</section>
-        <section class="today-lane"><header><h2>Scheduled</h2></header><p class="today-quiet">No scheduled follow-ups. Automatic check-backs are coming next.</p></section>
+        <section class="today-lane"><header><h2>Scheduled</h2>${data.scheduled.has_more ? '<button data-all-tasks>See all</button>' : ''}</header>${data.scheduled.tasks.length ? data.scheduled.tasks.map(row).join('') : '<p class="today-quiet">No check-backs scheduled. Open a task to set one.</p>'}</section>
         <section class="today-lane"><header><h2>On your list</h2>${data.on_list.has_more ? '<button data-all-tasks>See all</button>' : ''}</header>${data.on_list.tasks.length ? data.on_list.tasks.map(row).join('') : '<p class="today-quiet">Nothing to keep track of yet. Add something when you need it.</p>'}</section>
         ${data.paused.count ? `<details class="today-paused"><summary>Paused (${data.paused.count})</summary>${data.paused.tasks.map(row).join('')}${data.paused.has_more ? '<button class="btn wide" data-all-tasks>All paused tasks</button>' : ''}</details>` : ''}
         <section class="today-lane today-completed"><header><h2>Finished</h2>${data.completed.has_more ? '<button data-all-tasks>See all</button>' : ''}</header>${data.completed.tasks.length ? data.completed.tasks.map(row).join('') : '<p class="today-quiet">Completed tasks will stay here.</p>'}</section>

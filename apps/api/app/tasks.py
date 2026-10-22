@@ -14,6 +14,7 @@ from uuid import uuid4
 from fastapi import APIRouter, HTTPException, Query, Request, Response
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from . import proactive
 from .actions import COOKIE, InputValue, PrepareIn, annotate, engine, fingerprint
 
 router = APIRouter(tags=["tasks"])
@@ -98,14 +99,17 @@ class TaskChanges(BaseModel):
 
 class TaskCommand(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    kind: Literal["edit", "pause", "resume", "cancel", "complete", "staged_next", "collect"]
+    kind: Literal["edit", "pause", "resume", "cancel", "complete", "staged_next", "collect", "check_back"]
     expected_revision: int = Field(ge=1)
     command_key: str = Field(min_length=8, max_length=100)
     changes: TaskChanges | None = None
     result: str | None = Field(default=None, max_length=1000)
+    at: AwareDatetime | None = None  # check_back only; null clears it
 
     @model_validator(mode="after")
     def validate_command(self):
+        if (self.kind == "check_back") != ("at" in self.model_fields_set):
+            raise ValueError("Only a check-back accepts a time")
         if (self.kind == "edit") != (self.changes is not None):
             raise ValueError("Only an edit accepts changes")
         if self.kind == "complete":
@@ -143,6 +147,7 @@ class Tasks:
                         for table in ("tasks", "task_events"):
                             store.db.execute(f"ALTER TABLE {table} ENABLE ROW LEVEL SECURITY")
                     store.db.commit()
+                    proactive.setup(store)  # check-backs share the consented outbox
                     store._tasks_ready = True
                 except Exception:
                     store.db.conn.rollback()
@@ -282,6 +287,13 @@ class Tasks:
                         raise HTTPException(409, "Collection can be chosen once, after the staged reply")
                     task["next_step"] = COLLECT_STEP
                     event_data["choice"] = "collect"
+            elif kind == "check_back":
+                if task["status"] != "WAITING_USER":
+                    raise HTTPException(409, "Resume the task before scheduling a check-back")
+                if body.at is not None and not clock() + timedelta(minutes=1) <= body.at <= clock() + timedelta(days=60):
+                    raise HTTPException(422, "Choose a check-back time between a minute and 60 days from now")
+                task["check_back_at"] = body.at.astimezone(timezone.utc).isoformat() if body.at else None
+                event_data["at"] = task["check_back_at"]
             elif kind == "complete":
                 task["status"] = "COMPLETED"
                 task["result"] = {"text": body.result, "provenance": "user_supplied", "as_of": clock().isoformat()}
@@ -295,7 +307,9 @@ class Tasks:
                 raise HTTPException(409, "This task changed. Reload it before applying your edit.")
             self.event(owner, task, body.command_key, digest, {"edit": "edited", "pause": "paused", "resume": "resumed",
                        "cancel": "cancelled", "complete": "completed", "staged_next": "staged_reply",
-                       "collect": "collection_chosen"}[kind], event_data)
+                       "collect": "collection_chosen", "check_back": "check_back_set" if body.at else "check_back_cleared"}[kind], event_data)
+            if kind in ("check_back", "pause", "cancel", "complete"):
+                sync_check_back(self.store, owner, task, kind)
             return {"task": task, "replayed": False}
 
     def activity(self, owner, task_id, before=None):
@@ -328,6 +342,24 @@ def present(task, at=None):
 
 def presented_result(result):
     return {**result, "task": present(result["task"])}
+
+
+def sync_check_back(store, owner, task, kind):
+    """Gate B: one outbox message per scheduled check-back, written in the task's
+    transaction. Rescheduling, pausing, cancelling or completing withdraws any
+    undelivered one, so an obsolete check-back never arrives."""
+    store.db.execute("DELETE FROM outbox WHERE owner=? AND delivered_at IS NULL AND dedupe_key LIKE ?",
+                     (owner, f"checkback:{task['id']}:%"))
+    if kind != "check_back":
+        task["check_back_at"] = None
+        store.db.execute("UPDATE tasks SET data=? WHERE id=? AND owner=?", (json.dumps(task), task["id"], owner))
+        return
+    if task["check_back_at"]:
+        at = datetime.fromisoformat(task["check_back_at"]).astimezone(proactive.DUBAI)
+        store.db.execute("INSERT OR IGNORE INTO consent VALUES (?,?)", (owner, clock().isoformat()))  # the tap is the consent
+        proactive.enqueue(store, owner, f"checkback:{task['id']}:{task['check_back_at']}", "task_checkback",
+                          f"Check-back you asked for: {task['outcome'][:200]}. Open the task to add an update.",
+                          "user_reminder", proactive.after_quiet(at))
 
 
 def earlier_than(deadline):
@@ -448,6 +480,10 @@ def today(request: Request, response: Response):
                 decisions.append({**present(json.loads(t), at), "source_status": decision["source_status"], "decision": decision})
         deciding = {row["id"] for row in decisions}
         groups["needs_you"] = {"tasks": decisions[:3], "has_more": len(decisions) > 3}
+        check = extract("data", "check_back_at")
+        scheduled = [present(json.loads(r[0]), at) for r in tasks.store.db.execute(
+            f"SELECT data FROM tasks WHERE owner=? AND status='WAITING_USER' AND {check} IS NOT NULL ORDER BY {check} LIMIT 4", (owner,)).fetchall()]
+        groups["scheduled"] = {"tasks": scheduled[:3], "has_more": len(scheduled) > 3}
         if deciding:  # each task shows in one lane only
             rows = [r for r in tasks.store.db.execute(f"SELECT data FROM tasks WHERE owner=? AND status='WAITING_USER' ORDER BY {priority} LIMIT ?",
                                                       (owner, 4 + len(deciding))).fetchall() if json.loads(r[0])["id"] not in deciding]

@@ -59,8 +59,10 @@ def deliver_due(store, owner):
         store.db.execute("UPDATE outbox SET delivered_at=? WHERE owner=? AND delivered_at IS NULL AND available_at<=?",
                          (now.isoformat(), owner, now.isoformat()))
         store.commit()
-    rows = store.db.execute("SELECT id, kind, text, trigger_source, delivered_at FROM outbox WHERE owner=? AND delivered_at IS NOT NULL ORDER BY delivered_at", (owner,)).fetchall()
-    return [{"id": r[0], "kind": r[1], "text": r[2], "trigger_source": r[3], "delivered_at": r[4]} for r in rows]
+    rows = store.db.execute("SELECT id, kind, text, trigger_source, delivered_at, dedupe_key FROM outbox WHERE owner=? AND delivered_at IS NOT NULL ORDER BY delivered_at", (owner,)).fetchall()
+    # A check-back names its task so the message can open it; the task is re-read with ownership checks.
+    return [{"id": r[0], "kind": r[1], "text": r[2], "trigger_source": r[3], "delivered_at": r[4],
+             **({"task_id": r[5].split(":")[1]} if r[1] == "task_checkback" else {})} for r in rows]
 
 
 def ready_datetime(action):

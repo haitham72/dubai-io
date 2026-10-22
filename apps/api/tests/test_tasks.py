@@ -458,3 +458,47 @@ def test_staged_replies_reject_orders_manual_tasks_and_other_owners(client):
     other = TestClient(c.app); other.get("/api/session")
     assert command(other, task, "staged_next").status_code == 404
     assert command(c, task, "staged_next", changes={"outcome":"x"}).status_code == 422
+
+
+def test_check_back_is_consented_deduped_and_withdrawn_when_obsolete(client, monkeypatch):
+    from app import proactive
+    c, store, owner, _ = client
+    c.app.include_router(proactive.router)
+    task = create(c, outcome="Call the landlord about the deposit")
+    at = (datetime.now(timezone.utc) + timedelta(days=1)).replace(hour=6, minute=0, second=0, microsecond=0)  # 10:00 Dubai
+    body = {"kind":"check_back", "expected_revision":task["revision"], "command_key":uuid4().hex, "at":at.isoformat()}
+    task = c.post(f'/api/tasks/{task["id"]}/commands', json=body).json()["task"]
+    assert c.post(f'/api/tasks/{task["id"]}/commands', json=body).json()["replayed"]
+    pending = lambda: store.db.execute("SELECT dedupe_key FROM outbox WHERE owner=? AND delivered_at IS NULL", (owner,)).fetchall()
+    assert len(pending()) == 1
+    assert [t["id"] for t in c.get("/api/today").json()["scheduled"]["tasks"]] == [task["id"]]
+    assert c.get("/api/messages").json()["messages"] == []  # not due yet
+    later = at + timedelta(days=1)
+    task = command(c, task, "check_back", at=later.isoformat()).json()["task"]
+    assert [k for (k,) in pending()] == [f'checkback:{task["id"]}:{later.isoformat()}']  # rescheduled, old one withdrawn
+    monkeypatch.setattr(proactive, "clock", lambda: later.astimezone(proactive.DUBAI) + timedelta(minutes=1))
+    [message] = c.get("/api/messages").json()["messages"]
+    assert message["task_id"] == task["id"] and message["kind"] == "task_checkback" and "Call the landlord" in message["text"]
+    other = TestClient(c.app); other.get("/api/session")
+    assert other.get("/api/messages").json()["messages"] == []
+    assert command(other, task, "check_back", at=later.isoformat()).status_code == 404
+
+
+def test_pause_cancel_and_quiet_hours_govern_check_backs(client):
+    from app import proactive
+    c, store, owner, _ = client
+    task = create(c)
+    night = (datetime.now(timezone.utc) + timedelta(days=2)).replace(hour=20, minute=30, second=0, microsecond=0)  # 00:30 Dubai
+    task = command(c, task, "check_back", at=night.isoformat()).json()["task"]
+    [(available,)] = store.db.execute("SELECT available_at FROM outbox WHERE owner=?", (owner,)).fetchall()
+    assert datetime.fromisoformat(available).astimezone(proactive.DUBAI).hour == 7
+    task = command(c, task, "pause").json()["task"]
+    assert task["check_back_at"] is None
+    assert store.db.execute("SELECT COUNT(*) FROM outbox WHERE delivered_at IS NULL").fetchone()[0] == 0
+    assert command(c, task, "check_back", at=night.isoformat()).status_code == 409  # paused
+    task = command(c, task, "resume").json()["task"]
+    assert command(c, task, "check_back", at=(datetime.now(timezone.utc) - timedelta(hours=1)).isoformat()).status_code == 422
+    task = command(c, task, "check_back", at=night.isoformat()).json()["task"]
+    command(c, task, "cancel")
+    assert store.db.execute("SELECT COUNT(*) FROM outbox WHERE delivered_at IS NULL").fetchone()[0] == 0
+    assert c.post(f'/api/tasks/{task["id"]}/commands', json={"kind":"pause","expected_revision":1,"command_key":uuid4().hex,"at":None}).status_code == 422
