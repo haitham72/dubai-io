@@ -1103,7 +1103,7 @@ $('#svcGrid').addEventListener('click', e => {
 });
 
 // ---------------------------------------------------------------- chat, composer, tabs
-initChat({ enterResults, openOffers, startGuide, showChat });
+initChat({ enterResults, openOffers, startGuide, showChat, areaCenter });
 refreshProjectContext();
 initOffers({ post, update, showChat, trackOrder });
 loadProfile().then(o => { Object.assign(S.overrides, o); refreshHomeCaptions(); });

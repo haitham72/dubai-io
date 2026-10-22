@@ -1,4 +1,6 @@
 import { offerAutoHTML, answerOffer } from './assist.js';
+import { createLiveMap } from './gmap.js';
+import { browsingSession } from './recommendation-client.js';
 import { labFetch } from './api-client.js';
 import { requestContext, selectFocus, selectTaskFocus, waitForProjectContext } from './assistant-context.js';
 import { openServiceRequest } from './service-workflow.js';
@@ -141,8 +143,9 @@ function render() {
     if (it.who === 'me') return `<div class="msg me"><p>${esc(it.text)}</p></div>${it.pending ? `<div class="understood pending">${svg('spark', 'ic xs')}<span>Luna is understanding…</span></div>` : ''}${it.r ? understoodHTML(it) : ''}`;
     if (it.typing) return `<div class="msg bot typing"><span class="orbdot"></span><span class="orbdot"></span><span class="orbdot"></span></div>`;
     if (it.type === 'order') return it.missing ? `<div class="msg bot"><p>This order is no longer available on this device.</p></div>` : orderCardHTML(it.action);
-    return `<div class="msg bot ${it.wide ? 'wide' : ''} ${it.rich ? 'rich' : ''}">${it.html}${it.taskProposal ? `<button class="btn sm" data-review-task-change="${it.id}">Review proposed task change</button>` : ''}${it.taskId ? `<button class="btn sm" data-chat-task="${esc(it.taskId)}">Open task</button>` : ''}${it.recoveryReport ? `<button class="btn sm" data-restored-report="${it.id}">Review saved report</button>` : ''}</div>`;
+    return `<div class="msg bot ${it.wide ? 'wide' : ''} ${it.rich ? 'rich' : ''}">${it.html}${it.chatMap ? chatMapHTML(it) : ''}${it.taskProposal ? `<button class="btn sm" data-review-task-change="${it.id}">Review proposed task change</button>` : ''}${it.taskId ? `<button class="btn sm" data-chat-task="${esc(it.taskId)}">Open task</button>` : ''}${it.recoveryReport ? `<button class="btn sm" data-restored-report="${it.id}">Review saved report</button>` : ''}</div>`;
   }).join('');
+  mountChatMaps(list);
   requestAnimationFrame(() => { const s = $('#chatScroll'); if (s) s.scrollTop = s.scrollHeight; });
 }
 
@@ -181,12 +184,7 @@ export async function handle(text) {
     case 'lost_item': return startRecovery({ item: r.item, where: r.where });
     case 'airport_guide': return r.terminal ? startGuideFlow(r.terminal) : airport();
     case 'service_offers': return offers(r.service);
-    case 'places_near': {
-      await botSay(`<p>Here’s what’s near you, closest first. Opening the map.</p>`);
-      await wait(500);
-      if(ep!==threadEpoch)return;
-      return ctx.enterResults({ ask: text, cat: r.cat, sub: r.sub, query: r.query || null });
-    }
+    case 'places_near': return chatMap({ ask: text, cat: r.cat, sub: r.sub || null, query: r.query || null }, r.reply);
     case 'greeting': return botSay(`<p>Hi! I can help with a service, a place nearby or your saved tasks.</p>${chips(['Home cleaning prices', 'Coffee near me', 'I lost my wallet'])}<button class="btn sm" data-chat-task-list>View my tasks</button>`);
     case 'order_status': return orderStatus();
     case 'task_help': return taskHelp(taskFocus,r.reply,r.task_edits);
@@ -210,6 +208,44 @@ async function taskHelp(reference, reply, edits=[]) {
     const at=new Date(task.as_of).toLocaleString('en-GB',{timeZone:'Asia/Dubai',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
     return botSay(`${reply?'<p>'+esc(reply)+'</p>':''}<div class="task-next"><span>${esc(task.outcome)}</span><p>${esc(taskStateLabel(task.status))}</p>${task.next_step?'<p>Next step: '+esc(task.next_step)+'</p>':''}<small>Saved task · ${esc(at)} Dubai time. Review its details to make a change; this conversation has not sent or changed anything.</small></div>`,{taskId:task.id,taskProposal});
   } catch {return botSay('<p>The saved task could not be loaded. Reopen its latest details or clear the task context and try again.</p>');}
+}
+
+// ---------------------------------------------------------------- in-chat map
+// A small live Google map with the top places, right in the conversation; it
+// expands into the Maps view with the same search. Each map is created once and
+// its node is moved back in after every chat re-render.
+const chatMapNodes = new Map();
+async function chatMap(search, reply) {
+  const what = search.query || (CATEGORIES.find(c => c.id === search.cat)?.label || 'places').toLowerCase();
+  const id = await botSay(`<p>${esc(reply || 'Here are places near you.')}</p>`, { wide: true, chatMap: { ...search, what, status: 'loading', places: [] } });
+  if (!id) return;
+  const c = ctx.areaCenter();
+  try {
+    const data = await api('/api/discovery/places', { method: 'POST', signal: AbortSignal.timeout(12000), body: JSON.stringify({ session_id: browsingSession(), category: search.cat, subcategory: search.sub, lat: c.lat, lng: c.lng, ...(search.query ? { query: search.query } : {}) }) });
+    update(id, it => { it.chatMap = { ...it.chatMap, status: 'ok', area: c.label, places: data.places.slice(0, 8).map(x => ({ id: x.id, name: x.name, lat: x.lat, lng: x.lng, rating: x.rating, km: x.distance_km, open: x.open_now })) }; });
+  } catch { update(id, it => { it.chatMap = { ...it.chatMap, status: 'error' }; }); }
+}
+function chatMapHTML(it) {
+  const m = it.chatMap;
+  const rows = m.places.slice(0, 3).map((x, i) => `<li><span class="chat-map-n">${i + 1}</span><b>${esc(x.name)}</b><small>${x.rating ? '★ ' + x.rating.toFixed(1) + ' · ' : ''}${x.km != null ? x.km + ' km' : ''}${x.open != null ? ' · ' + (x.open ? 'Open now' : 'Closed') : ''}</small></li>`).join('');
+  return `<div class="chat-map">${m.status === 'ok' && m.places.length ? `<div class="chat-map-canvas" data-chat-map="${it.id}"></div>` : `<p class="hint">${m.status === 'loading' ? 'Finding ' + esc(m.what) + ' near you…' : m.status === 'error' ? 'Live places are unavailable right now.' : 'No places matched. Try the full map.'}</p>`}
+    ${rows ? `<ol class="chat-map-list">${rows}</ol>` : ''}
+    <button class="btn sm" data-expand-map="${it.id}">${svg('map', 'ic xs')} ${m.places.length ? 'See all ' + esc(m.what) + ' on the map' : 'Open Maps'}</button>
+    <p class="fine">Live from Google Maps${m.area ? ' · near ' + esc(m.area) : ''}. Nothing is ordered here.</p></div>`;
+}
+function mountChatMaps(list) {
+  for (const slot of list.querySelectorAll('[data-chat-map]')) {
+    const it = items.find(x => x.id === +slot.dataset.chatMap); if (!it) continue;
+    let node = chatMapNodes.get(it.id);
+    if (!node) {
+      node = Object.assign(document.createElement('div'), { className: 'chat-map-live' });
+      chatMapNodes.set(it.id, node);
+      createLiveMap(node, { compact: true, onPick: () => ctx.enterResults(it.chatMap) })
+        .then(m => m.show(it.chatMap.places, { center: ctx.areaCenter() }))
+        .catch(() => { node.innerHTML = '<p class="hint">The map could not load. The places are listed below.</p>'; });
+    }
+    slot.append(node);
+  }
 }
 
 // ---------------------------------------------------------------- flows
@@ -310,6 +346,8 @@ export function wireChat() {
     if (op) { const [g, pid] = op.dataset.openProvider.split('|'); openProvider(g, pid); return; }
     const rem = e.target.closest('[data-remind]');
     if (rem) { rem.disabled = true; remindWhenReady(rem.dataset.remind).then(r => { render(); if (r.offer_auto) botSay(offerAutoHTML()); }).catch(err => { toast(err.message); rem.disabled = false; }); return; }
+    const expand = e.target.closest('[data-expand-map]');
+    if (expand) { const it = items.find(x => x.id === +expand.dataset.expandMap); if (it?.chatMap) ctx.enterResults(it.chatMap); return; }
     const daily = e.target.closest('[data-brief-routine]');
     if (daily) {
       daily.disabled = true;
