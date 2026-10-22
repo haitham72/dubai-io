@@ -1,6 +1,6 @@
 # Detailed implementation plan
 
-Execution detail for the authoritative [PLAN.md](../PLAN.md). This is the durable task breakdown, not a second scope document. Updated 21 Oct 2026 after the local Supabase switchover. Consult code to establish progress against these tasks; never infer that a proposal or a service case is implemented.
+Execution detail for the authoritative [PLAN.md](../PLAN.md). This is the durable task breakdown, not a second scope document. Updated 22 Oct 2026 after temporal qualification and trusted place discovery. Consult code to establish progress against these tasks; never infer that a proposal or a service case is implemented.
 
 ## 0. Decisions that survive a session change
 
@@ -65,7 +65,7 @@ Design rationale and intended scoring: [recommender-plan.md](references/recommen
 6. **Acceptance passed:** 109 backend tests on SQLite and 109 on Supabase Postgres, with 11 live-model cases skipped per run; five JS cache tests cover stale/in-flight/overlapping/failure behavior. Eight browser checks cover scopes/evidence, timeline labels, Cancel, a failed-save retry with reason invalidation, edit/reload/canonical facts, Not true/Resume, Forget/reload and a visible profile outage/recovery. Browser observations were seeded test inputs; injected 503s were expected failure checks. Artifact: `output/playwright/rec02-evidence.png`.
 7. **Deployment checkpoint:** existing local recommender data was backed up under ignored `output/backups`, reconciled to `temporal-v2`, and the API restarted. No schema change or original-database reset was needed. Maintenance command when required: `python -m app.recommendations` from `apps/api`, using the configured database. The current API already runs this version.
 
-### REC-03. Candidate eligibility and more surfaces [NEXT TASK]
+### REC-03. Candidate eligibility and more surfaces [ACTIVE, expanded 22 Oct]
 
 1. Move candidate retrieval/eligibility into trusted server paths where provider attributes matter. The current general rank endpoint accepts bounded caller candidate IDs/topics; it does **not** verify prices, stock, dates or opening hours and must not authorize actions.
 2. Apply explicit area/date/budget/service/open-now constraints before scoring. Missing information is unknown, not fabricated. New explicit intent must immediately override old interests.
@@ -73,6 +73,40 @@ Design rationale and intended scoring: [recommender-plan.md](references/recommen
 4. Respect user-selected closest/price sorting; add controlled variety within constraints and stable ranking snapshots. Never reorder during a pending tap.
 5. Wire verified server completion signals only from authoritative action-engine events; never accept client `completed` claims. Do not learn sensitive pharmacy/medical traits.
 6. Acceptance: a small repeatable seafood sequence improves the next relevant list; an unrelated request wins immediately; event replays do not inflate weights; provider failures preserve browsing and status truth.
+
+#### REC-03A. Temporal behavior, not permanent click labels [implemented; SQLite/browser verified 22 Oct]
+
+- Preserve the existing evidence ledger and controls. Distinguish session influence from across-visit qualification: at least two distinct options and two visits separated by at least six hours for inferred long-term ranking. Two tabs opened together do not establish a lasting preference. These are conservative tuning defaults, not learned or measured thresholds.
+- Read-time decay remains 30 minutes for session signals and 30 days for long-term signals; inferred expiry remains 24 hours / 90 days. Confirmed preferences persist until corrected/forgotten and do not become booking facts.
+- Rotate the browser visit after 30 minutes of inactivity or 24 hours maximum duration, including an already-open tab. Never rotate in the middle of one event request. Server timestamps govern evidence; browser visit IDs alone cannot prove long-term qualification.
+- New explicit context overrides old context immediately. Negative feedback must reduce influence; dismissal hides one item for a bounded time without inventing a category dislike. Fresh contradictory evidence can change an inferred preference. Paused topics stay paused.
+- Acceptance: same-visit learning, no long-term boost from one visit/multiple simultaneous tabs, separated-visit qualification, fading/expiry, changing interests, negative feedback and explicit intent precedence. Profile UI describes these rules plainly.
+
+#### REC-03B. Trusted live-place discovery [implemented; SQLite/browser verified 22 Oct]
+
+- Add an owner-bound structured discovery endpoint. The server maps reviewed category/subcategory choices to provider queries, fetches the actual candidates and computes distance and transient topic matches. Do not accept caller-provided provider prices, availability, types or scores.
+- One provider request per list refresh initially; no extra paid query on every interaction. Rank the returned pool rather than promise exhaustive personalized retrieval. Unknown category tags stay unknown; broad-food observations do not magically prove a seafood preference.
+- Filter explicit radius and open-now requirements before ranking; missing opening information fails an explicit open-now filter. Date/ticket availability and exact restaurant budgets are unsupported unless a suitable authoritative source is introduced: reject unsupported structured claims rather than silently ignore them.
+- Add Recommended / Closest, Open now and explicit refresh in the existing result sheet, preserving the single category row and separate 2D/3D modes. Show a concrete reason only when profile evidence actually influences the result. Straight-line distance remains labelled as an estimate.
+- Reserve a bounded variety position in larger personalized lists, subject to all constraints. No random shuffle or mid-tap reranking. Profile controls invalidate place snapshots and late in-flight results as well as Home reasons.
+- Persist only permitted IDs, ranking metadata and app-owned interests. Provider listing names/types/hours/photos remain transient request/display data, never recommendation-history payloads.
+- Acceptance: actual candidate ordering changes after meaningful seafood interactions; explicit cafe/pet request and closest sort win; closed/unknown/out-of-radius candidates cannot enter a constrained result; provider timeouts produce retry rather than fictional places; stale profile responses cannot restore old reasons.
+
+**22 Oct implementation checkpoint for A/B:** `app/discovery.py` adds cookie-owned `POST /api/discovery/places`; provider candidates are fetched once per refresh, type/radius/open-now checked, then scored using current profile state. The existing generic rank endpoint also treats explicit topic intent as eligibility. Unknown provider tags do not receive invented specific preferences. Ranking runs retain IDs/scores/app-owned explanations only. The web preserves server ordering, offers Recommended/Closest/Open now/radius/Refresh, displays explanations and supports seven-day per-item hiding even when topic learning is paused. Transient display snapshots are bounded to 16 contexts and invalidated on visit rotation/profile correction. Visits rotate after 30 minutes idle / 24 hours maximum. `temporal-v3` requires separated visits for inferred long-term influence, excludes category taps from distinct-option counts and supports negative influence. Existing confirmed facts, organic-only classification and paused learning are preserved.
+
+**Exact coverage limits:** only category/subcategory and the structured radius/open-now controls reach this discovery contract. Natural-language budget/date/party-size extraction is not implemented; do not claim an arbitrary typed request has been fully constrained. Exact restaurant spend, future hours, ticket stock and authoritative service/product eligibility remain adapter/context work. Food, coffee and veterinary type checks use provider types; other service text-search matches are not verified fulfillment capabilities. The existing generic rank endpoint remains non-authoritative for provider attributes and actions.
+
+**Validation/deployment gate:** seven phone-size browser acceptance scenarios passed using the real app/session/profile endpoints and controlled provider/static-map responses. One separate live Google request returned eight places with types, validating the field mask; it was not an end-to-end live recommendation evaluation. PostgreSQL reads succeeded, but local test-schema creation stalled on `WALWrite`/object locks while Docker returned HTTP 500. The isolated runs were stopped; no PostgreSQL pass or production deployment is claimed. Before running this checkpoint against existing Supabase data: restore database write health, back up recommendation tables, run `python -m app.recommendations` to reconcile old category counts to v3, rerun both database suites, then restart the app. Do not reset volumes, replace `.env` with test settings or merge this write stall with the older Postgres recovery issue. No schema migration is required for A/B.
+
+**Latest regression evidence:** 128 backend tests passed on SQLite, 11 live-model cases skipped; JavaScript profile 92/recovery 8/Luna 12/recommendation-cache 5/browsing-visit 3/discovery-cache 5 passed. Browser artifact: ignored `output/playwright/rec03-discovery.png`. The earlier 109-per-database result belongs to REC-02 and does not verify the new PostgreSQL checkpoint.
+
+#### REC-03C. Trusted services/products and verified completions [NEXT IMPLEMENTATION TASK; A/B PostgreSQL gate also outstanding]
+
+- Use host catalog/provider adapters for item IDs, exact fixed prices, service compatibility and fulfillment evidence. Do not trust web fixture prices or use a restaurant price category as a guaranteed meal budget.
+- Preserve existing explicit service sorts. Personalize only when there are meaningful differing permitted tags; do not manufacture differences between identically tagged laundries.
+- Add authoritative completion observations from the engine only, with action-based idempotency and explicit sandbox exclusion. A sandbox completion must not train a real user's taste. Client `completed` events remain rejected. Pharmacy/medical activity never trains a health profile.
+- Product feeds require a source adapter and trustworthy currency/stock/date fields; existing search results alone do not prove current stock or eligibility. Keep unsupported sources visibly pending.
+- Acceptance: tampered prices rejected/ignored, exact budget filters use host values, fixture exclusions, verified completion replay, sensitive service exclusion, existing order/approval regression checks.
 
 ### REC-04. Measurement and lifecycle [pending]
 
@@ -119,6 +153,18 @@ Detailed product requirements: [assistant-context.md](references/assistant-conte
 - Avoid sensitive inferences, presumed children or milestones, and notifications based only on a hypothesis. An in-app suggestion and a proactive outbox notification are different permissions.
 - Test date boundaries, recurring dates, forgotten occasions, explicit opt-out and unavailable providers. Reuse existing dedupe, quiet hours and consent for any proactive message.
 
+#### SUG-01A. Eligibility and expiry
+
+- Resolve the explicit occasion/date/timezone first. Define the lead window per occasion and stop surfacing expired or cancelled occasions. A birthday example is a user-saved occasion, never a conclusion from shopping clicks.
+- Separate recipient preferences from the user's own tastes: buying a cake for a friend does not establish the user's permanent food preference. Initially keep gift/occasion exploration inside that task; do not train long-term recipient traits.
+- Suppress dismissed suggestions and respect budget/area/dietary constraints only where supplied and verifiable. Unknown constraints stay unknown.
+
+#### SUG-01B. Adaptive choices, rather than fixed occasion cards
+
+- Retrieve eligible candidates, then apply relevant confirmed and qualified temporal interests using the shared ranker. Example: a birthday may suggest dinner, cake or an activity; repeated interest in live music can favor an eligible music experience over a generic dinner.
+- The occasion provides relevance and timing; it does not force the same suggestions for everyone or override a new request. Keep a relevant variety option, explain the actual reason and expire the recommendation after its useful window.
+- Test two owners with the same occasion but different preferences, a changed explicit request, conflicting/expired dates, recipient-context isolation and no unwanted notification. Feed retrieval/verification must be implemented before marking this complete.
+
 ### EVT-01. Source-backed future events
 
 - Reuse configured search tools first; NewsAPI is optional and its developer tier is not a production feed. Do not add a key dependency when existing sources suffice.
@@ -127,6 +173,17 @@ Detailed product requirements: [assistant-context.md](references/assistant-conte
 - Examples are queries, not fixture facts: Global Village opening, a singer touring Dubai next week, a nearby festival. Do not assume this year's opening date or treat a past news item as upcoming.
 - Separate relevance from eligibility, duplicate news reports, stale/cancelled events, unverified announcements and ticket stock. A news report is not booking availability.
 - Render a clean carousel with reason/date/source, dismiss and handoff; no fake ticket purchase or external confirmation. Test timezone/date changes, duplicates, cancellation and empty results.
+
+#### EVT-01A. Freshness before personalization
+
+- Query for the explicit Dubai date window, verify identity/venue/date against the organizer, and exclude past/cancelled/out-of-area events before scoring. Never let a favorite artist's high score revive an expired event.
+- Rank eligible events by the current request, explicitly saved artist/topic preferences and qualified temporal interests. A short festival-browsing session can affect the next festival list without becoming a lasting artist preference.
+- Store permitted source/provenance/verification metadata and define refresh/expiry per source adapter. News is discovery evidence, not ticket inventory. No source means an honest empty/error state.
+
+#### EVT-01B. Timing patterns are a later, separate inference
+
+- Recency-based decay is implemented; learned habits such as Friday lunch, school routine or preferred outing time are not. Do not describe the six legacy demo hypotheses as measured habits of the real tester.
+- Any future time-of-day/day-of-week inference needs repeated evidence on separate days, a visible explanation/control, enough data to evaluate it and a reviewed retention policy. No LLM transcript mining or hidden routine detection.
 
 ## 5. Sponsored restaurant discovery
 
@@ -164,7 +221,7 @@ Detailed product requirements: [assistant-context.md](references/assistant-conte
 ## 7. How the next LLM should execute
 
 1. Read `CLAUDE.md`, `PLAN.md`, this document and `docs/request-backlog.md`; use `handoff.md` only for current runtime/checkpoint details.
-2. Start at **REC-03**, compare its requirements with code, then complete REC-04 before CTX-02/PLAN-01. REC-02 is verified complete; do not rebuild it, restart Supabase setup, re-research settled OAuth answers or resume native features.
+2. Start at **REC-03C** after checking the A/B PostgreSQL validation/reconciliation gate, then complete REC-04 before CTX-02/PLAN-01. REC-03A/B have SQLite/browser verification; the broader recommender is incomplete. Do not rebuild REC-02, restart Supabase setup, re-research settled OAuth answers or resume native features.
 3. Mark each task implemented and verified separately. Record changed contracts, migrations, test evidence and remaining limits before committing. Update the plan if the founder changes scope/order.
 4. Keep tests proportional: deterministic/profile/privacy/action changes need meaningful tests; browser acceptance must distinguish mocked provider data from live provider verification.
 5. Commit and push to `redesign` at coherent checkpoints; native branch remains `ios-swift`. Never commit `.env`, database contents, backups, provider keys or local signing state.

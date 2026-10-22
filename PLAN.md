@@ -1,19 +1,21 @@
 # Dubai-io — Plan
 
-**Updated:** 21 Oct 2026 · **Owner:** Haitham · **Branches:** `redesign` (web baseline), `ios-swift` (native work) · Status of record: `handoff.md` · Review checklist: `docs/user-app-review-guide.md`
+**Updated:** 22 Oct 2026 · **Owner:** Haitham · **Branches:** `redesign` (web/backend), `ios-swift` (native parked) · Runtime checkpoint: `handoff.md` · Review checklist: `docs/user-app-review-guide.md`
 This is the single plan. Done work lives in git history; this file keeps locks, scope, the demo arc and what remains.
 
 ## Founder locks and decisions
 
 - **No bidding, quotes or negotiation, ever** (10 Oct). Fixed published prices; every service row opens its own sandboxed modal HTML mini-app.
 - **Temporal profile is core** (13 Oct): visible hypotheses with Confirm / Not true / Forget (`ARCHITECTURE.md` §7).
+- **22 Oct, adaptive suggestions:** suggestions evolve with recent activity and repeated visits; they are never a constant feed or a permanent label inferred from one visit. Explicit current intent and constraints take priority. A single visit can influence this visit; inferred across-visit influence requires repeated, separated visits. Keep relevant variety, explain influence and let the user correct or pause learning. The temporal behavior contract and nested implementation gates are in `docs/references/recommender-plan.md` and `docs/implementation-plan.md`.
 - **Cyan palette** with the approved purple fringe; C1 reflection on stage cards at 0.385 (13 Oct).
 - **No shadows anywhere;** chat looks like ChatGPT/Claude: plain AI text, tinted user box, white rounded action boxes (19 Oct).
 - **19 Oct:** one order path through the server engine · fine appeal removed · C6 (lost item) = prefilled report + official handoff + "not recovered" · Postgres + pgvector for the backend · Resident/VIP arc and photo onboarding out of the January submission (May-final candidates) · no new service cases before submission.
 - **21 Oct:** founder authorized starting native Swift iOS on `ios-swift` after documenting and pushing the current web baseline. Founder has a Mac and iPhone 13 Pro Max. Supabase is the selected backend; local database integration and review-record import are now verified. Hosted deployment and production identity remain pending. Preserve the native in-app browser requirement, Wi-Fi/gradient onboarding and browse-to-chat transition. Other queued features remain in `docs/request-backlog.md`.
 
 - **21 Oct, latest priorities:** native feature work is parked for Mac/iPhone testing; local Supabase is now running and the API uses it. Continue the moderate recommender, then selected-card context/draft plans, events/occasion suggestions, sponsored food discovery and remaining review fixes. Google OAuth is last for the single tester. These explicit requests authorize their read-only discovery/planning work; purchases, government execution and other NEVER items remain excluded.
-- **Durable execution detail:** [docs/implementation-plan.md](docs/implementation-plan.md) contains nested tasks, dependencies, implemented-versus-pending status and acceptance gates. It is subordinate to this plan. **Next task: REC-03 (trusted candidate eligibility and wider recommendation surfaces).**
+- **22 Oct, branch/finalization instruction:** finish and commit the current work on `redesign`; native work remains parked. There is one repository/checkout. No iOS merge, branch switch or native implementation is part of this finalization.
+- **Durable execution detail:** [docs/implementation-plan.md](docs/implementation-plan.md) contains nested tasks, dependencies, implemented-versus-pending status and acceptance gates. It is subordinate to this plan. **Next implementation task: REC-03C (trusted services/products and verified completions). REC-03A/B are SQLite/browser verified; Supabase write health and PostgreSQL verification remain a deployment gate.**
 
 ## 1. What we're building
 
@@ -104,7 +106,7 @@ One visitor: late-night DXB arrival → laundry with a deadline → taxi-memory 
 
 The detailed, nested task breakdown and acceptance gates are in [docs/implementation-plan.md](docs/implementation-plan.md). Completed work and requests remain traceable in `docs/request-backlog.md`.
 
-1. **ACTIVE - moderate recommender:** REC-01 is implemented on Supabase. REC-02 Edit/evidence controls, aggregate repetition caps, cache invalidation and timeline labels are implemented and verified. Next: REC-03 trusted candidate constraints, wider surfaces and variety/stability, followed by REC-04 measurements/retention. Do not call the entire proposed recommender complete.
+1. **ACTIVE - moderate recommender:** REC-01/02 are implemented. REC-03A/B add separated-visit qualification, signed influence, trusted live-place retrieval/filtering, stable ordering, variety, visible reasons and item hiding. Verified on SQLite and in controlled browser scenarios; local Supabase test writes stalled on 22 Oct, so PostgreSQL validation/reconciliation is outstanding. Next implementation: REC-03C trusted services/products and verified completions, then REC-04 measurements/retention. Do not call the entire proposed recommender complete.
 2. **Assistant context and draft plans:** CTX-01 whole-place focus, bounded recent history and checkpoint forgetting are implemented. Finish CTX-02 selected fragments, server entity/plan validation and ticket-availability guard; then PLAN-01 revision-bound itinerary proposals, locked constraints, explicit assumptions and reviewable before/after changes. No external booking/purchase is implied.
 3. **Suggestions/events:** SUG-01 confirmed occasions and EVT-01 dated, sourced future events. Reuse configured search first; distinguish organizer verification from news and live ticket stock. Use existing consent/dedupe/quiet-hours rules for any notification.
 4. **Sponsored food discovery:** ADS-01 relevant food context, clear Sponsored/Why labels, organic alternatives, caps/dismissal and separate eligible first-party evidence. Current observations are organic-only. Empty inventory means no sponsored card.

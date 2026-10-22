@@ -1,15 +1,20 @@
 import { api } from './service-workflow.js';
 import { esc } from './ui.js';
 import { createRecommendationCache } from './recommendation-cache.js';
+import { createBrowsingVisit } from './browsing-visit.js';
+import { createDiscoveryCache } from './discovery-cache.js';
 
 // One browsing visit, independent of chat threads. No external Google profile.
-let visit;
-try {
-  const previous = JSON.parse(sessionStorage.getItem('dubaiio.visit') || 'null');
-  visit = previous && Date.now() - previous.at < 86400000 ? previous : { id: crypto.randomUUID(), at: Date.now() };
-  sessionStorage.setItem('dubaiio.visit', JSON.stringify(visit));
-} catch { visit = { id: crypto.randomUUID() }; }
-export const browsingSession = () => visit.id;
+let visitStorage;
+try { visitStorage = sessionStorage; } catch { /* blocked storage */ }
+const resolveVisit = createBrowsingVisit({ storage: visitStorage });
+let activeVisit;
+export function browsingSession() {
+  const id = resolveVisit();
+  if (activeVisit && activeVisit !== id) { homeRanks.invalidate(); discovery.invalidate(); }
+  activeVisit = id;
+  return id;
+}
 export const topicFor = (cat, sub) => ({ food: sub === 'Seafood' ? 'food.seafood' : 'food.restaurants', coffee: 'food.cafes',
   pets: sub === 'Grooming' ? 'pets.grooming' : sub === 'Boarding' ? 'pets.boarding' : 'pets.care',
   laundry: 'services.laundry', 'home-help': 'services.cleaning', 'fix-it': 'services.repairs', clothing: 'shopping.clothing' })[cat] || null;
@@ -17,16 +22,17 @@ export const topicFor = (cat, sub) => ({ food: sub === 'Seafood' ? 'food.seafood
 const CASE_TOPICS = { C1: ['services.cleaning'], C13: ['food.restaurants', 'food.seafood'], C12: ['pets.care','pets.grooming','pets.boarding'],
   C4: ['services.laundry'], C8: ['services.repairs'], C2: ['shopping.clothing'], C11: ['food.cafes'] };
 const homeRanks = createRecommendationCache(body => api('/api/recommendations', { method: 'POST', body: JSON.stringify(body) }));
-export const homeRank = id => homeRanks.get(id);
+export const discovery = createDiscoveryCache(body => api('/api/discovery/places', { method: 'POST', body: JSON.stringify(body), signal: AbortSignal.timeout(15000) }));
+export const homeRank = id => { browsingSession(); return homeRanks.get(id); };
 export async function refreshRecommendations(cases) {
   const candidates = cases.filter(c => CASE_TOPICS[c.id]).map(c => ({ id: c.id, topics: CASE_TOPICS[c.id] }));
-  await homeRanks.refresh({ session_id: visit.id, surface: 'home', candidates });
+  await homeRanks.refresh({ session_id: browsingSession(), surface: 'home', candidates });
 }
 export async function observe(kind, topic, entityId) {
   if (!topic) return;
   try {
     await api('/api/recommendation-events', { method: 'POST', body: JSON.stringify({ events: [{
-      event_key: crypto.randomUUID(), session_id: visit.id, kind, topic, entity_id: entityId,
+      event_key: crypto.randomUUID(), session_id: browsingSession(), kind, topic, entity_id: entityId,
     }] }) });
     return true;
   } catch { return false; }
@@ -45,8 +51,8 @@ function scopeHTML(row) {
   const session = row.scope === 'session';
   const state = row.learning_state === 'ready' ? 'Can influence suggestions' : row.learning_state === 'confirmed' ? 'You confirmed' : row.learning_state === 'paused' ? 'Learning paused' : 'Still learning';
   return '<div class="interest-scope"><b>' + (session ? 'This visit' : 'Across visits') + '</b><span class="src">' + esc(state) +
-    (row.status === 'active' ? ' · ' + Math.round(row.confidence * 100) + '% inferred confidence · ' + row.evidence_count + ' distinct options' : '') + '</span>' +
-    (row.status === 'active' ? '<small>Fades with a ' + (session ? '30-minute' : '30-day') + ' half-life. Expires ' + esc(dateLabel(row.expires_at)) + '.</small>' : '') +
+    (row.status === 'active' ? ' · ' + Math.round(row.confidence * 100) + '% inferred confidence · ' + row.evidence_count + ' distinct options' + (!session ? ' · ' + row.visit_count + ' visits' : '') : '') + '</span>' +
+    (row.status === 'active' ? '<small>Fades with a ' + (session ? '30-minute' : '30-day') + ' half-life. Expires ' + esc(dateLabel(row.expires_at)) + '.' + (!session && row.learning_state === 'learning' ? ' Needs repeated evidence on visits at least six hours apart before influencing future visits.' : '') + '</small>' : '') +
     (row.evidence?.length ? '<details><summary>Recent evidence</summary><ul class="interest-evidence">' + row.evidence.map(evidenceHTML).join('') + '</ul></details>' : '') + '</div>';
 }
 const buttonsHTML = row => ['rejected','forgotten'].includes(row.status)
@@ -59,7 +65,7 @@ export async function renderInterests(el, onChange) {
   el.dataset.interestRender = renderId;
   el.innerHTML = '<p>Loading your live interests…</p>';
   try {
-    const data = await api('/api/profile/interests?session_id=' + encodeURIComponent(visit.id));
+    const data = await api('/api/profile/interests?session_id=' + encodeURIComponent(browsingSession()));
     if (!el.isConnected || el.dataset.interestRender !== renderId) return;
     const rows = data.interests.filter(i => i.scope === 'long_term');
     el.innerHTML = '<h4>Live interests</h4><p class="fine">From your choices, separate from the timeline below. Inferences only reorder suggestions. Edit explicitly confirms your replacement; old evidence is removed. Forgotten interests stay paused until you resume learning.</p><ul class="list">' +
@@ -69,6 +75,7 @@ export async function renderInterests(el, onChange) {
         '<div class="acts">' + buttonsHTML(i) + '</div><div data-edit-interest></div><p class="interest-error" role="alert"></p></li>').join('') || '<li>No interests learned yet. Explore a few places to start.</li>') + '</ul>';
     async function save(topic, body, row) {
       homeRanks.pause();
+      discovery.pause();
       onChange?.({ refresh: false });
       row.querySelectorAll('button,select').forEach(control => control.disabled = true);
       row.querySelector('.interest-error').textContent = '';
@@ -83,6 +90,7 @@ export async function renderInterests(el, onChange) {
         }
       } finally {
         homeRanks.resume();
+        discovery.resume();
       }
       if (saved) {
         onChange?.({ refresh: true });

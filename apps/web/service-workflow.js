@@ -13,7 +13,7 @@ const SERVICES={laundry:'Laundry',cleaning:'Home cleaning',ac:'AC service',groom
 export async function api(url, options={}) {
   if(!sessionPromise)sessionPromise=fetch('/api/session',{credentials:'same-origin',signal:AbortSignal.timeout(4000)}).then(r=>{if(!r.ok)throw new Error('Session unavailable');return r.json();}).catch(e=>{sessionPromise=null;throw e;});
   await sessionPromise;
-  const r=await fetch(url,{...options,credentials:'same-origin',signal:AbortSignal.timeout(5000),headers:{'Content-Type':'application/json',...options.headers}});
+  const r=await fetch(url,{...options,credentials:'same-origin',signal:options.signal||AbortSignal.timeout(5000),headers:{'Content-Type':'application/json',...options.headers}});
   const data=await r.json();if(!r.ok)throw new Error(typeof data.detail==='string'?data.detail:'Could not save this request');return data;
 }
 function ownBody(){return document.querySelector('[data-page-id="service.request"] .page-host-content');}

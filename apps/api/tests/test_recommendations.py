@@ -47,7 +47,7 @@ def test_two_distinct_choices_adapt_this_visit_and_have_a_reason(client):
     record(c,event("one",kind="choose"),event("two",kind="choose"))
     result = rank(c)
     assert result["results"][0]["id"] == "fish"
-    assert "Because you explored seafood" == result["results"][0]["reason"]
+    assert "Because you explored seafood this visit" == result["results"][0]["reason"]
     # User's explicit next request wins and closest/price modes preserve supplied order.
     assert rank(c,intent="food.cafes")["results"][0]["id"] == "coffee"
     assert rank(c,sort="closest")["results"][0]["id"] == "coffee"
@@ -266,3 +266,59 @@ def test_failed_ingestion_does_not_leave_half_written_evidence(client,monkeypatc
     with pytest.raises(RuntimeError,match="Injected projection failure"):
         record(c,event())
     assert store.db.execute("SELECT COUNT(*) FROM recommendation_events").fetchone()[0] == 0
+
+
+def test_one_visit_or_simultaneous_tabs_cannot_establish_long_term_taste(client,monkeypatch):
+    c,_ = client
+    at = 1792500000.
+    monkeypatch.setattr(rec,"clock",lambda:at)
+    record(c,event("fish-one"),event("fish-two"),event("fish-three",session="parallel-tab"))
+    rows = c.get("/api/profile/interests?session_id=session-one").json()["interests"]
+    assert next(r for r in rows if r["scope"] == "session")["learning_state"] == "ready"
+    long = next(r for r in rows if r["scope"] == "long_term")
+    assert long["visit_count"] == 2 and long["learning_state"] == "learning"
+    assert rank(c,session_id="new-unrelated-visit")["results"][0]["id"] == "coffee"
+    at += rec.DAY+1
+    assert rank(c)["results"][0]["id"] == "coffee"
+
+
+def test_repeated_separated_visits_qualify_then_fade_and_expire(client,monkeypatch):
+    c,_ = client
+    at = 1792500000.
+    monkeypatch.setattr(rec,"clock",lambda:at)
+    record(c,event("fish-one"))
+    at += rec.LONG_TERM_VISIT_GAP
+    record(c,event("fish-two",session="second-visit"))
+    result = rank(c,session_id="third-visit")
+    assert result["results"][0]["id"] == "fish"
+    assert result["results"][0]["reason"] == "Because you explored seafood across visits"
+    at += 30*rec.DAY
+    faded = rank(c,session_id="third-visit")["results"]
+    assert next(r for r in faded if r["id"] == "fish")["influence"] < result["results"][0]["influence"]
+    at += 61*rec.DAY
+    assert rank(c,session_id="third-visit")["results"][0]["id"] == "coffee"
+
+
+def test_recent_negative_feedback_can_reverse_inferred_influence(client):
+    c,_ = client
+    record(c,event("positive-one"),event("positive-two"))
+    assert rank(c)["results"][0]["id"] == "fish"
+    record(c,event("negative-one",kind="less_like_this"),event("negative-two",kind="less_like_this"))
+    result = rank(c)["results"]
+    fish = next(r for r in result if r["id"] == "fish")
+    assert result[0]["id"] == "coffee"
+    assert fish["influence"] < 0 and "fewer seafood" in fish["reason"]
+
+
+def test_category_taps_alone_are_not_distinct_option_evidence(client):
+    c,_ = client
+    record(c,event("category-food",kind="category"),event("category-seafood",kind="category"))
+    assert all(r["evidence_count"] == 0 for r in c.get("/api/profile/interests").json()["interests"])
+    assert rank(c)["results"][0]["reason"] is None
+
+
+def test_explicit_intent_is_eligibility_even_against_confirmed_history(client):
+    c,_ = client
+    c.put("/api/profile/interests/food.seafood",json={"action":"confirm"})
+    record(c,event("one",kind="save"),event("two",kind="save"))
+    assert [r["id"] for r in rank(c,intent="food.cafes")["results"]] == ["coffee"]

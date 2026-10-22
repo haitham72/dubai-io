@@ -13,7 +13,7 @@ import { VARIANT } from './shaders.js';
 import { PALETTES, ONBOARDING, CASES, PROFILE_CARD, CATEGORIES, PLACES, SOURCES, EPISODES, HYPOTHESES, TOLD_LABELS, HOME, AREA_LABELS } from './data.js';
 import { profileAt, allowed } from './profile.js';
 import { loadProfile, profileEpisodes, setOverride } from './profile-store.js';
-import { topicFor, observe, homeRank, refreshRecommendations, renderInterests } from './recommendation-client.js';
+import { topicFor, observe, homeRank, refreshRecommendations, renderInterests, browsingSession, discovery } from './recommendation-client.js';
 import { createMap, km } from './map.js';
 import { $, svg, esc, toast, openSheet, closeSheet, reduced, told } from './ui.js';
 import { initChat, wireChat, handle, post, update, hasThread, resetChat, trackOrder } from './chat.js';
@@ -339,7 +339,7 @@ function homeOrder() {
   const byId = Object.fromEntries([...p.noticed, ...p.confirmed].map(h => [h.id, h]));
   return CASES.map((c, k) => {
     const recommendation = homeRank(c.id);
-    if (recommendation?.reason) return { c, h: { reason: recommendation.reason, provenance: recommendation.provenance }, score: 100 + recommendation.score };
+    if (recommendation?.reason) return { c, h: { reason: recommendation.reason, provenance: recommendation.provenance }, score: (recommendation.influence < 0 ? -100 : 100) + recommendation.score };
     const h = c.because && byId[c.because];
     // Tier rule: hypotheses may only re-rank, with a visible Because chip (allowed(h, 'rerank')).
     const boost = h && allowed(h, 'rerank') && (h.surfaced || h.provenance === 'user_supplied') ? h.conf : 0;
@@ -548,7 +548,15 @@ function openProfile() {
   const input = $('#asof');
   input.addEventListener('input', () => { S.asOf = +input.value; renderProfile(); });
   renderProfile();
-  renderInterests($('#liveInterests'), ({ refresh = true } = {}) => { refreshHomeCaptions(); if (refresh) refreshRecommendations(CASES); });
+  renderInterests($('#liveInterests'), ({ refresh = true } = {}) => {
+    refreshHomeCaptions();
+    if (S.view === 'results' && S.mapMode === '2d') {
+      S.detail = null;
+      if (refresh) loadLive();
+      renderResults(); refit();
+    }
+    if (refresh) refreshRecommendations(CASES);
+  });
 }
 function renderProfile() {
   $('#asofLbl').textContent = fmtDate(S.asOf);
@@ -600,7 +608,8 @@ function ensureMap() {
   MAP?.ready.catch(() => { if (S.mapMode === '3d') { $('#mapFallback').textContent = 'The 3D preview could not load. Demo places are still listed below.'; $('#mapFallback').hidden = false; } });
 }
 // Explicit views: live Google content stays on its Google map; the separate 3D preview uses demo places.
-const placeCache = new Map();
+const placeCache = discovery;
+let placeSort = 'recommended', placeOpen = false, placeRadius = 10;
 let cameraGeneration = 0, lastCameraKey = '';
 const cameraKey = () => `${S.cat}|${S.sub || ''}|${S.src || ''}|${S.detail || ''}`;
 function areaCenter() {
@@ -608,33 +617,28 @@ function areaCenter() {
   const hit = AREA_LABELS.find(([name]) => area.includes(name));
   return hit ? { lat: hit[1], lng: hit[2], label: told.area || HOME.label } : { lat: HOME.lat, lng: HOME.lng, label: told.area || HOME.label };
 }
-const liveKey = () => `${S.cat}|${S.sub || ''}|${areaCenter().label}`;
+const liveKey = () => `${S.cat}|${S.sub || ''}|${areaCenter().lat},${areaCenter().lng}|${placeSort}|${placeOpen}|${placeRadius}|${browsingSession()}`;
 function liveState() { return placeCache.get(liveKey()); }
-function loadLive() {
+function loadLive(force = false) {
   if (S.mapMode !== '2d') return;
   const key = liveKey();
-  if (placeCache.has(key)) return;
-  const c = areaCenter(), category = S.cat, subcategory = S.sub, cat = catOf(category);
-  const petQueries = { Vet: 'veterinary clinic', '24h': '24-hour veterinary clinic', 'Pet shop': 'pet shop', Boarding: 'pet boarding', Grooming: 'pet grooming', Photo: 'pet photography' };
-  const what = category === 'pets' && subcategory ? petQueries[subcategory] : subcategory ? `${subcategory} ${cat?.label || ''}` : (cat ? cat.label : 'Popular places');
-  placeCache.set(key, { status: 'loading' });
-  fetch('/api/places/search', { method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(9000),
-    body: JSON.stringify({ query: `${what} near ${c.label}`, lat: c.lat, lng: c.lng }) })
-    .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
-    .then(d => placeCache.set(key, { status: 'ok', at: d.as_of, places: d.places.filter(x => x.lat != null).map(x => ({
-      id: 'g:' + x.id, live: true, name: x.name, rating: x.rating || 0, count: x.ratings || 0, lat: x.lat, lng: x.lng,
-      area: x.short_address || x.address || '', address: x.address, cat: category, sub: subcategory, open: x.open_now, phone: x.phone, website: x.website, maps: x.maps_url,
-      img: x.photo ? '/api/places/photo?w=480&name=' + encodeURIComponent(x.photo) : null, photoBy: (x.photo_by || [])[0] || '' })) }))
-    .catch(() => placeCache.set(key, { status: 'error' }))
+  const c = areaCenter();
+  placeCache.refresh(key, { session_id: browsingSession(), category: S.cat, subcategory: S.sub, lat: c.lat, lng: c.lng,
+    sort: placeSort, open_now: placeOpen, radius_km: placeRadius }, force)
     .finally(() => { if (S.view === 'results' && S.mapMode === '2d' && liveKey() === key) { renderResults(); refit(); } });
 }
-const kmFrom = (c, p) => { const R = 6371, dLat = (p.lat - c.lat) * Math.PI / 180, dLng = (p.lng - c.lng) * Math.PI / 180;
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(c.lat * Math.PI / 180) * Math.cos(p.lat * Math.PI / 180) * Math.sin(dLng / 2) ** 2; return Math.round(2 * R * Math.asin(Math.sqrt(a)) * 10) / 10; };
 function filtered() {
   const live = liveState();
   if (S.mapMode === '2d') {
     if (live?.status !== 'ok') return [];
-    const c = areaCenter(); return live.places.map(p => ({ ...p, km: kmFrom(c, p) })).sort((a, b) => a.km - b.km || b.rating - a.rating);
+    // Preserve the server snapshot order, including explicit closest sorting.
+    return live.places.map(x => ({
+      id: 'g:' + x.id, live: true, name: x.name, rating: x.rating || 0, count: x.ratings || 0, lat: x.lat, lng: x.lng,
+      area: x.short_address || x.address || '', address: x.address, cat: S.cat, sub: S.sub, open: x.open_now,
+      phone: x.phone, website: x.website, maps: x.maps_url, km: x.distance_km,
+      reason: x.recommendation?.reason, variety: x.recommendation?.variety,
+      img: x.photo ? '/api/places/photo?w=480&name=' + encodeURIComponent(x.photo) : null, photoBy: (x.photo_by || [])[0] || '',
+    }));
   }
   return PLACES.filter(p => (S.cat === 'all' || p.cat === S.cat) && (!S.sub || p.sub === S.sub) && (!S.src || p.why === S.src))
     .map(p => ({ ...p, km: km(p) }))
@@ -645,7 +649,7 @@ function enterResults({ ask = null, cat = 'all', sub = null } = {}) {
   closeSheet(); closeOffers();
   setView('results');
   setSnap('peek', true);
-  loadLive();
+  loadLive(true);
   renderResults();
   refit();
 }
@@ -732,7 +736,7 @@ function selectMapCategory(cat, sub = null) {
   selectFocus(null);
   S.cat = cat; S.sub = sub; S.src = null; S.detail = null; S.ask = null;
   if (S.mapMode === '2d') observe('category', topicFor(cat, sub), 'category:' + cat + (sub ? ':' + sub.replace(/[^A-Za-z0-9_-]/g, '_') : '')).then(ok => { if (ok) refreshRecommendations(CASES); });
-  loadLive(); renderResults(); refit();
+  loadLive(true); renderResults(); refit();
 }
 const WHY = {
   video: p => `${svg('play', 'ic xs')} ${esc(p.video.handle)} · ${esc(p.video.at)}`,
@@ -794,15 +798,21 @@ function renderLiveResults(live) {
     return;
   }
   const list = filtered();
-  const at = live.at ? new Date(live.at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '';
+  const at = live.as_of ? new Date(live.as_of).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '';
   const credits = [...new Set(list.map(p => p.photoBy).filter(Boolean))].slice(0, 4).join(', ');
   const img = p => p.img ? `<div class="hc-img" style="background-image:url('${p.img}')"></div>` : `<div class="hc-img glyph">${svg(cat?.glyph || 'pin', 'ic lg')}</div>`;
   rsScroll.innerHTML = `
-    <div class="rs-head"><h3>${list.length} ${esc(what)} near ${esc(c.label)}</h3><p>Live from Google Maps · closest first · distances are straight-line estimates</p></div>
+    <div class="rs-head"><h3>${list.length} ${esc(what)} near ${esc(c.label)}</h3><p>Live from Google Maps · ${placeSort === 'closest' ? 'closest first' : 'recommended from this result set'} · straight-line distances</p></div>
+    <div class="place-controls">
+      <div class="seg glass" role="group" aria-label="Place ordering"><button data-place-sort="recommended" aria-pressed="${placeSort === 'recommended'}">Recommended</button><button data-place-sort="closest" aria-pressed="${placeSort === 'closest'}">Closest</button></div>
+      <label><input type="checkbox" data-place-open ${placeOpen ? 'checked' : ''}> Open now</label>
+      <label><span class="sr">Search radius</span><select data-place-radius aria-label="Search radius">${[1,3,6,10,25].map(n => `<option value="${n}" ${n === placeRadius ? 'selected' : ''}>Within ${n} km</option>`).join('')}</select></label>
+      <button class="btn sm" data-refresh-places>Refresh</button>
+    </div>
     <div class="hcards" id="hcards">${list.map((p, i) => `
       <button class="hcard" data-p="${esc(p.id)}">${img(p)}
         <span class="hc-txt"><b>${i + 1}. ${esc(p.name)}</b><span>${p.rating ? `★ ${p.rating.toFixed(1)} · ` : ''}${p.km} km${p.open === true ? ' · open now' : p.open === false ? ' · closed' : ''}</span>
-        <span class="chip mini ghost">Google</span></span>
+        <span class="chip mini ghost">${p.variety ? 'Something different nearby' : 'Google'}</span>${p.reason ? `<small class="place-reason">${esc(p.reason)}</small>` : ''}</span>
       </button>`).join('')}</div>
     <h4 class="sec">All results <span class="count">${list.length}</span></h4>
     <div class="masonry live">${list.map((p, i) => `
@@ -812,8 +822,10 @@ function renderLiveResults(live) {
           <div class="tile-row"><b>${esc(p.name)}</b>${p.rating ? `<span class="rt">★ ${p.rating.toFixed(1)}</span>` : ''}</div>
           <span class="tile-area">${esc(p.area)} · ${p.km} km</span>
           <span class="tile-why">${p.open === true ? '<span class="open">Open now</span>' : p.open === false ? '<span class="closed">Closed now</span>' : ''}${p.count ? ` · ${fmtN(p.count)} Google reviews` : ''}</span>
+          ${p.reason ? `<span class="place-reason">${esc(p.reason)}</span>` : ''}
         </div>
-      </button>`).join('') || `<p class="empty">Google found no ${esc(what)} near ${esc(c.label)}.</p>`}</div>
+      </button>`).join('') || `<p class="empty">No ${esc(what)} matched these filters in this Google result set. Try a wider radius or turn off Open now. Unknown opening hours are excluded when Open now is selected.</p>`}</div>
+    ${live.notice ? `<p class="fine">${esc(live.notice)}</p>` : ''}
     <p class="fine">Live from Google Maps${at ? ', ' + at : ''}. Not partners: no ordering here; Directions, Call and Website hand off.${credits ? ' Photos: ' + esc(credits) + ' (Google Maps).' : ''}</p>`;
 }
 function renderLiveDetail(p) {
@@ -831,9 +843,18 @@ function renderLiveDetail(p) {
     ${p.maps ? `<a class="btn primary wide big" href="${esc(p.maps)}" target="_blank" rel="noopener noreferrer">${svg('nav', 'ic sm')} Directions in Google Maps</a>` : ''}
     <div class="actions">${p.phone ? `<a class="btn" href="tel:${esc(p.phone.replace(/[^+0-9]/g, ''))}">${svg('phone', 'ic sm')} Call</a>` : ''}${p.website ? `<a class="btn" href="${esc(p.website)}" target="_blank" rel="noopener noreferrer">${svg('globe', 'ic sm')} Website</a>` : ''}</div>
     <button class="btn wide" id="askPlace">Ask about this place</button>
+    ${topicFor(S.cat, S.sub) ? '<button class="btn wide" id="hidePlace">Hide this place for 7 days</button><p class="fine" id="hidePlaceStatus" role="status"></p>' : ''}
     <p class="fine">Live from Google Maps. Not a Dubai-io partner: nothing is ordered or shared here.${p.photoBy ? ' Photo: ' + esc(p.photoBy) + ' (Google Maps).' : ''}</p>`;
   $('#dBack').addEventListener('click', backToList);
   $('#askPlace').addEventListener('click', beginChat);
+  $('#hidePlace')?.addEventListener('click', async e => {
+    const button = e.currentTarget, id = p.id;
+    button.disabled = true;
+    const ok = await observe('dismiss', topicFor(p.cat, p.sub), id);
+    if (S.detail !== id || !button.isConnected) return;
+    if (!ok) { button.disabled = false; $('#hidePlaceStatus').textContent = 'Could not save this change. Try again.'; return; }
+    S.detail = null; loadLive(true); renderResults(); refit();
+  });
 }
 function openDetail(id) {
   if (String(id).startsWith('g:')) {
@@ -891,11 +912,19 @@ $('#rChips').addEventListener('click', e => {
 });
 rsScroll.addEventListener('click', e => {
   if (rsheet.dataset.dragged === '1') return;
-  if (e.target.closest('[data-retry-places]')) { placeCache.delete(liveKey()); loadLive(); renderResults(); refit(); return; }
+  if (e.target.closest('[data-retry-places], [data-refresh-places]')) { loadLive(true); renderResults(); refit(); return; }
+  const order = e.target.closest('[data-place-sort]');
+  if (order) { placeSort = order.dataset.placeSort; loadLive(true); renderResults(); refit(); return; }
   const s = e.target.closest('[data-src]');
   if (s) { S.src = S.src === s.dataset.src ? null : s.dataset.src; renderResults(); refit(); return; }
   const t = e.target.closest('[data-p]');
   if (t) openDetail(t.dataset.p);
+});
+rsScroll.addEventListener('change', e => {
+  if (e.target.matches('[data-place-open]')) placeOpen = e.target.checked;
+  else if (e.target.matches('[data-place-radius]')) placeRadius = Number(e.target.value);
+  else return;
+  loadLive(true); renderResults(); refit();
 });
 function setSnap(name, instant) {
   S.snap = name;

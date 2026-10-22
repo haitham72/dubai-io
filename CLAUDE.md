@@ -87,6 +87,6 @@ node ../web/tests/profile.test.mjs; node ../web/tests/recovery.test.mjs; node ..
 - Every workflow ships with fixtures, a happy-path test and a failure-path test.
 - Stop the dev server by its PID only (never kill all `python.exe`).
 
-## Latest execution direction (21 Oct)
+## Latest execution direction (22 Oct)
 
-Native features are parked for the founder's Mac/iPhone testing. Local Supabase and review-record migration are verified; do not restart that setup. Follow PLAN.md and docs/implementation-plan.md, starting at REC-03 (REC-02 controls/explainability is verified complete). Finish recommender coverage/measurement, then assistant context and draft itineraries, events/occasions, sponsorship and remaining review fixes. Google OAuth is explicitly last for the single tester; retain cookie ownership and cross-user isolation. Never infer a public tester-owner bypass. Keep root handoff short; the detailed plan is the primary continuity artifact.
+Work on `redesign`; native features remain parked on `ios-swift` for the founder's Mac/iPhone testing. REC-03A/B are SQLite/browser verified; the 22 Oct Supabase write stall blocks PostgreSQL verification/reconciliation, not source commits. Next implementation is REC-03C, then REC-04 -> assistant context/plans -> events/occasions -> sponsorship -> review fixes. Preserve cookie ownership; Google OAuth is last. PLAN.md and its detailed implementation plan are authoritative; handoff.md records runtime limits. Do not reset databases or resume native work while finalizing this checkpoint.

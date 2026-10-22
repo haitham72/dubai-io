@@ -1,4 +1,4 @@
-# Request backlog — 21 Oct 2026
+# Request backlog — 22 Oct 2026
 
 Execution ledger for the founder's requests; scope remains in `PLAN.md`. Requirements, implementation and verification are separate states. A partial result is not completion.
 
@@ -6,15 +6,15 @@ Execution ledger for the founder's requests; scope remains in `PLAN.md`. Require
 
 Finish the active task before taking the next. New messages refine the active task or enter this backlog; questions get an answer without replacing the task. Reorder only when the founder explicitly changes priorities or the agent explains a logical reordering in the same session and updates this ledger. Preserve unresolved requests across handoffs. The founder explicitly lifted the native iOS hold on 21 Oct.
 
-**Active order, latest founder instruction:** finish recommender controls/coverage -> assistant context/draft plans -> events/occasion suggestions -> sponsored food discovery -> remaining review fixes. Local Supabase has reached its verified checkpoint. Native features are parked for Mac testing; Google OAuth is last for the single tester. **Primary detailed plan:** [implementation-plan.md](implementation-plan.md), under root PLAN.md. Next task REC-03. Current runtime: root handoff.md.
+**Active order, latest founder instruction:** finalize/commit/push the current `redesign` work; do not start iOS. Then finish recommender coverage -> assistant context/draft plans -> events/occasion suggestions -> sponsored food discovery -> remaining review fixes. Native features remain parked; Google OAuth is last. **Primary detailed plan:** [implementation-plan.md](implementation-plan.md), under root PLAN.md. Next implementation is REC-03C; A/B PostgreSQL verification/reconciliation is blocked by the 22 Oct local write stall. Current runtime: root handoff.md.
 
 ## Current sequence
 
 | Order | Request | Implementation and next result |
 |---|---|---|
 | Done, phone review pending | Maps modes/category navigation/cyan | Explicit 2D/3D and one-row drill-down are browser checked. Pet-specific query and captured async metadata fixes are implemented. Physical phone framing remains. |
-| Done, local checkpoint | PostgreSQL/Supabase | Dedicated local Supabase is healthy; versioned private schema, owner checks, access denial and SQLite review-record import verified. API port 8000 now uses it. Original Postgres recovery, hosted deployment and production Auth remain DB-02/03. |
-| ACTIVE | Own temporal profiler, moderate recommender, PostgreSQL tables and LangGraph short/long memory | REC-01 event/projection/ranking slice, two memory scopes and visible Confirm/Not true/Forget/Resume are implemented. Home category adaptation and live-map observations work. REC-02 is verified complete: explicit Edit, visible evidence/scopes, aggregate caps, transactional facts, cache invalidation and timeline labels. REC-03 eligibility/wider surfaces is next; REC-04 measurements remain. Legacy six hypotheses coexist; no fixture training. |
+| Baseline verified; current write issue | PostgreSQL/Supabase | The 21 Oct private schema, owner/access checks and SQLite import were verified. On 22 Oct reads worked but new test-schema writes stalled (`WALWrite`/locks) and Docker returned HTTP 500. No volume reset, source-data replacement or v3 deployment is claimed. Original Postgres recovery and hosted/Auth work remain DB-02/03. |
+| ACTIVE | Own temporal profiler, moderate recommender, PostgreSQL tables and LangGraph short/long memory | REC-01/02 implemented. REC-03A/B add separated-visit qualification, signed influence, trusted live places, radius/open-now constraints, stable order/variety/reasons and seven-day item hiding. 128 SQLite tests and seven controlled browser scenarios passed; PostgreSQL gate remains. Next REC-03C service/product eligibility/completions, then REC-04 measurement/lifecycle. Legacy six hypotheses coexist; no fixture training. |
 | Next | Context-aware Dubai assistant; selected museum fact and itinerary example | CTX-01 whole-place focus, removable chat chip, bounded history and owner checkpoint forgetting are implemented. CTX-02 fragments/server resolution/availability guard and PLAN-01 draft itinerary revisions/diffs remain. |
 | Then | Birthday/school/occasion suggestions and nearby festivals/artist events | SUG-01/EVT-01 are detailed pending tasks. Confirmed dates, source/organizer verification, explicit uncertainty and notification consent are required. No live event feed is claimed. |
 | Then | Sponsored restaurants personalized in a food thread | ADS-01 pending. Current observations are organic-only; no advertiser inventory, ad targeting or campaigns are implemented. Keep labels, organic alternatives and eligible evidence separate. |
@@ -48,3 +48,6 @@ The queue lists implementation requests separately from completed planning. Item
 - 21 Oct, plan-continuity instruction: the plan is more important than the handoff. PLAN.md is authoritative; docs/implementation-plan.md now records nested tasks, dependencies, exact implemented scope, acceptance gates and the then-active task REC-02 (completed in the checkpoint below). Code comparison establishes progress; do not treat plan prose as completed implementation.
 
 - 21 Oct, REC-02 completed without a scope diversion: 109 tests passed on each database (11 live skipped), five cache tests and eight browser checks passed. Local temporal-v2 projections were backed up/reconciled; API restarted. Next active task is REC-03. Commit/push/sync is explicitly requested; keep the rest of the nested plan pending.
+
+- 22 Oct: founder clarified suggestions must adapt over time. Expanded the temporal behavior contract and nested REC-03/SUG/EVT gates before implementation. REC-03A/B now have SQLite/browser verification; exact natural-language constraints, service/product adapters and broader relevance evaluation remain explicit. One separate live Google field-mask request succeeded. Local database write stalls prevented PostgreSQL verification; the old database and `.env` were preserved.
+- 22 Oct, branch clarification/finalization: one repository/working folder, currently `redesign`; `ios-swift` is unchanged. Founder requested commit/finalization and explicitly said not to start iOS. Finish the current checkpoint and sync its documents; do not infer a native merge or a completed wider roadmap.

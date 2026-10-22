@@ -27,7 +27,8 @@ TOPICS = {
 }
 WEIGHTS = {"category": .25, "detail": .5, "choose": 1., "save": 1.5, "less_like_this": -1.5, "dismiss": 0.}
 DAY = 86400
-RANKER = "temporal-v2"
+RANKER = "temporal-v3"
+LONG_TERM_VISIT_GAP = 6 * 3600
 
 
 def clock():
@@ -60,7 +61,7 @@ class Batch(Strict):
 
 class Candidate(Strict):
     id: str = Field(min_length=1, max_length=160)
-    topics: list[str] = Field(min_length=1, max_length=5)
+    topics: list[str] = Field(max_length=5)
 
     @field_validator("topics")
     @classmethod
@@ -162,7 +163,8 @@ class Recommender:
                 weighted = delta * .5 ** (max(0,at-received)/half_life)
                 bucket["p"] += max(weighted,0.)
                 bucket["n"] += max(-weighted,0.)
-                bucket["entities"][entity] = received
+                if kind != "category":
+                    bucket["entities"][entity] = received
                 bucket["last"] = max(bucket["last"],received)
         db.execute("DELETE FROM profile_interests WHERE owner=? AND topic=? AND usage_class='organic_only'", (owner,topic))
         for (scope,key),bucket in buckets.items():
@@ -211,7 +213,7 @@ class Recommender:
             for event in events:
                 override = db.execute("""SELECT status FROM profile_interests WHERE owner=? AND topic=?
                     AND scope='long_term' AND context_key='all' AND usage_class='organic_only'""", (owner,event.topic)).fetchone()
-                if override and override[0] in {"rejected", "forgotten"}:
+                if override and override[0] in {"rejected", "forgotten"} and event.kind != "dismiss":
                     continue
                 cur = db.execute("INSERT OR IGNORE INTO recommendation_events VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
                     (uuid4().hex,owner,event.event_key,event.session_id,event.thread_id,event.kind,event.topic,event.entity_id,0.,at,at+90*DAY,"organic_only"))
@@ -237,14 +239,23 @@ class Recommender:
                 continue
             decay = .5 ** (max(0,at-last)/(1800 if scope == "session" else 30*DAY))
             p,n = positive*decay,negative*decay
+            scoped = [(s,entity,kind,received,weight) for t,s,entity,kind,received,weight in observations
+                      if t == topic and (scope == "long_term" or s == key)]
+            visits = {}
+            for s,entity,kind,received,weight in scoped:
+                if kind != "category":
+                    visits[s] = min(visits.get(s,received),received)
+            repeated = len(visits) >= 2 and max(visits.values()) - min(visits.values()) >= LONG_TERM_VISIT_GAP
+            confidence = (p+1)/(p+n+2)
+            eligible = count >= 2 and (confidence >= .6 or confidence <= .4) and (scope == "session" or repeated)
             recent = [{"kind":kind,"entity_id":entity,"at":datetime.fromtimestamp(received,timezone.utc).isoformat(),
                        "impact":"less_like_this" if weight < 0 else "interest"}
                       for t,s,entity,kind,received,weight in observations if t == topic and (scope == "long_term" or s == key)][:5]
-            learning = "confirmed" if status == "confirmed" else "paused" if status in {"rejected","forgotten"} else "ready" if count >= 2 and (p+1)/(p+n+2) >= .6 else "learning"
+            learning = "confirmed" if status == "confirmed" else "paused" if status in {"rejected","forgotten"} else "ready" if eligible else "learning"
             result.append({"topic":topic,"label":TOPICS[topic],"scope":scope,"status":status,
                 "provenance":"user_supplied" if status == "confirmed" else "inferred",
-                "confidence":round((p+1)/(p+n+2),4),"evidence_count":count,
-                "signal":round(p/(p+n+2),4),"as_of":datetime.fromtimestamp(expiry-(DAY if scope == "session" else 90*DAY),timezone.utc).isoformat(),
+                "confidence":round(confidence,4),"evidence_count":count,"visit_count":len(visits),
+                "signal":round((p-n)/(p+n+2),4),"as_of":datetime.fromtimestamp(expiry-(DAY if scope == "session" else 90*DAY),timezone.utc).isoformat(),
                 "evidence":recent,"learning_state":learning,"half_life_seconds":1800 if scope == "session" else 30*DAY,
                 "expires_at":datetime.fromtimestamp(expiry,timezone.utc).isoformat() if status == "active" else None,
                 "usage_class":"organic_only"})
@@ -291,38 +302,55 @@ class Recommender:
                 raise
         return {"topic":topic,"status":status,**({"replacement_topic":replacement_topic,"replacement_status":"confirmed"} if action == "edit" else {})}
 
-    def rank(self, owner, body):
+    def rank(self, owner, body, *, practical=None, variety=False):
         # A control change cannot invalidate runs and then have a stale in-flight
         # ranking write its old evidence back after that transaction commits.
         with self.store.lock:
             self._lock_owner(owner)
             try:
-                return self._rank(owner,body)
+                return self._rank(owner,body,practical=practical,variety=variety)
             except Exception:
                 self.store.db.conn.rollback()
                 raise
 
-    def _rank(self, owner, body):
+    def _rank(self, owner, body, *, practical=None, variety=False):
         interests = self.interests(owner,body.session_id,commit=False)
         visible = [i for i in interests if i["status"] in {"active","confirmed"}]
         indexed = {(i["topic"],i["scope"]):i for i in visible}
         version = sha256(json.dumps(interests,sort_keys=True).encode()).hexdigest()[:16]
         ranked = []
         for position,candidate in enumerate(body.candidates):
+            if body.intent and body.intent not in candidate.topics:
+                continue  # A current explicit request is eligibility, not a trade-off.
             current = float(body.intent in candidate.topics) if body.intent else .5
             confirmed = any(indexed.get((t,"long_term"),{}).get("status") == "confirmed" for t in candidate.topics)
-            session = max((indexed.get((t,"session"),{}).get("signal",0) for t in candidate.topics),default=0)
-            long = max((indexed.get((t,"long_term"),{}).get("signal",0) for t in candidate.topics),default=0)
-            evidence = [i for i in visible if i["topic"] in candidate.topics and i["evidence_count"] >= 2 and i["confidence"] >= .6]
-            # Inferred contributions are used only when the reason can be displayed.
-            if not evidence:
-                session = long = 0
-            score = .45*current + .2*float(confirmed) + .15*session + .1*long + .1*.5
+            evidence = [i for i in visible if i["topic"] in candidate.topics and i["learning_state"] == "ready"]
+            # Qualification is per scope: one busy evening must not also unlock
+            # across-visit influence. Negative signals lower, rather than boost, rank.
+            strongest = lambda scope: max((i["signal"] for i in evidence if i["scope"] == scope),key=abs,default=0)
+            session, long = strongest("session"), strongest("long_term")
+            influence = .2*float(confirmed) + (.15*max(0,session) + .1*max(0,long) if confirmed else .15*session + .1*long)
+            score = .45*current + influence + .1*(practical or {}).get(candidate.id,.5)
+            strongest_evidence = max((i for i in evidence if i["signal"]*influence > 0),
+                                     key=lambda i:abs(i["signal"])*(.15 if i["scope"] == "session" else .1),default=None)
             reason = ("Because you confirmed an interest in " + next(TOPICS[t] for t in candidate.topics if indexed.get((t,"long_term"),{}).get("status") == "confirmed")) if confirmed else (
-                "Because you explored " + evidence[0]["label"] if evidence else None)
-            ranked.append({"id":candidate.id,"score":round(score,6),"reason":reason,"provenance":"inferred" if reason and not confirmed else "user_supplied" if confirmed else "estimate","position":position})
+                ("Because you asked for fewer " + strongest_evidence["label"] + " suggestions" if influence < 0 else
+                 "Because you explored " + strongest_evidence["label"] + (" this visit" if strongest_evidence["scope"] == "session" else " across visits")) if strongest_evidence and influence else None)
+            ranked.append({"id":candidate.id,"score":round(score,6),"influence":round(influence,6),"reason":reason,"provenance":"inferred" if reason and not confirmed else "user_supplied" if confirmed else "estimate","position":position})
         if body.sort == "recommended":
             ranked.sort(key=lambda r:(-r["score"],r["position"]))
+            if variety and any(r["influence"] > 0 for r in ranked):
+                # Every fifth slot may offer a different eligible topic. Use the
+                # trusted baseline order, never randomness or a constraint bypass.
+                topics = {c.id:tuple(c.topics) for c in body.candidates}
+                for slot in range(4,len(ranked),5):
+                    seen = {topics[r["id"]] for r in ranked[max(0,slot-4):slot]}
+                    choices = [i for i in range(slot,len(ranked)) if topics[ranked[i]["id"]] not in seen and ranked[i]["influence"] >= 0]
+                    if choices:
+                        chosen = min(choices,key=lambda i:ranked[i]["position"])
+                        row = ranked.pop(chosen)
+                        row["variety"] = True
+                        ranked.insert(slot,row)
         for row in ranked:
             row.pop("position")
         run_id,at = uuid4().hex,clock()

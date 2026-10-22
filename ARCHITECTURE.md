@@ -1,6 +1,6 @@
 # Dubai-io — Architecture
 
-**Updated:** 21 Oct 2026 · Scope: `PLAN.md` · Status: `handoff.md`
+**Updated:** 22 Oct 2026 · Scope: `PLAN.md` · Status: `handoff.md`
 **Lock:** no bidding/quote. `quote.request`, `QUOTED`, `QUOTE_ACCEPTED` do not exist.
 
 **Core rule:** the LLM reads and proposes; it never mutates. Every side effect goes through the deterministic action engine after a user tap (approval) or a merchant tap (inbox). Truth in status holds by construction.
@@ -80,6 +80,10 @@ Sources: (a) a reminder the user asked for, (b) order state changes (live over S
 - **Hypotheses** (`profile.py` + `apps/web/profile.js`): real choices become episodes with allowlisted hypotheses and fixed weights (view 0.5 · dismissal 1 · choice 2); beliefs are Beta(α, β) with half-life decay; surfaced at ≥ 0.7 with ≥ 2 signals; Confirm writes a preference fact, Not true / Forget remove it and unlink evidence.
 - **Never inferred:** health, religion, ethnicity, nationality-as-trait, gender, sexuality, politics (the hypothesis allowlist cannot express them).
 - **Conversation memory:** LangGraph checkpoints in Postgres, scoped to the session owner and thread.
+
+- **Temporal recommendation boundaries (22 Oct):** `recommendations.py` projects app-owned organic events with strongest-signal caps per option/visit. `temporal-v3` requires two distinct options and visits separated by six hours before inferred long-term influence; session/long-term signals decay independently. Category taps are weak signals, not distinct-option evidence. Confirmed preferences and paused controls remain separate; negative feedback reduces inferred influence.
+- **Trusted discovery:** cookie-owned `POST /api/discovery/places` accepts reviewed category/subcategory, coordinates, radius, open-now and sort. It fetches one provider batch, checks supported constraints and ranks transient candidates. Provider listing payloads are not saved in recommendation runs. Unsupported budget/date/stock constraints are not verified by this contract; the generic rank endpoint cannot authorize provider facts or actions.
+- **Display stability:** result snapshots change on explicit refresh/filter/navigation rather than each click; profile corrections/visit rotation invalidate saved and in-flight explanations. Single-item dismissal is owner-scoped for seven days and does not create a topic dislike. Current Supabase adoption/verification gate is in the detailed implementation plan.
 
 ## 8. Luna (LangGraph)
 
