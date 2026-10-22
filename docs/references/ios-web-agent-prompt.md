@@ -1,3 +1,24 @@
+# UPDATE 23 Oct: two branches, two worktrees (supersedes "Branches" below)
+
+You are **Muse**. Work on two branches at the same time, each in its **own git worktree**. Never switch branches inside the founder's main folder, because another agent is running a server there on `redesign-community`.
+
+```
+git fetch origin
+git worktree add ../dubai-io-ios ios-swift
+git worktree add -b dubai-io-web ../dubai-io-web origin/redesign-community
+```
+
+1. **`ios-swift`** in `../dubai-io-ios`: the iPhone app (SwiftUI). Merge `origin/redesign-community` first and at the start of each session.
+2. **`dubai-io-web`** in `../dubai-io-web`: the public website in `apps/site` (Next.js on Vercel). Apple.com-level design: this needs a lot of design work.
+   - Start with a design system: type scale, colour, spacing, image bands, motion.
+   - Then build the hero and feature pages.
+   - Then the signed-in `/app`.
+   - Merge `origin/redesign-community` regularly.
+
+On both branches: never edit `apps/web`, `apps/api` or `supabase`. Ask for backend changes in `docs/request-backlog.md` → "Native/site requests". Report per branch: commit hash, how it was verified, and what is not verified.
+
+---
+
 # Prompt for the native iOS + website agent (23 Oct 2026)
 
 Paste everything below the line into a new agent session opened at the repository root.
