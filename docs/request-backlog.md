@@ -1,23 +1,6 @@
 # Request backlog — 22 Oct 2026
 
-## Resumed three-track authorization — 23 Oct 2026
-
-Founder resumed option B: finalize `redesign-community`, integrate into `main`, then build `dubai-io-web` and `ios-swift` from that baseline. The pause note below is superseded.
-
-## Latest scope correction — 23 Oct 2026
-
-Stay on `redesign-community` and finish current branch edits only. **Do not merge into main or start web/iOS branches.** Earlier three-track execution authorization is paused by the founder. Plan the durable Reddit-like community database and Storage buckets in `docs/references/community-data-storage-plan.md`; implementation of that full target is not claimed. Recommender remains partial (REC-03C/REC-04 and PostgreSQL adoption pending).
-
-
-## Active implementation — 23 Oct 2026
-
-Founder supersedes prompt-only handoff: this agent now builds the three tracks. Order: verified `redesign-community` → `main` integration → web/iOS branches. Luna subagent owns rich persona/post/chat fixtures; backend selects relevant stable identities and calls Agnes for live replies. New posts target ten respondents, follow-up comments a couple of related respondents, direct chats the assigned mother/wife/friend/boss persona. All remain explicitly fictional AI demo interactions. Frontend corrections, backend orchestration and fixtures are in progress; no verification/completion claim yet.
-
-
-## Latest founder handoff — 23 Oct 2026
-
-Muse has three tracks: minimal targeted fixes on `redesign-community`, full-depth Apple-inspired site on `dubai-io-web`, and Swift app on `ios-swift`, each in its own worktree. The consolidated [Muse prompt](references/ios-web-agent-prompt.md) supersedes older two-branch/native-paused instructions. It includes nested Feed replies and circular stories, Calls navigation, 10–15 chat personas generated through NaraRouter, 10–15 communities with about 100 users, join-to-chat persistence, image-first news, three-column Services and licensed real imagery. **Status: handoff prepared; implementation and live model generation not verified by this documentation pass.** Redacted local configuration audit is in the prompt; provider connectivity remains unchecked.
-
+Current state: [status.md](status.md).
 
 ## Project workspaces checkpoint - verified, 22 Oct
 
