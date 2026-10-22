@@ -1117,6 +1117,7 @@ addEventListener('dubaiio:today-summary', e => {
   if (e.detail?.current_work) { S.currentWork = e.detail.current_work; followHomeSources(S.currentWork); refreshHomeCaptions(); }
   const counts = e.detail?.counts, parts = ['Today'];
   if (counts?.needs_you > 0) parts.push(counts.needs_you + (counts.needs_you === 1 ? ' needs you' : ' need you'));
+  if (counts?.running > 0) parts.push(counts.running + ' moving');
   if (counts?.on_list > 0) parts.push(counts.on_list + ' on your list');
   $('#todayHandleLabel').textContent = parts.join(' · ');
   $('#todayLaunch').setAttribute('aria-label', 'Open Today tasks' + (parts.length > 1 ? ': ' + parts.slice(1).join(', ') : ''));

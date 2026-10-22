@@ -204,13 +204,13 @@ def test_due_priority_and_paused_visibility_do_not_manufacture_decisions(client,
     assert [t["outcome"] for t in result["on_list"]["tasks"]] == ["Overdue","Tomorrow","November"]
     assert [t["due_state"] for t in result["on_list"]["tasks"]] == ["overdue","due_soon",None]
     assert result["on_list"]["has_more"] and result["paused"]["count"] == 1
-    assert result["counts"] == {"needs_you":0, "on_list":4, "paused":1}
+    assert result["counts"] == {"needs_you":0, "running":0, "on_list":4, "paused":1}
     assert result["paused"]["tasks"][0]["outcome"] == "On hold"
     assert result["needs_you"]["tasks"] == [] and result["running"]["tasks"] == []
     other = TestClient(c.app)
     other.get("/api/session")
     assert other.get("/api/today").json()["paused"]["count"] == 0
-    assert other.get("/api/today").json()["counts"] == {"needs_you":0, "on_list":0, "paused":0}
+    assert other.get("/api/today").json()["counts"] == {"needs_you":0, "running":0, "on_list":0, "paused":0}
 
 
 def test_title_only_capture_has_no_invented_next_step(client):
@@ -396,6 +396,7 @@ def test_decision_follows_authoritative_source_state(client):
     assert c.post(f'/api/actions/{action["id"]}/request-earlier', json={"target":"Tomorrow 08:30"}).status_code == 200
     today = c.get("/api/today").json()
     assert today["needs_you"]["tasks"] == [] and today["running"]["tasks"][0]["id"] == task["id"]
+    assert today["counts"]["running"] == 1 and today["counts"]["needs_you"] == 0
     action = store.get(owner, action["id"]); action["status"] = "UNKNOWN_STATUS"; store.put(owner, action)
     assert c.get("/api/today").json()["needs_you"]["tasks"][0]["decision"]["kind"] == "check"
     action["status"] = "COMPLETED"; store.put(owner, action)

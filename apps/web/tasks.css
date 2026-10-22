@@ -158,3 +158,9 @@
 .result-foot { display: flex; align-items: center; gap: 6px; border-top: 1px solid var(--sep); padding-top: 8px; margin-top: 2px; font-size: 12px; color: var(--label-3); }
 .result-foot > span { flex: 1; white-space: nowrap; }
 .result-keep, .result-open { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; min-width: 44px; justify-content: center; color: var(--tint-ink); font-size: 12.5px; font-weight: 600; }
+
+/* Brief: responsibility chips lead each line (Duet frame F2), plain AI text otherwise. */
+.msg.bot p.brief-label { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; color: var(--label-3); margin-bottom: 4px; }
+.brief { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 8px; }
+.brief-line { display: block; width: 100%; text-align: left; font-size: 15.5px; line-height: 1.5; min-height: 44px; }
+.brief-chip { padding: 1px 7px; border-radius: 7px; background: var(--tint-soft); color: var(--tint-ink); font-weight: 600; -webkit-box-decoration-break: clone; box-decoration-break: clone; }

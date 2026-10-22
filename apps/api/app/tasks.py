@@ -5,6 +5,7 @@ task means waiting for a user update. Only an explicit user report completes it;
 that report is never presented as provider evidence.
 """
 from contextlib import contextmanager
+from decimal import Decimal
 from datetime import datetime, timedelta, timezone
 import json
 from typing import Literal
@@ -318,7 +319,7 @@ def decision_for(action):
     who = order.get("provider") or action["recipient"]
     base = {"action_id": action["id"], "revision": action["revision"], "source_status": status}
     if status == "AWAITING_APPROVAL" and action.get("execution_available"):
-        return {**base, "kind": "approve", "title": "Approve and send" + (f" · AED {action['fixed_total_aed']}" if action.get("fixed_total_aed") else ""),
+        return {**base, "kind": "approve", "title": "Approve and send" + (f" · AED {Decimal(action['fixed_total_aed']):.2f}" if action.get("fixed_total_aed") is not None else ""),
                 "detail": "Fixed published price. Nothing is sent until you approve.",
                 "amount_aed": action.get("fixed_total_aed"), "snapshot_hash": action["snapshot_hash"]}
     if status == "UNKNOWN_STATUS":
@@ -426,7 +427,7 @@ def today(request: Request, response: Response):
         groups["running"] = {"tasks": [{**item["task"], "source_status": item["source"]["status"]} for item in current
             if item["source"]["status"] in {"DISPATCHING", "SUBMITTED", "ACCEPTED", "READY"} and item["task"]["id"] not in deciding],
             "has_more": len(current_rows) > 5}
-        return {**groups, "counts": {"needs_you": len(decisions), "on_list": totals.get("WAITING_USER", 0) - len(decisions), "paused": totals.get("PAUSED", 0)},
+        return {**groups, "counts": {"needs_you": len(decisions), "running": len(groups["running"]["tasks"]), "on_list": totals.get("WAITING_USER", 0) - len(decisions), "paused": totals.get("PAUSED", 0)},
                 "current_work": current, "mode": "manual", "monitoring_active": False, "as_of": at.isoformat()}
 
 

@@ -14,7 +14,7 @@ import { orderCardHTML, watchOrder, requestEarlier, remindWhenReady } from './or
 import { api } from './service-workflow.js';
 import { identity, getMessages, saveMessages, resetSession, newConversation, switchConversation } from './session-state.js';
 import { initRecovery, startRecovery, resetRecovery, handleRecoveryClick, restoreReport } from './recovery.js';
-import { taskStateLabel, reviewTaskChange } from './tasks.js';
+import { taskStateLabel, reviewTaskChange, briefHTML } from './tasks.js';
 
 let ctx = null; // { enterResults, openOffers, startGuide, showChat }
 const items = [];
@@ -62,6 +62,7 @@ const AIRPORT = /\b(airport|dxb|terminal|t1|t2|t3|landed|landing|arrivals?|immig
 const NEAR = /\b(near|nearby|around|close by|closest|nearest|map|where is|where's|walking distance)\b/;
 const HELLO = /^(hi|hello|hey|salam|salaam|marhaba|good (morning|evening|afternoon))\b/;
 const THANKS = /\b(thanks|thank you|shukran)\b/;
+const BRIEF = /\b(brief me|my brief|morning brief|daily brief|my day|what'?s on (today|my list)|what needs me|what'?s (moving|pending))\b/;
 
 export function route(text) {
   const q = text.toLowerCase().trim();
@@ -150,6 +151,10 @@ export async function handle(text) {
   try { await waitForProjectContext(); }
   catch { if(ep===threadEpoch){update(id,it=>{it.pending=false;});post({who:'bot',html:'<p>The workspace context could not be checked. Reconnect and reopen this chat before asking again.</p>'});}return; }
   if(ep!==threadEpoch)return;
+  if(BRIEF.test(text.toLowerCase())&&!requestContext().task_focus){
+    update(id,it=>{it.pending=false;it.r={intent:'brief',conf:1};});
+    try{return await botSay(await briefHTML(),{wide:true});}catch{return botSay('<p>Your tasks could not load. Reconnect and ask again.</p>');}
+  }
   const projectBefore=requestContext().project_focus;
   const taskFocus=requestContext().task_focus;
   const r=await luna.understand(text,taskFocus?()=>({intent:'task_help',conf:1}):route);
@@ -231,7 +236,7 @@ function richHTML(rich) {
   return '';
 }
 
-const INTENT_LABEL = { lost_item: 'Lost item', airport_guide: 'Airport guide', service_offers: 'Service', places_near: 'Places near you', order_status: 'Order status', task_help: 'Your saved task', info_question: 'Question',
+const INTENT_LABEL = { brief: 'Your brief', lost_item: 'Lost item', airport_guide: 'Airport guide', service_offers: 'Service', places_near: 'Places near you', order_status: 'Order status', task_help: 'Your saved task', info_question: 'Question',
   market_quote: 'Market quote', product_search: 'Shopping', greeting: 'Greeting', smalltalk: 'Chat', thanks: 'Thanks', unclear: 'Not sure yet' };
 // "Luna understood: Service · Laundry" (reference 02-rows); tap for the technical line.
 function understoodHTML(it) {
