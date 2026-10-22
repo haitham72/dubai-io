@@ -587,7 +587,7 @@ public struct ReadingResponse: Decodable, Sendable {
     public let articles: [ReadingArticle]
     public let status: String
     public let topic: String?
-    public let topics: [String]?
+    public let topics: [String: String]?
     public let reason: String?
     public let provenance: String?
     public let checkedAt: String?
