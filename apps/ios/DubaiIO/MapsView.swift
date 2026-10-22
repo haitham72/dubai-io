@@ -38,9 +38,11 @@ final class PlacesModel {
     }
 }
 
+/// On-demand Maps: live Google 2D discovery on a Google static map, plus the
+/// separate illustrative MapKit 3D area preview. The interactive Google Maps
+/// SDK needs an iOS-restricted key and a dependency decision (see report).
 struct MapsView: View {
     @Environment(SessionModel.self) private var session
-    let active: Bool
     let openLink: (String) -> Void
     @State private var model = PlacesModel()
     @State private var mode = "2d"
@@ -87,8 +89,8 @@ struct MapsView: View {
                 }.padding(20)
             }.navigationTitle("Maps")
         }
-        .task(id: active && mode == "2d" && session.client != nil ? "\(session.revision)|\(model.queryKey)" : nil) {
-            if active, mode == "2d", let client = session.client { await model.load(client) }
+        .task(id: mode == "2d" && session.client != nil ? "\(session.revision)|\(model.queryKey)" : nil) {
+            if mode == "2d", let client = session.client { await model.load(client) }
         }
     }
 

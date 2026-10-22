@@ -370,9 +370,12 @@ public struct OrderSummary: Decodable, Sendable {
     public let service: String?
     public let totalAed: Double?
     public let lines: [OrderLine]?
+    public let slot: String?
+    public let provenance: String?
+    public let asOf: String?
 
     private enum CodingKeys: String, CodingKey {
-        case provider, service, totalAed = "total_aed", lines
+        case provider, service, totalAed = "total_aed", lines, slot, provenance, asOf = "as_of"
     }
 
     public init(from decoder: any Decoder) throws {
@@ -381,6 +384,9 @@ public struct OrderSummary: Decodable, Sendable {
         service = try values.decodeIfPresent(String.self, forKey: .service)
         totalAed = try decodeMoney(values, key: .totalAed)
         lines = try values.decodeIfPresent([OrderLine].self, forKey: .lines)
+        slot = try values.decodeIfPresent(String.self, forKey: .slot)
+        provenance = try values.decodeIfPresent(String.self, forKey: .provenance)
+        asOf = try values.decodeIfPresent(String.self, forKey: .asOf)
     }
 }
 
@@ -674,7 +680,7 @@ public enum SSEParser {
 
 /// A person or demo persona reference attached to posts, comments and messages.
 /// Display only: never turned into profile facts or assistant instructions.
-public struct AuthorRef: Decodable, Sendable {
+public struct AuthorRef: Decodable, Sendable, Hashable {
     public let name: String
     public let handle: String?
     public let emoji: String?
@@ -693,7 +699,7 @@ public struct AuthorRef: Decodable, Sendable {
     }
 }
 
-public struct CommunityRef: Decodable, Sendable {
+public struct CommunityRef: Decodable, Sendable, Hashable {
     public let id: String
     public let name: String
     public let handle: String?
@@ -702,7 +708,7 @@ public struct CommunityRef: Decodable, Sendable {
     private enum CodingKeys: String, CodingKey { case id, name, handle, joined }
 }
 
-public struct Community: Decodable, Identifiable, Sendable {
+public struct Community: Decodable, Identifiable, Sendable, Hashable {
     public let id: String
     public let name: String
     public let handle: String?
@@ -718,7 +724,7 @@ public struct CommunityList: Decodable, Sendable {
     public let communities: [Community]
 }
 
-public struct FeedPost: Decodable, Identifiable, Sendable {
+public struct FeedPost: Decodable, Identifiable, Sendable, Hashable {
     public let id: String
     public let community: CommunityRef?
     public let author: AuthorRef?
@@ -744,7 +750,9 @@ public struct FeedResponse: Decodable, Sendable {
 }
 
 /// One entry in the stories rail: the latest story per community.
-public struct StoryTray: Decodable, Sendable {
+public struct StoryTray: Decodable, Sendable, Identifiable {
+    public var id: String { community.id }
+
     public let community: CommunityRef
     public let author: AuthorRef?
     public let image: String?
@@ -803,6 +811,10 @@ public struct SinglePost: Decodable, Sendable {
     public let post: FeedPost
 }
 
+public struct ActionsList: Decodable, Sendable {
+    public let actions: [ActionDetail]
+}
+
 /// Receipt for a posted text/comment/chat message. Backend-orchestrated persona
 /// replies arrive as new records; this receipt never contains their content.
 public struct SocialReceipt: Decodable, Sendable {
@@ -818,7 +830,7 @@ public struct SocialReceipt: Decodable, Sendable {
     }
 }
 
-public struct ChatThread: Decodable, Identifiable, Sendable {
+public struct ChatThread: Decodable, Identifiable, Sendable, Hashable {
     public let id: String
     public let kind: String?
     public let title: String?

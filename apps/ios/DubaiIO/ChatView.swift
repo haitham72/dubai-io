@@ -6,6 +6,7 @@ struct ChatView: View {
     @Bindable var model: ChatModel
     let close: () -> Void
     let openLink: (String) -> Void
+    var openMaps: () -> Void = {}
     @FocusState private var composerFocused: Bool
 
     var body: some View {
@@ -71,7 +72,19 @@ struct ChatView: View {
                         Notice(text: "Compare published demo items in Services. Sending a merchant request is available in the web demo.")
                     }
                     if reply.intent == "places_near" {
-                        Notice(text: "Explore live places in Maps.")
+                        Button(action: openMaps) {
+                            HStack {
+                                Image(systemName: "map").foregroundStyle(Theme.ink)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("See these places on the map").font(.subheadline.weight(.semibold))
+                                    Text("Live Google places on a Google map.").font(.caption).foregroundStyle(.secondary)
+                                }
+                                Spacer()
+                                Image(systemName: "chevron.right").font(.caption).foregroundStyle(.secondary)
+                            }
+                            .padding(14).frame(maxWidth: .infinity, alignment: .leading)
+                            .background(.background, in: .rect(cornerRadius: 18))
+                        }.buttonStyle(.plain)
                     }
                     if reply.intent == "order_status" {
                         Notice(text: "Check your web order card for merchant-confirmed updates.")

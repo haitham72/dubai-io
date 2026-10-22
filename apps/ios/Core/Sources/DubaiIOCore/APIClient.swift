@@ -180,6 +180,13 @@ public actor APIClient {
         return try await request("api/actions/\(id)")
     }
 
+    /// Recent actions for the orders & receipts widget. Only provider-confirmed
+    /// statuses are shown as done; everything else stays a draft or unknown.
+    public func actions() async throws -> ActionsList {
+        _ = try await connect()
+        return try await request("api/actions")
+    }
+
     public func prepareAction(_ input: PrepareInput) async throws -> ActionDetail {
         _ = try await connect()
         return try await request("api/actions/prepare", body: JSONEncoder().encode(input))
@@ -396,6 +403,15 @@ public actor APIClient {
     public func mapsConfig() async throws -> MapsConfig {
         _ = try await connect()
         return try await request("api/maps/config")
+    }
+
+    /// Fixture media (`media/foo.jpg`), thumbnails (`/api/...`) and absolute URLs
+    /// all resolve here so the app never guesses a host.
+    public nonisolated func resourceURL(_ path: String?) -> URL? {
+        guard let raw = path?.trimmingCharacters(in: .whitespacesAndNewlines), !raw.isEmpty else { return nil }
+        if let absolute = URL(string: raw), absolute.scheme != nil { return absolute }
+        let trimmed = raw.hasPrefix("/") ? String(raw.dropFirst()) : raw
+        return URL(string: trimmed, relativeTo: address.url)?.absoluteURL
     }
 
     public nonisolated func mapURL(places: [Place], center: (Double, Double) = (25.0805, 55.1403)) -> URL {
