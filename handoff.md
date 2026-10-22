@@ -1,6 +1,8 @@
 # Handoff - 22 Oct 2026
 
-The primary continuity artifact is **PLAN.md**, with nested tasks and acceptance gates in **docs/implementation-plan.md**. The request ledger is docs/request-backlog.md. **Next implementation: REC-03C, trusted services/products and verified completions.** REC-03A/B are SQLite/browser verified; restore local Supabase write health and complete their PostgreSQL verification/reconciliation before runtime adoption. Work stays on `redesign`; do not switch/merge `ios-swift` or start native work.
+The primary continuity artifact is **PLAN.md**, with nested tasks and acceptance gates in **docs/implementation-plan.md**. The request ledger is docs/request-backlog.md. **Latest task: product reframing and mature feature selection**, per the 22 Oct founder instruction that this is an assistant for everyday life/work in Dubai, not a visitor companion. Read `docs/references/personal-assistant-direction.md`: competitor research, proposed core, acceptance gates and open pilot decisions. No new assistant/connector features are implemented by that proposal. Previous unfinished tasks remain preserved; do not automatically resume REC-03C ahead of product selection.
+
+Source checkpoint `6470ad4` was committed/pushed on `redesign`. REC-03A/B are SQLite/browser verified; restore local Supabase write health and complete PostgreSQL verification/reconciliation before runtime adoption. Work stays on `redesign`; do not switch/merge `ios-swift` or start native work. A pilot-audience question was asked; check later founder replies rather than treating the working individual-resident assumption as approval.
 
 ## Runtime checkpoint
 

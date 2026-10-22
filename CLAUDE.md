@@ -4,13 +4,13 @@ Instructions for any coding agent in this repo. Read order: this file → `PLAN.
 
 ## What this is
 
-A chat-first AI companion for people living in or visiting Dubai, entered in the Create AI Agents Championship (Best Personal AI Agent):
+A personal assistant for everyday life and work in Dubai, entered in the Create AI Agents Championship (Best Personal AI Agent). On 22 Oct the founder explicitly superseded visitor-first framing and requested a mature feature proposal informed by Dots, Grok Bot and Duet:
 
-1. **Companion:** greets visitors on arrival, guides them through DXB step by step, remembers what they tell it, sends proactive in-chat messages they opted into.
+1. **Assistant:** proposed persistent responsibilities, Today/decisions, inspectable context and controlled follow-through. Existing memory/actions/outbox/discovery are foundations; new proposed features are not implemented claims. Airport guidance is an optional existing scenario.
 2. **Services (Talabat-normal):** a list sorted closest + ★ + price-from + turnaround; each row opens its **own sandboxed modal HTML mini-app**. Fixed published prices only. **Bidding / quote / negotiation is FORBIDDEN in any form.** A real merchant tap updates the chat.
 3. **Platform:** a shop joins from a photo of its price list (deferred past the January submission).
 
-Civic guidance is LATER. **Status:** web demo is ready for founder walkthrough with documented gaps (`handoff.md`). Native iOS was authorized on 21 Oct and starts on `ios-swift`; source/build/device validation are separate statuses.
+Civic guidance is LATER. **Status:** source checkpoint `6470ad4` has documented verification/runtime limits; product reframing/feature selection is active (`docs/references/personal-assistant-direction.md`). Native `ios-swift` remains parked. Source/build/device validation are separate statuses.
 
 ## Docs
 
@@ -22,6 +22,7 @@ Civic guidance is LATER. **Status:** web demo is ready for founder walkthrough w
 | `handoff.md` | How to run, current state, open notes; cannot override the canon |
 | `docs/request-backlog.md` | Ordered requests, clarifications and outstanding work |
 | `docs/implementation-plan.md` | Nested implementation tasks and acceptance gates under PLAN.md |
+| `docs/references/personal-assistant-direction.md` | Researched everyday-assistant proposal, pilot decisions and dependencies; not implemented scope |
 | `docs/user-app-review-guide.md` | Founder review checklist |
 | `docs/references/` | `redesign.md` (screen references), `visuals-libraries.md` (supplied prompts, verbatim), `api-catalog.md` |
 | `docs/services/` | `cases.md` + `intake.md`. New ideas go here, never into `PLAN.md` |
@@ -89,4 +90,4 @@ node ../web/tests/profile.test.mjs; node ../web/tests/recovery.test.mjs; node ..
 
 ## Latest execution direction (22 Oct)
 
-Work on `redesign`; native features remain parked on `ios-swift` for the founder's Mac/iPhone testing. REC-03A/B are SQLite/browser verified; the 22 Oct Supabase write stall blocks PostgreSQL verification/reconciliation, not source commits. Next implementation is REC-03C, then REC-04 -> assistant context/plans -> events/occasions -> sponsorship -> review fixes. Preserve cookie ownership; Google OAuth is last. PLAN.md and its detailed implementation plan are authoritative; handoff.md records runtime limits. Do not reset databases or resume native work while finalizing this checkpoint.
+Work on `redesign`; native stays parked. The latest founder instruction supersedes the visitor persona and pauses automatic REC-03C progression for product reframing/feature selection. Read the personal-assistant direction proposal; keep its proposed features distinct from implemented work and preserve all prior backlog. REC-03A/B remain SQLite/browser verified with a Supabase write-health/PostgreSQL adoption gate. Cookie ownership and the single-tester OAuth-last instruction remain; connector-based pilots need a deliberate dependency reorder. No database reset or native resumption.

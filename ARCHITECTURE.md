@@ -5,6 +5,8 @@
 
 **Core rule:** the LLM reads and proposes; it never mutates. Every side effect goes through the deterministic action engine after a user tap (approval) or a merchant tap (inbox). Truth in status holds by construction.
 
+**22 Oct product direction:** everyday life/work in Dubai supersedes the visitor-first persona. Persistent responsibilities, Today/decisions, routines and connected communications are proposed in `docs/references/personal-assistant-direction.md`; they are not implemented architecture. The existing components below remain foundations. No runtime or native migration was performed for the product-research task.
+
 ## 1. Shape
 
 ```

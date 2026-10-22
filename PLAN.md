@@ -15,13 +15,16 @@ This is the single plan. Done work lives in git history; this file keeps locks, 
 
 - **21 Oct, latest priorities:** native feature work is parked for Mac/iPhone testing; local Supabase is now running and the API uses it. Continue the moderate recommender, then selected-card context/draft plans, events/occasion suggestions, sponsored food discovery and remaining review fixes. Google OAuth is last for the single tester. These explicit requests authorize their read-only discovery/planning work; purchases, government execution and other NEVER items remain excluded.
 - **22 Oct, branch/finalization instruction:** finish and commit the current work on `redesign`; native work remains parked. There is one repository/checkout. No iOS merge, branch switch or native implementation is part of this finalization.
-- **Durable execution detail:** [docs/implementation-plan.md](docs/implementation-plan.md) contains nested tasks, dependencies, implemented-versus-pending status and acceptance gates. It is subordinate to this plan. **Next implementation task: REC-03C (trusted services/products and verified completions). REC-03A/B are SQLite/browser verified; Supabase write health and PostgreSQL verification remain a deployment gate.**
+- **22 Oct, product change superseding visitor-first scope:** the founder requested learning from OpenAI Dots, Grok Bot and Claude Duet and explicitly rejected a visitor-companion identity. DubaiIO is for everyday life and work in Dubai. The old visitor persona and hotel-concierge comparison no longer define the product. Feature selection and pilot prioritization are the active planning task; this does not authorize all proposed integrations or resume native work.
+- **Durable execution detail:** [docs/implementation-plan.md](docs/implementation-plan.md) records implementation status and gates. [Personal assistant direction](docs/references/personal-assistant-direction.md) records the researched feature proposal, dependencies and open pilot decisions. **Current task: product reframing/feature selection.** REC-03C/04 and all other unfinished tasks remain preserved as dependencies/backlog; do not silently resume them ahead of this change. REC-03A/B remain SQLite/browser verified with a PostgreSQL adoption gate.
 
 ## 1. What we're building
 
-> **Dubai-io remembers your situation and follows through with local merchants, with you approving what gets shared.**
+> **DubaiIO helps keep your everyday life and work moving: it remembers the relevant context, prepares useful next steps and brings you decisions that need you.**
 
-**Persona:** short-stay business visitor (visitor/resident is a user setting, never detected). **Main competitor:** the hotel concierge.
+**Audience:** people whose everyday life and work take place in Dubai. First pilot cohort is open; an individual living/working in Dubai is the working proposal, not a confirmed restriction. Household and business/team variants require a deliberate choice. Visiting/arriving is a situation, not the default identity. **Product comparison:** general personal agents and fragmented manual workflows across communication, calendars and local services. The hotel concierge is no longer the primary comparison.
+
+The proposed core is persistent responsibilities, a Today/decision view, inspectable context and controlled background follow-through. Connected communications, planning, adaptive discovery and merchant execution support those outcomes. Detailed features are proposals in the direction document, not claims of current functionality. Existing safeguards and completed source work remain valid.
 
 **Evidence and pitch guardrails** (desk research 9 Oct + Deepseek deep research; full text in git, `main:docs/VISITORS.md`, `main:docs/research/`):
 - **Lost item in a taxi:** strongest beat (official data) — 104,000+ items lost in Dubai taxis in 2025 (incl. ~3,000 passports); recovery depends on exactly what the companion remembers (time, pickup/drop-off, roof colour, plate, receipt).
@@ -46,23 +49,25 @@ Contest: Create AI Agents Championship, **Best Personal AI Agent**. Portal (chec
 | 7 | Merchant loop with deadline awareness (no quote) | ✅ |
 | 8 | Lost-item payoff from saved trip details, official handoff | ✅ |
 | 9 | Merchant onboarding from a price-list photo | ⏸ out of the January cut |
-| 10 | Resident/VIP arc | ⏸ LATER for January |
+| 10 | Everyday life/work audience; VIP features separate | Visitor-first framing superseded 22 Oct; new assistant features are proposed, not built. VIP-specific features remain deferred. |
 | 11 | Service cases from `docs/services/cases.md` | ⏸ frozen until after submission |
 | 12 | Temporal profile, visible hypotheses, "Because…" | ✅ |
 | 13 | Services surface (registry, list, sheets) | ✅ (live Places and Google 2D map with pins; separate 3D demo) |
-| 14 | Native iOS client | Authorized 21 Oct; first slice on `ios-swift`, not feature parity or device acceptance |
+| 14 | Native iOS client | First slice on `ios-swift`, parked; no feature parity/device acceptance or resumed native work |
 
 ### LATER
 
-Civic RAG with citations · resident bills and Salik/DEWA displays · community · background geofencing · ticket wallet · **payments and third-party purchasing** · media memory · Arabic RTL UI · live AR try-on · affiliate marketplace feeds. Native iOS moved to active work on 21 Oct (§6).
+Civic RAG with citations · resident bills and Salik/DEWA displays · community · background geofencing · ticket wallet · **payments and third-party purchasing** · media memory · Arabic RTL UI · live AR try-on · affiliate marketplace feeds. A broader audience does not automatically activate these features. Native remains parked (§6). Everyday resident life/work is the product direction, separate from these deferred capabilities.
 
 ### NEVER
 
 Fake "Confirmed/Booked/Paid" · invented positions, belts, queues or prices shown as real · government transactions (fines display-only) · copying the official DubaiNow look · bidding / quote / price negotiation in any form.
 
-## 3. Demo arc (4:00)
+## 3. Existing demo arc (historical visitor scenario)
 
-One visitor: late-night DXB arrival → laundry with a deadline → taxi-memory payoff. Start the phone at `#demo.wifi` (shows the "Scripted demo" label); merchant + operator on a second device at `/merchant.html`.
+This working scenario is preserved as implementation evidence, not the new product definition or selected future pitch. The 22 Oct direction calls for an ordinary life/work demonstration; audience, two useful recurring jobs and the revised script are still to be selected. Keep Wi-Fi/gradients available without forcing an airport story on every user.
+
+Historical script: one visitor, late-night DXB arrival → laundry with a deadline → taxi-memory payoff. Start at `#demo.wifi` ("Scripted demo" label); merchant + operator on a second device at `/merchant.html`.
 
 | Time | On screen | Presenter says |
 |---|---|---|
@@ -98,15 +103,17 @@ One visitor: late-night DXB arrival → laundry with a deadline → taxi-memory 
 | D13 | Discounts | Merchant-published fixed offers only |
 | D14 | Merchant growth | Inbound opt-in; **AI cold-calling / bulk WhatsApp on HOLD** (UAE Cabinet Res. 56–57/2024; counsel sign-off required) |
 | D15 | "Do the rest" autonomy | One explicit approval per side effect |
-| D16 | First user | Arriving visitor for the pitch; real pilot chosen by merchant access |
+| D16 | First user | Visitor-first ruling superseded 22 Oct. First everyday life/work pilot cohort and two responsibilities are open decisions. |
 | D17 | Stage format | Live app walkthrough (§3) with fallback video |
-| D18 | Commercial model | Merchant commission on fixed services first; affiliate links auxiliary |
+| D18 | Commercial model | Earlier assumption: merchant commission on fixed services, affiliates auxiliary. Reassess against the new assistant pilot; no replacement pricing/model is approved. |
 
 ## 4. Remaining, in execution order
 
 The detailed, nested task breakdown and acceptance gates are in [docs/implementation-plan.md](docs/implementation-plan.md). Completed work and requests remain traceable in `docs/request-backlog.md`.
 
-1. **ACTIVE - moderate recommender:** REC-01/02 are implemented. REC-03A/B add separated-visit qualification, signed influence, trusted live-place retrieval/filtering, stable ordering, variety, visible reasons and item hiding. Verified on SQLite and in controlled browser scenarios; local Supabase test writes stalled on 22 Oct, so PostgreSQL validation/reconciliation is outstanding. Next implementation: REC-03C trusted services/products and verified completions, then REC-04 measurements/retention. Do not call the entire proposed recommender complete.
+**Reordering authorized 22 Oct:** first review the [personal assistant feature proposal](docs/references/personal-assistant-direction.md), choose the pilot responsibilities and convert the selected slices into an implementation sequence. Recommended foundation: responsibilities + Today + inspectable context, then one useful connected/planning/service loop, then routines and optional additional channels. This is a proposal; the unfinished implementation tasks below are preserved, not automatically the next execution order. Database write health/ownership remain necessary implementation gates. Native stays parked.
+
+1. **Preserved - moderate recommender:** REC-01/02 are implemented. REC-03A/B add separated-visit qualification, signed influence, trusted live-place retrieval/filtering, stable ordering, variety, visible reasons and item hiding. Verified on SQLite and in controlled browser scenarios; local Supabase test writes stalled on 22 Oct, so PostgreSQL validation/reconciliation is outstanding. REC-03C trusted services/products and verified completions and REC-04 measurement/retention remain pending dependencies of the revised product. Do not call the entire proposed recommender complete.
 2. **Assistant context and draft plans:** CTX-01 whole-place focus, bounded recent history and checkpoint forgetting are implemented. Finish CTX-02 selected fragments, server entity/plan validation and ticket-availability guard; then PLAN-01 revision-bound itinerary proposals, locked constraints, explicit assumptions and reviewable before/after changes. No external booking/purchase is implied.
 3. **Suggestions/events:** SUG-01 confirmed occasions and EVT-01 dated, sourced future events. Reuse configured search first; distinguish organizer verification from news and live ticket stock. Use existing consent/dedupe/quiet-hours rules for any notification.
 4. **Sponsored food discovery:** ADS-01 relevant food context, clear Sponsored/Why labels, organic alternatives, caps/dismissal and separate eligible first-party evidence. Current observations are organic-only. Empty inventory means no sponsored card.

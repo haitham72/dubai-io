@@ -1,12 +1,12 @@
 # Detailed implementation plan
 
-Execution detail for the authoritative [PLAN.md](../PLAN.md). This is the durable task breakdown, not a second scope document. Updated 22 Oct 2026 after temporal qualification and trusted place discovery. Consult code to establish progress against these tasks; never infer that a proposal or a service case is implemented.
+Execution detail for the authoritative [PLAN.md](../PLAN.md). This is the durable task breakdown, not a second scope document. Updated 22 Oct 2026 after temporal qualification/trusted discovery and the founder's product-direction change. The active planning proposal is [personal-assistant-direction.md](references/personal-assistant-direction.md). Consult code to establish progress; never infer that a proposal or service case is implemented.
 
 ## 0. Decisions that survive a session change
 
-1. Build a **Dubai personal assistant**, coordinating places, services, products and draft plans. Maps is one surface. A localized encyclopedia is not the product.
+1. Build a **personal assistant for everyday life and work in Dubai**. The 22 Oct founder instruction supersedes the short-stay visitor/hotel-concierge persona. Ongoing responsibilities, communication, plans and local follow-through are the proposed product; Maps is one surface and arrival is one optional situation.
 2. Finish an active task before moving to another. New messages refine it or enter the request ledger. Record any logical reordering in the same session. Answer questions before treating them as implementation instructions.
-3. **Current order:** finish the moderate recommender -> assistant context and draft itineraries -> events/occasion suggestions -> sponsored restaurant discovery -> remaining reviewer/deployment fixes. Dependencies may be fixed within the active task. Supabase foundation and iOS handoff have reached their checkpoints; they are not reasons to restart the roadmap.
+3. **Current order, revised 22 Oct:** first complete product reframing and feature/pilot selection informed by Dots, Grok Bot and Duet. PA-01/02/03 (responsibilities, Today/decisions, context) plus bounded PC-05 deliverables are the proposed foundation; PC-01/02/03 and PA-04/PC-04 stage connected outcomes, routines and optional channels. These are proposals, not automatic implementation authorization. All earlier REC/CTX/PLAN/SUG/EVT/ADS/REV/DB tasks remain preserved and should be mapped as dependencies after selection. Do not resume the older recommender-first order silently.
 4. **Google OAuth is last.** There is one tester. Existing server-owned cookie sessions remain valid; never introduce a public `tester` owner override. Missing Google sign-in credentials must not block profiling, planning or discovery. Google API keys are separate from OAuth.
 5. **Native features are parked.** The founder will test on a Mac and iPhone 13 Pro Max. Do not install Windows Swift, force Expo, or divert back to native work. `ios-swift` contains the first client; `handoff-ios.md` records its remaining parity work.
 6. Preserve Wi-Fi concept onboarding, slow gradients, cyan and approved purple fringe, no shadows, one category row with Back, explicit 2D/3D selection, and the browse dock that collapses into one chat composer.
@@ -39,7 +39,7 @@ Execution detail for the authoritative [PLAN.md](../PLAN.md). This is the durabl
 - Google sign-in and optional Calendar/People scopes come last. Local OAuth is supported but phones/webhooks need reachable URLs. Existing OAuth connector scopes are only `openid email profile`; no Google Ads private-interest export exists.
 - Edge Functions: add an authenticated function only for a concrete webhook/provider need, with signature verification, replay protection and idempotency. Running the Edge service is not an implemented function.
 
-## 2. Moderate temporal recommender — ACTIVE
+## 2. Moderate temporal recommender — implemented foundation and preserved pending work
 
 Design rationale and intended scoring: [recommender-plan.md](references/recommender-plan.md). Current code: `apps/api/app/recommendations.py`, `apps/web/recommendation-client.js`; migrations `20261021000200_recommender.sql`.
 
@@ -100,7 +100,7 @@ Design rationale and intended scoring: [recommender-plan.md](references/recommen
 
 **Latest regression evidence:** 128 backend tests passed on SQLite, 11 live-model cases skipped; JavaScript profile 92/recovery 8/Luna 12/recommendation-cache 5/browsing-visit 3/discovery-cache 5 passed. Browser artifact: ignored `output/playwright/rec03-discovery.png`. The earlier 109-per-database result belongs to REC-02 and does not verify the new PostgreSQL checkpoint.
 
-#### REC-03C. Trusted services/products and verified completions [NEXT IMPLEMENTATION TASK; A/B PostgreSQL gate also outstanding]
+#### REC-03C. Trusted services/products and verified completions [preserved pending task; ordering follows product selection]
 
 - Use host catalog/provider adapters for item IDs, exact fixed prices, service compatibility and fulfillment evidence. Do not trust web fixture prices or use a restaurant price category as a guaranteed meal budget.
 - Preserve existing explicit service sorts. Personalize only when there are meaningful differing permitted tags; do not manufacture differences between identically tagged laundries.
@@ -221,7 +221,7 @@ Detailed product requirements: [assistant-context.md](references/assistant-conte
 ## 7. How the next LLM should execute
 
 1. Read `CLAUDE.md`, `PLAN.md`, this document and `docs/request-backlog.md`; use `handoff.md` only for current runtime/checkpoint details.
-2. Start at **REC-03C** after checking the A/B PostgreSQL validation/reconciliation gate, then complete REC-04 before CTX-02/PLAN-01. REC-03A/B have SQLite/browser verification; the broader recommender is incomplete. Do not rebuild REC-02, restart Supabase setup, re-research settled OAuth answers or resume native features.
+2. Read the 22 Oct **personal-assistant-direction.md** proposal before picking implementation work. Current task is mature feature/pilot selection, not automatic REC-03C execution. The first pilot audience was asked asynchronously and remains open unless a later founder answer resolves it. Preserve code checkpoint `6470ad4`, its Supabase adoption gate and all unfinished tasks; do not rebuild REC-02, restart setup, re-research settled OAuth answers or resume native features.
 3. Mark each task implemented and verified separately. Record changed contracts, migrations, test evidence and remaining limits before committing. Update the plan if the founder changes scope/order.
 4. Keep tests proportional: deterministic/profile/privacy/action changes need meaningful tests; browser acceptance must distinguish mocked provider data from live provider verification.
 5. Commit and push to `redesign` at coherent checkpoints; native branch remains `ios-swift`. Never commit `.env`, database contents, backups, provider keys or local signing state.
