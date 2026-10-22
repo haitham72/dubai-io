@@ -1,3 +1,36 @@
+# FOUNDER FEEDBACK 23 Oct (highest priority; supersedes below)
+
+Muse works on **3 branches**, each in its own worktree:
+- `redesign-community` (`../dubai-io-rc`): **minimal changes only**, limited to the fixes listed here.
+- `dubai-io-web`: the Apple.com-inspired site, full depth, same backend.
+- `ios-swift`: the Swift app.
+
+**General:** use real, openly licensed images (Unsplash, Pexels, Wikimedia) for people, food, places and items. No placeholders. Record each image's source and licence.
+
+**Feed:**
+- Excellent; keep it.
+- Replies must be nested threads like Facebook, not Twitter-style @mentions.
+- Fix the story circles: they must be true circles, evenly aligned.
+
+**Chat:**
+- Remove the phone icon next to the profile icon; it's confusing.
+- Copy the new WhatsApp structure: a Calls screen with search and tabs Calls | Contacts | Keypad | Favorites.
+- The mock chat is underwhelming. Spin up a small, low-to-medium effort agent to create 10–15 personas with real photo thumbnails and believable chat histories.
+- Use `NARAROUTER_API_KEY` with model `agnes`. Fall back to the models listed in `opencode.json` if a model isn't annotated.
+
+**Communities:**
+- Joining a community must carry through to Chat › Communities.
+- Create 10–15 communities with deep nested interactions among about 100 users, each with a persona and a thumbnail.
+- Topics are what Dubai residents really post, e.g. selling used items, hiring problems, visas, rent, moving, recommendations. Search Reddit (r/dubai, r/UAE) for reference.
+
+**Home news:**
+- Match Google News: a full-width thumbnail, then the title, then a subtitle under it.
+- The current small thumbnail beside the text is wrong.
+
+**Services:** exactly 3 thumbnails per row, never 1.5. Add more tiles if needed.
+
+---
+
 # UPDATE 23 Oct: two branches, two worktrees (supersedes "Branches" below)
 
 You are **Muse**. Work on two branches at the same time, each in its **own git worktree**. Never switch branches inside the founder's main folder, because another agent is running a server there on `redesign-community`.
