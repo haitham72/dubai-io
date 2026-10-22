@@ -87,7 +87,7 @@ Use a small trusted context envelope around untrusted provider/card text. A sele
 
 ## Supabase deployment and data controls
 
-Use local Supabase for schema/Auth integration when the Windows container runtime works, then apply versioned migrations to hosted development/staging. Local Google OAuth is supported with its registered callback; phone tests need reachable URLs. See [backend options](backend-options.md). Keep Python orchestration, approval binding and the outbox; small real webhooks can use Edge Functions.
+Use local Supabase for schema/Auth integration when the Windows container runtime works, then apply versioned migrations to hosted development/staging. Local Google OAuth is supported with its registered callback; phone tests need reachable URLs. See `supabase/README.md`. Keep Python orchestration, approval binding and the outbox; small real webhooks can use Edge Functions.
 
 Use a backend database connection appropriate to LangGraph/psycopg; prefer direct or session pooling for this persistent service. Confirm checkpoint setup/migrations and connection lifecycle against the pinned library. Supabase's transaction pooler has prepared-statement/pipelining limits, so do not switch connection modes blindly. [Connection documentation](https://supabase.com/docs/guides/database/connecting-to-postgres).
 
