@@ -68,9 +68,13 @@ Contest: Create AI Agents Championship, **Best Personal AI Agent**. Portal (chec
 | 15 | Manual tasks + Today | Manual slice plus preserved visual Home/swipe-up Today implemented. SQLite 145 passed/11 skipped (17 task checks); 390x844 and 428x926 normal/reduced-motion keyboard/gesture-scope/no-shadow browser checks passed. Physical iPhone/screen-reader and PostgreSQL adoption unverified; no worker/connector implied. |
 | 14 | Native iOS client | First slice on `ios-swift`, parked; no feature parity/device acceptance or resumed native work |
 
+### IN since 23 Oct (founder)
+
+Demo-grade **community**: Chat (groups, community threads, contacts with an in-app call log), Feed (communities, posts, comments, stories). Seeded people and posts are labelled Demo; real multi-user accounts arrive with Supabase Auth. Payment history means Dubai-io's own fixed-price orders and receipts only ("No payment taken"); bills remain LATER, and the DubaiNow look remains NEVER.
+
 ### LATER
 
-Civic RAG with citations · resident bills and Salik/DEWA displays · community · background geofencing · ticket wallet · **payments and third-party purchasing** · media memory · Arabic RTL UI · live AR try-on · affiliate marketplace feeds. A broader audience does not automatically activate these features. Native remains parked (§6). Everyday resident life/work is the product direction, separate from these deferred capabilities.
+Civic RAG with citations · resident bills and Salik/DEWA displays · background geofencing · ticket wallet · **payments and third-party purchasing** · media memory · Arabic RTL UI · live AR try-on · affiliate marketplace feeds. A broader audience does not automatically activate these features. Native remains parked (§6). Everyday resident life/work is the product direction, separate from these deferred capabilities.
 
 ### NEVER
 
