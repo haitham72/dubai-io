@@ -123,16 +123,39 @@ export interface Community {
   provenance?: string;
 }
 
+export interface Author {
+  name?: string;
+  handle?: string;
+  emoji?: string;
+}
+
+export function authorName(author?: Author | string | null): string {
+  if (!author) return "Someone";
+  if (typeof author === "string") return author;
+  return author.name ?? author.handle ?? "Someone";
+}
+
 export interface Post {
   id: string;
   community?: { id?: string; name?: string; joined?: boolean };
-  author?: string;
-  emoji?: string;
+  author?: Author | string;
   text?: string;
   image?: string | null;
   created_at?: string;
   provenance?: string;
-  comment_count?: number;
+  comments?: number;
+  likes?: number;
+  mine?: boolean;
+}
+
+export interface FeedComment {
+  id: string;
+  author?: Author | string;
+  text?: string;
+  created_at?: string;
+  provenance?: string;
+  parent_id?: string | null;
+  mine?: boolean;
 }
 
 export interface ChatThread {
@@ -147,13 +170,28 @@ export interface ChatMessage {
   author?: string;
   text?: string;
   created_at?: string;
+  at?: string;
   provenance?: string;
+  mine?: boolean;
+}
+
+export interface CatalogItem {
+  id: string;
+  name: string;
+  /** The backend serialises fixed prices as strings ("6") or numbers. */
+  price_aed?: number | string;
+}
+
+export function priceAed(value: number | string | undefined): number | null {
+  if (value === undefined || value === null) return null;
+  const n = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(n) ? n : null;
 }
 
 export interface CatalogProvider {
   id: string;
   name: string;
   service: string;
-  items?: Array<{ id: string; name: string; price_aed?: number }>;
+  items?: CatalogItem[];
   slots?: string[];
 }

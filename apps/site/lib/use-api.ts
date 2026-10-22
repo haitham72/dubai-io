@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { apiGet } from "./api";
+import { ensureSession } from "./session";
 
 export interface UseApi<T> {
   data: T | null;
@@ -25,7 +26,8 @@ export function useApi<T>(path: string | null): UseApi<T> {
     let live = true;
     setLoading(true);
     setError(null);
-    apiGet<T>(path)
+    ensureSession()
+      .then(() => apiGet<T>(path))
       .then((value) => {
         if (live) setData(value);
       })

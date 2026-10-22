@@ -8,6 +8,7 @@ import {
   SectionCard,
 } from "@/components/chrome";
 import { ApiError, apiPost } from "@/lib/api";
+import { ensureSession } from "@/lib/session";
 
 interface Turn {
   role: "you" | "luna";
@@ -29,6 +30,7 @@ export default function Ask() {
     setTurns((t) => [...t, { role: "you", text }]);
     setBusy(true);
     try {
+      await ensureSession();
       const reply = await apiPost<{ text?: string; reply?: string }>(
         "/api/luna/turn",
         { text },

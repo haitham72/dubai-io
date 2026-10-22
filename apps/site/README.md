@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Dubai-io website (`apps/site`)
 
-## Getting Started
+Next.js App Router + TypeScript marketing site and signed-in web view.
+Plain CSS only — no UI kit, no Tailwind, no shadows. Cyan accent, generous
+space, light/dark via `prefers-color-scheme`, `prefers-reduced-motion`
+respected.
 
-First, run the development server:
+## Routes
+
+| Route | What it is |
+|---|---|
+| `/` | Marketing home: hero, feature bands, image bands, CTAs |
+| `/privacy` | “What we never do” — the seven hard rules |
+| `/demo` | Contest demo walkthrough + image credits |
+| `/app` | Signed-in Today: needs-you decisions, running, on-list, news |
+| `/app/tasks/[id]` | Task detail + commands (complete / pause / cancel) |
+| `/app/decisions/[actionId]` | Decision card: approve-this-revision or reload on 409 |
+| `/app/feed`, `/app/feed/[postId]` | Stories, communities, posts, nested replies |
+| `/app/chat`, `/app/chat/[id]` | Threads + Calls / Contacts / Keypad / Favorites |
+| `/app/services`, `/app/services/[serviceId]` | Fixed-price catalog |
+| `/app/ask` | Assistant composer over `POST /api/luna/turn` |
+| `/app/map` | On-demand map (needs `NEXT_PUBLIC_MAPS_KEY`) |
+| `/app/profile` | “You told me” facts + “I noticed” hypotheses |
+
+All `/app` data comes from the same FastAPI backend (`apps/api`, read-only
+from this track) with `credentials: "include"`. Every fetch has loading,
+empty and error states; community content is labelled demo/untrusted;
+approval precedes any send/share; status renders only from authoritative
+events; every number shows provenance.
+
+## Run locally
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cd apps/site
+npm install
+npm run build   # must stay green
+npm run dev     # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Point at a backend with `NEXT_PUBLIC_API_BASE` (default
+`http://localhost:8000`). Start the API from `apps/api` (see root `handoff.md`).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Photos
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Real openly-licensed photos in `public/images/`, credited inline and in
+[`public/IMAGE_LICENSES.md`](public/IMAGE_LICENSES.md). No placeholders;
+pictured people are not affiliated with Dubai-io.
 
-## Learn More
+## Vercel readiness (not yet deployed — no deployment is claimed)
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Create a Vercel project with root directory `apps/site`.
+2. Environment variables:
+   - `NEXT_PUBLIC_API_BASE` — public URL of the FastAPI container.
+   - `NEXT_PUBLIC_MAPS_KEY` — referrer-restricted Google Maps browser key
+     (restricted to the Vercel domain). No other keys belong in the browser;
+     all provider keys stay server-side on the API host.
+3. Deploy the API as a container (Fly/Railway/Render/Cloud Run) in the same
+   region as Supabase, with CORS allowlisting the Vercel domain.
+4. Verify: `npm run build` green, then open `/`, `/privacy`, `/demo` and
+   each `/app` tab against the deployed API and confirm loading/empty/error
+   states with the backend both up and down.

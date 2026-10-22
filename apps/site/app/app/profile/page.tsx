@@ -11,19 +11,31 @@ import {
 } from "@/components/chrome";
 import { useApi } from "@/lib/use-api";
 
-interface ProfileData {
-  told?: Array<{ key?: string; value?: string }>;
-  hypotheses?: Array<{
-    key?: string;
-    value?: string;
-    confidence?: number;
-    evidence?: string;
-  }>;
-  me?: Record<string, string>;
+interface ProfileFact {
+  key?: string;
+  value?: string;
+  facet?: string;
+}
+
+interface ProfileDoc {
+  core?: { display_name?: string; home_area?: string; language?: string };
+  facts?: ProfileFact[];
+}
+
+interface ProfileEpisodes {
+  episodes?: Array<{ at?: string; kind?: string; text?: string; source?: string }>;
+  overrides?: Record<string, string>;
 }
 
 export default function Profile() {
-  const { data, error, loading, reload } = useApi<ProfileData>("/api/profile");
+  const doc = useApi<ProfileDoc>("/api/profile/me");
+  const seen = useApi<ProfileEpisodes>("/api/profile");
+  const error = doc.error ?? seen.error;
+  const loading = doc.loading || seen.loading;
+  const reload = () => {
+    doc.reload();
+    seen.reload();
+  };
 
   return (
     <>
@@ -39,18 +51,33 @@ export default function Profile() {
       {error ? (
         <ErrorState message={`Profile unavailable: ${error}`} onRetry={reload} />
       ) : null}
-      {data ? (
+      {!loading && !error ? (
         <>
           <SectionCard title="You told me">
-            {!data.told || data.told.length === 0 ? (
+            {(!doc.data?.facts || doc.data.facts.length === 0) &&
+            !doc.data?.core?.display_name &&
+            !doc.data?.core?.home_area ? (
               <EmptyState
                 title="Nothing stored yet"
-                body="Facts you state in Ask will appear here with provenance."
+                body="Facts you state in Ask appear here with user_supplied provenance. Confirming a hypothesis also records it here."
               />
             ) : (
               <ul className="listRows">
-                {data.told.map((fact, i) => (
-                  <li key={i} className="rowCard">
+                {doc.data?.core?.display_name || doc.data?.core?.home_area ? (
+                  <li className="rowCard">
+                    <h3>
+                      {doc.data.core.display_name ?? "You"}
+                      {doc.data.core.home_area
+                        ? ` · ${doc.data.core.home_area}`
+                        : ""}
+                    </h3>
+                    <div className="rowMeta">
+                      <Provenance value="user_supplied" />
+                    </div>
+                  </li>
+                ) : null}
+                {(doc.data?.facts ?? []).map((fact, i) => (
+                  <li key={fact.key ?? i} className="rowCard">
                     <h3>{fact.key ?? "Fact"}</h3>
                     <p>{fact.value ?? "—"}</p>
                     <div className="rowMeta">
@@ -61,25 +88,23 @@ export default function Profile() {
               </ul>
             )}
           </SectionCard>
-          <SectionCard title="I noticed (hypotheses)">
-            {!data.hypotheses || data.hypotheses.length === 0 ? (
+          <SectionCard title="I noticed (observed moments)">
+            {(!seen.data?.episodes || seen.data.episodes.length === 0) ? (
               <EmptyState
                 title="No hypotheses"
                 body="Unconfirmed guesses only ever re-rank options with a visible “Because…” chip — never pre-fill, trigger or set status."
               />
             ) : (
               <ul className="listRows">
-                {data.hypotheses.map((h, i) => (
+                {seen.data.episodes.map((episode, i) => (
                   <li key={i} className="rowCard">
-                    <h3>{h.key ?? "Hypothesis"}</h3>
-                    <p>{h.value ?? "—"}</p>
+                    <h3>{episode.kind ?? "Moment"}</h3>
+                    <p>{episode.text ?? "—"}</p>
                     <div className="rowMeta">
                       <Provenance value="inferred" />
-                      {typeof h.confidence === "number" ? (
-                        <span>confidence {h.confidence}</span>
-                      ) : null}
+                      {episode.at ? <span>{episode.at}</span> : null}
+                      {episode.source ? <span>{episode.source}</span> : null}
                     </div>
-                    {h.evidence ? <p>{h.evidence}</p> : null}
                   </li>
                 ))}
               </ul>
