@@ -91,7 +91,8 @@ def headlines(results, sources, at):
         if len([part for part in url.path.split("/") if part]) < 2:
             continue  # a front or section page, not an article
         title = re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]*>", "", str(item.get("title") or "")))).strip()
-        title = re.sub(r"\s*[|\-–]\s*" + re.escape(sources[host]) + r"\s*$", "", title, flags=re.I)[:200]  # drop " | Publisher"
+        title = re.sub(r"\s*[|\-–]\s*" + re.escape(sources[host]) + r"\s*$", "", title, flags=re.I)
+        title = re.sub(r"\s*[|\-–]\s*(?:www\.)?[a-z0-9-]+(?:\.[a-z0-9-]+)+\s*$", "", title, flags=re.I)[:200]  # drop " | Publisher" / " - www.site.com"
         date = published(item.get("published_date"), at)
         if not title or not date:
             continue  # A recency filter is not a publication timestamp.

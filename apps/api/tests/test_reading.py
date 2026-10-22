@@ -175,6 +175,7 @@ def test_front_pages_are_skipped_and_publisher_suffix_trimmed():
     at = datetime.now(timezone.utc)
     rows = reading.headlines([article(url="https://www.khaleejtimes.com/", title="Breaking News | Khaleej Times"),
                               article(url="https://www.khaleejtimes.com/uae", title="UAE | Khaleej Times"),
-                              article(url="https://www.khaleejtimes.com/uae/new-metro-line", title="New metro line opens | Khaleej Times")],
+                              article(url="https://www.khaleejtimes.com/uae/new-metro-line", title="New metro line opens | Khaleej Times"),
+                              article(url="https://www.thenationalnews.com/uae/minerals", title="Minerals push - www.thenationalnews.com")],
                              reading.PUBLISHERS, at)
-    assert [r["title"] for r in rows] == ["New metro line opens"]
+    assert [r["title"] for r in rows] == ["New metro line opens", "Minerals push"]
