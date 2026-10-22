@@ -158,3 +158,14 @@ def test_preview_rejects_internal_hosts_and_non_https_images(monkeypatch):
     monkeypatch.setattr(reading, "public_https", lambda url: True)
     monkeypatch.setattr(reading.httpx, "stream", lambda *a, **k: FakeStream(200, "text/html", b'<meta name="twitter:image" content="http://insecure/a.jpg">'))
     assert REAL_PREVIEW("https://www.thenationalnews.com/x") is None
+
+
+def test_cached_headlines_keep_their_thumbnails_after_the_image_map_is_trimmed(client, monkeypatch):
+    c, _ = client
+    monkeypatch.setattr(reading, "preview_image", lambda url: "https://cdn.example.com/a.jpg")
+    monkeypatch.setattr(reading, "fetch_headlines", lambda *a: reading.headlines([article()], reading.PUBLISHERS, datetime.now(timezone.utc)))
+    first = c.get("/api/reading?topic=dubai").json()["articles"][0]
+    reading._thumbs.clear()  # e.g. the 400-entry bound was hit by other topics
+    monkeypatch.setattr(reading, "fetch_headlines", lambda *a: pytest.fail("cache hit expected"))
+    again = c.get("/api/reading?topic=dubai").json()["articles"][0]
+    assert again["thumbnail"] == first["thumbnail"] and reading._thumbs[again["id"]] == "https://cdn.example.com/a.jpg"

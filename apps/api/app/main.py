@@ -6,6 +6,7 @@ Run: cd apps/api && .venv/Scripts/python -m uvicorn app.main:app --host 0.0.0.0 
 Then open http://<pc-ip>:8000/lab/home-v2-cyan.html
 """
 import uuid
+from contextlib import asynccontextmanager
 
 import httpx
 from fastapi import FastAPI, HTTPException, Query, Request, Response
@@ -30,7 +31,16 @@ from .tasks import resolve_context as resolve_task_context
 from .luna import graph as luna
 from .luna.schema import FactKey, FocusContext, TaskFocusContext, ProjectFocusContext
 
-app = FastAPI(title="Dubai-io API", version="0.1.0")
+@asynccontextmanager
+async def lifespan(_app):
+    merchant_pin()  # sandbox merchant PIN: MERCHANT_PIN, or generated into data/merchant.pin
+    if settings.widget_port:  # mini-apps on their own origin (rule 10)
+        from .widgets import serve_in_background
+        serve_in_background("0.0.0.0", settings.widget_port)
+    yield
+
+
+app = FastAPI(title="Dubai-io API", version="0.1.0", lifespan=lifespan)
 app.include_router(auth_router)
 app.include_router(action_router)
 app.include_router(merchant_router)
@@ -50,14 +60,6 @@ async def revalidate_app_files(request: Request, call_next):
     if request.url.path.endswith((".html", ".js", ".css", "/")):
         response.headers["Cache-Control"] = "no-cache"
     return response
-
-
-@app.on_event("startup")
-def _startup():
-    merchant_pin()  # sandbox merchant PIN: MERCHANT_PIN, or generated into data/merchant.pin
-    if settings.widget_port:  # mini-apps on their own origin (rule 10)
-        from .widgets import serve_in_background
-        serve_in_background("0.0.0.0", settings.widget_port)
 
 
 class TurnIn(BaseModel):

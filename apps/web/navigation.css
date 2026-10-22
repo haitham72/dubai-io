@@ -36,24 +36,26 @@
   transition: transform .4s var(--dock-motion), opacity .18s ease, visibility 0s linear .4s;
 }
 .mode-chat.nav-expanded .browse-dock { transform: none; opacity: 1; visibility: visible; pointer-events: auto; transition: transform .4s var(--dock-motion), opacity .2s ease, visibility 0s; }
-.browse-toggle { position: absolute; z-index: 33; left: 16px; bottom: calc(var(--safe-b) + var(--keyboard-inset, 0px) + 14px); width: 54px; height: 56px; display: grid; place-items: center; border-radius: 26px; opacity: 0; visibility: hidden; transform: scale(.8); transition: opacity .2s ease, transform .4s var(--dock-motion), visibility 0s linear .4s; }
+.browse-toggle { position: absolute; z-index: 33; left: 16px; bottom: calc(var(--safe-b) + var(--keyboard-inset, 0px) + 18px); width: 56px; height: 56px; display: grid; place-items: center; border-radius: 50%; opacity: 0; visibility: hidden; transform: scale(.8); transition: opacity .2s ease, transform .4s var(--dock-motion), visibility 0s linear .4s; }
 .mode-chat:not(.nav-expanded) .browse-toggle { opacity: 1; visibility: visible; transform: none; transition-delay: .12s, .12s, 0s; }
-.mode-chat .composer { left: 80px; }
+.mode-chat .composer { left: 82px; }
 .mode-chat.nav-expanded .composer { opacity: 0; visibility: hidden; pointer-events: none; transform: translateX(-20px) scaleX(.8); transition-delay: 0s; }
 .keyboard-open.mode-chat .browse-toggle { bottom: calc(var(--keyboard-inset, 0px) + 8px); }
 @media (prefers-reduced-motion: reduce) { .browse-dock, .browse-toggle, .composer, .tab-selection { animation: none !important; transition: none !important; } }
+/* The 56px composer and toggle share the centre line of the 64px dock (14px + 4px). */
 .composer {
-  bottom: calc(var(--safe-b) + var(--keyboard-inset, 0px) + 14px);
+  margin: 0; /* a <form>: no default margin may lift it off that line */
+  bottom: calc(var(--safe-b) + var(--keyboard-inset, 0px) + 18px);
   opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(18px) scale(.95);
   height: 56px; border-radius: 28px;
   transition: transform .44s var(--dock-motion), opacity .2s ease, visibility 0s linear .44s;
 }
 .mode-chat .composer {
-  bottom: calc(var(--safe-b) + var(--keyboard-inset, 0px) + 14px);
+  bottom: calc(var(--safe-b) + var(--keyboard-inset, 0px) + 18px);
   opacity: 1; visibility: visible; pointer-events: auto; transform: none;
   transition: transform .44s var(--dock-motion), opacity .25s ease .08s, visibility 0s;
 }
-.mode-results .composer { bottom: calc(var(--safe-b) + 14px); }
+.mode-results .composer { bottom: calc(var(--safe-b) + 18px); }
 .keyboard-open.mode-chat .composer { bottom: calc(var(--keyboard-inset, 0px) + 8px); }
 .composer input { font-size: 16px; }
 .chat-focus { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:12px 20px; padding:8px 12px; background:var(--tint-soft); border-radius:16px; color:var(--ink); }

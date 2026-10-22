@@ -198,6 +198,7 @@ def reading(request: Request, response: Response, topic: str = "for_you",
         cached = _cache.get(cache_key)
         if cached and now - cached[0] < TTL:
             articles, checked_at = cached[1], cached[2]
+            _thumbs.update(cached[3])  # the image map may have been trimmed; cached headlines keep theirs
         else:
             # Bound accidental repeated scrolling/reloads without background polling.
             _recent[owner] = [at for at in _recent.get(owner, []) if now - at < 60]
@@ -215,7 +216,7 @@ def reading(request: Request, response: Response, topic: str = "for_you",
         try:
             articles, checked_at = add_thumbnails(fetch_headlines(topics, sources)), utcnow().isoformat()
             with _lock:
-                _cache[cache_key] = (now, articles, checked_at)
+                _cache[cache_key] = (now, articles, checked_at, {a["id"]: _thumbs[a["id"]] for a in articles if a["id"] in _thumbs})
         except (httpx.HTTPError, RuntimeError, ValueError, TypeError):
             articles, checked_at, state = [], utcnow().isoformat(), "unavailable"
     # A mid-request Forget/edit must not return a stale personalized feed.
