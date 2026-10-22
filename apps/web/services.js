@@ -32,14 +32,14 @@ export function renderServicesLanding(el, area) {
     '<header class="services-brand"><div><b>Dubai<span>-io</span></b><p>Your Dubai assistant</p></div><span class="visitor-pill">' + svg('person', 'ic sm') + ' Your day</span></header>' +
     '<article class="services-hero"><div class="services-skyline"></div>' +
       '<div class="hero-top"><span>' + svg('orb', 'ic sm') + ' Dubai-io</span><span class="pill demo">Sandbox partners</span></div>' +
-      '<div class="hero-copy"><h1>A little help,<br>every day.</h1><p>Your next step in Dubai.</p>' +
+      '<div class="hero-copy"><h1>A little help,<br>every day.</h1><p>Choose your next task.</p>' +
       '<button class="hero-guide" data-services-say="Coffee near me">' + svg('cup', 'ic sm') + ' Find a place nearby ' + svg('chev', 'ic sm') + '</button></div></article>' +
     '<section class="services-stay" aria-label="Your area"><span class="services-orb">' + svg('orb') + '</span><div><h2>Which area works for you?</h2>' +
       '<div class="stay-options">' + ['Business Bay', 'Dubai Marina'].map(a => '<button data-area="' + esc(a) + '" aria-pressed="' + (area === a) + '">' + svg(a === 'Dubai Marina' ? 'nav' : 'home', 'ic sm') + esc(a) + '</button>').join('') + '</div>' +
       (area ? '<p class="services-area">' + svg('check', 'ic xs') + ' ' + esc(area) + ' · you told me</p>' : '') + '</div></section>' +
     '<section class="services-try" aria-label="Try asking"><h2>Try asking</h2><div class="services-shortcuts">' +
       [{ icon: 'drop', title: 'Press a shirt', ask: 'I need a shirt pressed by 9 tomorrow', hint: 'Compare laundries' }, { icon: 'map', title: 'Find nearby', ask: 'Coffee near me', hint: 'Explore the map' }, { icon: 'wallet', title: 'Lost something', ask: 'I left my bag in the taxi', hint: 'Get the next steps' }].map(x =>
-        '<button data-services-say="' + esc(x.ask) + '"><span>' + svg(x.icon) + '</span><b>' + esc(x.title) + '</b><small>' + esc(x.hint) + '</small>' + svg('chev', 'ic sm') + '</button>').join('') + '</div></section>' +
+        '<button data-services-say="' + esc(x.ask) + '">' + svg(x.icon, 'ic sm') + '<span class="shortcut-copy"><b>' + esc(x.title) + '</b><small>' + esc(x.hint) + '</small></span>' + svg('chev', 'ic sm') + '</button>').join('') + '</div></section>' +
     '<div class="services-categories"><div class="services-section-head"><h2>Services</h2><span>Fixed prices · demo</span></div>' +
     sections.filter(g => g.rows.length).map(g => '<section class="services-group"><h3>' + esc(g.label) + '</h3><div class="service-category-grid">' + g.rows.map(category).join('') + '</div></section>').join('') +
     '<button class="services-anything" data-services-ask="1">' + svg('spark') + '<span><b>Something else?</b><small>Ask your assistant.</small></span>' + svg('chev', 'ic sm') + '</button></div>';

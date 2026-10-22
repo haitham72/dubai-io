@@ -143,6 +143,41 @@ def test_interrupted_dispatch_is_unknown_after_restart(store):
     assert ActionEngine(store, engine.registry).get("alice", action["id"])["status"] == "UNKNOWN_STATUS"
 
 
+def test_independent_store_handles_cannot_dispatch_the_same_approval_twice(store,tmp_path):
+    calls, entered, release = [], Event(), Event()
+    def adapter(*_):
+        calls.append(1); entered.set(); release.wait(2)
+        return {"reference":"one-reference","provenance":"provider_confirmed"}
+    first = configured(store,adapter)
+    second_store = ActionStore(tmp_path / "actions.sqlite3")
+    second = ActionEngine(second_store,first.registry)
+    try:
+        action = first.prepare("alice",body())
+        with ThreadPoolExecutor() as pool:
+            pending = pool.submit(first.approve,"alice",action["id"],approval(action),"first-approval")
+            assert entered.wait(2)
+            observed = second.approve("alice",action["id"],approval(action),"second-approval")
+            assert observed["status"] in {"DISPATCHING","UNKNOWN_STATUS"}
+            release.set()
+            assert pending.result()["status"] == "SUBMITTED"
+        assert len(calls) == 1
+    finally:
+        release.set(); second_store.db.close()
+
+
+def test_dispatch_guard_failure_rolls_back_pending_writes_and_calls_no_adapter(store):
+    calls=[]
+    engine=configured(store,lambda *_:calls.append(1))
+    action=engine.prepare("alice",body())
+    def stale_guard():
+        store.db.execute("INSERT INTO preparations VALUES (?,?,?,?)",("alice","guard-pending","hash","{}"))
+        raise HTTPException(409,"Task changed")
+    with pytest.raises(HTTPException):
+        engine.approve("alice",action["id"],approval(action),"guarded-approval",guard=stale_guard)
+    assert calls == [] and engine.get("alice",action["id"])["status"] == "AWAITING_APPROVAL"
+    assert store.db.execute("SELECT 1 FROM preparations WHERE key=?",("guard-pending",)).fetchone() is None
+
+
 def test_http_sessions_isolate_actions_and_fail_closed(store, monkeypatch):
     monkeypatch.setattr(actions, "_engine", ActionEngine(store))
     app = FastAPI(); app.include_router(actions.router)

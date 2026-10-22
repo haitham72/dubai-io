@@ -257,6 +257,39 @@ def test_tracking_order_does_not_approve_and_reopens_terminal_tracking(client):
     assert len(c.get("/api/tasks").json()["tasks"]) == 1
 
 
+def test_home_current_work_is_source_backed_owned_and_never_dispatches(client):
+    c, store, owner, _ = client
+    create(c, outcome="A manual note is not running")
+    action = c.post("/api/actions/prepare",json={"capability_id":"order.request", "fields":{"area":{"value":"JLT"}},
+        "order":{"provider_id":"marinaexpress","items":[{"name":"Shirt wash + press","qty":1}]}}).json()
+    task = c.post("/api/tasks/from-action",json={"action_id":action["id"]}).json()["task"]
+    today = c.get("/api/today").json()
+    assert [item["task"]["id"] for item in today["current_work"]] == [task["id"]]
+    assert today["current_work"][0]["source"]["status"] == "AWAITING_APPROVAL"
+    assert today["running"]["tasks"] == [] and not today["monitoring_active"]
+    assert store.db.execute("SELECT COUNT(*) FROM approvals").fetchone()[0] == 0
+    other = TestClient(c.app); other.get("/api/session")
+    assert other.get("/api/today").json()["current_work"] == []
+    command(c,task,"pause")
+    assert c.get("/api/today").json()["current_work"] == []
+
+
+def test_home_running_uses_authoritative_source_state_and_keeps_manual_state_separate(client):
+    c, store, owner, _ = client
+    action = c.post("/api/actions/prepare",json={"capability_id":"order.request", "fields":{"area":{"value":"JLT"}},
+        "order":{"provider_id":"marinaexpress","items":[{"name":"Shirt wash + press","qty":1}]}}).json()
+    task = c.post("/api/tasks/from-action",json={"action_id":action["id"]}).json()["task"]
+    # Simulate a canonical provider event, rather than a model's claim.
+    action["status"] = "ACCEPTED"
+    store.put(owner,action)
+    today = c.get("/api/today").json()
+    assert today["running"]["tasks"][0]["source_status"] == "ACCEPTED"
+    assert today["running"]["tasks"][0]["status"] == "WAITING_USER"
+    action["status"] = "COMPLETED"; store.put(owner,action)
+    assert c.get("/api/today").json()["current_work"] == []
+    assert c.get(f'/api/tasks/{task["id"]}').json()["task"]["status"] == "WAITING_USER"
+
+
 def test_source_link_and_context_are_owner_bound_and_cannot_be_forged(client):
     c, store, owner, _ = client
     task = c.post("/api/tasks/from-report",json={"fields":report_fields()}).json()["task"]

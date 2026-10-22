@@ -12,7 +12,7 @@ import { SERVICE_GROUPS, matchService, byNear, openProvider } from './offers.js'
 import { createLunaClient } from './luna-client.js';
 import { orderCardHTML, watchOrder, requestEarlier, remindWhenReady } from './orders.js';
 import { api } from './service-workflow.js';
-import { identity, getMessages, saveMessages, resetSession } from './session-state.js';
+import { identity, getMessages, saveMessages, resetSession, newConversation, switchConversation } from './session-state.js';
 import { initRecovery, startRecovery, resetRecovery, handleRecoveryClick, restoreReport } from './recovery.js';
 import { taskStateLabel, reviewTaskChange } from './tasks.js';
 
@@ -26,6 +26,10 @@ const luna = createLunaClient({fetcher:labFetch,enabled:lunaReady,identity,conte
 
 export function initChat(c) {
   ctx = c; initRecovery({ say: botSay, post, update, near: () => ctx.enterResults({ cat: 'all' }) });
+  restoreMessages();
+  followMessages();
+}
+function restoreMessages() {
   for(const saved of getMessages()) {
     if(!['me','bot'].includes(saved?.who)||typeof saved.text!=='string')continue;
     if(saved.who==='bot'&&typeof saved.msgId==='string'){items.push({id:++seq,who:'bot',msgId:saved.msgId,msgSource:saved.msgSource,text:saved.text,html:proactiveHTML(saved.msgSource,saved.text.slice(0,600))});continue;}
@@ -34,9 +38,21 @@ export function initChat(c) {
     items.push({id:++seq,who:saved.who,text:saved.text.slice(0,6000),r:saved.who==='me'?saved.r:null,html:saved.who==='bot'?saved.text.slice(0,6000).split(/\n+/).filter(Boolean).map(line=>'<p>'+esc(line)+'</p>').join(''):null,recoveryReport:saved.recoveryReport,taskId:typeof saved.taskId==='string'?saved.taskId:null,taskProposal:saved.taskProposal&&typeof saved.taskProposal==='object'?saved.taskProposal:null});
   }
   render();
-  followMessages();
 }
 export function resetChat() { selectFocus(null); threadEpoch++; for(const stop of watchers.values())stop(); watchers.clear(); luna.reset(); resetSession(); for(const key of Object.keys(told))delete told[key]; items.length = 0; resetRecovery(); render(); }
+
+function reloadConversation() {
+  selectFocus(null); threadEpoch++;
+  for(const stop of watchers.values())stop(); watchers.clear(); luna.reset();
+  items.length=0; resetRecovery(); restoreMessages(); ctx.showChat();
+  $('#q').value=''; $('#q').focus({preventScroll:true});
+}
+export function startNewChat() { newConversation(); reloadConversation(); }
+export function openConversation(id) {
+  if(identity().thread_id===id)return;
+  if(!switchConversation(id))throw new Error('This conversation is no longer available on this device.');
+  reloadConversation();
+}
 
 // ---------------------------------------------------------------- router
 const LOST_VERB = /\b(lost|lose|losing|left|forgot|forgotten|missing|can'?t find|cannot find|dropped)\b/;

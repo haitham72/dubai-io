@@ -1,5 +1,9 @@
 # Review reconciliation — 22 Oct 2026
 
+## Subsequent founder navigation correction ? 22 Oct
+
+The preserved deck becomes permanent adaptive Tasks Home. Scroll normally through inline task history, then News once history has no more pages; no overview modal. Full-screen Wi-Fi/gradient intro stays. Services starts tasks. Ask uses standard previous chats/New chat/Tasks and user-profile controls, with Apple TV-style four-tab collapse to a **left stacked icon**. Projects groups chats/tasks/context and is confirmed pending work. This supersedes the remaining sheet/handle premise as well as DX-14's hide-deck premise; neither independent review report was edited. Navigation/headline pilot is verified on SQLite/browser (165 passed/11 skipped, both sizes/motion; limited live news/source-card check). Full background follow-through and Projects are not completed by this change. Detailed newest statuses are in the implementation plan/handoff.
+
 The founder authorized building from the independent review after the primary agent's assessment. This reconciles the [original critique](assistant-experience-review.md) with PLAN.md. Preserve the critique as an independent opinion; implementation status belongs in docs/implementation-plan.md and handoff.md.
 
 ## Decisions

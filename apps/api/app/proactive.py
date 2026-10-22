@@ -26,7 +26,7 @@ def setup(store):
     store.db.execute("CREATE TABLE IF NOT EXISTS consent (owner TEXT PRIMARY KEY, at TEXT)")
     store.db.execute("""CREATE TABLE IF NOT EXISTS outbox (id TEXT PRIMARY KEY, owner TEXT, dedupe_key TEXT, kind TEXT, text TEXT,
         trigger_source TEXT, available_at TEXT, delivered_at TEXT, UNIQUE(owner, dedupe_key))""")
-    store.db.commit()
+    store.commit()
 
 
 def in_quiet_hours(at):
@@ -48,7 +48,7 @@ def enqueue(store, owner, dedupe_key, kind, text, source, available_at):
         return False
     cur = store.db.execute("INSERT OR IGNORE INTO outbox VALUES (?,?,?,?,?,?,?,NULL)",
                            (uuid4().hex, owner, dedupe_key, kind, text, source, available_at.isoformat()))
-    store.db.commit()
+    store.commit()
     return cur.rowcount == 1
 
 
@@ -58,7 +58,7 @@ def deliver_due(store, owner):
     if not in_quiet_hours(now):
         store.db.execute("UPDATE outbox SET delivered_at=? WHERE owner=? AND delivered_at IS NULL AND available_at<=?",
                          (now.isoformat(), owner, now.isoformat()))
-        store.db.commit()
+        store.commit()
     rows = store.db.execute("SELECT id, kind, text, trigger_source, delivered_at FROM outbox WHERE owner=? AND delivered_at IS NOT NULL ORDER BY delivered_at", (owner,)).fetchall()
     return [{"id": r[0], "kind": r[1], "text": r[2], "trigger_source": r[3], "delivered_at": r[4]} for r in rows]
 

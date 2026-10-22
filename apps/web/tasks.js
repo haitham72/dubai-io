@@ -1,6 +1,6 @@
 // Manual responsibilities. No model, provider dispatch or background monitor.
 import { labFetch } from './api-client.js';
-import { esc, svg, toast, closeSheet } from './ui.js';
+import { esc, svg, toast, closeSheet, reduced } from './ui.js';
 import { registerPage, openPage } from './page-host.js';
 import { selectTaskFocus } from './assistant-context.js';
 import { statusLabel } from './status-labels.js';
@@ -25,7 +25,8 @@ async function request(path, body) {
 }
 
 function row(task) {
-  return `<button class="task-row" data-open-task="${esc(task.id)}"><span class="task-row-icon">${svg(task.status === 'COMPLETED' ? 'check' : task.status === 'PAUSED' ? 'clock' : 'orb', 'ic sm')}</span><span class="task-row-copy"><b>${esc(task.outcome)}</b>${task.next_step && task.next_step !== 'Add an update when you are ready.' ? `<span>${esc(task.next_step)}</span>` : ''}<small>${esc(labels[task.status] || task.status)}</small>${task.due_at ? `<small class="${task.due_state ? 'task-due-flag' : ''}">${task.due_state === 'overdue' ? 'Overdue · ' : task.due_state === 'due_soon' ? 'Due within 24h · ' : 'Due '}${esc(date(task.due_at))} · Dubai time</small>` : ''}</span>${svg('chev', 'ic sm')}</button>`;
+  const state = task.source_status ? statusLabel(task.source_status) : labels[task.status] || 'Status unavailable';
+  return `<button class="task-row" data-open-task="${esc(task.id)}"><span class="task-row-icon">${svg(task.status === 'COMPLETED' ? 'check' : task.status === 'PAUSED' ? 'clock' : 'orb', 'ic sm')}</span><span class="task-row-copy"><b>${esc(task.outcome)}</b>${task.next_step && task.next_step !== 'Add an update when you are ready.' ? `<span>${esc(task.next_step)}</span>` : ''}<small>${esc(state)}</small>${task.due_at ? `<small class="${task.due_state ? 'task-due-flag' : ''}">${task.due_state === 'overdue' ? 'Overdue · ' : task.due_state === 'due_soon' ? 'Due within 24h · ' : 'Due '}${esc(date(task.due_at))} · Dubai time</small>` : ''}</span>${svg('chev', 'ic sm')}</button>`;
 }
 
 function fields(task = {}, compact = false) {
@@ -225,7 +226,7 @@ registerPage('tasks.detail', {
   },
 });
 
-function openTask(id) { openPage('tasks.detail', { id }); }
+export function openTask(id) { openPage('tasks.detail', { id }); }
 
 registerPage('tasks.review-change', {
   title:'Review task change', source:'Your task · nothing applied yet',
@@ -283,9 +284,37 @@ document.addEventListener('click', async event => {
   if (event.target.closest('[data-chat-task-list]')) openPage('tasks.list');
 });
 
-export function createToday(root) {
-  let generation = 0, visible = false, summaryGeneration = 0;
-  function announceSummary(data) { window.dispatchEvent(new CustomEvent('dubaiio:today-summary', { detail: data ? { counts: data.counts, as_of: data.as_of } : null })); }
+export function createToday(root, startNewTask) {
+  let generation = 0, visible = false, summaryGeneration = 0, historyRows = [], nextOffset = null, historyBusy = false;
+  const historyObserver = new IntersectionObserver(entries => { if (visible && entries.some(entry => entry.isIntersecting)) loadMoreHistory(); }, { root: root.closest('.home-feed'), rootMargin: '160px' });
+  function historyEnd() { dispatchEvent(new CustomEvent('dubaiio:task-history-end', { detail: { exhausted: nextOffset === null } })); }
+  function announceSummary(data) { window.dispatchEvent(new CustomEvent('dubaiio:today-summary', { detail: data ? { counts: data.counts, as_of: data.as_of, current_work: data.current_work || [] } : null })); }
+  function renderHistory() {
+    const host = root.querySelector('[data-task-history]'); if (!host) return;
+    const focused = host.contains(document.activeElement) && document.activeElement.closest('[data-open-task]')?.dataset.openTask;
+    host.innerHTML = `<header><h2>Task history</h2></header>${historyRows.length ? historyRows.map(row).join('') : '<p class="today-quiet">Your task history will appear here.</p>'}
+      ${nextOffset !== null ? '<button class="btn wide" data-more-history>More tasks</button>' : '<p class="today-quiet">You’re up to date.</p>'}<p class="today-refresh-error" data-history-error role="alert" hidden></p>`;
+    historyObserver.disconnect();
+    const more = host.querySelector('[data-more-history]'); if (more) historyObserver.observe(more);
+    if (focused) host.querySelector(`[data-open-task="${CSS.escape(focused)}"]`)?.focus({ preventScroll: true });
+    historyEnd();
+  }
+  async function loadMoreHistory() {
+    if (!visible || nextOffset === null || historyBusy) return;
+    const mine = generation, offset = nextOffset; historyBusy = true;
+    const more = root.querySelector('[data-more-history]'); if (more) { more.disabled = true; more.textContent = 'Loading tasks…'; }
+    try {
+      const data = await request('/api/tasks?limit=30&offset=' + offset);
+      if (mine !== generation || !visible) return;
+      const known = new Set(historyRows.map(task => task.id));
+      historyRows.push(...data.tasks.filter(task => !known.has(task.id))); nextOffset = data.next_offset; renderHistory();
+    } catch {
+      if (mine !== generation || !visible) return;
+      historyObserver.disconnect(); const error = root.querySelector('[data-history-error]');
+      if (error) { error.hidden = false; error.textContent = 'More tasks could not load. Try again before continuing to news.'; }
+      if (more?.isConnected) { more.disabled = false; more.textContent = 'Try loading more tasks'; }
+    } finally { if (mine === generation) historyBusy = false; }
+  }
   async function refreshSummary() {
     const mine = ++summaryGeneration;
     try { const data = await request('/api/today'); if (mine === summaryGeneration) announceSummary(data); }
@@ -298,24 +327,37 @@ export function createToday(root) {
     if (!cached) root.innerHTML = '<p class="today-loading" role="status">Loading your day…</p>';
     root.setAttribute('aria-busy', 'true');
     try {
-      const data = await request('/api/today');
+      const retainedCount = historyRows.length;
+      const readHistory = async () => {
+        let offset = 0, result = {tasks: [], next_offset: null};
+        do {
+          const page = await request('/api/tasks?limit=30&offset=' + offset);
+          result.tasks.push(...page.tasks); result.next_offset = page.next_offset; offset = page.next_offset;
+        } while (offset !== null && result.tasks.length < retainedCount && mine === generation && visible);
+        return result;
+      };
+      const [data, history] = await Promise.all([request('/api/today'), readHistory()]);
       if (mine !== generation || !visible || !root.isConnected) return;
       ++summaryGeneration; announceSummary(data);
       const focus = root.contains(document.activeElement) ? document.activeElement.closest('button') : null;
-      const attr = focus && ['data-open-task','data-create-task','data-all-tasks','data-refresh-today'].find(name => focus.hasAttribute(name));
+      const attr = focus && ['data-open-task','data-create-task','data-all-tasks','data-refresh-today','data-start-new-task'].find(name => focus.hasAttribute(name));
       const selector = attr ? `[${attr}="${CSS.escape(focus.getAttribute(attr))}"]` : null;
-      const scroll = root.closest('#sheetBody'), scrollTop = scroll?.scrollTop || 0;
+      const scroll = root.closest('.home-feed'), scrollTop = scroll?.scrollTop || 0;
       const pausedOpen = root.querySelector('.today-paused')?.open;
-      const completedOpen = root.querySelector('.today-completed')?.open;
       const day = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Dubai', weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());
-      root.innerHTML = `<header class="today-header"><p>${esc(day)} · Dubai</p><div><h1>Your day</h1><button class="today-all" data-all-tasks>All tasks ${svg('chev', 'ic xs')}</button></div></header>
+      historyRows = history.tasks; nextOffset = history.next_offset; historyBusy = false;
+      root.innerHTML = `<header class="today-header"><p>${esc(day)} · Dubai</p><div><h1>Tasks</h1><button class="today-all" data-all-tasks>History ${svg('chev', 'ic xs')}</button></div></header>
+        <section class="today-lane"><header><h2>Running</h2></header>${data.running.tasks.length ? data.running.tasks.map(task => row({...task, source_status: task.source_status})).join('') : '<p class="today-quiet">No tasks are in progress.</p>'}</section>
+        <section class="today-lane"><header><h2>Scheduled</h2></header><p class="today-quiet">No scheduled follow-ups. Automatic check-backs are coming next.</p></section>
         <section class="today-lane"><header><h2>On your list</h2>${data.on_list.has_more ? '<button data-all-tasks>See all</button>' : ''}</header>${data.on_list.tasks.length ? data.on_list.tasks.map(row).join('') : '<p class="today-quiet">Nothing to keep track of yet. Add something when you need it.</p>'}</section>
         ${data.paused.count ? `<details class="today-paused"><summary>Paused (${data.paused.count})</summary>${data.paused.tasks.map(row).join('')}${data.paused.has_more ? '<button class="btn wide" data-all-tasks>All paused tasks</button>' : ''}</details>` : ''}
-        <button class="today-create" data-create-task><span class="today-create-icon">${svg('spark')}</span><span><b>Keep track of something</b><small>Start with a title. Add details later.</small></span>${svg('arrow', 'ic sm')}</button>
-        ${data.completed.tasks.length ? `<details class="today-completed"><summary>Recently completed</summary>${data.completed.tasks.map(row).join('')}${data.completed.has_more ? '<button class="btn wide" data-all-tasks>All completed tasks</button>' : ''}</details>` : ''}
+        <section class="today-lane today-completed"><header><h2>Finished</h2>${data.completed.has_more ? '<button data-all-tasks>See all</button>' : ''}</header>${data.completed.tasks.length ? data.completed.tasks.map(row).join('') : '<p class="today-quiet">Completed tasks will stay here.</p>'}</section>
+        <button class="today-new-task" data-start-new-task>Start a new task ${svg('arrow', 'ic sm')}</button>
+        <button class="today-note" data-create-task>Or keep a note on your list</button>
+        <section class="today-lane task-history" data-task-history tabindex="-1"></section>
         <p class="today-refresh-error" role="alert" hidden></p><footer class="today-footer"><span>Updates stay with your tasks.</span><button aria-label="Refresh Today" data-refresh-today>Refresh</button></footer>`;
+      renderHistory();
       if (pausedOpen && root.querySelector('.today-paused')) root.querySelector('.today-paused').open = true;
-      if (completedOpen && root.querySelector('.today-completed')) root.querySelector('.today-completed').open = true;
       if (scroll) scroll.scrollTop = scrollTop;
       if (selector) root.querySelector(selector)?.focus({ preventScroll: true });
     } catch {
@@ -332,15 +374,16 @@ export function createToday(root) {
   wireRows(root);
   root.addEventListener('click', event => {
     if (event.target.closest('[data-create-task]')) openPage('tasks.new');
-    if (event.target.closest('[data-all-tasks]')) openPage('tasks.list');
+    if (event.target.closest('[data-all-tasks]')) { const history = root.querySelector('[data-task-history]'); history?.scrollIntoView({ behavior: reduced ? 'instant' : 'smooth', block: 'start' }); history?.focus({ preventScroll: true }); }
+    if (event.target.closest('[data-more-history]')) loadMoreHistory();
     if (event.target.closest('[data-refresh-today]')) refresh();
+    if (event.target.closest('[data-start-new-task]')) startNewTask();
   });
-  const controller = { show(value) { const was = visible; visible = value; root.hidden = !value; root.inert = !value; if (value && !was) refresh(); if (!value) generation++; }, refresh, refreshSummary,
-    open() { openPage('tasks.today'); } };
-  registerPage('tasks.today', { title: 'Today', source: 'Your responsibilities', render: () => '<div class="today-host"></div>', mount(host) {
-    host.querySelector('.today-host').append(root); controller.show(true);
-    host.addEventListener('dubaiio:page-restored', () => { controller.show(true); refresh(); });
-  } });
-  document.addEventListener('dubaiio:sheet-closed', () => controller.show(false));
+  const controller = { show(value) { const was = visible; visible = value; root.hidden = !value; root.inert = !value; if (value && !was) refresh(); if (!value) { generation++; historyBusy = false; historyObserver.disconnect(); } }, refresh, refreshSummary,
+    open() {
+      controller.show(true);
+      root.closest('.home-feed').scrollTo({ top: root.offsetTop, behavior: reduced ? 'instant' : 'smooth' });
+      root.focus({ preventScroll: true });
+    } };
   return controller;
 }

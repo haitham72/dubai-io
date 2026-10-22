@@ -16,7 +16,8 @@ import { loadProfile, profileEpisodes, setOverride } from './profile-store.js';
 import { topicFor, observe, homeRank, refreshRecommendations, renderInterests, browsingSession, discovery } from './recommendation-client.js';
 import { createMap, km } from './map.js';
 import { $, svg, esc, toast, openSheet, closeSheet, reduced, told } from './ui.js';
-import { initChat, wireChat, handle, post, update, hasThread, resetChat, trackOrder } from './chat.js';
+import { initChat, wireChat, handle, post, update, hasThread, resetChat, trackOrder, startNewChat, openConversation } from './chat.js';
+import { listConversations } from './session-state.js';
 import { initOffers, wireOffers, openOffers, closeOffers } from './offers.js';
 import { initPageHost, resetPageHost, registerPage, openPage } from './page-host.js';
 import { initProviderPages } from './provider-pages.js';
@@ -24,7 +25,10 @@ import { openConnections } from './accounts.js';
 import { renderServicesLanding } from './services.js';
 import { startGuide, wireGuide } from './guide.js';
 import { startArrival } from './arrival.js';
-import { createToday } from './tasks.js';
+import { createToday, openTask } from './tasks.js';
+import { statusLabel } from './status-labels.js';
+import { createReading } from './reading.js';
+import { watchOrder } from './orders.js';
 
 // C1 used 0.55: apply 70% of that reflection to every stage card.
 const CARD_REFLECTION_STRENGTH = 0.55 * 0.70;
@@ -54,7 +58,9 @@ const fmtN = n => n.toLocaleString('en-US');
 
 document.documentElement.dataset.palette = paletteName;
 document.body.insertAdjacentHTML('beforeend', `
-<div id="app" class="mode-home ${reduced ? 'reduced' : ''}">
+<div id="app" class="mode-home is-onboarding ${reduced ? 'reduced' : ''}">
+  <section class="home-feed" id="homeFeed" aria-label="Home">
+  <div class="home-hero" id="homeHero">
   <canvas id="gl" aria-hidden="true"></canvas>
   <header class="top">
     <div class="brand"><button class="brand-btn" id="brandBtn" aria-label="Dubai-io. Tap to restart the demo"><b>Dubai-io</b></button><span class="area">${svg('pin', 'ic xs')} ${esc(told.area || 'Dubai')}${told.area ? ' · you told me' : ''}</span></div>
@@ -62,15 +68,18 @@ document.body.insertAdjacentHTML('beforeend', `
   <main id="stage" aria-roledescription="carousel" aria-label="Home cards"></main>
   <nav class="rail" id="rail" aria-label="Cards"></nav>
   <p class="caption" id="caption" aria-live="polite"></p>
-  <section class="today" id="today" aria-label="Today" hidden inert></section>
-  <button class="today-launch glass" id="todayLaunch" aria-controls="today" aria-expanded="false" aria-label="Open Today tasks"><span class="today-launch-grab" aria-hidden="true"></span><span><b id="todayHandleLabel">Today</b><small>Swipe up or tap for tasks</small></span>${svg('up', 'ic sm')}</button>
+  <button class="today-launch" id="todayLaunch" aria-controls="today" aria-label="Open Today tasks"><span class="today-launch-grab" aria-hidden="true"></span><span><b id="todayHandleLabel">Today</b><small>Scroll down to your tasks</small></span>${svg('up', 'ic sm')}</button>
+  </div>
+  <section class="today" id="today" aria-label="Today" tabindex="-1" hidden inert></section>
+  <section class="reading" id="reading" aria-label="News" hidden></section>
+  </section>
 
   <section class="chatv" id="chat" aria-label="Chat" inert>
     <div class="c-top">
-      <button class="round glass" id="chatBack" aria-label="Back to browsing">${svg('back')}</button>
+      <button class="round" id="chatHistory" aria-label="Open chat history" aria-controls="chatSidebar">${svg('menu')}</button>
       <span class="c-orb" aria-hidden="true"></span>
       <div class="c-title"><button class="brand-btn" id="brandBtn2" aria-label="Dubai-io. Tap to restart the demo"><b>Dubai-<i>io</i></b></button><span>Your Dubai assistant</span></div>
-      <button class="round" id="chatSearch" aria-label="Browse services">${svg('search')}</button>
+      <button class="round" id="chatUser" aria-label="Your profile">${svg('person')}</button>
     </div>
     <div class="c-scroll" id="chatScroll">
       <div class="chat-empty" id="chatEmpty">
@@ -85,6 +94,13 @@ document.body.insertAdjacentHTML('beforeend', `
       <div class="chat-focus" id="chatFocus" hidden></div><div class="c-list" id="chatList"></div>
     </div>
   </section>
+
+  <dialog class="chat-sidebar" id="chatSidebar" aria-labelledby="chatSidebarTitle">
+    <header><h2 id="chatSidebarTitle">Dubai-io</h2><button class="round" data-close-history aria-label="Close chat history">${svg('close')}</button></header>
+    <nav aria-label="Assistant"><button data-history-home>${svg('grid', 'ic sm')} Tasks</button><button data-new-chat>${svg('spark', 'ic sm')} New chat</button></nav>
+    <h3>Chats</h3><p class="chat-history-note">Saved on this device</p><div id="chatHistoryList"></div>
+    <footer><button id="chatBack">${svg('back', 'ic sm')} Back to browsing</button></footer>
+  </dialog>
 
   <section id="results" class="results" aria-label="Map near you">
     <div id="mapEl" class="mapbox" hidden></div>
@@ -116,6 +132,8 @@ document.body.insertAdjacentHTML('beforeend', `
     <button type="button" class="c-mic" id="mic" aria-label="Voice (typed in this lab)">${svg('mic', 'ic sm')}</button>
     <button type="submit" class="c-send" aria-label="Send">${svg('up', 'ic sm')}</button>
   </form>
+
+  <button class="browse-toggle glass" id="browseToggle" aria-label="Expand navigation" aria-controls="browseDock" aria-expanded="false" inert>${svg('stack')}</button>
 
   <div class="browse-dock" id="browseDock">
   <nav class="tabbar glass" aria-label="Tabs">
@@ -164,11 +182,24 @@ const S = {
   tune: { ribs: 8.5, foil: 1, grain: 0.07, aura: 0.95 },
   shape: { falloff: 2.4, height: 0.85, glow: 0.24 },
   overrides: {}, asOf: T1, active: -1,
+  currentWork: [],
   lift: 0, liftFrom: 0, liftTo: 0, liftStart: 0, liftDur: 820,
   ask: null, cat: 'all', sub: null, src: null, detail: null, snap: 'peek', chatReturn: 'home', mapMode: '2d',
 };
 const G = {};
-const today = createToday($('#today'));
+const today = createToday($('#today'), () => {
+  if (S.mode === 'onboard') { store.set('onboarded', '1'); buildHome(); }
+  enterServices();
+});
+const reading = createReading($('#reading'));
+const homeSourceWatchers = new Map();
+function followHomeSources(items) {
+  const ids = new Set(items.map(item => item.source.id));
+  for (const [id, stop] of homeSourceWatchers) if (!ids.has(id)) { stop(); homeSourceWatchers.delete(id); }
+  for (const id of ids) if (!homeSourceWatchers.has(id)) homeSourceWatchers.set(id, watchOrder(id, () => {}));
+}
+let sourceSummaryTimer;
+addEventListener('dubaiio:source-changed', () => { clearTimeout(sourceSummaryTimer); sourceSummaryTimer = setTimeout(() => today.refreshSummary(), 100); });
 window.__lab = { S, G };
 let seedN = 1, onboardingExitTimer = 0;
 const mkCard = def => ({ ...def, holo: CARD_REFLECTION_STRENGTH, variant: VARIANT[def.kind] ?? 0, seed: (seedN++ * 7.31) % 13, rev: reduced ? 1 : 0, revStart: 0, revDur: 1100, out: false, outFrom: 1, exitProgress: 0, el: null });
@@ -185,14 +216,20 @@ function setView(v) {
   }
   if (S.view !== v) S.from = S.view;
   S.view = v;
+  app.classList.remove('nav-expanded');
+  $('#browseToggle').setAttribute('aria-expanded', 'false');
+  $('#browseToggle').inert = v !== 'chat';
   for (const x of VIEWS) app.classList.toggle('mode-' + x, x === v);
   setTab(v === 'results' ? 'maps' : v === 'services' ? 'services' : 'home');
-  $('#browseDock').inert = v === 'chat';
+  $('#browseDock').inert = v === 'chat' || S.mode === 'onboard';
   $('#composer').inert = v !== 'chat';
   $('#chat').inert = v !== 'chat';
   stageEl.inert = v !== 'home';
   railEl.inert = v !== 'home';
-  $('#todayLaunch').inert = v !== 'home' || S.mode !== 'home';
+  $('#homeFeed').inert = v !== 'home';
+  $('#todayLaunch').inert = v !== 'home';
+  today.show(v === 'home');
+  reading.show(v === 'home');
   $('#svcGrid').inert = v !== 'services';
   $('#results').inert = v !== 'results';
   document.querySelector('.top').inert = v !== 'home';
@@ -207,6 +244,7 @@ function setTab(t) {
 }
 function beginChat() {
   if (S.onboardingExit) buildHome();
+  setNavigationExpanded(false);
   showChat();
   $('#q').focus({ preventScroll: true });
 }
@@ -229,8 +267,8 @@ addEventListener('popstate', e => {
 // ---------------------------------------------------------------- layout
 function layout() {
   const r = app.getBoundingClientRect();
-  const s = stageEl.getBoundingClientRect();
-  Object.assign(G, { W: r.width, H: r.height, sx: s.left - r.left, sy: s.top - r.top, sw: s.width, sh: s.height });
+  const s = stageEl.getBoundingClientRect(), hero = $('#homeHero').getBoundingClientRect();
+  Object.assign(G, { W: r.width, H: r.height, sx: s.left - hero.left, sy: s.top - hero.top, sw: s.width, sh: s.height });
   G.cw = Math.round(Math.min(318, G.sw * 0.78));
   G.ch = Math.round(Math.min(G.sh * 0.96, G.cw * 1.46));
   G.bandH = Math.round(G.ch * 0.52);
@@ -305,14 +343,17 @@ function buildRail() {
 
 // ---------------------------------------------------------------- flows: intro, home
 function startOnboarding() {
-  app.classList.remove('has-today-entry');
-  $('#todayLaunch').inert = true;
-  today.show(false);
+  app.classList.add('is-onboarding', 'has-today-entry');
+  $('#browseDock').hidden = true; $('#browseDock').inert = true;
+  $('#homeFeed').scrollTop = 0;
+  $('#todayLaunch').inert = false;
+  today.show(true);
   stageEl.inert = false; railEl.inert = false;
   setLift(0);
   clearTimeout(onboardingExitTimer);
   S.onboardingExit = false;
   S.mode = 'onboard';
+  layout();
   S.deck = [mkCard(ONBOARDING[0])];
   S.pos = S.target = 0; S.vel = 0;
   mountDeck();
@@ -341,7 +382,7 @@ function finishOnboarding() {
   });
   onboardingExitTimer = setTimeout(() => {
     // A replay/restart may have replaced the deck while the cards were leaving.
-    if (S.deck === deck) buildHome();
+    if (S.deck === deck) { buildHome(); enterServices(); }
   }, reduced ? 0 : end + 40);
 }
 function homeOrder() {
@@ -360,19 +401,30 @@ function buildHome() {
   clearTimeout(onboardingExitTimer);
   S.onboardingExit = false;
   S.mode = 'home';
+  app.classList.remove('is-onboarding');
+  $('#browseDock').hidden = false; $('#browseDock').inert = S.view === 'chat';
   app.classList.add('has-today-entry');
   stageEl.inert = S.view !== 'home'; railEl.inert = S.view !== 'home';
   $('#todayLaunch').inert = S.view !== 'home';
   setLift(S.view === 'home' ? 0 : 1);
   today.refreshSummary();
-  S.deck = [mkCard(PROFILE_CARD), ...homeOrder().map(o => mkCard({ ...o.c, becauseHyp: o.h }))];
-  S.pos = S.target = 1; S.vel = 0;
+  layout();
+  S.deck = homeDeck().map(mkCard);
+  S.pos = S.target = 0; S.vel = 0;
   mountDeck();
-  S.deck.forEach((c, i) => reveal(c, 120 + Math.abs(i - 1) * 140, 1000));
+  S.deck.forEach((c, i) => reveal(c, 120 + i * 140, 1000));
+}
+function homeDeck() {
+  if (S.currentWork.length) return S.currentWork.map(({task, source}) => ({
+    id: 'task:' + task.id, taskId: task.id, kind: 'silk', eyebrow: 'Your task', title: task.outcome,
+    body: task.next_step || statusLabel(source.status), meta: [statusLabel(source.status), ...(source.capability_id === 'order.request' ? ['Sandbox merchant'] : [])],
+    caption: 'Your saved task. Open it for the latest details.',
+  }));
+  return homeOrder().slice(0, 5).map(o => ({ ...o.c, eyebrow: 'Start a task', meta: ['Your choice'], becauseHyp: o.h }));
 }
 function captionFor(c) {
   if (!c) return '';
-  if (S.mode === 'onboard') return c.next === 'Start' ? 'Tap Start, or tap Ask to chat.' : 'Swipe, tap Next, or tap Ask to chat.';
+  if (S.mode === 'onboard') return c.next === 'Start' ? 'Start a new task in Services, or scroll down to your tasks.' : 'Swipe across or tap Next. Scroll down for your tasks.';
   if (c.becauseHyp) {
     const h = c.becauseHyp;
     if (h.reason) return `${esc(h.reason)} <span class="tag">${h.provenance === 'user_supplied' ? 'you confirmed' : 'inferred from choices'}</span>`;
@@ -481,8 +533,7 @@ function setLift(to) { if (S.liftTo === to) return; S.liftDur = S.mode === 'onbo
 // ---------------------------------------------------------------- stage input
 function onDown(e) {
   if (S.view !== 'home' || S.onboardingExit || e.button > 0 || e.target.closest('button')) return;
-  S.drag = { x: e.clientX, pos: S.pos, lastX: e.clientX, lastT: performance.now(), v: 0, moved: false, id: e.pointerId, card: e.target.closest('.card') };
-  stageEl.setPointerCapture(e.pointerId);
+  S.drag = { x: e.clientX, y: e.clientY, pos: S.pos, lastX: e.clientX, lastT: performance.now(), v: 0, moved: false, id: e.pointerId, card: e.target.closest('.card') };
   const r = S.drag.card;
   if (r && r.classList.contains('is-center')) {
     const b = r.getBoundingClientRect();
@@ -491,8 +542,13 @@ function onDown(e) {
 }
 function onMove(e) {
   const d = S.drag; if (!d || e.pointerId !== d.id) return;
-  const dx = e.clientX - d.x;
-  if (Math.abs(dx) > 6) d.moved = true;
+  const dx = e.clientX - d.x, dy = e.clientY - d.y;
+  // The browser owns vertical scrolling; only claim a horizontal card drag.
+  if (!d.moved) {
+    if (Math.abs(dy) > 6 && Math.abs(dy) > Math.abs(dx)) { S.drag = null; S.tiltTarget = [0, 0]; return; }
+    if (Math.abs(dx) <= 6) return;
+    d.moved = true; stageEl.setPointerCapture(e.pointerId);
+  }
   const now = performance.now();
   d.v = d.v * 0.7 + ((e.clientX - d.lastX) / Math.max(1, now - d.lastT)) * 0.3; d.lastX = e.clientX; d.lastT = now;
   let pos = d.pos - dx / G.spacing; const max = S.deck.length - 1;
@@ -503,6 +559,7 @@ function onMove(e) {
 function onUp(e) {
   const d = S.drag; if (!d || e.pointerId !== d.id) return;
   S.drag = null;
+  if (!d.moved && Math.abs(e.clientY - d.y) > 6) return;
   const max = S.deck.length - 1;
   if (!d.moved) {
     if (d.card) { const i = +d.card.dataset.i; if (i !== Math.round(S.pos)) S.target = i; else openCard(S.deck[i]); }
@@ -516,13 +573,14 @@ function onUp(e) {
 stageEl.addEventListener('pointerdown', onDown);
 stageEl.addEventListener('pointermove', onMove);
 stageEl.addEventListener('pointerup', onUp);
-stageEl.addEventListener('pointercancel', onUp);
+stageEl.addEventListener('pointercancel', () => { S.drag = null; S.tiltTarget = [0, 0]; });
 stageEl.addEventListener('click', e => { if (e.target.closest('[data-act="next"]')) { e.stopPropagation(); advance(); } });
 railEl.addEventListener('click', e => { const d = e.target.closest('.dot'); if (d && !S.onboardingExit) S.target = +d.dataset.i; });
 addEventListener('keydown', e => {
   if (e.defaultPrevented || e.target.closest?.('input,textarea,select,button,a,summary,[contenteditable="true"]')) return;
   if (!$('#sheet').hidden) { if (e.key === 'Escape') closeSheet(); return; }
   if (S.view !== 'home') { if (e.key === 'Escape') goBack(); return; }
+  if ($('#homeFeed').scrollTop > $('#homeHero').clientHeight / 2) return;
   if (S.onboardingExit) { if (['ArrowLeft', 'ArrowRight', 'Enter'].includes(e.key)) e.preventDefault(); return; }
   if (e.key === 'ArrowRight') { if (S.mode === 'onboard' && Math.round(S.pos) === S.deck.length - 1) advance(); else S.target = Math.min(S.deck.length - 1, Math.round(S.pos) + 1); }
   if (e.key === 'ArrowLeft') S.target = Math.max(0, Math.round(S.pos) - 1);
@@ -534,6 +592,7 @@ $('#scrim').addEventListener('click', closeSheet);
 function openCard(c) {
   if (!c) return;
   if (S.mode === 'onboard') { advance(); return; }
+  if (c.taskId) { openTask(c.taskId); return; }
   if (c.id === 'you') { openProfile(); return; }
   if (c.ask) { handle(c.ask); return; }
   const cat = catOf(c.category);
@@ -606,10 +665,17 @@ function renderProfile() {
 }
 function refreshHomeCaptions() {
   if (S.mode !== 'home') return;
-  const order = homeOrder();
-  for (const c of S.deck) { const o = order.find(x => x.c.id === c.id); if (o) c.becauseHyp = o.h; }
-  S.active = -1;
+  if (S.drag) { S.pendingDeck = true; return; }
+  S.pendingDeck = false;
+  const selected = S.deck[Math.round(S.pos)]?.id, definitions = homeDeck();
+  const previous = new Map(S.deck.map(c => [c.id, c]));
+  S.deck = definitions.map(def => { const old = previous.get(def.id); return old ? Object.assign(old, def) : mkCard(def); });
+  S.pos = S.target = Math.max(0, S.deck.findIndex(c => c.id === selected)); S.vel = 0;
+  mountDeck(); S.deck.forEach(c => { if (!previous.has(c.id)) reveal(c, 0, 700); });
 }
+stageEl.addEventListener('pointerup', () => { if (S.pendingDeck) refreshHomeCaptions(); });
+stageEl.addEventListener('pointercancel', () => { if (S.pendingDeck) refreshHomeCaptions(); });
+addEventListener('dubaiio:recommendations-changed', refreshHomeCaptions);
 
 // ---------------------------------------------------------------- Maps: near me
 let MAP = null;
@@ -985,10 +1051,6 @@ function setSnap(name, instant) {
 })();
 
 // ---------------------------------------------------------------- Services: competing offers
-// Chat header search opens Services.
-document.addEventListener('click', e => {
-  if (e.target.closest('#chatSearch')) enterServices();
-});
 function enterServices() { closeSheet(); renderServicesLanding($('#svcGrid'), told.area); setView('services'); }
 $('#svcGrid').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
@@ -1003,48 +1065,55 @@ initChat({ enterResults, openOffers, startGuide, showChat });
 initOffers({ post, update, showChat, trackOrder });
 loadProfile().then(o => { Object.assign(S.overrides, o); refreshHomeCaptions(); });
 wireChat(); wireOffers(); wireGuide(); initPageHost(); initProviderPages();
-$('#chatBack').addEventListener('click', leaveChat);
+const chatSidebar = $('#chatSidebar');
+$('#chatHistory').addEventListener('click', () => {
+  const conversations = listConversations();
+  $('#chatHistoryList').innerHTML = conversations.length ? conversations.map(c => `<button data-conversation="${esc(c.id)}" ${c.active ? 'aria-current="page"' : ''}>${esc(c.title)}</button>`).join('') : '<p class="chat-history-note">Your conversations will appear here.</p>';
+  chatSidebar.showModal();
+});
+chatSidebar.addEventListener('click', e => {
+  const target = e.target.closest('button');
+  if (target?.matches('[data-close-history]')) chatSidebar.close();
+  if (target?.matches('[data-new-chat]')) { try { startNewChat(); chatSidebar.close(); $('#q').focus({ preventScroll: true }); } catch (error) { toast(error.message); } }
+  if (target?.matches('[data-conversation]')) { try { openConversation(target.dataset.conversation); chatSidebar.close(); $('#q').focus({ preventScroll: true }); } catch (error) { toast(error.message); } }
+  if (target?.matches('[data-history-home]')) { chatSidebar.close(); setView('home'); $('#homeFeed').scrollTop = 0; }
+  if (e.target === chatSidebar) { const r = chatSidebar.getBoundingClientRect(); if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) chatSidebar.close(); }
+});
+$('#chatBack').addEventListener('click', () => { chatSidebar.close(); leaveChat(); });
+$('#chatUser').addEventListener('click', openMe);
 addEventListener('dubaiio:focus', e => {
   const el = $('#chatFocus'); el.hidden = !e.detail;
   el.innerHTML = e.detail ? '<span>' + (e.detail.task_id ? 'Task: ' : 'About ') + esc(e.detail.entity_name) + '</span><button class="btn sm" aria-label="Clear selected context">Clear</button>' : '';
   el.querySelector('button')?.addEventListener('click', () => selectFocus(null));
 });
 $('#chatLaunch').addEventListener('click', beginChat);
-addEventListener('dubaiio:task-chat', beginChat);
-function openToday() {
-  if (S.view !== 'home' || S.mode !== 'home') return;
-  today.open(); $('#todayLaunch').setAttribute('aria-expanded', 'true');
+function setNavigationExpanded(expanded) {
+  app.classList.toggle('nav-expanded', expanded);
+  $('#browseToggle').setAttribute('aria-expanded', String(expanded));
+  $('#browseDock').inert = S.mode === 'onboard' || (S.view === 'chat' && !expanded);
+  $('#composer').inert = S.view !== 'chat' || expanded;
+  if (expanded) { $('#q').blur(); document.querySelector('.tabbar button[aria-current]')?.focus({ preventScroll: true }); }
 }
-$('#todayLaunch').addEventListener('click', e => {
-  if (todaySwipeClick) { todaySwipeClick = false; e.preventDefault(); return; }
-  openToday();
-});
-let todayGesture = null, todaySwipeClick = false;
-$('#todayLaunch').addEventListener('pointerdown', e => {
-  if (!e.isPrimary || e.button !== 0) return;
-  todaySwipeClick = false; todayGesture = { x: e.clientX, y: e.clientY, at: performance.now() };
-  e.currentTarget.setPointerCapture(e.pointerId);
-});
-$('#todayLaunch').addEventListener('pointerup', e => {
-  const start = todayGesture; todayGesture = null;
-  if (start && start.y - e.clientY > 35 && Math.abs(start.x - e.clientX) < 60 && performance.now() - start.at < 1000) {
-    e.preventDefault(); todaySwipeClick = true; openToday();
-    setTimeout(() => { todaySwipeClick = false; }, 500);
-  }
-});
-$('#todayLaunch').addEventListener('pointercancel', () => { todayGesture = null; });
+$('#browseToggle').addEventListener('click', () => setNavigationExpanded(true));
+addEventListener('dubaiio:task-chat', beginChat);
+addEventListener('dubaiio:news-chat', beginChat);
+function openToday() {
+  if (S.view !== 'home') return;
+  today.open();
+}
+$('#todayLaunch').addEventListener('click', openToday);
 $('#todayLaunch').addEventListener('keydown', e => {
   if (e.key === 'ArrowUp') { e.preventDefault(); e.stopPropagation(); openToday(); }
 });
-document.addEventListener('dubaiio:sheet-closed', () => $('#todayLaunch').setAttribute('aria-expanded', 'false'));
 addEventListener('dubaiio:today-summary', e => {
+  if (e.detail?.current_work) { S.currentWork = e.detail.current_work; followHomeSources(S.currentWork); refreshHomeCaptions(); }
   const counts = e.detail?.counts, parts = ['Today'];
   if (counts?.needs_you > 0) parts.push(counts.needs_you + (counts.needs_you === 1 ? ' needs you' : ' need you'));
   if (counts?.on_list > 0) parts.push(counts.on_list + ' on your list');
   $('#todayHandleLabel').textContent = parts.join(' · ');
   $('#todayLaunch').setAttribute('aria-label', 'Open Today tasks' + (parts.length > 1 ? ': ' + parts.slice(1).join(', ') : ''));
 });
-$('#q').addEventListener('focus', showChat);
+$('#q').addEventListener('focus', () => { setNavigationExpanded(false); showChat(); });
 $('#q').addEventListener('keydown', e => { if (e.key === 'Escape') { e.preventDefault(); leaveChat(); } });
 $('#chatEmpty').addEventListener('click', e => {
   if (e.target.closest('[data-chat-task]')) { $('#q').blur(); openPage('tasks.new'); return; }
@@ -1070,6 +1139,7 @@ document.querySelector('.tabbar').addEventListener('click', e => {
   if (t === 'home') {
     if (S.mode !== 'home') { store.set('onboarded', '1'); buildHome(); }
     setView('home');
+    $('#homeFeed').scrollTo({ top: 0, behavior: 'instant' });
   }
   else if (t === 'maps') enterResults({ cat: 'all' });
   else if (t === 'services') enterServices();
@@ -1091,7 +1161,7 @@ registerPage('account.me', { title: 'Me', source: 'Dubai-io', render: () => `
   $('#meConnections').addEventListener('click', () => openConnections());
   $('#meProfile').addEventListener('click', () => { closeSheet(); setTimeout(openProfile, 340); });
   $('#meIntro').addEventListener('click', () => { closeSheet(); setView('home'); startOnboarding(); });
-  $('#meWifi').addEventListener('click', () => { closeSheet(); setView('home'); S.deck = []; stageEl.innerHTML = ''; railEl.innerHTML = ''; startArrival(() => startOnboarding()); });
+  $('#meWifi').addEventListener('click', () => { closeSheet(); setView('home'); app.classList.add('is-onboarding'); $('#browseDock').hidden = true; $('#browseDock').inert = true; $('#homeFeed').scrollTop = 0; today.show(false); S.deck = []; stageEl.innerHTML = ''; railEl.innerHTML = ''; startArrival(() => startOnboarding()); });
 } });
 function openMe() { openPage('account.me'); }
 
@@ -1100,6 +1170,8 @@ function restartDemo() {
   resetChat(); resetPageHost();
   clearTimeout(onboardingExitTimer); S.onboardingExit = false;
   closeSheet(); closeOffers(); setView('home');
+  app.classList.add('is-onboarding'); $('#browseDock').hidden = true; $('#browseDock').inert = true;
+  $('#homeFeed').scrollTop = 0; today.show(false);
   try { localStorage.removeItem('dubaiio.lab.onboarded'); } catch { /* private mode */ }
   S.deck = []; stageEl.innerHTML = ''; railEl.innerHTML = ''; captionEl.textContent = '';
   toast('Restarting the demo from landing.');

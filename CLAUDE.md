@@ -2,6 +2,10 @@
 
 Instructions for any coding agent in this repo. Read order: this file → `PLAN.md` → `ARCHITECTURE.md` → `handoff.md`.
 
+## Latest navigation correction ? read first (22 Oct)
+
+The founder specified permanent adaptive Tasks Home: current source-backed task cards, otherwise 3?5 usage/preference/recommendation starters; normal vertical scrolling through complete task history then News. Services starts new tasks. The Wi-Fi/gradient intro stays full screen without navigation. Today-as-modal and custom handle swipe takeover are superseded. Ask has standard chat history top left, profile top right, and the four tabs collapse **left** into a stacked icon which re-expands them (Apple TV). Flat Try asking rows. This is implemented/SQLite/browser verified at 165 passed/11 skipped; real headline retrieval and source-card behavior were separately checked. Chat history is local to the device. Projects means shared chats/tasks/context workspaces and remains unimplemented; Decisions/check-backs/cron/other queue remain pending. Read newest plan/handoff status before acting on historical pass descriptions below. Both independent reviews remain unchanged. Native stays parked.
+
 ## What this is
 
 A personal assistant for everyday life and work in Dubai, entered in the Create AI Agents Championship (Best Personal AI Agent). On 22 Oct the founder explicitly superseded visitor-first framing and requested a mature feature proposal informed by Dots, Grok Bot and Duet:

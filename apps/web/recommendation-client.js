@@ -26,7 +26,8 @@ export const discovery = createDiscoveryCache(body => api('/api/discovery/places
 export const homeRank = id => { browsingSession(); return homeRanks.get(id); };
 export async function refreshRecommendations(cases) {
   const candidates = cases.filter(c => CASE_TOPICS[c.id]).map(c => ({ id: c.id, topics: CASE_TOPICS[c.id] }));
-  await homeRanks.refresh({ session_id: browsingSession(), surface: 'home', candidates });
+  const changed = await homeRanks.refresh({ session_id: browsingSession(), surface: 'home', candidates });
+  if (changed) dispatchEvent(new CustomEvent('dubaiio:recommendations-changed'));
 }
 export async function observe(kind, topic, entityId) {
   if (!topic) return;
@@ -74,6 +75,7 @@ export async function renderInterests(el, onChange) {
         (data.interests.find(s => s.scope === 'session' && s.topic === i.topic) ? scopeHTML(data.interests.find(s => s.scope === 'session' && s.topic === i.topic)) : '') + scopeHTML(i) +
         '<div class="acts">' + buttonsHTML(i) + '</div><div data-edit-interest></div><p class="interest-error" role="alert"></p></li>').join('') || '<li>No interests learned yet. Explore a few places to start.</li>') + '</ul>';
     async function save(topic, body, row) {
+      dispatchEvent(new CustomEvent('dubaiio:interests-changing'));
       homeRanks.pause();
       discovery.pause();
       onChange?.({ refresh: false });
@@ -93,6 +95,7 @@ export async function renderInterests(el, onChange) {
         discovery.resume();
       }
       if (saved) {
+        dispatchEvent(new CustomEvent('dubaiio:interests-changed'));
         onChange?.({ refresh: true });
         await renderInterests(el, onChange);
       }

@@ -148,17 +148,17 @@ class Tasks:
         competing handles/workers: SQLite's writer lock or a PG owner lock.
         Revision predicates remain the final write guard.
         """
+        if write:
+            with self.store.transaction(owner):
+                yield
+            return
         with self.store.lock:
             try:
-                if write:
-                    if self.store.db.dialect == "sqlite":
-                        self.store.db.execute("BEGIN IMMEDIATE")
-                    else:
-                        self.store.db.execute("SELECT pg_advisory_xact_lock(hashtext(?))", ("tasks:" + owner,))
                 yield
-                self.store.db.commit()
+                self.store.commit()
             except Exception:
-                self.store.db.conn.rollback()
+                if not self.store._write_depth:
+                    self.store.db.conn.rollback()
                 raise
 
     def get(self, owner, task_id):
@@ -364,8 +364,22 @@ def today(request: Request, response: Response):
             groups[key] = {"tasks": [present(json.loads(r[0]), at) for r in rows[:3]], "has_more": len(rows) > 3}
         totals = dict(tasks.store.db.execute("SELECT status,COUNT(*) FROM tasks WHERE owner=? GROUP BY status", (owner,)).fetchall())
         groups["paused"]["count"] = totals.get("PAUSED", 0)
+        extract = (lambda col, path: f"json_extract({col}, '$.{path}')") if tasks.store.db.dialect == "sqlite" else (lambda col, path: f"({col}::jsonb ->> '{path}')")
+        # Source-backed work only. A saved manual note never becomes a running
+        # agent. Reads do not reconcile, approve or dispatch an Action.
+        source_id = "json_extract(t.data, '$.source.id')" if tasks.store.db.dialect == "sqlite" else "(t.data::jsonb -> 'source' ->> 'id')"
+        source_status = extract("a.data", "status")
+        current_rows = tasks.store.db.execute(f"""SELECT t.data,a.data FROM tasks t
+            JOIN actions a ON a.id={source_id} AND a.owner=t.owner
+            WHERE t.owner=? AND t.status='WAITING_USER'
+              AND {source_status} IN ('AWAITING_APPROVAL','DISPATCHING','SUBMITTED','ACCEPTED','READY','UNKNOWN_STATUS')
+            ORDER BY CASE WHEN {source_status} IN ('DISPATCHING','SUBMITTED','ACCEPTED','READY') THEN 0 ELSE 1 END,
+              t.updated_at DESC,t.id DESC LIMIT 6""", (owner,)).fetchall()
+        current = [{"task": present(json.loads(t), at), "source": annotate(json.loads(a))} for t, a in current_rows[:5]]
+        groups["running"] = {"tasks": [{**item["task"], "source_status": item["source"]["status"]} for item in current
+            if item["source"]["status"] in {"DISPATCHING", "SUBMITTED", "ACCEPTED", "READY"}], "has_more": len(current_rows) > 5}
         return {**groups, "counts": {"needs_you": 0, "on_list": totals.get("WAITING_USER", 0), "paused": totals.get("PAUSED", 0)},
-                "mode": "manual", "monitoring_active": False, "as_of": at.isoformat()}
+                "current_work": current, "mode": "manual", "monitoring_active": False, "as_of": at.isoformat()}
 
 
 @router.get("/api/tasks/{task_id}")

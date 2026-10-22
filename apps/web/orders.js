@@ -89,11 +89,13 @@ async function approve(e) {
 // EventSource first; a 1.5 s poll takes over if the stream breaks.
 export function watchOrder(id, onUpdate) {
   let poll = 0, closed = false;
-  const fallback = () => { if (poll || closed) return; poll = setInterval(() => api('/api/actions/' + encodeURIComponent(id)).then(onUpdate).catch(() => {}), 1500); };
+  let previous = null;
+  const receive = action => { if (closed) return; onUpdate(action); const version = JSON.stringify([action.status, action.revision, action.ready_at, action.earlier_request]); if (previous !== version) { previous = version; dispatchEvent(new CustomEvent('dubaiio:source-changed', { detail: { id } })); } };
+  const fallback = () => { if (poll || closed) return; poll = setInterval(() => api('/api/actions/' + encodeURIComponent(id)).then(receive).catch(() => {}), 1500); };
   let es = null;
   try { es = new EventSource('/api/actions/' + encodeURIComponent(id) + '/stream'); } catch { fallback(); }
   if (es) {
-    es.onmessage = m => { try { onUpdate(JSON.parse(m.data)); } catch { /* ignore a malformed frame */ } };
+    es.onmessage = m => { try { receive(JSON.parse(m.data)); } catch { /* ignore a malformed frame */ } };
     es.addEventListener('gone', () => es.close());
     es.onerror = () => { es.close(); fallback(); };
   }

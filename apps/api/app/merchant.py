@@ -5,6 +5,7 @@ dispatched orders, and only the fields the user approved for sharing. Every
 status change comes from a merchant tap here; nothing is simulated.
 """
 import hmac
+from contextlib import contextmanager
 import json
 import logging
 import secrets
@@ -111,14 +112,10 @@ def stream(request: Request):
 def command(action_id: str, command: str, body: CommandIn, request: Request, idempotency_key: str = Header(min_length=8, max_length=100)):
     provider = provider_for(request)
     eng, store = engine(), engine().store
-    with store.lock:
-        row = store.db.execute("SELECT owner FROM actions WHERE id=? AND provider=?", (action_id, provider)).fetchone()
-        if not row:
-            raise HTTPException(404, "Order not found")  # another merchant's order looks absent
+    with order_write(store, provider, action_id) as owner:
         replay = store.db.execute("SELECT result FROM merchant_commands WHERE action_id=? AND key=?", (action_id, idempotency_key)).fetchone()
         if replay:
             return json.loads(replay[0])
-        owner = row[0]
         action = eng.get(owner, action_id)
         if command == "confirm-time":
             if action["status"] not in ("ACCEPTED", "READY") or not when_key(body.ready_at):
@@ -143,5 +140,15 @@ def command(action_id: str, command: str, body: CommandIn, request: Request, ide
             raise HTTPException(404, "Unknown command")
         result = shared_view(action)
         store.db.execute("INSERT INTO merchant_commands VALUES (?,?,?)", (action_id, idempotency_key, json.dumps(result)))
-        store.db.commit()
         return result
+
+
+@contextmanager
+def order_write(store, provider, action_id):
+    """Authenticate the provider, then serialize with user/task source writes."""
+    with store.lock:
+        row = store.db.execute("SELECT owner FROM actions WHERE id=? AND provider=?", (action_id, provider)).fetchone()
+        if not row:
+            raise HTTPException(404, "Order not found")
+    with store.transaction(row[0]):
+        yield row[0]
