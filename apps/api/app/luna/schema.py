@@ -47,6 +47,14 @@ class TaskFocusContext(BaseModel):
     selected_at: AwareDatetime
 
 
+class ProjectFocusContext(BaseModel):
+    """Owner/revision-bound workspace reference; content stays server-resolved."""
+    model_config = ConfigDict(extra="forbid")
+    project_id: str = Field(min_length=1, max_length=64)
+    revision: int = Field(ge=1)
+    selected_at: AwareDatetime
+
+
 class StatedFact(BaseModel):
     """Something the user explicitly said about themselves in this message."""
     key: FactKey

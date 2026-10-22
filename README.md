@@ -1,6 +1,6 @@
 # Dubai-io
 
-Current web preview: Home scrolls from adaptive task cards through complete inline task history into attributed News. Ask has chat history/profile and a left stacked navigation toggle; Services starts new tasks and its Try asking rows are flat. SQLite/browser checkpoint: 165 passed/11 skipped; Projects workspaces, genuine Decisions and scheduled checks remain pending. Exact status and run details: [handoff.md](handoff.md).
+Current web preview: Home scrolls from adaptive task cards through complete inline task history into attributed News. Ask has chat history/profile and a left stacked navigation toggle; Services starts new tasks and its Try asking rows are flat. SQLite/browser checkpoint: 175 passed/11 skipped; Projects workspaces now group chats/tasks/shared context. Genuine Decisions and scheduled checks remain pending. Exact status and run details: [handoff.md](handoff.md).
 
 A personal assistant for everyday life and work in Dubai, built for the Create AI Agents Championship (Best Personal AI Agent).
 

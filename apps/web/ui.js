@@ -4,6 +4,7 @@ import { getFacts, saveFacts } from './session-state.js';
 export const ICON = {
   menu: '<path d="M4 6h16M4 12h12M4 18h16" />',
   stack: '<rect x="4" y="3" width="16" height="13" rx="3" /><path d="M6 19h12M8 22h8" />',
+  folder: '<path d="M3 7a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v9H3z" />',
   search: '<circle cx="11" cy="11" r="6.5" /><path d="M16 16l4.5 4.5" />',
   orb: '<circle cx="12" cy="12" r="8" /><path d="M8.5 13.5c1.8 1.6 5.2 1.6 7 0" />',
   grid: '<rect x="4" y="4" width="7" height="7" rx="2" /><rect x="13" y="4" width="7" height="7" rx="2" /><rect x="4" y="13" width="7" height="7" rx="2" /><rect x="13" y="13" width="7" height="7" rx="2" />',

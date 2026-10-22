@@ -95,3 +95,28 @@ def test_task_scoped_date_does_not_overwrite_global_profile(memory,monkeypatch):
     result=luna.turn("one","alice","Move this task to 25 October at 10am",task_context={"task_id":"one","revision":1})
     assert result["remembered"] == []
     assert luna.facts.current("alice")[0]["value"] == "Existing unrelated deadline"
+
+
+def test_project_context_is_transient_and_project_facts_do_not_escape_to_global_profile(memory,monkeypatch):
+    saver,prompts = memory
+    def parse(**kwargs):
+        prompts.append(kwargs["input"])
+        return SimpleNamespace(output_parsed=Understanding.model_validate({"intent":"smalltalk","confidence":1,
+            "item":None,"where_lost":None,"service":None,"category":None,"subcategory":None,"terminal":None,
+            "stated_facts":[{"key":"deadline","value":"Project date"}],"reply":"Your workspace has those notes.","clarify":None}))
+    monkeypatch.setattr(luna,"client",lambda:SimpleNamespace(responses=SimpleNamespace(parse=parse)))
+    luna.facts.add("alice","deadline","Unrelated global deadline","Keep this")
+    result = luna.turn("workspace-thread","alice","What is next?",project_context={"project_id":"moving","revision":2,"context":"Private workspace note ABC"})
+    assert "Private workspace note ABC" in prompts[-1] and result["remembered"] == []
+    assert "Private workspace note ABC" not in json.dumps([row.checkpoint for row in saver.list(None)])
+    assert luna.facts.current("alice")[0]["value"] == "Unrelated global deadline"
+    luna.turn("unrelated-thread","alice","Hello")
+    assert "Private workspace note ABC" not in prompts[-1]
+
+
+def test_project_research_cannot_expand_public_query_from_private_notes(memory,monkeypatch):
+    captured=[]
+    monkeypatch.setattr(luna,"run_research",lambda understanding,text,_client:captured.append(understanding) or {})
+    luna.research({"understanding":{"intent":"info_question","query":"Private workspace ABC 123"},"text":"Dubai opening hours"},
+        SimpleNamespace(context=luna.AssistantContext(project={"context":"Private workspace ABC 123"})))
+    assert captured[0]["query"] == "Dubai opening hours"

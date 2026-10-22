@@ -24,9 +24,11 @@ from .recommendations import router as recommendations_router
 from .discovery import router as discovery_router
 from .tasks import router as tasks_router
 from .reading import router as reading_router
+from .projects import router as projects_router
+from .projects import resolve_context as resolve_project_context
 from .tasks import resolve_context as resolve_task_context
 from .luna import graph as luna
-from .luna.schema import FactKey, FocusContext, TaskFocusContext
+from .luna.schema import FactKey, FocusContext, TaskFocusContext, ProjectFocusContext
 
 app = FastAPI(title="Dubai-io API", version="0.1.0")
 app.include_router(auth_router)
@@ -38,6 +40,7 @@ app.include_router(recommendations_router)
 app.include_router(discovery_router)
 app.include_router(tasks_router)
 app.include_router(reading_router)
+app.include_router(projects_router)
 
 
 @app.middleware("http")
@@ -63,6 +66,7 @@ class TurnIn(BaseModel):
     user_id: str = Field(default="demo-user", max_length=64)
     focus: FocusContext | None = None
     task_focus: TaskFocusContext | None = None
+    project_focus: ProjectFocusContext | None = None
 
 
 class PlacesIn(BaseModel):
@@ -106,6 +110,8 @@ def luna_turn(body: TurnIn, request: Request):
         context = {"focus": body.focus} if body.focus else {}
         if body.task_focus:
             context["task_context"] = resolve_task_context(engine().store, owner, body.task_focus)
+        if body.project_focus:
+            context["project_context"] = resolve_project_context(engine().store, owner, body.thread_id, body.project_focus)
         return luna.turn(body.thread_id, owner, body.text, **context)
     except HTTPException:
         raise

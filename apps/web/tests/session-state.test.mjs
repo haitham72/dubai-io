@@ -44,3 +44,12 @@ test('new empty chats do not create empty history entries; restart retains its e
   s.saveMessages([{who:'me',text:'Hello'}]);s.newConversation();assert.equal(s.listConversations().length,1);
   s.resetSession();assert.deepEqual(s.listConversations(),[]);
 });
+
+test('empty project chats survive switching; a new chat starts outside the project',async()=>{
+  const s=await storage();const projectThread=s.identity().thread_id;
+  s.setConversationProject('moving-home');s.newConversation();
+  assert.equal(s.listConversations().find(c=>c.id===projectThread).project_id,'moving-home');
+  assert.equal(s.switchConversation(projectThread),true);
+  assert.equal(s.listConversations().find(c=>c.active).project_id,'moving-home');
+  s.setConversationProject(null);assert.deepEqual(s.listConversations(),[]);
+});

@@ -37,9 +37,9 @@ export function createLunaClient({fetcher=globalThis.fetch,timeoutMs=15000,enabl
         try{
           // Promise.race also bounds fetch implementations that ignore abort.
           const timeout=new Promise((_,reject)=>{timer=setTimeout(()=>{controller.abort();reject(new Error('timeout'));},timeoutMs);});
-          const call=(async()=>{const response=await fetcher('/api/luna/turn',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({text,...identity(),...requestContext}),signal:controller.signal});if(!response.ok)throw new Error('API unavailable');return mapUnderstanding(await response.json());})();
+          const call=(async()=>{const response=await fetcher('/api/luna/turn',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({text,...identity(),...requestContext}),signal:controller.signal});if(!response.ok){if(response.status===409){const body=await response.json().catch(()=>({}));const error=new Error('context_changed');error.detail=typeof body.detail==='string'?body.detail.slice(0,240):'The selected task or project changed. Reopen its latest details before asking.';throw error;}throw new Error('API unavailable');}return mapUnderstanding(await response.json());})();
           const result=await Promise.race([call,timeout]);return owner===generation?result:null;
-        }catch(error){return owner===generation?{...fallback(text),via:'lab router',fallback_reason:error.message==='timeout'?'Luna timed out':'Luna unavailable'}:null;}
+        }catch(error){if(owner!==generation)return null;if(error.message==='context_changed')return {intent:'unclear',conf:0,clarify:error.detail,via:'lab router',fallback_reason:'Selected context changed',remembered:[]};return {...fallback(text),via:'lab router',fallback_reason:error.message==='timeout'?'Luna timed out':'Luna unavailable'};}
         finally{clearTimeout(timer);if(active===controller)active=null;}
       };
       const result=queue.then(work);queue=result.catch(()=>{});return result;

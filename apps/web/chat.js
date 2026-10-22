@@ -1,5 +1,5 @@
 import { labFetch } from './api-client.js';
-import { requestContext, selectFocus, selectTaskFocus } from './assistant-context.js';
+import { requestContext, selectFocus, selectTaskFocus, waitForProjectContext } from './assistant-context.js';
 import { openServiceRequest } from './service-workflow.js';
 // io chat. A lab stand-in for Luna: a deterministic intent router (clearly
 // labelled "lab router") until the LangGraph service in apps/api replaces it.
@@ -39,12 +39,13 @@ function restoreMessages() {
   }
   render();
 }
-export function resetChat() { selectFocus(null); threadEpoch++; for(const stop of watchers.values())stop(); watchers.clear(); luna.reset(); resetSession(); for(const key of Object.keys(told))delete told[key]; items.length = 0; resetRecovery(); render(); }
+export function resetChat() { selectFocus(null); threadEpoch++; for(const stop of watchers.values())stop(); watchers.clear(); luna.reset(); resetSession(); dispatchEvent(new CustomEvent('dubaiio:conversation-changed',{detail:identity()})); for(const key of Object.keys(told))delete told[key]; items.length = 0; resetRecovery(); render(); }
 
 function reloadConversation() {
   selectFocus(null); threadEpoch++;
   for(const stop of watchers.values())stop(); watchers.clear(); luna.reset();
   items.length=0; resetRecovery(); restoreMessages(); ctx.showChat();
+  dispatchEvent(new CustomEvent('dubaiio:conversation-changed',{detail:identity()}));
   $('#q').value=''; $('#q').focus({preventScroll:true});
 }
 export function startNewChat() { newConversation(); reloadConversation(); }
@@ -146,9 +147,21 @@ export async function handle(text) {
   text=String(text).trim();if(!text)return;
   if(text.length>600){toast('Keep this message under 600 characters.');return;}
   const ep=threadEpoch, id=post({who:'me',text,pending:true});ctx.showChat();
+  try { await waitForProjectContext(); }
+  catch { if(ep===threadEpoch){update(id,it=>{it.pending=false;});post({who:'bot',html:'<p>The workspace context could not be checked. Reconnect and reopen this chat before asking again.</p>'});}return; }
+  if(ep!==threadEpoch)return;
+  const projectBefore=requestContext().project_focus;
   const taskFocus=requestContext().task_focus;
   const r=await luna.understand(text,taskFocus?()=>({intent:'task_help',conf:1}):route);
   if(!r||ep!==threadEpoch)return;
+  try { await waitForProjectContext(); }
+  catch { if(ep===threadEpoch){update(id,it=>{it.pending=false;});post({who:'bot',html:'<p>The workspace context could not be checked. Reopen this chat before asking again.</p>'});}return; }
+  if(ep!==threadEpoch)return;
+  const projectAfter=requestContext().project_focus;
+  if((projectBefore?.project_id||'')!==(projectAfter?.project_id||'')||projectBefore?.revision!==projectAfter?.revision){
+    update(id,it=>{it.pending=false;});
+    post({who:'bot',html:'<p>The shared project context changed while I was answering. Ask again using the latest context.</p>'});return;
+  }
   update(id,it=>{it.pending=false;it.r=r;});
   const factKeys={area:'area',hotel:'hotel',terminal:'terminal',taxi_plate:'plate',taxi_roof:'roof',deadline:'deadline',pet:'pet',language:'language',other:'other'};
   // Show only facts that are new or changed this turn; known ones are already in "You told me".

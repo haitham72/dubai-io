@@ -29,6 +29,7 @@ import { createToday, openTask } from './tasks.js';
 import { statusLabel } from './status-labels.js';
 import { createReading } from './reading.js';
 import { watchOrder } from './orders.js';
+import { openProjects, refreshProjectContext } from './projects.js';
 
 // C1 used 0.55: apply 70% of that reflection to every stage card.
 const CARD_REFLECTION_STRENGTH = 0.55 * 0.70;
@@ -91,13 +92,13 @@ document.body.insertAdjacentHTML('beforeend', `
           <button data-chat-ask="Coffee near me">${svg('cup', 'ic sm')} Find coffee nearby ${svg('chev', 'ic xs')}</button>
         </div>
       </div>
-      <div class="chat-focus" id="chatFocus" hidden></div><div class="c-list" id="chatList"></div>
+      <div class="chat-focus" id="chatProject" hidden></div><div class="chat-focus" id="chatFocus" hidden></div><div class="c-list" id="chatList"></div>
     </div>
   </section>
 
   <dialog class="chat-sidebar" id="chatSidebar" aria-labelledby="chatSidebarTitle">
     <header><h2 id="chatSidebarTitle">Dubai-io</h2><button class="round" data-close-history aria-label="Close chat history">${svg('close')}</button></header>
-    <nav aria-label="Assistant"><button data-history-home>${svg('grid', 'ic sm')} Tasks</button><button data-new-chat>${svg('spark', 'ic sm')} New chat</button></nav>
+    <nav aria-label="Assistant"><button data-history-home>${svg('grid', 'ic sm')} Tasks</button><button data-history-projects>${svg('folder', 'ic sm')} Projects</button><button data-new-chat>${svg('spark', 'ic sm')} New chat</button></nav>
     <h3>Chats</h3><p class="chat-history-note">Saved on this device</p><div id="chatHistoryList"></div>
     <footer><button id="chatBack">${svg('back', 'ic sm')} Back to browsing</button></footer>
   </dialog>
@@ -236,7 +237,7 @@ function setView(v) {
   if (v !== 'chat') $('#q').blur();
   setLift(v === 'home' ? 0 : 1);
 }
-function showChat() { closeOffers(); if (S.view !== 'chat') setView('chat'); }
+function showChat() { closeOffers(); if (S.view !== 'chat') { refreshProjectContext(); setView('chat'); } }
 function setTab(t) {
   const buttons = [...document.querySelectorAll('.tabbar button')];
   buttons.forEach(b => { if (b.dataset.tab === t) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
@@ -1062,12 +1063,13 @@ $('#svcGrid').addEventListener('click', e => {
 
 // ---------------------------------------------------------------- chat, composer, tabs
 initChat({ enterResults, openOffers, startGuide, showChat });
+refreshProjectContext();
 initOffers({ post, update, showChat, trackOrder });
 loadProfile().then(o => { Object.assign(S.overrides, o); refreshHomeCaptions(); });
 wireChat(); wireOffers(); wireGuide(); initPageHost(); initProviderPages();
 const chatSidebar = $('#chatSidebar');
 $('#chatHistory').addEventListener('click', () => {
-  const conversations = listConversations();
+  const conversations = listConversations().filter(chat => !chat.project_id);
   $('#chatHistoryList').innerHTML = conversations.length ? conversations.map(c => `<button data-conversation="${esc(c.id)}" ${c.active ? 'aria-current="page"' : ''}>${esc(c.title)}</button>`).join('') : '<p class="chat-history-note">Your conversations will appear here.</p>';
   chatSidebar.showModal();
 });
@@ -1077,6 +1079,7 @@ chatSidebar.addEventListener('click', e => {
   if (target?.matches('[data-new-chat]')) { try { startNewChat(); chatSidebar.close(); $('#q').focus({ preventScroll: true }); } catch (error) { toast(error.message); } }
   if (target?.matches('[data-conversation]')) { try { openConversation(target.dataset.conversation); chatSidebar.close(); $('#q').focus({ preventScroll: true }); } catch (error) { toast(error.message); } }
   if (target?.matches('[data-history-home]')) { chatSidebar.close(); setView('home'); $('#homeFeed').scrollTop = 0; }
+  if (target?.matches('[data-history-projects]')) { chatSidebar.close(); openProjects(); }
   if (e.target === chatSidebar) { const r = chatSidebar.getBoundingClientRect(); if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) chatSidebar.close(); }
 });
 $('#chatBack').addEventListener('click', () => { chatSidebar.close(); leaveChat(); });
@@ -1096,7 +1099,12 @@ function setNavigationExpanded(expanded) {
 }
 $('#browseToggle').addEventListener('click', () => setNavigationExpanded(true));
 addEventListener('dubaiio:task-chat', beginChat);
+addEventListener('dubaiio:project-chat', beginChat);
 addEventListener('dubaiio:news-chat', beginChat);
+addEventListener('dubaiio:project-focus', event => {
+  const el = $('#chatProject'), project = event.detail; el.hidden = !project;
+  el.innerHTML = project ? `<span>Project: ${esc(project.name)}</span><button class="btn sm" data-project-page="${esc(project.project_id)}">Open project</button>` : '';
+});
 function openToday() {
   if (S.view !== 'home') return;
   today.open();
