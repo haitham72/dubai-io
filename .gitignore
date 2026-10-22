@@ -16,3 +16,5 @@ apps/api/data/*.sqlite3*
 apps/api/data/oauth.key
 output/
 .uvicorn.log
+# Reproducible Vercel installs for the marketing site
+!apps/site/package-lock.json
