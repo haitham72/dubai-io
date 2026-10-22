@@ -8,6 +8,7 @@ from app.actions import ActionEngine, ActionStore
 
 @pytest.fixture
 def client(tmp_path, monkeypatch):
+    monkeypatch.setattr(communities.social.settings, "nararouter_api_key", "")
     store = ActionStore(tmp_path / "communities.sqlite3")
     monkeypatch.setattr(actions, "_engine", ActionEngine(store))
     app = FastAPI()
@@ -69,7 +70,7 @@ def test_chats_filter_unread_and_are_owner_scoped(client):
     c.post("/api/communities/jlt-runners/join")
     everything = c.get("/api/chats").json()
     kinds = {t["kind"] for t in everything["threads"]}
-    assert kinds == {"group", "community"} and everything["unread"] > 0
+    assert {"group", "community"} <= kinds and everything["unread"] > 0
     assert {t["kind"] for t in c.get("/api/chats?filter=groups").json()["threads"]} == {"group"}
     assert [t["id"] for t in c.get("/api/chats?filter=communities").json()["threads"]] == ["community:jlt-runners"]
     tid = everything["threads"][0]["id"]
@@ -117,3 +118,21 @@ def test_seed_files_are_valid_and_use_only_local_media():
         assert g["image"] in communities.MEDIA
         for post in g["posts"]:
             assert post["author"] in ids and all(m["author"] in ids for m in post["comments"])
+
+
+def test_community_feed_filter_and_direct_post_visibility(client):
+    c, _ = client
+    filtered = c.get("/api/feed?community_id=jlt-runners&limit=2").json()["posts"]
+    assert filtered and len(filtered)<=2 and all(p["community"]["id"]=="jlt-runners" for p in filtered)
+    post=filtered[0]
+    assert c.get(f"/api/posts/{post['id']}").json()["post"]==post
+    c.post(f"/api/posts/{post['id']}/hide",json={})
+    assert c.get(f"/api/posts/{post['id']}").status_code==404
+    assert other(c).get(f"/api/posts/{post['id']}").status_code==200
+    c.post("/api/communities/jlt-runners/join")
+    own=c.post("/api/communities/jlt-runners/posts",json={"text":"Private post"}).json()
+    assert c.get(f"/api/posts/{own['id']}").status_code==200
+    assert other(c).get(f"/api/posts/{own['id']}").status_code==404
+    story=c.get("/api/communities/jlt-runners/stories").json()["frames"][0]
+    assert c.get(f"/api/posts/{story['id']}").status_code==404
+    assert c.get("/api/feed?community_id=missing").status_code==404

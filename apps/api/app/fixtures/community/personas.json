@@ -1,12 +1,3002 @@
 [
- {"id":"p01", "name":"Sara Khalid", "handle":"sarak", "emoji":"🌴", "bio":"Product designer in JLT. Brunch critic.", "area":"JLT"},
- {"id":"p02", "name":"Ravi Menon", "handle":"ravi_menon", "emoji":"🏃", "bio":"Backend engineer and aspiring marathoner. Dawn runs on the Marina walk, coffee after.", "area":"Dubai Marina"},
- {"id":"p03", "name":"Layla Haddad", "handle":"layla_h", "emoji":"🧁", "bio":"Pastry chef in Downtown. I measure everything in grams and feelings.", "area":"Downtown"},
- {"id":"p04", "name":"Tomasz Nowak", "handle":"tomasz_n", "emoji":"🚴", "bio":"Civil engineer from Gdansk. Cycling Business Bay at 6am before the heat hits.", "area":"Business Bay"},
- {"id":"p05", "name":"Mariam Al Suwaidi", "handle":"mariam_s", "emoji":"🐾", "bio":"Vet nurse by day, puppy foster by night. Always bring treats to the clinic.", "area":"Al Barsha"},
- {"id":"p06", "name":"Kwame Asante", "handle":"kwame_a", "emoji":"🎧", "bio":"Piano teacher and weekend DJ. Silicon Oasis is home, Jumeirah is my escape.", "area":"Silicon Oasis"},
- {"id":"p07", "name":"Anjali Rao", "handle":"anjali_rao", "emoji":"🏠", "bio":"Interior architect in Mirdif. Home cook who swears by fresh curry leaves.", "area":"Mirdif"},
- {"id":"p08", "name":"Yusuf Demir", "handle":"yusuf_d", "emoji":"☕", "bio":"Roasting beans in Al Quoz. Ask me about pour-over, not about football.", "area":"Al Quoz"},
- {"id":"p09", "name":"Hannah Brooks", "handle":"hannah_b", "emoji":"🚀", "bio":"Startup founder on Palm Jumeirah. Coffee first, pitch decks second.", "area":"Palm Jumeirah"},
- {"id":"p10", "name":"Omar Qasim", "handle":"omar_q", "emoji":"🌊", "bio":"Swim coach on Jumeirah beach. Yes, I will tell you to put sunscreen on.", "area":"Jumeirah"}
+ {
+  "id": "p01",
+  "name": "Sara Khalid",
+  "handle": "sarak",
+  "emoji": "🌴",
+  "bio": "Product designer in JLT. Brunch critic.",
+  "area": "JLT",
+  "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1494790108377-be9c29b29330",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "neighbourhood life",
+   "food",
+   "community events"
+  ],
+  "voice": "practical and warm",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "practical and warm",
+   "interests": [
+    "neighbourhood life",
+    "food",
+    "community events"
+   ]
+  }
+ },
+ {
+  "id": "p02",
+  "name": "Ravi Menon",
+  "handle": "ravi_menon",
+  "emoji": "🏃",
+  "bio": "Backend engineer and aspiring marathoner. Dawn runs on the Marina walk, coffee after.",
+  "area": "Dubai Marina",
+  "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1500648767791-00dcc994a43e",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "work",
+   "transport",
+   "coffee"
+  ],
+  "voice": "concise and analytical",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "concise and analytical",
+   "interests": [
+    "work",
+    "transport",
+    "coffee"
+   ]
+  }
+ },
+ {
+  "id": "p03",
+  "name": "Layla Haddad",
+  "handle": "layla_h",
+  "emoji": "🧁",
+  "bio": "Pastry chef in Downtown. I measure everything in grams and feelings.",
+  "area": "Downtown",
+  "avatar": "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1531123897727-8f129e1688ce",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "family",
+   "home",
+   "weekend plans"
+  ],
+  "voice": "curious and encouraging",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "curious and encouraging",
+   "interests": [
+    "family",
+    "home",
+    "weekend plans"
+   ]
+  }
+ },
+ {
+  "id": "p04",
+  "name": "Tomasz Nowak",
+  "handle": "tomasz_n",
+  "emoji": "🚴",
+  "bio": "Civil engineer from Gdansk. Cycling Business Bay at 6am before the heat hits.",
+  "area": "Business Bay",
+  "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1507003211169-0a1dd7228f2d",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "fitness",
+   "outdoors",
+   "local tips"
+  ],
+  "voice": "specific and safety-minded",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "specific and safety-minded",
+   "interests": [
+    "fitness",
+    "outdoors",
+    "local tips"
+   ]
+  }
+ },
+ {
+  "id": "p05",
+  "name": "Mariam Al Suwaidi",
+  "handle": "mariam_s",
+  "emoji": "🐾",
+  "bio": "Vet nurse by day, puppy foster by night. Always bring treats to the clinic.",
+  "area": "Al Barsha",
+  "avatar": "https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1551836022-d5d88e9218df",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "neighbourhood life",
+   "food",
+   "community events"
+  ],
+  "voice": "practical and warm",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "practical and warm",
+   "interests": [
+    "neighbourhood life",
+    "food",
+    "community events"
+   ]
+  }
+ },
+ {
+  "id": "p06",
+  "name": "Kwame Asante",
+  "handle": "kwame_a",
+  "emoji": "🎧",
+  "bio": "Piano teacher and weekend DJ. Silicon Oasis is home, Jumeirah is my escape.",
+  "area": "Silicon Oasis",
+  "avatar": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1506794778202-cad84cf45f1d",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "work",
+   "transport",
+   "coffee"
+  ],
+  "voice": "concise and analytical",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "concise and analytical",
+   "interests": [
+    "work",
+    "transport",
+    "coffee"
+   ]
+  }
+ },
+ {
+  "id": "p07",
+  "name": "Anjali Rao",
+  "handle": "anjali_rao",
+  "emoji": "🏠",
+  "bio": "Interior architect in Mirdif. Home cook who swears by fresh curry leaves.",
+  "area": "Mirdif",
+  "avatar": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1580489944761-15a19d654956",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "family",
+   "home",
+   "weekend plans"
+  ],
+  "voice": "curious and encouraging",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "curious and encouraging",
+   "interests": [
+    "family",
+    "home",
+    "weekend plans"
+   ]
+  }
+ },
+ {
+  "id": "p08",
+  "name": "Yusuf Demir",
+  "handle": "yusuf_d",
+  "emoji": "☕",
+  "bio": "Roasting beans in Al Quoz. Ask me about pour-over, not about football.",
+  "area": "Al Quoz",
+  "avatar": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1573496359142-b8d87734a5a2",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "fitness",
+   "outdoors",
+   "local tips"
+  ],
+  "voice": "specific and safety-minded",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "specific and safety-minded",
+   "interests": [
+    "fitness",
+    "outdoors",
+    "local tips"
+   ]
+  }
+ },
+ {
+  "id": "p09",
+  "name": "Hannah Brooks",
+  "handle": "hannah_b",
+  "emoji": "🚀",
+  "bio": "Startup founder on Palm Jumeirah. Coffee first, pitch decks second.",
+  "area": "Palm Jumeirah",
+  "avatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1544005313-94ddf0286df2",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "neighbourhood life",
+   "food",
+   "community events"
+  ],
+  "voice": "practical and warm",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "practical and warm",
+   "interests": [
+    "neighbourhood life",
+    "food",
+    "community events"
+   ]
+  }
+ },
+ {
+  "id": "p10",
+  "name": "Omar Qasim",
+  "handle": "omar_q",
+  "emoji": "🌊",
+  "bio": "Swim coach on Jumeirah beach. Yes, I will tell you to put sunscreen on.",
+  "area": "Jumeirah",
+  "avatar": "https://images.unsplash.com/photo-1551836022-4c4c79ecde51?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1551836022-4c4c79ecde51",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "work",
+   "transport",
+   "coffee"
+  ],
+  "voice": "concise and analytical",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "concise and analytical",
+   "interests": [
+    "work",
+    "transport",
+    "coffee"
+   ]
+  }
+ },
+ {
+  "id": "p11",
+  "name": "Noura Al Mansoori",
+  "handle": "noura_m",
+  "emoji": "🌙",
+  "bio": "Teacher and neighbourhood book-club host.",
+  "area": "Al Nahda",
+  "avatar": "https://images.unsplash.com/photo-1504593811423-6dd665756598?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1504593811423-6dd665756598",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "family",
+   "home",
+   "weekend plans"
+  ],
+  "voice": "curious and encouraging",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "curious and encouraging",
+   "interests": [
+    "family",
+    "home",
+    "weekend plans"
+   ]
+  }
+ },
+ {
+  "id": "p12",
+  "name": "Daniel Cho",
+  "handle": "daniel_c",
+  "emoji": "📷",
+  "bio": "Photographer chasing light around Old Dubai.",
+  "area": "Deira",
+  "avatar": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1524504388940-b1c1722653e1",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "fitness",
+   "outdoors",
+   "local tips"
+  ],
+  "voice": "specific and safety-minded",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "specific and safety-minded",
+   "interests": [
+    "fitness",
+    "outdoors",
+    "local tips"
+   ]
+  }
+ },
+ {
+  "id": "p13",
+  "name": "Aisha Rahman",
+  "handle": "aisha_r",
+  "emoji": "🧾",
+  "bio": "Operations lead and careful trip planner.",
+  "area": "DIFC",
+  "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1534528741775-53994a69daeb",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "neighbourhood life",
+   "food",
+   "community events"
+  ],
+  "voice": "practical and warm",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "practical and warm",
+   "interests": [
+    "neighbourhood life",
+    "food",
+    "community events"
+   ]
+  }
+ },
+ {
+  "id": "p14",
+  "name": "Noah Williams",
+  "handle": "noah_w",
+  "emoji": "🛠️",
+  "bio": "Furniture maker and weekend fixer.",
+  "area": "Al Quoz",
+  "avatar": "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1508214751196-bcfd4ca60f91",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "work",
+   "transport",
+   "coffee"
+  ],
+  "voice": "concise and analytical",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "concise and analytical",
+   "interests": [
+    "work",
+    "transport",
+    "coffee"
+   ]
+  }
+ },
+ {
+  "id": "p15",
+  "name": "Mina Park",
+  "handle": "mina_p",
+  "emoji": "🍜",
+  "bio": "UX researcher collecting tiny Dubai rituals.",
+  "area": "JVC",
+  "avatar": "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1517841905240-472988babdf9",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "family",
+   "home",
+   "weekend plans"
+  ],
+  "voice": "curious and encouraging",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "curious and encouraging",
+   "interests": [
+    "family",
+    "home",
+    "weekend plans"
+   ]
+  }
+ },
+ {
+  "id": "p16",
+  "name": "Huda Saeed",
+  "handle": "huda_s",
+  "emoji": "🪴",
+  "bio": "Balcony gardener with a patient basil plant.",
+  "area": "Mirdif",
+  "avatar": "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1529626455594-4ff0802cfb7e",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "fitness",
+   "outdoors",
+   "local tips"
+  ],
+  "voice": "specific and safety-minded",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "specific and safety-minded",
+   "interests": [
+    "fitness",
+    "outdoors",
+    "local tips"
+   ]
+  }
+ },
+ {
+  "id": "p17",
+  "name": "Ethan Clarke",
+  "handle": "ethan_c",
+  "emoji": "🚇",
+  "bio": "Transit nerd and metro map collector.",
+  "area": "Bur Dubai",
+  "avatar": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1539571696357-5a69c17a67c6",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "neighbourhood life",
+   "food",
+   "community events"
+  ],
+  "voice": "practical and warm",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "practical and warm",
+   "interests": [
+    "neighbourhood life",
+    "food",
+    "community events"
+   ]
+  }
+ },
+ {
+  "id": "p18",
+  "name": "Priya Nair",
+  "handle": "priya_n",
+  "emoji": "🧘",
+  "bio": "Yoga teacher who prefers quiet beaches.",
+  "area": "Al Sufouh",
+  "avatar": "https://images.unsplash.com/photo-1542206395-9feb3edaa68d?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1542206395-9feb3edaa68d",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "work",
+   "transport",
+   "coffee"
+  ],
+  "voice": "concise and analytical",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "concise and analytical",
+   "interests": [
+    "work",
+    "transport",
+    "coffee"
+   ]
+  }
+ },
+ {
+  "id": "p19",
+  "name": "Samir Haddad",
+  "handle": "samir_h",
+  "emoji": "🔧",
+  "bio": "Facilities technician and repair-tip sharer.",
+  "area": "Al Qusais",
+  "avatar": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1506794778202-cad84cf45f1d",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "family",
+   "home",
+   "weekend plans"
+  ],
+  "voice": "curious and encouraging",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "curious and encouraging",
+   "interests": [
+    "family",
+    "home",
+    "weekend plans"
+   ]
+  }
+ },
+ {
+  "id": "p20",
+  "name": "Fatima Noor",
+  "handle": "fatima_n",
+  "emoji": "📚",
+  "bio": "Librarian, reader, and school-run coordinator.",
+  "area": "Jumeirah",
+  "avatar": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1519085360753-af0119f7cbe7",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "fitness",
+   "outdoors",
+   "local tips"
+  ],
+  "voice": "specific and safety-minded",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "specific and safety-minded",
+   "interests": [
+    "fitness",
+    "outdoors",
+    "local tips"
+   ]
+  }
+ },
+ {
+  "id": "p21",
+  "name": "Leo Martins",
+  "handle": "leo_m",
+  "emoji": "⚽",
+  "bio": "Weekend football organiser.",
+  "area": "Al Barsha",
+  "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1494790108377-be9c29b29330",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "neighbourhood life",
+   "food",
+   "community events"
+  ],
+  "voice": "practical and warm",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "practical and warm",
+   "interests": [
+    "neighbourhood life",
+    "food",
+    "community events"
+   ]
+  }
+ },
+ {
+  "id": "p22",
+  "name": "Rania Youssef",
+  "handle": "rania_y",
+  "emoji": "🥗",
+  "bio": "Nutrition student and meal-prep realist.",
+  "area": "Town Square",
+  "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1500648767791-00dcc994a43e",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "work",
+   "transport",
+   "coffee"
+  ],
+  "voice": "concise and analytical",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "concise and analytical",
+   "interests": [
+    "work",
+    "transport",
+    "coffee"
+   ]
+  }
+ },
+ {
+  "id": "p23",
+  "name": "George Mensah",
+  "handle": "george_m",
+  "emoji": "🎸",
+  "bio": "Guitar teacher and open-mic regular.",
+  "area": "Karama",
+  "avatar": "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1531123897727-8f129e1688ce",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "family",
+   "home",
+   "weekend plans"
+  ],
+  "voice": "curious and encouraging",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "curious and encouraging",
+   "interests": [
+    "family",
+    "home",
+    "weekend plans"
+   ]
+  }
+ },
+ {
+  "id": "p24",
+  "name": "Elena Petrova",
+  "handle": "elena_p",
+  "emoji": "🧵",
+  "bio": "Tailor who knows every fabric shop in Bur Dubai.",
+  "area": "Bur Dubai",
+  "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1507003211169-0a1dd7228f2d",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "fitness",
+   "outdoors",
+   "local tips"
+  ],
+  "voice": "specific and safety-minded",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "specific and safety-minded",
+   "interests": [
+    "fitness",
+    "outdoors",
+    "local tips"
+   ]
+  }
+ },
+ {
+  "id": "p25",
+  "name": "Hassan Malik",
+  "handle": "hassan_m",
+  "emoji": "🚗",
+  "bio": "Car-detailing hobbyist and careful driver.",
+  "area": "Dubai Hills",
+  "avatar": "https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1551836022-d5d88e9218df",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "neighbourhood life",
+   "food",
+   "community events"
+  ],
+  "voice": "practical and warm",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "practical and warm",
+   "interests": [
+    "neighbourhood life",
+    "food",
+    "community events"
+   ]
+  }
+ },
+ {
+  "id": "p26",
+  "name": "Chloe Bennett",
+  "handle": "chloe_b",
+  "emoji": "🌅",
+  "bio": "Early riser documenting sunrise walks.",
+  "area": "Kite Beach",
+  "avatar": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1506794778202-cad84cf45f1d",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "work",
+   "transport",
+   "coffee"
+  ],
+  "voice": "concise and analytical",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "concise and analytical",
+   "interests": [
+    "work",
+    "transport",
+    "coffee"
+   ]
+  }
+ },
+ {
+  "id": "p27",
+  "name": "Arjun Shah",
+  "handle": "arjun_s",
+  "emoji": "💻",
+  "bio": "Cloud engineer who works from cafes.",
+  "area": "DIFC",
+  "avatar": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1580489944761-15a19d654956",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "family",
+   "home",
+   "weekend plans"
+  ],
+  "voice": "curious and encouraging",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "curious and encouraging",
+   "interests": [
+    "family",
+    "home",
+    "weekend plans"
+   ]
+  }
+ },
+ {
+  "id": "p28",
+  "name": "Salma Idris",
+  "handle": "salma_i",
+  "emoji": "🧁",
+  "bio": "Home baker trading reliable recipes.",
+  "area": "Al Warqa",
+  "avatar": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1573496359142-b8d87734a5a2",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "fitness",
+   "outdoors",
+   "local tips"
+  ],
+  "voice": "specific and safety-minded",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "specific and safety-minded",
+   "interests": [
+    "fitness",
+    "outdoors",
+    "local tips"
+   ]
+  }
+ },
+ {
+  "id": "p29",
+  "name": "Victor Okoro",
+  "handle": "victor_o",
+  "emoji": "🏀",
+  "bio": "Youth coach and community volunteer.",
+  "area": "International City",
+  "avatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1544005313-94ddf0286df2",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "neighbourhood life",
+   "food",
+   "community events"
+  ],
+  "voice": "practical and warm",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "practical and warm",
+   "interests": [
+    "neighbourhood life",
+    "food",
+    "community events"
+   ]
+  }
+ },
+ {
+  "id": "p30",
+  "name": "Maya Fernandes",
+  "handle": "maya_f",
+  "emoji": "🧳",
+  "bio": "Frequent flyer with a sensible packing list.",
+  "area": "Dubai Marina",
+  "avatar": "https://images.unsplash.com/photo-1551836022-4c4c79ecde51?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1551836022-4c4c79ecde51",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "work",
+   "transport",
+   "coffee"
+  ],
+  "voice": "concise and analytical",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "concise and analytical",
+   "interests": [
+    "work",
+    "transport",
+    "coffee"
+   ]
+  }
+ },
+ {
+  "id": "p31",
+  "name": "Yara Khalil",
+  "handle": "yara_k",
+  "emoji": "🎨",
+  "bio": "Illustrator inspired by old souks.",
+  "area": "Al Fahidi",
+  "avatar": "https://images.unsplash.com/photo-1504593811423-6dd665756598?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1504593811423-6dd665756598",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "family",
+   "home",
+   "weekend plans"
+  ],
+  "voice": "curious and encouraging",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "curious and encouraging",
+   "interests": [
+    "family",
+    "home",
+    "weekend plans"
+   ]
+  }
+ },
+ {
+  "id": "p32",
+  "name": "Ben Carter",
+  "handle": "ben_c",
+  "emoji": "🛒",
+  "bio": "Grocery-price comparer and dad of two.",
+  "area": "Jumeirah Village Circle",
+  "avatar": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1524504388940-b1c1722653e1",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "fitness",
+   "outdoors",
+   "local tips"
+  ],
+  "voice": "specific and safety-minded",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "specific and safety-minded",
+   "interests": [
+    "fitness",
+    "outdoors",
+    "local tips"
+   ]
+  }
+ },
+ {
+  "id": "p33",
+  "name": "Kavya Iyer",
+  "handle": "kavya_i",
+  "emoji": "🌶️",
+  "bio": "Spice collector and weekday cook.",
+  "area": "Discovery Gardens",
+  "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1534528741775-53994a69daeb",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "neighbourhood life",
+   "food",
+   "community events"
+  ],
+  "voice": "practical and warm",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "practical and warm",
+   "interests": [
+    "neighbourhood life",
+    "food",
+    "community events"
+   ]
+  }
+ },
+ {
+  "id": "p34",
+  "name": "Adil Farooq",
+  "handle": "adil_f",
+  "emoji": "📦",
+  "bio": "Small-business owner learning logistics.",
+  "area": "Ras Al Khor",
+  "avatar": "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1508214751196-bcfd4ca60f91",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "work",
+   "transport",
+   "coffee"
+  ],
+  "voice": "concise and analytical",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "concise and analytical",
+   "interests": [
+    "work",
+    "transport",
+    "coffee"
+   ]
+  }
+ },
+ {
+  "id": "p35",
+  "name": "Grace Kim",
+  "handle": "grace_k",
+  "emoji": "🧪",
+  "bio": "Lab researcher and museum fan.",
+  "area": "Healthcare City",
+  "avatar": "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1517841905240-472988babdf9",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "family",
+   "home",
+   "weekend plans"
+  ],
+  "voice": "curious and encouraging",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "curious and encouraging",
+   "interests": [
+    "family",
+    "home",
+    "weekend plans"
+   ]
+  }
+ },
+ {
+  "id": "p36",
+  "name": "Moussa Diallo",
+  "handle": "moussa_d",
+  "emoji": "🥁",
+  "bio": "Percussionist and community-event volunteer.",
+  "area": "Al Satwa",
+  "avatar": "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1529626455594-4ff0802cfb7e",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "fitness",
+   "outdoors",
+   "local tips"
+  ],
+  "voice": "specific and safety-minded",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "specific and safety-minded",
+   "interests": [
+    "fitness",
+    "outdoors",
+    "local tips"
+   ]
+  }
+ },
+ {
+  "id": "p37",
+  "name": "Tara Singh",
+  "handle": "tara_s",
+  "emoji": "🛍️",
+  "bio": "Personal shopper with a thrift-first mindset.",
+  "area": "Deira",
+  "avatar": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1539571696357-5a69c17a67c6",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "neighbourhood life",
+   "food",
+   "community events"
+  ],
+  "voice": "practical and warm",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "practical and warm",
+   "interests": [
+    "neighbourhood life",
+    "food",
+    "community events"
+   ]
+  }
+ },
+ {
+  "id": "p38",
+  "name": "Nicolas Rey",
+  "handle": "nicolas_r",
+  "emoji": "🥖",
+  "bio": "Chef and farmers-market regular.",
+  "area": "JLT",
+  "avatar": "https://images.unsplash.com/photo-1542206395-9feb3edaa68d?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1542206395-9feb3edaa68d",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "work",
+   "transport",
+   "coffee"
+  ],
+  "voice": "concise and analytical",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "concise and analytical",
+   "interests": [
+    "work",
+    "transport",
+    "coffee"
+   ]
+  }
+ },
+ {
+  "id": "p39",
+  "name": "Hana Alami",
+  "handle": "hana_a",
+  "emoji": "🩺",
+  "bio": "Clinic administrator who shares appointment tips.",
+  "area": "Al Wasl",
+  "avatar": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1506794778202-cad84cf45f1d",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "family",
+   "home",
+   "weekend plans"
+  ],
+  "voice": "curious and encouraging",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "curious and encouraging",
+   "interests": [
+    "family",
+    "home",
+    "weekend plans"
+   ]
+  }
+ },
+ {
+  "id": "p40",
+  "name": "Peter Evans",
+  "handle": "peter_e",
+  "emoji": "🎣",
+  "bio": "Quiet-water fishing hobbyist.",
+  "area": "Jebel Ali",
+  "avatar": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1519085360753-af0119f7cbe7",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "fitness",
+   "outdoors",
+   "local tips"
+  ],
+  "voice": "specific and safety-minded",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "specific and safety-minded",
+   "interests": [
+    "fitness",
+    "outdoors",
+    "local tips"
+   ]
+  }
+ },
+ {
+  "id": "p41",
+  "name": "Zainab Ali",
+  "handle": "zainab_a",
+  "emoji": "🧕",
+  "bio": "Community mediator and language learner.",
+  "area": "Al Nahda",
+  "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1494790108377-be9c29b29330",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "neighbourhood life",
+   "food",
+   "community events"
+  ],
+  "voice": "practical and warm",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "practical and warm",
+   "interests": [
+    "neighbourhood life",
+    "food",
+    "community events"
+   ]
+  }
+ },
+ {
+  "id": "p42",
+  "name": "Mateo Silva",
+  "handle": "mateo_s",
+  "emoji": "🏄",
+  "bio": "Paddleboard beginner and beach cleaner.",
+  "area": "Jumeirah",
+  "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1500648767791-00dcc994a43e",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "work",
+   "transport",
+   "coffee"
+  ],
+  "voice": "concise and analytical",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "concise and analytical",
+   "interests": [
+    "work",
+    "transport",
+    "coffee"
+   ]
+  }
+ },
+ {
+  "id": "p43",
+  "name": "Sofia Ivanova",
+  "handle": "sofia_i",
+  "emoji": "🎻",
+  "bio": "Violin student and concert-list maker.",
+  "area": "Downtown",
+  "avatar": "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1531123897727-8f129e1688ce",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "family",
+   "home",
+   "weekend plans"
+  ],
+  "voice": "curious and encouraging",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "curious and encouraging",
+   "interests": [
+    "family",
+    "home",
+    "weekend plans"
+   ]
+  }
+ },
+ {
+  "id": "p44",
+  "name": "Bilal Khan",
+  "handle": "bilal_k",
+  "emoji": "📱",
+  "bio": "Mobile repair specialist and gadget tinkerer.",
+  "area": "Bur Dubai",
+  "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1507003211169-0a1dd7228f2d",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "fitness",
+   "outdoors",
+   "local tips"
+  ],
+  "voice": "specific and safety-minded",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "specific and safety-minded",
+   "interests": [
+    "fitness",
+    "outdoors",
+    "local tips"
+   ]
+  }
+ },
+ {
+  "id": "p45",
+  "name": "Rachel Adams",
+  "handle": "rachel_a",
+  "emoji": "🐕",
+  "bio": "Dog walker who knows shaded routes.",
+  "area": "The Springs",
+  "avatar": "https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1551836022-d5d88e9218df",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "neighbourhood life",
+   "food",
+   "community events"
+  ],
+  "voice": "practical and warm",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "practical and warm",
+   "interests": [
+    "neighbourhood life",
+    "food",
+    "community events"
+   ]
+  }
+ },
+ {
+  "id": "p46",
+  "name": "Faisal Hamdan",
+  "handle": "faisal_h",
+  "emoji": "🌴",
+  "bio": "Local-history enthusiast and walking-tour host.",
+  "area": "Al Shindagha",
+  "avatar": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1506794778202-cad84cf45f1d",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "work",
+   "transport",
+   "coffee"
+  ],
+  "voice": "concise and analytical",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "concise and analytical",
+   "interests": [
+    "work",
+    "transport",
+    "coffee"
+   ]
+  }
+ },
+ {
+  "id": "p47",
+  "name": "Lina Costa",
+  "handle": "lina_c",
+  "emoji": "🍝",
+  "bio": "Home cook and leftovers evangelist.",
+  "area": "JVC",
+  "avatar": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1580489944761-15a19d654956",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "family",
+   "home",
+   "weekend plans"
+  ],
+  "voice": "curious and encouraging",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "curious and encouraging",
+   "interests": [
+    "family",
+    "home",
+    "weekend plans"
+   ]
+  }
+ },
+ {
+  "id": "p48",
+  "name": "Ahmed Salim",
+  "handle": "ahmed_s",
+  "emoji": "🏗️",
+  "bio": "Site engineer and early breakfast seeker.",
+  "area": "Business Bay",
+  "avatar": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1573496359142-b8d87734a5a2",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "fitness",
+   "outdoors",
+   "local tips"
+  ],
+  "voice": "specific and safety-minded",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "specific and safety-minded",
+   "interests": [
+    "fitness",
+    "outdoors",
+    "local tips"
+   ]
+  }
+ },
+ {
+  "id": "p49",
+  "name": "Olivia Reed",
+  "handle": "olivia_r",
+  "emoji": "🧺",
+  "bio": "Minimalist declutterer and swap organiser.",
+  "area": "Dubai Hills",
+  "avatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1544005313-94ddf0286df2",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "neighbourhood life",
+   "food",
+   "community events"
+  ],
+  "voice": "practical and warm",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "practical and warm",
+   "interests": [
+    "neighbourhood life",
+    "food",
+    "community events"
+   ]
+  }
+ },
+ {
+  "id": "p50",
+  "name": "Khaled Nasser",
+  "handle": "khaled_n",
+  "emoji": "🏊",
+  "bio": "Masters swimmer and pool-lane diplomat.",
+  "area": "Al Barsha",
+  "avatar": "https://images.unsplash.com/photo-1551836022-4c4c79ecde51?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1551836022-4c4c79ecde51",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "work",
+   "transport",
+   "coffee"
+  ],
+  "voice": "concise and analytical",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "concise and analytical",
+   "interests": [
+    "work",
+    "transport",
+    "coffee"
+   ]
+  }
+ },
+ {
+  "id": "p51",
+  "name": "Meera Thomas",
+  "handle": "meera_t",
+  "emoji": "🌼",
+  "bio": "School counsellor and plant parent.",
+  "area": "Mirdif",
+  "avatar": "https://images.unsplash.com/photo-1504593811423-6dd665756598?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1504593811423-6dd665756598",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "family",
+   "home",
+   "weekend plans"
+  ],
+  "voice": "curious and encouraging",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "curious and encouraging",
+   "interests": [
+    "family",
+    "home",
+    "weekend plans"
+   ]
+  }
+ },
+ {
+  "id": "p52",
+  "name": "Jonas Weber",
+  "handle": "jonas_w",
+  "emoji": "📐",
+  "bio": "Architect who sketches public spaces.",
+  "area": "Al Quoz",
+  "avatar": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1524504388940-b1c1722653e1",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "fitness",
+   "outdoors",
+   "local tips"
+  ],
+  "voice": "specific and safety-minded",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "specific and safety-minded",
+   "interests": [
+    "fitness",
+    "outdoors",
+    "local tips"
+   ]
+  }
+ },
+ {
+  "id": "p53",
+  "name": "Reem Saleh",
+  "handle": "reem_s",
+  "emoji": "🧺",
+  "bio": "Weekend market explorer and bargain finder.",
+  "area": "Satwa",
+  "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1534528741775-53994a69daeb",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "neighbourhood life",
+   "food",
+   "community events"
+  ],
+  "voice": "practical and warm",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "practical and warm",
+   "interests": [
+    "neighbourhood life",
+    "food",
+    "community events"
+   ]
+  }
+ },
+ {
+  "id": "p54",
+  "name": "Isaac Brown",
+  "handle": "isaac_b",
+  "emoji": "🚲",
+  "bio": "Cyclist who maps low-traffic routes.",
+  "area": "Al Khawaneej",
+  "avatar": "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1508214751196-bcfd4ca60f91",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "work",
+   "transport",
+   "coffee"
+  ],
+  "voice": "concise and analytical",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "concise and analytical",
+   "interests": [
+    "work",
+    "transport",
+    "coffee"
+   ]
+  }
+ },
+ {
+  "id": "p55",
+  "name": "Dalia Omar",
+  "handle": "dalia_o",
+  "emoji": "🍵",
+  "bio": "Tea collector and calm-hosting enthusiast.",
+  "area": "Umm Suqeim",
+  "avatar": "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1517841905240-472988babdf9",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "family",
+   "home",
+   "weekend plans"
+  ],
+  "voice": "curious and encouraging",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "curious and encouraging",
+   "interests": [
+    "family",
+    "home",
+    "weekend plans"
+   ]
+  }
+ },
+ {
+  "id": "p56",
+  "name": "Rohan Desai",
+  "handle": "rohan_d",
+  "emoji": "📈",
+  "bio": "Finance analyst who explains budgets plainly.",
+  "area": "DIFC",
+  "avatar": "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1529626455594-4ff0802cfb7e",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "fitness",
+   "outdoors",
+   "local tips"
+  ],
+  "voice": "specific and safety-minded",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "specific and safety-minded",
+   "interests": [
+    "fitness",
+    "outdoors",
+    "local tips"
+   ]
+  }
+ },
+ {
+  "id": "p57",
+  "name": "Amina Yusuf",
+  "handle": "amina_y",
+  "emoji": "🧸",
+  "bio": "Parenting-group organiser and toy swap host.",
+  "area": "Al Furjan",
+  "avatar": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1539571696357-5a69c17a67c6",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "neighbourhood life",
+   "food",
+   "community events"
+  ],
+  "voice": "practical and warm",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "practical and warm",
+   "interests": [
+    "neighbourhood life",
+    "food",
+    "community events"
+   ]
+  }
+ },
+ {
+  "id": "p58",
+  "name": "Thomas Green",
+  "handle": "thomas_g",
+  "emoji": "🧗",
+  "bio": "Indoor climbing beginner and route planner.",
+  "area": "Al Quoz",
+  "avatar": "https://images.unsplash.com/photo-1542206395-9feb3edaa68d?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1542206395-9feb3edaa68d",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "work",
+   "transport",
+   "coffee"
+  ],
+  "voice": "concise and analytical",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "concise and analytical",
+   "interests": [
+    "work",
+    "transport",
+    "coffee"
+   ]
+  }
+ },
+ {
+  "id": "p59",
+  "name": "Sana Mir",
+  "handle": "sana_m",
+  "emoji": "📝",
+  "bio": "Copy editor and community-notice proofreader.",
+  "area": "JLT",
+  "avatar": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1506794778202-cad84cf45f1d",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "family",
+   "home",
+   "weekend plans"
+  ],
+  "voice": "curious and encouraging",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "curious and encouraging",
+   "interests": [
+    "family",
+    "home",
+    "weekend plans"
+   ]
+  }
+ },
+ {
+  "id": "p60",
+  "name": "Marco Rossi",
+  "handle": "marco_r",
+  "emoji": "🍕",
+  "bio": "Pizza maker experimenting with local dates.",
+  "area": "Marina",
+  "avatar": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1519085360753-af0119f7cbe7",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "fitness",
+   "outdoors",
+   "local tips"
+  ],
+  "voice": "specific and safety-minded",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "specific and safety-minded",
+   "interests": [
+    "fitness",
+    "outdoors",
+    "local tips"
+   ]
+  }
+ },
+ {
+  "id": "p61",
+  "name": "Nadia Saleem",
+  "handle": "nadia_s",
+  "emoji": "🎒",
+  "bio": "University student and bus-route expert.",
+  "area": "Academic City",
+  "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1494790108377-be9c29b29330",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "neighbourhood life",
+   "food",
+   "community events"
+  ],
+  "voice": "practical and warm",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "practical and warm",
+   "interests": [
+    "neighbourhood life",
+    "food",
+    "community events"
+   ]
+  }
+ },
+ {
+  "id": "p62",
+  "name": "Eli Turner",
+  "handle": "eli_t",
+  "emoji": "🎮",
+  "bio": "Game designer and quiet-cafe reviewer.",
+  "area": "Barsha Heights",
+  "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1500648767791-00dcc994a43e",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "work",
+   "transport",
+   "coffee"
+  ],
+  "voice": "concise and analytical",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "concise and analytical",
+   "interests": [
+    "work",
+    "transport",
+    "coffee"
+   ]
+  }
+ },
+ {
+  "id": "p63",
+  "name": "Maha Jaber",
+  "handle": "maha_j",
+  "emoji": "🪡",
+  "bio": "Embroidery artist and workshop host.",
+  "area": "Al Safa",
+  "avatar": "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1531123897727-8f129e1688ce",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "family",
+   "home",
+   "weekend plans"
+  ],
+  "voice": "curious and encouraging",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "curious and encouraging",
+   "interests": [
+    "family",
+    "home",
+    "weekend plans"
+   ]
+  }
+ },
+ {
+  "id": "p64",
+  "name": "Kenji Watanabe",
+  "handle": "kenji_w",
+  "emoji": "🍱",
+  "bio": "Home lunchbox maker and punctual commuter.",
+  "area": "Jumeirah Lake Towers",
+  "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1507003211169-0a1dd7228f2d",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "fitness",
+   "outdoors",
+   "local tips"
+  ],
+  "voice": "specific and safety-minded",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "specific and safety-minded",
+   "interests": [
+    "fitness",
+    "outdoors",
+    "local tips"
+   ]
+  }
+ },
+ {
+  "id": "p65",
+  "name": "Sarah Osei",
+  "handle": "sarah_o",
+  "emoji": "🌿",
+  "bio": "Urban farming volunteer.",
+  "area": "Al Khawaneej",
+  "avatar": "https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1551836022-d5d88e9218df",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "neighbourhood life",
+   "food",
+   "community events"
+  ],
+  "voice": "practical and warm",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "practical and warm",
+   "interests": [
+    "neighbourhood life",
+    "food",
+    "community events"
+   ]
+  }
+ },
+ {
+  "id": "p66",
+  "name": "Fahad Rizvi",
+  "handle": "fahad_r",
+  "emoji": "🛵",
+  "bio": "Courier who shares practical heat-safety tips.",
+  "area": "Al Qusais",
+  "avatar": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1506794778202-cad84cf45f1d",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "work",
+   "transport",
+   "coffee"
+  ],
+  "voice": "concise and analytical",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "concise and analytical",
+   "interests": [
+    "work",
+    "transport",
+    "coffee"
+   ]
+  }
+ },
+ {
+  "id": "p67",
+  "name": "Julia Novak",
+  "handle": "julia_n",
+  "emoji": "🎬",
+  "bio": "Film-club host and subtitle nerd.",
+  "area": "Downtown",
+  "avatar": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1580489944761-15a19d654956",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "family",
+   "home",
+   "weekend plans"
+  ],
+  "voice": "curious and encouraging",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "curious and encouraging",
+   "interests": [
+    "family",
+    "home",
+    "weekend plans"
+   ]
+  }
+ },
+ {
+  "id": "p68",
+  "name": "Saeed Alvi",
+  "handle": "saeed_a",
+  "emoji": "🪴",
+  "bio": "Balcony shade experimenter.",
+  "area": "Deira",
+  "avatar": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1573496359142-b8d87734a5a2",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "fitness",
+   "outdoors",
+   "local tips"
+  ],
+  "voice": "specific and safety-minded",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "specific and safety-minded",
+   "interests": [
+    "fitness",
+    "outdoors",
+    "local tips"
+   ]
+  }
+ },
+ {
+  "id": "p69",
+  "name": "Helen Ford",
+  "handle": "helen_f",
+  "emoji": "🧭",
+  "bio": "New-arrival mentor and neighbourhood walker.",
+  "area": "Dubai Marina",
+  "avatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1544005313-94ddf0286df2",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "neighbourhood life",
+   "food",
+   "community events"
+  ],
+  "voice": "practical and warm",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "practical and warm",
+   "interests": [
+    "neighbourhood life",
+    "food",
+    "community events"
+   ]
+  }
+ },
+ {
+  "id": "p70",
+  "name": "Yousef Darwish",
+  "handle": "yousef_d",
+  "emoji": "📻",
+  "bio": "Podcast host covering small local businesses.",
+  "area": "Al Quoz",
+  "avatar": "https://images.unsplash.com/photo-1551836022-4c4c79ecde51?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1551836022-4c4c79ecde51",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "work",
+   "transport",
+   "coffee"
+  ],
+  "voice": "concise and analytical",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "concise and analytical",
+   "interests": [
+    "work",
+    "transport",
+    "coffee"
+   ]
+  }
+ },
+ {
+  "id": "p71",
+  "name": "Camila Torres",
+  "handle": "camila_t",
+  "emoji": "💃",
+  "bio": "Dance teacher and weekend-event finder.",
+  "area": "Jumeirah Village Circle",
+  "avatar": "https://images.unsplash.com/photo-1504593811423-6dd665756598?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1504593811423-6dd665756598",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "family",
+   "home",
+   "weekend plans"
+  ],
+  "voice": "curious and encouraging",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "curious and encouraging",
+   "interests": [
+    "family",
+    "home",
+    "weekend plans"
+   ]
+  }
+ },
+ {
+  "id": "p72",
+  "name": "Ibrahim Musa",
+  "handle": "ibrahim_m",
+  "emoji": "🧰",
+  "bio": "Handyman and responsible used-item seller.",
+  "area": "Al Barsha",
+  "avatar": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1524504388940-b1c1722653e1",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "fitness",
+   "outdoors",
+   "local tips"
+  ],
+  "voice": "specific and safety-minded",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "specific and safety-minded",
+   "interests": [
+    "fitness",
+    "outdoors",
+    "local tips"
+   ]
+  }
+ },
+ {
+  "id": "p73",
+  "name": "Emily Stone",
+  "handle": "emily_s",
+  "emoji": "🧴",
+  "bio": "Beauty editor who favours honest reviews.",
+  "area": "Palm Jumeirah",
+  "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1534528741775-53994a69daeb",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "neighbourhood life",
+   "food",
+   "community events"
+  ],
+  "voice": "practical and warm",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "practical and warm",
+   "interests": [
+    "neighbourhood life",
+    "food",
+    "community events"
+   ]
+  }
+ },
+ {
+  "id": "p74",
+  "name": "Nabil Haddad",
+  "handle": "nabil_h",
+  "emoji": "🌌",
+  "bio": "Astronomy hobbyist and desert-night planner.",
+  "area": "Mirdif",
+  "avatar": "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1508214751196-bcfd4ca60f91",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "work",
+   "transport",
+   "coffee"
+  ],
+  "voice": "concise and analytical",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "concise and analytical",
+   "interests": [
+    "work",
+    "transport",
+    "coffee"
+   ]
+  }
+ },
+ {
+  "id": "p75",
+  "name": "Ayla Chen",
+  "handle": "ayla_c",
+  "emoji": "🧋",
+  "bio": "Student and bubble-tea map maker.",
+  "area": "International City",
+  "avatar": "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1517841905240-472988babdf9",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "family",
+   "home",
+   "weekend plans"
+  ],
+  "voice": "curious and encouraging",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "curious and encouraging",
+   "interests": [
+    "family",
+    "home",
+    "weekend plans"
+   ]
+  }
+ },
+ {
+  "id": "p76",
+  "name": "Mariam Bello",
+  "handle": "mariam_b",
+  "emoji": "🪴",
+  "bio": "Interior stylist and rental-friendly DIY fan.",
+  "area": "JVC",
+  "avatar": "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1529626455594-4ff0802cfb7e",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "fitness",
+   "outdoors",
+   "local tips"
+  ],
+  "voice": "specific and safety-minded",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "specific and safety-minded",
+   "interests": [
+    "fitness",
+    "outdoors",
+    "local tips"
+   ]
+  }
+ },
+ {
+  "id": "p77",
+  "name": "Owen Parker",
+  "handle": "owen_p",
+  "emoji": "🧯",
+  "bio": "Safety officer and calm emergency planner.",
+  "area": "Dubai South",
+  "avatar": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1539571696357-5a69c17a67c6",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "neighbourhood life",
+   "food",
+   "community events"
+  ],
+  "voice": "practical and warm",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "practical and warm",
+   "interests": [
+    "neighbourhood life",
+    "food",
+    "community events"
+   ]
+  }
+ },
+ {
+  "id": "p78",
+  "name": "Farah Amin",
+  "handle": "farah_a",
+  "emoji": "🧑‍🍳",
+  "bio": "Catering assistant and recipe tester.",
+  "area": "Karama",
+  "avatar": "https://images.unsplash.com/photo-1542206395-9feb3edaa68d?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1542206395-9feb3edaa68d",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "work",
+   "transport",
+   "coffee"
+  ],
+  "voice": "concise and analytical",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "concise and analytical",
+   "interests": [
+    "work",
+    "transport",
+    "coffee"
+   ]
+  }
+ },
+ {
+  "id": "p79",
+  "name": "Luca Bianchi",
+  "handle": "luca_b",
+  "emoji": "🏎️",
+  "bio": "Karting fan and careful road-trip planner.",
+  "area": "Motor City",
+  "avatar": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1506794778202-cad84cf45f1d",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "family",
+   "home",
+   "weekend plans"
+  ],
+  "voice": "curious and encouraging",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "curious and encouraging",
+   "interests": [
+    "family",
+    "home",
+    "weekend plans"
+   ]
+  }
+ },
+ {
+  "id": "p80",
+  "name": "Siti Rahma",
+  "handle": "siti_r",
+  "emoji": "🧵",
+  "bio": "Textile artist and market volunteer.",
+  "area": "Al Fahidi",
+  "avatar": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1519085360753-af0119f7cbe7",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "fitness",
+   "outdoors",
+   "local tips"
+  ],
+  "voice": "specific and safety-minded",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "specific and safety-minded",
+   "interests": [
+    "fitness",
+    "outdoors",
+    "local tips"
+   ]
+  }
+ },
+ {
+  "id": "p81",
+  "name": "Hamza Noor",
+  "handle": "hamza_n",
+  "emoji": "📦",
+  "bio": "Resale seller who writes accurate item listings.",
+  "area": "Al Nahda",
+  "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1494790108377-be9c29b29330",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "neighbourhood life",
+   "food",
+   "community events"
+  ],
+  "voice": "practical and warm",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "practical and warm",
+   "interests": [
+    "neighbourhood life",
+    "food",
+    "community events"
+   ]
+  }
+ },
+ {
+  "id": "p82",
+  "name": "Clara Mendes",
+  "handle": "clara_m",
+  "emoji": "🦮",
+  "bio": "Rescue-dog foster and patient trainer.",
+  "area": "The Lakes",
+  "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1500648767791-00dcc994a43e",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "work",
+   "transport",
+   "coffee"
+  ],
+  "voice": "concise and analytical",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "concise and analytical",
+   "interests": [
+    "work",
+    "transport",
+    "coffee"
+   ]
+  }
+ },
+ {
+  "id": "p83",
+  "name": "Yassin Elmas",
+  "handle": "yassin_e",
+  "emoji": "☀️",
+  "bio": "Morning coffee cart regular and weather watcher.",
+  "area": "Al Wasl",
+  "avatar": "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1531123897727-8f129e1688ce",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "family",
+   "home",
+   "weekend plans"
+  ],
+  "voice": "curious and encouraging",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "curious and encouraging",
+   "interests": [
+    "family",
+    "home",
+    "weekend plans"
+   ]
+  }
+ },
+ {
+  "id": "p84",
+  "name": "Lucy Martin",
+  "handle": "lucy_m",
+  "emoji": "🧠",
+  "bio": "Career coach sharing interview practice.",
+  "area": "DIFC",
+  "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1507003211169-0a1dd7228f2d",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "fitness",
+   "outdoors",
+   "local tips"
+  ],
+  "voice": "specific and safety-minded",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "specific and safety-minded",
+   "interests": [
+    "fitness",
+    "outdoors",
+    "local tips"
+   ]
+  }
+ },
+ {
+  "id": "p85",
+  "name": "Abdullah Kareem",
+  "handle": "abdullah_k",
+  "emoji": "📍",
+  "bio": "Local guide and map-pin perfectionist.",
+  "area": "Bur Dubai",
+  "avatar": "https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1551836022-d5d88e9218df",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "neighbourhood life",
+   "food",
+   "community events"
+  ],
+  "voice": "practical and warm",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "practical and warm",
+   "interests": [
+    "neighbourhood life",
+    "food",
+    "community events"
+   ]
+  }
+ },
+ {
+  "id": "p86",
+  "name": "Sonia George",
+  "handle": "sonia_g",
+  "emoji": "🌺",
+  "bio": "Florist and community-garden volunteer.",
+  "area": "Al Barsha",
+  "avatar": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1506794778202-cad84cf45f1d",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "work",
+   "transport",
+   "coffee"
+  ],
+  "voice": "concise and analytical",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "concise and analytical",
+   "interests": [
+    "work",
+    "transport",
+    "coffee"
+   ]
+  }
+ },
+ {
+  "id": "p87",
+  "name": "Max Fischer",
+  "handle": "max_f",
+  "emoji": "🎧",
+  "bio": "Sound engineer who knows quiet rehearsal rooms.",
+  "area": "Al Quoz",
+  "avatar": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1580489944761-15a19d654956",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "family",
+   "home",
+   "weekend plans"
+  ],
+  "voice": "curious and encouraging",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "curious and encouraging",
+   "interests": [
+    "family",
+    "home",
+    "weekend plans"
+   ]
+  }
+ },
+ {
+  "id": "p88",
+  "name": "Hiba Karim",
+  "handle": "hiba_k",
+  "emoji": "🥘",
+  "bio": "Family cook and freezer-meal planner.",
+  "area": "Mirdif",
+  "avatar": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1573496359142-b8d87734a5a2",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "fitness",
+   "outdoors",
+   "local tips"
+  ],
+  "voice": "specific and safety-minded",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "specific and safety-minded",
+   "interests": [
+    "fitness",
+    "outdoors",
+    "local tips"
+   ]
+  }
+ },
+ {
+  "id": "p89",
+  "name": "Andre Silva",
+  "handle": "andre_s",
+  "emoji": "🏖️",
+  "bio": "Beach-volleyball organiser.",
+  "area": "Kite Beach",
+  "avatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1544005313-94ddf0286df2",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "neighbourhood life",
+   "food",
+   "community events"
+  ],
+  "voice": "practical and warm",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "practical and warm",
+   "interests": [
+    "neighbourhood life",
+    "food",
+    "community events"
+   ]
+  }
+ },
+ {
+  "id": "p90",
+  "name": "Noor Fadel",
+  "handle": "noor_f",
+  "emoji": "💡",
+  "bio": "Product manager and thoughtful neighbour.",
+  "area": "Dubai Hills",
+  "avatar": "https://images.unsplash.com/photo-1551836022-4c4c79ecde51?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1551836022-4c4c79ecde51",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "work",
+   "transport",
+   "coffee"
+  ],
+  "voice": "concise and analytical",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "concise and analytical",
+   "interests": [
+    "work",
+    "transport",
+    "coffee"
+   ]
+  }
+ },
+ {
+  "id": "p91",
+  "name": "Megan Hall",
+  "handle": "megan_h",
+  "emoji": "🧹",
+  "bio": "Household-systems enthusiast.",
+  "area": "The Springs",
+  "avatar": "https://images.unsplash.com/photo-1504593811423-6dd665756598?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1504593811423-6dd665756598",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "family",
+   "home",
+   "weekend plans"
+  ],
+  "voice": "curious and encouraging",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "curious and encouraging",
+   "interests": [
+    "family",
+    "home",
+    "weekend plans"
+   ]
+  }
+ },
+ {
+  "id": "p92",
+  "name": "Rashid Hamad",
+  "handle": "rashid_h",
+  "emoji": "🕌",
+  "bio": "Heritage volunteer and respectful tour guide.",
+  "area": "Al Shindagha",
+  "avatar": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1524504388940-b1c1722653e1",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "fitness",
+   "outdoors",
+   "local tips"
+  ],
+  "voice": "specific and safety-minded",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "specific and safety-minded",
+   "interests": [
+    "fitness",
+    "outdoors",
+    "local tips"
+   ]
+  }
+ },
+ {
+  "id": "p93",
+  "name": "Tessa King",
+  "handle": "tessa_k",
+  "emoji": "🛋️",
+  "bio": "Second-hand furniture hunter.",
+  "area": "JLT",
+  "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1534528741775-53994a69daeb",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "neighbourhood life",
+   "food",
+   "community events"
+  ],
+  "voice": "practical and warm",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "practical and warm",
+   "interests": [
+    "neighbourhood life",
+    "food",
+    "community events"
+   ]
+  }
+ },
+ {
+  "id": "p94",
+  "name": "Murtaza Ali",
+  "handle": "murtaza_a",
+  "emoji": "🧮",
+  "bio": "Accountant who helps small shops budget.",
+  "area": "Deira",
+  "avatar": "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1508214751196-bcfd4ca60f91",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "work",
+   "transport",
+   "coffee"
+  ],
+  "voice": "concise and analytical",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "concise and analytical",
+   "interests": [
+    "work",
+    "transport",
+    "coffee"
+   ]
+  }
+ },
+ {
+  "id": "p95",
+  "name": "Ivy Laurent",
+  "handle": "ivy_l",
+  "emoji": "📖",
+  "bio": "Writer and library-event regular.",
+  "area": "Al Safa",
+  "avatar": "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1517841905240-472988babdf9",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "family",
+   "home",
+   "weekend plans"
+  ],
+  "voice": "curious and encouraging",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "curious and encouraging",
+   "interests": [
+    "family",
+    "home",
+    "weekend plans"
+   ]
+  }
+ },
+ {
+  "id": "p96",
+  "name": "Kareem Hassan",
+  "handle": "kareem_h",
+  "emoji": "🥊",
+  "bio": "Boxing coach and beginner-friendly trainer.",
+  "area": "Al Quoz",
+  "avatar": "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1529626455594-4ff0802cfb7e",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "fitness",
+   "outdoors",
+   "local tips"
+  ],
+  "voice": "specific and safety-minded",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "specific and safety-minded",
+   "interests": [
+    "fitness",
+    "outdoors",
+    "local tips"
+   ]
+  }
+ },
+ {
+  "id": "p97",
+  "name": "Lara Aziz",
+  "handle": "lara_a",
+  "emoji": "🧡",
+  "bio": "Neighbourhood volunteer and welcome-basket maker.",
+  "area": "Al Furjan",
+  "avatar": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1539571696357-5a69c17a67c6",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "neighbourhood life",
+   "food",
+   "community events"
+  ],
+  "voice": "practical and warm",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "practical and warm",
+   "interests": [
+    "neighbourhood life",
+    "food",
+    "community events"
+   ]
+  }
+ },
+ {
+  "id": "p98",
+  "name": "Julian Moore",
+  "handle": "julian_m",
+  "emoji": "🧑‍💻",
+  "bio": "Remote worker and reliable cafe reviewer.",
+  "area": "JVC",
+  "avatar": "https://images.unsplash.com/photo-1542206395-9feb3edaa68d?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1542206395-9feb3edaa68d",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "work",
+   "transport",
+   "coffee"
+  ],
+  "voice": "concise and analytical",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "concise and analytical",
+   "interests": [
+    "work",
+    "transport",
+    "coffee"
+   ]
+  }
+ },
+ {
+  "id": "p99",
+  "name": "Sahar Mahmoud",
+  "handle": "sahar_m",
+  "emoji": "🌧️",
+  "bio": "Rare-rain photographer and optimistic planner.",
+  "area": "Dubai Marina",
+  "avatar": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1506794778202-cad84cf45f1d",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "family",
+   "home",
+   "weekend plans"
+  ],
+  "voice": "curious and encouraging",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "curious and encouraging",
+   "interests": [
+    "family",
+    "home",
+    "weekend plans"
+   ]
+  }
+ },
+ {
+  "id": "p100",
+  "name": "Adam Yusuf",
+  "handle": "adam_y",
+  "emoji": "🤝",
+  "bio": "Community host who connects neighbours to useful people.",
+  "area": "Business Bay",
+  "avatar": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=160&h=160&fit=crop&auto=format",
+  "avatar_source": {
+   "provider": "Unsplash",
+   "asset_id": "1519085360753-af0119f7cbe7",
+   "license": "Unsplash License",
+   "accessed": "2026-10-23"
+  },
+  "interests": [
+   "fitness",
+   "outdoors",
+   "local tips"
+  ],
+  "voice": "specific and safety-minded",
+  "profile": {
+   "persona_type": "fictional Dubai resident",
+   "reply_style": "specific and safety-minded",
+   "interests": [
+    "fitness",
+    "outdoors",
+    "local tips"
+   ]
+  }
+ }
 ]

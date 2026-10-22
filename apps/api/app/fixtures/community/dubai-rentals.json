@@ -1,0 +1,419 @@
+{
+  "id": "dubai-rentals",
+  "name": "Dubai Rentals & Flatmates",
+  "handle": "dxb_rentals",
+  "topic": "Housing",
+  "about": "Practical renter conversations: viewings, Ejari questions, commute tradeoffs, and respectful flatmate searches.",
+  "image": "media/home-green.jpg",
+  "members": 22100,
+  "stories": [
+    {
+      "author": "p69",
+      "text": "Viewing checklist: AC, water pressure, noise, and the actual commute.",
+      "image": "media/home-green.jpg",
+      "hours_ago": 4
+    },
+    {
+      "author": "p39",
+      "text": "A clear written inventory prevents arguments later.",
+      "image": "media/ac.jpg",
+      "hours_ago": 20
+    }
+  ],
+  "posts": [
+    {
+      "id": "dubai-rentals-01",
+      "author": "p69",
+      "text": "New to Dubai and comparing a cheaper flat farther from work with a smaller place near the Metro. What tradeoff surprised you most after moving in?",
+      "image": "media/home.jpg",
+      "hours_ago": 5,
+      "likes": 267,
+      "comments": [
+        {
+          "id": "dubai-rentals-01-c00",
+          "author": "p17",
+          "text": "Calculate the full commute in summer, including the walk from the station. The cheaper rent can cost energy every day.",
+          "parent_id": null,
+          "hours_ago": 4,
+          "likes": 16
+        },
+        {
+          "id": "dubai-rentals-01-c01",
+          "author": "p69",
+          "text": "That is exactly what I had not priced in. I will do two trial commutes before deciding.",
+          "parent_id": "dubai-rentals-01-c00",
+          "hours_ago": 3,
+          "likes": 19
+        },
+        {
+          "id": "dubai-rentals-01-c02",
+          "author": "p25",
+          "text": "Also visit at night; construction noise and parking feel different after 8pm.",
+          "parent_id": "dubai-rentals-01-c01",
+          "hours_ago": 2,
+          "likes": 12
+        },
+        {
+          "id": "dubai-rentals-01-c03",
+          "author": "p41",
+          "text": "Ask for every fee in writing and keep your own copy of the inventory.",
+          "parent_id": "dubai-rentals-01-c02",
+          "hours_ago": 1,
+          "likes": 10
+        }
+      ]
+    },
+    {
+      "id": "dubai-rentals-02",
+      "author": "p39",
+      "text": "What do you photograph during a viewing before signing? I am making a one-page checklist for first-time renters.",
+      "image": "media/ac.jpg",
+      "hours_ago": 11,
+      "likes": 143,
+      "comments": [
+        {
+          "id": "dubai-rentals-02-c00",
+          "author": "p90",
+          "text": "Meter readings, AC vents, window seals, water pressure, stains, and the exact parking bay.",
+          "parent_id": null,
+          "hours_ago": 10,
+          "likes": 9
+        },
+        {
+          "id": "dubai-rentals-02-c01",
+          "author": "p39",
+          "text": "Adding all of those, plus a video of the appliances starting up.",
+          "parent_id": "dubai-rentals-02-c00",
+          "hours_ago": 9,
+          "likes": 14
+        },
+        {
+          "id": "dubai-rentals-02-c02",
+          "author": "p52",
+          "text": "Photograph the view from each bedroom too; it catches unexpected construction sites.",
+          "parent_id": "dubai-rentals-02-c01",
+          "hours_ago": 8,
+          "likes": 7
+        }
+      ]
+    },
+    {
+      "id": "dubai-rentals-03",
+      "author": "p69",
+      "text": "What did you inspect first at a viewing? I am building a checklist for people renting alone.",
+      "image": "media/ac.jpg",
+      "hours_ago": 5,
+      "likes": 138,
+      "comments": [
+        {
+          "id": "dubai-rentals-03-c00",
+          "author": "p30",
+          "text": "What did you inspect first at a viewing? I am building a checklist for people renting alone.",
+          "parent_id": null,
+          "hours_ago": 12,
+          "likes": 3
+        },
+        {
+          "id": "dubai-rentals-03-c01",
+          "author": "p37",
+          "text": "I tried this recently and the clear version saved both sides a second trip.",
+          "parent_id": "dubai-rentals-03-c00",
+          "hours_ago": 11,
+          "likes": 4
+        },
+        {
+          "id": "dubai-rentals-03-c02",
+          "author": "p44",
+          "text": "Adding the area and a realistic time window made the replies much better.",
+          "parent_id": "dubai-rentals-03-c01",
+          "hours_ago": 10,
+          "likes": 5
+        },
+        {
+          "id": "dubai-rentals-03-c03",
+          "author": "p51",
+          "text": "I agree; a small checklist keeps a friendly exchange from becoming confusing.",
+          "parent_id": "dubai-rentals-03-c02",
+          "hours_ago": 9,
+          "likes": 6
+        },
+        {
+          "id": "dubai-rentals-03-c04",
+          "author": "p58",
+          "text": "That is useful context. I would also confirm the practical constraint first.",
+          "parent_id": "dubai-rentals-03-c03",
+          "hours_ago": 8,
+          "likes": 7
+        },
+        {
+          "id": "dubai-rentals-03-c05",
+          "author": "p65",
+          "text": "Our building group used the same approach and it reduced back-and-forth.",
+          "parent_id": "dubai-rentals-03-c04",
+          "hours_ago": 7,
+          "likes": 8
+        },
+        {
+          "id": "dubai-rentals-03-c06",
+          "author": "p72",
+          "text": "I will try this and report what changed, with the caveat that every situation differs.",
+          "parent_id": "dubai-rentals-03-c05",
+          "hours_ago": 6,
+          "likes": 9
+        },
+        {
+          "id": "dubai-rentals-03-c07",
+          "author": "p79",
+          "text": "One more detail: keep the original message updated so people do not rely on stale information.",
+          "parent_id": "dubai-rentals-03-c06",
+          "hours_ago": 5,
+          "likes": 10
+        },
+        {
+          "id": "dubai-rentals-03-c08",
+          "author": "p86",
+          "text": "Thanks for asking this openly. Someone new to Dubai will probably find it useful.",
+          "parent_id": "dubai-rentals-03-c07",
+          "hours_ago": 4,
+          "likes": 11
+        },
+        {
+          "id": "dubai-rentals-03-c09",
+          "author": "p93",
+          "text": "I have saved the idea for our next community meetup.",
+          "parent_id": "dubai-rentals-03-c08",
+          "hours_ago": 3,
+          "likes": 12
+        },
+        {
+          "id": "dubai-rentals-03-c10",
+          "author": "p100",
+          "text": "That follow-through is exactly what makes a local thread helpful.",
+          "parent_id": "dubai-rentals-03-c09",
+          "hours_ago": 2,
+          "likes": 13
+        },
+        {
+          "id": "dubai-rentals-03-c11",
+          "author": "p07",
+          "text": "Closing the loop: I used the checklist and the decision was much clearer.",
+          "parent_id": "dubai-rentals-03-c10",
+          "hours_ago": 1,
+          "likes": 3
+        }
+      ]
+    },
+    {
+      "id": "dubai-rentals-04",
+      "author": "p69",
+      "text": "How do you compare a longer commute with a higher rent near the Metro?",
+      "image": "media/ac.jpg",
+      "hours_ago": 6,
+      "likes": 155,
+      "comments": [
+        {
+          "id": "dubai-rentals-04-c00",
+          "author": "p33",
+          "text": "How do you compare a longer commute with a higher rent near the Metro?",
+          "parent_id": null,
+          "hours_ago": 12,
+          "likes": 3
+        },
+        {
+          "id": "dubai-rentals-04-c01",
+          "author": "p40",
+          "text": "I tried this recently and the clear version saved both sides a second trip.",
+          "parent_id": "dubai-rentals-04-c00",
+          "hours_ago": 11,
+          "likes": 4
+        },
+        {
+          "id": "dubai-rentals-04-c02",
+          "author": "p47",
+          "text": "Adding the area and a realistic time window made the replies much better.",
+          "parent_id": "dubai-rentals-04-c01",
+          "hours_ago": 10,
+          "likes": 5
+        },
+        {
+          "id": "dubai-rentals-04-c03",
+          "author": "p54",
+          "text": "I agree; a small checklist keeps a friendly exchange from becoming confusing.",
+          "parent_id": "dubai-rentals-04-c02",
+          "hours_ago": 9,
+          "likes": 6
+        },
+        {
+          "id": "dubai-rentals-04-c04",
+          "author": "p61",
+          "text": "That is useful context. I would also confirm the practical constraint first.",
+          "parent_id": "dubai-rentals-04-c03",
+          "hours_ago": 8,
+          "likes": 7
+        },
+        {
+          "id": "dubai-rentals-04-c05",
+          "author": "p68",
+          "text": "Our building group used the same approach and it reduced back-and-forth.",
+          "parent_id": "dubai-rentals-04-c04",
+          "hours_ago": 7,
+          "likes": 8
+        },
+        {
+          "id": "dubai-rentals-04-c06",
+          "author": "p75",
+          "text": "I will try this and report what changed, with the caveat that every situation differs.",
+          "parent_id": "dubai-rentals-04-c05",
+          "hours_ago": 6,
+          "likes": 9
+        },
+        {
+          "id": "dubai-rentals-04-c07",
+          "author": "p82",
+          "text": "One more detail: keep the original message updated so people do not rely on stale information.",
+          "parent_id": "dubai-rentals-04-c06",
+          "hours_ago": 5,
+          "likes": 10
+        },
+        {
+          "id": "dubai-rentals-04-c08",
+          "author": "p89",
+          "text": "Thanks for asking this openly. Someone new to Dubai will probably find it useful.",
+          "parent_id": "dubai-rentals-04-c07",
+          "hours_ago": 4,
+          "likes": 11
+        },
+        {
+          "id": "dubai-rentals-04-c09",
+          "author": "p96",
+          "text": "I have saved the idea for our next community meetup.",
+          "parent_id": "dubai-rentals-04-c08",
+          "hours_ago": 3,
+          "likes": 12
+        },
+        {
+          "id": "dubai-rentals-04-c10",
+          "author": "p03",
+          "text": "That follow-through is exactly what makes a local thread helpful.",
+          "parent_id": "dubai-rentals-04-c09",
+          "hours_ago": 2,
+          "likes": 13
+        },
+        {
+          "id": "dubai-rentals-04-c11",
+          "author": "p10",
+          "text": "Closing the loop: I used the checklist and the decision was much clearer.",
+          "parent_id": "dubai-rentals-04-c10",
+          "hours_ago": 1,
+          "likes": 3
+        }
+      ]
+    },
+    {
+      "id": "dubai-rentals-05",
+      "author": "p69",
+      "text": "Which question helped you spot a noisy apartment before signing?",
+      "image": "media/ac.jpg",
+      "hours_ago": 7,
+      "likes": 172,
+      "comments": [
+        {
+          "id": "dubai-rentals-05-c00",
+          "author": "p36",
+          "text": "Which question helped you spot a noisy apartment before signing?",
+          "parent_id": null,
+          "hours_ago": 12,
+          "likes": 3
+        },
+        {
+          "id": "dubai-rentals-05-c01",
+          "author": "p43",
+          "text": "I tried this recently and the clear version saved both sides a second trip.",
+          "parent_id": "dubai-rentals-05-c00",
+          "hours_ago": 11,
+          "likes": 4
+        },
+        {
+          "id": "dubai-rentals-05-c02",
+          "author": "p50",
+          "text": "Adding the area and a realistic time window made the replies much better.",
+          "parent_id": "dubai-rentals-05-c01",
+          "hours_ago": 10,
+          "likes": 5
+        },
+        {
+          "id": "dubai-rentals-05-c03",
+          "author": "p57",
+          "text": "I agree; a small checklist keeps a friendly exchange from becoming confusing.",
+          "parent_id": "dubai-rentals-05-c02",
+          "hours_ago": 9,
+          "likes": 6
+        },
+        {
+          "id": "dubai-rentals-05-c04",
+          "author": "p64",
+          "text": "That is useful context. I would also confirm the practical constraint first.",
+          "parent_id": "dubai-rentals-05-c03",
+          "hours_ago": 8,
+          "likes": 7
+        },
+        {
+          "id": "dubai-rentals-05-c05",
+          "author": "p71",
+          "text": "Our building group used the same approach and it reduced back-and-forth.",
+          "parent_id": "dubai-rentals-05-c04",
+          "hours_ago": 7,
+          "likes": 8
+        },
+        {
+          "id": "dubai-rentals-05-c06",
+          "author": "p78",
+          "text": "I will try this and report what changed, with the caveat that every situation differs.",
+          "parent_id": "dubai-rentals-05-c05",
+          "hours_ago": 6,
+          "likes": 9
+        },
+        {
+          "id": "dubai-rentals-05-c07",
+          "author": "p85",
+          "text": "One more detail: keep the original message updated so people do not rely on stale information.",
+          "parent_id": "dubai-rentals-05-c06",
+          "hours_ago": 5,
+          "likes": 10
+        },
+        {
+          "id": "dubai-rentals-05-c08",
+          "author": "p92",
+          "text": "Thanks for asking this openly. Someone new to Dubai will probably find it useful.",
+          "parent_id": "dubai-rentals-05-c07",
+          "hours_ago": 4,
+          "likes": 11
+        },
+        {
+          "id": "dubai-rentals-05-c09",
+          "author": "p99",
+          "text": "I have saved the idea for our next community meetup.",
+          "parent_id": "dubai-rentals-05-c08",
+          "hours_ago": 3,
+          "likes": 12
+        },
+        {
+          "id": "dubai-rentals-05-c10",
+          "author": "p06",
+          "text": "That follow-through is exactly what makes a local thread helpful.",
+          "parent_id": "dubai-rentals-05-c09",
+          "hours_ago": 2,
+          "likes": 13
+        },
+        {
+          "id": "dubai-rentals-05-c11",
+          "author": "p13",
+          "text": "Closing the loop: I used the checklist and the decision was much clearer.",
+          "parent_id": "dubai-rentals-05-c10",
+          "hours_ago": 1,
+          "likes": 3
+        }
+      ]
+    }
+  ]
+}

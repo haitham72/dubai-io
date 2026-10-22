@@ -27,6 +27,10 @@ class Settings:
     fast_effort = os.getenv("FAST_EFFORT", "medium")
     luna_timeout_s = float(os.getenv("LUNA_TIMEOUT_S", "20"))
     openai_api_key = os.getenv("OPENAI_API_KEY", "")
+    nararouter_api_key = os.getenv("NARAROUTER_API_KEY", "")
+    social_model = os.getenv("SOCIAL_MODEL", "agnes-2.5-flash")
+    social_base_url = os.getenv("NARAROUTER_BASE_URL", "https://router.bynara.id/v1")
+    social_timeout_s = float(os.getenv("SOCIAL_TIMEOUT_S", "35"))
     google_key = os.getenv("GOOGLE_PLACES_KEY", "")
     # Maps JavaScript keys are visible in the browser by design: use a separate key
     # restricted to your site (HTTP referrer) and to the Maps JavaScript API.

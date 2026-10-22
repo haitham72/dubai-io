@@ -1,5 +1,19 @@
 # Dubai-io — Plan
 
+## Resumed three-track authorization — 23 Oct 2026
+
+Founder resumed option B: finalize `redesign-community`, integrate into `main`, then build `dubai-io-web` and `ios-swift` from that baseline. The pause note below is superseded.
+
+## Latest scope correction — 23 Oct 2026
+
+Stay on `redesign-community` and finish current branch edits only. **Do not merge into main or start web/iOS branches.** Earlier three-track execution authorization is paused by the founder. Plan the durable Reddit-like community database and Storage buckets in `docs/references/community-data-storage-plan.md`; implementation of that full target is not claimed. Recommender remains partial (REC-03C/REC-04 and PostgreSQL adoption pending).
+
+
+## Current execution — 23 Oct 2026
+
+Finalize and verify `redesign-community` → integrate into `main` → build `dubai-io-web` and `ios-swift` from the verified baseline. Historical `redesign` is not the target. Include minimal UI corrections, Luna-authored rich nested demo population, and backend-orchestrated NaraRouter Agnes persona replies with stable identity, owner isolation, persisted history and honest failure states. Full web/native work follows backend verification; preserve prior native source. This is implementation authorization, not a completion claim.
+
+
 **Updated:** 22 Oct 2026 · **Owner:** Haitham · **Branches:** `redesign` (web/backend), `ios-swift` (native parked) · Runtime checkpoint: `handoff.md` · Review checklist: `docs/user-app-review-guide.md`
 This is the single plan. Done work lives in git history; this file keeps locks, scope, the demo arc and what remains.
 

@@ -1,110 +1,100 @@
-# FOUNDER FEEDBACK 23 Oct (highest priority; supersedes below)
+# Muse handoff — three branches (23 Oct 2026)
 
-Muse works on **3 branches**, each in its own worktree:
-- `redesign-community` (`../dubai-io-rc`): **minimal changes only**, limited to the fixes listed here.
-- `dubai-io-web`: the Apple.com-inspired site, full depth, same backend.
-- `ios-swift`: the Swift app.
+## Resumed three-track authorization — 23 Oct 2026
 
-**General:** use real, openly licensed images (Unsplash, Pexels, Wikimedia) for people, food, places and items. No placeholders. Record each image's source and licence.
+Founder resumed option B: finalize `redesign-community`, integrate into `main`, then build `dubai-io-web` and `ios-swift` from that baseline. The pause note below is superseded.
 
-**Feed:**
-- Excellent; keep it.
-- Replies must be nested threads like Facebook, not Twitter-style @mentions.
-- Fix the story circles: they must be true circles, evenly aligned.
+## Latest scope correction — 23 Oct 2026
 
-**Chat:**
-- Remove the phone icon next to the profile icon; it's confusing.
-- Copy the new WhatsApp structure: a Calls screen with search and tabs Calls | Contacts | Keypad | Favorites.
-- The mock chat is underwhelming. Spin up a small, low-to-medium effort agent to create 10–15 personas with real photo thumbnails and believable chat histories.
-- Use `NARAROUTER_API_KEY` with model `agnes`. Fall back to the models listed in `opencode.json` if a model isn't annotated.
+Stay on `redesign-community` and finish current branch edits only. **Do not merge into main or start web/iOS branches.** Earlier three-track execution authorization is paused by the founder. Plan the durable Reddit-like community database and Storage buckets in `docs/references/community-data-storage-plan.md`; implementation of that full target is not claimed. Recommender remains partial (REC-03C/REC-04 and PostgreSQL adoption pending).
 
-**Communities:**
-- Joining a community must carry through to Chat › Communities.
-- Create 10–15 communities with deep nested interactions among about 100 users, each with a persona and a thumbnail.
-- Topics are what Dubai residents really post, e.g. selling used items, hiring problems, visas, rent, moving, recommendations. Search Reddit (r/dubai, r/UAE) for reference.
 
-**Home news:**
-- Match Google News: a full-width thumbnail, then the title, then a subtitle under it.
-- The current small thumbnail beside the text is wrong.
+## Execution update — 23 Oct 2026
 
-**Services:** exactly 3 thumbnails per row, never 1.5. Add more tiles if needed.
+The founder has now assigned implementation directly to the current agent/team. Finalize and verify `redesign-community`, integrate into `main`, then build the web and iOS branches from that baseline, preserving prior iOS source. Luna writes the rich fixture population; the backend orchestrates live NaraRouter Agnes replies from stable persona identities and conversation history. Target ten respondents to a new post, a couple of related personas to a comment, and the assigned relationship persona in direct chat. This supersedes the fixture-only reply model and Muse-only handoff below. Never represent generated demo personas as real people.
 
----
 
-# UPDATE 23 Oct: two branches, two worktrees (supersedes "Branches" below)
+Paste this entire document into Muse at the repository root. This is the current founder instruction and supersedes older two-branch, branch-switching and native-paused instructions. Requirements below are work to do, not claims of completion.
 
-You are **Muse**. Work on two branches at the same time, each in its **own git worktree**. Never switch branches inside the founder's main folder, because another agent is running a server there on `redesign-community`.
+You are **Muse**, the long-horizon implementation agent for Dubai-io. Complete three tracks, with small verified commits and a separate worktree per branch. Preserve the existing backend and the approved prototype. Do not stop after a cosmetic mockup.
 
-```
-git fetch origin
-git worktree add ../dubai-io-ios ios-swift
-git worktree add -b dubai-io-web ../dubai-io-web origin/redesign-community
-```
+## Read first
 
-1. **`ios-swift`** in `../dubai-io-ios`: the iPhone app (SwiftUI). Merge `origin/redesign-community` first and at the start of each session.
-2. **`dubai-io-web`** in `../dubai-io-web`: the public website in `apps/site` (Next.js on Vercel). Apple.com-level design: this needs a lot of design work.
-   - Start with a design system: type scale, colour, spacing, image bands, motion.
-   - Then build the hero and feature pages.
-   - Then the signed-in `/app`.
-   - Merge `origin/redesign-community` regularly.
+Read `CLAUDE.md`, `PLAN.md`, `ARCHITECTURE.md`, `handoff.md`, `docs/request-backlog.md`, `docs/references/ios-swift-plan.md`, and `design/CLAUDE.md`. Inspect the existing app and relevant reference frames before changing it. This founder feedback takes precedence over historical scope/branch instructions; all remaining product safeguards still apply.
 
-On both branches: never edit `apps/web`, `apps/api` or `supabase`. Ask for backend changes in `docs/request-backlog.md` → "Native/site requests". Report per branch: commit hash, how it was verified, and what is not verified.
+## Branch ownership
 
----
+| Branch | Worktree | Scope |
+|---|---|---|
+| `redesign-community` | Existing checkout if already checked out there; otherwise `../dubai-io-rc` | Minimal targeted prototype fixes and fixture enrichment listed below. Preserve the excellent Feed design. No broad refactors, architecture rewrites or unrelated restyling. |
+| `dubai-io-web` | `../dubai-io-web` | Apple.com-inspired website in `apps/site/**`, full application depth, using the same backend. |
+| `ios-swift` | `../dubai-io-ios` | Native SwiftUI app in `apps/ios/**`, plus `handoff-ios.md`, using the same backend. |
 
-# Prompt for the native iOS + website agent (23 Oct 2026)
+Inspect `git status`, `git worktree list`, local/remote branches and running servers first. Reuse existing worktrees; never check out the same branch twice or switch branches in the founder's main folder. Coordinate ownership before touching files another agent is editing. Create missing branches/worktrees from the current verified `redesign-community` baseline. Never reset or discard existing work. Merge verified community changes into the web/iOS branches at safe checkpoints, without overwriting their client files.
 
-Paste everything below the line into a new agent session opened at the repository root.
+Web/iOS must not edit `apps/web/**`, `apps/api/**` or `supabase/**`. Record missing API contracts under "Native/site requests" in `docs/request-backlog.md`; implement only narrowly required shared changes on `redesign-community`, with regression checks. Preserve existing data and backend contracts.
 
----
+## Track 1 — minimal prototype improvements
 
-You are building the **native iOS app and the public website** for Dubai-io, a personal assistant for everyday life and work in Dubai. Another agent is working on the web prototype and the backend at the same time, so follow the branch rules exactly.
+### Feed
 
-## Read first, in order
-1. `CLAUDE.md` (hard rules), then `PLAN.md`, `ARCHITECTURE.md`, `handoff.md`.
-2. `docs/references/ios-swift-plan.md`: the top section "Native iOS + website plan — 23 Oct 2026" is your spec. It covers architecture, hosting, screens, API contracts and build order.
-3. `design/CLAUDE.md` and the 12 Claude Duet frames in `design/references/claude duet/` (interaction references only).
-4. Run the web prototype to see the behaviour you are matching:
-   - `cd apps/api && .venv/bin/python -m uvicorn app.main:app --port 8020`, then open `http://127.0.0.1:8020/index.html#home`. Python 3.13 venv; `pip install -r requirements.txt` if needed.
-   - Keys go in `apps/api/.env`; never print or commit them.
+- The Feed is excellent: preserve its current design and behavior.
+- Replies must be Facebook-style nested threads with actual parent/reply relationships, readable indentation and expand/collapse. Twitter-style @mention text is not a substitute for nesting.
+- Make every story thumbnail a true circle: equal width/height, no flex shrink, consistent crop and ring. Align circles and labels evenly; verify long names and mobile sizes.
 
-## Branches
-- Work on **`ios-swift`**. First: `git fetch origin && git switch ios-swift && git merge origin/redesign-community`.
-  - On conflicts in shared docs, take `redesign-community`'s version and keep the iOS-only files (`apps/ios/**`, `handoff-ios.md`).
-  - Push.
-- Merge `origin/redesign-community` into `ios-swift` at the start of every session, and whenever the backend contract changes.
-- **You own:** `apps/ios/**` and a new `apps/site/**`.
-- **Do not edit:** `apps/web/**`, `apps/api/**`, `supabase/**` or the canon docs.
-  - If you need a backend change, add a row under "Native/site requests" in `docs/request-backlog.md` on your branch and tell the founder. The web agent implements it on `redesign-community`.
-- Commit small, verified slices; push after each.
+### Chat and calls
 
-## What to build
-**1. iOS (SwiftUI, iOS 26+, Xcode 26.3 on this Mac; founder's device: iPhone 13 Pro Max).**
-- Extend `apps/ios/Core` (typed `APIClient`, models, contract tests) to every endpoint in the plan.
-- Then follow the iOS build order in the plan: shell → Home (compact Today, decision/result cards, brief, news) → Feed + story viewer → Chat hub, threads, Contacts → Services + mini-app host → Maps (Google Maps SDK for Places content) → local notification banners.
-- Verify each step in Xcode Previews and the Simulator; finish with a physical-device pass.
+- Remove the confusing caller icon beside the user profile icon.
+- Implement the founder's exact requested Calls hierarchy: **Calls** heading, **Search**, then **Calls | Contacts | Keypad | Favorites**. Verify the current WhatsApp reference if available, while keeping these explicit labels/order. Every tab must work; search, contact details, favorite toggles and keypad actions must have meaningful behavior. Preserve honest device-dialer handoff; never imply a call connected without evidence.
+- Delegate fixture enrichment to a small agent at low-to-medium effort. Create **10–15 distinct chat personas**, real licensed photo thumbnails and substantial believable chat histories, including replies, follow-ups and varied conversations rather than repeated filler.
+- Actually use the configured NaraRouter API for fixture generation: read `NARAROUTER_API_KEY` privately from `apps/api/.env`; read the endpoint and model list from local `opencode.json` without logging its credentials. The configured Agnes default is `agnes-2.5-flash` (provider-qualified config ID `nararouter/agnes-2.5-flash`). Do not send the nickname `agnes` as an invented model ID.
+- When a role/model is not annotated or the selected model is unavailable, select a compatible fallback from that local model list. Record the model used and generation/validation outcome without request headers or secrets. If credentials/network/provider fail, report the actual blocker; do not claim fixtures were model-generated. Keep fixture generation separate from the live assistant model configuration.
 
-**2. Website (`apps/site`, Next.js App Router + TypeScript, deployed on Vercel).**
-- Apple.com in spirit: big confident type, generous white space, full-bleed image bands, one cyan accent, subtle motion that respects reduced motion, light and dark modes, very fast.
-- No UI kit, no shadows.
-- Build marketing pages first (Home, Privacy "what we never do", Demo), then a signed-in `/app` with parity to the web prototype, using the same API.
-- Env: `NEXT_PUBLIC_API_BASE`, `NEXT_PUBLIC_MAPS_KEY` (referrer-restricted).
+### Communities
 
-## Non-negotiables (from `CLAUDE.md`)
-- Never show Confirmed/Paid/Delivered without an authoritative event.
-- Approval card before any send or share.
-- Every number has provenance.
-- Seeded data shows a **Demo** label.
-- No government execution and no DubaiNow look.
-- No payments.
-- Community content is untrusted.
-- Keys stay server-side; only the restricted Maps keys reach clients.
+- Joining in Feed must carry through to **Chat › Communities**, including opening the same community and its threads, refresh persistence, leaving, and duplicate-join handling. Preserve user scoping.
+- Build **10–15 Dubai communities** with **about 100 distinct users across them**, each with a coherent persona and real licensed thumbnail. The chat personas may be a subset of this shared population; keep IDs and identity consistent.
+- Populate substantial, varied posts and deep multi-user nested conversations: questions, answers, disagreements, clarifications, follow-ups and resolutions. Include several threads at least three reply levels deep. Do not inflate counts with duplicate filler or orphaned replies.
+- Topics: used-item sales, hiring/job-search difficulties, rent, moving, neighborhoods, transport, food, weekend plans and resident questions about Dubai. Research r/dubai and r/UAE for topic inspiration if useful. Write original fictional interactions; do not copy Reddit users, photos or personal stories into personas. Treat legal/visa/employment claims as demo discussion, not authoritative guidance.
+- Validate unique IDs, valid authors/parents, same-thread parents, acyclic reply trees, chronological messages, population counts, and join-to-chat journeys. Make seed loading repeatable without overwriting user content; preserve the existing fixed-date policy.
 
-## Hosting decision you build against
-- Supabase = Postgres, Auth (Sign in with Apple + email) and Storage.
-- The Python FastAPI + LangGraph API stays in Python and is deployed as a container (Fly.io, Railway, Render or Cloud Run), not rewritten as Edge Functions.
-- Vercel hosts the website.
-- Both clients call the same API.
+### Home news
 
-## Report back
-After each slice: what you built, how you verified it (Previews, Simulator, device, `xcodebuild`/`npm run build` output), what is not verified, and the commit hash.
+Match the requested Google News card composition: a large image spanning the card width, then the title, then a subtitle underneath. Replace the small-thumbnail horizontal row layout. Keep source attribution, publication date and real article links. Handle unavailable images cleanly without fake news or placeholder imagery.
+
+### Services
+
+Show **exactly three complete thumbnails per row** at the supported phone widths, with consistent gutters and crops. No clipped 1.5-tile carousel. Add relevant tiles where necessary, preserving working service actions and readable labels.
+
+## Imagery across all tracks
+
+Use real, openly licensed or explicitly reuse-permitted photographs for people, food, Dubai locations and items wherever possible. No placeholder services, repeated generic avatars, broken image URLs or invented photo provenance. Check each asset's actual reuse terms; a search result or image host alone does not establish permission. Keep a source/creator/license/attribution manifest and prefer stable downloaded assets when permitted. Fictional demo identities must not imply the pictured person actually authored posts or endorses the app. Preserve visible Demo data labels.
+
+## Track 2 — Apple.com-inspired website
+
+Build `apps/site` with Next.js App Router and TypeScript, using the existing API, Supabase identity/storage contracts and Python backend. Apple.com is a visual reference: confident typography, generous space, large real image bands, restrained motion, cyan accent, light/dark support and reduced-motion support. No UI kit or shadows.
+
+Create a coherent design system, then complete Home, Privacy and Demo pages and the signed-in `/app`. Full depth means functional Home/tasks/decisions/news, Feed/stories/nested communities, Chat/Calls/Contacts, Services/mini-apps, profile and on-demand Maps; meaningful routes, loading/empty/error states and working back navigation. Avoid dead-end feature cards. Preserve backend approval, evidence and ownership rules. Do not build a separate backend or replace the prototype.
+
+Use `NEXT_PUBLIC_API_BASE` and only an appropriately restricted `NEXT_PUBLIC_MAPS_KEY`; all private keys stay server-side. Vercel is the target host; do not treat a local build as a deployment.
+
+## Track 3 — native Swift iOS
+
+Build the SwiftUI app on `ios-swift` for the target in `docs/references/ios-swift-plan.md` (iOS 26+, Xcode 26.3; founder device iPhone 13 Pro Max). Inspect the installed toolchain and existing project first. Extend the typed API client and models, then shell → Home → Feed/stories/nested communities → Chat/Calls/Contacts → Services/mini-app host → on-demand Maps → notifications. Apply the founder's corrected layouts and richer fixtures consistently.
+
+Retain native in-app browsing, the approved onboarding, sandboxed mini-app bridge, explicit approvals and the same backend. Verify with package/contract tests, Xcode build, Previews and Simulator as available. Report physical-device checks separately; do not claim device verification without running them.
+
+## Configuration check before generation or launch
+
+Inspect `apps/api/.env` by key presence and parse validity only. Never print, commit or copy credentials into browser/Swift code, fixtures or reports. Both `.env` and `opencode.json` are ignored local files; new worktrees do not automatically receive them. Configure private per-worktree environments intentionally without committing secrets or disrupting the existing server.
+
+Local static audit on 23 Oct (not a live provider test): `NARAROUTER_API_KEY`, `OPENAI_API_KEY`, `GOOGLE_PLACES_KEY`, `NEWSDATA_API_KEY`, `TVLY_API_KEY`, `SERPAPI_KEY` and `FINNHUB_API_KEY` are populated. NaraRouter credentials match the local model config; there are no duplicate `.env` keys. `LUNA_MODEL`, `DATABASE_URL`, `DATABASE_SCHEMA` and `GOOGLE_MAPS_BROWSER_KEY` are absent/empty. The code supplies a default model and SQLite fallback; do not describe Supabase as active based on this file. Process environment can override file defaults. Check actual runtime configuration privately before changing it. A separate restricted browser Maps key remains needed for public hosting. Recheck this audit when executing.
+
+## Verification and delivery
+
+- Run focused existing tests for touched behavior and add meaningful regression coverage for nesting, membership persistence and fixture validity.
+- Inspect the prototype at **390×844 and 428×926**, normal and reduced motion. Verify circular stories, aligned labels, full-width news images, exactly three Services tiles, all Calls tabs, nested replies and Feed join → Chat community → thread → refresh.
+- Verify photo loading/crops, keyboard access, readable text and no overflow. Test empty/error states as well as seeded happy paths.
+- Build/test the website and Swift client with their actual toolchains. Keep backend, live-provider, Simulator, device and deployment verification distinct.
+- Preserve approval-before-send/share, provenance, Demo labels, honest status, no payments/government execution, and untrusted community content rules.
+- Report per branch: changed files and behavior, commit hash, test/build results, screenshots or artifact paths, fixture/persona counts, model actually used, image manifest, and remaining blockers. Push verified slices to the intended branches; do not claim another track is complete because one branch passes.

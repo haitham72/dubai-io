@@ -192,12 +192,12 @@
 .today-empty { width: 100%; text-align: left; min-height: 48px; padding: 12px 14px; border: 1px dashed var(--sep); border-radius: 16px; color: var(--tint-ink); font-size: 14px; font-weight: 600; background: rgba(255,255,255,.6); }
 .lane-intro { margin: 0 0 12px; font-size: 14px; color: var(--label-2); }
 
-/* News thumbnails: the publisher's preview image, right of the headline (Google News pattern). */
-.reading-articles article.has-thumb { display: grid; grid-template-columns: 1fr 96px; column-gap: 14px; }
-.reading-articles article.has-thumb > :not(.reading-thumb) { grid-column: 1; }
-.reading-thumb { grid-column: 2; grid-row: 1 / span 4; margin: 0; align-self: start; }
-.reading-thumb img { display: block; width: 96px; height: 96px; object-fit: cover; border-radius: 14px; background: var(--tint-soft); }
+/* Publisher images lead each headline card at the full available width. */
+.reading-articles article.has-thumb { display: flex; flex-direction: column; gap: 10px; }
+.reading-thumb { margin: 0; width: 100%; }
+.reading-thumb img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 16px; background: var(--tint-soft); }
 .reading-thumb figcaption { margin-top: 4px; font-size: 10px; color: var(--label-3); line-height: 1.3; overflow-wrap: anywhere; }
+.reading-articles article > p.reading-subtitle { font-size: 14px; color: var(--label-2); margin: 0; }
 
 /* Compact Today (23 Oct): one card, one-line rows, lane chips. */
 .today-card { background: #fff; border: 1px solid var(--sep); border-radius: 22px; padding: 14px 14px 10px; margin-bottom: 18px; display: grid; gap: 10px; }
@@ -222,3 +222,7 @@
 .task-meta.warn { color: #B4540A; font-weight: 600; }
 .task-meta.done, .task-meta.quiet { color: var(--label-3); }
 .task-history .task-row.compact, [data-lane-list] .task-row.compact { background: #fff; border: 1px solid var(--sep); border-radius: 14px; margin-bottom: 6px; padding: 8px 12px; }
+.reading-articles article.has-thumb > h3 { order: 1; }
+.reading-articles article.has-thumb > p { order: 2; }
+.reading-articles article.has-thumb > .reading-subtitle { order: 2; }
+.reading-articles article.has-thumb > button { order: 3; }

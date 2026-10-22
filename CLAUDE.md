@@ -1,5 +1,19 @@
 # CLAUDE.md — Dubai-io (contest build)
 
+## Resumed three-track authorization — 23 Oct 2026
+
+Founder resumed option B: finalize `redesign-community`, integrate into `main`, then build `dubai-io-web` and `ios-swift` from that baseline. The pause note below is superseded.
+
+## Latest scope correction — 23 Oct 2026
+
+Stay on `redesign-community` and finish current branch edits only. **Do not merge into main or start web/iOS branches.** Earlier three-track execution authorization is paused by the founder. Plan the durable Reddit-like community database and Storage buckets in `docs/references/community-data-storage-plan.md`; implementation of that full target is not claimed. Recommender remains partial (REC-03C/REC-04 and PostgreSQL adoption pending).
+
+
+## Current execution — 23 Oct 2026
+
+Founder now authorizes this agent to complete all three tracks: finalize `redesign-community`, verify and integrate into `main`, then create/update `dubai-io-web` and `ios-swift` from that verified baseline. `redesign` is historical, not the integration target. Preserve existing native files from `origin/ios-swift`. Luna authors rich fictional community/chat fixtures; backend-orchestrated NaraRouter Agnes replies use fixed persona identity and relevant conversation history (roughly ten respondents to a new post, two to a reply, the assigned relationship persona in direct chats). Demo labels remain mandatory; generated replies are not real humans or authoritative facts. User declines credential rotation; do not rotate or alter keys. Earlier Muse-only handoff and native-paused instructions are superseded. Implementation is in progress, not verified complete.
+
+
 Instructions for any coding agent in this repo. Read order: this file → `PLAN.md` → `ARCHITECTURE.md` → `handoff.md`.
 
 ## Community redesign - read first (23 Oct, branch `redesign-community`)

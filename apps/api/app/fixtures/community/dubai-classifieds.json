@@ -1,0 +1,427 @@
+{
+  "id": "dubai-classifieds",
+  "name": "Dubai Classifieds",
+  "handle": "dubaiclassifieds",
+  "topic": "Buy & Sell",
+  "about": "Neighbour-to-neighbour listings for useful things in Dubai. Meet safely, describe items honestly, and never pay before checking.",
+  "image": "media/home.jpg",
+  "members": 28400,
+  "stories": [
+    {
+      "author": "p72",
+      "text": "Clearing a spare room this weekend; honest listings only.",
+      "image": "media/home.jpg",
+      "hours_ago": 3
+    },
+    {
+      "author": "p81",
+      "text": "Please include dimensions and pickup area in every listing.",
+      "image": "media/laundry-shelf.jpg",
+      "hours_ago": 15
+    }
+  ],
+  "posts": [
+    {
+      "id": "dubai-classifieds-01",
+      "author": "p72",
+      "text": "Giving away a sturdy desk in Al Barsha after a home-office move. It has scratches but no wobble; pickup only and please bring help for the stairs.",
+      "image": "media/laundry-shelf.jpg",
+      "hours_ago": 4,
+      "likes": 182,
+      "comments": [
+        {
+          "id": "dubai-classifieds-01-c00",
+          "author": "p81",
+          "text": "Thanks for including the condition and stairs. Is the top about 120cm wide?",
+          "parent_id": null,
+          "hours_ago": 3,
+          "likes": 8
+        },
+        {
+          "id": "dubai-classifieds-01-c01",
+          "author": "p72",
+          "text": "Yes, 120 by 60cm. I measured it this morning.",
+          "parent_id": "dubai-classifieds-01-c00",
+          "hours_ago": 2,
+          "likes": 11
+        },
+        {
+          "id": "dubai-classifieds-01-c02",
+          "author": "p93",
+          "text": "I can collect Saturday afternoon if it is still available.",
+          "parent_id": "dubai-classifieds-01-c01",
+          "hours_ago": 1,
+          "likes": 5
+        },
+        {
+          "id": "dubai-classifieds-01-c03",
+          "author": "p72",
+          "text": "Saturday after 3 works; I will mark it reserved here once we agree.",
+          "parent_id": "dubai-classifieds-01-c02",
+          "hours_ago": 0,
+          "likes": 7
+        },
+        {
+          "id": "dubai-classifieds-01-c04",
+          "author": "p49",
+          "text": "This is the kind of listing that saves everyone time. Photos of the scratches would help too.",
+          "parent_id": null,
+          "hours_ago": 1,
+          "likes": 9
+        }
+      ]
+    },
+    {
+      "id": "dubai-classifieds-02",
+      "author": "p81",
+      "text": "Selling a lightly used stroller in Deira. Clean, folds flat, and includes the rain cover. Sharing measurements and a daylight photo before anyone travels.",
+      "image": "media/pets.jpg",
+      "hours_ago": 9,
+      "likes": 96,
+      "comments": [
+        {
+          "id": "dubai-classifieds-02-c00",
+          "author": "p57",
+          "text": "Could you add the folded dimensions and approximate weight?",
+          "parent_id": null,
+          "hours_ago": 8,
+          "likes": 6
+        },
+        {
+          "id": "dubai-classifieds-02-c01",
+          "author": "p81",
+          "text": "Folded is 78x48x30cm and about 8kg; I will add the label photo.",
+          "parent_id": "dubai-classifieds-02-c00",
+          "hours_ago": 7,
+          "likes": 8
+        },
+        {
+          "id": "dubai-classifieds-02-c02",
+          "author": "p57",
+          "text": "That fits my boot. I will message after I check the route.",
+          "parent_id": "dubai-classifieds-02-c01",
+          "hours_ago": 6,
+          "likes": 4
+        }
+      ]
+    },
+    {
+      "id": "dubai-classifieds-03",
+      "author": "p81",
+      "text": "Anyone else selling after a move? Please include measurements, pickup area, and honest wear.",
+      "image": "media/laundry.jpg",
+      "hours_ago": 5,
+      "likes": 138,
+      "comments": [
+        {
+          "id": "dubai-classifieds-03-c00",
+          "author": "p30",
+          "text": "Anyone else selling after a move? Please include measurements, pickup area, and honest wear.",
+          "parent_id": null,
+          "hours_ago": 12,
+          "likes": 3
+        },
+        {
+          "id": "dubai-classifieds-03-c01",
+          "author": "p37",
+          "text": "I tried this recently and the clear version saved both sides a second trip.",
+          "parent_id": "dubai-classifieds-03-c00",
+          "hours_ago": 11,
+          "likes": 4
+        },
+        {
+          "id": "dubai-classifieds-03-c02",
+          "author": "p44",
+          "text": "Adding the area and a realistic time window made the replies much better.",
+          "parent_id": "dubai-classifieds-03-c01",
+          "hours_ago": 10,
+          "likes": 5
+        },
+        {
+          "id": "dubai-classifieds-03-c03",
+          "author": "p51",
+          "text": "I agree; a small checklist keeps a friendly exchange from becoming confusing.",
+          "parent_id": "dubai-classifieds-03-c02",
+          "hours_ago": 9,
+          "likes": 6
+        },
+        {
+          "id": "dubai-classifieds-03-c04",
+          "author": "p58",
+          "text": "That is useful context. I would also confirm the practical constraint first.",
+          "parent_id": "dubai-classifieds-03-c03",
+          "hours_ago": 8,
+          "likes": 7
+        },
+        {
+          "id": "dubai-classifieds-03-c05",
+          "author": "p65",
+          "text": "Our building group used the same approach and it reduced back-and-forth.",
+          "parent_id": "dubai-classifieds-03-c04",
+          "hours_ago": 7,
+          "likes": 8
+        },
+        {
+          "id": "dubai-classifieds-03-c06",
+          "author": "p72",
+          "text": "I will try this and report what changed, with the caveat that every situation differs.",
+          "parent_id": "dubai-classifieds-03-c05",
+          "hours_ago": 6,
+          "likes": 9
+        },
+        {
+          "id": "dubai-classifieds-03-c07",
+          "author": "p79",
+          "text": "One more detail: keep the original message updated so people do not rely on stale information.",
+          "parent_id": "dubai-classifieds-03-c06",
+          "hours_ago": 5,
+          "likes": 10
+        },
+        {
+          "id": "dubai-classifieds-03-c08",
+          "author": "p86",
+          "text": "Thanks for asking this openly. Someone new to Dubai will probably find it useful.",
+          "parent_id": "dubai-classifieds-03-c07",
+          "hours_ago": 4,
+          "likes": 11
+        },
+        {
+          "id": "dubai-classifieds-03-c09",
+          "author": "p93",
+          "text": "I have saved the idea for our next community meetup.",
+          "parent_id": "dubai-classifieds-03-c08",
+          "hours_ago": 3,
+          "likes": 12
+        },
+        {
+          "id": "dubai-classifieds-03-c10",
+          "author": "p100",
+          "text": "That follow-through is exactly what makes a local thread helpful.",
+          "parent_id": "dubai-classifieds-03-c09",
+          "hours_ago": 2,
+          "likes": 13
+        },
+        {
+          "id": "dubai-classifieds-03-c11",
+          "author": "p07",
+          "text": "Closing the loop: I used the checklist and the decision was much clearer.",
+          "parent_id": "dubai-classifieds-03-c10",
+          "hours_ago": 1,
+          "likes": 3
+        }
+      ]
+    },
+    {
+      "id": "dubai-classifieds-04",
+      "author": "p81",
+      "text": "What is the safest way to arrange a used-item handoff? Meet in a lobby and keep payment clear.",
+      "image": "media/laundry.jpg",
+      "hours_ago": 6,
+      "likes": 155,
+      "comments": [
+        {
+          "id": "dubai-classifieds-04-c00",
+          "author": "p33",
+          "text": "What is the safest way to arrange a used-item handoff? Meet in a lobby and keep payment clear.",
+          "parent_id": null,
+          "hours_ago": 12,
+          "likes": 3
+        },
+        {
+          "id": "dubai-classifieds-04-c01",
+          "author": "p40",
+          "text": "I tried this recently and the clear version saved both sides a second trip.",
+          "parent_id": "dubai-classifieds-04-c00",
+          "hours_ago": 11,
+          "likes": 4
+        },
+        {
+          "id": "dubai-classifieds-04-c02",
+          "author": "p47",
+          "text": "Adding the area and a realistic time window made the replies much better.",
+          "parent_id": "dubai-classifieds-04-c01",
+          "hours_ago": 10,
+          "likes": 5
+        },
+        {
+          "id": "dubai-classifieds-04-c03",
+          "author": "p54",
+          "text": "I agree; a small checklist keeps a friendly exchange from becoming confusing.",
+          "parent_id": "dubai-classifieds-04-c02",
+          "hours_ago": 9,
+          "likes": 6
+        },
+        {
+          "id": "dubai-classifieds-04-c04",
+          "author": "p61",
+          "text": "That is useful context. I would also confirm the practical constraint first.",
+          "parent_id": "dubai-classifieds-04-c03",
+          "hours_ago": 8,
+          "likes": 7
+        },
+        {
+          "id": "dubai-classifieds-04-c05",
+          "author": "p68",
+          "text": "Our building group used the same approach and it reduced back-and-forth.",
+          "parent_id": "dubai-classifieds-04-c04",
+          "hours_ago": 7,
+          "likes": 8
+        },
+        {
+          "id": "dubai-classifieds-04-c06",
+          "author": "p75",
+          "text": "I will try this and report what changed, with the caveat that every situation differs.",
+          "parent_id": "dubai-classifieds-04-c05",
+          "hours_ago": 6,
+          "likes": 9
+        },
+        {
+          "id": "dubai-classifieds-04-c07",
+          "author": "p82",
+          "text": "One more detail: keep the original message updated so people do not rely on stale information.",
+          "parent_id": "dubai-classifieds-04-c06",
+          "hours_ago": 5,
+          "likes": 10
+        },
+        {
+          "id": "dubai-classifieds-04-c08",
+          "author": "p89",
+          "text": "Thanks for asking this openly. Someone new to Dubai will probably find it useful.",
+          "parent_id": "dubai-classifieds-04-c07",
+          "hours_ago": 4,
+          "likes": 11
+        },
+        {
+          "id": "dubai-classifieds-04-c09",
+          "author": "p96",
+          "text": "I have saved the idea for our next community meetup.",
+          "parent_id": "dubai-classifieds-04-c08",
+          "hours_ago": 3,
+          "likes": 12
+        },
+        {
+          "id": "dubai-classifieds-04-c10",
+          "author": "p03",
+          "text": "That follow-through is exactly what makes a local thread helpful.",
+          "parent_id": "dubai-classifieds-04-c09",
+          "hours_ago": 2,
+          "likes": 13
+        },
+        {
+          "id": "dubai-classifieds-04-c11",
+          "author": "p10",
+          "text": "Closing the loop: I used the checklist and the decision was much clearer.",
+          "parent_id": "dubai-classifieds-04-c10",
+          "hours_ago": 1,
+          "likes": 3
+        }
+      ]
+    },
+    {
+      "id": "dubai-classifieds-05",
+      "author": "p81",
+      "text": "Looking for a compact shelf under 80cm wide; practical condition matters more than perfect photos.",
+      "image": "media/laundry.jpg",
+      "hours_ago": 7,
+      "likes": 172,
+      "comments": [
+        {
+          "id": "dubai-classifieds-05-c00",
+          "author": "p36",
+          "text": "Looking for a compact shelf under 80cm wide; practical condition matters more than perfect photos.",
+          "parent_id": null,
+          "hours_ago": 12,
+          "likes": 3
+        },
+        {
+          "id": "dubai-classifieds-05-c01",
+          "author": "p43",
+          "text": "I tried this recently and the clear version saved both sides a second trip.",
+          "parent_id": "dubai-classifieds-05-c00",
+          "hours_ago": 11,
+          "likes": 4
+        },
+        {
+          "id": "dubai-classifieds-05-c02",
+          "author": "p50",
+          "text": "Adding the area and a realistic time window made the replies much better.",
+          "parent_id": "dubai-classifieds-05-c01",
+          "hours_ago": 10,
+          "likes": 5
+        },
+        {
+          "id": "dubai-classifieds-05-c03",
+          "author": "p57",
+          "text": "I agree; a small checklist keeps a friendly exchange from becoming confusing.",
+          "parent_id": "dubai-classifieds-05-c02",
+          "hours_ago": 9,
+          "likes": 6
+        },
+        {
+          "id": "dubai-classifieds-05-c04",
+          "author": "p64",
+          "text": "That is useful context. I would also confirm the practical constraint first.",
+          "parent_id": "dubai-classifieds-05-c03",
+          "hours_ago": 8,
+          "likes": 7
+        },
+        {
+          "id": "dubai-classifieds-05-c05",
+          "author": "p71",
+          "text": "Our building group used the same approach and it reduced back-and-forth.",
+          "parent_id": "dubai-classifieds-05-c04",
+          "hours_ago": 7,
+          "likes": 8
+        },
+        {
+          "id": "dubai-classifieds-05-c06",
+          "author": "p78",
+          "text": "I will try this and report what changed, with the caveat that every situation differs.",
+          "parent_id": "dubai-classifieds-05-c05",
+          "hours_ago": 6,
+          "likes": 9
+        },
+        {
+          "id": "dubai-classifieds-05-c07",
+          "author": "p85",
+          "text": "One more detail: keep the original message updated so people do not rely on stale information.",
+          "parent_id": "dubai-classifieds-05-c06",
+          "hours_ago": 5,
+          "likes": 10
+        },
+        {
+          "id": "dubai-classifieds-05-c08",
+          "author": "p92",
+          "text": "Thanks for asking this openly. Someone new to Dubai will probably find it useful.",
+          "parent_id": "dubai-classifieds-05-c07",
+          "hours_ago": 4,
+          "likes": 11
+        },
+        {
+          "id": "dubai-classifieds-05-c09",
+          "author": "p99",
+          "text": "I have saved the idea for our next community meetup.",
+          "parent_id": "dubai-classifieds-05-c08",
+          "hours_ago": 3,
+          "likes": 12
+        },
+        {
+          "id": "dubai-classifieds-05-c10",
+          "author": "p06",
+          "text": "That follow-through is exactly what makes a local thread helpful.",
+          "parent_id": "dubai-classifieds-05-c09",
+          "hours_ago": 2,
+          "likes": 13
+        },
+        {
+          "id": "dubai-classifieds-05-c11",
+          "author": "p13",
+          "text": "Closing the loop: I used the checklist and the decision was much clearer.",
+          "parent_id": "dubai-classifieds-05-c10",
+          "hours_ago": 1,
+          "likes": 3
+        }
+      ]
+    }
+  ]
+}

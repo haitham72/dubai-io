@@ -15,6 +15,7 @@ from fastapi import APIRouter, HTTPException, Query, Request
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from .actions import COOKIE, engine
+from . import social_generation as social
 
 router = APIRouter(tags=["communities"])
 clock = lambda: datetime.now(timezone.utc)
@@ -92,7 +93,10 @@ def load_seed():
         for post in g["posts"]:
             assert post["author"] in ids and (post["image"] is None or post["image"] in MEDIA), post["id"]
             assert 0 < len(post["text"]) <= 500, post["id"]
-            for comment in post["comments"]:
+            seen_comments = set()
+            for index, comment in enumerate(post["comments"]):
+                assert not comment.get("parent_id") or comment["parent_id"] in seen_comments, post["id"]
+                seen_comments.add(f"{post['id']}-c{index:02d}")
                 assert comment["author"] in ids and 0 < len(comment["text"]) <= 400, post["id"]
     return personas, groups
 
@@ -102,16 +106,19 @@ def setup(store):
         return
     for statement in DDL:
         store.db.execute(statement)
+    social.migrate(store)
     if store.db.dialect == "postgres":
         for table in TABLES:
             store.db.execute(f"ALTER TABLE {table} ENABLE ROW LEVEL SECURITY")
     personas, groups = load_seed()
+    personas = personas + social.chat_fixture()["personas"] + social.legacy_personas(GROUPS)
     names = {p["id"]: p["name"] for p in personas}
     now = clock()
     ago = lambda hours: (now - timedelta(hours=max(0, hours))).isoformat()
     for p in personas:
-        store.db.execute("INSERT OR IGNORE INTO personas VALUES (?,?,?,?,?,?,?)",
+        store.db.execute("INSERT OR IGNORE INTO personas (id,name,handle,emoji,bio,area,provenance) VALUES (?,?,?,?,?,?,?)",
                          (p["id"], p["name"], p["handle"], p["emoji"], p["bio"], p["area"], "demo_fixture"))
+        store.db.execute("UPDATE personas SET avatar=?, profile=? WHERE id=?", (p.get("avatar"), json.dumps(p), p["id"]))
     for g in groups:
         store.db.execute("INSERT OR IGNORE INTO communities VALUES (?,?,?,?,?,?,?,?)",
                          (g["id"], g["name"], g["handle"], g["topic"], g["about"], g["image"], g["members"], "demo_fixture"))
@@ -122,8 +129,11 @@ def setup(store):
             store.db.execute("INSERT OR IGNORE INTO posts VALUES (?,?,?,?,?,?,?,?,?,?,?)", (post["id"], g["id"], None, post["author"],
                              names[post["author"]], "post", post["text"], post["image"], ago(post["hours_ago"]), post["likes"], "demo_fixture"))
             for j, c in enumerate(post["comments"]):
-                store.db.execute("INSERT OR IGNORE INTO comments VALUES (?,?,?,?,?,?,?,?,?)", (f"{post['id']}-c{j:02d}", post["id"], None, c["author"],
+                store.db.execute("INSERT OR IGNORE INTO comments (id,post_id,owner,persona_id,author,text,created_at,likes,provenance) VALUES (?,?,?,?,?,?,?,?,?)", (f"{post['id']}-c{j:02d}", post["id"], None, c["author"],
                                  names[c["author"]], c["text"], ago(c["hours_ago"]), c["likes"], "demo_fixture"))
+                parent = c.get("parent_id")
+                if parent:
+                    store.db.execute("UPDATE comments SET parent_id=? WHERE id=? AND provenance='demo_fixture'", (parent, f"{post['id']}-c{j:02d}"))
     store.db.commit()
     store._communities_ready = True
 
@@ -134,15 +144,15 @@ def scope(request):
 
 
 POST_SQL = """SELECT p.id,p.community_id,p.owner,p.author,p.kind,p.text,p.image,p.created_at,p.provenance,c.name,c.handle,
-        p.likes,p.persona_id,pe.handle,pe.emoji,(SELECT COUNT(*) FROM comments m WHERE m.post_id=p.id AND (m.owner IS NULL OR m.owner=?))
+        p.likes,p.persona_id,pe.handle,pe.emoji,pe.avatar,(SELECT COUNT(*) FROM comments m WHERE m.post_id=p.id AND (m.owner IS NULL OR m.owner=?))
     FROM posts p JOIN communities c ON c.id=p.community_id LEFT JOIN personas pe ON pe.id=p.persona_id"""
 
 
 def present_post(row, joined):
-    pid, community, owner, author, kind, text, image, at, provenance, name, handle, likes, persona, phandle, emoji, comments = row
+    pid, community, owner, author, kind, text, image, at, provenance, name, handle, likes, persona, phandle, emoji, avatar, comments = row
     return {"id": pid, "community": {"id": community, "name": name, "handle": handle, "joined": community in joined},
-            "author": {"name": author, "handle": phandle or "you", "emoji": emoji or "🙂", "persona_id": persona},
-            "mine": owner is not None, "kind": kind, "text": text, "image": image, "likes": likes, "comments": comments,
+            "author": {"name": author, "handle": phandle or "you", "emoji": emoji or "🙂", "persona_id": persona, "avatar": avatar},
+            "mine": owner is not None and persona is None, "kind": kind, "text": text, "image": image, "likes": likes, "comments": comments,
             "created_at": at, "provenance": provenance}
 
 
@@ -190,7 +200,7 @@ def leave(community_id: str, request: Request):
 
 
 @router.get("/api/feed")
-def feed(request: Request, limit: int = Query(default=20, ge=1, le=50)):
+def feed(request: Request, limit: int = Query(default=20, ge=1, le=50), community_id: str | None = None):
     """Posts from joined communities first, then discovery; hidden posts and other users' private posts excluded."""
     store, owner = scope(request)
     with store.lock:
@@ -198,7 +208,9 @@ def feed(request: Request, limit: int = Query(default=20, ge=1, le=50)):
         joined = joined_ids(store, owner)
         hidden = {r[0] for r in store.db.execute("SELECT post_id FROM hidden_posts WHERE owner=?", (owner,)).fetchall()}
         rows = store.db.execute(POST_SQL + " WHERE (p.owner IS NULL OR p.owner=?) ORDER BY p.created_at DESC", (owner, owner)).fetchall()
-        posts = [present_post(r, joined) for r in rows if r[0] not in hidden]
+        if community_id:
+            community(store, community_id)
+        posts = [present_post(r, joined) for r in rows if r[0] not in hidden and (not community_id or r[1] == community_id)]
         stories = {}
         for p in posts:
             if p["kind"] == "story" and p["community"]["id"] not in stories:
@@ -227,6 +239,7 @@ def stories(community_id: str, request: Request):
 class PostIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
     text: str = Field(min_length=1, max_length=500)
+    request_id: str | None = Field(default=None, min_length=1, max_length=100)
 
     @field_validator("text")
     @classmethod
@@ -245,16 +258,30 @@ def create_post(community_id: str, body: PostIn, request: Request):
         community(store, community_id)
         if community_id not in joined_ids(store, owner):
             raise HTTPException(409, "Join the community before posting")
-        pid = uuid4().hex
+        result, fresh = social.claim(store, owner, "post", community_id, body)
+        if not fresh:
+            return result
+        pid = result["id"]
         store.db.execute("INSERT INTO posts VALUES (?,?,?,?,?,?,?,?,?,?,?)", (pid, community_id, owner, None, "You", "post", body.text, None,
                          clock().isoformat(), 0, "user_supplied"))
         store.db.commit()
-        return {"id": pid, "text": body.text}
+    return social.respond(store, owner, result, "post", pid)
 
 
 def visible_post(store, owner, post_id):
     if not store.db.execute("SELECT 1 FROM posts WHERE id=? AND (owner IS NULL OR owner=?)", (post_id, owner)).fetchone():
         raise HTTPException(404, "Post not found")
+
+
+@router.get("/api/posts/{post_id}")
+def get_post(post_id: str, request: Request):
+    store, owner = scope(request)
+    with store.lock:
+        setup(store)
+        row = store.db.execute(POST_SQL + " WHERE p.id=? AND p.kind='post' AND (p.owner IS NULL OR p.owner=?) AND NOT EXISTS (SELECT 1 FROM hidden_posts h WHERE h.owner=? AND h.post_id=p.id)", (owner, post_id, owner, owner)).fetchone()
+        if not row:
+            raise HTTPException(404, "Post not found")
+        return {"post": present_post(row, joined_ids(store, owner))}
 
 
 @router.get("/api/posts/{post_id}/comments")
@@ -263,23 +290,32 @@ def comments(post_id: str, request: Request):
     with store.lock:
         setup(store)
         visible_post(store, owner, post_id)
-        rows = store.db.execute("""SELECT m.id,m.author,m.text,m.created_at,m.likes,m.provenance,m.owner,pe.handle,pe.emoji FROM comments m
+        rows = store.db.execute("""SELECT m.id,m.author,m.text,m.created_at,m.likes,m.provenance,m.owner,pe.handle,pe.emoji,m.persona_id,pe.avatar,m.parent_id,m.model FROM comments m
             LEFT JOIN personas pe ON pe.id=m.persona_id WHERE m.post_id=? AND (m.owner IS NULL OR m.owner=?) ORDER BY m.created_at""",
             (post_id, owner)).fetchall()
-        return {"comments": [{"id": r[0], "author": {"name": r[1], "handle": r[7] or "you", "emoji": r[8] or "🙂"}, "text": r[2],
-                              "created_at": r[3], "likes": r[4], "provenance": r[5], "mine": r[6] is not None} for r in rows]}
+        return {"comments": [{"id": r[0], "author": {"name": r[1], "handle": r[7] or "you", "emoji": r[8] or "🙂", "persona_id": r[9], "avatar": r[10]}, "text": r[2],
+                              "created_at": r[3], "likes": r[4], "provenance": r[5], "mine": r[6] is not None and r[9] is None, "parent_id": r[11], "model": r[12]} for r in rows]}
+
+
+class CommentIn(PostIn):
+    parent_id: str | None = Field(default=None, max_length=100)
 
 
 @router.post("/api/posts/{post_id}/comments")
-def add_comment(post_id: str, body: PostIn, request: Request):
+def add_comment(post_id: str, body: CommentIn, request: Request):
     store, owner = scope(request)
     with store.lock:
         setup(store)
         visible_post(store, owner, post_id)
-        cid = uuid4().hex
-        store.db.execute("INSERT INTO comments VALUES (?,?,?,?,?,?,?,?,?)", (cid, post_id, owner, None, "You", body.text, clock().isoformat(), 0, "user_supplied"))
+        if body.parent_id and not store.db.execute("SELECT 1 FROM comments WHERE id=? AND post_id=? AND (owner IS NULL OR owner=?)", (body.parent_id, post_id, owner)).fetchone():
+            raise HTTPException(404, "Reply not found")
+        result, fresh = social.claim(store, owner, "comment", post_id, body)
+        if not fresh:
+            return result
+        cid = result["id"]
+        store.db.execute("INSERT INTO comments (id,post_id,owner,persona_id,author,text,created_at,likes,provenance,parent_id) VALUES (?,?,?,?,?,?,?,?,?,?)", (cid, post_id, owner, None, "You", body.text, clock().isoformat(), 0, "user_supplied", body.parent_id))
         store.db.commit()
-        return {"id": cid, "text": body.text}
+    return social.respond(store, owner, result, "comment", post_id)
 
 
 class HideIn(BaseModel):
@@ -302,19 +338,21 @@ def hide_post(post_id: str, body: HideIn, request: Request):
 def ensure_threads(store, owner):
     """Each owner gets the demo groups once, plus one thread per joined community."""
     now = clock()
+    social.ensure_chats(store, owner, now)
     for tid, title, lines in GROUPS:
         if store.db.execute("SELECT 1 FROM chat_threads WHERE owner=? AND id=?", (owner, tid)).fetchone():
             continue
         store.db.execute("INSERT INTO chat_threads VALUES (?,?,?,?,?,?)", (tid, owner, "group", title, None, now.isoformat()))
         for i, (author, text) in enumerate(lines):
-            store.db.execute("INSERT INTO chat_messages VALUES (?,?,?,?,?,?,?)", (uuid4().hex, owner, tid, author, text,
+            store.db.execute("INSERT INTO chat_messages (id,owner,thread_id,author,text,at,provenance) VALUES (?,?,?,?,?,?,?)", (uuid4().hex, owner, tid, author, text,
                              (now - timedelta(minutes=40 - i * 10)).isoformat(), "demo_fixture"))
+    social.bind_legacy_messages(store, owner, GROUPS)
     for cid in joined_ids(store, owner):
         tid = "community:" + cid
         if not store.db.execute("SELECT 1 FROM chat_threads WHERE owner=? AND id=?", (owner, tid)).fetchone():
             name = community(store, cid)[1]
             store.db.execute("INSERT INTO chat_threads VALUES (?,?,?,?,?,?)", (tid, owner, "community", name, cid, now.isoformat()))
-            store.db.execute("INSERT INTO chat_messages VALUES (?,?,?,?,?,?,?)", (uuid4().hex, owner, tid, name,
+            store.db.execute("INSERT INTO chat_messages (id,owner,thread_id,author,text,at,provenance) VALUES (?,?,?,?,?,?,?)", (uuid4().hex, owner, tid, name,
                              f"Welcome to {name}. Be kind; posts here are from members, not Dubai-io.", now.isoformat(), "demo_fixture"))
 
 
@@ -325,9 +363,11 @@ def thread_list(store, owner):
             (SELECT at FROM chat_messages m WHERE m.owner=t.owner AND m.thread_id=t.id ORDER BY at DESC LIMIT 1),
             (SELECT COUNT(*) FROM chat_messages m WHERE m.owner=t.owner AND m.thread_id=t.id AND m.author!='You'
                 AND m.at > COALESCE((SELECT read_at FROM chat_reads r WHERE r.owner=t.owner AND r.thread_id=t.id), ''))
-        FROM chat_threads t WHERE t.owner=?""", (owner,)).fetchall()
+        FROM chat_threads t WHERE t.owner=? AND (t.community_id IS NULL OR EXISTS (SELECT 1 FROM community_members cm WHERE cm.owner=t.owner AND cm.community_id=t.community_id))""", (owner,)).fetchall()
     threads = [{"id": r[0], "kind": r[1], "title": r[2], "community_id": r[3], "last": r[4] or "", "last_author": r[5] or "",
                 "at": r[6] or "", "unread": int(r[7] or 0)} for r in rows]
+    for thread in threads:
+        thread.update(social.thread_identity(store, thread["id"]))
     return sorted(threads, key=lambda t: t["at"], reverse=True)
 
 
@@ -346,7 +386,7 @@ def chats(request: Request, filter: str = Query(default="all", pattern="^(all|un
 
 def own_thread(store, owner, thread_id):
     row = store.db.execute("SELECT id,kind,title,community_id FROM chat_threads WHERE owner=? AND id=?", (owner, thread_id)).fetchone()
-    if not row:
+    if not row or (row[3] and row[3] not in joined_ids(store, owner)):
         raise HTTPException(404, "Conversation not found")
     return row
 
@@ -357,13 +397,13 @@ def messages(thread_id: str, request: Request):
     with store.lock:
         setup(store)
         t = own_thread(store, owner, thread_id)
-        rows = store.db.execute("SELECT id,author,text,at,provenance FROM chat_messages WHERE owner=? AND thread_id=? ORDER BY at",
+        rows = store.db.execute("SELECT id,author,text,at,provenance,persona_id,model FROM chat_messages WHERE owner=? AND thread_id=? ORDER BY at",
                                 (owner, thread_id)).fetchall()
         store.db.execute("DELETE FROM chat_reads WHERE owner=? AND thread_id=?", (owner, thread_id))
         store.db.execute("INSERT INTO chat_reads VALUES (?,?,?)", (owner, thread_id, clock().isoformat()))
         store.db.commit()
         return {"thread": {"id": t[0], "kind": t[1], "title": t[2], "community_id": t[3]},
-                "messages": [{"id": r[0], "author": r[1], "mine": r[1] == "You", "text": r[2], "at": r[3], "provenance": r[4]} for r in rows]}
+                "messages": [{"id": r[0], "author": r[1], "mine": r[1] == "You", "text": r[2], "at": r[3], "provenance": r[4], "persona_id": r[5], "avatar": social.avatar(store, r[5]), "model": r[6]} for r in rows]}
 
 
 class MessageIn(PostIn):
@@ -377,10 +417,12 @@ def send_message(thread_id: str, body: MessageIn, request: Request):
     with store.lock:
         setup(store)
         own_thread(store, owner, thread_id)
-        mid = uuid4().hex
-        store.db.execute("INSERT INTO chat_messages VALUES (?,?,?,?,?,?,?)", (mid, owner, thread_id, "You", body.text, clock().isoformat(), "user_supplied"))
+        result, fresh = social.claim(store, owner, "chat", thread_id, body)
+        if not fresh:
+            return result
+        store.db.execute("INSERT INTO chat_messages (id,owner,thread_id,author,text,at,provenance) VALUES (?,?,?,?,?,?,?)", (result["id"], owner, thread_id, "You", body.text, clock().isoformat(), "user_supplied"))
         store.db.commit()
-        return {"id": mid, "text": body.text}
+    return social.respond(store, owner, result, "chat", thread_id)
 
 
 # ---------------------------------------------------------------- contacts and calls
