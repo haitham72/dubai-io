@@ -16,6 +16,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from .actions import COOKIE, engine
 from . import social_generation as social
+from . import ml_tasks
 
 router = APIRouter(tags=["communities"])
 clock = lambda: datetime.now(timezone.utc)
@@ -107,6 +108,7 @@ def setup(store):
     for statement in DDL:
         store.db.execute(statement)
     social.migrate(store)
+    ml_tasks.setup(store)
     if store.db.dialect == "postgres":
         for table in TABLES:
             store.db.execute(f"ALTER TABLE {table} ENABLE ROW LEVEL SECURITY")
@@ -290,11 +292,15 @@ def comments(post_id: str, request: Request):
     with store.lock:
         setup(store)
         visible_post(store, owner, post_id)
-        rows = store.db.execute("""SELECT m.id,m.author,m.text,m.created_at,m.likes,m.provenance,m.owner,pe.handle,pe.emoji,m.persona_id,pe.avatar,m.parent_id,m.model FROM comments m
-            LEFT JOIN personas pe ON pe.id=m.persona_id WHERE m.post_id=? AND (m.owner IS NULL OR m.owner=?) ORDER BY m.created_at""",
+        rows = store.db.execute("""SELECT m.id,m.author,m.text,m.created_at,m.likes,m.provenance,m.owner,pe.handle,pe.emoji,m.persona_id,pe.avatar,m.parent_id,m.model,
+            l.sentiment,l.neg,l.topics,l.harsh,l.model FROM comments m
+            LEFT JOIN personas pe ON pe.id=m.persona_id LEFT JOIN comment_labels l ON l.comment_id=m.id
+            WHERE m.post_id=? AND (m.owner IS NULL OR m.owner=?) ORDER BY m.created_at""",
             (post_id, owner)).fetchall()
         return {"comments": [{"id": r[0], "author": {"name": r[1], "handle": r[7] or "you", "emoji": r[8] or "🙂", "persona_id": r[9], "avatar": r[10]}, "text": r[2],
-                              "created_at": r[3], "likes": r[4], "provenance": r[5], "mine": r[6] is not None and r[9] is None, "parent_id": r[11], "model": r[12]} for r in rows]}
+                              "created_at": r[3], "likes": r[4], "provenance": r[5], "mine": r[6] is not None and r[9] is None, "parent_id": r[11], "model": r[12],
+                              "analysis": None if r[13] is None else {"sentiment": r[13], "neg": r[14], "topics": json.loads(r[15] or "[]"),
+                              "harsh": bool(r[16]), "harsh_basis": "sentiment_negative", "model": r[17]}} for r in rows]}
 
 
 class CommentIn(PostIn):
@@ -315,6 +321,7 @@ def add_comment(post_id: str, body: CommentIn, request: Request):
         cid = result["id"]
         store.db.execute("INSERT INTO comments (id,post_id,owner,persona_id,author,text,created_at,likes,provenance,parent_id) VALUES (?,?,?,?,?,?,?,?,?,?)", (cid, post_id, owner, None, "You", body.text, clock().isoformat(), 0, "user_supplied", body.parent_id))
         store.db.commit()
+    ml_tasks.dispatch_comment(store, owner, cid, post_id, body.text, clock().isoformat())
     return social.respond(store, owner, result, "comment", post_id)
 
 

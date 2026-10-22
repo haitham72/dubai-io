@@ -31,6 +31,12 @@ class Settings:
     social_model = os.getenv("SOCIAL_MODEL", "agnes-2.5-flash")
     social_base_url = os.getenv("NARAROUTER_BASE_URL", "https://router.bynara.id/v1")
     social_timeout_s = float(os.getenv("SOCIAL_TIMEOUT_S", "35"))
+    rabbitmq_url = os.getenv("RABBITMQ_URL", "amqp://guest:guest@localhost:5672//")
+    redis_url = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+    ml_eager = os.getenv("CELERY_EAGER", "1") == "1"
+    sentiment_model = os.getenv("SENTIMENT_MODEL", "cardiffnlp/twitter-xlm-roberta-base-sentiment-multilingual")
+    embedding_model = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
+    harsh_neg_threshold = float(os.getenv("HARSH_NEG_THRESHOLD", "0.8"))
     google_key = os.getenv("GOOGLE_PLACES_KEY", "")
     # Maps JavaScript keys are visible in the browser by design: use a separate key
     # restricted to your site (HTTP referrer) and to the Maps JavaScript API.
