@@ -138,6 +138,9 @@ def command(action_id: str, command: str, body: CommandIn, request: Request, ide
             eng.transition(owner, action, to, "merchant", **meta)
         else:
             raise HTTPException(404, "Unknown command")
+        if command in ("accept", "confirm-time"):
+            from .proactive import auto_follow_up_order  # proactive imports this module
+            auto_follow_up_order(store, owner, action)
         result = shared_view(action)
         store.db.execute("INSERT INTO merchant_commands VALUES (?,?,?)", (action_id, idempotency_key, json.dumps(result)))
         return result

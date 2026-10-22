@@ -1,3 +1,4 @@
+import { assistHTML, mountAssist } from './assist.js';
 import { openSavedDetails } from './saved-details.js';
 import { selectFocus } from './assistant-context.js';
 import { openSavedRequests } from './service-workflow.js';
@@ -1164,7 +1165,9 @@ registerPage('account.me', { title: 'Me', source: 'Dubai-io', render: () => `
       <button class="btn" id="meIntro">${svg('orb', 'ic sm')} Replay the intro</button>
       <button class="btn" id="meWifi">${svg('wifi', 'ic sm')} Replay landing and Wi-Fi sign-in</button>
     </div>
-    <p class="fine">Flags: add #fps, #tune or #nogl to the link (join with dots, e.g. #fps.tune).</p>`, mount: () => {
+    ${assistHTML()}
+    <p class="fine">Flags: add #fps, #tune or #nogl to the link (join with dots, e.g. #fps.tune).</p>`, mount: root => {
+  mountAssist(root);
   $('#meDetails').addEventListener('click', openSavedDetails);
   $('#meRequests').addEventListener('click', openSavedRequests);
   $('#meConnections').addEventListener('click', () => openConnections());

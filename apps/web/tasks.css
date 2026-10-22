@@ -173,3 +173,12 @@
 .task-staged li small { font-size: 11px; color: var(--label-3); }
 .task-staged .rec-pill { justify-self: start; }
 .decision-actions .btn:disabled { opacity: .45; cursor: default; }
+
+/* Follow-up modes on Me */
+.assist { border: 1px solid var(--sep); border-radius: 18px; padding: 12px 14px; margin: 14px 0; display: grid; gap: 6px; background: #fff; }
+.assist legend { font-size: 13px; font-weight: 640; padding: 0 4px; }
+.assist label { display: flex; gap: 10px; align-items: flex-start; min-height: 44px; padding: 6px 0; }
+.assist label span { display: grid; gap: 2px; }
+.assist label b { font-size: 14.5px; font-weight: 600; }
+.assist label small { font-size: 12.5px; color: var(--label-2); line-height: 1.35; }
+.assist input { margin-top: 3px; accent-color: var(--tint); }

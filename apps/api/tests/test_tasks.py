@@ -502,3 +502,35 @@ def test_pause_cancel_and_quiet_hours_govern_check_backs(client):
     command(c, task, "cancel")
     assert store.db.execute("SELECT COUNT(*) FROM outbox WHERE delivered_at IS NULL").fetchone()[0] == 0
     assert c.post(f'/api/tasks/{task["id"]}/commands', json={"kind":"pause","expected_revision":1,"command_key":uuid4().hex,"at":None}).status_code == 422
+
+
+def test_follow_up_modes_never_send_and_learn_offers_auto(client, monkeypatch):
+    from app import proactive, merchant
+    c, store, owner, _ = client
+    c.app.include_router(proactive.router)
+    assert c.get("/api/assist").json() == {"mode":"ask", "manual_reminders":0, "offer_auto":False}
+    assert c.put("/api/assist", json={"mode":"sometimes"}).status_code == 422
+    # Ask: a kept report gets no automatic check-back.
+    task = c.post("/api/tasks/from-report",json={"fields":report_fields()}).json()["task"]
+    assert task.get("check_back_at") is None
+    # Auto: the next kept report gets one, recorded as automatic, and nothing is sent.
+    c.put("/api/assist", json={"mode":"auto"})
+    fields = report_fields(); fields["description"] = {"value":"Grey umbrella"}
+    task = c.post("/api/tasks/from-report",json={"fields":fields}).json()["task"]
+    assert task["check_back_at"] and task["status"] == "WAITING_USER"
+    events = c.get(f'/api/tasks/{task["id"]}').json()["events"]
+    assert events[-1]["kind"] == "check_back_set" and events[-1]["actor"] == "auto"
+    assert store.db.execute("SELECT COUNT(*) FROM approvals").fetchone()[0] == 0
+    # Auto: a merchant's ready time schedules the reminder without a tap.
+    action, _ = tracked_order(c)
+    c.post(f'/api/actions/{action["id"]}/approve', headers={"Idempotency-Key":uuid4().hex},
+           json={"snapshot_hash":action["snapshot_hash"],"revision":action["revision"]})
+    a = store.get(owner, action["id"]); a["status"], a["ready_at"] = "ACCEPTED", "Tomorrow 10:00"; store.put(owner, a)
+    proactive.auto_follow_up_order(store, owner, a)
+    assert store.db.execute("SELECT trigger_source FROM outbox WHERE dedupe_key=?", (f'ready:{a["id"]}:Tomorrow 10:00',)).fetchone()[0] == "auto_follow_up"
+    # Learn: after three hand-set reminders it offers Auto once; dismissing keeps asking.
+    c.put("/api/assist", json={"mode":"learn"})
+    proactive.save_assist(store, owner, manual_reminders=2); store.commit()
+    b = store.get(owner, action["id"]); b["ready_at"] = "Tomorrow 11:00"; store.put(owner, b)
+    assert c.post("/api/reminders", json={"action_id":b["id"]}).json()["offer_auto"] is True
+    assert c.put("/api/assist", json={"mode":"learn", "dismiss_offer":True}).json()["offer_auto"] is False

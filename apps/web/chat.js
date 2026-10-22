@@ -1,3 +1,4 @@
+import { offerAutoHTML, answerOffer } from './assist.js';
 import { labFetch } from './api-client.js';
 import { requestContext, selectFocus, selectTaskFocus, waitForProjectContext } from './assistant-context.js';
 import { openServiceRequest } from './service-workflow.js';
@@ -306,7 +307,9 @@ export function wireChat() {
     const op = e.target.closest('[data-open-provider]');
     if (op) { const [g, pid] = op.dataset.openProvider.split('|'); openProvider(g, pid); return; }
     const rem = e.target.closest('[data-remind]');
-    if (rem) { rem.disabled = true; remindWhenReady(rem.dataset.remind).then(() => render()).catch(err => { toast(err.message); rem.disabled = false; }); return; }
+    if (rem) { rem.disabled = true; remindWhenReady(rem.dataset.remind).then(r => { render(); if (r.offer_auto) botSay(offerAutoHTML()); }).catch(err => { toast(err.message); rem.disabled = false; }); return; }
+    const offer = e.target.closest('[data-assist-offer]');
+    if (offer) { offer.parentElement.querySelectorAll('button').forEach(b => { b.disabled = true; }); answerOffer(offer.dataset.assistOffer).catch(err => toast(err.message)); return; }
     const early = e.target.closest('[data-earlier]');
     if (early) { early.disabled = true; requestEarlier(early.dataset.earlier, early.dataset.target).catch(err => { toast(err.message); early.disabled = false; }); return; }
     const say = e.target.closest('[data-say]');

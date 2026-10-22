@@ -234,7 +234,7 @@ class Tasks:
                 raise
             return None  # Tracking/history remain readable if its source disappears.
 
-    def command(self, owner, task_id, body):
+    def command(self, owner, task_id, body, actor="user"):
         payload = values(body, exclude={"command_key"})
         digest = fingerprint(payload)
         with self.transaction(owner, write=True):
@@ -251,7 +251,7 @@ class Tasks:
             if task["status"] not in ACTIVE:
                 raise HTTPException(409, "A completed or cancelled task cannot be changed")
             kind = body.kind
-            event_data = {"actor": "user"}
+            event_data = {"actor": actor}
             if kind == "edit":
                 changes = values(body.changes, exclude_unset=True)
                 task.update(changes)
@@ -438,7 +438,16 @@ def track_report(body: TrackReport, request: Request, response: Response):
     # The fixed capability has no adapter; this endpoint never calls approve.
     action = engine().prepare(owner, PrepareIn(capability_id="recovery.rta", fields=body.fields,
         preparation_key="report-task:" + fingerprint({k: v.model_dump() for k, v in body.fields.items()})))
-    return presented_result(tasks.track_action(owner, action["id"]))
+    result = tasks.track_action(owner, action["id"])
+    with tasks.transaction(owner):
+        auto = proactive.assist(tasks.store, owner)["mode"] == "auto"
+    if auto and not result["replayed"]:
+        # Auto follow-ups: a kept report gets a check-back two days later at 10:00 Dubai.
+        day = (clock().astimezone(proactive.DUBAI) + timedelta(days=2)).date()
+        at = datetime.combine(day, datetime.min.time().replace(hour=10), proactive.DUBAI)
+        result = tasks.command(owner, result["task"]["id"], TaskCommand(kind="check_back", expected_revision=result["task"]["revision"],
+                               command_key="auto-check-back:" + result["task"]["id"], at=at), actor="auto")
+    return presented_result(result)
 
 
 @router.get("/api/today")
