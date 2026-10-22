@@ -153,15 +153,24 @@ public actor APIClient {
         return try await request("api/tasks")
     }
 
-    public func task(id: String) async throws -> TaskDetail {
+    /// `GET /api/tasks/{id}` answers `{task, linked_item, ...activity}`; only `task` is modelled.
+    public func task(id: String) async throws -> TaskResponse {
         _ = try await connect()
         return try await request("api/tasks/\(id)")
     }
 
-    public func sendCommand(_ command: TaskCommand, taskID: String) async throws -> TaskDetail {
+    public func sendCommand(_ command: TaskCommand, taskID: String) async throws -> TaskResponse {
         _ = try await connect()
         return try await request(
             "api/tasks/\(taskID)/commands", body: JSONEncoder().encode(command))
+    }
+
+    /// Not-now / keep-on-Today for a decision: tracks the action's task.
+    public func taskFromAction(actionID: String) async throws -> TaskResponse {
+        _ = try await connect()
+        struct Input: Encodable { let action_id: String }
+        return try await request(
+            "api/tasks/from-action", body: JSONEncoder().encode(Input(action_id: actionID)))
     }
 
     // MARK: - Decisions / orders
@@ -169,6 +178,11 @@ public actor APIClient {
     public func action(id: String) async throws -> ActionDetail {
         _ = try await connect()
         return try await request("api/actions/\(id)")
+    }
+
+    public func prepareAction(_ input: PrepareInput) async throws -> ActionDetail {
+        _ = try await connect()
+        return try await request("api/actions/prepare", body: JSONEncoder().encode(input))
     }
 
     public func approveAction(
@@ -187,12 +201,30 @@ public actor APIClient {
         return try await request("api/actions/\(id)/cancel", method: "POST")
     }
 
-    public func reminders() async throws -> ReminderList {
+    public func requestEarlier(id: String, target: String) async throws -> ActionDetail {
         _ = try await connect()
-        return try await request("api/reminders")
+        struct Input: Encodable { let target: String }
+        return try await request(
+            "api/actions/\(id)/request-earlier", body: JSONEncoder().encode(Input(target: target)))
     }
 
-    // MARK: - Outbox / follow-up mode / brief
+    /// SSE change feed for one action; the App layer reads it with `SSEStream`.
+    /// A 409 from the shown revision means reload — approving a stale revision is refused.
+    public nonisolated func actionStreamRequest(id: String) -> URLRequest {
+        var request = URLRequest(url: address.endpoint("api/actions/\(id)/stream"))
+        request.setValue("text/event-stream", forHTTPHeaderField: "Accept")
+        return request
+    }
+
+    /// `POST /api/reminders` ("Remind me when it's ready"); the tap is the consent.
+    public func remindWhenReady(actionID: String) async throws -> ReadyReminder {
+        _ = try await connect()
+        struct Input: Encodable { let action_id: String }
+        return try await request(
+            "api/reminders", body: JSONEncoder().encode(Input(action_id: actionID)))
+    }
+
+    // MARK: - Outbox / follow-up mode / morning brief
 
     public func messages() async throws -> OutboxList {
         _ = try await connect()
@@ -204,43 +236,69 @@ public actor APIClient {
         return try await request("api/assist")
     }
 
-    public func updateAssist(mode: String) async throws -> AssistState {
+    public func updateAssist(mode: String, dismissOffer: Bool = false) async throws -> AssistState {
         _ = try await connect()
-        struct Input: Encodable { let mode: String }
+        struct Input: Encodable { let mode: String; let dismiss_offer: Bool }
         return try await request(
-            "api/assist", method: "PUT", body: JSONEncoder().encode(Input(mode: mode)))
+            "api/assist", method: "PUT", body: JSONEncoder().encode(Input(mode: mode, dismiss_offer: dismissOffer)))
     }
 
-    public func brief() async throws -> Brief {
+    public func briefRoutine() async throws -> BriefRoutine {
         _ = try await connect()
         return try await request("api/routines/brief")
     }
 
-    // MARK: - Community / feed / chat
+    public func updateBriefRoutine(active: Bool, atTime: String = "08:00") async throws -> BriefRoutine {
+        _ = try await connect()
+        struct Input: Encodable { let active: Bool; let at_time: String }
+        return try await request(
+            "api/routines/brief", method: "PUT", body: JSONEncoder().encode(Input(active: active, at_time: atTime)))
+    }
+
+    // MARK: - Community / feed / stories / chat
 
     public func communities() async throws -> CommunityList {
         _ = try await connect()
         return try await request("api/communities")
     }
 
-    public func joinCommunity(id: String) async throws -> Community {
+    /// Join/leave answer the full community list; joining carries through to Chat.
+    public func joinCommunity(id: String) async throws -> CommunityList {
         _ = try await connect()
         return try await request("api/communities/\(id)/join", method: "POST")
     }
 
-    public func leaveCommunity(id: String) async throws -> Community {
+    public func leaveCommunity(id: String) async throws -> CommunityList {
         _ = try await connect()
         return try await request("api/communities/\(id)/leave", method: "POST")
     }
 
-    public func communityPosts(id: String) async throws -> FeedList {
+    public func communityPosts(id: String) async throws -> FeedResponse {
         _ = try await connect()
         return try await request("api/communities/\(id)/posts")
     }
 
-    public func feed() async throws -> FeedList {
+    public func feed() async throws -> FeedResponse {
         _ = try await connect()
         return try await request("api/feed")
+    }
+
+    public func stories(communityID: String) async throws -> StoryFrames {
+        _ = try await connect()
+        return try await request("api/communities/\(communityID)/stories")
+    }
+
+    public func post(id: String) async throws -> SinglePost {
+        _ = try await connect()
+        return try await request("api/posts/\(id)")
+    }
+
+    public func createPost(communityID: String, text: String, requestID: String = UUID().uuidString) async throws -> SocialReceipt {
+        _ = try await connect()
+        struct Input: Encodable { let text: String; let request_id: String }
+        return try await request(
+            "api/communities/\(communityID)/posts",
+            body: JSONEncoder().encode(Input(text: text, request_id: requestID)))
     }
 
     public func comments(postID: String) async throws -> CommentList {
@@ -248,14 +306,27 @@ public actor APIClient {
         return try await request("api/posts/\(postID)/comments")
     }
 
-    public func hidePost(postID: String) async throws -> HiddenPost {
+    public func addComment(postID: String, text: String, parentID: String? = nil, requestID: String = UUID().uuidString) async throws -> SocialReceipt {
         _ = try await connect()
-        return try await request("api/posts/\(postID)/hide", method: "POST")
+        struct Input: Encodable { let text: String; let parent_id: String?; let request_id: String }
+        return try await request(
+            "api/posts/\(postID)/comments",
+            body: JSONEncoder().encode(Input(text: text, parent_id: parentID, request_id: requestID)))
     }
 
-    public func chats() async throws -> ChatList {
+    public func hidePost(postID: String, reason: String? = nil) async throws -> HiddenPost {
         _ = try await connect()
-        return try await request("api/chats")
+        struct Input: Encodable { let reason: String? }
+        return try await request(
+            "api/posts/\(postID)/hide", method: "POST", body: JSONEncoder().encode(Input(reason: reason)))
+    }
+
+    public func chats(filter: String = "all") async throws -> ChatList {
+        _ = try await connect()
+        let valid = ["all", "unread", "groups", "communities"].contains(filter) ? filter : "all"
+        var components = URLComponents(url: address.endpoint("api/chats"), resolvingAgainstBaseURL: false)!
+        components.queryItems = [URLQueryItem(name: "filter", value: valid)]
+        return try await request(url: components.url!)
     }
 
     public func chatMessages(id: String) async throws -> ChatMessages {
@@ -263,14 +334,68 @@ public actor APIClient {
         return try await request("api/chats/\(id)/messages")
     }
 
+    public func sendChatMessage(threadID: String, text: String, requestID: String = UUID().uuidString) async throws -> SocialReceipt {
+        _ = try await connect()
+        struct Input: Encodable { let text: String; let request_id: String }
+        return try await request(
+            "api/chats/\(threadID)/messages",
+            body: JSONEncoder().encode(Input(text: text, request_id: requestID)))
+    }
+
     public func contacts() async throws -> ContactList {
         _ = try await connect()
         return try await request("api/contacts")
     }
 
+    public func addContact(name: String, phone: String) async throws -> Contact {
+        _ = try await connect()
+        struct Input: Encodable { let name: String; let phone: String }
+        return try await request(
+            "api/contacts", body: JSONEncoder().encode(Input(name: name, phone: phone)))
+    }
+
+    public func deleteContact(id: String) async throws -> DeletedRef {
+        _ = try await connect()
+        return try await request("api/contacts/\(id)", method: "DELETE")
+    }
+
     public func calls() async throws -> CallList {
         _ = try await connect()
         return try await request("api/calls")
+    }
+
+    /// Logs that the user started a call; answers the `tel:` handoff. Never a connection claim.
+    public func logCall(contactID: String) async throws -> CallHandoff {
+        _ = try await connect()
+        struct Input: Encodable { let contact_id: String }
+        return try await request(
+            "api/calls", body: JSONEncoder().encode(Input(contact_id: contactID)))
+    }
+
+    public func clearCalls() async throws -> DeletedRef {
+        _ = try await connect()
+        struct Input: Decodable { let cleared: Bool }
+        let answer: Input = try await request("api/calls", method: "DELETE")
+        return DeletedRef(deleted: answer.cleared ? "cleared" : "")
+    }
+
+    // MARK: - Reading / discovery / maps config
+
+    public func reading(topic: String = "for_you") async throws -> ReadingResponse {
+        _ = try await connect()
+        var components = URLComponents(url: address.endpoint("api/reading"), resolvingAgainstBaseURL: false)!
+        components.queryItems = [URLQueryItem(name: "topic", value: topic)]
+        return try await request(url: components.url!)
+    }
+
+    public func discover(_ input: DiscoveryInput) async throws -> DiscoveryResponse {
+        _ = try await connect()
+        return try await request("api/discovery/places", body: JSONEncoder().encode(input))
+    }
+
+    public func mapsConfig() async throws -> MapsConfig {
+        _ = try await connect()
+        return try await request("api/maps/config")
     }
 
     public nonisolated func mapURL(places: [Place], center: (Double, Double) = (25.0805, 55.1403)) -> URL {
@@ -287,8 +412,14 @@ public actor APIClient {
     private func request<Output: Decodable & Sendable>(
         _ path: String, method: String? = nil, headers: [String: String] = [:], body: Data? = nil
     ) async throws -> Output {
+        try await request(url: address.endpoint(path), method: method, headers: headers, body: body)
+    }
+
+    private func request<Output: Decodable & Sendable>(
+        url: URL, method: String? = nil, headers: [String: String] = [:], body: Data? = nil
+    ) async throws -> Output {
         try Task.checkCancellation()
-        var request = URLRequest(url: address.endpoint(path))
+        var request = URLRequest(url: url)
         request.httpMethod = method ?? (body == nil ? "GET" : "POST")
         for (field, value) in headers { request.setValue(value, forHTTPHeaderField: field) }
         request.setValue("application/json", forHTTPHeaderField: "Accept")
@@ -303,7 +434,8 @@ public actor APIClient {
             throw APIError.http(response.statusCode, String(message.prefix(300)))
         }
         let decoder = JSONDecoder()
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        // Explicit snake_case CodingKeys on every multi-word type; no key
+        // strategy, so a key mismatch fails loudly instead of decoding nil.
         do { return try decoder.decode(Output.self, from: data) }
         catch { throw APIError.invalidResponse }
     }
