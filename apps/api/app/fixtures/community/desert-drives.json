@@ -1,0 +1,1631 @@
+{
+ "id": "desert-drives",
+ "name": "Desert Drives",
+ "handle": "desertdrivesdxb",
+ "topic": "Travel",
+ "about": "Dunes, wadis, Hatta trails and stargazing spots within a few hours of Dubai. Route notes, fuel stops and safety first.",
+ "image": "media/rest-water.jpg",
+ "members": 4300,
+ "stories": [
+  {
+   "author": "p04",
+   "text": "Sunset dune drive near Al Qudra, tyres aired down to 18 psi. Worth every bump.",
+   "image": "media/rest-water.jpg",
+   "hours_ago": 7
+  },
+  {
+   "author": "p02",
+   "text": "Wadi hike at dawn, cold water and a lot of shade under the rocks. Pure bliss.",
+   "image": "media/marina.jpg",
+   "hours_ago": 19
+  },
+  {
+   "author": "p08",
+   "text": "Campfire coffee in the desert, a thermos and a stove. My new favourite ritual.",
+   "image": "media/coffee.jpg",
+   "hours_ago": 33
+  }
+ ],
+ "posts": [
+  {
+   "id": "desert-drives-01",
+   "author": "p04",
+   "text": "Sunset drive to the Al Qudra dunes this Friday. Meet at the lay-by at 4:30pm, bring water, a first aid kit and a tow strap. Tyres aired down, nobody gets stuck alone.",
+   "image": "media/rest-water.jpg",
+   "hours_ago": 6,
+   "likes": 367,
+   "comments": [
+    {
+     "author": "p01",
+     "text": "Count me in. I've got the tow strap and the snacks, Tomasz. Tyres at 18 psi?",
+     "hours_ago": 5,
+     "likes": 11
+    },
+    {
+     "author": "p02",
+     "text": "I'll follow in my car and bring extra water. Keep the convoy slow and steady.",
+     "hours_ago": 5,
+     "likes": 8
+    },
+    {
+     "author": "p06",
+     "text": "Sunset in the dunes with a playlist is my dream Friday. Coming with the speaker, low volume.",
+     "hours_ago": 4,
+     "likes": 9
+    },
+    {
+     "author": "p08",
+     "text": "I'll bring the thermos and a stove for the coffee at the top of the dune. Good plan.",
+     "hours_ago": 4,
+     "likes": 12
+    },
+    {
+     "author": "p10",
+     "text": "Dune driving with a group needs a leader and a spotter. Who's the leader this week?",
+     "hours_ago": 4,
+     "likes": 7
+    },
+    {
+     "author": "p04",
+     "text": "@omar_q I'll lead, you spot. We swap at the second stop so everyone gets a turn.",
+     "hours_ago": 3,
+     "likes": 6
+    },
+    {
+     "author": "p05",
+     "text": "Puppy is not allowed in the dunes, sadly. But I'll send him a dune photo to dream about.",
+     "hours_ago": 3,
+     "likes": 10
+    },
+    {
+     "author": "p07",
+     "text": "Hot tip: reduce tyre pressure slowly and carry a pump to inflate before the highway.",
+     "hours_ago": 3,
+     "likes": 13
+    },
+    {
+     "author": "p09",
+     "text": "Our team has never done dunes. Is it safe for beginners in a normal SUV?",
+     "hours_ago": 2,
+     "likes": 5
+    },
+    {
+     "author": "p04",
+     "text": "@hannah_b a high-clearance SUV is best. Stay with the group and follow the leader's line.",
+     "hours_ago": 2,
+     "likes": 8
+    },
+    {
+     "author": "p03",
+     "text": "Dune snacks, a pastry box and a chilled drink. The desert is hungry work.",
+     "hours_ago": 2,
+     "likes": 9
+    },
+    {
+     "author": "p01",
+     "text": "Bring a blanket for the sunset, the sand gets cooler quickly after the sun goes down.",
+     "hours_ago": 2,
+     "likes": 7
+    },
+    {
+     "author": "p02",
+     "text": "Sunset photos on the dune are the best part. Bring a power bank for the phone.",
+     "hours_ago": 1,
+     "likes": 6
+    },
+    {
+     "author": "p06",
+     "text": "Please keep the rubbish in the car, the desert is not a bin. Leave no trace.",
+     "hours_ago": 1,
+     "likes": 14
+    },
+    {
+     "author": "p08",
+     "text": "Absolutely. Pack it in, pack it out, and the desert stays beautiful for everyone.",
+     "hours_ago": 1,
+     "likes": 11
+    },
+    {
+     "author": "p10",
+     "text": "Check the wind forecast before you go, sand storms are not fun. Good luck all.",
+     "hours_ago": 1,
+     "likes": 5
+    },
+    {
+     "author": "p04",
+     "text": "Good point, Omar. I'll check the forecast tomorrow and post it in the thread.",
+     "hours_ago": 1,
+     "likes": 4
+    },
+    {
+     "author": "p07",
+     "text": "Sunset at 6:20pm, so leave the dunes by 7:15 to be safe. Better to be early.",
+     "hours_ago": 1,
+     "likes": 9
+    },
+    {
+     "author": "p09",
+     "text": "Thanks everyone, I'll join the convoy and watch and learn. Yalla, desert.",
+     "hours_ago": 1,
+     "likes": 6
+    },
+    {
+     "author": "p01",
+     "text": "Going to be an amazing evening. See you all at the lay-by, Tomasz.",
+     "hours_ago": 0,
+     "likes": 8
+    },
+    {
+     "author": "p02",
+     "text": "Desert sunsets are the best free show in the country. Let's go.",
+     "hours_ago": 0,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "Puppy sends his regards from the balcony, with a very long sigh.",
+     "hours_ago": 0,
+     "likes": 12
+    },
+    {
+     "author": "p06",
+     "text": "Yalla, convoy on Friday. Send photos, the sand looks amazing from the top 🌅",
+     "hours_ago": 0,
+     "likes": 10
+    },
+    {
+     "author": "p08",
+     "text": "Coffee at the top of the dune, the best place in the city. See you Friday.",
+     "hours_ago": 0,
+     "likes": 7
+    },
+    {
+     "author": "p10",
+     "text": "Safe driving and a great sunset, everyone. Remember to keep the speed low.",
+     "hours_ago": 0,
+     "likes": 6
+    }
+   ]
+  },
+  {
+   "id": "desert-drives-02",
+   "author": "p02",
+   "text": "Wadi hike in Hatta at dawn: 6km loop, two small waterfalls in the rainy season and a lot of shade under the rocks. Water is essential, even in the cool morning.",
+   "image": "media/marina.jpg",
+   "hours_ago": 20,
+   "likes": 298,
+   "comments": [
+    {
+     "author": "p04",
+     "text": "Wadi hikes at dawn are the best. The rocks are cool and the light is beautiful.",
+     "hours_ago": 18,
+     "likes": 10
+    },
+    {
+     "author": "p10",
+     "text": "Water is the most important item. Carry two litres per person, even for a short loop.",
+     "hours_ago": 17,
+     "likes": 13
+    },
+    {
+     "author": "p08",
+     "text": "Coffee at the top of the wadi is my reward. Bring a flask, nothing else needed.",
+     "hours_ago": 16,
+     "likes": 9
+    },
+    {
+     "author": "p03",
+     "text": "Dawn hike and then a pastry at the bottom of the wadi. A perfect Saturday for me.",
+     "hours_ago": 15,
+     "likes": 11
+    },
+    {
+     "author": "p05",
+     "text": "Puppy would love the wadi, but I'll check if dogs are allowed on the trail first.",
+     "hours_ago": 14,
+     "likes": 8
+    },
+    {
+     "author": "p01",
+     "text": "Good shoes with grip for the rocks. Trail runners are my best friend on the wadi.",
+     "hours_ago": 14,
+     "likes": 7
+    },
+    {
+     "author": "p06",
+     "text": "The waterfalls in the rainy season are magical. Check the weather before you go.",
+     "hours_ago": 13,
+     "likes": 9
+    },
+    {
+     "author": "p07",
+     "text": "Hatta trail maps are in the visitor centre, pick one up if you can. Very useful.",
+     "hours_ago": 12,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "Our team wants a wadi hike next month. Any beginner-friendly loops you recommend?",
+     "hours_ago": 11,
+     "likes": 5
+    },
+    {
+     "author": "p02",
+     "text": "@hannah_b the 4km loop near the dam is perfect for beginners, with clear signs.",
+     "hours_ago": 10,
+     "likes": 8
+    },
+    {
+     "author": "p04",
+     "text": "Carry a small first aid kit and a phone with offline maps. The signal can be patchy.",
+     "hours_ago": 9,
+     "likes": 12
+    },
+    {
+     "author": "p10",
+     "text": "Good point. Share your route with a friend before you head out, always.",
+     "hours_ago": 9,
+     "likes": 7
+    },
+    {
+     "author": "p08",
+     "text": "I like the quiet of the wadi at dawn, no traffic, just birds and the wind.",
+     "hours_ago": 8,
+     "likes": 6
+    },
+    {
+     "author": "p03",
+     "text": "Dawn wadi, lovely. Bring a light snack for the top, a cake is too heavy for the rocks.",
+     "hours_ago": 7,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "Puppy vote for the wadi: yes, if the trail allows dogs, and he has his own water.",
+     "hours_ago": 7,
+     "likes": 10
+    },
+    {
+     "author": "p01",
+     "text": "A hot day on the wadi is punishing. Start early and finish before the noon heat.",
+     "hours_ago": 6,
+     "likes": 9
+    },
+    {
+     "author": "p06",
+     "text": "Music is not allowed on some trails, respect the quiet of the nature, friends.",
+     "hours_ago": 5,
+     "likes": 8
+    },
+    {
+     "author": "p07",
+     "text": "Stay on the marked path, the rocks can be slippery after the rain. Be careful.",
+     "hours_ago": 5,
+     "likes": 7
+    },
+    {
+     "author": "p02",
+     "text": "Thanks everyone, this is a great list of tips. I'll bring the trail runners.",
+     "hours_ago": 4,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "The wadi hike is on my list now. The team will be so happy to see the waterfalls.",
+     "hours_ago": 4,
+     "likes": 5
+    },
+    {
+     "author": "p04",
+     "text": "Good luck, Hannah. Take photos of the rock patterns, they're gorgeous.",
+     "hours_ago": 3,
+     "likes": 4
+    },
+    {
+     "author": "p10",
+     "text": "Enjoy the wadi, everyone. Water, shade and good company. Yalla!",
+     "hours_ago": 3,
+     "likes": 9
+    },
+    {
+     "author": "p08",
+     "text": "Coffee and wadi, my new favourite combo. Thank you Ravi for the route.",
+     "hours_ago": 2,
+     "likes": 6
+    },
+    {
+     "author": "p03",
+     "text": "A wadi hike with a pastry at the bottom. The best way to end a dawn walk.",
+     "hours_ago": 2,
+     "likes": 8
+    },
+    {
+     "author": "p01",
+     "text": "The desert sky after a wadi hike is a lovely reward. Go explore 🌄",
+     "hours_ago": 1,
+     "likes": 7
+    }
+   ]
+  },
+  {
+   "id": "desert-drives-03",
+   "author": "p08",
+   "text": "Campfire coffee in the desert: a stove, a small kettle, and a moka pot for the bold. Smell of smoke, stars overhead, no traffic. Who wants to try a night at the camp?",
+   "image": "media/coffee.jpg",
+   "hours_ago": 34,
+   "likes": 412,
+   "comments": [
+    {
+     "author": "p04",
+     "text": "Campfire coffee is the best coffee. I'm in for the night at the camp, with the bike too.",
+     "hours_ago": 32,
+     "likes": 14
+    },
+    {
+     "author": "p06",
+     "text": "Moka pot over a fire? I want to see that. Bring the playlist and the blanket.",
+     "hours_ago": 31,
+     "likes": 11
+    },
+    {
+     "author": "p01",
+     "text": "Stars over the desert are unmatched. Bring a warm jacket, the nights are cold.",
+     "hours_ago": 30,
+     "likes": 12
+    },
+    {
+     "author": "p02",
+     "text": "Sunrise run from the camp, the sand is firm at dawn. Count me in for that.",
+     "hours_ago": 29,
+     "likes": 8
+    },
+    {
+     "author": "p03",
+     "text": "I'll bring cake for the campfire, a sweet end to the evening. Pastry in the dunes.",
+     "hours_ago": 28,
+     "likes": 10
+    },
+    {
+     "author": "p05",
+     "text": "Puppy can't come to the dunes, but he would love the campfire smell, I'm sure.",
+     "hours_ago": 27,
+     "likes": 9
+    },
+    {
+     "author": "p10",
+     "text": "Fire safety is key. Check the rules for campfires, and keep water next to it.",
+     "hours_ago": 26,
+     "likes": 13
+    },
+    {
+     "author": "p07",
+     "text": "Make sure the fire is out before you sleep, the desert wind can spread sparks fast.",
+     "hours_ago": 25,
+     "likes": 12
+    },
+    {
+     "author": "p09",
+     "text": "We have never done camping in the desert. Is there a campsite that allows tents?",
+     "hours_ago": 24,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "@hannah_b yes, a few licensed camps near the dunes. Book ahead, they fill up in winter.",
+     "hours_ago": 23,
+     "likes": 8
+    },
+    {
+     "author": "p04",
+     "text": "Dune camp with a tent and a sunrise coffee, the perfect easy adventure.",
+     "hours_ago": 22,
+     "likes": 7
+    },
+    {
+     "author": "p06",
+     "text": "Stars, music, and a moka pot, Yusuf. You're turning the desert into a cafe.",
+     "hours_ago": 21,
+     "likes": 9
+    },
+    {
+     "author": "p01",
+     "text": "Pack a headlamp, not just a phone. Red light keeps the night vision nice.",
+     "hours_ago": 20,
+     "likes": 10
+    },
+    {
+     "author": "p02",
+     "text": "Early morning run from camp, cool sand, and a great view. The best way to wake up.",
+     "hours_ago": 19,
+     "likes": 6
+    },
+    {
+     "author": "p10",
+     "text": "Swim in the desert? Ha, no, but a dip in a nearby pool after the hike is great.",
+     "hours_ago": 18,
+     "likes": 5
+    },
+    {
+     "author": "p03",
+     "text": "Hot chocolate by the fire, marshmallows, the cosy desert night. Sold.",
+     "hours_ago": 17,
+     "likes": 11
+    },
+    {
+     "author": "p07",
+     "text": "I'll bring the warm blankets and the good lamp. Desert nights are colder than you think.",
+     "hours_ago": 16,
+     "likes": 9
+    },
+    {
+     "author": "p05",
+     "text": "Puppy's rule for camping: a soft blanket and a warm lap. He's very adaptable.",
+     "hours_ago": 15,
+     "likes": 12
+    },
+    {
+     "author": "p09",
+     "text": "Let's book the camp for next month. I'll gather the team and send the details.",
+     "hours_ago": 14,
+     "likes": 7
+    },
+    {
+     "author": "p08",
+     "text": "Thanks everyone. The campfire coffee is waiting, and so is the moka pot.",
+     "hours_ago": 13,
+     "likes": 8
+    },
+    {
+     "author": "p04",
+     "text": "Good luck, Hannah. Camp life is the best team bonding in the desert.",
+     "hours_ago": 12,
+     "likes": 6
+    },
+    {
+     "author": "p02",
+     "text": "Camping plus runs plus coffee, my holy trinity in the desert. Let's go.",
+     "hours_ago": 11,
+     "likes": 7
+    },
+    {
+     "author": "p06",
+     "text": "Yalla, campfire night. Bring stories, songs and the bold coffee.",
+     "hours_ago": 10,
+     "likes": 8
+    },
+    {
+     "author": "p01",
+     "text": "Stars, coffee and friends, a perfect desert night. I'm in.",
+     "hours_ago": 9,
+     "likes": 5
+    },
+    {
+     "author": "p03",
+     "text": "Dessert under the stars, can't wait. Yusuf, bring the moka!",
+     "hours_ago": 8,
+     "likes": 6
+    }
+   ]
+  },
+  {
+   "id": "desert-drives-04",
+   "author": "p07",
+   "text": "Beginner question: is it okay to drive a normal car to the lookout point near the dunes, or do I really need a 4x4? I want to see the view without damaging the car.",
+   "image": null,
+   "hours_ago": 48,
+   "likes": 156,
+   "comments": [
+    {
+     "author": "p04",
+     "text": "The lookout point is on the paved road, a normal car is fine. Dunes need a 4x4.",
+     "hours_ago": 46,
+     "likes": 12
+    },
+    {
+     "author": "p10",
+     "text": "Stick to the marked roads, and don't drive on the soft sand with a normal car.",
+     "hours_ago": 45,
+     "likes": 9
+    },
+    {
+     "author": "p02",
+     "text": "Normal car is fine, but check the tyres and the fuel before you leave the city.",
+     "hours_ago": 44,
+     "likes": 8
+    },
+    {
+     "author": "p08",
+     "text": "Petrol stations are few on the desert roads. Fill up before you go, always.",
+     "hours_ago": 43,
+     "likes": 10
+    },
+    {
+     "author": "p06",
+     "text": "I've seen people get stuck in the soft sand with a sedan. Don't be that person.",
+     "hours_ago": 42,
+     "likes": 7
+    },
+    {
+     "author": "p03",
+     "text": "Lookout point with a picnic and cake, nice for a normal car day. Good choice, Anjali.",
+     "hours_ago": 41,
+     "likes": 6
+    },
+    {
+     "author": "p05",
+     "text": "Puppy would love the view but not the dunes. The lookout point is a good compromise.",
+     "hours_ago": 40,
+     "likes": 11
+    },
+    {
+     "author": "p01",
+     "text": "Bring water and a phone charger. The lookout is quiet, so keep the music low.",
+     "hours_ago": 39,
+     "likes": 8
+    },
+    {
+     "author": "p09",
+     "text": "Thanks, Anjali. Going to the lookout first before deciding on the dune trip.",
+     "hours_ago": 38,
+     "likes": 5
+    },
+    {
+     "author": "p07",
+     "text": "@hannah_b the lookout is a great first step. You'll learn the road before the dunes.",
+     "hours_ago": 37,
+     "likes": 6
+    },
+    {
+     "author": "p04",
+     "text": "Check the road closures before you go, some sections get closed in bad weather.",
+     "hours_ago": 36,
+     "likes": 9
+    },
+    {
+     "author": "p10",
+     "text": "Good advice, Tomasz. A quick check of the official road status saves a lot of trouble.",
+     "hours_ago": 35,
+     "likes": 7
+    },
+    {
+     "author": "p02",
+     "text": "Look at the map the night before, and set the route offline. Simple, safe, and calm.",
+     "hours_ago": 34,
+     "likes": 5
+    },
+    {
+     "author": "p08",
+     "text": "Coffee at the lookout with a thermos, the view and the flask make a great pair.",
+     "hours_ago": 33,
+     "likes": 8
+    },
+    {
+     "author": "p06",
+     "text": "The lookout at sunset is my favourite. Pack a blanket and a playlist.",
+     "hours_ago": 32,
+     "likes": 6
+    },
+    {
+     "author": "p03",
+     "text": "Lookout cake, the new trend. Let's make it a Desert Drives tradition.",
+     "hours_ago": 31,
+     "likes": 9
+    },
+    {
+     "author": "p05",
+     "text": "Puppy's lookout photo is ready, he looked very serious about the view.",
+     "hours_ago": 30,
+     "likes": 10
+    },
+    {
+     "author": "p01",
+     "text": "Anjali, thanks for asking. These answers are a great starter guide for newcomers.",
+     "hours_ago": 29,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "Starter guide, yes. Let's pin a list of car types and the routes they can take.",
+     "hours_ago": 28,
+     "likes": 7
+    },
+    {
+     "author": "p04",
+     "text": "Good idea. I'll add my dune and road notes in the pinned post this week.",
+     "hours_ago": 27,
+     "likes": 5
+    },
+    {
+     "author": "p10",
+     "text": "Keep it simple: normal car for the lookout, 4x4 for the dunes, and always a buddy.",
+     "hours_ago": 26,
+     "likes": 11
+    },
+    {
+     "author": "p02",
+     "text": "Simple rules are the best. Thanks all, the lookout trip is on for this weekend.",
+     "hours_ago": 25,
+     "likes": 4
+    },
+    {
+     "author": "p07",
+     "text": "Thank you all, this is so helpful. I'll post photos from the lookout on Sunday.",
+     "hours_ago": 24,
+     "likes": 8
+    },
+    {
+     "author": "p06",
+     "text": "Looking forward to the photos, Anjali. Yalla, the desert is calling 🏜️",
+     "hours_ago": 23,
+     "likes": 6
+    },
+    {
+     "author": "p02",
+     "text": "Lookout views are best just before sunset. Plan the timing and bring a jacket.",
+     "hours_ago": 44,
+     "likes": 6
+    }
+   ]
+  },
+  {
+   "id": "desert-drives-05",
+   "author": "p01",
+   "text": "Lost my phone signal for six hours on a desert drive and it was the best digital detox I've had. Paper map, a thermos and a good book. Highly recommend.",
+   "image": null,
+   "hours_ago": 72,
+   "likes": 289,
+   "comments": [
+    {
+     "author": "p08",
+     "text": "Digital detox in the desert is the best. Coffee and a book, the perfect pairing.",
+     "hours_ago": 70,
+     "likes": 12
+    },
+    {
+     "author": "p03",
+     "text": "Six hours without messages is the dream. Pastry, coffee and silence, pure heaven.",
+     "hours_ago": 69,
+     "likes": 10
+    },
+    {
+     "author": "p04",
+     "text": "Offline maps saved me once. Download the area before you leave, it's a must.",
+     "hours_ago": 68,
+     "likes": 11
+    },
+    {
+     "author": "p10",
+     "text": "Silence in the desert is a good reset. Also a good reason to tell people your plan.",
+     "hours_ago": 67,
+     "likes": 9
+    },
+    {
+     "author": "p02",
+     "text": "No signal means no running app, which is a shame, but the view makes up for it.",
+     "hours_ago": 66,
+     "likes": 6
+    },
+    {
+     "author": "p05",
+     "text": "Puppy would be bored without his phone, but he would love the peace and quiet.",
+     "hours_ago": 65,
+     "likes": 13
+    },
+    {
+     "author": "p06",
+     "text": "Paper maps are underrated. Bring one, and a compass, in case the battery dies.",
+     "hours_ago": 64,
+     "likes": 8
+    },
+    {
+     "author": "p07",
+     "text": "I'll try the detox on the next trip. Maybe two hours first, to be brave.",
+     "hours_ago": 63,
+     "likes": 7
+    },
+    {
+     "author": "p09",
+     "text": "Our team needs this. We'll try a no-phone hour at the camp, maybe that's a start.",
+     "hours_ago": 62,
+     "likes": 9
+    },
+    {
+     "author": "p01",
+     "text": "@hannah_b a phone-free hour is a great start. You'll be surprised how calm it feels.",
+     "hours_ago": 61,
+     "likes": 8
+    },
+    {
+     "author": "p04",
+     "text": "Carry a satellite messenger if you do long desert drives, it's a safety net.",
+     "hours_ago": 60,
+     "likes": 6
+    },
+    {
+     "author": "p10",
+     "text": "Good call, Tomasz. Safety first, detox second. Let people know the route.",
+     "hours_ago": 59,
+     "likes": 7
+    },
+    {
+     "author": "p08",
+     "text": "A thermos, a paper map and a notebook, that's my desert kit. No screens needed.",
+     "hours_ago": 58,
+     "likes": 10
+    },
+    {
+     "author": "p03",
+     "text": "Notebook for pastry recipes in the desert, yes! I'll bring one too.",
+     "hours_ago": 57,
+     "likes": 8
+    },
+    {
+     "author": "p05",
+     "text": "Puppy's favourite detox is a long nap in the shade. Very effective, very relaxing.",
+     "hours_ago": 56,
+     "likes": 12
+    },
+    {
+     "author": "p02",
+     "text": "Desert quiet is great for thinking. I always get my best ideas on a long drive.",
+     "hours_ago": 55,
+     "likes": 5
+    },
+    {
+     "author": "p06",
+     "text": "No notifications for six hours, the best gift for the mind. Thanks for sharing, Sara.",
+     "hours_ago": 54,
+     "likes": 9
+    },
+    {
+     "author": "p07",
+     "text": "Digital detox is my new goal for the summer. One desert day, then a month of balance.",
+     "hours_ago": 53,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "Anjali, the month of balance plan is a great idea. Let's do it as a group.",
+     "hours_ago": 52,
+     "likes": 7
+    },
+    {
+     "author": "p04",
+     "text": "Group detox challenge in the desert, a fun team goal. Count me in.",
+     "hours_ago": 51,
+     "likes": 5
+    },
+    {
+     "author": "p10",
+     "text": "Keep the detox safe and sensible. Good signal is great, no signal is also fine.",
+     "hours_ago": 50,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "Coffee plus silence is the ultimate desert combo. Thanks for the reminder, Sara.",
+     "hours_ago": 49,
+     "likes": 8
+    },
+    {
+     "author": "p03",
+     "text": "I'll try the paper map and the book this weekend, a very cosy plan.",
+     "hours_ago": 48,
+     "likes": 7
+    },
+    {
+     "author": "p01",
+     "text": "Enjoy the silence, friends, and bring water. The desert is calm but not forgiving.",
+     "hours_ago": 47,
+     "likes": 9
+    },
+    {
+     "author": "p05",
+     "text": "Puppy approves the desert detox. He is already dozing in the sun on the balcony.",
+     "hours_ago": 46,
+     "likes": 11
+    }
+   ]
+  },
+  {
+   "id": "desert-drives-06",
+   "author": "p04",
+   "text": "Fuel and rest stop map for the desert roads, updated this week. Petrol stations are far apart, so plan your stops and keep an eye on the gauge. Map link in the group.",
+   "image": "media/rest-room.jpg",
+   "hours_ago": 96,
+   "likes": 344,
+   "comments": [
+    {
+     "author": "p02",
+     "text": "Thank you, Tomasz. Fuel stops are the most important part of a desert plan.",
+     "hours_ago": 94,
+     "likes": 12
+    },
+    {
+     "author": "p10",
+     "text": "Keep the rest stop toilets in mind too, they are sometimes far apart. Plan ahead.",
+     "hours_ago": 93,
+     "likes": 8
+    },
+    {
+     "author": "p08",
+     "text": "A coffee stop on the map would be a nice addition, Tomasz. Even a flask stop counts.",
+     "hours_ago": 92,
+     "likes": 9
+    },
+    {
+     "author": "p01",
+     "text": "This map is very useful for newcomers. Save it to your phone before you leave.",
+     "hours_ago": 91,
+     "likes": 10
+    },
+    {
+     "author": "p06",
+     "text": "Fuel at half a tank is my rule in the desert. Never go below that line.",
+     "hours_ago": 90,
+     "likes": 11
+    },
+    {
+     "author": "p03",
+     "text": "Rest stops with shade and water are my favourite. The desert heat is serious.",
+     "hours_ago": 89,
+     "likes": 7
+    },
+    {
+     "author": "p05",
+     "text": "Puppy needs water at the rest stops, so this map is a lifesaver for us.",
+     "hours_ago": 88,
+     "likes": 13
+    },
+    {
+     "author": "p07",
+     "text": "Map is clear and easy to read. Thank you, Tomasz, for the hard work.",
+     "hours_ago": 87,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "I'll share the map with the team, and we'll plan our trip around the stops.",
+     "hours_ago": 86,
+     "likes": 8
+    },
+    {
+     "author": "p04",
+     "text": "@hannah_b good, share it with the team. Keep the map updated after each trip too.",
+     "hours_ago": 85,
+     "likes": 5
+    },
+    {
+     "author": "p02",
+     "text": "Mark the stops with the best views too, runners like a good view at a rest stop.",
+     "hours_ago": 84,
+     "likes": 7
+    },
+    {
+     "author": "p10",
+     "text": "Good idea, Ravi. Add a note on the shade and water at each stop.",
+     "hours_ago": 83,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "Tomasz, the coffee stop near the highway exit is worth adding. Ask for the strong brew.",
+     "hours_ago": 82,
+     "likes": 9
+    },
+    {
+     "author": "p03",
+     "text": "Pastry stop on the map is my request. A cake for the road, please.",
+     "hours_ago": 81,
+     "likes": 8
+    },
+    {
+     "author": "p05",
+     "text": "Puppy's rest stop is the one with the water bowl, mark it in red, please.",
+     "hours_ago": 80,
+     "likes": 10
+    },
+    {
+     "author": "p01",
+     "text": "Thank you all for the ideas. The map is becoming a community project.",
+     "hours_ago": 79,
+     "likes": 7
+    },
+    {
+     "author": "p06",
+     "text": "Community maps are the best kind. Keep adding, friends, and keep it honest.",
+     "hours_ago": 78,
+     "likes": 6
+    },
+    {
+     "author": "p07",
+     "text": "Yes, honest and updated. The desert roads change, so check before you leave.",
+     "hours_ago": 77,
+     "likes": 5
+    },
+    {
+     "author": "p09",
+     "text": "Thanks everyone. I'll print a copy for the glovebox, just in case.",
+     "hours_ago": 76,
+     "likes": 7
+    },
+    {
+     "author": "p04",
+     "text": "Glovebox copy is a smart move. Batteries die, paper doesn't.",
+     "hours_ago": 75,
+     "likes": 6
+    },
+    {
+     "author": "p02",
+     "text": "Good luck with the trips, everyone. Water, fuel and a plan, always.",
+     "hours_ago": 74,
+     "likes": 8
+    },
+    {
+     "author": "p10",
+     "text": "Stay safe and enjoy the open road. The desert is beautiful when you respect it.",
+     "hours_ago": 73,
+     "likes": 9
+    },
+    {
+     "author": "p08",
+     "text": "Thanks for the map, Tomasz. Coffee and fuel, a good road trip combo ☕",
+     "hours_ago": 72,
+     "likes": 5
+    },
+    {
+     "author": "p03",
+     "text": "Map is saved, cake is packed, and the desert is calling. Yalla 🏜️",
+     "hours_ago": 71,
+     "likes": 6
+    },
+    {
+     "author": "p07",
+     "text": "Thanks, Tomasz. A list of petrol stations with opening hours would be a great next step.",
+     "hours_ago": 90,
+     "likes": 7
+    }
+   ]
+  },
+  {
+   "id": "desert-drives-07",
+   "author": "p10",
+   "text": "Dune driving safety basics: lower tyre pressure gradually, never stop on a slope, keep a steady speed, and always stay in a convoy. Yes, this is the boring post. Please read it.",
+   "image": "media/rest-water.jpg",
+   "hours_ago": 120,
+   "likes": 402,
+   "comments": [
+    {
+     "author": "p04",
+     "text": "Boring but essential, Omar. The stop on the slope rule saved us once. Read it, everyone.",
+     "hours_ago": 118,
+     "likes": 15
+    },
+    {
+     "author": "p01",
+     "text": "Steady speed is the hardest rule for me, I always want to go faster. Thanks for the reminder.",
+     "hours_ago": 117,
+     "likes": 11
+    },
+    {
+     "author": "p02",
+     "text": "Convoy rules are the best safety net. Never go alone in the dunes, that's the golden rule.",
+     "hours_ago": 116,
+     "likes": 13
+    },
+    {
+     "author": "p06",
+     "text": "Tyre pressure gradually, yes. Quick deflation is the way people get into trouble.",
+     "hours_ago": 115,
+     "likes": 9
+    },
+    {
+     "author": "p08",
+     "text": "I'd add: carry a shovel and a board, not just a strap. The sand is stubborn.",
+     "hours_ago": 114,
+     "likes": 10
+    },
+    {
+     "author": "p03",
+     "text": "Boring posts are the most useful ones. Thank you, Omar, for the careful advice.",
+     "hours_ago": 113,
+     "likes": 8
+    },
+    {
+     "author": "p05",
+     "text": "Puppy's safety rule: always stay with the group, even on the walks. Same principle.",
+     "hours_ago": 112,
+     "likes": 12
+    },
+    {
+     "author": "p07",
+     "text": "Keep your speed steady and your eyes forward. The dune crests hide the drop.",
+     "hours_ago": 111,
+     "likes": 7
+    },
+    {
+     "author": "p09",
+     "text": "Our team will read this before the first trip. Thanks for making it simple.",
+     "hours_ago": 110,
+     "likes": 6
+    },
+    {
+     "author": "p10",
+     "text": "@hannah_b read it twice, and do a training run on flat sand first. Good practice.",
+     "hours_ago": 109,
+     "likes": 8
+    },
+    {
+     "author": "p04",
+     "text": "Flat sand practice is great for learning the feel of the car. Start slow.",
+     "hours_ago": 108,
+     "likes": 6
+    },
+    {
+     "author": "p02",
+     "text": "A pump in the car is essential. Re-inflating before the highway is the step people skip.",
+     "hours_ago": 107,
+     "likes": 9
+    },
+    {
+     "author": "p08",
+     "text": "Please also check the coolant and the oil before a long desert trip. Heat is hard on engines.",
+     "hours_ago": 106,
+     "likes": 7
+    },
+    {
+     "author": "p01",
+     "text": "Good reminder. A quick check at the petrol station is a small price for safety.",
+     "hours_ago": 105,
+     "likes": 5
+    },
+    {
+     "author": "p06",
+     "text": "Leave a note with the route and return time at home. It's a simple thing that matters.",
+     "hours_ago": 104,
+     "likes": 10
+    },
+    {
+     "author": "p03",
+     "text": "A note at home, a cake in the car, and a happy heart. The essentials.",
+     "hours_ago": 103,
+     "likes": 6
+    },
+    {
+     "author": "p05",
+     "text": "Puppy approves of the safety rules. He always stays close to the leash.",
+     "hours_ago": 102,
+     "likes": 11
+    },
+    {
+     "author": "p07",
+     "text": "Thank you Omar, I've bookmarked this post. Safety is the best adventure.",
+     "hours_ago": 101,
+     "likes": 8
+    },
+    {
+     "author": "p09",
+     "text": "Adding these rules to the team travel policy. Thank you for the clear list.",
+     "hours_ago": 100,
+     "likes": 7
+    },
+    {
+     "author": "p04",
+     "text": "Great to see the group taking safety seriously. The desert deserves respect.",
+     "hours_ago": 99,
+     "likes": 9
+    },
+    {
+     "author": "p02",
+     "text": "Keep it safe, friends. The dunes are the best place to learn patience.",
+     "hours_ago": 98,
+     "likes": 6
+    },
+    {
+     "author": "p10",
+     "text": "Thanks all. Drive safe, stay in the convoy, and enjoy the view. 🙏",
+     "hours_ago": 97,
+     "likes": 10
+    },
+    {
+     "author": "p06",
+     "text": "Stay safe, and keep the snacks in the car where they belong, lol. Yalla 🏜️",
+     "hours_ago": 96,
+     "likes": 7
+    },
+    {
+     "author": "p08",
+     "text": "Coffee after the safety talk, a perfect ritual. Thank you, Omar.",
+     "hours_ago": 95,
+     "likes": 5
+    },
+    {
+     "author": "p03",
+     "text": "Dune safety and a dessert after. That's a balanced desert plan, I think.",
+     "hours_ago": 94,
+     "likes": 6
+    }
+   ]
+  },
+  {
+   "id": "desert-drives-08",
+   "author": "p06",
+   "text": "Stargazing spot recommendation: a quiet area past the Hatta dam with almost no light pollution. Bring a blanket, a red torch and a lot of patience for your eyes to adjust.",
+   "image": "media/rest-water.jpg",
+   "hours_ago": 144,
+   "likes": 321,
+   "comments": [
+    {
+     "author": "p02",
+     "text": "Stars past Hatta are incredible. The Milky Way is clearly visible in the winter months.",
+     "hours_ago": 142,
+     "likes": 14
+    },
+    {
+     "author": "p04",
+     "text": "Red torch is the best tip, the bright white light ruins the night vision in seconds.",
+     "hours_ago": 141,
+     "likes": 11
+    },
+    {
+     "author": "p10",
+     "text": "Lie on the sand with a blanket and watch the sky. The quiet is the best part.",
+     "hours_ago": 140,
+     "likes": 9
+    },
+    {
+     "author": "p08",
+     "text": "Coffee on a blanket under the stars, the best night in the desert. Thanks Kwame.",
+     "hours_ago": 139,
+     "likes": 10
+    },
+    {
+     "author": "p03",
+     "text": "A snack and a blanket and the stars, my kind of Friday night. Dessert optional, very optional.",
+     "hours_ago": 138,
+     "likes": 7
+    },
+    {
+     "author": "p05",
+     "text": "Puppy would bark at every shooting star, so I'll leave him at home for the stargazing.",
+     "hours_ago": 137,
+     "likes": 12
+    },
+    {
+     "author": "p01",
+     "text": "Stargazing apps help identify constellations. Download the star map before you go.",
+     "hours_ago": 136,
+     "likes": 8
+    },
+    {
+     "author": "p07",
+     "text": "A star chart on paper plus a red torch, the old-fashioned way is the best way.",
+     "hours_ago": 135,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "We're planning a team stargazing night. Thanks for the spot, Kwame.",
+     "hours_ago": 134,
+     "likes": 7
+    },
+    {
+     "author": "p06",
+     "text": "@hannah_b enjoy it, the stars are amazing. Keep the group quiet for the best view.",
+     "hours_ago": 133,
+     "likes": 5
+    },
+    {
+     "author": "p04",
+     "text": "Watch out for the cold after midnight. Layers and a flask of tea are my tip.",
+     "hours_ago": 132,
+     "likes": 8
+    },
+    {
+     "author": "p02",
+     "text": "Night air in the desert is surprisingly chilly. Bring a warm hat too.",
+     "hours_ago": 131,
+     "likes": 6
+    },
+    {
+     "author": "p10",
+     "text": "Respect the dark and the animals, keep the lights off the road when driving home.",
+     "hours_ago": 130,
+     "likes": 9
+    },
+    {
+     "author": "p08",
+     "text": "I'll bring a thermos of hot coffee for the stargazing. Cold nights need hot drinks.",
+     "hours_ago": 129,
+     "likes": 10
+    },
+    {
+     "author": "p03",
+     "text": "Hot chocolate for the stargazers, my treat. The stars and the sweets, the perfect night.",
+     "hours_ago": 128,
+     "likes": 9
+    },
+    {
+     "author": "p05",
+     "text": "Puppy will be asleep by eight, so I'll send him a star photo instead. He'd approve.",
+     "hours_ago": 127,
+     "likes": 11
+    },
+    {
+     "author": "p01",
+     "text": "A stargazing night is the best way to reset the week. Thank you for the tip, Kwame.",
+     "hours_ago": 126,
+     "likes": 7
+    },
+    {
+     "author": "p07",
+     "text": "Stargazing with friends, a perfect Thursday night, and then a sleep in on Friday.",
+     "hours_ago": 125,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "Let's make the stargazing night a monthly ritual for the team. Who's in?",
+     "hours_ago": 124,
+     "likes": 8
+    },
+    {
+     "author": "p04",
+     "text": "Monthly stargazing, a brilliant habit. I'll bring the telescope if it fits in the car.",
+     "hours_ago": 123,
+     "likes": 9
+    },
+    {
+     "author": "p02",
+     "text": "Telescope on the sand, a dream of a night. Good luck with the planning, Hannah.",
+     "hours_ago": 122,
+     "likes": 5
+    },
+    {
+     "author": "p10",
+     "text": "Stay safe, keep the group close, and enjoy the stars. Yalla, Friday night.",
+     "hours_ago": 121,
+     "likes": 8
+    },
+    {
+     "author": "p08",
+     "text": "Thanks, Kwame, the stars are calling us all. Coffee is ready, see you under the sky ✨",
+     "hours_ago": 120,
+     "likes": 7
+    },
+    {
+     "author": "p03",
+     "text": "Stars, cake and friends, what a lovely way to end the week. Thank you all.",
+     "hours_ago": 119,
+     "likes": 6
+    },
+    {
+     "author": "p01",
+     "text": "Kwame, did you go on a clear night? The moon ruins the view for a few days.",
+     "hours_ago": 138,
+     "likes": 5
+    }
+   ]
+  },
+  {
+   "id": "desert-drives-09",
+   "author": "p08",
+   "text": "Honest desert picnic review: a shaded spot near the dam, a thermos of cold brew, dates and a small cheese board. Simple, cheap, and the best view for under 100 AED.",
+   "image": "media/coffee.jpg",
+   "hours_ago": 166,
+   "likes": 265,
+   "comments": [
+    {
+     "author": "p03",
+     "text": "Dates and cheese in the desert is a lovely combo. Under 100 AED is a great achievement.",
+     "hours_ago": 164,
+     "likes": 10
+    },
+    {
+     "author": "p04",
+     "text": "Cold brew on the dam side, the best picnic in the mountains. Thank you, Yusuf.",
+     "hours_ago": 162,
+     "likes": 9
+    },
+    {
+     "author": "p06",
+     "text": "Simple picnics are the best. Good food, good company, good view, nothing else needed.",
+     "hours_ago": 160,
+     "likes": 11
+    },
+    {
+     "author": "p01",
+     "text": "Shaded spot near the dam is hard to find in summer. Thanks for the tip, Yusuf.",
+     "hours_ago": 158,
+     "likes": 8
+    },
+    {
+     "author": "p02",
+     "text": "Dates are my running snack too. Perfect for the mountain trail after a run.",
+     "hours_ago": 156,
+     "likes": 7
+    },
+    {
+     "author": "p05",
+     "text": "Puppy would eat the cheese board. Keep it out of his reach, please.",
+     "hours_ago": 154,
+     "likes": 12
+    },
+    {
+     "author": "p10",
+     "text": "A cold drink at the dam is the best reward after a hike. Swim later if allowed.",
+     "hours_ago": 152,
+     "likes": 6
+    },
+    {
+     "author": "p07",
+     "text": "Under 100 AED for a view like that is a steal. Honest review, five stars.",
+     "hours_ago": 150,
+     "likes": 9
+    },
+    {
+     "author": "p09",
+     "text": "Our team picnic will copy this idea. Cheese board, dates, cold brew, perfect.",
+     "hours_ago": 148,
+     "likes": 8
+    },
+    {
+     "author": "p08",
+     "text": "@hannah_b copy away, the best ideas are shared. Enjoy the dam view.",
+     "hours_ago": 146,
+     "likes": 6
+    },
+    {
+     "author": "p04",
+     "text": "Dam views are the best reason to drive the mountain road. Good food is the bonus.",
+     "hours_ago": 144,
+     "likes": 7
+    },
+    {
+     "author": "p03",
+     "text": "Adding a small cake to the picnic next time, Yusuf. Dates and cake are a good pair.",
+     "hours_ago": 142,
+     "likes": 9
+    },
+    {
+     "author": "p01",
+     "text": "Keep the rubbish in a bag and take it home. The dam area is beautiful, let's keep it so.",
+     "hours_ago": 140,
+     "likes": 10
+    },
+    {
+     "author": "p06",
+     "text": "Leave no trace, always. Good reminder, friends, and nice picnic, Yusuf.",
+     "hours_ago": 138,
+     "likes": 8
+    },
+    {
+     "author": "p02",
+     "text": "A calm picnic after a run is my dream. Thanks for sharing the spot.",
+     "hours_ago": 136,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "Puppy approves of the picnic plan, as long as there is a bowl of water for him.",
+     "hours_ago": 134,
+     "likes": 11
+    },
+    {
+     "author": "p10",
+     "text": "Water bowls and shade, the two essentials for pets and people in the mountains.",
+     "hours_ago": 132,
+     "likes": 7
+    },
+    {
+     "author": "p07",
+     "text": "Picnic at the dam with friends, I'm sold. Yusuf, you are the picnic hero.",
+     "hours_ago": 130,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "Let's plan the team picnic for next month, with the dates and the cold brew.",
+     "hours_ago": 128,
+     "likes": 8
+    },
+    {
+     "author": "p04",
+     "text": "Good plan. I'll bring my bike for the ride to the dam, the mountain road is lovely.",
+     "hours_ago": 126,
+     "likes": 5
+    },
+    {
+     "author": "p03",
+     "text": "Yalla, picnic season is coming. Dates, cake, coffee, friends 🌴",
+     "hours_ago": 124,
+     "likes": 7
+    },
+    {
+     "author": "p01",
+     "text": "Thank you for the review, Yusuf. Honest reviews are my favourite kind.",
+     "hours_ago": 122,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "Thanks, everyone. The dam is waiting, and the cold brew is cold. See you there ☕",
+     "hours_ago": 120,
+     "likes": 8
+    },
+    {
+     "author": "p02",
+     "text": "Reaching the dam at sunrise is the way to go for the cooler picnic, I suspect.",
+     "hours_ago": 150,
+     "likes": 4
+    },
+    {
+     "author": "p06",
+     "text": "Cold brew in a flask keeps for hours, a clever trick for the mountain picnic.",
+     "hours_ago": 140,
+     "likes": 6
+    }
+   ]
+  },
+  {
+   "id": "desert-drives-10",
+   "author": "p02",
+   "text": "Monthly desert clean-up drive: meet at the lay-by, bring gloves and bags, collect rubbish along the dune edge and the roadside. Two hours, then a picnic. Who's joining?",
+   "image": "media/rest-room.jpg",
+   "hours_ago": 168,
+   "likes": 351,
+   "comments": [
+    {
+     "author": "p04",
+     "text": "Clean-up drives are important. I'll bring the gloves and the big bags from the bike shop.",
+     "hours_ago": 166,
+     "likes": 12
+    },
+    {
+     "author": "p10",
+     "text": "Count me in. A clean desert is a happy desert, and the picnic after is a bonus.",
+     "hours_ago": 165,
+     "likes": 10
+    },
+    {
+     "author": "p08",
+     "text": "I'll bring coffee for the crew. Clean-up and coffee, the perfect Saturday morning.",
+     "hours_ago": 164,
+     "likes": 11
+    },
+    {
+     "author": "p06",
+     "text": "Gloves and bags, I'm in. The playlist will keep the team going, low volume.",
+     "hours_ago": 163,
+     "likes": 8
+    },
+    {
+     "author": "p03",
+     "text": "Picnic after the clean-up, I'll bring pastries and a sweet tea for the team.",
+     "hours_ago": 162,
+     "likes": 9
+    },
+    {
+     "author": "p05",
+     "text": "Puppy will not join the clean-up, but he'll supervise from the car with a water bowl.",
+     "hours_ago": 161,
+     "likes": 13
+    },
+    {
+     "author": "p01",
+     "text": "Count me in too, Ravi. Our team will bring the bags and the energy.",
+     "hours_ago": 160,
+     "likes": 7
+    },
+    {
+     "author": "p07",
+     "text": "Two hours is a good length. Bring hats, sunscreen, and plenty of water.",
+     "hours_ago": 159,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "Our office team wants to join too. How many people can the lay-by fit?",
+     "hours_ago": 158,
+     "likes": 5
+    },
+    {
+     "author": "p02",
+     "text": "@hannah_b the lay-by fits about ten cars. Carpool if you can, it's better for the planet.",
+     "hours_ago": 157,
+     "likes": 8
+    },
+    {
+     "author": "p04",
+     "text": "Carpool is a great idea. I'll share the car list in the group this week.",
+     "hours_ago": 156,
+     "likes": 6
+    },
+    {
+     "author": "p10",
+     "text": "Keep the litter away from the sand edges, the wildlife can be affected by plastic.",
+     "hours_ago": 155,
+     "likes": 9
+    },
+    {
+     "author": "p08",
+     "text": "Good point. Please bring a small bag for glass and a bigger one for general rubbish.",
+     "hours_ago": 154,
+     "likes": 7
+    },
+    {
+     "author": "p03",
+     "text": "Sorting the bags is a great idea, I'll bring the labels and a marker.",
+     "hours_ago": 153,
+     "likes": 6
+    },
+    {
+     "author": "p05",
+     "text": "Puppy's contribution: he will find the one lost glove, it's his special talent.",
+     "hours_ago": 152,
+     "likes": 12
+    },
+    {
+     "author": "p01",
+     "text": "A treasure hunt for gloves, I love it. Clean-up with a little fun, well done Ravi.",
+     "hours_ago": 151,
+     "likes": 5
+    },
+    {
+     "author": "p07",
+     "text": "Please remember the heat, start early and take breaks in the shade. Safety first.",
+     "hours_ago": 150,
+     "likes": 8
+    },
+    {
+     "author": "p09",
+     "text": "We'll be there at 6:30 with the team. Thanks for organising, Ravi.",
+     "hours_ago": 149,
+     "likes": 7
+    },
+    {
+     "author": "p04",
+     "text": "Good, a team of volunteers makes the desert better, one bag at a time.",
+     "hours_ago": 148,
+     "likes": 6
+    },
+    {
+     "author": "p10",
+     "text": "The best way to give back to the desert, friends. See you at the lay-by.",
+     "hours_ago": 147,
+     "likes": 9
+    },
+    {
+     "author": "p08",
+     "text": "Coffee for everyone at the end, I've got the big thermos ready. Yalla, clean desert!",
+     "hours_ago": 146,
+     "likes": 10
+    },
+    {
+     "author": "p03",
+     "text": "A clean desert with a picnic after, the best Saturday ever. Thank you, Ravi 🏜️",
+     "hours_ago": 145,
+     "likes": 8
+    },
+    {
+     "author": "p01",
+     "text": "Gloves on, music low, bags full. See you all at the lay-by on Saturday.",
+     "hours_ago": 144,
+     "likes": 6
+    },
+    {
+     "author": "p07",
+     "text": "Thanks for the drive, friends. Let's leave the desert cleaner than we found it 🌵",
+     "hours_ago": 143,
+     "likes": 7
+    },
+    {
+     "author": "p03",
+     "text": "Count me in for the clean-up. Cake for the volunteers, obviously.",
+     "hours_ago": 160,
+     "likes": 8
+    }
+   ]
+  }
+ ]
+}

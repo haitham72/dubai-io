@@ -32,23 +32,48 @@
 }
 .chat-launch:active { transform: scale(.92); background: var(--tint-soft); }
 .mode-chat .browse-dock, .mode-portal .browse-dock {
-  transform: translateY(22px) scale(.86); opacity: 0; visibility: hidden; pointer-events: none;
+  transform: scaleX(.14); transform-origin: left center; opacity: 0; visibility: hidden; pointer-events: none;
   transition: transform .4s var(--dock-motion), opacity .18s ease, visibility 0s linear .4s;
 }
+.mode-chat.nav-expanded .browse-dock { transform: none; opacity: 1; visibility: visible; pointer-events: auto; transition: transform .4s var(--dock-motion), opacity .2s ease, visibility 0s; }
+.browse-toggle { position: absolute; z-index: 33; left: 16px; bottom: calc(var(--safe-b) + var(--keyboard-inset, 0px) + 18px); width: 56px; height: 56px; display: grid; place-items: center; border-radius: 50%; opacity: 0; visibility: hidden; transform: scale(.8); transition: opacity .2s ease, transform .4s var(--dock-motion), visibility 0s linear .4s; }
+.mode-chat:not(.nav-expanded) .browse-toggle { opacity: 1; visibility: visible; transform: none; transition-delay: .12s, .12s, 0s; }
+.mode-chat .composer { left: 82px; }
+.mode-chat.nav-expanded .composer { opacity: 0; visibility: hidden; pointer-events: none; transform: translateX(-20px) scaleX(.8); transition-delay: 0s; }
+.keyboard-open.mode-chat .browse-toggle { bottom: calc(var(--keyboard-inset, 0px) + 8px); }
+@media (prefers-reduced-motion: reduce) { .browse-dock, .browse-toggle, .composer, .tab-selection { animation: none !important; transition: none !important; } }
+/* The 56px composer and toggle share the centre line of the 64px dock (14px + 4px). */
 .composer {
-  bottom: calc(var(--safe-b) + var(--keyboard-inset, 0px) + 14px);
+  margin: 0; /* a <form>: no default margin may lift it off that line */
+  bottom: calc(var(--safe-b) + var(--keyboard-inset, 0px) + 18px);
   opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(18px) scale(.95);
   height: 56px; border-radius: 28px;
   transition: transform .44s var(--dock-motion), opacity .2s ease, visibility 0s linear .44s;
 }
 .mode-chat .composer {
-  bottom: calc(var(--safe-b) + var(--keyboard-inset, 0px) + 14px);
+  bottom: calc(var(--safe-b) + var(--keyboard-inset, 0px) + 18px);
   opacity: 1; visibility: visible; pointer-events: auto; transform: none;
   transition: transform .44s var(--dock-motion), opacity .25s ease .08s, visibility 0s;
 }
-.mode-results .composer { bottom: calc(var(--safe-b) + 14px); }
+.mode-results .composer { bottom: calc(var(--safe-b) + 18px); }
 .keyboard-open.mode-chat .composer { bottom: calc(var(--keyboard-inset, 0px) + 8px); }
 .composer input { font-size: 16px; }
+.chat-focus { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:12px 20px; padding:8px 12px; background:var(--tint-soft); border-radius:16px; color:var(--ink); }
+.chat-focus[hidden] { display:none; }
+#liveInterests .src { display:block; margin-top:4px; }
+#liveInterests .interest { display:block; }
+.interest h5 { margin:0; font:inherit; font-weight:650; }
+.interest-scope { margin-top:12px; padding:10px 12px; background:var(--tint-soft); border-radius:14px; }
+.interest-scope small { display:block; margin-top:6px; line-height:1.5; }
+.interest-scope summary { cursor:pointer; margin-top:8px; }
+.interest-evidence { padding-left:18px; font-size:12px; line-height:1.6; }
+.interest-evidence a { color:#076E89; text-underline-offset:2px; }
+.interest .acts { flex-wrap:wrap; }
+.interest-editor { margin-top:12px; }
+.interest-editor label { display:grid; gap:8px; }
+.interest-editor select { width:100%; padding:10px; border:1px solid var(--tint); border-radius:10px; background:var(--tint-soft); color:inherit; font:inherit; font-size:16px; }
+.interest-error { font-size:13px; line-height:1.5; }
+.interest-error:empty { display:none; }
 .composer input:focus-visible { outline: none !important; }
 .composer:has(input:focus-visible) { outline: 2px solid var(--tint); outline-offset: 2px; }
 .chatv { bottom: var(--keyboard-inset, 0px); }
@@ -58,6 +83,20 @@
 .c-title b { font-size: 22px; }
 .c-title span { font-size: 12px; padding-top: 2px; }
 .c-top .round { width: 42px; height: 42px; flex: none; }
+.c-title { text-align: center; align-items: center; }
+.c-title .brand-btn { text-align: center; }
+.chat-sidebar { position: fixed; inset: 0 auto 0 max(0px, calc((100vw - 440px) / 2)); margin: 0; width: min(340px, calc(100vw - 40px)); max-width: none; height: 100dvh; max-height: none; padding: calc(var(--safe-t) + 16px) 20px calc(var(--safe-b) + 20px); border: 0; border-right: 1px solid var(--sep); background: var(--bg); color: var(--label); overflow-y: auto; }
+.chat-sidebar::backdrop { background: rgba(12, 40, 52, .2); }
+.chat-sidebar header { display: flex; justify-content: space-between; align-items: center; }
+.chat-sidebar h2 { margin: 0; font: 700 22px var(--font-display); letter-spacing: -.03em; }
+.chat-sidebar h3 { margin: 24px 0 0; font-size: 13px; font-weight: 600; color: var(--label-2); }
+.chat-sidebar nav { display: grid; margin-top: 22px; }
+.chat-sidebar nav button, .chat-sidebar footer button { display: flex; gap: 12px; align-items: center; min-height: 48px; width: 100%; text-align: left; }
+.chat-sidebar footer { margin-top: 24px; padding-top: 8px; border-top: 1px solid var(--sep); }
+.chat-history-note { margin: 6px 0 12px; color: var(--label-3); font-size: 12px; }
+#chatHistoryList { display: grid; gap: 3px; }
+#chatHistoryList button { text-align: left; padding: 12px 10px; min-height: 44px; border-radius: 10px; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#chatHistoryList button[aria-current], #chatHistoryList button:hover { background: var(--tint-soft); }
 .c-orb { display: none; }
 .c-scroll { padding: 12px 18px calc(var(--safe-b) + 92px); }
 .c-scroll:has(.chat-empty:not([hidden])) { display: flex; flex-direction: column; }
@@ -115,3 +154,27 @@
   .chat-starters button { min-height: 42px; padding-block: 9px; }
   .keyboard-open .chat-starters { display: none; }
 }
+
+/* Preview-only iPhone keyboard (desktop review). Flat keys: a 1px edge, no shadow. */
+.sim-keyboard { position: absolute; z-index: 40; left: 0; right: 0; bottom: 0; height: 291px; padding: 8px 3px 34px; background: #D1D4DA; display: grid; grid-template-rows: repeat(4, 1fr); row-gap: 11px; user-select: none; }
+.sim-keyboard > div { display: flex; justify-content: center; gap: 6px; }
+.sim-keyboard button { flex: 0 1 32px; height: 42px; border-radius: 5px; background: #fff; border-bottom: 1px solid #898A8D; font: 400 22px/1 var(--font); color: #000; display: grid; place-items: center; }
+.sim-keyboard button:active { background: #B3B7BE; }
+.sim-keyboard .mod { flex: 0 0 42px; background: #ABB0BA; font-size: 16px; }
+.sim-keyboard .mod.on { background: #fff; }
+.sim-keyboard .space { flex: 1 1 auto; font-size: 16px; }
+.sim-keyboard .action { flex: 0 0 88px; background: #ABB0BA; font-size: 16px; }
+.sim-keyboard-tag { position: absolute; left: 0; right: 0; bottom: 10px; text-align: center; font-size: 10px; letter-spacing: .04em; color: #6B7079; }
+.sim-keyboard[hidden] { display: none; }
+
+/* Duet-style notification banner (in-app). Flat card, no shadow; slides from the top. */
+.notify-host { position: absolute; z-index: 60; left: 10px; right: 10px; top: calc(var(--safe-t, 0px) + 10px); transform: translateY(-140%); transition: transform .45s var(--dock-motion); pointer-events: none; }
+.notify-host.in { transform: none; pointer-events: auto; }
+.notify { width: 100%; display: flex; gap: 12px; align-items: flex-start; text-align: left; padding: 12px 14px; border-radius: 22px; background: rgba(255,255,255,.92); border: 1px solid var(--sep); -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px); }
+.notify-icon { flex: none; width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; background: var(--tint); color: #fff; }
+.notify-copy { display: grid; gap: 2px; min-width: 0; font-size: 14px; line-height: 1.35; color: var(--label); }
+.notify-head { display: flex; gap: 6px; align-items: center; font-size: 12.5px; }
+.notify-head em { font-style: normal; font-size: 10.5px; font-weight: 600; color: #703A88; background: #F3E8FA; border-radius: 6px; padding: 1px 6px; }
+.notify-head small { margin-left: auto; color: var(--label-3); }
+.notify-title { font-weight: 640; }
+@media (prefers-reduced-motion: reduce) { .notify-host { transition: none; } }

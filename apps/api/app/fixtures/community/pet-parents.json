@@ -1,0 +1,1631 @@
+{
+ "id": "pet-parents",
+ "name": "Pet Parents Dubai",
+ "handle": "petparentsdxb",
+ "topic": "Pets",
+ "about": "Vets, groomers, pet-friendly cafes and heat tips for dogs and cats across Dubai. Puppy photos welcome, judgement not.",
+ "image": "media/pets.jpg",
+ "members": 9100,
+ "stories": [
+  {
+   "author": "p05",
+   "text": "Puppy finally slept through the night. Miracles happen 🐶",
+   "image": "media/puppy.jpg",
+   "hours_ago": 2
+  },
+  {
+   "author": "p10",
+   "text": "Dog beach hour in JBR is back. Bring water and a towel for paws.",
+   "image": "media/pets.jpg",
+   "hours_ago": 8
+  },
+  {
+   "author": "p07",
+   "text": "Found a cat sitter in Mirdif who sends daily photos. Five stars.",
+   "image": "media/home-green.jpg",
+   "hours_ago": 16
+  }
+ ],
+ "posts": [
+  {
+   "id": "pet-parents-01",
+   "author": "p05",
+   "text": "Vet nurse here. Quick reminder for everyone: summer means tick and flea checks every two weeks, even for indoor pets. The heat makes them more active than you think.",
+   "image": "media/vet.jpg",
+   "hours_ago": 4,
+   "likes": 286,
+   "comments": [
+    {
+     "author": "p02",
+     "text": "Thanks Mariam, I thought indoor dogs were safe. Booking a check this week.",
+     "hours_ago": 3,
+     "likes": 12
+    },
+    {
+     "author": "p06",
+     "text": "Cats too? Mine is strictly indoor and somehow still attracts fleas. Mystery.",
+     "hours_ago": 3,
+     "likes": 9
+    },
+    {
+     "author": "p07",
+     "text": "The flea spray at the vet worked for us. Ask for the one that's safe for puppies.",
+     "hours_ago": 2,
+     "likes": 14
+    },
+    {
+     "author": "p09",
+     "text": "Do you know a clinic that does checks on weekends? Work hours are killing me.",
+     "hours_ago": 3,
+     "likes": 6
+    },
+    {
+     "author": "p04",
+     "text": "Ticks in Dubai in summer? Didn't know. Adding a check to the weekly routine.",
+     "hours_ago": 2,
+     "likes": 5
+    },
+    {
+     "author": "p10",
+     "text": "Check behind the ears and between the toes after every walk. Takes 30 seconds.",
+     "hours_ago": 1,
+     "likes": 18
+    },
+    {
+     "author": "p03",
+     "text": "My cat hates the flea comb more than the vet visit. Dramatic little creature.",
+     "hours_ago": 2,
+     "likes": 11
+    },
+    {
+     "author": "p08",
+     "text": "Cats are drama queens, but yes, check them. Flea treatment is cheaper than a bad week.",
+     "hours_ago": 1,
+     "likes": 8
+    },
+    {
+     "author": "p01",
+     "text": "@mariam_s which spray is the puppy-safe one? I'd love the exact name for the clinic.",
+     "hours_ago": 2,
+     "likes": 7
+    },
+    {
+     "author": "p05",
+     "text": "@sarak I'll post a list with the clinic names in a separate thread, to be safe.",
+     "hours_ago": 1,
+     "likes": 10
+    },
+    {
+     "author": "p07",
+     "text": "Thank you, a list is much better than guessing. Please include the prices too.",
+     "hours_ago": 1,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "My dog had fleas last summer after one park visit. Lesson learned, I check now.",
+     "hours_ago": 1,
+     "likes": 9
+    },
+    {
+     "author": "p02",
+     "text": "Parks are the main source, no question. Shoes off at the door helps too.",
+     "hours_ago": 0,
+     "likes": 4
+    },
+    {
+     "author": "p04",
+     "text": "Heat check: dogs are not allowed on hot tiles, the vet clinic says the same.",
+     "hours_ago": 1,
+     "likes": 12
+    },
+    {
+     "author": "p06",
+     "text": "Adding a note: the cat carrier should live out, not in the cupboard. Cats get used to it.",
+     "hours_ago": 2,
+     "likes": 13
+    },
+    {
+     "author": "p10",
+     "text": "Great reminder. Summer heat and parasites are a double hit, be vigilant.",
+     "hours_ago": 0,
+     "likes": 7
+    },
+    {
+     "author": "p03",
+     "text": "My baker's heart melts at every pet photo. Keep these tips coming, Mariam.",
+     "hours_ago": 1,
+     "likes": 5
+    },
+    {
+     "author": "p08",
+     "text": "Coffee shop cat has a flea collar on, the owner says it works. Just a thought.",
+     "hours_ago": 2,
+     "likes": 3
+    },
+    {
+     "author": "p01",
+     "text": "Puppy is on the flea plan since last week, he is not a fan but it's fine.",
+     "hours_ago": 1,
+     "likes": 6
+    },
+    {
+     "author": "p05",
+     "text": "Every pet is different, so ask your vet before using any product. Sorry for the rules.",
+     "hours_ago": 0,
+     "likes": 11
+    },
+    {
+     "author": "p07",
+     "text": "Good call, always check the label for the animal's weight. Keep it safe.",
+     "hours_ago": 1,
+     "likes": 4
+    },
+    {
+     "author": "p09",
+     "text": "Keeping the checklist in my phone now. Thanks for making it easy to follow.",
+     "hours_ago": 1,
+     "likes": 8
+    },
+    {
+     "author": "p04",
+     "text": "Puppy has the best vet nurse in the city. Lucky pup.",
+     "hours_ago": 0,
+     "likes": 15
+    },
+    {
+     "author": "p02",
+     "text": "Thanks all, saving this post. Pets are family, let's keep them healthy.",
+     "hours_ago": 0,
+     "likes": 9
+    },
+    {
+     "author": "p10",
+     "text": "Health first, fun second. Yalla, check those paws today 🐾",
+     "hours_ago": 0,
+     "likes": 12
+    }
+   ]
+  },
+  {
+   "id": "pet-parents-02",
+   "author": "p07",
+   "text": "Looking for a pet-friendly cafe in Mirdif or Al Warqa where I can bring my cat in a carrier. Patio preferred, but a quiet corner with AC is fine too.",
+   "image": null,
+   "hours_ago": 12,
+   "likes": 118,
+   "comments": [
+    {
+     "author": "p03",
+     "text": "Cats in carriers on the patio are common at one cafe near the park. Ask for the corner table.",
+     "hours_ago": 10,
+     "likes": 8
+    },
+    {
+     "author": "p05",
+     "text": "Cats on the patio? Brave. My vet clinic would approve of a quiet corner, though.",
+     "hours_ago": 9,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "Our coffee shop in Al Quoz is cat-friendly, not with food, just the calm.",
+     "hours_ago": 8,
+     "likes": 5
+    },
+    {
+     "author": "p10",
+     "text": "Dogs are allowed on most patios, cats need a carrier. Check the cafe rules first.",
+     "hours_ago": 7,
+     "likes": 9
+    },
+    {
+     "author": "p06",
+     "text": "My cat would hate any cafe, so I'll be the one with the photos from the doorway.",
+     "hours_ago": 6,
+     "likes": 12
+    },
+    {
+     "author": "p09",
+     "text": "Mirdif has a few options near the park. The one with the big windows is lovely.",
+     "hours_ago": 6,
+     "likes": 4
+    },
+    {
+     "author": "p04",
+     "text": "Cat cafes are a niche here, but a pet-friendly patio is becoming more common.",
+     "hours_ago": 5,
+     "likes": 3
+    },
+    {
+     "author": "p01",
+     "text": "I'd bring a travel blanket for the carrier, cats love the smell of home.",
+     "hours_ago": 5,
+     "likes": 10
+    },
+    {
+     "author": "p02",
+     "text": "Thanks for the tip on the travel blanket, Sara. Very practical advice.",
+     "hours_ago": 4,
+     "likes": 2
+    },
+    {
+     "author": "p07",
+     "text": "@sarak thanks! Do you know the name of the one with the windows?",
+     "hours_ago": 4,
+     "likes": 3
+    },
+    {
+     "author": "p03",
+     "text": "I think it's the one by the old souk side. Check the map, it has great coffee too.",
+     "hours_ago": 4,
+     "likes": 6
+    },
+    {
+     "author": "p05",
+     "text": "Share the name when you find it, I'll add it to the vet clinic list for owners.",
+     "hours_ago": 3,
+     "likes": 5
+    },
+    {
+     "author": "p08",
+     "text": "Coffee and cats in one place is my dream. I'd happily roast beans for a cat cafe.",
+     "hours_ago": 3,
+     "likes": 7
+    },
+    {
+     "author": "p10",
+     "text": "A cat cafe would do very well in Dubai, the summer is long and cats love the AC.",
+     "hours_ago": 2,
+     "likes": 8
+    },
+    {
+     "author": "p06",
+     "text": "Cats prefer the AC, that's the one thing I know for sure. Good luck Anjali.",
+     "hours_ago": 2,
+     "likes": 4
+    },
+    {
+     "author": "p09",
+     "text": "Patio plus carrier plus coffee sounds like a fun Saturday. Count me in for the pet meetup.",
+     "hours_ago": 2,
+     "likes": 6
+    },
+    {
+     "author": "p04",
+     "text": "Pet meetups are great for socialising the dogs. Maybe a monthly one in the park.",
+     "hours_ago": 1,
+     "likes": 5
+    },
+    {
+     "author": "p01",
+     "text": "A monthly meetup is a great idea. Sign me up with the puppy and the cafe crowd.",
+     "hours_ago": 1,
+     "likes": 9
+    },
+    {
+     "author": "p07",
+     "text": "I'll start a poll in the group for a cat-friendly meetup date, thanks everyone.",
+     "hours_ago": 1,
+     "likes": 7
+    },
+    {
+     "author": "p03",
+     "text": "Bring treats for the cat and a little cake for the humans, pastry chef's rule.",
+     "hours_ago": 1,
+     "likes": 11
+    },
+    {
+     "author": "p05",
+     "text": "Puppy will be a very polite guest. He is training with treats right now.",
+     "hours_ago": 1,
+     "likes": 13
+    },
+    {
+     "author": "p10",
+     "text": "Keep the meetup pet-friendly and quiet. Everyone's animals will thank you.",
+     "hours_ago": 0,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "Quiet corner, good coffee, happy cat. Simple and beautiful.",
+     "hours_ago": 0,
+     "likes": 5
+    },
+    {
+     "author": "p02",
+     "text": "Looking forward to meeting the pets. The puppy and I are in for a long walk after.",
+     "hours_ago": 0,
+     "likes": 4
+    },
+    {
+     "author": "p09",
+     "text": "Let's finish with a group photo of all the pets. The cat will be the star.",
+     "hours_ago": 0,
+     "likes": 8
+    }
+   ]
+  },
+  {
+   "id": "pet-parents-03",
+   "author": "p06",
+   "text": "My cat knocked a glass off the table three times this week. Is this normal behaviour or should I be worried? She looks very pleased with herself about it.",
+   "image": null,
+   "hours_ago": 20,
+   "likes": 395,
+   "comments": [
+    {
+     "author": "p05",
+     "text": "Cats do this to check if you're watching. It's normal, but keep the glass away from the edge.",
+     "hours_ago": 18,
+     "likes": 24
+    },
+    {
+     "author": "p01",
+     "text": "My cat does it to the mug every morning. We have a ritual now, lol.",
+     "hours_ago": 17,
+     "likes": 15
+    },
+    {
+     "author": "p10",
+     "text": "It's play and attention seeking. Give her a toy at the same time to redirect it.",
+     "hours_ago": 16,
+     "likes": 12
+    },
+    {
+     "author": "p03",
+     "text": "Pretty sure mine is trying to test gravity for science. Very thorough researcher.",
+     "hours_ago": 15,
+     "likes": 18
+    },
+    {
+     "author": "p04",
+     "text": "If it happens a lot, check for boredom. Try a short play session before bed.",
+     "hours_ago": 14,
+     "likes": 9
+    },
+    {
+     "author": "p07",
+     "text": "Mine knocks things off the counter when she is hungry. Check the feeding schedule.",
+     "hours_ago": 13,
+     "likes": 10
+    },
+    {
+     "author": "p08",
+     "text": "My cat does it right after I sit down with coffee. Clearly she is a professional.",
+     "hours_ago": 12,
+     "likes": 14
+    },
+    {
+     "author": "p09",
+     "text": "I'd speak to the vet if it's sudden, though. Changes in behaviour can mean a health thing.",
+     "hours_ago": 11,
+     "likes": 8
+    },
+    {
+     "author": "p02",
+     "text": "Agree with Hannah, sudden changes are worth a check. Usually it's just play though.",
+     "hours_ago": 11,
+     "likes": 6
+    },
+    {
+     "author": "p06",
+     "text": "@mariam_s it's been going on for only a week, she eats well and sleeps well. I'll keep an eye on it.",
+     "hours_ago": 10,
+     "likes": 7
+    },
+    {
+     "author": "p05",
+     "text": "A week is fine to observe. If she starts drinking more or losing weight, call the vet.",
+     "hours_ago": 10,
+     "likes": 11
+    },
+    {
+     "author": "p10",
+     "text": "Cats are masters of mischief. A cat with a plan is a happy cat.",
+     "hours_ago": 9,
+     "likes": 10
+    },
+    {
+     "author": "p03",
+     "text": "Hide the glasses, buy a cat tower, and enjoy the show. That's my advice.",
+     "hours_ago": 8,
+     "likes": 13
+    },
+    {
+     "author": "p01",
+     "text": "Cat tower is a game changer. Mine uses it as a lookout post now.",
+     "hours_ago": 8,
+     "likes": 9
+    },
+    {
+     "author": "p04",
+     "text": "Puppy would never knock a glass, he would drink from it. Different species.",
+     "hours_ago": 7,
+     "likes": 12
+    },
+    {
+     "author": "p08",
+     "text": "Coffee mug survival is a daily challenge in this flat. I feel your pain.",
+     "hours_ago": 7,
+     "likes": 6
+    },
+    {
+     "author": "p07",
+     "text": "Maybe she wants water. Try a fountain, many cats prefer running water.",
+     "hours_ago": 6,
+     "likes": 16
+    },
+    {
+     "author": "p09",
+     "text": "Water fountain was a hit for my cat. She drinks more and stops knocking things over.",
+     "hours_ago": 6,
+     "likes": 8
+    },
+    {
+     "author": "p02",
+     "text": "Running water helps, and a toy near the glass area keeps her busy.",
+     "hours_ago": 5,
+     "likes": 5
+    },
+    {
+     "author": "p10",
+     "text": "Keep a routine of play in the evening, and she'll calm down during the day.",
+     "hours_ago": 5,
+     "likes": 7
+    },
+    {
+     "author": "p03",
+     "text": "Thanks all, the cat tower and the water fountain are on my shopping list today.",
+     "hours_ago": 4,
+     "likes": 9
+    },
+    {
+     "author": "p06",
+     "text": "Mariam, thanks for the reassurance. Cat is now sleeping in the sun, looking innocent.",
+     "hours_ago": 3,
+     "likes": 14
+    },
+    {
+     "author": "p05",
+     "text": "That innocent look is the most dangerous one. Enjoy the peace while it lasts.",
+     "hours_ago": 3,
+     "likes": 12
+    },
+    {
+     "author": "p04",
+     "text": "Good luck Kwame, cats are very clever. Let us know how the fountain goes.",
+     "hours_ago": 2,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "The cat has won this round, but I'm keeping my mug on the far side of the table.",
+     "hours_ago": 2,
+     "likes": 8
+    }
+   ]
+  },
+  {
+   "id": "pet-parents-04",
+   "author": "p01",
+   "text": "Weekend dog grooming in Al Barsha: I took my golden retriever for a bath and the groomer used a gentle shampoo. He came back smelling like a fresh croissant. Recommend?",
+   "image": "media/cloth.jpg",
+   "hours_ago": 30,
+   "likes": 203,
+   "comments": [
+    {
+     "author": "p02",
+     "text": "Smelling like a croissant is the ultimate praise. Name of the groomer please?",
+     "hours_ago": 28,
+     "likes": 8
+    },
+    {
+     "author": "p05",
+     "text": "A gentle shampoo is key, too much soap dries the skin. Good find, Sara.",
+     "hours_ago": 27,
+     "likes": 11
+    },
+    {
+     "author": "p03",
+     "text": "Smell like a croissant? I'll take him as my new pastry assistant, lol.",
+     "hours_ago": 26,
+     "likes": 15
+    },
+    {
+     "author": "p10",
+     "text": "Dogs with long coats need regular brushing between baths. Ask for a de-shedding session.",
+     "hours_ago": 25,
+     "likes": 9
+    },
+    {
+     "author": "p08",
+     "text": "Coffee after the grooming session is the best, the dog and the human both deserve it.",
+     "hours_ago": 24,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "Our groomer does a lovely job but the wait is long on Saturdays. Book a week ahead.",
+     "hours_ago": 23,
+     "likes": 7
+    },
+    {
+     "author": "p04",
+     "text": "Dogs hate the dryer, so ask for a towel dry and gentle blow dry. Less stress for the pup.",
+     "hours_ago": 22,
+     "likes": 10
+    },
+    {
+     "author": "p06",
+     "text": "My husky sheds like a snowstorm. The de-shed treatment changed my living room.",
+     "hours_ago": 21,
+     "likes": 12
+    },
+    {
+     "author": "p07",
+     "text": "Ask the groomer about ear cleaning too, golden retrievers get ear infections easily.",
+     "hours_ago": 20,
+     "likes": 13
+    },
+    {
+     "author": "p01",
+     "text": "@anjali_rao yes, they cleaned his ears too, and trimmed the nails. Full service.",
+     "hours_ago": 19,
+     "likes": 5
+    },
+    {
+     "author": "p02",
+     "text": "Nails are the one thing I always forget. Glad you mentioned it, Sara.",
+     "hours_ago": 18,
+     "likes": 4
+    },
+    {
+     "author": "p10",
+     "text": "The groomer should also check for ticks while they wash, double win.",
+     "hours_ago": 17,
+     "likes": 9
+    },
+    {
+     "author": "p03",
+     "text": "Ticks and croissants in one visit, this is a complete service, I love it.",
+     "hours_ago": 16,
+     "likes": 8
+    },
+    {
+     "author": "p05",
+     "text": "Puppy's first grooming is next week. Please wish him luck, he is very dramatic.",
+     "hours_ago": 15,
+     "likes": 14
+    },
+    {
+     "author": "p04",
+     "text": "Dramatic dogs are my favourite kind. Good luck, Mariam.",
+     "hours_ago": 14,
+     "likes": 4
+    },
+    {
+     "author": "p08",
+     "text": "A calm dog makes for a calm groomer. Treats during the session help a lot.",
+     "hours_ago": 13,
+     "likes": 7
+    },
+    {
+     "author": "p09",
+     "text": "Could you share the price range? Trying to budget for a monthly visit.",
+     "hours_ago": 12,
+     "likes": 3
+    },
+    {
+     "author": "p01",
+     "text": "@hannah_b about 150 AED for a full wash with trim in Al Barsha. Prices change, check first.",
+     "hours_ago": 11,
+     "likes": 6
+    },
+    {
+     "author": "p06",
+     "text": "Good to know. I'll ask for a quote before I book, so there are no surprises.",
+     "hours_ago": 10,
+     "likes": 5
+    },
+    {
+     "author": "p07",
+     "text": "Quote first is always wise. A good groomer will tell you the full price upfront.",
+     "hours_ago": 9,
+     "likes": 8
+    },
+    {
+     "author": "p02",
+     "text": "My dog gets the deluxe package once a month, it's worth every dirham.",
+     "hours_ago": 8,
+     "likes": 6
+    },
+    {
+     "author": "p10",
+     "text": "Dogs who get regular grooming are calmer, I've seen it in the pool too.",
+     "hours_ago": 7,
+     "likes": 5
+    },
+    {
+     "author": "p03",
+     "text": "Ok, the croissant dog is the reason I'm adopting one. Sara, you've won this thread.",
+     "hours_ago": 6,
+     "likes": 12
+    },
+    {
+     "author": "p05",
+     "text": "Puppy approves of the croissant smell, he's been sniffing my bag all day.",
+     "hours_ago": 5,
+     "likes": 9
+    },
+    {
+     "author": "p04",
+     "text": "Enjoy the fresh smell and the happy dog. Good weekend, everyone.",
+     "hours_ago": 4,
+     "likes": 3
+    }
+   ]
+  },
+  {
+   "id": "pet-parents-05",
+   "author": "p09",
+   "text": "Pet insurance in the UAE: has anyone compared the plans? I'm trying to decide between basic cover for accidents only and a plan that includes routine checks.",
+   "image": null,
+   "hours_ago": 44,
+   "likes": 134,
+   "comments": [
+    {
+     "author": "p05",
+     "text": "Accident-only is cheaper but routine checks add up fast. Compare the annual limits first.",
+     "hours_ago": 42,
+     "likes": 12
+    },
+    {
+     "author": "p04",
+     "text": "Read the exclusions carefully, pre-existing conditions are usually not covered.",
+     "hours_ago": 41,
+     "likes": 14
+    },
+    {
+     "author": "p01",
+     "text": "I went with a mid-tier plan. Two vet visits in one year already paid for it.",
+     "hours_ago": 40,
+     "likes": 8
+    },
+    {
+     "author": "p07",
+     "text": "Ask the vet clinic which providers they work with, they often know the claims process well.",
+     "hours_ago": 39,
+     "likes": 9
+    },
+    {
+     "author": "p10",
+     "text": "Swim coaches see a lot of injuries in dogs at the beach, so I'd go for the broader cover.",
+     "hours_ago": 38,
+     "likes": 6
+    },
+    {
+     "author": "p03",
+     "text": "Pet insurance sounds very grown up. My cat's insurance is her biggest expense, honestly.",
+     "hours_ago": 37,
+     "likes": 11
+    },
+    {
+     "author": "p06",
+     "text": "Check the waiting period too. Some plans take weeks before they start paying out.",
+     "hours_ago": 36,
+     "likes": 13
+    },
+    {
+     "author": "p02",
+     "text": "Monthly premium versus annual, the annual one is cheaper in my experience.",
+     "hours_ago": 35,
+     "likes": 5
+    },
+    {
+     "author": "p08",
+     "text": "I'd rather spend on coffee for the owner than insurance, but I'm a bad example.",
+     "hours_ago": 34,
+     "likes": 7
+    },
+    {
+     "author": "p09",
+     "text": "@omar_q that's a good point about the beach injuries. Thanks for the heads up.",
+     "hours_ago": 33,
+     "likes": 4
+    },
+    {
+     "author": "p05",
+     "text": "Puppy needs the broader cover, he eats everything from the sand. Very expensive hobby.",
+     "hours_ago": 32,
+     "likes": 16
+    },
+    {
+     "author": "p04",
+     "text": "Dog-specific plans may be better than a general pet plan. Compare both.",
+     "hours_ago": 31,
+     "likes": 6
+    },
+    {
+     "author": "p01",
+     "text": "Keep the receipts and photos of every visit. Claims go faster with clean paperwork.",
+     "hours_ago": 30,
+     "likes": 9
+    },
+    {
+     "author": "p07",
+     "text": "Check if the plan covers emergency vet visits at night, that's the one that matters most.",
+     "hours_ago": 29,
+     "likes": 10
+    },
+    {
+     "author": "p06",
+     "text": "Emergency cover saved us once at midnight. Worth more than the premium, honestly.",
+     "hours_ago": 28,
+     "likes": 12
+    },
+    {
+     "author": "p10",
+     "text": "Good luck with the decision, Hannah. Whichever you choose, the pet is lucky to have you.",
+     "hours_ago": 27,
+     "likes": 8
+    },
+    {
+     "author": "p03",
+     "text": "Thank you all, this is a much better summary than the brochures.",
+     "hours_ago": 26,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "Insurance for coffee beans would be my dream plan, but let's stick with pets.",
+     "hours_ago": 25,
+     "likes": 3
+    },
+    {
+     "author": "p05",
+     "text": "I'll post a comparison table for the group once I have the quotes. Stay tuned.",
+     "hours_ago": 24,
+     "likes": 11
+    },
+    {
+     "author": "p04",
+     "text": "Looking forward to it. Maybe add a column for the waiting period too.",
+     "hours_ago": 23,
+     "likes": 5
+    },
+    {
+     "author": "p02",
+     "text": "Insurance is the boring part, but it's the one that saves you when it matters.",
+     "hours_ago": 22,
+     "likes": 7
+    },
+    {
+     "author": "p01",
+     "text": "Well said, Ravi. Boring but essential. Like the vaccines.",
+     "hours_ago": 21,
+     "likes": 4
+    },
+    {
+     "author": "p07",
+     "text": "Vaccines first, insurance second, treats third. The order matters.",
+     "hours_ago": 20,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "Thanks everyone, I'm going to compare three plans this weekend and share the result.",
+     "hours_ago": 19,
+     "likes": 9
+    },
+    {
+     "author": "p06",
+     "text": "Good luck Hannah, and remember, the dog is always the best investment in the end.",
+     "hours_ago": 18,
+     "likes": 10
+    }
+   ]
+  },
+  {
+   "id": "pet-parents-06",
+   "author": "p08",
+   "text": "Our coffee shop is starting a dog-friendly corner on the terrace this weekend. Water bowls, shade, and a sign saying please pick up after your dog. Feedback welcome!",
+   "image": "media/pets.jpg",
+   "hours_ago": 56,
+   "likes": 312,
+   "comments": [
+    {
+     "author": "p10",
+     "text": "Yes! A water bowl is the most important thing on a terrace in summer. Well done, Yusuf.",
+     "hours_ago": 54,
+     "likes": 15
+    },
+    {
+     "author": "p05",
+     "text": "Puppy will be the first customer, he already knows the coffee smell. Thank you!",
+     "hours_ago": 53,
+     "likes": 24
+    },
+    {
+     "author": "p03",
+     "text": "Dog-friendly with cake on the menu would be perfect. Maybe a dog biscuit too.",
+     "hours_ago": 52,
+     "likes": 12
+    },
+    {
+     "author": "p01",
+     "text": "Shade is crucial. Put a fan near the corner, dogs get hot even on a mild day.",
+     "hours_ago": 51,
+     "likes": 10
+    },
+    {
+     "author": "p02",
+     "text": "Thanks for doing this. Running with my dog and then coffee, the dream routine.",
+     "hours_ago": 50,
+     "likes": 8
+    },
+    {
+     "author": "p04",
+     "text": "Good clear sign, the dog owners who ignore the rules are the real problem.",
+     "hours_ago": 49,
+     "likes": 9
+    },
+    {
+     "author": "p06",
+     "text": "Please keep the dogs off the chairs. Cats too, if any cat wants to visit, lol.",
+     "hours_ago": 48,
+     "likes": 6
+    },
+    {
+     "author": "p07",
+     "text": "Maybe add a small bowl of water for cats as well, they are welcome on the terrace.",
+     "hours_ago": 47,
+     "likes": 11
+    },
+    {
+     "author": "p09",
+     "text": "I'll bring the team for a dog-friendly meeting, the terrace will be packed.",
+     "hours_ago": 46,
+     "likes": 7
+    },
+    {
+     "author": "p08",
+     "text": "@hannah_b a team meeting with dogs sounds like a good concept for a startup, honest.",
+     "hours_ago": 45,
+     "likes": 5
+    },
+    {
+     "author": "p10",
+     "text": "Keep the terrace calm in the afternoon too, the dogs need a rest in the heat.",
+     "hours_ago": 44,
+     "likes": 6
+    },
+    {
+     "author": "p05",
+     "text": "Puppy is practising his sit for the terrace. Two treats per sit, he is very motivated.",
+     "hours_ago": 43,
+     "likes": 18
+    },
+    {
+     "author": "p03",
+     "text": "Puppy with a flour dusted nose is the new coffee shop mascot. I'm volunteering.",
+     "hours_ago": 42,
+     "likes": 9
+    },
+    {
+     "author": "p01",
+     "text": "Thanks Yusuf for the sign. Clear rules, good manners, happy dogs. That's the formula.",
+     "hours_ago": 41,
+     "likes": 12
+    },
+    {
+     "author": "p02",
+     "text": "Ask your staff to be kind to nervous dogs too, some of them need space.",
+     "hours_ago": 40,
+     "likes": 7
+    },
+    {
+     "author": "p06",
+     "text": "Dog music on the terrace? Kidding, but a calm playlist helps animals relax.",
+     "hours_ago": 39,
+     "likes": 5
+    },
+    {
+     "author": "p07",
+     "text": "Let's organise a first meetup there next weekend, the timing is perfect.",
+     "hours_ago": 38,
+     "likes": 8
+    },
+    {
+     "author": "p04",
+     "text": "I'll bring my dog for the first meetup, he loves coffee smells even if he can't drink it.",
+     "hours_ago": 37,
+     "likes": 6
+    },
+    {
+     "author": "p10",
+     "text": "A dog's first coffee is always a surprise. Make sure it is only the water bowl.",
+     "hours_ago": 36,
+     "likes": 9
+    },
+    {
+     "author": "p08",
+     "text": "Water only for the dogs, promise. Espresso is for the humans, that's the policy.",
+     "hours_ago": 35,
+     "likes": 10
+    },
+    {
+     "author": "p05",
+     "text": "Puppy approves of the policy. He is already practising his best calm face.",
+     "hours_ago": 34,
+     "likes": 13
+    },
+    {
+     "author": "p03",
+     "text": "Dog-friendly coffee shops are good for the neighbourhood. Good job, Yusuf.",
+     "hours_ago": 33,
+     "likes": 11
+    },
+    {
+     "author": "p01",
+     "text": "Yes, the neighbourhood needs more places like this. Pets are part of the community.",
+     "hours_ago": 32,
+     "likes": 8
+    },
+    {
+     "author": "p02",
+     "text": "Thanks for the great work, the group is proud to support the terrace.",
+     "hours_ago": 31,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "See you at the meetup, Yusuf. Bring the good beans and the water bowl 🐶",
+     "hours_ago": 30,
+     "likes": 9
+    }
+   ]
+  },
+  {
+   "id": "pet-parents-07",
+   "author": "p10",
+   "text": "Heat safety for pets, a quick checklist: walk before 8am or after 7pm, test pavement with your hand for seven seconds, carry water, and never leave a pet in a parked car.",
+   "image": "media/rest-room.jpg",
+   "hours_ago": 72,
+   "likes": 421,
+   "comments": [
+    {
+     "author": "p05",
+     "text": "Seven seconds on the pavement is the rule the clinic teaches too. Great summary, Omar.",
+     "hours_ago": 70,
+     "likes": 18
+    },
+    {
+     "author": "p03",
+     "text": "Never in a parked car, even for two minutes. Please, everyone, this is serious.",
+     "hours_ago": 69,
+     "likes": 22
+    },
+    {
+     "author": "p01",
+     "text": "Carrying water is so important. I keep a collapsible bowl in every bag now.",
+     "hours_ago": 68,
+     "likes": 14
+    },
+    {
+     "author": "p02",
+     "text": "Early morning walks are my routine, it works for both of us and the streets are cool.",
+     "hours_ago": 67,
+     "likes": 9
+    },
+    {
+     "author": "p06",
+     "text": "Shade and water, plus a cooling mat for the bed. My cat loves it more than the AC.",
+     "hours_ago": 66,
+     "likes": 12
+    },
+    {
+     "author": "p07",
+     "text": "Signs of heatstroke in pets include heavy panting, drooling and weakness. Call the vet.",
+     "hours_ago": 65,
+     "likes": 16
+    },
+    {
+     "author": "p08",
+     "text": "Coffee shops should have a pet water station, it's a simple kindness. Adding it to my list.",
+     "hours_ago": 64,
+     "likes": 7
+    },
+    {
+     "author": "p04",
+     "text": "Pets left on the balcony in the heat is a risk too. Bring them inside on hot days.",
+     "hours_ago": 63,
+     "likes": 8
+    },
+    {
+     "author": "p09",
+     "text": "Our office has a dog-friendly policy but the parking lot is hot. Guess the lift is the answer.",
+     "hours_ago": 62,
+     "likes": 5
+    },
+    {
+     "author": "p10",
+     "text": "@hannah_b the lift is safe, but not the car park. Good instinct.",
+     "hours_ago": 61,
+     "likes": 4
+    },
+    {
+     "author": "p05",
+     "text": "Puppy's cooling vest is the best purchase of this year. He looks like a little lifeguard.",
+     "hours_ago": 60,
+     "likes": 19
+    },
+    {
+     "author": "p03",
+     "text": "Lifeguard puppy with a cooling vest. That's the next viral picture for sure.",
+     "hours_ago": 59,
+     "likes": 11
+    },
+    {
+     "author": "p01",
+     "text": "Shade in the garden plus a fan and water. Simple and effective, my dog is calm.",
+     "hours_ago": 58,
+     "likes": 6
+    },
+    {
+     "author": "p02",
+     "text": "Thanks for the checklist Omar, I'm pinning this for the next summer.",
+     "hours_ago": 57,
+     "likes": 12
+    },
+    {
+     "author": "p06",
+     "text": "Heat stroke in pets can happen fast. Learn the signs and act quickly, always.",
+     "hours_ago": 56,
+     "likes": 10
+    },
+    {
+     "author": "p07",
+     "text": "Keep the vet number in your phone and the nearest 24-hour clinic too.",
+     "hours_ago": 55,
+     "likes": 13
+    },
+    {
+     "author": "p08",
+     "text": "Coffee to go in the heat is a risk for the dog too, keep the cup away from paws.",
+     "hours_ago": 54,
+     "likes": 4
+    },
+    {
+     "author": "p04",
+     "text": "Good tip, Yusuf. Hot drinks and curious paws are a bad combination.",
+     "hours_ago": 53,
+     "likes": 5
+    },
+    {
+     "author": "p09",
+     "text": "Adding a pet emergency number to my phone home screen now. Thank you, Omar.",
+     "hours_ago": 52,
+     "likes": 9
+    },
+    {
+     "author": "p10",
+     "text": "Good idea. Keep safety information visible, not buried in a chat.",
+     "hours_ago": 51,
+     "likes": 6
+    },
+    {
+     "author": "p05",
+     "text": "Puppy says thanks for the water tip. He drinks a lot after the walks.",
+     "hours_ago": 50,
+     "likes": 15
+    },
+    {
+     "author": "p03",
+     "text": "Dogs and water bowls are the best pair. Let's make this the rule everywhere.",
+     "hours_ago": 49,
+     "likes": 8
+    },
+    {
+     "author": "p01",
+     "text": "This should be pinned at the top of the group. Thanks for the clear list.",
+     "hours_ago": 48,
+     "likes": 10
+    },
+    {
+     "author": "p02",
+     "text": "Stay cool everyone, and check on your neighbours' pets too in the heat.",
+     "hours_ago": 47,
+     "likes": 11
+    },
+    {
+     "author": "p06",
+     "text": "Let's all be the kind neighbour who knocks if a pet looks in trouble. Yalla 🐾",
+     "hours_ago": 46,
+     "likes": 14
+    }
+   ]
+  },
+  {
+   "id": "pet-parents-08",
+   "author": "p03",
+   "text": "Rescue update: the kitten we fostered in Silicon Oasis found a home with a lovely family in Al Barsha. They sent a photo of him already sleeping in a sunbeam. So happy today!",
+   "image": "media/cloth.jpg",
+   "hours_ago": 90,
+   "likes": 540,
+   "comments": [
+    {
+     "author": "p05",
+     "text": "That is the best news I've read this week. Foster heroes, you did so well.",
+     "hours_ago": 88,
+     "likes": 26
+    },
+    {
+     "author": "p06",
+     "text": "Congrats to the kitten and the family. Sunbeam nap is the true sign of happiness.",
+     "hours_ago": 87,
+     "likes": 18
+    },
+    {
+     "author": "p01",
+     "text": "Tears of joy. Thank you Layla for giving him a safe start. The sunbeam photo is perfect.",
+     "hours_ago": 86,
+     "likes": 15
+    },
+    {
+     "author": "p02",
+     "text": "Fostering is hard work, so good on you for doing it. Well done!",
+     "hours_ago": 85,
+     "likes": 11
+    },
+    {
+     "author": "p04",
+     "text": "Happy ending, lovely to hear. The kitten is lucky to have you.",
+     "hours_ago": 84,
+     "likes": 9
+    },
+    {
+     "author": "p07",
+     "text": "Sunbeam cats are the happiest cats. Mine has claimed the same spot for years.",
+     "hours_ago": 83,
+     "likes": 12
+    },
+    {
+     "author": "p08",
+     "text": "I'd add a coffee to the celebration, but I'm sure the cake is the real star today.",
+     "hours_ago": 82,
+     "likes": 7
+    },
+    {
+     "author": "p09",
+     "text": "What a wonderful post to read on a Monday. Thank you for sharing the update.",
+     "hours_ago": 81,
+     "likes": 8
+    },
+    {
+     "author": "p10",
+     "text": "Good job Layla. Fostering saves lives, and so does sharing the good news.",
+     "hours_ago": 80,
+     "likes": 10
+    },
+    {
+     "author": "p03",
+     "text": "Thank you all, it was a team effort with the vet clinic and the family. So grateful.",
+     "hours_ago": 79,
+     "likes": 13
+    },
+    {
+     "author": "p05",
+     "text": "The clinic cared for him from day one. Fostering is a family project, really.",
+     "hours_ago": 78,
+     "likes": 9
+    },
+    {
+     "author": "p06",
+     "text": "Who is the new family? Can we see more photos of the kitten in the new home?",
+     "hours_ago": 77,
+     "likes": 6
+    },
+    {
+     "author": "p03",
+     "text": "Sweet family with two kids, the kitten is their favourite toy already. Photos later.",
+     "hours_ago": 76,
+     "likes": 14
+    },
+    {
+     "author": "p01",
+     "text": "Kids and kittens are the perfect combo. Hope he gets all the sunbeams.",
+     "hours_ago": 75,
+     "likes": 8
+    },
+    {
+     "author": "p04",
+     "text": "We have fostered three puppies so far. It is hard, but every goodbye is worth it.",
+     "hours_ago": 74,
+     "likes": 7
+    },
+    {
+     "author": "p07",
+     "text": "Please share how to start fostering, I want to try next year. Any tips?",
+     "hours_ago": 73,
+     "likes": 10
+    },
+    {
+     "author": "p05",
+     "text": "@anjali_rao call the local rescue group, they will walk you through the first steps.",
+     "hours_ago": 72,
+     "likes": 12
+    },
+    {
+     "author": "p08",
+     "text": "Coffee and fostering, a good combo. Hope the kitten finds the best morning routine.",
+     "hours_ago": 71,
+     "likes": 5
+    },
+    {
+     "author": "p09",
+     "text": "Adding fostering to my list of things to do next year. Hannah's office could sponsor a pet fund.",
+     "hours_ago": 70,
+     "likes": 9
+    },
+    {
+     "author": "p10",
+     "text": "A pet fund at the office is a great idea, let's talk about it at the next lunch.",
+     "hours_ago": 69,
+     "likes": 6
+    },
+    {
+     "author": "p02",
+     "text": "Running and fostering, the two things I didn't know I needed. Good luck to all of you.",
+     "hours_ago": 68,
+     "likes": 4
+    },
+    {
+     "author": "p06",
+     "text": "Puppy and the kitten, a playdate? Mariam, please, I need a sequel.",
+     "hours_ago": 67,
+     "likes": 11
+    },
+    {
+     "author": "p05",
+     "text": "Puppy would love a playdate, but the kitten should have a quiet week first. Patience!",
+     "hours_ago": 66,
+     "likes": 13
+    },
+    {
+     "author": "p03",
+     "text": "Thank you all, my heart is full. Yalla, let's celebrate with a pet-friendly cake 🎂",
+     "hours_ago": 65,
+     "likes": 16
+    },
+    {
+     "author": "p01",
+     "text": "Layla, you're a legend. Congratulations to the whole rescue team 🐾",
+     "hours_ago": 64,
+     "likes": 10
+    }
+   ]
+  },
+  {
+   "id": "pet-parents-09",
+   "author": "p04",
+   "text": "Question for cat owners: how do you keep the litter smell under control in a small flat? We've tried three brands and the smell still sneaks through to the living room.",
+   "image": null,
+   "hours_ago": 110,
+   "likes": 98,
+   "comments": [
+    {
+     "author": "p07",
+     "text": "Scoop daily and change the box every two weeks. Silica litter is worth the price, honestly.",
+     "hours_ago": 108,
+     "likes": 12
+    },
+    {
+     "author": "p06",
+     "text": "Put the tray in the bathroom with the fan on, that's my trick. Smell goes straight out.",
+     "hours_ago": 107,
+     "likes": 9
+    },
+    {
+     "author": "p03",
+     "text": "Baking soda under the litter, a thin layer. It helped in my tiny kitchen flat.",
+     "hours_ago": 106,
+     "likes": 7
+    },
+    {
+     "author": "p01",
+     "text": "A covered tray with a filter is better than an open one. Less smell, less spreading.",
+     "hours_ago": 105,
+     "likes": 8
+    },
+    {
+     "author": "p05",
+     "text": "Check the cat's diet too, some foods change the smell. Ask your vet for advice.",
+     "hours_ago": 104,
+     "likes": 10
+    },
+    {
+     "author": "p02",
+     "text": "Keep the tray away from the kitchen, the smell mixes with the food smell. Not nice.",
+     "hours_ago": 103,
+     "likes": 5
+    },
+    {
+     "author": "p08",
+     "text": "I'd add an air purifier near the tray. Cheap and quiet, my flat smells like coffee now.",
+     "hours_ago": 102,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "We tried a robot litter box. Expensive, but the smell is much better now.",
+     "hours_ago": 101,
+     "likes": 11
+    },
+    {
+     "author": "p10",
+     "text": "Cats are very sensitive to dirty trays. A clean tray often solves the problem completely.",
+     "hours_ago": 100,
+     "likes": 9
+    },
+    {
+     "author": "p04",
+     "text": "Thanks all, the bathroom idea and the baking soda are my plan for this week.",
+     "hours_ago": 99,
+     "likes": 4
+    },
+    {
+     "author": "p07",
+     "text": "@tomasz_n also check the flat's ventilation, a small window open helps a lot.",
+     "hours_ago": 98,
+     "likes": 6
+    },
+    {
+     "author": "p06",
+     "text": "Mango would like a cleaner tray, she has opinions about everything, honestly.",
+     "hours_ago": 97,
+     "likes": 12
+    },
+    {
+     "author": "p03",
+     "text": "Pastry chef's rule: clean the tray as often as you clean the mixer. No excuses.",
+     "hours_ago": 96,
+     "likes": 8
+    },
+    {
+     "author": "p01",
+     "text": "Cats notice everything, so the smell matters to them as much as to us.",
+     "hours_ago": 95,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "A pet deodoriser is safe if it's cat-friendly. Read the label and avoid strong sprays.",
+     "hours_ago": 94,
+     "likes": 10
+    },
+    {
+     "author": "p02",
+     "text": "Ventilation and cleanliness, the basics that work. Thank you for the reminder.",
+     "hours_ago": 93,
+     "likes": 3
+    },
+    {
+     "author": "p08",
+     "text": "Coffee grounds are not litter, though I'm sure someone has tried it. Please don't.",
+     "hours_ago": 92,
+     "likes": 7
+    },
+    {
+     "author": "p09",
+     "text": "Ha, a coffee litter experiment. Yusuf, you are very creative.",
+     "hours_ago": 91,
+     "likes": 5
+    },
+    {
+     "author": "p10",
+     "text": "Keep the litter box clean and the living room will smell like home, not like the box.",
+     "hours_ago": 90,
+     "likes": 6
+    },
+    {
+     "author": "p04",
+     "text": "Good luck with the trial, I'll report back which combo worked best.",
+     "hours_ago": 89,
+     "likes": 3
+    },
+    {
+     "author": "p07",
+     "text": "Report back with the brand name too, the group will want to know.",
+     "hours_ago": 88,
+     "likes": 4
+    },
+    {
+     "author": "p05",
+     "text": "Puppy has never had a litter problem, he prefers the balcony. Different challenges.",
+     "hours_ago": 87,
+     "likes": 9
+    },
+    {
+     "author": "p06",
+     "text": "Balcony is a great solution if you have one, the cat is very impressed with the view.",
+     "hours_ago": 86,
+     "likes": 6
+    },
+    {
+     "author": "p03",
+     "text": "Thanks Tomasz, the group has so many great ideas. I'll try the bathroom tray too.",
+     "hours_ago": 85,
+     "likes": 4
+    },
+    {
+     "author": "p01",
+     "text": "Good luck, and enjoy the fresh flat. Yalla, happy cat, happy home 🐈",
+     "hours_ago": 84,
+     "likes": 5
+    }
+   ]
+  },
+  {
+   "id": "pet-parents-10",
+   "author": "p07",
+   "text": "Weekend dog park meetup at Mushrif this Saturday morning, 7am, shaded area near the play zone. Small dogs and big dogs welcome, but please keep them on leash until you say hi.",
+   "image": "media/puppy.jpg",
+   "hours_ago": 140,
+   "likes": 255,
+   "comments": [
+    {
+     "author": "p05",
+     "text": "Puppy will be there, he is bouncing with excitement already. See you Saturday!",
+     "hours_ago": 136,
+     "likes": 16
+    },
+    {
+     "author": "p02",
+     "text": "Mushrif park is a great choice, the shade is good and the lake is close.",
+     "hours_ago": 134,
+     "likes": 9
+    },
+    {
+     "author": "p10",
+     "text": "Keep the big dogs and the small dogs in separate lines for the first ten minutes. Safer.",
+     "hours_ago": 132,
+     "likes": 14
+    },
+    {
+     "author": "p04",
+     "text": "Leash rules are important. Thanks for making it clear in the post, Anjali.",
+     "hours_ago": 130,
+     "likes": 8
+    },
+    {
+     "author": "p06",
+     "text": "Mango the cat cannot come, sadly, but I'll send the dog photos on her behalf.",
+     "hours_ago": 128,
+     "likes": 11
+    },
+    {
+     "author": "p01",
+     "text": "We'll bring our golden retriever, he's very friendly and loves to make new friends.",
+     "hours_ago": 126,
+     "likes": 10
+    },
+    {
+     "author": "p03",
+     "text": "Bringing a box of dog treats and a cake for the humans. Balance of sweet and savoury.",
+     "hours_ago": 124,
+     "likes": 13
+    },
+    {
+     "author": "p08",
+     "text": "Coffee cart at the park entrance on weekends? Asking for the team, I'll bring one.",
+     "hours_ago": 122,
+     "likes": 7
+    },
+    {
+     "author": "p09",
+     "text": "Our small dog is nervous around big ones. Can we have a quiet corner for him?",
+     "hours_ago": 120,
+     "likes": 9
+    },
+    {
+     "author": "p07",
+     "text": "@hannah_b yes, there's a quiet corner near the bench by the trees. Perfect for shy dogs.",
+     "hours_ago": 118,
+     "likes": 6
+    },
+    {
+     "author": "p05",
+     "text": "Puppy is excited about the big dog area, but he knows his manners. Treats in my pocket.",
+     "hours_ago": 116,
+     "likes": 12
+    },
+    {
+     "author": "p10",
+     "text": "Water bowls are a must. Bring two if you can, the park has one fountain only.",
+     "hours_ago": 114,
+     "likes": 10
+    },
+    {
+     "author": "p02",
+     "text": "I'll run to the park with my dog and join the meetup after. Early start for us.",
+     "hours_ago": 112,
+     "likes": 7
+    },
+    {
+     "author": "p04",
+     "text": "Pick up after your dog. The cleaners do their best, but please help them.",
+     "hours_ago": 110,
+     "likes": 12
+    },
+    {
+     "author": "p06",
+     "text": "Music at the park? I'll keep the speaker off. Dogs and dancing do not mix well.",
+     "hours_ago": 108,
+     "likes": 5
+    },
+    {
+     "author": "p01",
+     "text": "Our golden will bring the tennis ball. Warning to everyone, he is very competitive.",
+     "hours_ago": 106,
+     "likes": 15
+    },
+    {
+     "author": "p03",
+     "text": "Tennis ball diplomacy, the most important skill at a dog park. Lol.",
+     "hours_ago": 104,
+     "likes": 9
+    },
+    {
+     "author": "p07",
+     "text": "Please arrive on time so we can start together, the early light is perfect for photos.",
+     "hours_ago": 102,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "Early morning and coffee, my favourite time. See you at the cart.",
+     "hours_ago": 100,
+     "likes": 8
+    },
+    {
+     "author": "p09",
+     "text": "The quiet corner plan sounds great, I'll bring my shy little dog and a treat bag.",
+     "hours_ago": 98,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "The quiet corner is also perfect for puppies with a lot of energy. Good call, Anjali.",
+     "hours_ago": 96,
+     "likes": 7
+    },
+    {
+     "author": "p10",
+     "text": "See you all at Mushrif. Let's make this the best dog meetup in the group.",
+     "hours_ago": 94,
+     "likes": 9
+    },
+    {
+     "author": "p02",
+     "text": "Looking forward to it. The dogs will have a great time, the humans too.",
+     "hours_ago": 92,
+     "likes": 4
+    },
+    {
+     "author": "p04",
+     "text": "Puppy and the golden are going to become best friends, I can feel it.",
+     "hours_ago": 90,
+     "likes": 11
+    },
+    {
+     "author": "p06",
+     "text": "Send the group photos afterwards, the cat will be jealous. Yalla, dog day 🐶",
+     "hours_ago": 88,
+     "likes": 10
+    }
+   ]
+  }
+ ]
+}

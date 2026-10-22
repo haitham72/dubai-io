@@ -4,6 +4,7 @@ Preparation is local. Only a registered adapter can execute, after an approval
 of the exact server snapshot. SQLite is a lab store, not the planned Postgres gate.
 """
 from dataclasses import dataclass
+from contextlib import contextmanager
 from decimal import Decimal
 from datetime import datetime, timezone
 from hashlib import sha256
@@ -148,6 +149,45 @@ class ActionStore:
             self.db.execute("ALTER TABLE actions ADD COLUMN provider TEXT")  # older local databases
         self.db.commit()
         self.lock = RLock()
+        self._write_depth = 0
+        self._write_owner = None
+
+    @contextmanager
+    def transaction(self, owner):
+        """Serialize one owner's canonical writes, including task dispatch guards.
+
+        No transaction spans an adapter call. Nested operations share the
+        existing transaction; only the outer boundary commits or rolls back.
+        """
+        with self.lock:
+            outer = self._write_depth == 0
+            if not outer and self._write_owner != owner:
+                raise RuntimeError("A transaction cannot change owners")
+            try:
+                if outer:
+                    if self.db.dialect == "sqlite":
+                        self.db.execute("BEGIN IMMEDIATE")
+                    else:
+                        self.db.execute("SELECT pg_advisory_xact_lock(hashtext(?))", ("owner:" + owner,))
+                    self._write_owner = owner
+                self._write_depth += 1
+                try:
+                    yield
+                finally:
+                    self._write_depth -= 1
+                if outer:
+                    self.db.commit()
+            except Exception:
+                if outer:
+                    self.db.conn.rollback()
+                raise
+            finally:
+                if outer:
+                    self._write_owner = None
+
+    def commit(self):
+        if not self._write_depth:
+            self.db.commit()
 
     def session(self, token):
         with self.lock:
@@ -176,7 +216,7 @@ class ActionStore:
         provider = (action.get("order") or {}).get("provider_id")
         self.db.execute("INSERT INTO actions (id, owner, data, provider) VALUES (?,?,?,?) ON CONFLICT(id) DO UPDATE SET data=excluded.data, provider=excluded.provider",
                         (action["id"], owner, json.dumps(action), provider))
-        self.db.commit()
+        self.commit()
 
 
 class ActionEngine:
@@ -198,7 +238,7 @@ class ActionEngine:
         if capability.order != (body.order is not None):
             raise HTTPException(422, "This capability needs an order" if capability.order else "This capability does not take an order")
         order = self.price(body.order.model_dump()) if body.order else None
-        with self.store.lock:
+        with self.store.transaction(owner):
             payload_hash = fingerprint({"capability_id": body.capability_id, "fields": {key: value.model_dump() for key, value in body.fields.items()}, "draft_id": body.draft_id, "order": order})
             replay = self.store.db.execute("SELECT payload_hash,result FROM preparations WHERE owner=? AND key=?", (owner, body.preparation_key)).fetchone()
             if replay:
@@ -243,13 +283,17 @@ class ActionEngine:
         with self.store.lock:
             action = self.store.get(owner, action_id)
             if action["status"] == "DISPATCHING" and action_id not in self.in_flight:
-                action["status"] = "UNKNOWN_STATUS"
-                action["blocked_reason"] = "Dispatch was interrupted. Check the provider before retrying."
-                self.store.put(owner, action)
+                with self.store.transaction(owner):
+                    action = self.store.get(owner, action_id)
+                    if action["status"] == "DISPATCHING" and action_id not in self.in_flight:
+                        action["status"] = "UNKNOWN_STATUS"
+                        action["blocked_reason"] = "Dispatch was interrupted. Check the provider before retrying."
+                        self.store.put(owner, action)
+            self.store.commit()
             return annotate(action)
 
     def cancel(self, owner, action_id):
-        with self.store.lock:
+        with self.store.transaction(owner):
             action = self.get(owner, action_id)
             if action["status"] == "CANCELLED":
                 return action
@@ -261,8 +305,10 @@ class ActionEngine:
             self.store.put(owner, action)
             return action
 
-    def approve(self, owner, action_id, body: ApprovalIn, key):
-        with self.store.lock:
+    def approve(self, owner, action_id, body: ApprovalIn, key, *, guard=None):
+        with self.store.transaction(owner):
+            if guard:
+                guard()  # Owner/task/source binding is checked in the dispatch transaction.
             action = self.get(owner, action_id)
             if action["snapshot_hash"] != body.snapshot_hash or action["revision"] != body.revision:
                 raise HTTPException(409, "Draft changed. Review and approve the current details.")
@@ -292,11 +338,10 @@ class ActionEngine:
             action["status"] = "UNKNOWN_STATUS"
             action["blocked_reason"] = "The provider outcome is unknown. Reconcile it before any retry."
         finally:
-            with self.store.lock:
+            with self.store.transaction(owner):
                 action["events"].append({"kind": "adapter_result", "at": now(), "status": action["status"]})
                 self.store.put(owner, action)
                 self.store.db.execute("INSERT INTO approvals VALUES (?,?,?)", (action_id, key, json.dumps(action)))
-                self.store.db.commit()
                 self.in_flight.discard(action_id)
         return annotate(action)
 
@@ -307,8 +352,10 @@ class ActionEngine:
         self.store.put(owner, action)
         return annotate(action)
 
-    def request_earlier(self, owner, action_id, target):
-        with self.store.lock:
+    def request_earlier(self, owner, action_id, target, *, guard=None):
+        with self.store.transaction(owner):
+            if guard:
+                guard()
             action = self.get(owner, action_id)
             check = action.get("deadline_check")
             if action["status"] != "ACCEPTED" or not check or check["meets"]:

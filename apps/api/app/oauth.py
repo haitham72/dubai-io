@@ -58,7 +58,7 @@ class GoogleOAuth:
         self.cipher, self.transport = Fernet(key), transport
         self.refresh_locks = {}
         with store.lock:
-            store.db.execute("CREATE TABLE IF NOT EXISTS oauth_attempts (state_hash TEXT PRIMARY KEY, owner TEXT, expires REAL, data BLOB)")
+            store.db.execute("CREATE TABLE IF NOT EXISTS oauth_attempts (state_hash TEXT PRIMARY KEY, owner TEXT, expires DOUBLE PRECISION, data BLOB)")
             store.db.execute("CREATE TABLE IF NOT EXISTS oauth_grants (owner TEXT, provider TEXT, data BLOB, PRIMARY KEY(owner,provider))")
             store.db.commit()
 

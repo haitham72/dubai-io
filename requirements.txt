@@ -1,0 +1,2 @@
+# Python deps live with the API; this lets `pip install -r requirements.txt` work from the repo root.
+-r apps/api/requirements.txt

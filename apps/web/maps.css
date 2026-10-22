@@ -15,3 +15,9 @@
 .results .gmap { height: calc(100% - 220px); object-fit: cover; object-position: center; }
 body.stage-demo:has(#app.mode-results) .demo-label { top: calc(var(--safe-t) + 151px); }
 @media (max-height: 600px) { .map-placeholder { padding-top: 185px; } }
+/* Interactive Google map (live results) and its pins */
+.glive { background: #E8EEF1; }
+.results .glive { height: calc(100% - 220px); }
+.gpin { min-width: 26px; height: 26px; padding: 0 8px; border-radius: 13px; background: var(--tint-ink); color: #fff; font: 600 12px/26px var(--font); text-align: center; border: 2px solid #fff; white-space: nowrap; }
+.gpin.on { background: var(--label); font-size: 13px; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
+.gme { width: 16px; height: 16px; border-radius: 50%; background: #2E7CF6; border: 3px solid #fff; }

@@ -47,6 +47,23 @@ def test_total_is_rebuilt_from_the_host_catalog(clients):
     assert draft["recipient"] == "Marina Express Laundry (sandbox merchant)"
 
 
+def test_failed_merchant_command_receipt_rolls_back_the_source_status(clients,monkeypatch):
+    user,shop,_ = clients
+    _,sent=send(user,order_body())
+    action=sent.json()
+    store=actions.engine().store
+    execute=store.db.execute
+    def fail_receipt(sql,params=()):
+        if sql.startswith("INSERT INTO merchant_commands"):
+            raise RuntimeError("Simulated receipt write failure")
+        return execute(sql,params)
+    monkeypatch.setattr(store.db,"execute",fail_receipt)
+    with pytest.raises(RuntimeError,match="receipt"):
+        tap(shop,action["id"],"accept","atomic-accept",ready_at="Tomorrow 10:00")
+    latest=user.get('/api/actions/'+action['id']).json()
+    assert latest['status']=='SUBMITTED' and not latest.get('ready_at')
+
+
 def test_unknown_item_slot_or_provider_is_rejected(clients):
     user, _, _ = clients
     for change in ({"items": [{"name": "Gold plating", "qty": 1}]}, {"slot": "Midnight"}, {"provider_id": "real-brand"}):

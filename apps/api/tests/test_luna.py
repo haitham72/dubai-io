@@ -45,6 +45,13 @@ def test_greeting_is_not_gated_by_confidence():
     assert out["intent"] == "greeting"
 
 
+def test_task_suggestions_are_dropped_outside_task_help_or_below_confidence():
+    edits = [{"field":"due_at","value":"2026-10-24T09:00:00+04:00"}]
+    assert validate(base(intent="greeting",task_edits=edits))["understanding"]["task_edits"] == []
+    assert validate(base(intent="task_help",confidence=.3,task_edits=edits))["understanding"]["task_edits"] == []
+    assert validate(base(intent="task_help",task_edits=edits))["understanding"]["task_edits"] == edits
+
+
 def test_fact_store_supersedes_and_forgets(tmp_path):
     store = ActionStore(tmp_path / "a.sqlite3")
     s = ProfileStore(lambda: store)

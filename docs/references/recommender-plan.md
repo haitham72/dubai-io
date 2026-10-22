@@ -1,12 +1,27 @@
-# Moderate recommender and memory plan — 21 Oct 2026
+# Moderate recommender and memory plan — 22 Oct 2026
 
-**Planning deliverable; not implemented.** Target: Supabase Postgres/Auth, with the existing FastAPI/LangGraph service. Execution order and outstanding requests: [request backlog](../request-backlog.md). Existing contest scope remains in `PLAN.md`.
+**Implementation checkpoint:** REC-01/02 are implemented. REC-03A/B temporal qualification and trusted live places are implemented and verified on SQLite/in controlled browser checks (128 backend tests, seven browser scenarios); PostgreSQL write health/verification/reconciliation remains a deployment gate. Next: REC-03C service/product eligibility and verified completions, then REC-04 measurements. The full proposal below is not all implemented. See ../implementation-plan.md for exact scope and gates. Current retention is 24 hours for ranking runs and 90 days for events, with cleanup on activity; all client observations are organic-only. Google OAuth is last.
+
+
+**Design and behavior contract, updated 22 Oct 2026.** Parts are implemented as recorded above; remaining slices are tracked explicitly in [the detailed plan](../implementation-plan.md). Target: Supabase Postgres/Auth, with the existing FastAPI/LangGraph service. Execution order and outstanding requests: [request backlog](../request-backlog.md). Existing contest scope remains in `PLAN.md`.
 
 ## Intended behavior
 
 Dubai-io should adapt after a few meaningful interactions in the current visit. Opening several seafood options can raise seafood recommendations immediately; it does not establish a permanent preference. Explicit current requests and constraints outrank inferred interests. Keep some variety and let users dismiss, correct or reset recommendations.
 
 The first version uses deterministic, weighted content matching. Use app-owned category/item tags, recency, explicit preferences, distance/time fit and available provider evidence. Collaborative filtering and model training can wait for enough real feedback. No LLM call is needed for each click.
+
+### Adaptive behavior contract (founder clarification, 22 Oct)
+
+1. **Now:** the current category, explicit request and hard constraints determine what is eligible. Asking for coffee stops seafood history from taking over that request. Changing tasks does not erase history; it changes which history is relevant.
+2. **This visit:** a few distinct meaningful interactions can influence the next relevant list. A browser visit rotates after 30 minutes idle or 24 hours maximum. Current lists remain stable until explicit refresh, sort/filter changes or re-entry.
+3. **Across visits:** one evening's browsing is insufficient. Initially require two distinct options across at least two visits separated by six hours before inferred long-term influence is eligible. Additional tabs at the same time do not qualify. Confirmed preferences are a separate explicit source and do not need click evidence.
+4. **Change over time:** session signals halve every 30 minutes and expire after 24 hours; inferred long-term signals halve every 30 days and expire after 90 days without reinforcement. New negative evidence reduces influence; old positive evidence cannot lock the user into a permanent taste. These defaults need evaluation, not marketing claims.
+5. **Choice and variety:** strongest current intent first, then confirmed preference, qualified session and long-term influence, plus practical fit. Keep a bounded relevant variety slot in longer personalized lists. No random shuffle, fake recommendations or feedback from merely seeing a card.
+6. **Correction:** Confirm/Edit/Not true/Forget/Resume remain visible. Dismiss one place temporarily without declaring dislike of its entire category. Forget invalidates stored evidence, model checkpoints and cached/in-flight explanations. This is separate from deleting browser chat history.
+7. **Suggestion eligibility:** occasions, future events and sponsorship will reuse temporal relevance only after their own date/source/consent rules. A cake suggestion requires an explicit occasion; browsing cakes does not prove a birthday. News about an artist does not prove a dated concert or ticket stock. Organic evidence stays out of sponsorship until ADS-01 defines an eligible consented path.
+
+**Example:** two seafood detail opens tonight can promote seafood candidates on the next relevant discovery refresh. Opening coffee immediately shows coffee. Returning tomorrow without reinforcement starts a new visit and does not preserve last night's session boost. Repeated seafood choices on separated visits can establish an explicitly visible, fading across-visit hypothesis. It never becomes a confirmed preference unless the user confirms it.
 
 ## What already exists
 
@@ -50,11 +65,11 @@ Starting signals: category choice/detail open = weak positive; save/explicit sel
 
 Map events to a reviewed taxonomy such as `food.seafood`, `events.live_music` or `service.laundry`; keep sensitive traits outside it. Existing episode endpoints accept only their current kinds/positive weights, so signed recommendation feedback requires a new validated event contract rather than assuming it works today.
 
-First filter candidates by the explicit request, date/area, known constraints and source freshness. Do not treat unknown opening hours, ticket stock or travel time as verified availability. Then rank eligible candidates using a versioned formula with normalized features:
+First filter candidates by the explicit request, date/area, known constraints and source freshness. Do not treat unknown opening hours, ticket stock or travel time as verified availability. Current place discovery supports category/type, radius and open-now controls; other constraints require their pending adapters/context contracts. Explicit topic intent also filters the generic rank input. Then rank eligible candidates using a versioned formula with normalized features:
 
 `score = .45 current_intent + .20 confirmed_preferences + .15 session_interest + .10 longer_term_interest + .10 practical_fit`
 
-Weights are initial defaults, not measured results; neutral/missing terms are handled consistently. Explicit budget/distance/deadline constraints remain filters, not preferences that a high score can overrule. Show one concrete reason per recommended option, e.g. “Because you explored seafood tonight.” Reserve roughly one in five positions for relevant variety, subject to the same constraints. A user-selected closest/price sort keeps that ordering; recommendations cannot silently override it. Label straight-line distance and estimates.
+Weights are initial defaults, not measured results; neutral/missing terms are handled consistently. Session and long-term terms are signed and individually qualified; category taps do not count as distinct options. Inferred negative evidence does not cancel an explicitly confirmed preference. Explicit budget/distance/deadline constraints remain filters, not preferences that a high score can overrule; unsupported constraints must not be described as verified. Show one concrete reason per influenced option, e.g. “Because you explored seafood this visit.” The place ranker reserves every fifth position for a different eligible topic where possible, using stable baseline order. A user-selected closest/price sort keeps that ordering; recommendations cannot silently override it. Label straight-line distance and estimates.
 
 Re-rank at the next list refresh or completed interaction, not while a finger is targeting a card. Cache keys include owner, session/intent, profile revision, candidate set and ranker version. Failure falls back to an honest deterministic list. Initial target: under 150 ms p95 for scoring an already fetched candidate batch, excluding provider/network/LLM time; measure before claiming it.
 
@@ -72,7 +87,7 @@ Use a small trusted context envelope around untrusted provider/card text. A sele
 
 ## Supabase deployment and data controls
 
-Use local Supabase for schema/Auth integration when the Windows container runtime works, then apply versioned migrations to hosted development/staging. Local Google OAuth is supported with its registered callback; phone tests need reachable URLs. See [backend options](backend-options.md). Keep Python orchestration, approval binding and the outbox; small real webhooks can use Edge Functions.
+Use local Supabase for schema/Auth integration when the Windows container runtime works, then apply versioned migrations to hosted development/staging. Local Google OAuth is supported with its registered callback; phone tests need reachable URLs. See `supabase/README.md`. Keep Python orchestration, approval binding and the outbox; small real webhooks can use Edge Functions.
 
 Use a backend database connection appropriate to LangGraph/psycopg; prefer direct or session pooling for this persistent service. Confirm checkpoint setup/migrations and connection lifecycle against the pinned library. Supabase's transaction pooler has prepared-statement/pipelining limits, so do not switch connection modes blindly. [Connection documentation](https://supabase.com/docs/guides/database/connecting-to-postgres).
 
@@ -80,7 +95,7 @@ Keep checkpoints, profiling and action internals in private schemas; apply RLS t
 
 Retain provider IDs and permitted app-owned signals, not an unrestricted copy of Google listings/photos/reviews or provider-derived attributes. Source permissions govern persistence. Keep Google Workspace-derived context separate from evidence eligible for sponsored targeting: Workspace data cannot be used for advertising. Never mix restricted data into an ad profile and assume a later filter can remove it. [Google policy](https://developers.google.com/workspace/workspace-api-user-data-developer-policy).
 
-Proposed retention: session-interest rows 24 hours, behavioral events/runs 90 days, inferred preferences until expiry/forgetting, stated facts until their validity changes or the user forgets them. Explain these choices in the user-facing controls before launch. Forget removes/rebuilds affected projections, evidence links, caches and summaries; remove or rewrite affected checkpoints so old text cannot recreate forgotten facts. Conversation deletion has a distinct, clearly described scope. [Checkpoint deletion](https://docs.langchain.com/oss/python/langgraph/add-memory#delete-all-checkpoints-for-a-thread).
+Retention: session-interest rows 24 hours, behavioral events 90 days, ranking runs 24 hours, inferred preferences until expiry/forgetting, stated facts until their validity changes or the user forgets them. Cleanup currently runs on activity; scheduled cleanup remains REC-04. Transient browser place snapshots are limited to 16 contexts. Explain these choices in the user-facing controls before launch. Forget removes/rebuilds affected projections, evidence links, caches and summaries; remove or rewrite affected checkpoints so old text cannot recreate forgotten facts. Conversation deletion has a distinct, clearly described scope. [Checkpoint deletion](https://docs.langchain.com/oss/python/langgraph/add-memory#delete-all-checkpoints-for-a-thread).
 
 ## Implementation sequence and acceptance gates
 

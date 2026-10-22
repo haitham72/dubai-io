@@ -1,0 +1,427 @@
+{
+  "id": "dubai-jobs",
+  "name": "Dubai Jobs & Hiring",
+  "handle": "dxbjobs",
+  "topic": "Work",
+  "about": "Salary-transparent job leads, CV feedback, interview practice, and respectful hiring conversations.",
+  "image": "media/cafe-counter.jpg",
+  "members": 31700,
+  "stories": [
+    {
+      "author": "p84",
+      "text": "A good job post includes salary range, location, and visa context.",
+      "image": "media/cafe-counter.jpg",
+      "hours_ago": 4
+    },
+    {
+      "author": "p13",
+      "text": "Interview questions should reveal the work, not free consulting.",
+      "image": "media/cafe-bulbs.jpg",
+      "hours_ago": 16
+    }
+  ],
+  "posts": [
+    {
+      "id": "dubai-jobs-01",
+      "author": "p84",
+      "text": "Hiring thread: what makes you trust a Dubai job listing before sending your CV? I am collecting signals that help newcomers avoid vague offers.",
+      "image": null,
+      "hours_ago": 6,
+      "likes": 401,
+      "comments": [
+        {
+          "id": "dubai-jobs-01-c00",
+          "author": "p13",
+          "text": "A named company domain, clear responsibilities, salary range, and a real office or video contact. Never pay a recruiter for an offer.",
+          "parent_id": null,
+          "hours_ago": 5,
+          "likes": 24
+        },
+        {
+          "id": "dubai-jobs-01-c01",
+          "author": "p84",
+          "text": "Good distinction: a recruiter can ask for time, but the candidate should not be charged for access to a job.",
+          "parent_id": "dubai-jobs-01-c00",
+          "hours_ago": 4,
+          "likes": 30
+        },
+        {
+          "id": "dubai-jobs-01-c02",
+          "author": "p27",
+          "text": "I also verify the hiring manager on the company site and ask what the first 30 days look like.",
+          "parent_id": "dubai-jobs-01-c01",
+          "hours_ago": 3,
+          "likes": 16
+        },
+        {
+          "id": "dubai-jobs-01-c03",
+          "author": "p56",
+          "text": "And compare the whole package: base, housing, insurance, commute, and visa responsibility.",
+          "parent_id": "dubai-jobs-01-c02",
+          "hours_ago": 2,
+          "likes": 18
+        },
+        {
+          "id": "dubai-jobs-01-c04",
+          "author": "p84",
+          "text": "I will add a checklist with those fields and label it community advice, not legal advice.",
+          "parent_id": "dubai-jobs-01-c03",
+          "hours_ago": 1,
+          "likes": 21
+        }
+      ]
+    },
+    {
+      "id": "dubai-jobs-02",
+      "author": "p13",
+      "text": "CV review request: how do you show measurable work when your previous employer will not let you share client names?",
+      "image": "media/cafe-bulbs.jpg",
+      "hours_ago": 13,
+      "likes": 188,
+      "comments": [
+        {
+          "id": "dubai-jobs-02-c00",
+          "author": "p27",
+          "text": "Use the problem, action, and result without naming the client: reduced processing time by 20%, for example.",
+          "parent_id": null,
+          "hours_ago": 12,
+          "likes": 15
+        },
+        {
+          "id": "dubai-jobs-02-c01",
+          "author": "p13",
+          "text": "That keeps the evidence while respecting confidentiality. I will rewrite the first bullet that way.",
+          "parent_id": "dubai-jobs-02-c00",
+          "hours_ago": 11,
+          "likes": 11
+        },
+        {
+          "id": "dubai-jobs-02-c02",
+          "author": "p84",
+          "text": "Also keep a private portfolio of what you are allowed to show; do not upload confidential slides.",
+          "parent_id": "dubai-jobs-02-c01",
+          "hours_ago": 10,
+          "likes": 14
+        }
+      ]
+    },
+    {
+      "id": "dubai-jobs-03",
+      "author": "p84",
+      "text": "What should a respectful hiring post include before asking for applications?",
+      "image": "media/cafe-counter.jpg",
+      "hours_ago": 5,
+      "likes": 138,
+      "comments": [
+        {
+          "id": "dubai-jobs-03-c00",
+          "author": "p30",
+          "text": "What should a respectful hiring post include before asking for applications?",
+          "parent_id": null,
+          "hours_ago": 12,
+          "likes": 3
+        },
+        {
+          "id": "dubai-jobs-03-c01",
+          "author": "p37",
+          "text": "I tried this recently and the clear version saved both sides a second trip.",
+          "parent_id": "dubai-jobs-03-c00",
+          "hours_ago": 11,
+          "likes": 4
+        },
+        {
+          "id": "dubai-jobs-03-c02",
+          "author": "p44",
+          "text": "Adding the area and a realistic time window made the replies much better.",
+          "parent_id": "dubai-jobs-03-c01",
+          "hours_ago": 10,
+          "likes": 5
+        },
+        {
+          "id": "dubai-jobs-03-c03",
+          "author": "p51",
+          "text": "I agree; a small checklist keeps a friendly exchange from becoming confusing.",
+          "parent_id": "dubai-jobs-03-c02",
+          "hours_ago": 9,
+          "likes": 6
+        },
+        {
+          "id": "dubai-jobs-03-c04",
+          "author": "p58",
+          "text": "That is useful context. I would also confirm the practical constraint first.",
+          "parent_id": "dubai-jobs-03-c03",
+          "hours_ago": 8,
+          "likes": 7
+        },
+        {
+          "id": "dubai-jobs-03-c05",
+          "author": "p65",
+          "text": "Our building group used the same approach and it reduced back-and-forth.",
+          "parent_id": "dubai-jobs-03-c04",
+          "hours_ago": 7,
+          "likes": 8
+        },
+        {
+          "id": "dubai-jobs-03-c06",
+          "author": "p72",
+          "text": "I will try this and report what changed, with the caveat that every situation differs.",
+          "parent_id": "dubai-jobs-03-c05",
+          "hours_ago": 6,
+          "likes": 9
+        },
+        {
+          "id": "dubai-jobs-03-c07",
+          "author": "p79",
+          "text": "One more detail: keep the original message updated so people do not rely on stale information.",
+          "parent_id": "dubai-jobs-03-c06",
+          "hours_ago": 5,
+          "likes": 10
+        },
+        {
+          "id": "dubai-jobs-03-c08",
+          "author": "p86",
+          "text": "Thanks for asking this openly. Someone new to Dubai will probably find it useful.",
+          "parent_id": "dubai-jobs-03-c07",
+          "hours_ago": 4,
+          "likes": 11
+        },
+        {
+          "id": "dubai-jobs-03-c09",
+          "author": "p93",
+          "text": "I have saved the idea for our next community meetup.",
+          "parent_id": "dubai-jobs-03-c08",
+          "hours_ago": 3,
+          "likes": 12
+        },
+        {
+          "id": "dubai-jobs-03-c10",
+          "author": "p100",
+          "text": "That follow-through is exactly what makes a local thread helpful.",
+          "parent_id": "dubai-jobs-03-c09",
+          "hours_ago": 2,
+          "likes": 13
+        },
+        {
+          "id": "dubai-jobs-03-c11",
+          "author": "p07",
+          "text": "Closing the loop: I used the checklist and the decision was much clearer.",
+          "parent_id": "dubai-jobs-03-c10",
+          "hours_ago": 1,
+          "likes": 3
+        }
+      ]
+    },
+    {
+      "id": "dubai-jobs-04",
+      "author": "p84",
+      "text": "How do you prepare for a Dubai interview without guessing at the salary?",
+      "image": "media/cafe-counter.jpg",
+      "hours_ago": 6,
+      "likes": 155,
+      "comments": [
+        {
+          "id": "dubai-jobs-04-c00",
+          "author": "p33",
+          "text": "How do you prepare for a Dubai interview without guessing at the salary?",
+          "parent_id": null,
+          "hours_ago": 12,
+          "likes": 3
+        },
+        {
+          "id": "dubai-jobs-04-c01",
+          "author": "p40",
+          "text": "I tried this recently and the clear version saved both sides a second trip.",
+          "parent_id": "dubai-jobs-04-c00",
+          "hours_ago": 11,
+          "likes": 4
+        },
+        {
+          "id": "dubai-jobs-04-c02",
+          "author": "p47",
+          "text": "Adding the area and a realistic time window made the replies much better.",
+          "parent_id": "dubai-jobs-04-c01",
+          "hours_ago": 10,
+          "likes": 5
+        },
+        {
+          "id": "dubai-jobs-04-c03",
+          "author": "p54",
+          "text": "I agree; a small checklist keeps a friendly exchange from becoming confusing.",
+          "parent_id": "dubai-jobs-04-c02",
+          "hours_ago": 9,
+          "likes": 6
+        },
+        {
+          "id": "dubai-jobs-04-c04",
+          "author": "p61",
+          "text": "That is useful context. I would also confirm the practical constraint first.",
+          "parent_id": "dubai-jobs-04-c03",
+          "hours_ago": 8,
+          "likes": 7
+        },
+        {
+          "id": "dubai-jobs-04-c05",
+          "author": "p68",
+          "text": "Our building group used the same approach and it reduced back-and-forth.",
+          "parent_id": "dubai-jobs-04-c04",
+          "hours_ago": 7,
+          "likes": 8
+        },
+        {
+          "id": "dubai-jobs-04-c06",
+          "author": "p75",
+          "text": "I will try this and report what changed, with the caveat that every situation differs.",
+          "parent_id": "dubai-jobs-04-c05",
+          "hours_ago": 6,
+          "likes": 9
+        },
+        {
+          "id": "dubai-jobs-04-c07",
+          "author": "p82",
+          "text": "One more detail: keep the original message updated so people do not rely on stale information.",
+          "parent_id": "dubai-jobs-04-c06",
+          "hours_ago": 5,
+          "likes": 10
+        },
+        {
+          "id": "dubai-jobs-04-c08",
+          "author": "p89",
+          "text": "Thanks for asking this openly. Someone new to Dubai will probably find it useful.",
+          "parent_id": "dubai-jobs-04-c07",
+          "hours_ago": 4,
+          "likes": 11
+        },
+        {
+          "id": "dubai-jobs-04-c09",
+          "author": "p96",
+          "text": "I have saved the idea for our next community meetup.",
+          "parent_id": "dubai-jobs-04-c08",
+          "hours_ago": 3,
+          "likes": 12
+        },
+        {
+          "id": "dubai-jobs-04-c10",
+          "author": "p03",
+          "text": "That follow-through is exactly what makes a local thread helpful.",
+          "parent_id": "dubai-jobs-04-c09",
+          "hours_ago": 2,
+          "likes": 13
+        },
+        {
+          "id": "dubai-jobs-04-c11",
+          "author": "p10",
+          "text": "Closing the loop: I used the checklist and the decision was much clearer.",
+          "parent_id": "dubai-jobs-04-c10",
+          "hours_ago": 1,
+          "likes": 3
+        }
+      ]
+    },
+    {
+      "id": "dubai-jobs-05",
+      "author": "p84",
+      "text": "What is a useful first week plan after accepting a new role?",
+      "image": "media/cafe-counter.jpg",
+      "hours_ago": 7,
+      "likes": 172,
+      "comments": [
+        {
+          "id": "dubai-jobs-05-c00",
+          "author": "p36",
+          "text": "What is a useful first week plan after accepting a new role?",
+          "parent_id": null,
+          "hours_ago": 12,
+          "likes": 3
+        },
+        {
+          "id": "dubai-jobs-05-c01",
+          "author": "p43",
+          "text": "I tried this recently and the clear version saved both sides a second trip.",
+          "parent_id": "dubai-jobs-05-c00",
+          "hours_ago": 11,
+          "likes": 4
+        },
+        {
+          "id": "dubai-jobs-05-c02",
+          "author": "p50",
+          "text": "Adding the area and a realistic time window made the replies much better.",
+          "parent_id": "dubai-jobs-05-c01",
+          "hours_ago": 10,
+          "likes": 5
+        },
+        {
+          "id": "dubai-jobs-05-c03",
+          "author": "p57",
+          "text": "I agree; a small checklist keeps a friendly exchange from becoming confusing.",
+          "parent_id": "dubai-jobs-05-c02",
+          "hours_ago": 9,
+          "likes": 6
+        },
+        {
+          "id": "dubai-jobs-05-c04",
+          "author": "p64",
+          "text": "That is useful context. I would also confirm the practical constraint first.",
+          "parent_id": "dubai-jobs-05-c03",
+          "hours_ago": 8,
+          "likes": 7
+        },
+        {
+          "id": "dubai-jobs-05-c05",
+          "author": "p71",
+          "text": "Our building group used the same approach and it reduced back-and-forth.",
+          "parent_id": "dubai-jobs-05-c04",
+          "hours_ago": 7,
+          "likes": 8
+        },
+        {
+          "id": "dubai-jobs-05-c06",
+          "author": "p78",
+          "text": "I will try this and report what changed, with the caveat that every situation differs.",
+          "parent_id": "dubai-jobs-05-c05",
+          "hours_ago": 6,
+          "likes": 9
+        },
+        {
+          "id": "dubai-jobs-05-c07",
+          "author": "p85",
+          "text": "One more detail: keep the original message updated so people do not rely on stale information.",
+          "parent_id": "dubai-jobs-05-c06",
+          "hours_ago": 5,
+          "likes": 10
+        },
+        {
+          "id": "dubai-jobs-05-c08",
+          "author": "p92",
+          "text": "Thanks for asking this openly. Someone new to Dubai will probably find it useful.",
+          "parent_id": "dubai-jobs-05-c07",
+          "hours_ago": 4,
+          "likes": 11
+        },
+        {
+          "id": "dubai-jobs-05-c09",
+          "author": "p99",
+          "text": "I have saved the idea for our next community meetup.",
+          "parent_id": "dubai-jobs-05-c08",
+          "hours_ago": 3,
+          "likes": 12
+        },
+        {
+          "id": "dubai-jobs-05-c10",
+          "author": "p06",
+          "text": "That follow-through is exactly what makes a local thread helpful.",
+          "parent_id": "dubai-jobs-05-c09",
+          "hours_ago": 2,
+          "likes": 13
+        },
+        {
+          "id": "dubai-jobs-05-c11",
+          "author": "p13",
+          "text": "Closing the loop: I used the checklist and the decision was much clearer.",
+          "parent_id": "dubai-jobs-05-c10",
+          "hours_ago": 1,
+          "likes": 3
+        }
+      ]
+    }
+  ]
+}

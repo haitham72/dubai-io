@@ -1,0 +1,1631 @@
+{
+ "id": "jlt-runners",
+ "name": "JLT Runners",
+ "handle": "jltrunners",
+ "topic": "Fitness",
+ "about": "Dawn runs around JLT, the Marina walk and Jumeirah. Pace groups, heat-safe routes, shoe swaps and honest race recaps.",
+ "image": "media/shoes.jpg",
+ "members": 6200,
+ "stories": [
+  {
+   "author": "p02",
+   "text": "5am group run along the lake, 8k done, the sky was pink. Who's joining Sunday?",
+   "image": "media/marina.jpg",
+   "hours_ago": 3
+  },
+  {
+   "author": "p10",
+   "text": "Swim and run combo this week. Fins for the sea, shoes for the sand. Yalla!",
+   "image": "media/shoes.jpg",
+   "hours_ago": 9
+  },
+  {
+   "author": "p04",
+   "text": "New cycling-to-run loop from Business Bay to the canal. Smooth tarmac, few cars.",
+   "image": "media/rest-water.jpg",
+   "hours_ago": 20
+  }
+ ],
+ "posts": [
+  {
+   "id": "jlt-runners-01",
+   "author": "p02",
+   "text": "Sunday dawn group run, meeting at the JLT lake gate at 5:15am. Pace groups: 5:30, 6:00 and 'chatty pace'. Bring water, the heat is coming early this year.",
+   "image": "media/marina.jpg",
+   "hours_ago": 5,
+   "likes": 210,
+   "comments": [
+    {
+     "author": "p01",
+     "text": "Chatty pace is my natural habitat. Count me in with the pancakes after.",
+     "hours_ago": 4,
+     "likes": 14
+    },
+    {
+     "author": "p05",
+     "text": "Can I bring my puppy? He sprints faster than most of us, I promise.",
+     "hours_ago": 3,
+     "likes": 21
+    },
+    {
+     "author": "p06",
+     "text": "5:15 is a spiritual hour for me. I'll be there with the playlist and a tired smile.",
+     "hours_ago": 4,
+     "likes": 8
+    },
+    {
+     "author": "p04",
+     "text": "Cycling pace group would be great too, I can do slow laps around the lake.",
+     "hours_ago": 3,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "Coffee truck near the gate after 6am would be perfect, just saying.",
+     "hours_ago": 2,
+     "likes": 12
+    },
+    {
+     "author": "p09",
+     "text": "First time in a group run. Is it beginner friendly for someone who runs 3k on a good day?",
+     "hours_ago": 4,
+     "likes": 9
+    },
+    {
+     "author": "p10",
+     "text": "@hannah_b yes, the chatty pace group has walk breaks. Nobody gets left behind.",
+     "hours_ago": 3,
+     "likes": 15
+    },
+    {
+     "author": "p03",
+     "text": "Pancakes after a run is a sacred ritual. Bring a box of cupcakes too, I'll bake.",
+     "hours_ago": 3,
+     "likes": 11
+    },
+    {
+     "author": "p07",
+     "text": "Will there be a route with shade? Last Sunday's run was brutal in the sun.",
+     "hours_ago": 2,
+     "likes": 7
+    },
+    {
+     "author": "p02",
+     "text": "@anjali_rao yes, the lake loop has trees on the north side, cooler and nicer.",
+     "hours_ago": 2,
+     "likes": 10
+    },
+    {
+     "author": "p01",
+     "text": "Trees on the north side, got it. Water bottle, sunscreen, let's go.",
+     "hours_ago": 1,
+     "likes": 5
+    },
+    {
+     "author": "p04",
+     "text": "Heat index is high this week, carry electrolytes not just water. Safer for everyone.",
+     "hours_ago": 2,
+     "likes": 13
+    },
+    {
+     "author": "p05",
+     "text": "Great advice Tomasz. Pup gets water too, we're a team of hydration freaks.",
+     "hours_ago": 1,
+     "likes": 6
+    },
+    {
+     "author": "p06",
+     "text": "Heard the lake path closes for maintenance some mornings. Check the notice first.",
+     "hours_ago": 2,
+     "likes": 4
+    },
+    {
+     "author": "p08",
+     "text": "I will be the one who sprints for the coffee at the end, don't wait for me.",
+     "hours_ago": 1,
+     "likes": 9
+    },
+    {
+     "author": "p09",
+     "text": "Adding this to my calendar. Thank you for making the run social, it helps a lot.",
+     "hours_ago": 1,
+     "likes": 8
+    },
+    {
+     "author": "p10",
+     "text": "Post run stretching by the water, five minutes, no excuses. Coach's orders.",
+     "hours_ago": 2,
+     "likes": 12
+    },
+    {
+     "author": "p03",
+     "text": "I'll bring the cupcakes in a box that survives the run. Wish me luck.",
+     "hours_ago": 1,
+     "likes": 7
+    },
+    {
+     "author": "p07",
+     "text": "@omar_q the coach has spoken. Stretching is a must, I learned that the painful way.",
+     "hours_ago": 1,
+     "likes": 5
+    },
+    {
+     "author": "p02",
+     "text": "Thanks all, see you Sunday at the gate. Keep the energy up, the sun is no joke.",
+     "hours_ago": 0,
+     "likes": 18
+    },
+    {
+     "author": "p01",
+     "text": "Chatty pace group gets a team name? Suggestions: the Slow Lap Crew.",
+     "hours_ago": 1,
+     "likes": 16
+    },
+    {
+     "author": "p06",
+     "text": "The Slow Lap Crew has a great ring to it. Playlist name: Slow Jams.",
+     "hours_ago": 1,
+     "likes": 11
+    },
+    {
+     "author": "p05",
+     "text": "Puppy approves the team name. He has already started barking the rhythm.",
+     "hours_ago": 0,
+     "likes": 19
+    },
+    {
+     "author": "p04",
+     "text": "Cycling version: the Fast Spokes, to balance out the Slow Lap Crew.",
+     "hours_ago": 0,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "Can we get a group photo at the end? I want to remember my first group run.",
+     "hours_ago": 0,
+     "likes": 10
+    }
+   ]
+  },
+  {
+   "id": "jlt-runners-02",
+   "author": "p10",
+   "text": "Swim and run training is my favourite combo. Two laps in the sea, then a 4k run on the beach. My legs feel light and the sand is brutal in the best way.",
+   "image": null,
+   "hours_ago": 9,
+   "likes": 143,
+   "comments": [
+    {
+     "author": "p02",
+     "text": "Sand runs are underrated. Your calves will hate you for a week, then love you forever.",
+     "hours_ago": 8,
+     "likes": 12
+    },
+    {
+     "author": "p04",
+     "text": "Sea swims before a run feel like a cheat code. Cold water recovers my legs too.",
+     "hours_ago": 7,
+     "likes": 9
+    },
+    {
+     "author": "p01",
+     "text": "Coach, what's the pace on the sand? I'm too scared to ask but I want to try.",
+     "hours_ago": 7,
+     "likes": 6
+    },
+    {
+     "author": "p10",
+     "text": "@sarak start slow, sand is four times harder than road. Walk when you need to.",
+     "hours_ago": 6,
+     "likes": 11
+    },
+    {
+     "author": "p03",
+     "text": "Sand plus sunscreen plus a hot run equals a sticky mess. Worth it though.",
+     "hours_ago": 6,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "Puppy wants to join the sand run. He ran two metres and then decided the sea is better.",
+     "hours_ago": 5,
+     "likes": 24
+    },
+    {
+     "author": "p06",
+     "text": "The beach at sunrise with a swim is a Dubai luxury people don't appreciate enough.",
+     "hours_ago": 5,
+     "likes": 8
+    },
+    {
+     "author": "p08",
+     "text": "I'm a coffee-first person, so the swim is a bold move before caffeine. Respect.",
+     "hours_ago": 4,
+     "likes": 7
+    },
+    {
+     "author": "p09",
+     "text": "Do you swim with a wetsuit in summer or just the shorts? Asking for a friend.",
+     "hours_ago": 4,
+     "likes": 4
+    },
+    {
+     "author": "p10",
+     "text": "@hannah_b in summer just shorts. In winter a light wetsuit, the water is still warm.",
+     "hours_ago": 3,
+     "likes": 6
+    },
+    {
+     "author": "p07",
+     "text": "I'd need a lifeguard, a towel and a snack bag for this. Very impressed.",
+     "hours_ago": 4,
+     "likes": 5
+    },
+    {
+     "author": "p02",
+     "text": "Post-swim run means salt on the skin, so bring a fresh shirt. Chafing is the enemy.",
+     "hours_ago": 3,
+     "likes": 10
+    },
+    {
+     "author": "p04",
+     "text": "Good tip. Also use a bit of body glide, the salt water makes it worse.",
+     "hours_ago": 3,
+     "likes": 8
+    },
+    {
+     "author": "p01",
+     "text": "Body glide, fresh shirt, sunscreen, got my list ready for Saturday.",
+     "hours_ago": 2,
+     "likes": 6
+    },
+    {
+     "author": "p05",
+     "text": "Puppy needs his own swim plan. Maybe a separate beach day with the vet nurses.",
+     "hours_ago": 2,
+     "likes": 9
+    },
+    {
+     "author": "p06",
+     "text": "Music on the beach run is a must. Bring headphones, not a speaker, be considerate.",
+     "hours_ago": 2,
+     "likes": 4
+    },
+    {
+     "author": "p08",
+     "text": "Post-run espresso on the sand is my idea of heaven. I'll be the guy with the thermos.",
+     "hours_ago": 1,
+     "likes": 7
+    },
+    {
+     "author": "p09",
+     "text": "Can I come as a spectator? I'll bring coffee for the finishers.",
+     "hours_ago": 1,
+     "likes": 5
+    },
+    {
+     "author": "p03",
+     "text": "Coffee for finishers, and cake too? Sounds like a plan to me.",
+     "hours_ago": 1,
+     "likes": 6
+    },
+    {
+     "author": "p10",
+     "text": "Yes, coffee and cake and a stretching circle. That's my recovery plan.",
+     "hours_ago": 1,
+     "likes": 12
+    },
+    {
+     "author": "p02",
+     "text": "Sand run on Saturday, I'll join with the chatty pace group. Yalla.",
+     "hours_ago": 1,
+     "likes": 8
+    },
+    {
+     "author": "p07",
+     "text": "Lifeguard check: is the beach patrolled at 6am? Safety first, please.",
+     "hours_ago": 1,
+     "likes": 9
+    },
+    {
+     "author": "p10",
+     "text": "@anjali_rao yes, the patrol starts at 6am on the main beach. Always swim in the flagged zone.",
+     "hours_ago": 0,
+     "likes": 14
+    },
+    {
+     "author": "p04",
+     "text": "Good, safety comes first. Thanks Omar for keeping the group sane.",
+     "hours_ago": 0,
+     "likes": 6
+    },
+    {
+     "author": "p01",
+     "text": "This thread convinced me. Sand, sea and sunrise, I'm in next week.",
+     "hours_ago": 0,
+     "likes": 10
+    }
+   ]
+  },
+  {
+   "id": "jlt-runners-03",
+   "author": "p04",
+   "text": "New cycling-to-run loop from Business Bay to the Dubai Water Canal, then back via the bridge. About 16km total, smooth tarmac, few cars, shade on the north bank.",
+   "image": "media/rest-water.jpg",
+   "hours_ago": 20,
+   "likes": 88,
+   "comments": [
+    {
+     "author": "p02",
+     "text": "Shade on the north bank is the detail I needed. Adding it to my weekend plan.",
+     "hours_ago": 18,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "I'd add a coffee stop at the midpoint, the canal views are worth a slow sip.",
+     "hours_ago": 17,
+     "likes": 9
+    },
+    {
+     "author": "p10",
+     "text": "16km is my long run now. Thanks for mapping it, Tomasz, the route saves me a lot of thinking.",
+     "hours_ago": 16,
+     "likes": 7
+    },
+    {
+     "author": "p06",
+     "text": "Music on the bridge at sunset is a whole vibe. Bring the speaker, but keep it low.",
+     "hours_ago": 15,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "Puppy-friendly? I need a loop with a water bowl near the start line.",
+     "hours_ago": 14,
+     "likes": 4
+    },
+    {
+     "author": "p09",
+     "text": "Is there a bike rack near the start? Want to bring my bike and run back.",
+     "hours_ago": 13,
+     "likes": 6
+    },
+    {
+     "author": "p04",
+     "text": "@hannah_b there is a rack by the metro entrance, arrive early, it fills up.",
+     "hours_ago": 12,
+     "likes": 5
+    },
+    {
+     "author": "p01",
+     "text": "Canal side in the morning is gorgeous. The water reflects the towers, lovely light.",
+     "hours_ago": 11,
+     "likes": 12
+    },
+    {
+     "author": "p03",
+     "text": "The loop passes my favourite bakery. Dangerous but motivating, honestly.",
+     "hours_ago": 10,
+     "likes": 8
+    },
+    {
+     "author": "p07",
+     "text": "Is there a water fountain halfway? I always run out around the eighth km.",
+     "hours_ago": 9,
+     "likes": 10
+    },
+    {
+     "author": "p04",
+     "text": "Yes, a small fountain near the bridge, it works most mornings, not guaranteed.",
+     "hours_ago": 8,
+     "likes": 7
+    },
+    {
+     "author": "p02",
+     "text": "Carry a bottle regardless. Fountains in Dubai are a gamble, learnt that the hard way.",
+     "hours_ago": 8,
+     "likes": 9
+    },
+    {
+     "author": "p08",
+     "text": "Hydration tip from a coffee man: a cold brew after the run is the reward.",
+     "hours_ago": 7,
+     "likes": 4
+    },
+    {
+     "author": "p10",
+     "text": "Cold water in the face at the canal, the best trick of summer training.",
+     "hours_ago": 7,
+     "likes": 6
+    },
+    {
+     "author": "p05",
+     "text": "Pups need water too, so the fountain question is serious for me.",
+     "hours_ago": 6,
+     "likes": 5
+    },
+    {
+     "author": "p09",
+     "text": "The loop is perfect for a weekend bike and run combo. Thanks for sharing.",
+     "hours_ago": 5,
+     "likes": 6
+    },
+    {
+     "author": "p06",
+     "text": "Let's do a group ride-and-run on this loop next month. Who's in?",
+     "hours_ago": 5,
+     "likes": 11
+    },
+    {
+     "author": "p01",
+     "text": "Yes! I'll bring the sunscreen and the good playlist, you bring the bike.",
+     "hours_ago": 4,
+     "likes": 8
+    },
+    {
+     "author": "p03",
+     "text": "Ride and run and cake at the end. Honestly that's my dream sport.",
+     "hours_ago": 4,
+     "likes": 9
+    },
+    {
+     "author": "p07",
+     "text": "Count me in if we start after 6am, before the heat hits the canal.",
+     "hours_ago": 3,
+     "likes": 5
+    },
+    {
+     "author": "p02",
+     "text": "6am is the sweet spot. Maybe 5:45 for the real runners.",
+     "hours_ago": 3,
+     "likes": 6
+    },
+    {
+     "author": "p04",
+     "text": "Route map link to follow in the group, no external links on this thread though.",
+     "hours_ago": 2,
+     "likes": 3
+    },
+    {
+     "author": "p10",
+     "text": "Good call, keep the links in the group chat, not here. Ready for the loop.",
+     "hours_ago": 2,
+     "likes": 4
+    },
+    {
+     "author": "p08",
+     "text": "Fine, I'll bring the thermos. Let's hit the canal together soon.",
+     "hours_ago": 1,
+     "likes": 7
+    },
+    {
+     "author": "p06",
+     "text": "Canal crew confirmed. Yalla, legs are warming up already.",
+     "hours_ago": 1,
+     "likes": 8
+    }
+   ]
+  },
+  {
+   "id": "jlt-runners-04",
+   "author": "p07",
+   "text": "Ran my first 10k without stopping, in June heat, at 5:30am in Mirdif. I still cannot believe it. Thank you to this group for the tips on pacing and hydration.",
+   "image": null,
+   "hours_ago": 36,
+   "likes": 452,
+   "comments": [
+    {
+     "author": "p02",
+     "text": "Huge congrats Anjali! That's a serious milestone, the first 10k feels like a mountain.",
+     "hours_ago": 34,
+     "likes": 30
+    },
+    {
+     "author": "p05",
+     "text": "Congrats! The puppy is jumping around in celebration, I can hear him from here.",
+     "hours_ago": 33,
+     "likes": 22
+    },
+    {
+     "author": "p10",
+     "text": "Proud of you. Pacing is everything, you clearly listened. Well done.",
+     "hours_ago": 32,
+     "likes": 25
+    },
+    {
+     "author": "p03",
+     "text": "Congratulations! I'm making you a cake shaped like a running shoe, no arguments.",
+     "hours_ago": 31,
+     "likes": 19
+    },
+    {
+     "author": "p01",
+     "text": "Amazing effort! What was your pace? I'm trying to get under six minutes soon.",
+     "hours_ago": 30,
+     "likes": 8
+    },
+    {
+     "author": "p04",
+     "text": "In June heat that's a huge win. Mirdif loop is hilly in the middle, respect.",
+     "hours_ago": 29,
+     "likes": 12
+    },
+    {
+     "author": "p06",
+     "text": "You should have a playlist for the last two kilometres, trust me, it helps.",
+     "hours_ago": 28,
+     "likes": 7
+    },
+    {
+     "author": "p08",
+     "text": "I'll buy you a celebratory flat white after the next group run, it's the least I can do.",
+     "hours_ago": 26,
+     "likes": 13
+    },
+    {
+     "author": "p09",
+     "text": "Inspiring. I'm still at the 3k stage, your story gives me hope.",
+     "hours_ago": 25,
+     "likes": 11
+    },
+    {
+     "author": "p07",
+     "text": "@hannah_b everyone starts at 3k. Keep going, you'll be surprised how fast it builds.",
+     "hours_ago": 24,
+     "likes": 16
+    },
+    {
+     "author": "p02",
+     "text": "The first 10k is a mental game more than physical. Glad you cracked it.",
+     "hours_ago": 23,
+     "likes": 9
+    },
+    {
+     "author": "p10",
+     "text": "Did you take a salt tablet? Heat plus long distance needs more than water.",
+     "hours_ago": 22,
+     "likes": 6
+    },
+    {
+     "author": "p07",
+     "text": "@omar_q yes, a salt tablet at 6k and electrolytes at the start. Good call.",
+     "hours_ago": 21,
+     "likes": 7
+    },
+    {
+     "author": "p04",
+     "text": "Electrolytes and a banana, my old formula. Works every time for me.",
+     "hours_ago": 20,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "The puppy wants to know if there will be a treat at the finish line. Please say yes.",
+     "hours_ago": 19,
+     "likes": 14
+    },
+    {
+     "author": "p06",
+     "text": "Huge milestone and the group is proud. Keep posting the progress, it inspires.",
+     "hours_ago": 18,
+     "likes": 10
+    },
+    {
+     "author": "p01",
+     "text": "Let's celebrate with a brunch after the Sunday run, Anjali's treat, everyone's invited.",
+     "hours_ago": 17,
+     "likes": 12
+    },
+    {
+     "author": "p03",
+     "text": "Brunch means cake. That's the rule. I'll bring the shoe cake.",
+     "hours_ago": 16,
+     "likes": 9
+    },
+    {
+     "author": "p08",
+     "text": "Shoe cake and a coffee, that's the best finish line I've heard of.",
+     "hours_ago": 15,
+     "likes": 8
+    },
+    {
+     "author": "p09",
+     "text": "What shoes did you use? I need to upgrade mine before the next race.",
+     "hours_ago": 14,
+     "likes": 4
+    },
+    {
+     "author": "p07",
+     "text": "@hannah_b my trainers are the basic model. Fit matters more than the brand, get a proper gait check.",
+     "hours_ago": 13,
+     "likes": 10
+    },
+    {
+     "author": "p02",
+     "text": "A gait check at a running store is worth it. Half the pain is bad shoes.",
+     "hours_ago": 12,
+     "likes": 11
+    },
+    {
+     "author": "p10",
+     "text": "Good shoes plus good sunscreen plus good company. The three things that make a run.",
+     "hours_ago": 11,
+     "likes": 7
+    },
+    {
+     "author": "p05",
+     "text": "Puppy approved your 10k with a happy tail wag. From him, that's a gold medal.",
+     "hours_ago": 10,
+     "likes": 18
+    },
+    {
+     "author": "p04",
+     "text": "Keep the streak going, Anjali. The next target is 15k, we'll be there cheering.",
+     "hours_ago": 9,
+     "likes": 6
+    }
+   ]
+  },
+  {
+   "id": "jlt-runners-05",
+   "author": "p06",
+   "text": "Honest question about recovery: how many rest days per week do you take? I'm doing five runs and wondering if I'm pushing too hard in this heat. Advice welcome 🎧",
+   "image": null,
+   "hours_ago": 48,
+   "likes": 167,
+   "comments": [
+    {
+     "author": "p10",
+     "text": "Two proper rest days, one of them with swimming or stretching only. Your body needs the break.",
+     "hours_ago": 46,
+     "likes": 14
+    },
+    {
+     "author": "p02",
+     "text": "Five runs in summer heat is a lot. I'd drop to four and keep the long one on Sunday.",
+     "hours_ago": 45,
+     "likes": 16
+    },
+    {
+     "author": "p04",
+     "text": "Watch your resting heart rate. If it climbs three days in a row, take a full rest day.",
+     "hours_ago": 44,
+     "likes": 11
+    },
+    {
+     "author": "p03",
+     "text": "I'm no runner, but rest days are a must for any hobby. Bakers need them too.",
+     "hours_ago": 43,
+     "likes": 5
+    },
+    {
+     "author": "p01",
+     "text": "Sleep is the real recovery, not the rest day. Eight hours and you feel new.",
+     "hours_ago": 42,
+     "likes": 9
+    },
+    {
+     "author": "p05",
+     "text": "My puppy takes two naps and a rest day every week. Maybe we are learning from him.",
+     "hours_ago": 41,
+     "likes": 19
+    },
+    {
+     "author": "p07",
+     "text": "I push too hard when I feel good. A rest day saves me from injuries, I learnt slowly.",
+     "hours_ago": 40,
+     "likes": 8
+    },
+    {
+     "author": "p08",
+     "text": "Coffee doesn't count as recovery, I'm told. Sorry, I still tried.",
+     "hours_ago": 39,
+     "likes": 10
+    },
+    {
+     "author": "p09",
+     "text": "What about cross training? Cycling a few times a week instead of running?",
+     "hours_ago": 38,
+     "likes": 6
+    },
+    {
+     "author": "p04",
+     "text": "@hannah_b yes, cycling is brilliant cross training, low impact and it keeps the legs moving.",
+     "hours_ago": 37,
+     "likes": 7
+    },
+    {
+     "author": "p10",
+     "text": "Swimming is the best low-impact recovery, I'd say. Add it on the rest day.",
+     "hours_ago": 36,
+     "likes": 9
+    },
+    {
+     "author": "p06",
+     "text": "Thanks all, very helpful. I'll cut to four runs and add a swim on Wednesday.",
+     "hours_ago": 35,
+     "likes": 12
+    },
+    {
+     "author": "p02",
+     "text": "Good plan. Also drink more water on the rest days, your muscles repair with fluids.",
+     "hours_ago": 34,
+     "likes": 6
+    },
+    {
+     "author": "p01",
+     "text": "Stretch before bed, five minutes. My calves thank me every morning.",
+     "hours_ago": 33,
+     "likes": 8
+    },
+    {
+     "author": "p03",
+     "text": "Foam roller plus a warm bath plus a cake, that's my recovery routine.",
+     "hours_ago": 32,
+     "likes": 11
+    },
+    {
+     "author": "p05",
+     "text": "If the knee hurts for more than a few days, see a physio. Please don't ignore it.",
+     "hours_ago": 31,
+     "likes": 13
+    },
+    {
+     "author": "p07",
+     "text": "Agreed, pain is information. Listen, rest, come back stronger.",
+     "hours_ago": 30,
+     "likes": 7
+    },
+    {
+     "author": "p08",
+     "text": "I'd add a light walk on rest days, a stroll gets the blood moving without stress.",
+     "hours_ago": 29,
+     "likes": 5
+    },
+    {
+     "author": "p09",
+     "text": "I'm starting a training log this week. Rest days included, I promise to log them.",
+     "hours_ago": 28,
+     "likes": 6
+    },
+    {
+     "author": "p10",
+     "text": "Logging rest days is a brilliant habit. Half of training is knowing when to stop.",
+     "hours_ago": 27,
+     "likes": 10
+    },
+    {
+     "author": "p04",
+     "text": "Heat acclimatisation takes about two weeks, so ease in if you're new to the summer.",
+     "hours_ago": 26,
+     "likes": 9
+    },
+    {
+     "author": "p02",
+     "text": "Two weeks of easy runs, then add the intensity. Patience pays off in Dubai.",
+     "hours_ago": 25,
+     "likes": 12
+    },
+    {
+     "author": "p06",
+     "text": "Patience, rest and a good playlist. My new training motto. Thank you all 🎶",
+     "hours_ago": 24,
+     "likes": 14
+    },
+    {
+     "author": "p05",
+     "text": "Puppy says rest is his favourite part of the training plan. Honest dog.",
+     "hours_ago": 23,
+     "likes": 15
+    },
+    {
+     "author": "p01",
+     "text": "Good luck with the four-run plan Kwame, report back after two weeks.",
+     "hours_ago": 22,
+     "likes": 5
+    }
+   ]
+  },
+  {
+   "id": "jlt-runners-06",
+   "author": "p09",
+   "text": "Shoe swap week in the group! Share the pair you love, the one you hate, and the price you paid. I'll start: my lightweight racers, 480 AED, not worth it for daily runs.",
+   "image": "media/shoes.jpg",
+   "hours_ago": 58,
+   "likes": 134,
+   "comments": [
+    {
+     "author": "p02",
+     "text": "I run daily in the cushioned pair, 520 AED. Worth it for long runs, boring for everything else.",
+     "hours_ago": 56,
+     "likes": 9
+    },
+    {
+     "author": "p10",
+     "text": "Swim shoes and sandals are my two pairs. Sandals on the beach, always, sand loves to hide in trainers.",
+     "hours_ago": 55,
+     "likes": 6
+    },
+    {
+     "author": "p07",
+     "text": "Basic budget trainers from the mall, 220 AED. They've lasted two years, no complaints.",
+     "hours_ago": 54,
+     "likes": 12
+    },
+    {
+     "author": "p04",
+     "text": "Cycling shoes clip in, so the running pair is separate. Shoe cupboard is getting full.",
+     "hours_ago": 53,
+     "likes": 7
+    },
+    {
+     "author": "p05",
+     "text": "I buy trainers for the puppy's walks, but the dog eats my old pairs. Don't leave shoes out.",
+     "hours_ago": 52,
+     "likes": 16
+    },
+    {
+     "author": "p01",
+     "text": "My pair hurts my heel after 10k, is that normal? Shopping for a new fit soon.",
+     "hours_ago": 51,
+     "likes": 8
+    },
+    {
+     "author": "p03",
+     "text": "Heel pain usually means the drop or cushioning is wrong. Get a gait check, I'm serious.",
+     "hours_ago": 50,
+     "likes": 10
+    },
+    {
+     "author": "p06",
+     "text": "I'm loyal to one brand for years, but the new model feels off. Shoe loyalty is complicated.",
+     "hours_ago": 49,
+     "likes": 5
+    },
+    {
+     "author": "p08",
+     "text": "Shoes are like coffee beans, the best one is the one that fits your routine.",
+     "hours_ago": 48,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "@sarak the gait check at the running store is free in some places, call ahead.",
+     "hours_ago": 47,
+     "likes": 9
+    },
+    {
+     "author": "p10",
+     "text": "Trail shoes are another category, though we don't have many trails here. Sand is the trail.",
+     "hours_ago": 46,
+     "likes": 8
+    },
+    {
+     "author": "p02",
+     "text": "Sand is the trail, true. Lightweight trainers handle sand best, the heavy ones sink.",
+     "hours_ago": 45,
+     "likes": 7
+    },
+    {
+     "author": "p07",
+     "text": "Socks matter too. Moisture wicking socks changed my life, and they're cheap.",
+     "hours_ago": 44,
+     "likes": 11
+    },
+    {
+     "author": "p04",
+     "text": "Good socks and good shoes plus good sunscreen, the holy trinity again, lol.",
+     "hours_ago": 43,
+     "likes": 4
+    },
+    {
+     "author": "p05",
+     "text": "Puppy's favourite shoe is the one left on the balcony. Please, nobody leave them out.",
+     "hours_ago": 42,
+     "likes": 13
+    },
+    {
+     "author": "p01",
+     "text": "Thanks all, I'll try the gait check on Saturday before the group run.",
+     "hours_ago": 41,
+     "likes": 5
+    },
+    {
+     "author": "p06",
+     "text": "Share your shoe size and the brand you like, we can do a bulk discount run.",
+     "hours_ago": 40,
+     "likes": 6
+    },
+    {
+     "author": "p03",
+     "text": "I'll bring a box of cupcakes for the shoe swap, a sweet bribe for the swap.",
+     "hours_ago": 39,
+     "likes": 9
+    },
+    {
+     "author": "p08",
+     "text": "Coffee is the better swap. Shoes you trade, coffee you share.",
+     "hours_ago": 38,
+     "likes": 4
+    },
+    {
+     "author": "p10",
+     "text": "Keep the swap in the group, not in the comments, the thread is getting busy.",
+     "hours_ago": 37,
+     "likes": 3
+    },
+    {
+     "author": "p02",
+     "text": "Fair point, Omar. Next thread will be a proper shoe swap event.",
+     "hours_ago": 36,
+     "likes": 5
+    },
+    {
+     "author": "p09",
+     "text": "Great energy in this thread. The shoe swap is officially on for next Sunday.",
+     "hours_ago": 35,
+     "likes": 10
+    },
+    {
+     "author": "p04",
+     "text": "Cycling and running in one group is a good mix, the group gets better each week.",
+     "hours_ago": 34,
+     "likes": 7
+    },
+    {
+     "author": "p05",
+     "text": "Puppy submitted his paw measurements for the shoe swap. He's serious about it.",
+     "hours_ago": 33,
+     "likes": 17
+    },
+    {
+     "author": "p07",
+     "text": "Count me in for the swap. I'll bring the mall pair and a lot of enthusiasm.",
+     "hours_ago": 32,
+     "likes": 6
+    }
+   ]
+  },
+  {
+   "id": "jlt-runners-07",
+   "author": "p03",
+   "text": "Post-run snack ideas that won't ruin your stomach? Trying to find something sweet but light after a 12k run in this heat, bakery treats are not an option this time.",
+   "image": null,
+   "hours_ago": 72,
+   "likes": 112,
+   "comments": [
+    {
+     "author": "p02",
+     "text": "Banana with peanut butter. Simple, cheap and the carbs refill you fast.",
+     "hours_ago": 70,
+     "likes": 11
+    },
+    {
+     "author": "p04",
+     "text": "Dates and yoghurt. Sweet, light, and my grandmother swore by it after work.",
+     "hours_ago": 69,
+     "likes": 9
+    },
+    {
+     "author": "p10",
+     "text": "Chilled watermelon after the sea swim, the best post-run snack. Hydrates too.",
+     "hours_ago": 68,
+     "likes": 12
+    },
+    {
+     "author": "p01",
+     "text": "Oats with honey and berries, prepared the night before. Fast and light.",
+     "hours_ago": 67,
+     "likes": 8
+    },
+    {
+     "author": "p05",
+     "text": "Puppy's post-run snack is a carrot. I'm trying it myself, it's surprisingly good.",
+     "hours_ago": 66,
+     "likes": 10
+    },
+    {
+     "author": "p06",
+     "text": "Chocolate milk, the classic. Protein and sugar, the recovery drink that works.",
+     "hours_ago": 65,
+     "likes": 7
+    },
+    {
+     "author": "p07",
+     "text": "Mango with a pinch of salt, the Mirdif summer favourite. Sweet and refreshing.",
+     "hours_ago": 64,
+     "likes": 13
+    },
+    {
+     "author": "p08",
+     "text": "Coffee plus dates. Yes, I'm the guy who does that after every run.",
+     "hours_ago": 63,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "Greek yoghurt with honey and nuts, I eat it straight from the fridge.",
+     "hours_ago": 62,
+     "likes": 5
+    },
+    {
+     "author": "p03",
+     "text": "Thank you all, I'll try the dates and yoghurt combo this week, sounds lovely.",
+     "hours_ago": 61,
+     "likes": 8
+    },
+    {
+     "author": "p04",
+     "text": "@layla_h add a few walnuts, the crunch makes the snack feel like a treat.",
+     "hours_ago": 60,
+     "likes": 6
+    },
+    {
+     "author": "p02",
+     "text": "Peanut butter on rice cakes is my cheat snack when the sweet craving hits.",
+     "hours_ago": 59,
+     "likes": 5
+    },
+    {
+     "author": "p10",
+     "text": "Keep it light, the stomach can cramp after heavy snacks in the heat. Learned that hard.",
+     "hours_ago": 58,
+     "likes": 9
+    },
+    {
+     "author": "p05",
+     "text": "The puppy got a bite of banana and loved it. Dogs know good food.",
+     "hours_ago": 57,
+     "likes": 14
+    },
+    {
+     "author": "p01",
+     "text": "Smoothie with frozen fruit and oats, super cold, super easy, very Dubai summer.",
+     "hours_ago": 56,
+     "likes": 7
+    },
+    {
+     "author": "p06",
+     "text": "A proper recovery shake with milk, banana and cocoa. Tastes like dessert.",
+     "hours_ago": 55,
+     "likes": 6
+    },
+    {
+     "author": "p07",
+     "text": "Dates stuffed with almonds, the desert-style treat that works for runners.",
+     "hours_ago": 54,
+     "likes": 10
+    },
+    {
+     "author": "p08",
+     "text": "Please add espresso to the recovery list, it's a scientific must in my book.",
+     "hours_ago": 53,
+     "likes": 4
+    },
+    {
+     "author": "p09",
+     "text": "Greek yoghurt bowl with fruit is what I do after every long run. Simple and filling.",
+     "hours_ago": 52,
+     "likes": 6
+    },
+    {
+     "author": "p03",
+     "text": "Adding this whole list to the recipe book. Thanks everyone, you've saved my weekend.",
+     "hours_ago": 51,
+     "likes": 9
+    },
+    {
+     "author": "p02",
+     "text": "Don't forget the fluids, electrolytes in the first hour. The snack is the second step.",
+     "hours_ago": 50,
+     "likes": 8
+    },
+    {
+     "author": "p04",
+     "text": "Coconut water is my go-to. Sweet, salty, and no fuss.",
+     "hours_ago": 49,
+     "likes": 5
+    },
+    {
+     "author": "p10",
+     "text": "Coconut water plus a fresh mango is the perfect beach run finish, trust the coach.",
+     "hours_ago": 48,
+     "likes": 7
+    },
+    {
+     "author": "p05",
+     "text": "Puppy wants you to know he is still waiting for that banana, Omar.",
+     "hours_ago": 47,
+     "likes": 11
+    },
+    {
+     "author": "p01",
+     "text": "Good snack list. Everyone should try the dates and yoghurt at least once.",
+     "hours_ago": 46,
+     "likes": 6
+    }
+   ]
+  },
+  {
+   "id": "jlt-runners-08",
+   "author": "p04",
+   "text": "Heat safety reminder for the group: if you feel dizzy, cold, or stop sweating, stop, sit in shade, and get help. Early summer heat is not a joke here, please look after each other.",
+   "image": "media/rest-water.jpg",
+   "hours_ago": 96,
+   "likes": 301,
+   "comments": [
+    {
+     "author": "p10",
+     "text": "Very important. Shade, water, and a buddy. No hero runs in July, ever.",
+     "hours_ago": 94,
+     "likes": 25
+    },
+    {
+     "author": "p02",
+     "text": "Thanks for posting this. I had a near miss last summer, a cold shower saved me.",
+     "hours_ago": 93,
+     "likes": 18
+    },
+    {
+     "author": "p05",
+     "text": "Puppy and I are staying indoors after eight. The asphalt is too hot for paws.",
+     "hours_ago": 92,
+     "likes": 12
+    },
+    {
+     "author": "p01",
+     "text": "Carry a small first aid kit with electrolytes. Better safe than sorry on long routes.",
+     "hours_ago": 91,
+     "likes": 11
+    },
+    {
+     "author": "p06",
+     "text": "Run with a buddy, always. The app tracks your route, but a friend knows when to call.",
+     "hours_ago": 90,
+     "likes": 9
+    },
+    {
+     "author": "p07",
+     "text": "Keep your phone charged and share your route before you leave. Simple habits.",
+     "hours_ago": 89,
+     "likes": 8
+    },
+    {
+     "author": "p03",
+     "text": "Heat stroke is serious. If someone is confused, call emergency help immediately.",
+     "hours_ago": 88,
+     "likes": 14
+    },
+    {
+     "author": "p08",
+     "text": "Coffee doesn't help heat stress, water does. Lesson learned from my own sweaty mornings.",
+     "hours_ago": 87,
+     "likes": 5
+    },
+    {
+     "author": "p09",
+     "text": "Our group should add a heat policy to the pinned post. Clear rules keep everyone safe.",
+     "hours_ago": 86,
+     "likes": 10
+    },
+    {
+     "author": "p04",
+     "text": "Good idea Hannah. I'll draft a short version and pin it, one page, no fluff.",
+     "hours_ago": 85,
+     "likes": 12
+    },
+    {
+     "author": "p10",
+     "text": "Lifeguards on the beach can help too, if you're near the sea just ask for water.",
+     "hours_ago": 84,
+     "likes": 6
+    },
+    {
+     "author": "p02",
+     "text": "Early morning runs are safest. Aim to finish before 7am in summer, no exceptions.",
+     "hours_ago": 83,
+     "likes": 13
+    },
+    {
+     "author": "p05",
+     "text": "Puppy's rule: if the ground is too hot for your hand, it's too hot for paws.",
+     "hours_ago": 82,
+     "likes": 16
+    },
+    {
+     "author": "p01",
+     "text": "Hand on the pavement test, I love it. Adding it to my routine right now.",
+     "hours_ago": 81,
+     "likes": 7
+    },
+    {
+     "author": "p06",
+     "text": "Music at a lower volume so you can hear traffic and people. Safety first on the road.",
+     "hours_ago": 80,
+     "likes": 6
+    },
+    {
+     "author": "p07",
+     "text": "Thank you for this reminder, I almost ran in the afternoon last week. Never again.",
+     "hours_ago": 79,
+     "likes": 9
+    },
+    {
+     "author": "p03",
+     "text": "Let's keep this thread as a reminder. Share your own heat tips below, please.",
+     "hours_ago": 78,
+     "likes": 8
+    },
+    {
+     "author": "p08",
+     "text": "Stop for water at the coffee stand, the staff there are very helpful, I promise.",
+     "hours_ago": 77,
+     "likes": 4
+    },
+    {
+     "author": "p09",
+     "text": "Take a cooling towel. They are cheap and they make a huge difference in the heat.",
+     "hours_ago": 76,
+     "likes": 11
+    },
+    {
+     "author": "p04",
+     "text": "Ice in a cap and cold water on the neck, the tricks my coach taught me.",
+     "hours_ago": 75,
+     "likes": 9
+    },
+    {
+     "author": "p10",
+     "text": "Heat plus salt plus water, always. A balanced approach keeps you running all summer.",
+     "hours_ago": 74,
+     "likes": 10
+    },
+    {
+     "author": "p02",
+     "text": "Stay safe everyone, see you at the gate in the early light. Yalla, we run smart.",
+     "hours_ago": 72,
+     "likes": 15
+    },
+    {
+     "author": "p05",
+     "text": "Puppy is now officially the group's heat safety mascot. He wears his cooling vest.",
+     "hours_ago": 71,
+     "likes": 20
+    },
+    {
+     "author": "p01",
+     "text": "Thank you, Tomasz, for keeping the group sensible. Respect.",
+     "hours_ago": 70,
+     "likes": 12
+    },
+    {
+     "author": "p06",
+     "text": "Stay cool, stay hydrated, and take care of the buddy next to you 🎧",
+     "hours_ago": 69,
+     "likes": 13
+    }
+   ]
+  },
+  {
+   "id": "jlt-runners-09",
+   "author": "p01",
+   "text": "Ran past the new art murals near Al Quoz this morning and felt like I was in a different city. Anyone want a Saturday route that ends at a cafe with proper shade?",
+   "image": null,
+   "hours_ago": 120,
+   "likes": 96,
+   "comments": [
+    {
+     "author": "p08",
+     "text": "Al Quoz murals are great. The cafe near the tyre warehouse has shaded seats, come by after.",
+     "hours_ago": 118,
+     "likes": 10
+    },
+    {
+     "author": "p02",
+     "text": "Saturday works for me. I'll bring the route plan and the sunscreen, you bring the smile.",
+     "hours_ago": 116,
+     "likes": 8
+    },
+    {
+     "author": "p04",
+     "text": "Art and running is a perfect weekend mix. I'll add a bike ride before it for a cross session.",
+     "hours_ago": 114,
+     "likes": 6
+    },
+    {
+     "author": "p10",
+     "text": "Shaded cafe after a run is the best reward, I'm in if the water is cold.",
+     "hours_ago": 112,
+     "likes": 7
+    },
+    {
+     "author": "p05",
+     "text": "Puppy-friendly cafe? He wants to see the murals too, he's very into art.",
+     "hours_ago": 110,
+     "likes": 12
+    },
+    {
+     "author": "p06",
+     "text": "Art, run and coffee. That's a three-part Saturday I can get behind.",
+     "hours_ago": 108,
+     "likes": 9
+    },
+    {
+     "author": "p07",
+     "text": "Where do you park? Al Quoz parking is tricky, I always end up circling the block.",
+     "hours_ago": 106,
+     "likes": 5
+    },
+    {
+     "author": "p09",
+     "text": "Metro plus a short walk, it's easier than parking. Trust me on that one.",
+     "hours_ago": 104,
+     "likes": 6
+    },
+    {
+     "author": "p03",
+     "text": "I'll bring cake to the cafe, the bakers' code says sharing is caring.",
+     "hours_ago": 102,
+     "likes": 11
+    },
+    {
+     "author": "p01",
+     "text": "Route is about 9km with two murals on the way. The Saturday pace is relaxed.",
+     "hours_ago": 100,
+     "likes": 8
+    },
+    {
+     "author": "p02",
+     "text": "Nine kilometres with photo stops, that's my kind of run. Let's go.",
+     "hours_ago": 98,
+     "likes": 7
+    },
+    {
+     "author": "p04",
+     "text": "Sun is strong at 7am now, so meet at 6, before the heat builds.",
+     "hours_ago": 96,
+     "likes": 5
+    },
+    {
+     "author": "p08",
+     "text": "6am is a fine time for me, coffee at 6:30 and the murals at 7. Perfect plan.",
+     "hours_ago": 94,
+     "likes": 6
+    },
+    {
+     "author": "p10",
+     "text": "Who wants to see the sculpture near the warehouse? Best one on the route.",
+     "hours_ago": 92,
+     "likes": 9
+    },
+    {
+     "author": "p05",
+     "text": "Puppy's vote goes to the big mural with the dogs painted on it. Very fitting.",
+     "hours_ago": 90,
+     "likes": 13
+    },
+    {
+     "author": "p06",
+     "text": "Music at the murals is a nice idea. Quiet playlist, let's not disturb the artists.",
+     "hours_ago": 88,
+     "likes": 4
+    },
+    {
+     "author": "p07",
+     "text": "Count me in. I want to take photos for the group album, I'm getting into photography.",
+     "hours_ago": 86,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "Photographers and runners, a new combo. The album will be great.",
+     "hours_ago": 84,
+     "likes": 5
+    },
+    {
+     "author": "p03",
+     "text": "Are there benches in case we need a sit-down? Cake bribery requires a seat.",
+     "hours_ago": 82,
+     "likes": 4
+    },
+    {
+     "author": "p01",
+     "text": "Benches are there near the cafe, and the shade is generous. Don't worry, cake is safe.",
+     "hours_ago": 80,
+     "likes": 7
+    },
+    {
+     "author": "p02",
+     "text": "Looking forward to Saturday. Please share your timing so we can plan the groups.",
+     "hours_ago": 78,
+     "likes": 3
+    },
+    {
+     "author": "p04",
+     "text": "I'll be on the bike, so my timing is flexible. Meet you at the cafe.",
+     "hours_ago": 76,
+     "likes": 4
+    },
+    {
+     "author": "p08",
+     "text": "The cafe has cold brew on tap, so bring thirst and good vibes.",
+     "hours_ago": 74,
+     "likes": 8
+    },
+    {
+     "author": "p10",
+     "text": "Swim after the cafe if anyone wants to finish at the beach. Optional, obviously.",
+     "hours_ago": 72,
+     "likes": 6
+    },
+    {
+     "author": "p05",
+     "text": "Puppy will need a nap after the murals. Plan accordingly, friends 🐶",
+     "hours_ago": 70,
+     "likes": 11
+    }
+   ]
+  },
+  {
+   "id": "jlt-runners-10",
+   "author": "p05",
+   "text": "Dog runners, a question: is it okay to run with a dog on the lake path in the morning? My puppy has so much energy and I want to share the routine with him.",
+   "image": "media/puppy.jpg",
+   "hours_ago": 150,
+   "likes": 224,
+   "comments": [
+    {
+     "author": "p02",
+     "text": "Yes, with a leash and water. The lake path is quiet before 6am, perfect for a young pup.",
+     "hours_ago": 146,
+     "likes": 14
+    },
+    {
+     "author": "p10",
+     "text": "Start with short runs, a young dog's joints are still growing. Walk breaks are a must.",
+     "hours_ago": 144,
+     "likes": 18
+    },
+    {
+     "author": "p04",
+     "text": "Check the local rules on dogs in parks. Carry bags and pick up after him, always.",
+     "hours_ago": 142,
+     "likes": 12
+    },
+    {
+     "author": "p06",
+     "text": "Heat is the real issue, so only mornings. Test the ground with your hand first.",
+     "hours_ago": 140,
+     "likes": 15
+    },
+    {
+     "author": "p01",
+     "text": "My dog runs with me every Sunday. Best training partner, never complains about the early start.",
+     "hours_ago": 138,
+     "likes": 9
+    },
+    {
+     "author": "p03",
+     "text": "Puppy gets a biscuit at the end of each lap. Motivation is the secret, I'm told.",
+     "hours_ago": 136,
+     "likes": 11
+    },
+    {
+     "author": "p07",
+     "text": "Get a harness, not a collar, for running. Much safer for the neck.",
+     "hours_ago": 134,
+     "likes": 13
+    },
+    {
+     "author": "p08",
+     "text": "Coffee break for the human while the dog sniffs every bush. Balance is important.",
+     "hours_ago": 132,
+     "likes": 7
+    },
+    {
+     "author": "p09",
+     "text": "Our dog ran a 5k with us last month. She slept all afternoon and then all night.",
+     "hours_ago": 130,
+     "likes": 10
+    },
+    {
+     "author": "p05",
+     "text": "Thank you all. I'll start with a short walk-run combo and build up slowly.",
+     "hours_ago": 128,
+     "likes": 8
+    },
+    {
+     "author": "p02",
+     "text": "Good plan. Keep the leash short near other joggers, not everyone likes dogs close.",
+     "hours_ago": 126,
+     "likes": 9
+    },
+    {
+     "author": "p10",
+     "text": "Water bowl at the start and end of the run, the dog needs it more than you do.",
+     "hours_ago": 124,
+     "likes": 11
+    },
+    {
+     "author": "p04",
+     "text": "Puppy is very lucky to have a runner, the lake path is a dream for dogs.",
+     "hours_ago": 122,
+     "likes": 6
+    },
+    {
+     "author": "p06",
+     "text": "Keep the run calm, no sudden stops, and reward good behaviour. Simple rules.",
+     "hours_ago": 120,
+     "likes": 7
+    },
+    {
+     "author": "p01",
+     "text": "Also watch for the other dogs on the path, some are nervous. Give them space.",
+     "hours_ago": 118,
+     "likes": 8
+    },
+    {
+     "author": "p03",
+     "text": "The puppy with a running bib would be the cutest thing on the lake, I'm sure.",
+     "hours_ago": 116,
+     "likes": 12
+    },
+    {
+     "author": "p07",
+     "text": "Ask the vet nurse for a checkup before any long run, growing dogs need the all-clear.",
+     "hours_ago": 114,
+     "likes": 10
+    },
+    {
+     "author": "p08",
+     "text": "I'll watch out for your puppy when I'm walking the coffee cart, don't worry.",
+     "hours_ago": 112,
+     "likes": 5
+    },
+    {
+     "author": "p09",
+     "text": "What about winter? Is the lake path good for dogs in cooler months too?",
+     "hours_ago": 110,
+     "likes": 4
+    },
+    {
+     "author": "p02",
+     "text": "Winter is the best time for dog runs here, cool air and happy dogs.",
+     "hours_ago": 108,
+     "likes": 9
+    },
+    {
+     "author": "p10",
+     "text": "Winter swims with a dog are a whole new level, just be sure the water is safe.",
+     "hours_ago": 106,
+     "likes": 6
+    },
+    {
+     "author": "p04",
+     "text": "Good luck, Mariam, I'm sure the pup will be a star on the lake path.",
+     "hours_ago": 104,
+     "likes": 7
+    },
+    {
+     "author": "p05",
+     "text": "Thanks, everyone, this was really helpful. Puppy is already wagging his tail at the leash.",
+     "hours_ago": 102,
+     "likes": 16
+    },
+    {
+     "author": "p06",
+     "text": "Let's see the first run photo next Sunday, the lake will be proud. 🎶",
+     "hours_ago": 100,
+     "likes": 8
+    },
+    {
+     "author": "p01",
+     "text": "Go Mariam and puppy! Tag us all in the photo, the group wants to see.",
+     "hours_ago": 98,
+     "likes": 12
+    }
+   ]
+  }
+ ]
+}

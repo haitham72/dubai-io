@@ -1,0 +1,1631 @@
+{
+ "id": "startup-dxb",
+ "name": "Startup DXB",
+ "handle": "startupdxb",
+ "topic": "Work",
+ "about": "Founders, freelancers and small teams building in Dubai. Hiring, visas, free zones, fundraising questions and honest lessons from the trenches.",
+ "image": "media/cafe-counter.jpg",
+ "members": 7600,
+ "stories": [
+  {
+   "author": "p09",
+   "text": "Shipped our first paid pilot this week. Three customers, one very tired founder.",
+   "image": "media/cafe-counter.jpg",
+   "hours_ago": 4
+  },
+  {
+   "author": "p04",
+   "text": "Business Bay coworking office hours, free coffee on Wednesdays. Come say hi.",
+   "image": "media/cafe-bulbs.jpg",
+   "hours_ago": 12
+  },
+  {
+   "author": "p06",
+   "text": "Demo day rehearsal done. The slides are ugly but the story is clean.",
+   "image": "media/ac.jpg",
+   "hours_ago": 21
+  }
+ ],
+ "posts": [
+  {
+   "id": "startup-dxb-01",
+   "author": "p09",
+   "text": "Honest question for founders: how long did your free zone licence take to set up, and was it worth it compared with a mainland company? Trying to decide before the next hiring round.",
+   "image": null,
+   "hours_ago": 5,
+   "likes": 302,
+   "comments": [
+    {
+     "author": "p04",
+     "text": "Mine took about three weeks end to end. Mainland gave more flexibility for clients in town.",
+     "hours_ago": 4,
+     "likes": 14
+    },
+    {
+     "author": "p07",
+     "text": "Free zone is easier to start, but check which clients you can serve from it. That matters more.",
+     "hours_ago": 4,
+     "likes": 16
+    },
+    {
+     "author": "p01",
+     "text": "Compare the total yearly cost, including the office, the visas and the renewal. Not just the licence.",
+     "hours_ago": 3,
+     "likes": 12
+    },
+    {
+     "author": "p06",
+     "text": "Freelancer here: I started on a simple setup and upgraded later. No regrets so far.",
+     "hours_ago": 3,
+     "likes": 6
+    },
+    {
+     "author": "p02",
+     "text": "Ask a business setup advisor for a written breakdown of fees. Keep the emails for records.",
+     "hours_ago": 3,
+     "likes": 8
+    },
+    {
+     "author": "p03",
+     "text": "Pastry startup here, free zone worked for the kitchen lease. Good luck, Hannah!",
+     "hours_ago": 2,
+     "likes": 5
+    },
+    {
+     "author": "p08",
+     "text": "Coffee roasting business, we went mainland for the wholesale clients. Depends on your model.",
+     "hours_ago": 2,
+     "likes": 9
+    },
+    {
+     "author": "p10",
+     "text": "Swim school as a business is mainland for us. Customers come from all over the city.",
+     "hours_ago": 2,
+     "likes": 4
+    },
+    {
+     "author": "p05",
+     "text": "Puppy's vet clinic is mainland, but the owners wanted a free zone for the lab. Mixed setups work.",
+     "hours_ago": 2,
+     "likes": 7
+    },
+    {
+     "author": "p09",
+     "text": "@tomasz_n three weeks is good to know. Mainland would help with local clients, I think.",
+     "hours_ago": 1,
+     "likes": 6
+    },
+    {
+     "author": "p04",
+     "text": "@hannah_b yes, the local client list is the deciding factor for most of us.",
+     "hours_ago": 1,
+     "likes": 8
+    },
+    {
+     "author": "p07",
+     "text": "Also check the visa quota. Some free zones give fewer visas for the team at first.",
+     "hours_ago": 2,
+     "likes": 10
+    },
+    {
+     "author": "p01",
+     "text": "Visa quotas are a real constraint for hiring. Ask the advisor for the exact number.",
+     "hours_ago": 1,
+     "likes": 7
+    },
+    {
+     "author": "p06",
+     "text": "Good question. Most people underestimate the admin time, so budget for it.",
+     "hours_ago": 1,
+     "likes": 5
+    },
+    {
+     "author": "p02",
+     "text": "Admin time is the hidden cost. A part-time accountant saves a lot of headaches.",
+     "hours_ago": 1,
+     "likes": 9
+    },
+    {
+     "author": "p03",
+     "text": "Hire an accountant before the first invoice, it's the cheapest insurance in business.",
+     "hours_ago": 1,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "Keep receipts and invoices organised from day one. Future you will thank you.",
+     "hours_ago": 0,
+     "likes": 5
+    },
+    {
+     "author": "p10",
+     "text": "Yes, the accountant and the tax calendar. Put the deadlines in the team calendar.",
+     "hours_ago": 1,
+     "likes": 4
+    },
+    {
+     "author": "p05",
+     "text": "Puppy has no business plan but he has a lot of loyal customers. Simple model works too.",
+     "hours_ago": 1,
+     "likes": 8
+    },
+    {
+     "author": "p07",
+     "text": "Ha, puppy has the best retention rate in the group, Mariam, honestly.",
+     "hours_ago": 0,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "Thanks all. Going to make a comparison sheet this week and share the anonymised version.",
+     "hours_ago": 0,
+     "likes": 11
+    },
+    {
+     "author": "p04",
+     "text": "Share the sheet in the group when it's ready. Happy to review it with you.",
+     "hours_ago": 0,
+     "likes": 7
+    },
+    {
+     "author": "p01",
+     "text": "Yes please, a shared sheet helps everyone who is still deciding.",
+     "hours_ago": 0,
+     "likes": 5
+    },
+    {
+     "author": "p06",
+     "text": "Good luck with the decision, Hannah. The right setup is the one that fits your clients.",
+     "hours_ago": 0,
+     "likes": 6
+    },
+    {
+     "author": "p02",
+     "text": "Great community answers. Start small, keep records clean, and grow from there.",
+     "hours_ago": 0,
+     "likes": 4
+    }
+   ]
+  },
+  {
+   "id": "startup-dxb-02",
+   "author": "p04",
+   "text": "Hiring lesson of the month: our best engineer came from a referral, not a job board. Build the habit of asking your network before you post a role. Free and faster.",
+   "image": "media/cafe-bulbs.jpg",
+   "hours_ago": 14,
+   "likes": 268,
+   "comments": [
+    {
+     "author": "p09",
+     "text": "Referrals are gold. Our last two hires were friends of friends, and both are amazing.",
+     "hours_ago": 12,
+     "likes": 12
+    },
+    {
+     "author": "p07",
+     "text": "Ask your team for referrals with a clear job description. Vague posts don't travel well.",
+     "hours_ago": 11,
+     "likes": 10
+    },
+    {
+     "author": "p01",
+     "text": "Good advice. A referral bonus on your first hires is a nice way to say thank you.",
+     "hours_ago": 11,
+     "likes": 8
+    },
+    {
+     "author": "p06",
+     "text": "As a freelancer, referrals are how I found every client. Networking is the real business.",
+     "hours_ago": 10,
+     "likes": 9
+    },
+    {
+     "author": "p02",
+     "text": "Engineers refer engineers. Tell your team the role, and they'll tell their friends.",
+     "hours_ago": 9,
+     "likes": 7
+    },
+    {
+     "author": "p03",
+     "text": "Our pastry team was found by a referral from a customer. Never underestimate a happy customer.",
+     "hours_ago": 9,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "Hiring a barista through a regular customer. The trust is instant, and it's the best hire.",
+     "hours_ago": 8,
+     "likes": 8
+    },
+    {
+     "author": "p10",
+     "text": "Swim coaches are often referred by parents. It works in every industry, apparently.",
+     "hours_ago": 8,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "Puppy's vet nurse was a referral from a friend. Trust and care from day one.",
+     "hours_ago": 7,
+     "likes": 9
+    },
+    {
+     "author": "p04",
+     "text": "@hannah_b exactly. Trust is the thing you can't post in a job ad.",
+     "hours_ago": 7,
+     "likes": 6
+    },
+    {
+     "author": "p07",
+     "text": "Also ask for referrals after a good project, not just when you're hiring. Timing matters.",
+     "hours_ago": 6,
+     "likes": 7
+    },
+    {
+     "author": "p09",
+     "text": "The referral programme on our team is simple: a coffee for every good introduction.",
+     "hours_ago": 5,
+     "likes": 8
+    },
+    {
+     "author": "p01",
+     "text": "A coffee for an introduction is a fair deal. Yusuf would approve, I'm sure.",
+     "hours_ago": 5,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "Coffee for introductions is my kind of incentive. Count me in for that deal.",
+     "hours_ago": 4,
+     "likes": 7
+    },
+    {
+     "author": "p06",
+     "text": "Don't forget to thank the referrer personally. Small gestures build a strong network.",
+     "hours_ago": 4,
+     "likes": 5
+    },
+    {
+     "author": "p02",
+     "text": "Thank-you notes work better than emails, honestly. People remember them.",
+     "hours_ago": 3,
+     "likes": 4
+    },
+    {
+     "author": "p03",
+     "text": "A handwritten note with a pastry box, the best thank-you I've ever given.",
+     "hours_ago": 3,
+     "likes": 9
+    },
+    {
+     "author": "p10",
+     "text": "Good thread for the founders. Referrals, notes, and a good team culture.",
+     "hours_ago": 2,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "Puppy approves of the referral system. Friends bring friends, that's how a pack works.",
+     "hours_ago": 2,
+     "likes": 10
+    },
+    {
+     "author": "p07",
+     "text": "Lovely comparison, Mariam. Yalla, the pack is growing.",
+     "hours_ago": 2,
+     "likes": 6
+    },
+    {
+     "author": "p04",
+     "text": "Thanks all. Next post: how to write a job ad that people actually want to read.",
+     "hours_ago": 1,
+     "likes": 8
+    },
+    {
+     "author": "p09",
+     "text": "Please do, Tomasz. Our job ads are very boring, I need help.",
+     "hours_ago": 1,
+     "likes": 7
+    },
+    {
+     "author": "p01",
+     "text": "Keep the job ads short and honest. Real photos of the office help too.",
+     "hours_ago": 1,
+     "likes": 5
+    },
+    {
+     "author": "p06",
+     "text": "Looking forward to the job ad guide. Let's make hiring less painful for everyone.",
+     "hours_ago": 1,
+     "likes": 4
+    },
+    {
+     "author": "p02",
+     "text": "Good thread, Tomasz. Build the network first, the hiring follows.",
+     "hours_ago": 0,
+     "likes": 6
+    }
+   ]
+  },
+  {
+   "id": "startup-dxb-03",
+   "author": "p07",
+   "text": "Pitch deck feedback request: our interior design marketplace for Dubai homes. 10 slides, no fluff. Who has seen a deck like this before and what slide would you cut first?",
+   "image": "media/home.jpg",
+   "hours_ago": 26,
+   "likes": 289,
+   "comments": [
+    {
+     "author": "p09",
+     "text": "Cut the team slide and merge it with the traction slide. Investors skim, so keep it short.",
+     "hours_ago": 24,
+     "likes": 14
+    },
+    {
+     "author": "p04",
+     "text": "Your market size slide needs a bottom-up number, not just the top-down one. Investors check.",
+     "hours_ago": 23,
+     "likes": 11
+    },
+    {
+     "author": "p01",
+     "text": "The competition slide is the most important one for a marketplace. Show the gap clearly.",
+     "hours_ago": 22,
+     "likes": 9
+    },
+    {
+     "author": "p06",
+     "text": "Show the customer journey with a real screenshot. A design marketplace should look good in the deck too.",
+     "hours_ago": 21,
+     "likes": 10
+    },
+    {
+     "author": "p02",
+     "text": "Cut the roadmap if it's longer than three bullets. Nobody remembers it after the meeting.",
+     "hours_ago": 20,
+     "likes": 7
+    },
+    {
+     "author": "p03",
+     "text": "The before and after photos from real projects would make the deck sing. Pastry-style visuals.",
+     "hours_ago": 20,
+     "likes": 8
+    },
+    {
+     "author": "p08",
+     "text": "Keep the ask on the last slide, clear amount and clear use of funds. Simple.",
+     "hours_ago": 19,
+     "likes": 6
+    },
+    {
+     "author": "p10",
+     "text": "Practise the deck out loud, twice. The story has to flow without reading the slides.",
+     "hours_ago": 18,
+     "likes": 7
+    },
+    {
+     "author": "p05",
+     "text": "Puppy would like a slide about pets in homes, he would be the first investor.",
+     "hours_ago": 18,
+     "likes": 12
+    },
+    {
+     "author": "p07",
+     "text": "@mariam_s ha, a pet-friendly interior slide might be a good idea for the design brief.",
+     "hours_ago": 17,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "Show unit economics early, even if they are rough. Founders who hide the numbers lose trust.",
+     "hours_ago": 17,
+     "likes": 9
+    },
+    {
+     "author": "p04",
+     "text": "Agree with Hannah. A rough number with an assumption list is better than no number.",
+     "hours_ago": 16,
+     "likes": 5
+    },
+    {
+     "author": "p01",
+     "text": "Keep the design slides to one visual each. Too many screenshots make the story hard to follow.",
+     "hours_ago": 15,
+     "likes": 6
+    },
+    {
+     "author": "p06",
+     "text": "Cut the ten-item feature list down to three. Investors want the why, not the what.",
+     "hours_ago": 15,
+     "likes": 8
+    },
+    {
+     "author": "p02",
+     "text": "The first slide should say what you do in one sentence. Nothing else is needed there.",
+     "hours_ago": 14,
+     "likes": 7
+    },
+    {
+     "author": "p03",
+     "text": "A one-sentence promise on slide one, a photo of a home on slide two. Clean and warm.",
+     "hours_ago": 13,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "Coffee shop in a home, the design marketplace could partner with local cafes. Just an idea.",
+     "hours_ago": 13,
+     "likes": 4
+    },
+    {
+     "author": "p10",
+     "text": "Keep the deck for a live meeting, not a long read. Send a short memo as the follow-up.",
+     "hours_ago": 12,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "Puppy's final verdict: the slide with the dog photo gets the most attention. Use it.",
+     "hours_ago": 12,
+     "likes": 13
+    },
+    {
+     "author": "p07",
+     "text": "Thank you all, this is incredibly useful. I'll rework the deck this week and share v2.",
+     "hours_ago": 11,
+     "likes": 10
+    },
+    {
+     "author": "p09",
+     "text": "Send v2 when you're ready, I'll review the market slide for you.",
+     "hours_ago": 10,
+     "likes": 6
+    },
+    {
+     "author": "p04",
+     "text": "Also rehearse the Q&A, the hardest questions come after the deck, not during.",
+     "hours_ago": 10,
+     "likes": 7
+    },
+    {
+     "author": "p01",
+     "text": "Good luck, Anjali. A strong deck and a strong story is the best combination.",
+     "hours_ago": 9,
+     "likes": 8
+    },
+    {
+     "author": "p06",
+     "text": "Looking forward to v2. The design marketplace is a great idea, very Dubai.",
+     "hours_ago": 8,
+     "likes": 5
+    },
+    {
+     "author": "p02",
+     "text": "Keep the pitch short, Anjali. Five minutes and ten questions is a good rhythm.",
+     "hours_ago": 7,
+     "likes": 4
+    }
+   ]
+  },
+  {
+   "id": "startup-dxb-04",
+   "author": "p01",
+   "text": "Working from a cafe every day is great until the wifi drops during a client call. Anyone have a reliable backup plan for Dubai? Mobile hotspot, a second SIM, something else?",
+   "image": "media/cafe-counter.jpg",
+   "hours_ago": 38,
+   "likes": 176,
+   "comments": [
+    {
+     "author": "p04",
+     "text": "Second SIM with a data plan is my backup. Cheap, reliable, and I keep it charged in the bag.",
+     "hours_ago": 36,
+     "likes": 11
+    },
+    {
+     "author": "p09",
+     "text": "Hotspot from the phone plus a power bank. I do a quick test before every important call.",
+     "hours_ago": 35,
+     "likes": 9
+    },
+    {
+     "author": "p02",
+     "text": "Coworking spaces have proper internet. The day pass is cheaper than a lost client, honestly.",
+     "hours_ago": 34,
+     "likes": 8
+    },
+    {
+     "author": "p08",
+     "text": "Coffee shops with a good router are rare. Ask the staff which one is the most stable.",
+     "hours_ago": 33,
+     "likes": 6
+    },
+    {
+     "author": "p10",
+     "text": "Cloud calls on a phone hotspot are fine if you mute the video. Be considerate.",
+     "hours_ago": 32,
+     "likes": 5
+    },
+    {
+     "author": "p06",
+     "text": "I keep a list of the stable cafes near my clients. The best coffee is the one with the wifi.",
+     "hours_ago": 31,
+     "likes": 7
+    },
+    {
+     "author": "p03",
+     "text": "Bakery wifi is patchy, but the croissants are excellent. I plan around the croissants.",
+     "hours_ago": 30,
+     "likes": 6
+    },
+    {
+     "author": "p05",
+     "text": "Puppy's vet clinic has the best wifi in Al Barsha, so I can join the calls from the back room.",
+     "hours_ago": 29,
+     "likes": 8
+    },
+    {
+     "author": "p07",
+     "text": "Wired ethernet adapter for the laptop, a small investment that saves your calls.",
+     "hours_ago": 28,
+     "likes": 5
+    },
+    {
+     "author": "p01",
+     "text": "@hannah_b the second SIM is the cleanest backup. I'll look into it this week.",
+     "hours_ago": 27,
+     "likes": 6
+    },
+    {
+     "author": "p04",
+     "text": "Check the coverage map of your provider before you pick the SIM. Some areas are weak.",
+     "hours_ago": 26,
+     "likes": 7
+    },
+    {
+     "author": "p09",
+     "text": "We keep a small coworking membership for the team, it's cheaper than the stress.",
+     "hours_ago": 25,
+     "likes": 6
+    },
+    {
+     "author": "p02",
+     "text": "Use the coworking space for big calls and the cafe for the rest. Balance.",
+     "hours_ago": 24,
+     "likes": 5
+    },
+    {
+     "author": "p08",
+     "text": "Good balance. Cafes are for thinking, coworking for talking, a simple rule.",
+     "hours_ago": 23,
+     "likes": 7
+    },
+    {
+     "author": "p06",
+     "text": "Mobile hotspot with a hard limit on data, so you don't get a shock bill at month end.",
+     "hours_ago": 22,
+     "likes": 4
+    },
+    {
+     "author": "p10",
+     "text": "Set a data alert on the plan, it's a simple thing that saves money.",
+     "hours_ago": 21,
+     "likes": 5
+    },
+    {
+     "author": "p03",
+     "text": "A small table near the power socket is my favourite work spot. Ask for it politely.",
+     "hours_ago": 20,
+     "likes": 6
+    },
+    {
+     "author": "p05",
+     "text": "Puppy can't work from a cafe, but he sits under the table and supports the calls.",
+     "hours_ago": 19,
+     "likes": 10
+    },
+    {
+     "author": "p07",
+     "text": "Good luck with the backup plan, Sara. Calls are important, so test them first.",
+     "hours_ago": 18,
+     "likes": 5
+    },
+    {
+     "author": "p01",
+     "text": "Thanks, everyone. Going with a second SIM and the coworking day pass for big calls.",
+     "hours_ago": 17,
+     "likes": 8
+    },
+    {
+     "author": "p04",
+     "text": "Good combo. Keep the hotspot as the last resort, not the main plan.",
+     "hours_ago": 16,
+     "likes": 4
+    },
+    {
+     "author": "p09",
+     "text": "Let's share a list of the cafes with good wifi in the group. Useful for everyone.",
+     "hours_ago": 15,
+     "likes": 9
+    },
+    {
+     "author": "p02",
+     "text": "Yes, a wifi list is a great idea. Add the power socket count too, please.",
+     "hours_ago": 14,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "Power sockets and wifi, the two things a coffee shop can offer a founder. Noted.",
+     "hours_ago": 13,
+     "likes": 5
+    },
+    {
+     "author": "p06",
+     "text": "Good thread. Keep calm on the calls, and the wifi will follow, lol.",
+     "hours_ago": 12,
+     "likes": 3
+    }
+   ]
+  },
+  {
+   "id": "startup-dxb-05",
+   "author": "p06",
+   "text": "Freelancers in Dubai: how do you handle late payments from clients? I have one invoice that's 60 days overdue and I'm not sure whether to send a polite reminder or a firm one.",
+   "image": null,
+   "hours_ago": 52,
+   "likes": 241,
+   "comments": [
+    {
+     "author": "p04",
+     "text": "A polite reminder first, then a firm one with a deadline. Keep the tone professional.",
+     "hours_ago": 50,
+     "likes": 12
+    },
+    {
+     "author": "p09",
+     "text": "Write it down in writing, every time. A phone call is fine but the email is the record.",
+     "hours_ago": 49,
+     "likes": 10
+    },
+    {
+     "author": "p01",
+     "text": "Add a late payment clause in the next contract, it changes the conversation completely.",
+     "hours_ago": 48,
+     "likes": 9
+    },
+    {
+     "author": "p02",
+     "text": "Ask for a deposit upfront on new projects. It filters out the clients who pay late.",
+     "hours_ago": 47,
+     "likes": 8
+    },
+    {
+     "author": "p07",
+     "text": "Sixty days is a long time. Ask for a payment date in writing, and set a clear next step.",
+     "hours_ago": 46,
+     "likes": 7
+    },
+    {
+     "author": "p03",
+     "text": "Bakery invoices are paid on delivery, so I can't help much here, but good luck Kwame.",
+     "hours_ago": 45,
+     "likes": 5
+    },
+    {
+     "author": "p08",
+     "text": "Our coffee wholesale clients pay weekly now, after a few awkward months. Set the rules early.",
+     "hours_ago": 44,
+     "likes": 6
+    },
+    {
+     "author": "p10",
+     "text": "Be firm and kind. Most late payments are simply admin forgotten, not refused.",
+     "hours_ago": 43,
+     "likes": 8
+    },
+    {
+     "author": "p05",
+     "text": "Puppy has no invoices, but he does have a very polite way of asking for treats. Learn from him.",
+     "hours_ago": 42,
+     "likes": 11
+    },
+    {
+     "author": "p06",
+     "text": "Ha, puppy's negotiation skills are impressive. Thanks for the advice, everyone.",
+     "hours_ago": 41,
+     "likes": 6
+    },
+    {
+     "author": "p04",
+     "text": "Check the contract for the payment terms, and quote them back in your reminder.",
+     "hours_ago": 40,
+     "likes": 7
+    },
+    {
+     "author": "p09",
+     "text": "Consider a small fee for late payments if your contract allows it. Many clients respond.",
+     "hours_ago": 39,
+     "likes": 5
+    },
+    {
+     "author": "p01",
+     "text": "Keep copies of the delivery proof, it helps if the dispute gets complicated.",
+     "hours_ago": 38,
+     "likes": 6
+    },
+    {
+     "author": "p02",
+     "text": "Document everything, dates and messages. A clean paper trail is your best friend.",
+     "hours_ago": 37,
+     "likes": 8
+    },
+    {
+     "author": "p07",
+     "text": "If it goes on for months, a formal letter from a lawyer may be needed. Hope it doesn't come to that.",
+     "hours_ago": 36,
+     "likes": 4
+    },
+    {
+     "author": "p03",
+     "text": "Good luck Kwame, and don't feel guilty about asking for money. You earned it.",
+     "hours_ago": 35,
+     "likes": 9
+    },
+    {
+     "author": "p08",
+     "text": "Coffee to clear the head before the email. Then send it calmly, and wait a day.",
+     "hours_ago": 34,
+     "likes": 5
+    },
+    {
+     "author": "p10",
+     "text": "Sending the reminder at 9am on a weekday works better than a late-night message.",
+     "hours_ago": 33,
+     "likes": 6
+    },
+    {
+     "author": "p05",
+     "text": "Puppy approves of the calm and polite approach. Keep it kind, Kwame.",
+     "hours_ago": 32,
+     "likes": 7
+    },
+    {
+     "author": "p06",
+     "text": "Thanks all, this is exactly what I needed. Reminder email going out tomorrow morning.",
+     "hours_ago": 31,
+     "likes": 8
+    },
+    {
+     "author": "p09",
+     "text": "Let us know how it goes. The group can help with a template if you want one.",
+     "hours_ago": 30,
+     "likes": 5
+    },
+    {
+     "author": "p04",
+     "text": "Good luck, Kwame. Keep the records and the tone professional, and you'll be fine.",
+     "hours_ago": 29,
+     "likes": 6
+    },
+    {
+     "author": "p01",
+     "text": "Yalla, one overdue invoice at a time. Good luck, you've got this 💪",
+     "hours_ago": 28,
+     "likes": 7
+    },
+    {
+     "author": "p09",
+     "text": "Ask for a written payment schedule as part of the reminder, it sets a clear next step.",
+     "hours_ago": 44,
+     "likes": 6
+    },
+    {
+     "author": "p04",
+     "text": "Keep a friendly tone in the first reminder, the client might just have forgotten.",
+     "hours_ago": 36,
+     "likes": 8
+    }
+   ]
+  },
+  {
+   "id": "startup-dxb-06",
+   "author": "p02",
+   "text": "Build-in-public update: we went from 40 to 310 weekly active users in six weeks without a paid ad. Most came from a community post and two local newsletters. Lessons below.",
+   "image": "media/ac.jpg",
+   "hours_ago": 66,
+   "likes": 352,
+   "comments": [
+    {
+     "author": "p09",
+     "text": "Congrats, Ravi! Community first is such a clear lesson. Organic growth is the hardest and best.",
+     "hours_ago": 64,
+     "likes": 14
+    },
+    {
+     "author": "p04",
+     "text": "Local newsletters are underrated in Dubai. Great move, and the audience is very engaged.",
+     "hours_ago": 63,
+     "likes": 10
+    },
+    {
+     "author": "p07",
+     "text": "Six weeks to 310 is a fantastic run. What was the one post that drove the most signups?",
+     "hours_ago": 62,
+     "likes": 9
+    },
+    {
+     "author": "p06",
+     "text": "Build-in-public works when you show the messy parts too. Thanks for being honest.",
+     "hours_ago": 61,
+     "likes": 8
+    },
+    {
+     "author": "p01",
+     "text": "Congratulations! The newsletter angle is worth copying for other founders in the group.",
+     "hours_ago": 60,
+     "likes": 7
+    },
+    {
+     "author": "p03",
+     "text": "Our pastry shop got its first wave of orders from a post in a local community. Same idea!",
+     "hours_ago": 59,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "Community posts with a real story get the best response. Coffee and honesty go together.",
+     "hours_ago": 58,
+     "likes": 8
+    },
+    {
+     "author": "p10",
+     "text": "Great momentum, Ravi. Keep the community close and reply to every message personally.",
+     "hours_ago": 57,
+     "likes": 7
+    },
+    {
+     "author": "p05",
+     "text": "Puppy's community post got 40 likes. He is very proud and very ambitious.",
+     "hours_ago": 56,
+     "likes": 12
+    },
+    {
+     "author": "p02",
+     "text": "@anjali_rao the best post was an honest one about the first bug. People love the honesty.",
+     "hours_ago": 55,
+     "likes": 9
+    },
+    {
+     "author": "p07",
+     "text": "Honest posts win every time. A bug story is more memorable than a feature list.",
+     "hours_ago": 54,
+     "likes": 8
+    },
+    {
+     "author": "p09",
+     "text": "Please share the newsletter names in the group, so we can all try the same channels.",
+     "hours_ago": 53,
+     "likes": 6
+    },
+    {
+     "author": "p04",
+     "text": "Share the lessons list too, the one you mentioned. Founders learn from each other.",
+     "hours_ago": 52,
+     "likes": 5
+    },
+    {
+     "author": "p06",
+     "text": "Newsletters, communities and honest updates. A simple growth plan that really works.",
+     "hours_ago": 51,
+     "likes": 7
+    },
+    {
+     "author": "p01",
+     "text": "Keep an eye on churn while you grow. The users who stay are the real success story.",
+     "hours_ago": 50,
+     "likes": 6
+    },
+    {
+     "author": "p03",
+     "text": "Retention is cake and coffee for the users, keep them coming back. Simple, right?",
+     "hours_ago": 49,
+     "likes": 5
+    },
+    {
+     "author": "p08",
+     "text": "Coffee and churn analysis, two words I never thought would be in the same sentence.",
+     "hours_ago": 48,
+     "likes": 4
+    },
+    {
+     "author": "p10",
+     "text": "Good analytics are the foundation. Track the signups by channel from day one.",
+     "hours_ago": 47,
+     "likes": 6
+    },
+    {
+     "author": "p05",
+     "text": "Puppy approves of the community growth. The best marketing is a happy pack.",
+     "hours_ago": 46,
+     "likes": 9
+    },
+    {
+     "author": "p02",
+     "text": "Thanks all. The lessons list is coming this week, I promise, with the numbers.",
+     "hours_ago": 45,
+     "likes": 8
+    },
+    {
+     "author": "p07",
+     "text": "Yalla, Ravi, can't wait for the numbers. Community growth is the best kind.",
+     "hours_ago": 44,
+     "likes": 5
+    },
+    {
+     "author": "p09",
+     "text": "Looking forward to it. Congrats again, the team should celebrate with cake.",
+     "hours_ago": 43,
+     "likes": 7
+    },
+    {
+     "author": "p04",
+     "text": "Cake and a team dinner on the calendar. Great progress, Ravi.",
+     "hours_ago": 42,
+     "likes": 4
+    },
+    {
+     "author": "p06",
+     "text": "Build in public, grow in public, and enjoy the ride. Congrats, Ravi 🚀",
+     "hours_ago": 41,
+     "likes": 6
+    },
+    {
+     "author": "p03",
+     "text": "Congratulations from the bakery team. Keep building, we're cheering from the kitchen.",
+     "hours_ago": 40,
+     "likes": 5
+    }
+   ]
+  },
+  {
+   "id": "startup-dxb-07",
+   "author": "p08",
+   "text": "Roasting business numbers, honestly: green bean costs are up 18 percent this year, so our cup prices went up slightly. How are other food and drink founders handling price changes?",
+   "image": "media/coffee.jpg",
+   "hours_ago": 84,
+   "likes": 198,
+   "comments": [
+    {
+     "author": "p03",
+     "text": "Pastry costs are up too. We used a smaller change every quarter instead of one big jump.",
+     "hours_ago": 82,
+     "likes": 9
+    },
+    {
+     "author": "p04",
+     "text": "Tell customers the reason, honestly. Most people accept a small change if it's explained.",
+     "hours_ago": 81,
+     "likes": 10
+    },
+    {
+     "author": "p09",
+     "text": "Bundles and subscriptions help smooth the price changes. Loyal customers love a deal.",
+     "hours_ago": 80,
+     "likes": 7
+    },
+    {
+     "author": "p01",
+     "text": "Keep the premium line and the everyday line separate. The everyday one stays steady.",
+     "hours_ago": 79,
+     "likes": 6
+    },
+    {
+     "author": "p06",
+     "text": "Freelancer here: I raise my rates once a year and tell clients ahead of time. It works.",
+     "hours_ago": 78,
+     "likes": 8
+    },
+    {
+     "author": "p02",
+     "text": "Sponsorship or small batch releases can help the margin too, without a big price change.",
+     "hours_ago": 77,
+     "likes": 5
+    },
+    {
+     "author": "p10",
+     "text": "Swim school prices went up last year, and we explained the pool costs. Most families stayed.",
+     "hours_ago": 76,
+     "likes": 6
+    },
+    {
+     "author": "p05",
+     "text": "Puppy's vet clinic had to adjust fees too. Honest explanation, same loyal customers.",
+     "hours_ago": 75,
+     "likes": 7
+    },
+    {
+     "author": "p07",
+     "text": "Transparency with customers is the key. Share the reason and the timeline together.",
+     "hours_ago": 74,
+     "likes": 9
+    },
+    {
+     "author": "p08",
+     "text": "@tomasz_n that's our plan too: explain the bean market and the timeline in one note.",
+     "hours_ago": 73,
+     "likes": 5
+    },
+    {
+     "author": "p04",
+     "text": "Ask the customers for feedback, they often suggest a better way to change prices.",
+     "hours_ago": 72,
+     "likes": 4
+    },
+    {
+     "author": "p09",
+     "text": "A loyalty card with a small discount, that's a nice gesture in a hard year.",
+     "hours_ago": 71,
+     "likes": 6
+    },
+    {
+     "author": "p01",
+     "text": "Test a small price change in one location first, then scale it if it holds.",
+     "hours_ago": 70,
+     "likes": 5
+    },
+    {
+     "author": "p03",
+     "text": "Pastry and coffee pairing deals keep the average ticket high. Great for margins.",
+     "hours_ago": 69,
+     "likes": 7
+    },
+    {
+     "author": "p06",
+     "text": "Be careful about discounts that train customers to wait. They can hurt more than help.",
+     "hours_ago": 68,
+     "likes": 6
+    },
+    {
+     "author": "p02",
+     "text": "Cost control on the supply side, like batch buying, is also a lever. Talk to suppliers.",
+     "hours_ago": 67,
+     "likes": 4
+    },
+    {
+     "author": "p10",
+     "text": "Good luck, Yusuf. Hold the quality and the story, and the customers will stay.",
+     "hours_ago": 66,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "Puppy would be happy with any price, as long as the treats stay the same.",
+     "hours_ago": 65,
+     "likes": 8
+    },
+    {
+     "author": "p07",
+     "text": "Ha, the puppy understands value better than most founders. Simple and true.",
+     "hours_ago": 64,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "Thanks for the honest post, Yusuf. Founders in food need more of these conversations.",
+     "hours_ago": 63,
+     "likes": 7
+    },
+    {
+     "author": "p08",
+     "text": "Thanks all. Next post: how we set up the wholesale price list, with the margins.",
+     "hours_ago": 62,
+     "likes": 5
+    },
+    {
+     "author": "p04",
+     "text": "Looking forward to it. Keep the numbers simple, the group loves a clear table.",
+     "hours_ago": 61,
+     "likes": 4
+    },
+    {
+     "author": "p03",
+     "text": "Good luck, Yusuf. A cake to go with the price change, to soften the news.",
+     "hours_ago": 60,
+     "likes": 6
+    },
+    {
+     "author": "p01",
+     "text": "Yalla, founders, let's keep sharing the hard numbers. The group is stronger for it.",
+     "hours_ago": 59,
+     "likes": 7
+    },
+    {
+     "author": "p06",
+     "text": "Coffee shop economics are fascinating. Thanks for the transparency, Yusuf.",
+     "hours_ago": 58,
+     "likes": 5
+    }
+   ]
+  },
+  {
+   "id": "startup-dxb-08",
+   "author": "p10",
+   "text": "Coworking etiquette for the startup crowd: keep calls short in the open area, label your shared fridge, and please clean the coffee machine after yourself. Simple rules, big difference.",
+   "image": "media/cafe-bulbs.jpg",
+   "hours_ago": 108,
+   "likes": 236,
+   "comments": [
+    {
+     "author": "p04",
+     "text": "The coffee machine rule is the most important one. Nobody likes the leftover grounds.",
+     "hours_ago": 106,
+     "likes": 12
+    },
+    {
+     "author": "p09",
+     "text": "Shared fridge labels saved our team lunches. Add the date too, it helps.",
+     "hours_ago": 105,
+     "likes": 9
+    },
+    {
+     "author": "p07",
+     "text": "Call booths are the best invention in a coworking space. Please use them, friends.",
+     "hours_ago": 104,
+     "likes": 8
+    },
+    {
+     "author": "p01",
+     "text": "Keep your laptop charger tidy under the table, nobody wants to trip over the cables.",
+     "hours_ago": 103,
+     "likes": 6
+    },
+    {
+     "author": "p06",
+     "text": "Freelancers in coworking spaces, we are very grateful for the simple rules. Thanks, Omar.",
+     "hours_ago": 102,
+     "likes": 7
+    },
+    {
+     "author": "p03",
+     "text": "A clean kitchen is a happy kitchen, the pastry team agrees completely.",
+     "hours_ago": 101,
+     "likes": 5
+    },
+    {
+     "author": "p08",
+     "text": "Coffee machine etiquette is my favourite topic, and yes, clean it after yourself, please.",
+     "hours_ago": 100,
+     "likes": 8
+    },
+    {
+     "author": "p05",
+     "text": "Puppy is not allowed in the coworking space, but the rules sound like a puppy-friendly office.",
+     "hours_ago": 99,
+     "likes": 6
+    },
+    {
+     "author": "p02",
+     "text": "Quiet hours on the open floor would also help the focus-heavy people. Good suggestion.",
+     "hours_ago": 98,
+     "likes": 5
+    },
+    {
+     "author": "p10",
+     "text": "Thanks all. Let's add a short rules card to the wall so the newcomers see it.",
+     "hours_ago": 97,
+     "likes": 7
+    },
+    {
+     "author": "p04",
+     "text": "Printed rules on the wall, a simple and visible solution. Yes.",
+     "hours_ago": 96,
+     "likes": 4
+    },
+    {
+     "author": "p09",
+     "text": "The fridge labels will be the first thing I do on Monday. Thanks, Omar.",
+     "hours_ago": 95,
+     "likes": 5
+    },
+    {
+     "author": "p07",
+     "text": "Good manners in a shared space are the foundation of a great community.",
+     "hours_ago": 94,
+     "likes": 6
+    },
+    {
+     "author": "p01",
+     "text": "A coworking community that respects the rules is a joy to work in.",
+     "hours_ago": 93,
+     "likes": 5
+    },
+    {
+     "author": "p06",
+     "text": "Quiet calls, tidy desks, a kind neighbour. The perfect coworking life.",
+     "hours_ago": 92,
+     "likes": 7
+    },
+    {
+     "author": "p03",
+     "text": "Pastries for the people who clean the kitchen. A small gesture to say thank you.",
+     "hours_ago": 91,
+     "likes": 8
+    },
+    {
+     "author": "p08",
+     "text": "Coffee for the cleaning staff is a kind idea too. Let's do it on Friday.",
+     "hours_ago": 90,
+     "likes": 6
+    },
+    {
+     "author": "p05",
+     "text": "A kind community, a clean desk, a happy team. Puppy approves of the whole idea.",
+     "hours_ago": 89,
+     "likes": 9
+    },
+    {
+     "author": "p02",
+     "text": "Coworking etiquette is a small thing that makes a big difference to the mood.",
+     "hours_ago": 88,
+     "likes": 4
+    },
+    {
+     "author": "p10",
+     "text": "Yalla, let's make the space a good place to work. Thanks for the kind replies.",
+     "hours_ago": 87,
+     "likes": 5
+    },
+    {
+     "author": "p04",
+     "text": "Good thread, Omar. Small habits make the team better.",
+     "hours_ago": 86,
+     "likes": 4
+    },
+    {
+     "author": "p09",
+     "text": "Share a photo of the rules card when it's up, I'll copy the design for our office.",
+     "hours_ago": 85,
+     "likes": 6
+    },
+    {
+     "author": "p07",
+     "text": "Lovely community spirit in this thread. See you at the coworking space, friends.",
+     "hours_ago": 84,
+     "likes": 5
+    },
+    {
+     "author": "p01",
+     "text": "Keep the rules simple, keep the coffee good, and the team will stay happy.",
+     "hours_ago": 83,
+     "likes": 4
+    },
+    {
+     "author": "p06",
+     "text": "Coworking life with good people is the best kind. Yalla, see you on Monday 🚀",
+     "hours_ago": 82,
+     "likes": 5
+    }
+   ]
+  },
+  {
+   "id": "startup-dxb-09",
+   "author": "p04",
+   "text": "Visa renewal season for startup teams: set the reminder 60 days before expiry, keep scans of every document, and ask your advisor for the checklist. The last-minute rush is no fun.",
+   "image": "media/cafe-counter.jpg",
+   "hours_ago": 128,
+   "likes": 271,
+   "comments": [
+    {
+     "author": "p09",
+     "text": "Sixty days is smart. We missed one renewal by a week once, it was stressful.",
+     "hours_ago": 126,
+     "likes": 11
+    },
+    {
+     "author": "p07",
+     "text": "Scans in a shared folder with clear file names, the whole team can find things fast.",
+     "hours_ago": 125,
+     "likes": 8
+    },
+    {
+     "author": "p01",
+     "text": "Advisor checklist is a must. Ask for the list in writing so nothing gets forgotten.",
+     "hours_ago": 124,
+     "likes": 7
+    },
+    {
+     "author": "p02",
+     "text": "Renewal reminders in the team calendar, with an owner for each one. No orphan tasks.",
+     "hours_ago": 123,
+     "likes": 9
+    },
+    {
+     "author": "p06",
+     "text": "Freelancers have renewals too, the same rule applies. Thanks for the clear tips, Tomasz.",
+     "hours_ago": 122,
+     "likes": 6
+    },
+    {
+     "author": "p03",
+     "text": "Our pastry team's visas are on a simple calendar. Visual reminders are the best.",
+     "hours_ago": 121,
+     "likes": 5
+    },
+    {
+     "author": "p08",
+     "text": "Keep the paper copies in a folder at the office too, just in case the scans fail.",
+     "hours_ago": 120,
+     "likes": 4
+    },
+    {
+     "author": "p10",
+     "text": "Renewal season is stressful. A shared checklist helps the whole team feel calm.",
+     "hours_ago": 119,
+     "likes": 6
+    },
+    {
+     "author": "p05",
+     "text": "Puppy's microchip and vaccine records are on the same kind of reminder. Very organised.",
+     "hours_ago": 118,
+     "likes": 10
+    },
+    {
+     "author": "p04",
+     "text": "@mariam_s yes, same discipline for pets and people. The reminder habit works for both.",
+     "hours_ago": 117,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "Please share the checklist in the group, Tomasz. Our office will use it right away.",
+     "hours_ago": 116,
+     "likes": 8
+    },
+    {
+     "author": "p07",
+     "text": "Yes, a shared checklist would be great. Make it one page with the dates first.",
+     "hours_ago": 115,
+     "likes": 5
+    },
+    {
+     "author": "p01",
+     "text": "Add a note about the photos, the passport photos must be recent. Learned that the hard way.",
+     "hours_ago": 114,
+     "likes": 7
+    },
+    {
+     "author": "p02",
+     "text": "Recent photos, clear scans, and the correct names on each document. Simple, but easy to miss.",
+     "hours_ago": 113,
+     "likes": 6
+    },
+    {
+     "author": "p06",
+     "text": "Name spelling mistakes cause the biggest delays. Double check every letter, friends.",
+     "hours_ago": 112,
+     "likes": 5
+    },
+    {
+     "author": "p03",
+     "text": "A spell-check on the names, it's like the final proofing of a cake. Important.",
+     "hours_ago": 111,
+     "likes": 4
+    },
+    {
+     "author": "p08",
+     "text": "Coffee while you wait for the renewal confirmation, a tradition for the impatient.",
+     "hours_ago": 110,
+     "likes": 3
+    },
+    {
+     "author": "p10",
+     "text": "Good luck with your renewals, team. Keep calm and start early.",
+     "hours_ago": 109,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "Puppy wishes all the startups a smooth renewal season. He is cheering loudly.",
+     "hours_ago": 108,
+     "likes": 8
+    },
+    {
+     "author": "p04",
+     "text": "Thanks for the great thread. Checklist coming to the group this week.",
+     "hours_ago": 107,
+     "likes": 4
+    },
+    {
+     "author": "p09",
+     "text": "Looking forward to it. Keep the reminders going, Tomasz, the team needs them.",
+     "hours_ago": 106,
+     "likes": 6
+    },
+    {
+     "author": "p07",
+     "text": "Yalla, renewal season done early. A proud moment for every founder 🙌",
+     "hours_ago": 105,
+     "likes": 7
+    },
+    {
+     "author": "p01",
+     "text": "Good luck to everyone with the renewals. Start early and keep it boring.",
+     "hours_ago": 104,
+     "likes": 5
+    },
+    {
+     "author": "p02",
+     "text": "Boring is the goal for admin, and exciting for the product. Thanks, Tomasz.",
+     "hours_ago": 103,
+     "likes": 6
+    },
+    {
+     "author": "p06",
+     "text": "Thanks all for the advice. Let's keep the admin tidy so we can build 🚀",
+     "hours_ago": 102,
+     "likes": 4
+    }
+   ]
+  },
+  {
+   "id": "startup-dxb-10",
+   "author": "p07",
+   "text": "Monthly startup coffee meetup at the Business Bay cafe, first Thursday at 7:30am. Founders, freelancers and anyone building something. Bring a problem, leave with an intro.",
+   "image": "media/cafe-bulbs.jpg",
+   "hours_ago": 150,
+   "likes": 318,
+   "comments": [
+    {
+     "author": "p09",
+     "text": "Count me in for the first Thursday. Bringing a problem and a pastry, a good trade.",
+     "hours_ago": 146,
+     "likes": 12
+    },
+    {
+     "author": "p04",
+     "text": "Early start but worth it. The cafe has a quiet corner for meetings, great choice.",
+     "hours_ago": 144,
+     "likes": 9
+    },
+    {
+     "author": "p01",
+     "text": "A problem-and-intro format is brilliant. Very practical for a busy founder.",
+     "hours_ago": 142,
+     "likes": 8
+    },
+    {
+     "author": "p03",
+     "text": "Bakery in the same street, come early for the croissants before the meetup.",
+     "hours_ago": 140,
+     "likes": 7
+    },
+    {
+     "author": "p08",
+     "text": "Cafe owner here: welcome, the coffee is on me for the first ten founders.",
+     "hours_ago": 138,
+     "likes": 10
+    },
+    {
+     "author": "p05",
+     "text": "Puppy cannot attend, but I'll send him to the cafe patio with a bowl of water.",
+     "hours_ago": 136,
+     "likes": 8
+    },
+    {
+     "author": "p02",
+     "text": "7:30 is perfect after a morning run. I'll bring my shoes and my pitch.",
+     "hours_ago": 134,
+     "likes": 6
+    },
+    {
+     "author": "p10",
+     "text": "Swimmers meet at 6:30, so I'll be there with a towel and a problem to solve.",
+     "hours_ago": 132,
+     "likes": 5
+    },
+    {
+     "author": "p06",
+     "text": "Freelancers are invited too, and the intro list is always useful. Thanks, Anjali.",
+     "hours_ago": 130,
+     "likes": 7
+    },
+    {
+     "author": "p07",
+     "text": "Yes, all builders welcome. Bring a problem, a question, or a good idea.",
+     "hours_ago": 128,
+     "likes": 9
+    },
+    {
+     "author": "p09",
+     "text": "Can we do a quick round of intros at the start? Two sentences each, no slides.",
+     "hours_ago": 126,
+     "likes": 6
+    },
+    {
+     "author": "p04",
+     "text": "Two-sentence intros, yes. Keep the energy high and the time short.",
+     "hours_ago": 124,
+     "likes": 5
+    },
+    {
+     "author": "p01",
+     "text": "Bring business cards if you have them, but a quick LinkedIn follow works too.",
+     "hours_ago": 122,
+     "likes": 4
+    },
+    {
+     "author": "p03",
+     "text": "Business cards are a little old-fashioned, but a pastry card with my name is my signature.",
+     "hours_ago": 120,
+     "likes": 7
+    },
+    {
+     "author": "p08",
+     "text": "Coffee and intros, the best way to start a Thursday. I'm in for the first session.",
+     "hours_ago": 118,
+     "likes": 6
+    },
+    {
+     "author": "p05",
+     "text": "Puppy would bring a dog-friendly startup idea to the meetup. Let's see who else brings a pet.",
+     "hours_ago": 116,
+     "likes": 9
+    },
+    {
+     "author": "p02",
+     "text": "The first meetup is a great chance to find a running partner too, lol. Good plan.",
+     "hours_ago": 114,
+     "likes": 5
+    },
+    {
+     "author": "p10",
+     "text": "Keep the meetup to one hour, then everyone gets back to building. Respect the time.",
+     "hours_ago": 112,
+     "likes": 6
+    },
+    {
+     "author": "p06",
+     "text": "One hour, a few intros, and a lot of good coffee. Perfect formula.",
+     "hours_ago": 110,
+     "likes": 5
+    },
+    {
+     "author": "p07",
+     "text": "We'll finish on time, I promise. Thanks everyone for the support.",
+     "hours_ago": 108,
+     "likes": 8
+    },
+    {
+     "author": "p09",
+     "text": "Looking forward to meeting the group in person. The first Thursday is on my calendar.",
+     "hours_ago": 106,
+     "likes": 7
+    },
+    {
+     "author": "p04",
+     "text": "See you there, founders. Bring the problems and the coffee cups.",
+     "hours_ago": 104,
+     "likes": 5
+    },
+    {
+     "author": "p03",
+     "text": "Pastries are coming. Yalla, first Thursday of the month, the builders' breakfast 🥐",
+     "hours_ago": 102,
+     "likes": 8
+    },
+    {
+     "author": "p01",
+     "text": "Excited for the first Thursday. Thanks for organising, Anjali.",
+     "hours_ago": 100,
+     "likes": 4
+    },
+    {
+     "author": "p08",
+     "text": "Coffee's ready. See you all at the Business Bay cafe, bring your curiosity ☕",
+     "hours_ago": 98,
+     "likes": 6
+    }
+   ]
+  }
+ ]
+}

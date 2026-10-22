@@ -11,13 +11,28 @@ import sqlite3
 from pathlib import Path
 
 
+def postgres_connect(url: str, **kwargs):
+    """Use the backend schema for Supabase; explicit URL options win (isolated tests)."""
+    import psycopg
+    from psycopg.conninfo import conninfo_to_dict
+    from .config import settings
+
+    schema = settings.database_schema
+    if schema:
+        if not re.fullmatch(r"[a-z][a-z0-9_]{0,62}", schema):
+            raise ValueError("DATABASE_SCHEMA must be a simple PostgreSQL identifier")
+        if not kwargs.get("options") and not conninfo_to_dict(url).get("options"):
+            kwargs["options"] = f"-csearch_path={schema},extensions,public"
+    return psycopg.connect(url, connect_timeout=5, **kwargs)
+
+
 class PostgresDB:
     dialect = "postgres"
 
     def __init__(self, url: str):
         import psycopg
         from psycopg.types.string import TextLoader
-        self.conn = psycopg.connect(url, autocommit=False)
+        self.conn = postgres_connect(url, autocommit=False)
         for name in ("json", "jsonb"):  # hand JSON back as text, like SQLite
             self.conn.adapters.register_loader(name, TextLoader)
         self.conn.execute("CREATE EXTENSION IF NOT EXISTS vector")

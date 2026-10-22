@@ -28,6 +28,10 @@ Detailed setup: `apps/ios/README.md`. Do not install a Windows Swift toolchain t
 
 ## Backend continuity
 
-Supabase is the selected target, retaining FastAPI/LangGraph and the deterministic action engine. The old Docker Postgres remains unrecovered; preserve its volume. The web review server uses separate SQLite data, not recovered records. Do not copy credentials or private data into the native repository.
+Supabase is the selected target, retaining FastAPI/LangGraph and the deterministic action engine. The old Docker Postgres remains unrecovered; preserve its volume. At the native handoff the web review server used separate SQLite data. The backend has since moved those review records to local Supabase on redesign; root handoff.md and PLAN.md track current backend state. No original Postgres recovery is claimed. Do not copy credentials or private data into the native repository.
 
 The remaining request order and implementation status live in `docs/request-backlog.md`; `PLAN.md` and `ARCHITECTURE.md` remain authoritative for execution boundaries.
+
+## 22 Oct scope reminder
+
+Native remains parked while `redesign` adds manual tasks/Today and undergoes a separate design/interaction/use-case review against 12 Duet frames. No native task parity or new build/device acceptance is claimed. Read PLAN.md/handoff.md and the new Claude review prompt for current web/backend direction; do not switch/merge or implement Swift as part of that review.

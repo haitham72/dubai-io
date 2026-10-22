@@ -6,6 +6,7 @@ Run: cd apps/api && .venv/Scripts/python -m uvicorn app.main:app --host 0.0.0.0 
 Then open http://<pc-ip>:8000/lab/home-v2-cyan.html
 """
 import uuid
+from contextlib import asynccontextmanager
 
 import httpx
 from fastapi import FastAPI, HTTPException, Query, Request, Response
@@ -20,15 +21,38 @@ from .config import settings
 from .merchant import merchant_pin, router as merchant_router
 from .proactive import router as proactive_router
 from .profile import router as profile_router
+from .recommendations import router as recommendations_router
+from .discovery import router as discovery_router
+from .tasks import router as tasks_router
+from .reading import router as reading_router
+from .projects import router as projects_router
+from .communities import router as communities_router
+from .projects import resolve_context as resolve_project_context
+from .tasks import resolve_context as resolve_task_context
 from .luna import graph as luna
-from .luna.schema import FactKey
+from .luna.schema import FactKey, FocusContext, TaskFocusContext, ProjectFocusContext
 
-app = FastAPI(title="Dubai-io API", version="0.1.0")
+@asynccontextmanager
+async def lifespan(_app):
+    merchant_pin()  # sandbox merchant PIN: MERCHANT_PIN, or generated into data/merchant.pin
+    if settings.widget_port:  # mini-apps on their own origin (rule 10)
+        from .widgets import serve_in_background
+        serve_in_background("0.0.0.0", settings.widget_port)
+    yield
+
+
+app = FastAPI(title="Dubai-io API", version="0.1.0", lifespan=lifespan)
 app.include_router(auth_router)
 app.include_router(action_router)
 app.include_router(merchant_router)
 app.include_router(proactive_router)
 app.include_router(profile_router)
+app.include_router(recommendations_router)
+app.include_router(discovery_router)
+app.include_router(tasks_router)
+app.include_router(reading_router)
+app.include_router(projects_router)
+app.include_router(communities_router)
 
 
 @app.middleware("http")
@@ -40,18 +64,13 @@ async def revalidate_app_files(request: Request, call_next):
     return response
 
 
-@app.on_event("startup")
-def _startup():
-    merchant_pin()  # sandbox merchant PIN: MERCHANT_PIN, or generated into data/merchant.pin
-    if settings.widget_port:  # mini-apps on their own origin (rule 10)
-        from .widgets import serve_in_background
-        serve_in_background("0.0.0.0", settings.widget_port)
-
-
 class TurnIn(BaseModel):
     text: str = Field(min_length=1, max_length=600)
     thread_id: str = Field(default_factory=lambda: uuid.uuid4().hex, max_length=64)
     user_id: str = Field(default="demo-user", max_length=64)
+    focus: FocusContext | None = None
+    task_focus: TaskFocusContext | None = None
+    project_focus: ProjectFocusContext | None = None
 
 
 class PlacesIn(BaseModel):
@@ -92,7 +111,12 @@ def luna_turn(body: TurnIn, request: Request):
         raise HTTPException(503, "OPENAI_API_KEY is not set")
     try:
         owner = engine().store.owner(request.cookies.get(COOKIE))
-        return luna.turn(body.thread_id, owner, body.text)
+        context = {"focus": body.focus} if body.focus else {}
+        if body.task_focus:
+            context["task_context"] = resolve_task_context(engine().store, owner, body.task_focus)
+        if body.project_focus:
+            context["project_context"] = resolve_project_context(engine().store, owner, body.thread_id, body.project_focus)
+        return luna.turn(body.thread_id, owner, body.text, **context)
     except HTTPException:
         raise
     except Exception as err:  # the web falls back to its lab router
@@ -121,7 +145,7 @@ def edit_session_fact(key: FactKey, body: FactEdit, request: Request):
 @app.delete("/api/session/memory/{key}")
 def forget_session_fact(key: FactKey, request: Request):
     owner = engine().store.owner(request.cookies.get(COOKIE))
-    return {"forgotten": luna.facts.forget(owner, key)}
+    return {"forgotten": luna.forget_fact(owner, key)}
 
 
 @app.get("/api/memory/{user_id}", deprecated=True)
@@ -137,7 +161,7 @@ def forget(user_id: str, key: FactKey, request: Request):
     owner = engine().store.owner(request.cookies.get(COOKIE))
     if user_id != owner:
         raise HTTPException(404, "Memory not found")
-    return {"forgotten": luna.facts.forget(owner, key)}
+    return {"forgotten": luna.forget_fact(owner, key)}
 
 
 @app.post("/api/places/search")
@@ -159,6 +183,17 @@ async def places_photo(name: str = Query(max_length=1200), w: int = 480):
     except httpx.HTTPError:
         raise HTTPException(502, "Photo unavailable")
     return Response(data, media_type=kind, headers={"Cache-Control": "private, max-age=3600"})
+
+
+@app.get("/api/maps/config")
+def maps_config(request: Request):
+    """Browser key for the interactive in-app Google map. The server Places key is
+    lent only to a local preview (localhost) so it never ships to real users."""
+    if settings.google_maps_browser_key:
+        return {"key": settings.google_maps_browser_key, "source": "browser_key"}
+    if request.url.hostname in {"localhost", "127.0.0.1", "::1"} and settings.google_key:
+        return {"key": settings.google_key, "source": "local_preview_fallback"}
+    raise HTTPException(503, "Interactive map not configured")
 
 
 @app.get("/api/staticmap")

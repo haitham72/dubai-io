@@ -22,17 +22,25 @@ class Settings:
     # Luna understands every turn. Founder choice (13 Oct): gpt-6-luna at high
     # reasoning effort; gpt-6.1-sol at medium is the faster alternative.
     luna_model = os.getenv("LUNA_MODEL", "gpt-6-luna")
-    luna_effort = os.getenv("LUNA_EFFORT", "high")
+    luna_effort = os.getenv("LUNA_EFFORT", "low")  # routing: low was 2-4 s vs ~9.5 s at high with the same intents (23 Oct check)
     fast_model = os.getenv("FAST_MODEL", "gpt-6.1-sol")
     fast_effort = os.getenv("FAST_EFFORT", "medium")
     luna_timeout_s = float(os.getenv("LUNA_TIMEOUT_S", "20"))
     openai_api_key = os.getenv("OPENAI_API_KEY", "")
+    nararouter_api_key = os.getenv("NARAROUTER_API_KEY", "")
+    social_model = os.getenv("SOCIAL_MODEL", "agnes-2.5-flash")
+    social_base_url = os.getenv("NARAROUTER_BASE_URL", "https://router.bynara.id/v1")
+    social_timeout_s = float(os.getenv("SOCIAL_TIMEOUT_S", "35"))
     google_key = os.getenv("GOOGLE_PLACES_KEY", "")
+    # Maps JavaScript keys are visible in the browser by design: use a separate key
+    # restricted to your site (HTTP referrer) and to the Maps JavaScript API.
+    google_maps_browser_key = os.getenv("GOOGLE_MAPS_BROWSER_KEY", "")
     google_oauth_client_id = os.getenv("GOOGLE_OAUTH_CLIENT_ID", "")
     google_oauth_client_secret = os.getenv("GOOGLE_OAUTH_CLIENT_SECRET", "")
     google_oauth_redirect_uri = os.getenv("GOOGLE_OAUTH_REDIRECT_URI", "")
     oauth_token_key = os.getenv("OAUTH_TOKEN_KEY", "")
     database_url = os.getenv("DATABASE_URL", "").strip()  # whitespace explicitly selects SQLite on Windows
+    database_schema = os.getenv("DATABASE_SCHEMA", "").strip()  # Supabase backend-only schema; empty preserves existing deployments
     widget_port = int(os.getenv("WIDGET_PORT", "8001"))  # separate mini-app origin; 0 disables
     merchant_pin = os.getenv("MERCHANT_PIN", "")  # sandbox merchant sign-in; generated into data/ when unset
     web_dir = ROOT / "apps" / "web"

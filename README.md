@@ -1,6 +1,10 @@
 # Dubai-io
 
-A chat-first AI companion for Dubai visitors and residents, built for the Create AI Agents Championship (Best Personal AI Agent).
+Current web preview: Home scrolls from adaptive task cards through complete inline task history into attributed News. Ask has chat history/profile and a left stacked navigation toggle; Services starts new tasks and its Try asking rows are flat. SQLite/browser checkpoint: 175 passed/11 skipped; Projects workspaces now group chats/tasks/shared context. Genuine Decisions and scheduled checks remain pending. Exact status and run details: [handoff.md](handoff.md).
+
+A personal assistant for everyday life and work in Dubai, built for the Create AI Agents Championship (Best Personal AI Agent).
+
+**22 Oct completion work:** preserve the approved visual/photo Home, Wi-Fi/gradient onboarding and navigation. Manual Today now connects saved reports/orders -> tasks -> current source -> task chat, with clearable context and reviewed revision-bound chat edits. Suggestions/tracking do not approve/send/file or change provider state. Open `http://localhost:8010/index.html#home` and refresh for web changes; widgets use 8011 with separate SQLite data. SQLite: 154 passed/11 skipped; both phone sizes/motion settings browser-verified, plus two synthetic live model checks. Genuine service decisions and the remaining recovery/check-back/Reading/connector work are next under the finish-the-app authorization; this is not a redesign or a finished-app claim. [PLAN.md](PLAN.md) and [handoff.md](handoff.md) record exact scope/gates. Physical iPhone/screen-reader/PostgreSQL adoption remains unverified; both review reports stay unchanged and native remains parked.
 
 ```
 apps/web/   frontend (HTML/CSS/ES modules), served by the API
@@ -34,4 +38,4 @@ node ../web/tests/profile.test.mjs; node ../web/tests/recovery.test.mjs; node ..
 
 ## Docs
 
-[CLAUDE.md](CLAUDE.md) (agent rules) → [PLAN.md](PLAN.md) (scope, demo arc, remaining) → [ARCHITECTURE.md](ARCHITECTURE.md) → [docs/handoff.md](docs/handoff.md) (run + state) · [Review guide](docs/user-app-review-guide.md) · [API catalog](docs/references/api-catalog.md) · [Cases](docs/services/cases.md)
+[CLAUDE.md](CLAUDE.md) (agent rules) → [PLAN.md](PLAN.md) (scope, demo arc, remaining) → [ARCHITECTURE.md](ARCHITECTURE.md) → [docs/handoff.md](handoff.md) (run + state) · [Review guide](docs/user-app-review-guide.md) · [API catalog](docs/references/api-catalog.md) · [Cases](docs/services/cases.md)

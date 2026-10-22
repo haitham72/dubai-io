@@ -26,7 +26,56 @@ def setup(store):
     store.db.execute("CREATE TABLE IF NOT EXISTS consent (owner TEXT PRIMARY KEY, at TEXT)")
     store.db.execute("""CREATE TABLE IF NOT EXISTS outbox (id TEXT PRIMARY KEY, owner TEXT, dedupe_key TEXT, kind TEXT, text TEXT,
         trigger_source TEXT, available_at TEXT, delivered_at TEXT, UNIQUE(owner, dedupe_key))""")
-    store.db.commit()
+    # How follow-ups happen: ask (default), auto (routine reminders/check-backs without
+    # asking each time) or learn (ask, then offer auto once the user keeps choosing it).
+    # No mode can send, share or pay; those always wait for an approval tap.
+    store.db.execute("""CREATE TABLE IF NOT EXISTS assist (owner TEXT PRIMARY KEY, mode TEXT NOT NULL,
+        manual_reminders INTEGER NOT NULL, offer_dismissed INTEGER NOT NULL, updated_at TEXT NOT NULL)""")
+    # Reviewed routines (Gate F): explicit activation, a daily time and an expiry.
+    store.db.execute("""CREATE TABLE IF NOT EXISTS routines (owner TEXT NOT NULL, kind TEXT NOT NULL, at_time TEXT NOT NULL,
+        active INTEGER NOT NULL, expires_at TEXT NOT NULL, updated_at TEXT NOT NULL, PRIMARY KEY(owner, kind))""")
+    store.commit()
+
+
+PRE_DELIVERY = []  # deterministic producers (e.g. the morning brief) run before release
+
+
+MODES = ("ask", "auto", "learn")
+LEARN_AFTER = 3
+
+
+def assist(store, owner):
+    row = store.db.execute("SELECT mode, manual_reminders, offer_dismissed FROM assist WHERE owner=?", (owner,)).fetchone()
+    mode, count, dismissed = row or ("ask", 0, 0)
+    return {"mode": mode, "manual_reminders": count, "offer_auto": mode == "learn" and count >= LEARN_AFTER and not dismissed}
+
+
+def save_assist(store, owner, **changes):
+    current = assist(store, owner)
+    row = store.db.execute("SELECT offer_dismissed FROM assist WHERE owner=?", (owner,)).fetchone()
+    values = {"mode": current["mode"], "manual_reminders": current["manual_reminders"], "offer_dismissed": row[0] if row else 0, **changes}
+    store.db.execute("DELETE FROM assist WHERE owner=?", (owner,))
+    store.db.execute("INSERT INTO assist VALUES (?,?,?,?,?)", (owner, values["mode"], values["manual_reminders"],
+                                                                values["offer_dismissed"], clock().isoformat()))
+
+
+def schedule_ready_reminder(store, owner, action, source="user_reminder"):
+    """Fires 15 minutes before the shop's ready time; the caller has established consent."""
+    store.db.execute("INSERT OR IGNORE INTO consent VALUES (?,?)", (owner, clock().isoformat()))
+    due = after_quiet(max(ready_datetime(action) - timedelta(minutes=15), clock()))
+    provider = action["order"]["provider"]
+    lead = "Reminder you asked for" if source == "user_reminder" else "Automatic reminder (Auto follow-ups)"
+    created = enqueue(store, owner, f"ready:{action['id']}:{action['ready_at']}", "order_ready",
+                      f"{lead}: your order at {provider} is due ready at {action['ready_at']}. The shop confirms ready, not me.",
+                      source, due)
+    return due, created
+
+
+def auto_follow_up_order(store, owner, action):
+    """Merchant set a ready time: in Auto mode, schedule the reminder without asking."""
+    setup(store)
+    if assist(store, owner)["mode"] == "auto" and action["status"] in ("ACCEPTED", "READY") and when_key(action.get("ready_at")):
+        schedule_ready_reminder(store, owner, action, source="auto_follow_up")
 
 
 def in_quiet_hours(at):
@@ -48,19 +97,23 @@ def enqueue(store, owner, dedupe_key, kind, text, source, available_at):
         return False
     cur = store.db.execute("INSERT OR IGNORE INTO outbox VALUES (?,?,?,?,?,?,?,NULL)",
                            (uuid4().hex, owner, dedupe_key, kind, text, source, available_at.isoformat()))
-    store.db.commit()
+    store.commit()
     return cur.rowcount == 1
 
 
 def deliver_due(store, owner):
     """Dispatcher step: release due messages outside quiet hours, then return the delivered thread."""
     now = clock()
+    for produce in PRE_DELIVERY:
+        produce(store, owner, now)
     if not in_quiet_hours(now):
         store.db.execute("UPDATE outbox SET delivered_at=? WHERE owner=? AND delivered_at IS NULL AND available_at<=?",
                          (now.isoformat(), owner, now.isoformat()))
-        store.db.commit()
-    rows = store.db.execute("SELECT id, kind, text, trigger_source, delivered_at FROM outbox WHERE owner=? AND delivered_at IS NOT NULL ORDER BY delivered_at", (owner,)).fetchall()
-    return [{"id": r[0], "kind": r[1], "text": r[2], "trigger_source": r[3], "delivered_at": r[4]} for r in rows]
+        store.commit()
+    rows = store.db.execute("SELECT id, kind, text, trigger_source, delivered_at, dedupe_key FROM outbox WHERE owner=? AND delivered_at IS NOT NULL ORDER BY delivered_at", (owner,)).fetchall()
+    # A check-back names its task so the message can open it; the task is re-read with ownership checks.
+    return [{"id": r[0], "kind": r[1], "text": r[2], "trigger_source": r[3], "delivered_at": r[4],
+             **({"task_id": r[5].split(":")[1]} if r[1] == "task_checkback" else {})} for r in rows]
 
 
 def ready_datetime(action):
@@ -91,13 +144,83 @@ def remind_when_ready(body: ReminderIn, request: Request):
         action = engine().get(owner, body.action_id)
         if action["status"] not in ("ACCEPTED", "READY") or not when_key(action.get("ready_at")):
             raise HTTPException(409, "A reminder needs an accepted order with a ready time")
-        store.db.execute("INSERT OR IGNORE INTO consent VALUES (?,?)", (owner, clock().isoformat()))
-        due = after_quiet(max(ready_datetime(action) - timedelta(minutes=15), clock()))
-        provider = action["order"]["provider"]
-        created = enqueue(store, owner, f"ready:{action['id']}:{action['ready_at']}", "order_ready",
-                          f"Reminder you asked for: your order at {provider} is due ready at {action['ready_at']}. The shop confirms ready, not me.",
-                          "user_reminder", due)
-        return {"scheduled_for": due.isoformat(), "created": created}
+        due, created = schedule_ready_reminder(store, owner, action)
+        if created:  # Learn counts what the user keeps choosing by hand
+            save_assist(store, owner, manual_reminders=assist(store, owner)["manual_reminders"] + 1)
+        store.commit()
+        return {"scheduled_for": due.isoformat(), "created": created, "offer_auto": assist(store, owner)["offer_auto"]}
+
+
+class RoutineIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    active: bool
+    at_time: str = Field(default="08:00", pattern=r"^([01]\d|2[0-3]):[0-5]\d$")
+
+
+ROUTINE_DAYS = 30
+
+
+def routine(store, owner):
+    row = store.db.execute("SELECT at_time, active, expires_at FROM routines WHERE owner=? AND kind='morning_brief'", (owner,)).fetchone()
+    return {"kind": "morning_brief", "at_time": row[0], "active": bool(row[1]), "expires_at": row[2]} if row else {"kind": "morning_brief", "active": False}
+
+
+@router.get("/api/routines/brief")
+def get_brief_routine(request: Request):
+    store = engine().store
+    owner = store.owner(request.cookies.get(COOKIE))
+    with store.lock:
+        setup(store)
+        return routine(store, owner)
+
+
+@router.put("/api/routines/brief")
+def set_brief_routine(body: RoutineIn, request: Request):
+    """Turning it on is the consent; it runs for 30 days unless renewed, outside quiet hours only."""
+    if body.active and in_quiet_hours(datetime.combine(clock().date(), time.fromisoformat(body.at_time), DUBAI)):
+        raise HTTPException(422, "Choose a time between 07:00 and 22:59 Dubai")
+    store = engine().store
+    owner = store.owner(request.cookies.get(COOKIE))
+    with store.lock:
+        setup(store)
+        store.db.execute("DELETE FROM routines WHERE owner=? AND kind='morning_brief'", (owner,))
+        store.db.execute("INSERT INTO routines VALUES (?,?,?,?,?,?)", (owner, "morning_brief", body.at_time, int(body.active),
+                         (clock() + timedelta(days=ROUTINE_DAYS)).isoformat(), clock().isoformat()))
+        if body.active:
+            store.db.execute("INSERT OR IGNORE INTO consent VALUES (?,?)", (owner, clock().isoformat()))
+        else:  # stopping withdraws a brief not yet delivered
+            store.db.execute("DELETE FROM outbox WHERE owner=? AND kind='morning_brief' AND delivered_at IS NULL", (owner,))
+        store.db.commit()
+        return routine(store, owner)
+
+
+class AssistIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    mode: str = Field(pattern="^(ask|auto|learn)$")
+    dismiss_offer: bool = False
+
+
+@router.get("/api/assist")
+def get_assist(request: Request):
+    store = engine().store
+    owner = store.owner(request.cookies.get(COOKIE))
+    with store.lock:
+        setup(store)
+        return assist(store, owner)
+
+
+@router.put("/api/assist")
+def set_assist(body: AssistIn, request: Request):
+    """Choosing Auto is the standing consent for routine reminders and check-backs."""
+    store = engine().store
+    owner = store.owner(request.cookies.get(COOKIE))
+    with store.lock:
+        setup(store)
+        save_assist(store, owner, mode=body.mode, **({"offer_dismissed": 1} if body.dismiss_offer else {}))
+        if body.mode == "auto":
+            store.db.execute("INSERT OR IGNORE INTO consent VALUES (?,?)", (owner, clock().isoformat()))
+        store.db.commit()
+        return assist(store, owner)
 
 
 @router.get("/api/messages")

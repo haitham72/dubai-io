@@ -1,5 +1,5 @@
 // Understanding only; this module never executes service actions.
-const INTENTS = new Set(['lost_item','airport_guide','service_offers','places_near','order_status','info_question','market_quote','product_search','greeting','smalltalk','unclear']);
+const INTENTS = new Set(['lost_item','airport_guide','service_offers','places_near','order_status','task_help','info_question','market_quote','product_search','greeting','smalltalk','unclear']);
 const SERVICES = new Set(['laundry','cleaning','ac','grooming','carwash','pharmacy','maid']);
 const CATEGORIES = new Set(['pets','food','coffee','barber','home-help','laundry','clothing','fix-it']);
 export function mapUnderstanding(value) {
@@ -8,6 +8,7 @@ export function mapUnderstanding(value) {
     reply:typeof value.reply==='string'?value.reply.slice(0,300):'', clarify:typeof value.clarify==='string'?value.clarify.slice(0,300):'',
     remembered:Array.isArray(value.remembered)?value.remembered.filter(f=>f?.provenance==='user_supplied'&&typeof f.key==='string'&&typeof f.value==='string'):[] };
   if(r.conf<.6 && !['greeting','smalltalk'].includes(r.intent))r.intent='unclear';
+  if(r.intent==='task_help')r.task_edits=Array.isArray(value.task_edits)&&value.task_edits.length<=4?value.task_edits.filter(e=>e&&['outcome','next_step','details','due_at'].includes(e.field)&&typeof e.value==='string').map(e=>({field:e.field,value:e.value.slice(0,1600)})):[];
   if(r.intent==='lost_item'){r.item=typeof value.item==='string'?value.item.slice(0,80):'item';r.where=['taxi','metro','shop'].includes(value.where_lost)?value.where_lost:null;}
   if(r.intent==='airport_guide')r.terminal=['1','2','3'].includes(value.terminal)?value.terminal:null;
   if(r.intent==='service_offers'){if(!SERVICES.has(value.service))throw new Error('Unknown service');r.service=value.service;}
@@ -16,14 +17,15 @@ export function mapUnderstanding(value) {
   if(r.intent==='product_search')r.products=(Array.isArray(value.products)?value.products:[]).filter(p=>p&&typeof p.link==='string'&&/^https:\/\/www\.amazon\.ae\//.test(p.link)&&typeof p.title==='string').slice(0,10)
     .map(p=>({title:p.title.slice(0,140),link:p.link,price:typeof p.price==='string'?p.price.slice(0,20):null,rating:Number.isFinite(p.rating)?p.rating:null,reviews:Number.isInteger(p.reviews)?p.reviews:null,
       thumbnail:typeof p.thumbnail==='string'&&/^https:\/\/m\.media-amazon\.com\//.test(p.thumbnail)?p.thumbnail:null,as_of:String(p.as_of||'')}));
-  if(r.intent==='places_near'){if(!CATEGORIES.has(value.category))throw new Error('Unknown category');r.cat=value.category;r.sub=typeof value.subcategory==='string'?value.subcategory.slice(0,80):null;}
+  if(r.intent==='places_near'){if(!CATEGORIES.has(value.category))throw new Error('Unknown category');r.cat=value.category;r.sub=typeof value.subcategory==='string'?value.subcategory.slice(0,80):null;r.query=typeof value.query==='string'&&/^[\w '&-]{1,60}$/.test(value.query.trim())?value.query.trim():null;}
   return r;
 }
-export function createLunaClient({fetcher=globalThis.fetch,timeoutMs=15000,enabled=true,identity=()=>({})}={}) {
+export function createLunaClient({fetcher=globalThis.fetch,timeoutMs=15000,enabled=true,identity=()=>({}),context=()=>({})}={}) {
   let generation=0, active=null, queue=Promise.resolve();
   return {
     reset(){generation++;active?.abort();active=null;queue=Promise.resolve();},
     understand(text,fallback){
+      const requestContext=context();
       const owner=generation;
       const work=async()=>{
         if(owner!==generation)return null;
@@ -35,9 +37,9 @@ export function createLunaClient({fetcher=globalThis.fetch,timeoutMs=15000,enabl
         try{
           // Promise.race also bounds fetch implementations that ignore abort.
           const timeout=new Promise((_,reject)=>{timer=setTimeout(()=>{controller.abort();reject(new Error('timeout'));},timeoutMs);});
-          const call=(async()=>{const response=await fetcher('/api/luna/turn',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({text,...identity()}),signal:controller.signal});if(!response.ok)throw new Error('API unavailable');return mapUnderstanding(await response.json());})();
+          const call=(async()=>{const response=await fetcher('/api/luna/turn',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({text,...identity(),...requestContext}),signal:controller.signal});if(!response.ok){if(response.status===409){const body=await response.json().catch(()=>({}));const error=new Error('context_changed');error.detail=typeof body.detail==='string'?body.detail.slice(0,240):'The selected task or project changed. Reopen its latest details before asking.';throw error;}throw new Error('API unavailable');}return mapUnderstanding(await response.json());})();
           const result=await Promise.race([call,timeout]);return owner===generation?result:null;
-        }catch(error){return owner===generation?{...fallback(text),via:'lab router',fallback_reason:error.message==='timeout'?'Luna timed out':'Luna unavailable'}:null;}
+        }catch(error){if(owner!==generation)return null;if(error.message==='context_changed')return {intent:'unclear',conf:0,clarify:error.detail,via:'lab router',fallback_reason:'Selected context changed',remembered:[]};return {...fallback(text),via:'lab router',fallback_reason:error.message==='timeout'?'Luna timed out':'Luna unavailable'};}
         finally{clearTimeout(timer);if(active===controller)active=null;}
       };
       const result=queue.then(work);queue=result.catch(()=>{});return result;

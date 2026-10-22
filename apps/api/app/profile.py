@@ -107,7 +107,8 @@ def set_override(hypothesis: str, body: OverrideIn, request: Request):
     if body.status == "confirmed":
         profile_store().add(owner, hypothesis, label, "You confirmed: " + label, facet=facet, status="confirmed")
     else:
-        profile_store().forget(owner, hypothesis)
+        from .luna.graph import forget_fact
+        forget_fact(owner, hypothesis)
     return {"hypothesis": hypothesis, "status": body.status}
 
 
@@ -117,7 +118,8 @@ def clear_override(hypothesis: str, request: Request):
     with store.lock:
         store.db.execute("DELETE FROM profile_overrides WHERE owner=? AND hypothesis=?", (owner, hypothesis))
         store.db.commit()
-    profile_store().forget(owner, hypothesis)
+    from .luna.graph import forget_fact
+    forget_fact(owner, hypothesis)
     return {"hypothesis": hypothesis, "status": None}
 
 

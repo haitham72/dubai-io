@@ -23,7 +23,7 @@ def postgres_schema(monkeypatch):
     with psycopg.connect(URL, autocommit=True) as admin:
         admin.execute(f"CREATE SCHEMA {schema}")
     sep = "&" if "?" in URL else "?"
-    scoped = f"{URL}{sep}options=-csearch_path%3D{schema},public"
+    scoped = f"{URL}{sep}options=-csearch_path%3D{schema},extensions,public"
     monkeypatch.setattr(actions, "connect", lambda target: db.PostgresDB(scoped))
     yield
     with psycopg.connect(URL, autocommit=True) as admin:

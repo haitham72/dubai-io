@@ -26,6 +26,7 @@ function back() {
   const previous = history.pop(); if (!previous) { closeSheet(); return; }
   const body = openSheet('', () => { history = []; });
   body.append(previous.fragment); body.scrollTop = previous.scrollTop;
+  body.querySelector('.page-host-content')?.dispatchEvent(new CustomEvent('dubaiio:page-restored'));
   if (previous.focusId) body.querySelector('[id="' + CSS.escape(previous.focusId) + '"]')?.focus({ preventScroll: true });
 }
 export function openPage(id, context = {}, { replace = false } = {}) {

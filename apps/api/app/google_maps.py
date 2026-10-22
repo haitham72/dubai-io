@@ -10,7 +10,7 @@ import httpx
 from .config import settings
 
 HOME = {"latitude": 25.0805, "longitude": 55.1403}  # Dubai Marina, the area the user told us
-PLACE_FIELDS = ",".join(f"places.{f}" for f in ("id", "displayName", "rating", "userRatingCount", "location", "formattedAddress", "shortFormattedAddress", "primaryType", "googleMapsUri", "photos", "currentOpeningHours.openNow", "nationalPhoneNumber", "websiteUri"))
+PLACE_FIELDS = ",".join(f"places.{f}" for f in ("id", "displayName", "rating", "userRatingCount", "location", "formattedAddress", "shortFormattedAddress", "primaryType", "types", "googleMapsUri", "photos", "currentOpeningHours.openNow", "nationalPhoneNumber", "websiteUri"))
 PHOTO_NAME = re.compile(r"^places/[A-Za-z0-9_-]{1,300}/photos/[A-Za-z0-9_-]{1,900}$")
 
 
@@ -30,6 +30,7 @@ async def search_places(query: str, lat: float | None = None, lng: float | None 
         "lng": (p.get("location") or {}).get("longitude"),
         "address": p.get("formattedAddress"),
         "type": p.get("primaryType"),
+        "types": p.get("types") or [],
         "maps_url": p.get("googleMapsUri"),
         "short_address": p.get("shortFormattedAddress"),
         "open_now": (p.get("currentOpeningHours") or {}).get("openNow"),

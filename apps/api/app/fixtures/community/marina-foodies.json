@@ -1,0 +1,1631 @@
+{
+ "id": "marina-foodies",
+ "name": "Marina Foodies",
+ "handle": "marinafoodies",
+ "topic": "Food",
+ "about": "Where to eat along the Marina and JBR, shared honestly. Shawarma debates, late-night grills and the odd brunch splurge.",
+ "image": "media/food.jpg",
+ "members": 18400,
+ "stories": [
+  {
+   "author": "p03",
+   "text": "Brunch on the Marina boardwalk was worth the sunburn. The pancakes are huge.",
+   "image": "media/spread.jpg",
+   "hours_ago": 4
+  },
+  {
+   "author": "p06",
+   "text": "Late night grill near JBR, smoke everywhere, zero regrets. Yalla!",
+   "image": "media/grill.jpg",
+   "hours_ago": 10
+  },
+  {
+   "author": "p08",
+   "text": "Shawarma war update: the corner spot still wins on garlic sauce.",
+   "image": "media/shawarma.jpg",
+   "hours_ago": 18
+  }
+ ],
+ "posts": [
+  {
+   "id": "marina-foodies-01",
+   "author": "p01",
+   "text": "Okay Marina foodies, quick poll: is the new grill place on the walk worth the queue or just Instagram hype? I waited 40 minutes at 9pm, but the lamb was great 🔥",
+   "image": "media/grill.jpg",
+   "hours_ago": 3,
+   "likes": 134,
+   "comments": [
+    {
+     "author": "p05",
+     "text": "Worth it for the lamb, skip the rice. Rice was a bit dry for me.",
+     "hours_ago": 1,
+     "likes": 12
+    },
+    {
+     "author": "p02",
+     "text": "Forty minutes is brutal. Do they take bookings? @sarak which dish did you order?",
+     "hours_ago": 1,
+     "likes": 4
+    },
+    {
+     "author": "p03",
+     "text": "Lamb yes, but the kofta is underrated. Ask for extra tahini 🙌",
+     "hours_ago": 0,
+     "likes": 22
+    },
+    {
+     "author": "p07",
+     "text": "Went on a Tuesday and was seated in 10 minutes. Weekday trick.",
+     "hours_ago": 2,
+     "likes": 9
+    },
+    {
+     "author": "p09",
+     "text": "Is the kitchen certified halal? Asking for a team lunch 🙏",
+     "hours_ago": 1,
+     "likes": 3
+    },
+    {
+     "author": "p04",
+     "text": "The queue is mostly tourists photographing the menu board, honestly.",
+     "hours_ago": 0,
+     "likes": 15
+    },
+    {
+     "author": "p10",
+     "text": "@sarak I'll test it this weekend and report back with a verdict.",
+     "hours_ago": 2,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "Coffee is average, but the lamb is top tier. Fair trade.",
+     "hours_ago": 1,
+     "likes": 8
+    },
+    {
+     "author": "p06",
+     "text": "Pro tip: order the mezze to share so you don't wait for mains.",
+     "hours_ago": 0,
+     "likes": 27
+    },
+    {
+     "author": "p01",
+     "text": "@ravi_menon thanks! I'll update the thread after my second visit.",
+     "hours_ago": 1,
+     "likes": 5
+    },
+    {
+     "author": "p02",
+     "text": "Parking near the walk is a nightmare after 8, take a taxi or the metro.",
+     "hours_ago": 1,
+     "likes": 2
+    },
+    {
+     "author": "p05",
+     "text": "Ok, booking for Friday then. Table for four, fingers crossed.",
+     "hours_ago": 2,
+     "likes": 4
+    },
+    {
+     "author": "p09",
+     "text": "The service was sweet, the waiter remembered our order from ten minutes earlier haha.",
+     "hours_ago": 0,
+     "likes": 11
+    },
+    {
+     "author": "p03",
+     "text": "Dessert looked insane but nobody ordered it. Be the first.",
+     "hours_ago": 1,
+     "likes": 7
+    },
+    {
+     "author": "p07",
+     "text": "Good for groups, bad for quiet chats. The music is loud.",
+     "hours_ago": 1,
+     "likes": 5
+    },
+    {
+     "author": "p04",
+     "text": "Price check: about 180 AED for two with drinks. Not cheap, not bad.",
+     "hours_ago": 0,
+     "likes": 9
+    },
+    {
+     "author": "p10",
+     "text": "Nothing beats the grill on a cool evening. Night walk after helps digest 😅",
+     "hours_ago": 2,
+     "likes": 13
+    },
+    {
+     "author": "p08",
+     "text": "I'd argue the chicken is better than the lamb. Change my mind.",
+     "hours_ago": 1,
+     "likes": 6
+    },
+    {
+     "author": "p06",
+     "text": "Heard the sauce bottles are for sale at the counter now lol.",
+     "hours_ago": 0,
+     "likes": 18
+    },
+    {
+     "author": "p02",
+     "text": "Five stars for the bread alone, warm and fresh every single time.",
+     "hours_ago": 1,
+     "likes": 10
+    },
+    {
+     "author": "p05",
+     "text": "The lamb photo alone sold me. Adding this to my list.",
+     "hours_ago": 1,
+     "likes": 8
+    },
+    {
+     "author": "p03",
+     "text": "The grill smoke makes everyone smell like BBQ for the rest of the week.",
+     "hours_ago": 0,
+     "likes": 16
+    },
+    {
+     "author": "p09",
+     "text": "Anyone tried the vegetarian platter? Trying to convince my sister.",
+     "hours_ago": 2,
+     "likes": 2
+    },
+    {
+     "author": "p07",
+     "text": "Hot tip: message them before you leave the metro, they hold a table.",
+     "hours_ago": 1,
+     "likes": 14
+    },
+    {
+     "author": "p01",
+     "text": "Thanks all. Verdict coming soon, I'm going back on Friday 🍖",
+     "hours_ago": 0,
+     "likes": 31
+    }
+   ]
+  },
+  {
+   "id": "marina-foodies-02",
+   "author": "p04",
+   "text": "Found a shawarma stand in Dubai Marina that does the wrap on a plate with pickles and fries. Is this normal or am I the only one who had no idea?",
+   "image": "media/shawarma.jpg",
+   "hours_ago": 6,
+   "likes": 412,
+   "comments": [
+    {
+     "author": "p08",
+     "text": "Normal in Cairo-style spots, it's the fries that make it. Welcome to the club.",
+     "hours_ago": 5,
+     "likes": 40
+    },
+    {
+     "author": "p06",
+     "text": "That is the correct way. Wrap is for the road, plate is for sitting down.",
+     "hours_ago": 4,
+     "likes": 22
+    },
+    {
+     "author": "p03",
+     "text": "Pickles and fries inside the wrap is a personal crime, but I respect the plate.",
+     "hours_ago": 5,
+     "likes": 18
+    },
+    {
+     "author": "p01",
+     "text": "Yes! Sit, eat with a knife and fork, pretend you're in a restaurant 😂",
+     "hours_ago": 3,
+     "likes": 11
+    },
+    {
+     "author": "p05",
+     "text": "Which stand is this? Asking for my dad, he's been looking for a good plate for years.",
+     "hours_ago": 4,
+     "likes": 9
+    },
+    {
+     "author": "p02",
+     "text": "Thought it was just a Marina thing. Glad to hear it's common, I'll stop being shy about it.",
+     "hours_ago": 3,
+     "likes": 6
+    },
+    {
+     "author": "p07",
+     "text": "The garlic sauce on the side changes everything, do not skip it.",
+     "hours_ago": 2,
+     "likes": 15
+    },
+    {
+     "author": "p10",
+     "text": "Lunch break special for me, plate with extra chili and a cold yoghurt drink.",
+     "hours_ago": 4,
+     "likes": 8
+    },
+    {
+     "author": "p09",
+     "text": "Honest question: is it cheaper on the plate or the same price as the wrap?",
+     "hours_ago": 3,
+     "likes": 4
+    },
+    {
+     "author": "p04",
+     "text": "@layla_h it's about 22 AED for the plate, the wrap is 16. Worth the extra six.",
+     "hours_ago": 2,
+     "likes": 12
+    },
+    {
+     "author": "p03",
+     "text": "@tomasz_n six dirhams for a bigger lunch? Easy yes from me.",
+     "hours_ago": 2,
+     "likes": 3
+    },
+    {
+     "author": "p08",
+     "text": "Quality beef or chicken? The chicken is usually juicier in these places.",
+     "hours_ago": 3,
+     "likes": 5
+    },
+    {
+     "author": "p06",
+     "text": "Chicken every time. The beef is fine but it dries out at lunch.",
+     "hours_ago": 2,
+     "likes": 7
+    },
+    {
+     "author": "p02",
+     "text": "I went there after a long run. Best post run meal I've had in months.",
+     "hours_ago": 1,
+     "likes": 10
+    },
+    {
+     "author": "p05",
+     "text": "Carb lovers unite. I will be sending my cousins there this weekend.",
+     "hours_ago": 1,
+     "likes": 6
+    },
+    {
+     "author": "p07",
+     "text": "The bread is baked on site and you can smell it from the car park.",
+     "hours_ago": 2,
+     "likes": 13
+    },
+    {
+     "author": "p09",
+     "text": "Adding this to the Friday team lunch list. Thanks for sharing 🙌",
+     "hours_ago": 1,
+     "likes": 4
+    },
+    {
+     "author": "p10",
+     "text": "Be careful, the pickles are strong. Ask for a little less on the first try.",
+     "hours_ago": 2,
+     "likes": 5
+    },
+    {
+     "author": "p01",
+     "text": "The lemon mint drink is the unsung hero of this place.",
+     "hours_ago": 1,
+     "likes": 9
+    },
+    {
+     "author": "p04",
+     "text": "Good to know. I may try the spicy version next time.",
+     "hours_ago": 0,
+     "likes": 2
+    },
+    {
+     "author": "p08",
+     "text": "Please do not put cheese on it, my friends, that is the line.",
+     "hours_ago": 1,
+     "likes": 21
+    },
+    {
+     "author": "p03",
+     "text": "Cheese is a hard no, agreed. The rest of the plate is perfection.",
+     "hours_ago": 0,
+     "likes": 14
+    },
+    {
+     "author": "p06",
+     "text": "Lol the cheese debate is back. Yalla, eat your fries and stop arguing.",
+     "hours_ago": 1,
+     "likes": 17
+    },
+    {
+     "author": "p05",
+     "text": "Ok I'm convinced. The plate is coming to my weekend plans.",
+     "hours_ago": 0,
+     "likes": 11
+    },
+    {
+     "author": "p09",
+     "text": "Wrap or plate, either way, I'm booking the team lunch there this week.",
+     "hours_ago": 3,
+     "likes": 4
+    }
+   ]
+  },
+  {
+   "id": "marina-foodies-03",
+   "author": "p07",
+   "text": "Brunch review, Business Bay edition: a cafe with oat milk, mango pancakes and actual seating in the shade. Anyone else finding these places are multiplying?",
+   "image": "media/spread.jpg",
+   "hours_ago": 11,
+   "likes": 268,
+   "comments": [
+    {
+     "author": "p03",
+     "text": "They are multiplying like sourdough starters. I love it, honestly.",
+     "hours_ago": 10,
+     "likes": 19
+    },
+    {
+     "author": "p01",
+     "text": "Shade is the real luxury in summer. Give me a seat and a fan and I'm happy.",
+     "hours_ago": 9,
+     "likes": 25
+    },
+    {
+     "author": "p08",
+     "text": "Oat milk flat white at that place is decent. The pancakes though, too sweet for me.",
+     "hours_ago": 8,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "Mango pancakes are my weekend guilty pleasure. Send the name pls.",
+     "hours_ago": 9,
+     "likes": 8
+    },
+    {
+     "author": "p02",
+     "text": "Half of these new cafes close after a year. Still, I hope this one lasts.",
+     "hours_ago": 7,
+     "likes": 12
+    },
+    {
+     "author": "p04",
+     "text": "In Business Bay the parking is the real challenge. Metro, then a short walk.",
+     "hours_ago": 8,
+     "likes": 10
+    },
+    {
+     "author": "p05",
+     "text": "Brunch with the dogs welcome? Asking for my puppy and his weekend outings 🐶",
+     "hours_ago": 6,
+     "likes": 16
+    },
+    {
+     "author": "p06",
+     "text": "Mango pancakes are the sweetest thing I've had in a while. Summer heat makes it perfect.",
+     "hours_ago": 5,
+     "likes": 9
+    },
+    {
+     "author": "p10",
+     "text": "Brunch is my favourite meal. Eggs, toast and a cold juice, done.",
+     "hours_ago": 6,
+     "likes": 4
+    },
+    {
+     "author": "p07",
+     "text": "@yusuf_d I know you'll have an opinion on the coffee, go on, roast us.",
+     "hours_ago": 5,
+     "likes": 7
+    },
+    {
+     "author": "p08",
+     "text": "@anjali_rao the coffee is smooth, not roasted to death. Good enough for me.",
+     "hours_ago": 4,
+     "likes": 5
+    },
+    {
+     "author": "p03",
+     "text": "The lighting in there is gorgeous for photos. Bad for my eyes at 10am though.",
+     "hours_ago": 4,
+     "likes": 13
+    },
+    {
+     "author": "p09",
+     "text": "Nice find. I keep waiting for a place with a proper power socket for laptops.",
+     "hours_ago": 3,
+     "likes": 11
+    },
+    {
+     "author": "p02",
+     "text": "Those sockets are everywhere on the Marina side, you just have to look.",
+     "hours_ago": 3,
+     "likes": 3
+    },
+    {
+     "author": "p04",
+     "text": "Oat milk is the default now, nobody asks anymore. Progress.",
+     "hours_ago": 4,
+     "likes": 6
+    },
+    {
+     "author": "p01",
+     "text": "Brunch rule number one: never go after 1pm on a Friday. Trust me.",
+     "hours_ago": 2,
+     "likes": 22
+    },
+    {
+     "author": "p05",
+     "text": "Mango pancakes plus a dog-friendly terrace would be my dream combo.",
+     "hours_ago": 3,
+     "likes": 8
+    },
+    {
+     "author": "p06",
+     "text": "Heard they want to open a second branch in JLT. Not confirmed though.",
+     "hours_ago": 2,
+     "likes": 4
+    },
+    {
+     "author": "p10",
+     "text": "The bill was higher than expected, but the view was worth it, so ok.",
+     "hours_ago": 1,
+     "likes": 5
+    },
+    {
+     "author": "p08",
+     "text": "I'd try their filter coffee before the flat white next time.",
+     "hours_ago": 2,
+     "likes": 6
+    },
+    {
+     "author": "p07",
+     "text": "@omar_q the bill is the price of a good mood in summer, come on.",
+     "hours_ago": 1,
+     "likes": 9
+    },
+    {
+     "author": "p03",
+     "text": "Ok, the sweet tooth in me is booking a table already 🍓",
+     "hours_ago": 1,
+     "likes": 12
+    },
+    {
+     "author": "p09",
+     "text": "Shared the link with my team. Brunch on Thursday, who's in?",
+     "hours_ago": 1,
+     "likes": 7
+    },
+    {
+     "author": "p02",
+     "text": "Thursday works for me, but I'll be there after my run, so late.",
+     "hours_ago": 0,
+     "likes": 2
+    },
+    {
+     "author": "p04",
+     "text": "Good spot, good people, good vibes. Five stars from a regular.",
+     "hours_ago": 0,
+     "likes": 14
+    }
+   ]
+  },
+  {
+   "id": "marina-foodies-04",
+   "author": "p02",
+   "text": "Quick question for people who order late: which late night spots deliver to Dubai Marina after 11pm without the usual 45 minute wait? Trying to avoid another shawarma-less night.",
+   "image": null,
+   "hours_ago": 17,
+   "likes": 98,
+   "comments": [
+    {
+     "author": "p06",
+     "text": "The shawarma place near the tram stop still delivers past midnight. Ask for the spicy garlic.",
+     "hours_ago": 16,
+     "likes": 14
+    },
+    {
+     "author": "p08",
+     "text": "Delivery is hit or miss, I'd just walk over if you're close enough.",
+     "hours_ago": 15,
+     "likes": 3
+    },
+    {
+     "author": "p05",
+     "text": "The falafel spot on the walk is open until 2am and they are quick. Trust me.",
+     "hours_ago": 14,
+     "likes": 11
+    },
+    {
+     "author": "p03",
+     "text": "Dessert delivery after 11 is my weakness. The cheesecake place is open late.",
+     "hours_ago": 12,
+     "likes": 9
+    },
+    {
+     "author": "p01",
+     "text": "Check the app before you order, some spots show 'open' but the kitchen closes early.",
+     "hours_ago": 13,
+     "likes": 16
+    },
+    {
+     "author": "p10",
+     "text": "Late night swims and late night shawarma, the two great Dubai pastimes.",
+     "hours_ago": 10,
+     "likes": 7
+    },
+    {
+     "author": "p07",
+     "text": "Ordering from a place three minutes away and still waiting 45 min is so Dubai.",
+     "hours_ago": 11,
+     "likes": 12
+    },
+    {
+     "author": "p04",
+     "text": "Pick up is faster than delivery, just saying. Pay at the counter and walk home.",
+     "hours_ago": 9,
+     "likes": 10
+    },
+    {
+     "author": "p09",
+     "text": "Tip: order before 11:15 and you avoid the rush. Learnt that the hard way.",
+     "hours_ago": 8,
+     "likes": 13
+    },
+    {
+     "author": "p02",
+     "text": "Thanks, all of these are great. I'll make a list and test them this week.",
+     "hours_ago": 7,
+     "likes": 4
+    },
+    {
+     "author": "p05",
+     "text": "Make sure the place is actually open, I got stuck at a closed grill once.",
+     "hours_ago": 9,
+     "likes": 6
+    },
+    {
+     "author": "p06",
+     "text": "Late night grill near the beach, order the chicken tikka. You won't regret it.",
+     "hours_ago": 6,
+     "likes": 8
+    },
+    {
+     "author": "p08",
+     "text": "Coffee after midnight is a bad idea but I still do it, so you know.",
+     "hours_ago": 8,
+     "likes": 5
+    },
+    {
+     "author": "p03",
+     "text": "Who else calls it dinner at midnight and breakfast at 2am? Just me?",
+     "hours_ago": 5,
+     "likes": 18
+    },
+    {
+     "author": "p01",
+     "text": "@layla_h no, I'm guilty too. Midnight dinners are a Dubai rite of passage.",
+     "hours_ago": 4,
+     "likes": 9
+    },
+    {
+     "author": "p10",
+     "text": "Cold water with that spicy wrap is the only way to finish a late meal.",
+     "hours_ago": 6,
+     "likes": 4
+    },
+    {
+     "author": "p07",
+     "text": "The best delivery is the one where the rider doesn't call you three times.",
+     "hours_ago": 5,
+     "likes": 11
+    },
+    {
+     "author": "p04",
+     "text": "Heard a new place opens on the walk next month. Will update when they do.",
+     "hours_ago": 3,
+     "likes": 5
+    },
+    {
+     "author": "p09",
+     "text": "Let's do a late night group order sometime, one place, one bill, one happy team.",
+     "hours_ago": 4,
+     "likes": 7
+    },
+    {
+     "author": "p02",
+     "text": "@hannah_b yes please, I'll bring the running shoes and the big bag.",
+     "hours_ago": 3,
+     "likes": 2
+    },
+    {
+     "author": "p05",
+     "text": "Thread is gold. Saving this for the next time I miss the last metro.",
+     "hours_ago": 2,
+     "likes": 6
+    },
+    {
+     "author": "p06",
+     "text": "Late night in the Marina feels like a different city. I love it.",
+     "hours_ago": 2,
+     "likes": 10
+    },
+    {
+     "author": "p08",
+     "text": "The music from the cafe across the street is perfect at this hour.",
+     "hours_ago": 3,
+     "likes": 3
+    },
+    {
+     "author": "p03",
+     "text": "Dates at midnight are the best kept secret of the summer, honestly.",
+     "hours_ago": 1,
+     "likes": 12
+    },
+    {
+     "author": "p01",
+     "text": "Going to try the falafel spot tonight. Report coming in the morning.",
+     "hours_ago": 1,
+     "likes": 8
+    }
+   ]
+  },
+  {
+   "id": "marina-foodies-05",
+   "author": "p08",
+   "text": "Roasted my first batch of beans this week and it tasted like burnt toast. Any Marina neighbours with a light roast to recommend, so I can learn from it?",
+   "image": "media/coffee.jpg",
+   "hours_ago": 24,
+   "likes": 176,
+   "comments": [
+    {
+     "author": "p03",
+     "text": "Burnt toast means you went too far, pull it earlier. Respect the first crack.",
+     "hours_ago": 22,
+     "likes": 18
+    },
+    {
+     "author": "p04",
+     "text": "Roast in smaller batches. My first ten attempts were very dark too, do not give up.",
+     "hours_ago": 21,
+     "likes": 11
+    },
+    {
+     "author": "p01",
+     "text": "Try a light Ethiopian bean, it's floral and forgiving. Good starting point.",
+     "hours_ago": 20,
+     "likes": 14
+    },
+    {
+     "author": "p06",
+     "text": "Ask the cafe on the boardwalk, they roast in house and they're happy to talk.",
+     "hours_ago": 19,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "Coffee nerds are my favourite people. Yusuf, you should host a tasting night.",
+     "hours_ago": 18,
+     "likes": 9
+    },
+    {
+     "author": "p02",
+     "text": "Light roast, and then nothing for two days so the flavours settle. Patience!",
+     "hours_ago": 17,
+     "likes": 12
+    },
+    {
+     "author": "p07",
+     "text": "My cousin burned three batches, now she sells them as dark roast. Business sense.",
+     "hours_ago": 16,
+     "likes": 8
+    },
+    {
+     "author": "p05",
+     "text": "I cannot taste the difference between roasts, sorry. I just like it hot.",
+     "hours_ago": 15,
+     "likes": 3
+    },
+    {
+     "author": "p10",
+     "text": "Hot coffee at 40 degrees outside? I respect the commitment.",
+     "hours_ago": 14,
+     "likes": 10
+    },
+    {
+     "author": "p08",
+     "text": "@hannah_b I'll bring a bag to the next meetup. Free tasting, no pitch decks.",
+     "hours_ago": 13,
+     "likes": 15
+    },
+    {
+     "author": "p09",
+     "text": "Deal. I'll bring the pitch deck and you bring the beans, a fair trade.",
+     "hours_ago": 12,
+     "likes": 7
+    },
+    {
+     "author": "p03",
+     "text": "Would love to taste a light roast with a pastry. Pairing night?",
+     "hours_ago": 11,
+     "likes": 6
+    },
+    {
+     "author": "p01",
+     "text": "Light roast with a lemon cake is a dream combo. Count me in.",
+     "hours_ago": 10,
+     "likes": 9
+    },
+    {
+     "author": "p04",
+     "text": "Do you use a home roaster or a pan? Asking because I want to try next weekend.",
+     "hours_ago": 9,
+     "likes": 4
+    },
+    {
+     "author": "p08",
+     "text": "@tomasz_n a pan works fine for small batches. Keep the window open, the smoke is real.",
+     "hours_ago": 8,
+     "likes": 5
+    },
+    {
+     "author": "p06",
+     "text": "The smoke alarm is the real enemy of home roasters. Ask me how I know.",
+     "hours_ago": 8,
+     "likes": 13
+    },
+    {
+     "author": "p02",
+     "text": "Coffee is my marathon fuel. Burnt beans would be a tragedy, good luck!",
+     "hours_ago": 7,
+     "likes": 4
+    },
+    {
+     "author": "p05",
+     "text": "I'll bring treats for the tasting. Dog biscuits for the pup, cake for you lot.",
+     "hours_ago": 6,
+     "likes": 12
+    },
+    {
+     "author": "p10",
+     "text": "Please keep the pups away from the roaster, they get very excited about the smell.",
+     "hours_ago": 6,
+     "likes": 5
+    },
+    {
+     "author": "p07",
+     "text": "Home roasting is great until the neighbours complain. Balcony roasting is an art.",
+     "hours_ago": 5,
+     "likes": 7
+    },
+    {
+     "author": "p03",
+     "text": "Good luck Yusuf, learning to roast is like learning to bake. Lots of tiny failures.",
+     "hours_ago": 4,
+     "likes": 9
+    },
+    {
+     "author": "p09",
+     "text": "Does anyone know a place in Al Quoz that sells green beans? Shipping is slow.",
+     "hours_ago": 4,
+     "likes": 3
+    },
+    {
+     "author": "p08",
+     "text": "Yes, the warehouse near the old tyre market, ask for the Yemeni batch.",
+     "hours_ago": 3,
+     "likes": 6
+    },
+    {
+     "author": "p01",
+     "text": "Thanks for the tips everyone. This thread is more useful than any tutorial.",
+     "hours_ago": 2,
+     "likes": 11
+    },
+    {
+     "author": "p06",
+     "text": "Let's be honest, the best coffee is always the one someone else makes.",
+     "hours_ago": 1,
+     "likes": 16
+    }
+   ]
+  },
+  {
+   "id": "marina-foodies-06",
+   "author": "p05",
+   "text": "Dog friendly brunch spots on the Marina side? My puppy is almost six months and he is very social. Patio seating only please, the indoor AC makes him sneeze.",
+   "image": "media/puppy.jpg",
+   "hours_ago": 31,
+   "likes": 540,
+   "comments": [
+    {
+     "author": "p07",
+     "text": "The terrace near the marina pier allows dogs on the patio. Ask for the shaded corner.",
+     "hours_ago": 29,
+     "likes": 21
+    },
+    {
+     "author": "p09",
+     "text": "Puppy alert! Please post a photo, I need to see him before I can focus today.",
+     "hours_ago": 28,
+     "likes": 30
+    },
+    {
+     "author": "p03",
+     "text": "Ask them for a water bowl first, most places are happy to bring one out.",
+     "hours_ago": 27,
+     "likes": 14
+    },
+    {
+     "author": "p02",
+     "text": "Rain or shine, the pier terrace is dog friendly and the views are great.",
+     "hours_ago": 26,
+     "likes": 8
+    },
+    {
+     "author": "p04",
+     "text": "Keep an eye on the tiles, they get hot in summer. Test the paws with your hand first.",
+     "hours_ago": 25,
+     "likes": 19
+    },
+    {
+     "author": "p06",
+     "text": "My neighbour's dog gets carried to brunch in a tote bag. Fashion over comfort, lol.",
+     "hours_ago": 24,
+     "likes": 12
+    },
+    {
+     "author": "p01",
+     "text": "@mariam_s the terrace near the cafe has a dog menu. Sounds silly but it's great.",
+     "hours_ago": 23,
+     "likes": 16
+    },
+    {
+     "author": "p10",
+     "text": "Dogs and the sea, the best combo. Take him to the beach early before the heat.",
+     "hours_ago": 22,
+     "likes": 25
+    },
+    {
+     "author": "p08",
+     "text": "Dog brunch in Al Quoz, the coffee is decent and the patio is shaded. Yes.",
+     "hours_ago": 21,
+     "likes": 6
+    },
+    {
+     "author": "p05",
+     "text": "@sarak the dog menu sounds like my kind of place. Thank you for the tip!",
+     "hours_ago": 20,
+     "likes": 5
+    },
+    {
+     "author": "p07",
+     "text": "Remember to pick up after him, the Marina cleaners are not your friends.",
+     "hours_ago": 19,
+     "likes": 13
+    },
+    {
+     "author": "p03",
+     "text": "Those puppy eyes at the table are impossible to resist. Bring him to the next pastry test.",
+     "hours_ago": 18,
+     "likes": 11
+    },
+    {
+     "author": "p09",
+     "text": "Our dog hates the heat too. Cold water bowl, ice cube, happy dog.",
+     "hours_ago": 17,
+     "likes": 9
+    },
+    {
+     "author": "p02",
+     "text": "I run with my dog at dawn, then brunch. The routine keeps us both happy.",
+     "hours_ago": 16,
+     "likes": 10
+    },
+    {
+     "author": "p04",
+     "text": "Dogs on the metro is allowed only in a bag, check the rules before you go.",
+     "hours_ago": 15,
+     "likes": 7
+    },
+    {
+     "author": "p06",
+     "text": "The rules are strict on the metro, but the taxis are usually dog friendly if you ask.",
+     "hours_ago": 14,
+     "likes": 6
+    },
+    {
+     "author": "p10",
+     "text": "Dogs at the beach club? Only some, so message them first. Better safe.",
+     "hours_ago": 13,
+     "likes": 8
+    },
+    {
+     "author": "p01",
+     "text": "Puppy photo please Mariam, the whole thread is waiting 🐶",
+     "hours_ago": 12,
+     "likes": 34
+    },
+    {
+     "author": "p05",
+     "text": "Ok here he is, asleep under the table after the walk. Brunch is hard work.",
+     "hours_ago": 11,
+     "likes": 49
+    },
+    {
+     "author": "p08",
+     "text": "Look at those ears, the cutest customer I have had all week.",
+     "hours_ago": 10,
+     "likes": 18
+    },
+    {
+     "author": "p03",
+     "text": "He looks like a pastry chef's assistant, a little flour on the nose. Adorable.",
+     "hours_ago": 9,
+     "likes": 12
+    },
+    {
+     "author": "p07",
+     "text": "Bring a small towel for muddy paws after the Marina walk. Saves the car seats.",
+     "hours_ago": 8,
+     "likes": 9
+    },
+    {
+     "author": "p09",
+     "text": "Adding the pier terrace to the list for my dog's first birthday brunch.",
+     "hours_ago": 7,
+     "likes": 11
+    },
+    {
+     "author": "p02",
+     "text": "Any dog-friendly spot with a proper run space? My pup needs more than a patio.",
+     "hours_ago": 6,
+     "likes": 4
+    },
+    {
+     "author": "p04",
+     "text": "The park near the lake has enclosed space, a good spot after brunch.",
+     "hours_ago": 5,
+     "likes": 5
+    }
+   ]
+  },
+  {
+   "id": "marina-foodies-07",
+   "author": "p06",
+   "text": "Summer heat is brutal but the Marina night market is back. Shawarma stalls, fresh juice and a DJ set by the water. Yalla, who is coming Friday?",
+   "image": "media/marina-night.jpg",
+   "hours_ago": 36,
+   "likes": 355,
+   "comments": [
+    {
+     "author": "p01",
+     "text": "I'm in! Just tell me the time and I'll bring the cold cash for the juice stall.",
+     "hours_ago": 34,
+     "likes": 14
+    },
+    {
+     "author": "p03",
+     "text": "Market plus desserts equals a perfect Friday. Count me in, I'll bring the sweets.",
+     "hours_ago": 33,
+     "likes": 18
+    },
+    {
+     "author": "p02",
+     "text": "Market at night after a morning run is my kind of day. Maybe after 8pm.",
+     "hours_ago": 32,
+     "likes": 7
+    },
+    {
+     "author": "p04",
+     "text": "Is it cash only or can I pay with card? Asking before I bring the bike.",
+     "hours_ago": 31,
+     "likes": 5
+    },
+    {
+     "author": "p08",
+     "text": "Most stalls take card now, but keep some cash for the small juice cart.",
+     "hours_ago": 30,
+     "likes": 6
+    },
+    {
+     "author": "p05",
+     "text": "Dogs allowed at the night market? Asking for a friend with a very good puppy.",
+     "hours_ago": 29,
+     "likes": 9
+    },
+    {
+     "author": "p07",
+     "text": "Crowded on weekends, go early for the good seats near the DJ booth.",
+     "hours_ago": 28,
+     "likes": 11
+    },
+    {
+     "author": "p10",
+     "text": "I'll sell sunscreen at the stall next to the juice. Business is business.",
+     "hours_ago": 27,
+     "likes": 16
+    },
+    {
+     "author": "p09",
+     "text": "Our team is coming Friday! We will be the loud table near the grill.",
+     "hours_ago": 26,
+     "likes": 12
+    },
+    {
+     "author": "p06",
+     "text": "@hannah_b the grill table is the best table, bring a playlist and a big appetite.",
+     "hours_ago": 25,
+     "likes": 8
+    },
+    {
+     "author": "p01",
+     "text": "Summer heat plus a night market is a dream, the sea breeze is perfect after 9pm.",
+     "hours_ago": 24,
+     "likes": 10
+    },
+    {
+     "author": "p03",
+     "text": "Desserts there are unexpectedly good. The date and cardamom ice cream is a must.",
+     "hours_ago": 23,
+     "likes": 13
+    },
+    {
+     "author": "p02",
+     "text": "Is there a water refill point? Heat plus dancing equals dehydration.",
+     "hours_ago": 22,
+     "likes": 4
+    },
+    {
+     "author": "p04",
+     "text": "The water stall near the entrance is free if you bring your own bottle.",
+     "hours_ago": 21,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "Coffee stand at the far end, filter brew. Trust me, you need it after the dancing.",
+     "hours_ago": 20,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "I'll bring the puppy in a bag if I have to, just to see the lights.",
+     "hours_ago": 19,
+     "likes": 7
+    },
+    {
+     "author": "p10",
+     "text": "Bring a light jacket for the sea breeze at midnight, it gets chilly fast.",
+     "hours_ago": 18,
+     "likes": 10
+    },
+    {
+     "author": "p07",
+     "text": "Parking near the market is limited, take the metro to the stop by the pier.",
+     "hours_ago": 17,
+     "likes": 9
+    },
+    {
+     "author": "p09",
+     "text": "The DJ set last time was incredible. Hope they keep the same lineup.",
+     "hours_ago": 16,
+     "likes": 8
+    },
+    {
+     "author": "p06",
+     "text": "Yes, same crew, and a surprise set near the end. Don't be late.",
+     "hours_ago": 15,
+     "likes": 15
+    },
+    {
+     "author": "p01",
+     "text": "Ok we're definitely coming. Setting my alarm so I don't miss the sunset.",
+     "hours_ago": 14,
+     "likes": 6
+    },
+    {
+     "author": "p03",
+     "text": "I'll be the one with the box of cupcakes. Please don't sit on it.",
+     "hours_ago": 13,
+     "likes": 11
+    },
+    {
+     "author": "p02",
+     "text": "Post-market plan: a walk along the walk and back. Dessert shared with the group.",
+     "hours_ago": 12,
+     "likes": 4
+    },
+    {
+     "author": "p08",
+     "text": "Coffee and music, the two things I need after a long week. See you there.",
+     "hours_ago": 11,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "Puppy will be the best-behaved guest, I promise. Possibly.",
+     "hours_ago": 10,
+     "likes": 9
+    }
+   ]
+  },
+  {
+   "id": "marina-foodies-08",
+   "author": "p10",
+   "text": "Honest take: the best meal I had this month was a plain grilled chicken on a bench by the sea after my training. Simple beats fancy almost every time.",
+   "image": "media/grill.jpg",
+   "hours_ago": 50,
+   "likes": 221,
+   "comments": [
+    {
+     "author": "p04",
+     "text": "Agreed, sea air makes everything taste better. Plus, no dishes to wash.",
+     "hours_ago": 48,
+     "likes": 12
+    },
+    {
+     "author": "p02",
+     "text": "After a long run, plain chicken with rice is the best meal in the world.",
+     "hours_ago": 46,
+     "likes": 14
+    },
+    {
+     "author": "p03",
+     "text": "Simple food is underrated. I still dream about a plain omelette from my first job.",
+     "hours_ago": 45,
+     "likes": 9
+    },
+    {
+     "author": "p01",
+     "text": "Give me a grilled fish and lemon any day, the simplest things are the best.",
+     "hours_ago": 44,
+     "likes": 11
+    },
+    {
+     "author": "p05",
+     "text": "A bench, a chicken wrap and a dog at your feet. Perfect afternoon.",
+     "hours_ago": 43,
+     "likes": 16
+    },
+    {
+     "author": "p06",
+     "text": "Lol the swim coach gives sensible advice. Who knew.",
+     "hours_ago": 42,
+     "likes": 7
+    },
+    {
+     "author": "p08",
+     "text": "Fair point. The fancy places are great for a night out, not for daily fuel.",
+     "hours_ago": 41,
+     "likes": 8
+    },
+    {
+     "author": "p07",
+     "text": "Home-cooked simple food beats the restaurant every time, let's be honest.",
+     "hours_ago": 40,
+     "likes": 10
+    },
+    {
+     "author": "p09",
+     "text": "I'm still sceptical, but I'll try the bench approach this weekend.",
+     "hours_ago": 39,
+     "likes": 5
+    },
+    {
+     "author": "p10",
+     "text": "@hannah_b just bring a towel and sunscreen. The rest takes care of itself.",
+     "hours_ago": 38,
+     "likes": 13
+    },
+    {
+     "author": "p03",
+     "text": "Sunscreen is the hero nobody thanks. Add a hat and you're set.",
+     "hours_ago": 37,
+     "likes": 8
+    },
+    {
+     "author": "p04",
+     "text": "The sea wind is the best seasoning in Dubai, no question.",
+     "hours_ago": 36,
+     "likes": 6
+    },
+    {
+     "author": "p02",
+     "text": "Grilled chicken, yoghurt, salad. My holy trinity after a long session.",
+     "hours_ago": 35,
+     "likes": 9
+    },
+    {
+     "author": "p05",
+     "text": "I just want a plain tea and a quiet bench. Is that too much to ask? 😂",
+     "hours_ago": 34,
+     "likes": 12
+    },
+    {
+     "author": "p06",
+     "text": "Mariam, the tea is free if you sit near the old lighthouse, I hear.",
+     "hours_ago": 33,
+     "likes": 4
+    },
+    {
+     "author": "p01",
+     "text": "Simple beats fancy, but fancy with friends beats simple alone. Balance.",
+     "hours_ago": 32,
+     "likes": 15
+    },
+    {
+     "author": "p08",
+     "text": "The bench rule is good. We need more benches on the Marina walk.",
+     "hours_ago": 31,
+     "likes": 10
+    },
+    {
+     "author": "p07",
+     "text": "Benches with shade is the real request to the municipality, haha.",
+     "hours_ago": 30,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "Add shade and a water fountain and I'll move there permanently.",
+     "hours_ago": 29,
+     "likes": 7
+    },
+    {
+     "author": "p10",
+     "text": "Water fountains are rare on the walk. Carry a bottle, friends.",
+     "hours_ago": 28,
+     "likes": 11
+    },
+    {
+     "author": "p03",
+     "text": "Carry a bottle, a snack and a good book. The Marina bench life is elite.",
+     "hours_ago": 27,
+     "likes": 8
+    },
+    {
+     "author": "p04",
+     "text": "My bench is my office on Fridays. Laptop, grilled corn and the sea.",
+     "hours_ago": 26,
+     "likes": 9
+    },
+    {
+     "author": "p02",
+     "text": "Corn on the walk, hot and buttery. A guilty summer pleasure.",
+     "hours_ago": 25,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "Will report back on the bench experiment with the puppy this weekend.",
+     "hours_ago": 24,
+     "likes": 6
+    },
+    {
+     "author": "p06",
+     "text": "Looking forward to it, and to the photos of the bench and the puppy 🐶",
+     "hours_ago": 23,
+     "likes": 12
+    }
+   ]
+  },
+  {
+   "id": "marina-foodies-09",
+   "author": "p09",
+   "text": "Startup lunch tradition: we rotate restaurants every Thursday. This week we picked a Lebanese place with the best mezze in Business Bay. Recs for next week?",
+   "image": "media/spread.jpg",
+   "hours_ago": 88,
+   "likes": 147,
+   "comments": [
+    {
+     "author": "p03",
+     "text": "Try the Syrian place near the Dubai Water Canal. The sweets are amazing for a team treat.",
+     "hours_ago": 86,
+     "likes": 9
+    },
+    {
+     "author": "p04",
+     "text": "Business Bay has a great Turkish grill, the team will love the portions.",
+     "hours_ago": 84,
+     "likes": 7
+    },
+    {
+     "author": "p01",
+     "text": "Mezze for a team is smart, everyone can share and nobody argues about the bill.",
+     "hours_ago": 82,
+     "likes": 10
+    },
+    {
+     "author": "p08",
+     "text": "Lebanese mezze plus strong coffee is my ideal team lunch. Make the coffee a must.",
+     "hours_ago": 80,
+     "likes": 6
+    },
+    {
+     "author": "p02",
+     "text": "Ask for the vegetarian platter, it's big enough for the whole table.",
+     "hours_ago": 79,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "Are dogs allowed on the patio? Asking because my puppy is the team mascot now.",
+     "hours_ago": 77,
+     "likes": 8
+    },
+    {
+     "author": "p06",
+     "text": "Good idea. Team lunch builds real relationships, even if the bill is long.",
+     "hours_ago": 76,
+     "likes": 4
+    },
+    {
+     "author": "p07",
+     "text": "Keep a shared list of the places you tried, so you don't repeat the same spot.",
+     "hours_ago": 75,
+     "likes": 12
+    },
+    {
+     "author": "p10",
+     "text": "Send a message to the group after each lunch. Short reviews, five stars or three.",
+     "hours_ago": 73,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "Great ideas. I'll start the list, and @layla_h you're in charge of desserts.",
+     "hours_ago": 72,
+     "likes": 11
+    },
+    {
+     "author": "p03",
+     "text": "Deal. I'll pick a box of baklava from the Syrian place, promise.",
+     "hours_ago": 71,
+     "likes": 9
+    },
+    {
+     "author": "p01",
+     "text": "Rotate the restaurant but keep one fixed table, a little ritual is nice.",
+     "hours_ago": 70,
+     "likes": 7
+    },
+    {
+     "author": "p04",
+     "text": "Friday is better than Thursday for a longer lunch, just a suggestion.",
+     "hours_ago": 69,
+     "likes": 3
+    },
+    {
+     "author": "p08",
+     "text": "Team coffee after lunch is non-negotiable. I'll bring the cups and the beans.",
+     "hours_ago": 68,
+     "likes": 8
+    },
+    {
+     "author": "p02",
+     "text": "Running club goes to the same falafel spot after every long run. Maybe add it.",
+     "hours_ago": 66,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "Puppy will do a team photo next week if you let him sit on the mezze, haha.",
+     "hours_ago": 65,
+     "likes": 14
+    },
+    {
+     "author": "p06",
+     "text": "Make sure everyone's diet is noted. Vegetarian, vegan, the usual. Ask first.",
+     "hours_ago": 64,
+     "likes": 6
+    },
+    {
+     "author": "p07",
+     "text": "Good point. A quick poll in the group chat before booking saves drama.",
+     "hours_ago": 63,
+     "likes": 9
+    },
+    {
+     "author": "p10",
+     "text": "Mezze is great for swimmers after training too, lots of protein without the heaviness.",
+     "hours_ago": 62,
+     "likes": 4
+    },
+    {
+     "author": "p03",
+     "text": "Lebanese bread warm from the oven is my weakness, I could eat the whole basket.",
+     "hours_ago": 60,
+     "likes": 11
+    },
+    {
+     "author": "p09",
+     "text": "Basket goes on the team list then, bread is non-negotiable 🍞",
+     "hours_ago": 59,
+     "likes": 7
+    },
+    {
+     "author": "p04",
+     "text": "I'll check the parking near the canal and send an update tonight.",
+     "hours_ago": 58,
+     "likes": 3
+    },
+    {
+     "author": "p01",
+     "text": "Thanks everyone, this is already the best team lunch thread on the group.",
+     "hours_ago": 55,
+     "likes": 12
+    },
+    {
+     "author": "p08",
+     "text": "Coffee and mezze, a good life. See you all next Thursday.",
+     "hours_ago": 54,
+     "likes": 6
+    },
+    {
+     "author": "p06",
+     "text": "Yalla, let's do it. I'm bringing the playlist for the walk after lunch.",
+     "hours_ago": 52,
+     "likes": 9
+    }
+   ]
+  },
+  {
+   "id": "marina-foodies-10",
+   "author": "p03",
+   "text": "Rant of the week: restaurants that drop a service charge onto the bill and then also add a tip line. Please explain, I am genuinely confused and a bit annoyed.",
+   "image": null,
+   "hours_ago": 140,
+   "likes": 189,
+   "comments": [
+    {
+     "author": "p01",
+     "text": "Yes, always check the bill before tipping. Ask the waiter to explain the line.",
+     "hours_ago": 136,
+     "likes": 16
+    },
+    {
+     "author": "p04",
+     "text": "Service charge is usually for the house, tip is for the person. Both can be on the bill.",
+     "hours_ago": 130,
+     "likes": 11
+    },
+    {
+     "author": "p08",
+     "text": "I just ask for the breakdown politely. Most staff are happy to show it to you.",
+     "hours_ago": 128,
+     "likes": 9
+    },
+    {
+     "author": "p06",
+     "text": "Tipping culture is complicated here, but the staff depend on it, so I tip anyway.",
+     "hours_ago": 126,
+     "likes": 13
+    },
+    {
+     "author": "p02",
+     "text": "Read the menu footer, the service charge is written in small print. Lesson learned.",
+     "hours_ago": 124,
+     "likes": 7
+    },
+    {
+     "author": "p05",
+     "text": "I once tipped twice by accident. The waiter was very polite about it, lol.",
+     "hours_ago": 120,
+     "likes": 10
+    },
+    {
+     "author": "p07",
+     "text": "Honest suggestion: ask for the bill to be split by item so you see every fee.",
+     "hours_ago": 118,
+     "likes": 12
+    },
+    {
+     "author": "p09",
+     "text": "Our team lunch got a double charge once. The manager fixed it in minutes.",
+     "hours_ago": 116,
+     "likes": 6
+    },
+    {
+     "author": "p10",
+     "text": "Keep receipts for the service charge if you are reimbursed by your company.",
+     "hours_ago": 114,
+     "likes": 8
+    },
+    {
+     "author": "p03",
+     "text": "Thank you, all of this is useful. I'll ask at the next place before I pay.",
+     "hours_ago": 112,
+     "likes": 5
+    },
+    {
+     "author": "p01",
+     "text": "@layla_h the general rule is ten percent if you are happy. No pressure though.",
+     "hours_ago": 110,
+     "likes": 9
+    },
+    {
+     "author": "p04",
+     "text": "In my home country the tip is on the table, not on the bill. Different culture, same goal.",
+     "hours_ago": 108,
+     "likes": 4
+    },
+    {
+     "author": "p08",
+     "text": "Coffee shops usually have a tip jar, that is a small and happy ritual for me.",
+     "hours_ago": 106,
+     "likes": 6
+    },
+    {
+     "author": "p06",
+     "text": "Good staff deserve a good tip, bad service deserves a conversation. That's my rule.",
+     "hours_ago": 104,
+     "likes": 14
+    },
+    {
+     "author": "p02",
+     "text": "Digital payments make it easy to tip the right person now, use the app.",
+     "hours_ago": 102,
+     "likes": 3
+    },
+    {
+     "author": "p05",
+     "text": "I'll ask the waiter next time and report back, the puppy is the only one who never pays.",
+     "hours_ago": 100,
+     "likes": 7
+    },
+    {
+     "author": "p07",
+     "text": "Thank you Layla for raising this, it's something every newcomer should know.",
+     "hours_ago": 98,
+     "likes": 12
+    },
+    {
+     "author": "p10",
+     "text": "Lol the puppy is living the dream. Free food, free walks.",
+     "hours_ago": 96,
+     "likes": 8
+    },
+    {
+     "author": "p09",
+     "text": "Our office has a clear policy now, we tip ten percent, and we say it out loud.",
+     "hours_ago": 94,
+     "likes": 5
+    },
+    {
+     "author": "p01",
+     "text": "Clear communication solves most of this. Ask, be kind, pay fairly.",
+     "hours_ago": 92,
+     "likes": 10
+    },
+    {
+     "author": "p04",
+     "text": "Great point. I think the apps should show the service charge clearly up front.",
+     "hours_ago": 90,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "The apps are getting better. Just check the total before you hit confirm.",
+     "hours_ago": 88,
+     "likes": 4
+    },
+    {
+     "author": "p06",
+     "text": "Let's see the new rules coming, then we can complain properly again 😄",
+     "hours_ago": 84,
+     "likes": 9
+    },
+    {
+     "author": "p02",
+     "text": "Fair enough. I'm off to run now, rant recorded, thank you for the transparency.",
+     "hours_ago": 80,
+     "likes": 2
+    },
+    {
+     "author": "p03",
+     "text": "Thanks all for the kind replies. Bill mystery solved, mostly. Cake is on me next time 🍰",
+     "hours_ago": 76,
+     "likes": 18
+    }
+   ]
+  }
+ ]
+}

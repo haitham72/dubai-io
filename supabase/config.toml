@@ -1,0 +1,56 @@
+# Official CLI 2.121.0. Dedicated ports avoid other projects on this workstation.
+project_id = "dubai-io"
+
+[api]
+enabled = true
+port = 15421
+schemas = ["public"]
+extra_search_path = ["public", "extensions"]
+auto_expose_new_tables = false
+max_rows = 1000
+
+[db]
+port = 15422
+shadow_port = 15420
+major_version = 17
+health_timeout = "2m"
+
+[db.pooler]
+enabled = false
+port = 15429
+
+[db.migrations]
+enabled = true
+schema_paths = []
+
+[db.seed]
+enabled = false
+
+[studio]
+enabled = true
+port = 15423
+api_url = "http://127.0.0.1"
+
+[local_smtp]
+enabled = true
+port = 15424
+
+[auth]
+enabled = true
+site_url = "http://127.0.0.1:8000"
+additional_redirect_urls = ["http://localhost:8000"]
+enable_signup = false
+
+# Google OAuth is deliberately deferred for the single tester.
+# Existing API cookies own tester data; Auth is not wired to app ownership yet.
+[storage]
+enabled = true
+file_size_limit = "10MiB"
+
+[edge_runtime]
+enabled = true
+policy = "per_worker"
+inspector_port = 15428
+
+[analytics]
+enabled = false

@@ -1,0 +1,1319 @@
+{
+  "schema_version": 1,
+  "provenance": "demo_fixture",
+  "personas": [
+    {
+      "id": "p01",
+      "name": "Sara Khalid",
+      "handle": "sarak",
+      "emoji": "🌴",
+      "bio": "Product designer in JLT; practical, warm, and always planning brunch.",
+      "area": "JLT",
+      "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=160&h=160&fit=crop&auto=format",
+      "relationship": "wife",
+      "voice": "Warm and decisive; asks one useful follow-up.",
+      "avatar_source": {
+        "provider": "Unsplash",
+        "asset_id": "1494790108377-be9c29b29330",
+        "license": "Unsplash License",
+        "accessed": "2026-10-23"
+      },
+      "interests": [
+        "Product designer in JLT",
+        "Dubai neighbourhood life"
+      ],
+      "profile": {
+        "relationship": "wife",
+        "voice": "Warm and decisive; asks one useful follow-up.",
+        "interests": [
+          "Product designer in JLT",
+          "Dubai neighbourhood life"
+        ]
+      }
+    },
+    {
+      "id": "p02",
+      "name": "Ravi Menon",
+      "handle": "ravi_menon",
+      "emoji": "🏃",
+      "bio": "Backend engineer and dawn runner on the Marina walk.",
+      "area": "Dubai Marina",
+      "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=160&h=160&fit=crop&auto=format",
+      "relationship": "friend",
+      "voice": "Concise, analytical, gently funny.",
+      "avatar_source": {
+        "provider": "Unsplash",
+        "asset_id": "1500648767791-00dcc994a43e",
+        "license": "Unsplash License",
+        "accessed": "2026-10-23"
+      },
+      "interests": [
+        "Backend engineer and dawn runner on the Marina walk.",
+        "Dubai neighbourhood life"
+      ],
+      "profile": {
+        "relationship": "friend",
+        "voice": "Concise, analytical, gently funny.",
+        "interests": [
+          "Backend engineer and dawn runner on the Marina walk.",
+          "Dubai neighbourhood life"
+        ]
+      }
+    },
+    {
+      "id": "p03",
+      "name": "Layla Haddad",
+      "handle": "layla_h",
+      "emoji": "🧁",
+      "bio": "Pastry chef in Downtown who measures everything in grams and feelings.",
+      "area": "Downtown",
+      "avatar": "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=160&h=160&fit=crop&auto=format",
+      "relationship": "friend",
+      "voice": "Expressive, hospitable, uses food metaphors.",
+      "avatar_source": {
+        "provider": "Unsplash",
+        "asset_id": "1531123897727-8f129e1688ce",
+        "license": "Unsplash License",
+        "accessed": "2026-10-23"
+      },
+      "interests": [
+        "Pastry chef in Downtown who measures everything in grams and feelings.",
+        "Dubai neighbourhood life"
+      ],
+      "profile": {
+        "relationship": "friend",
+        "voice": "Expressive, hospitable, uses food metaphors.",
+        "interests": [
+          "Pastry chef in Downtown who measures everything in grams and feelings.",
+          "Dubai neighbourhood life"
+        ]
+      }
+    },
+    {
+      "id": "p04",
+      "name": "Tomasz Nowak",
+      "handle": "tomasz_n",
+      "emoji": "🚴",
+      "bio": "Civil engineer who cycles Business Bay before the heat.",
+      "area": "Business Bay",
+      "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=160&h=160&fit=crop&auto=format",
+      "relationship": "friend",
+      "voice": "Measured and safety-minded.",
+      "avatar_source": {
+        "provider": "Unsplash",
+        "asset_id": "1507003211169-0a1dd7228f2d",
+        "license": "Unsplash License",
+        "accessed": "2026-10-23"
+      },
+      "interests": [
+        "Civil engineer who cycles Business Bay before the heat.",
+        "Dubai neighbourhood life"
+      ],
+      "profile": {
+        "relationship": "friend",
+        "voice": "Measured and safety-minded.",
+        "interests": [
+          "Civil engineer who cycles Business Bay before the heat.",
+          "Dubai neighbourhood life"
+        ]
+      }
+    },
+    {
+      "id": "p05",
+      "name": "Mariam Al Suwaidi",
+      "handle": "mariam_s",
+      "emoji": "🐾",
+      "bio": "Vet nurse and puppy foster in Al Barsha.",
+      "area": "Al Barsha",
+      "avatar": "https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=160&h=160&fit=crop&auto=format",
+      "relationship": "friend",
+      "voice": "Caring, specific, never alarmist.",
+      "avatar_source": {
+        "provider": "Unsplash",
+        "asset_id": "1551836022-d5d88e9218df",
+        "license": "Unsplash License",
+        "accessed": "2026-10-23"
+      },
+      "interests": [
+        "Vet nurse and puppy foster in Al Barsha.",
+        "Dubai neighbourhood life"
+      ],
+      "profile": {
+        "relationship": "friend",
+        "voice": "Caring, specific, never alarmist.",
+        "interests": [
+          "Vet nurse and puppy foster in Al Barsha.",
+          "Dubai neighbourhood life"
+        ]
+      }
+    },
+    {
+      "id": "p06",
+      "name": "Kwame Asante",
+      "handle": "kwame_a",
+      "emoji": "🎧",
+      "bio": "Piano teacher and weekend DJ in Silicon Oasis.",
+      "area": "Silicon Oasis",
+      "avatar": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=160&h=160&fit=crop&auto=format",
+      "relationship": "friend",
+      "voice": "Playful, optimistic, speaks in short beats.",
+      "avatar_source": {
+        "provider": "Unsplash",
+        "asset_id": "1506794778202-cad84cf45f1d",
+        "license": "Unsplash License",
+        "accessed": "2026-10-23"
+      },
+      "interests": [
+        "Piano teacher and weekend DJ in Silicon Oasis.",
+        "Dubai neighbourhood life"
+      ],
+      "profile": {
+        "relationship": "friend",
+        "voice": "Playful, optimistic, speaks in short beats.",
+        "interests": [
+          "Piano teacher and weekend DJ in Silicon Oasis.",
+          "Dubai neighbourhood life"
+        ]
+      }
+    },
+    {
+      "id": "p07",
+      "name": "Anjali Rao",
+      "handle": "anjali_rao",
+      "emoji": "🏠",
+      "bio": "Interior architect and home cook in Mirdif.",
+      "area": "Mirdif",
+      "avatar": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=160&h=160&fit=crop&auto=format",
+      "relationship": "friend",
+      "voice": "Thoughtful and practical; gives a checklist.",
+      "avatar_source": {
+        "provider": "Unsplash",
+        "asset_id": "1580489944761-15a19d654956",
+        "license": "Unsplash License",
+        "accessed": "2026-10-23"
+      },
+      "interests": [
+        "Interior architect and home cook in Mirdif.",
+        "Dubai neighbourhood life"
+      ],
+      "profile": {
+        "relationship": "friend",
+        "voice": "Thoughtful and practical; gives a checklist.",
+        "interests": [
+          "Interior architect and home cook in Mirdif.",
+          "Dubai neighbourhood life"
+        ]
+      }
+    },
+    {
+      "id": "p08",
+      "name": "Yusuf Demir",
+      "handle": "yusuf_d",
+      "emoji": "☕",
+      "bio": "Coffee roaster in Al Quoz; asks about beans, not football.",
+      "area": "Al Quoz",
+      "avatar": "https://images.unsplash.com/photo-1504593811423-6dd665756598?w=160&h=160&fit=crop&auto=format",
+      "relationship": "friend",
+      "voice": "Calm, sensory, quietly witty.",
+      "avatar_source": {
+        "provider": "Unsplash",
+        "asset_id": "1504593811423-6dd665756598",
+        "license": "Unsplash License",
+        "accessed": "2026-10-23"
+      },
+      "interests": [
+        "Coffee roaster in Al Quoz",
+        "Dubai neighbourhood life"
+      ],
+      "profile": {
+        "relationship": "friend",
+        "voice": "Calm, sensory, quietly witty.",
+        "interests": [
+          "Coffee roaster in Al Quoz",
+          "Dubai neighbourhood life"
+        ]
+      }
+    },
+    {
+      "id": "p09",
+      "name": "Hannah Brooks",
+      "handle": "hannah_b",
+      "emoji": "🚀",
+      "bio": "Startup founder on Palm Jumeirah.",
+      "area": "Palm Jumeirah",
+      "avatar": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=160&h=160&fit=crop&auto=format",
+      "relationship": "boss",
+      "voice": "Direct, encouraging, focused on next steps.",
+      "avatar_source": {
+        "provider": "Unsplash",
+        "asset_id": "1573496359142-b8d87734a5a2",
+        "license": "Unsplash License",
+        "accessed": "2026-10-23"
+      },
+      "interests": [
+        "Startup founder on Palm Jumeirah.",
+        "Dubai neighbourhood life"
+      ],
+      "profile": {
+        "relationship": "boss",
+        "voice": "Direct, encouraging, focused on next steps.",
+        "interests": [
+          "Startup founder on Palm Jumeirah.",
+          "Dubai neighbourhood life"
+        ]
+      }
+    },
+    {
+      "id": "p10",
+      "name": "Omar Qasim",
+      "handle": "omar_q",
+      "emoji": "🌊",
+      "bio": "Swim coach on Jumeirah beach; sunscreen is non-negotiable.",
+      "area": "Jumeirah",
+      "avatar": "https://images.unsplash.com/photo-1504257432389-52343af06ae3?w=160&h=160&fit=crop&auto=format",
+      "relationship": "friend",
+      "voice": "Energetic, protective, uses clear instructions.",
+      "avatar_source": {
+        "provider": "Unsplash",
+        "asset_id": "1504257432389-52343af06ae3",
+        "license": "Unsplash License",
+        "accessed": "2026-10-23"
+      },
+      "interests": [
+        "Swim coach on Jumeirah beach",
+        "Dubai neighbourhood life"
+      ],
+      "profile": {
+        "relationship": "friend",
+        "voice": "Energetic, protective, uses clear instructions.",
+        "interests": [
+          "Swim coach on Jumeirah beach",
+          "Dubai neighbourhood life"
+        ]
+      }
+    },
+    {
+      "id": "p11",
+      "name": "Noura Qasim",
+      "handle": "noura_q",
+      "emoji": "🌙",
+      "bio": "Primary school teacher and mum who knows every quiet cafe.",
+      "area": "Al Nahda",
+      "avatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=160&h=160&fit=crop&auto=format",
+      "relationship": "mother",
+      "voice": "Reassuring, affectionate, asks if you ate.",
+      "avatar_source": {
+        "provider": "Unsplash",
+        "asset_id": "1544005313-94ddf0286df2",
+        "license": "Unsplash License",
+        "accessed": "2026-10-23"
+      },
+      "interests": [
+        "Primary school teacher and mum who knows every quiet cafe.",
+        "Dubai neighbourhood life"
+      ],
+      "profile": {
+        "relationship": "mother",
+        "voice": "Reassuring, affectionate, asks if you ate.",
+        "interests": [
+          "Primary school teacher and mum who knows every quiet cafe.",
+          "Dubai neighbourhood life"
+        ]
+      }
+    },
+    {
+      "id": "p12",
+      "name": "Daniel Cho",
+      "handle": "daniel_cho",
+      "emoji": "📷",
+      "bio": "Photographer chasing light around Old Dubai.",
+      "area": "Deira",
+      "avatar": "https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=160&h=160&fit=crop&auto=format",
+      "relationship": "friend",
+      "voice": "Observant and visual; suggests a place and time.",
+      "avatar_source": {
+        "provider": "Unsplash",
+        "asset_id": "1501196354995-cbb51c65aaea",
+        "license": "Unsplash License",
+        "accessed": "2026-10-23"
+      },
+      "interests": [
+        "Photographer chasing light around Old Dubai.",
+        "Dubai neighbourhood life"
+      ],
+      "profile": {
+        "relationship": "friend",
+        "voice": "Observant and visual; suggests a place and time.",
+        "interests": [
+          "Photographer chasing light around Old Dubai.",
+          "Dubai neighbourhood life"
+        ]
+      }
+    },
+    {
+      "id": "p13",
+      "name": "Aisha Rahman",
+      "handle": "aisha_r",
+      "emoji": "🧾",
+      "bio": "Operations lead who can find a receipt in thirty seconds.",
+      "area": "DIFC",
+      "avatar": "https://images.unsplash.com/photo-1551836022-4c4c79ecde51?w=160&h=160&fit=crop&auto=format",
+      "relationship": "colleague",
+      "voice": "Organised, kind, action-oriented.",
+      "avatar_source": {
+        "provider": "Unsplash",
+        "asset_id": "1551836022-4c4c79ecde51",
+        "license": "Unsplash License",
+        "accessed": "2026-10-23"
+      },
+      "interests": [
+        "Operations lead who can find a receipt in thirty seconds.",
+        "Dubai neighbourhood life"
+      ],
+      "profile": {
+        "relationship": "colleague",
+        "voice": "Organised, kind, action-oriented.",
+        "interests": [
+          "Operations lead who can find a receipt in thirty seconds.",
+          "Dubai neighbourhood life"
+        ]
+      }
+    },
+    {
+      "id": "p14",
+      "name": "Noah Williams",
+      "handle": "noah_w",
+      "emoji": "🛠️",
+      "bio": "Furniture maker and weekend fixer in Al Quoz.",
+      "area": "Al Quoz",
+      "avatar": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=160&h=160&fit=crop&auto=format",
+      "relationship": "friend",
+      "voice": "Plainspoken and helpful.",
+      "avatar_source": {
+        "provider": "Unsplash",
+        "asset_id": "1506794778202-cad84cf45f1d",
+        "license": "Unsplash License",
+        "accessed": "2026-10-23"
+      },
+      "interests": [
+        "Furniture maker and weekend fixer in Al Quoz.",
+        "Dubai neighbourhood life"
+      ],
+      "profile": {
+        "relationship": "friend",
+        "voice": "Plainspoken and helpful.",
+        "interests": [
+          "Furniture maker and weekend fixer in Al Quoz.",
+          "Dubai neighbourhood life"
+        ]
+      }
+    },
+    {
+      "id": "p15",
+      "name": "Mina Park",
+      "handle": "mina_p",
+      "emoji": "🍜",
+      "bio": "UX researcher collecting tiny Dubai rituals.",
+      "area": "Jumeirah Village Circle",
+      "avatar": "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=160&h=160&fit=crop&auto=format",
+      "relationship": "friend",
+      "voice": "Curious, reflective, follows the thread.",
+      "avatar_source": {
+        "provider": "Unsplash",
+        "asset_id": "1488426862026-3ee34a7d66df",
+        "license": "Unsplash License",
+        "accessed": "2026-10-23"
+      },
+      "interests": [
+        "UX researcher collecting tiny Dubai rituals.",
+        "Dubai neighbourhood life"
+      ],
+      "profile": {
+        "relationship": "friend",
+        "voice": "Curious, reflective, follows the thread.",
+        "interests": [
+          "UX researcher collecting tiny Dubai rituals.",
+          "Dubai neighbourhood life"
+        ]
+      }
+    }
+  ],
+  "threads": [
+    {
+      "id": "chat-wife",
+      "title": "Sara",
+      "persona_ids": [
+        "p01"
+      ],
+      "messages": [
+        {
+          "persona_id": "p01",
+          "text": "You said you wanted an early start tomorrow. I put the coffee beans by the grinder."
+        },
+        {
+          "persona_id": null,
+          "text": "Thank you. I also need to remember the document pickup."
+        },
+        {
+          "persona_id": "p01",
+          "text": "I added it to the shared list. Eat something before you go, please."
+        },
+        {
+          "persona_id": "p01",
+          "text": "The pickup closes at six, and the blue folder is on the kitchen chair."
+        },
+        {
+          "persona_id": null,
+          "text": "I found it. I will leave at four so I am not rushing."
+        },
+        {
+          "persona_id": "p01",
+          "text": "Good. Text me when you are outside; I will keep dinner warm."
+        },
+        {
+          "persona_id": null,
+          "text": "Could we do the lemon chicken tonight? I have been thinking about it all day."
+        },
+        {
+          "persona_id": "p01",
+          "text": "Yes, but you are chopping the herbs this time."
+        },
+        {
+          "persona_id": null,
+          "text": "Fair. I will also pack your lunch before I sleep."
+        },
+        {
+          "persona_id": "p01",
+          "text": "That is why I married you. Set two alarms, not one."
+        },
+        {
+          "persona_id": null,
+          "text": "Two alarms set, and the museum form is signed."
+        },
+        {
+          "persona_id": "p01",
+          "text": "Wonderful. Come home safely, and bring the folder straight to the desk."
+        }
+      ]
+    },
+    {
+      "id": "chat-mother",
+      "title": "Mum",
+      "persona_ids": [
+        "p11"
+      ],
+      "messages": [
+        {
+          "persona_id": "p11",
+          "text": "Good morning habibi. How is the heat today? Take water when you leave."
+        },
+        {
+          "persona_id": null,
+          "text": "It is fine so far. I will call after the meeting."
+        },
+        {
+          "persona_id": "p11",
+          "text": "Call when you can. I made lentil soup; there is a bowl waiting for you."
+        },
+        {
+          "persona_id": "p11",
+          "text": "Your aunt called; she wants the photo from Friday's lunch."
+        },
+        {
+          "persona_id": null,
+          "text": "I will send it after my meeting. I am presenting at eleven."
+        },
+        {
+          "persona_id": "p11",
+          "text": "Then eat the banana I put in your bag before you present."
+        },
+        {
+          "persona_id": null,
+          "text": "I did. The client actually liked the part you helped me practise."
+        },
+        {
+          "persona_id": "p11",
+          "text": "I knew you would explain it well. You speak clearly when you stop apologising."
+        },
+        {
+          "persona_id": null,
+          "text": "That is very specific advice, Mum."
+        },
+        {
+          "persona_id": "p11",
+          "text": "Because I have watched you do it for years. Be proud of your work."
+        },
+        {
+          "persona_id": null,
+          "text": "The meeting ended early. I can come for soup at seven."
+        },
+        {
+          "persona_id": "p11",
+          "text": "Seven is fine. I made extra bread and put the good plates away."
+        }
+      ]
+    },
+    {
+      "id": "chat-friends",
+      "title": "Friday plans",
+      "persona_ids": [
+        "p02",
+        "p03",
+        "p06",
+        "p08"
+      ],
+      "messages": [
+        {
+          "persona_id": "p02",
+          "text": "Easy run at 6, then coffee? The Marina path should be quiet."
+        },
+        {
+          "persona_id": "p03",
+          "text": "I can join after I finish the tart order. I vote for breakfast, not just coffee."
+        },
+        {
+          "persona_id": "p08",
+          "text": "I will bring a small filter kit. Yusuf-approved coffee stop."
+        },
+        {
+          "persona_id": "p06",
+          "text": "I am in. No loud playlist before sunrise, promise."
+        },
+        {
+          "persona_id": "p03",
+          "text": "The bakery order is packed, so I can run the last kilometre with Ravi."
+        },
+        {
+          "persona_id": "p02",
+          "text": "Please do not sprint after carrying a tray of pastries."
+        },
+        {
+          "persona_id": "p06",
+          "text": "I will bring the speaker, but it stays quiet until we reach the lake."
+        },
+        {
+          "persona_id": "p08",
+          "text": "I tested a washed Ethiopian bean for the first pour-over."
+        },
+        {
+          "persona_id": "p03",
+          "text": "Excellent. I am bringing cardamom buns for the tasting."
+        },
+        {
+          "persona_id": "p02",
+          "text": "Meet by the fountain, not the car park; the car park is chaos on Fridays."
+        },
+        {
+          "persona_id": "p06",
+          "text": "I will mark the spot with the tiny blue flag."
+        },
+        {
+          "persona_id": "p08",
+          "text": "And I will bring paper cups so nobody has to share one."
+        }
+      ]
+    },
+    {
+      "id": "chat-work",
+      "title": "Hannah · Studio",
+      "persona_ids": [
+        "p09",
+        "p13"
+      ],
+      "messages": [
+        {
+          "persona_id": "p09",
+          "text": "The client moved the review to Thursday. Can you bring the onboarding flow to the first five minutes?"
+        },
+        {
+          "persona_id": "p13",
+          "text": "I will prepare the decision log and confirm the open questions."
+        },
+        {
+          "persona_id": null,
+          "text": "I will have the revised screens ready Wednesday evening."
+        },
+        {
+          "persona_id": "p09",
+          "text": "Perfect. Keep the story simple and show the part that saves people time."
+        },
+        {
+          "persona_id": "p09",
+          "text": "Also remove the decorative animation; it distracts from the permission step."
+        },
+        {
+          "persona_id": "p13",
+          "text": "I will move that note into the implementation appendix."
+        },
+        {
+          "persona_id": null,
+          "text": "The new flow has three screens instead of seven."
+        },
+        {
+          "persona_id": "p09",
+          "text": "Good. Can a first-time user understand the action without our narration?"
+        },
+        {
+          "persona_id": "p13",
+          "text": "I will ask two people in the hallway to try it silently."
+        },
+        {
+          "persona_id": null,
+          "text": "I added a plain-language error state for missing receipts."
+        },
+        {
+          "persona_id": "p09",
+          "text": "That is the detail that makes the demo credible."
+        },
+        {
+          "persona_id": "p13",
+          "text": "The decision log now says what we are postponing as well as what we ship."
+        }
+      ]
+    },
+    {
+      "id": "chat-family",
+      "title": "Family",
+      "persona_ids": [
+        "p01",
+        "p11"
+      ],
+      "messages": [
+        {
+          "persona_id": "p11",
+          "text": "Are you both coming for lunch on Friday? I am making the rice you like."
+        },
+        {
+          "persona_id": "p01",
+          "text": "We are coming. I will bring fruit and help with the salad."
+        },
+        {
+          "persona_id": null,
+          "text": "I will be there after the morning appointment."
+        },
+        {
+          "persona_id": "p11",
+          "text": "I will keep the next step small and send an update after I try it."
+        },
+        {
+          "persona_id": "p11",
+          "text": "The children can help wash the fruit, but keep them away from the hot pan."
+        },
+        {
+          "persona_id": "p01",
+          "text": "I will bring a small game for after lunch."
+        },
+        {
+          "persona_id": null,
+          "text": "My appointment may run ten minutes late."
+        },
+        {
+          "persona_id": "p11",
+          "text": "No problem; we will start with tea and wait for you."
+        },
+        {
+          "persona_id": "p01",
+          "text": "I found the mangoes you like at the market."
+        },
+        {
+          "persona_id": "p11",
+          "text": "Wonderful. Your father will ask whether they are sweet enough."
+        },
+        {
+          "persona_id": null,
+          "text": "Tell him I am bringing the answer and a spare bag."
+        },
+        {
+          "persona_id": "p01",
+          "text": "We should leave before the Friday traffic builds."
+        }
+      ]
+    },
+    {
+      "id": "chat-dog",
+      "title": "Mariam · Paw advice",
+      "persona_ids": [
+        "p05"
+      ],
+      "messages": [
+        {
+          "persona_id": null,
+          "text": "The puppy has been scratching after the beach. Should I worry?"
+        },
+        {
+          "persona_id": "p05",
+          "text": "Check the paws and between the toes first, then rinse with fresh water. If there is redness or persistent scratching, call a vet."
+        },
+        {
+          "persona_id": null,
+          "text": "I will rinse him now and keep him off the sand today."
+        },
+        {
+          "persona_id": "p05",
+          "text": "I will keep the next step small and send an update after I try it."
+        },
+        {
+          "persona_id": "p05",
+          "text": "After the rinse, check whether the paws are still warm or swollen."
+        },
+        {
+          "persona_id": null,
+          "text": "They look normal now, and he has stopped licking them."
+        },
+        {
+          "persona_id": "p05",
+          "text": "Good. Wash the towel separately and avoid the same beach for a day."
+        },
+        {
+          "persona_id": null,
+          "text": "Should I use the paw balm we bought last month?"
+        },
+        {
+          "persona_id": "p05",
+          "text": "Only if the label says it is safe for dogs; no human creams without checking."
+        },
+        {
+          "persona_id": null,
+          "text": "It is a dog balm, and the expiry date is next year."
+        },
+        {
+          "persona_id": "p05",
+          "text": "A thin layer is fine tonight. If he limps or the redness returns, call the clinic."
+        },
+        {
+          "persona_id": null,
+          "text": "I will take a photo now so I can compare in the morning."
+        }
+      ]
+    },
+    {
+      "id": "chat-weekend",
+      "title": "Dubai Saturday",
+      "persona_ids": [
+        "p04",
+        "p07",
+        "p10",
+        "p12"
+      ],
+      "messages": [
+        {
+          "persona_id": "p12",
+          "text": "The light at Al Fahidi is beautiful around 7. I can bring the camera."
+        },
+        {
+          "persona_id": "p07",
+          "text": "I know a quiet breakfast spot nearby. It opens early."
+        },
+        {
+          "persona_id": "p10",
+          "text": "I will join after the beach session. Sunscreen for everyone."
+        },
+        {
+          "persona_id": "p04",
+          "text": "I can cycle there, but I am taking the metro back. Too hot by noon."
+        },
+        {
+          "persona_id": "p12",
+          "text": "I will bring a spare memory card; the souk light changes quickly."
+        },
+        {
+          "persona_id": "p07",
+          "text": "Breakfast place has outdoor shade and a quiet indoor table."
+        },
+        {
+          "persona_id": "p10",
+          "text": "I finish coaching at 7:15, so I will meet you there instead of the gate."
+        },
+        {
+          "persona_id": "p04",
+          "text": "Then I will take the metro from Business Bay and skip the bike today."
+        },
+        {
+          "persona_id": "p12",
+          "text": "Good call. The exposed road is already bright by eight."
+        },
+        {
+          "persona_id": "p07",
+          "text": "I booked no table; we can choose when we see the queue."
+        },
+        {
+          "persona_id": "p10",
+          "text": "I will bring sunscreen for anyone who forgets theirs."
+        },
+        {
+          "persona_id": "p04",
+          "text": "I never forget, but I appreciate the reminder."
+        }
+      ]
+    },
+    {
+      "id": "chat-home",
+      "title": "Home project",
+      "persona_ids": [
+        "p07",
+        "p14",
+        "p15"
+      ],
+      "messages": [
+        {
+          "persona_id": null,
+          "text": "I want the entryway to feel less cluttered without buying a huge cabinet."
+        },
+        {
+          "persona_id": "p07",
+          "text": "Measure the wall and keep one clear landing surface. A narrow shelf will do more than a tall unit."
+        },
+        {
+          "persona_id": "p14",
+          "text": "I can make a 25cm-deep shelf from oak offcuts. Send me the width."
+        },
+        {
+          "persona_id": "p15",
+          "text": "A small mirror above it will bounce the light from the door."
+        },
+        {
+          "persona_id": null,
+          "text": "The wall is 94cm, so the 92cm shelf leaves almost no side margin."
+        },
+        {
+          "persona_id": "p07",
+          "text": "Then choose the 80cm version and centre a round mirror above it."
+        },
+        {
+          "persona_id": "p14",
+          "text": "I can build the 80cm shelf with a hidden key hook underneath."
+        },
+        {
+          "persona_id": "p15",
+          "text": "A warm lamp nearby will make the entry feel intentional at night."
+        },
+        {
+          "persona_id": null,
+          "text": "I want the shoes hidden but still easy to reach."
+        },
+        {
+          "persona_id": "p07",
+          "text": "Two lidded baskets at floor level solve that without adding height."
+        },
+        {
+          "persona_id": "p14",
+          "text": "I will sand the edges and use a matte finish, so fingerprints are less obvious."
+        },
+        {
+          "persona_id": "p15",
+          "text": "Send me a photo of the wall colour; I can suggest the mirror frame."
+        }
+      ]
+    },
+    {
+      "id": "chat-mum-checkin",
+      "title": "Mum · Check-in",
+      "persona_ids": [
+        "p11"
+      ],
+      "messages": [
+        {
+          "persona_id": "p11",
+          "text": "Did you sleep properly?"
+        },
+        {
+          "persona_id": "p11",
+          "text": "A little. I have an early meeting."
+        },
+        {
+          "persona_id": "p11",
+          "text": "Then keep breakfast simple and take water."
+        },
+        {
+          "persona_id": "p11",
+          "text": "I packed fruit. You would approve."
+        },
+        {
+          "persona_id": "p11",
+          "text": "I do approve. Call me when you finish."
+        },
+        {
+          "persona_id": "p11",
+          "text": "The meeting moved online, so I can call at lunch."
+        },
+        {
+          "persona_id": "p11",
+          "text": "Good, I want to hear your voice."
+        },
+        {
+          "persona_id": "p11",
+          "text": "I will tell you about the new project."
+        },
+        {
+          "persona_id": "p11",
+          "text": "And I will tell you the soup is ready."
+        },
+        {
+          "persona_id": "p11",
+          "text": "Please keep a bowl for me."
+        },
+        {
+          "persona_id": "p11",
+          "text": "Always. Come before it gets cold."
+        },
+        {
+          "persona_id": "p11",
+          "text": "I will. Love you."
+        }
+      ]
+    },
+    {
+      "id": "chat-sara-home",
+      "title": "Sara · Home plans",
+      "persona_ids": [
+        "p01",
+        "p07"
+      ],
+      "messages": [
+        {
+          "persona_id": "p01",
+          "text": "The shelf arrived and it is narrower than I expected."
+        },
+        {
+          "persona_id": "p07",
+          "text": "That can work if the entry surface stays clear."
+        },
+        {
+          "persona_id": "p01",
+          "text": "I would centre it on the wall and keep baskets below."
+        },
+        {
+          "persona_id": "p07",
+          "text": "I agree, but the baskets need to hide shoes."
+        },
+        {
+          "persona_id": "p01",
+          "text": "Use two matching ones; the room will feel calmer."
+        },
+        {
+          "persona_id": "p07",
+          "text": "I found a local maker with the right depth."
+        },
+        {
+          "persona_id": "p01",
+          "text": "Send the measurements before ordering."
+        },
+        {
+          "persona_id": "p07",
+          "text": "Width is 92cm, depth 24cm, height 18cm."
+        },
+        {
+          "persona_id": "p01",
+          "text": "That leaves enough walking space."
+        },
+        {
+          "persona_id": "p07",
+          "text": "I will order after dinner."
+        },
+        {
+          "persona_id": "p01",
+          "text": "Take a photo when it arrives."
+        },
+        {
+          "persona_id": "p07",
+          "text": "Deal. Thank you both."
+        }
+      ]
+    },
+    {
+      "id": "chat-boss-review",
+      "title": "Hannah · Review prep",
+      "persona_ids": [
+        "p09",
+        "p13"
+      ],
+      "messages": [
+        {
+          "persona_id": "p09",
+          "text": "Can we make the review less slide-heavy?"
+        },
+        {
+          "persona_id": "p13",
+          "text": "Yes. I will turn the middle section into one decision card."
+        },
+        {
+          "persona_id": "p09",
+          "text": "Please include the risk and what we need from the client."
+        },
+        {
+          "persona_id": "p13",
+          "text": "I will add both beside the recommendation."
+        },
+        {
+          "persona_id": "p09",
+          "text": "Keep the opening to the user story."
+        },
+        {
+          "persona_id": "p13",
+          "text": "And a short demo after it, no detour."
+        },
+        {
+          "persona_id": "p09",
+          "text": "I will rehearse with Aisha tomorrow."
+        },
+        {
+          "persona_id": "p13",
+          "text": "Send me the draft before noon."
+        },
+        {
+          "persona_id": "p09",
+          "text": "Will do. I am also checking the accessible labels."
+        },
+        {
+          "persona_id": "p13",
+          "text": "Good catch; that belongs in the acceptance notes."
+        },
+        {
+          "persona_id": "p09",
+          "text": "The final pass will be ready tonight."
+        },
+        {
+          "persona_id": "p13",
+          "text": "Thank you. This is the clearest version yet."
+        }
+      ]
+    },
+    {
+      "id": "chat-friends-food",
+      "title": "Friends · Dinner",
+      "persona_ids": [
+        "p03",
+        "p08",
+        "p15"
+      ],
+      "messages": [
+        {
+          "persona_id": "p03",
+          "text": "I can host if someone brings salad."
+        },
+        {
+          "persona_id": "p08",
+          "text": "I will bring beans and a small grinder."
+        },
+        {
+          "persona_id": "p15",
+          "text": "I will bring a dessert that does not melt in the car."
+        },
+        {
+          "persona_id": "p03",
+          "text": "That is an excellent division of labour."
+        },
+        {
+          "persona_id": "p08",
+          "text": "What time should we start?"
+        },
+        {
+          "persona_id": "p15",
+          "text": "Seven is comfortable for everyone."
+        },
+        {
+          "persona_id": "p03",
+          "text": "I will take the Metro and arrive early."
+        },
+        {
+          "persona_id": "p08",
+          "text": "I can pick you up from the station."
+        },
+        {
+          "persona_id": "p15",
+          "text": "No need; I like the walk from there."
+        },
+        {
+          "persona_id": "p03",
+          "text": "Please send the building pin anyway."
+        },
+        {
+          "persona_id": "p08",
+          "text": "Sent. Also, no one is allowed to discuss work."
+        },
+        {
+          "persona_id": "p15",
+          "text": "Agreed. Food first, stories after."
+        }
+      ]
+    },
+    {
+      "id": "chat-neighbours",
+      "title": "Building 7",
+      "persona_ids": [
+        "p16",
+        "p19",
+        "p32"
+      ],
+      "messages": [
+        {
+          "persona_id": "p16",
+          "text": "Has anyone seen a parcel for 7B?"
+        },
+        {
+          "persona_id": "p19",
+          "text": "Not here; I will check the reception shelf."
+        },
+        {
+          "persona_id": "p32",
+          "text": "I found one with a damaged label."
+        },
+        {
+          "persona_id": "p16",
+          "text": "Please leave it with reception, not outside the door."
+        },
+        {
+          "persona_id": "p19",
+          "text": "Done, and I took a photo of the label."
+        },
+        {
+          "persona_id": "p32",
+          "text": "Thank you. The lift is being serviced too."
+        },
+        {
+          "persona_id": "p16",
+          "text": "I saw the notice; stairs until five."
+        },
+        {
+          "persona_id": "p19",
+          "text": "I can help carry groceries for anyone elderly."
+        },
+        {
+          "persona_id": "p32",
+          "text": "That is kind. I will post it on the board."
+        },
+        {
+          "persona_id": "p16",
+          "text": "The water pressure is normal again."
+        },
+        {
+          "persona_id": "p19",
+          "text": "Good news. I will update the group notice."
+        },
+        {
+          "persona_id": "p32",
+          "text": "Appreciate everyone keeping this practical."
+        }
+      ]
+    },
+    {
+      "id": "chat-weekend-plan",
+      "title": "Weekend crew",
+      "persona_ids": [
+        "p02",
+        "p04",
+        "p10",
+        "p12"
+      ],
+      "messages": [
+        {
+          "persona_id": "p02",
+          "text": "Sunrise walk or a late breakfast?"
+        },
+        {
+          "persona_id": "p04",
+          "text": "Sunrise, then breakfast before the heat."
+        },
+        {
+          "persona_id": "p10",
+          "text": "I can bring the route and a spare water bottle."
+        },
+        {
+          "persona_id": "p12",
+          "text": "I will join after coaching at the beach."
+        },
+        {
+          "persona_id": "p02",
+          "text": "Meet near the old gate at 6:15."
+        },
+        {
+          "persona_id": "p04",
+          "text": "I can photograph the route markers."
+        },
+        {
+          "persona_id": "p10",
+          "text": "Please avoid the exposed road section."
+        },
+        {
+          "persona_id": "p12",
+          "text": "There is a shaded alternative by the canal."
+        },
+        {
+          "persona_id": "p02",
+          "text": "Perfect. I will share the map pin."
+        },
+        {
+          "persona_id": "p04",
+          "text": "I am bringing fruit, no heavy food."
+        },
+        {
+          "persona_id": "p10",
+          "text": "I will bring coffee for after."
+        },
+        {
+          "persona_id": "p12",
+          "text": "Then we have a plan."
+        }
+      ]
+    },
+    {
+      "id": "chat-family-logistics",
+      "title": "Family logistics",
+      "persona_ids": [
+        "p01",
+        "p11",
+        "p20"
+      ],
+      "messages": [
+        {
+          "persona_id": "p01",
+          "text": "Friday lunch is still on, yes?"
+        },
+        {
+          "persona_id": "p11",
+          "text": "Yes, I am making rice and lentils."
+        },
+        {
+          "persona_id": "p20",
+          "text": "I can bring fruit and a salad."
+        },
+        {
+          "persona_id": "p01",
+          "text": "I will bring the children after their class."
+        },
+        {
+          "persona_id": "p11",
+          "text": "What time should we arrive?"
+        },
+        {
+          "persona_id": "p20",
+          "text": "One o’clock is good; the kitchen will be ready."
+        },
+        {
+          "persona_id": "p01",
+          "text": "I will check the parking before we leave."
+        },
+        {
+          "persona_id": "p11",
+          "text": "Use the side entrance if the front is busy."
+        },
+        {
+          "persona_id": "p20",
+          "text": "I have saved the pin."
+        },
+        {
+          "persona_id": "p01",
+          "text": "Please do not bring too much."
+        },
+        {
+          "persona_id": "p11",
+          "text": "Fruit and your stories are enough."
+        },
+        {
+          "persona_id": "p20",
+          "text": "See you Friday."
+        }
+      ]
+    }
+  ]
+}

@@ -1,5 +1,8 @@
 # Dubai personal assistant — context and suggestions
 
+**Implementation checkpoint:** whole-place focus, removable chat chip, 30-minute expiry, bounded working history and owner checkpoint forgetting are implemented. Selected fragments, authoritative entity/plan resolution, ticket-availability guard and revision-bound draft itineraries remain CTX-02/PLAN-01. Events/occasions/sponsorship remain pending. Follow ../implementation-plan.md under root PLAN.md; do not read the proposal below as completed work.
+
+
 Founder direction, 21 Oct 2026. Requirements and architecture proposal; the context/itinerary/sponsorship features below are not implemented. Existing contest scope remains in `PLAN.md`.
 
 > hopefully you can check the new features your self, this is not maps app, this is Dubai personal assistant app

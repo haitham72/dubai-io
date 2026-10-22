@@ -1,5 +1,12 @@
+import { createHub } from './hub.js';
+import { createFeed } from './feed.js';
+import { createLiveMap } from './gmap.js';
+import { notify, sourceMoment, allowNotifications } from './notify.js';
+import { initSimKeyboard } from './sim-keyboard.js';
+import { assistHTML, mountAssist } from './assist.js';
 import { openSavedDetails } from './saved-details.js';
-import { openSavedRequests } from './service-workflow.js';
+import { selectFocus } from './assistant-context.js';
+import { openSavedRequests, api } from './service-workflow.js';
 // Home v2 lab. Flow: iPhone Wi-Fi sign-in -> install + open Dubai-io -> soft
 // card-by-card intro -> browse dock -> focused chat with its own composer.
 // Asking lifts the cards away into the chat; the answer can be a recovery
@@ -12,9 +19,11 @@ import { VARIANT } from './shaders.js';
 import { PALETTES, ONBOARDING, CASES, PROFILE_CARD, CATEGORIES, PLACES, SOURCES, EPISODES, HYPOTHESES, TOLD_LABELS, HOME, AREA_LABELS } from './data.js';
 import { profileAt, allowed } from './profile.js';
 import { loadProfile, profileEpisodes, setOverride } from './profile-store.js';
+import { topicFor, observe, homeRank, refreshRecommendations, renderInterests, browsingSession, discovery } from './recommendation-client.js';
 import { createMap, km } from './map.js';
 import { $, svg, esc, toast, openSheet, closeSheet, reduced, told } from './ui.js';
-import { initChat, wireChat, handle, post, update, hasThread, resetChat, trackOrder } from './chat.js';
+import { initChat, wireChat, handle, post, update, hasThread, resetChat, trackOrder, startNewChat, openConversation } from './chat.js';
+import { listConversations } from './session-state.js';
 import { initOffers, wireOffers, openOffers, closeOffers } from './offers.js';
 import { initPageHost, resetPageHost, registerPage, openPage } from './page-host.js';
 import { initProviderPages } from './provider-pages.js';
@@ -22,6 +31,11 @@ import { openConnections } from './accounts.js';
 import { renderServicesLanding } from './services.js';
 import { startGuide, wireGuide } from './guide.js';
 import { startArrival } from './arrival.js';
+import { createToday, openTask } from './tasks.js';
+import { statusLabel } from './status-labels.js';
+import { createReading } from './reading.js';
+import { watchOrder } from './orders.js';
+import { openProjects, refreshProjectContext } from './projects.js';
 
 // C1 used 0.55: apply 70% of that reflection to every stage card.
 const CARD_REFLECTION_STRENGTH = 0.55 * 0.70;
@@ -51,39 +65,55 @@ const fmtN = n => n.toLocaleString('en-US');
 
 document.documentElement.dataset.palette = paletteName;
 document.body.insertAdjacentHTML('beforeend', `
-<div id="app" class="mode-home ${reduced ? 'reduced' : ''}">
+<div id="app" class="mode-home is-onboarding ${reduced ? 'reduced' : ''}">
+  <section class="home-feed" id="homeFeed" aria-label="Home">
+  <div class="home-hero" id="homeHero">
   <canvas id="gl" aria-hidden="true"></canvas>
   <header class="top">
     <div class="brand"><button class="brand-btn" id="brandBtn" aria-label="Dubai-io. Tap to restart the demo"><b>Dubai-io</b></button><span class="area">${svg('pin', 'ic xs')} ${esc(told.area || 'Dubai')}${told.area ? ' · you told me' : ''}</span></div>
+    <button class="round glass" id="homeMe" aria-label="Your profile">${svg('person')}</button>
   </header>
   <main id="stage" aria-roledescription="carousel" aria-label="Home cards"></main>
   <nav class="rail" id="rail" aria-label="Cards"></nav>
   <p class="caption" id="caption" aria-live="polite"></p>
+  <button class="today-launch" id="todayLaunch" aria-controls="today" aria-label="Open Today tasks"><span class="today-launch-grab" aria-hidden="true"></span><span><b id="todayHandleLabel">Today</b><small>Scroll down to your tasks</small></span>${svg('up', 'ic sm')}</button>
+  </div>
+  <section class="today" id="today" aria-label="Today" tabindex="-1" hidden inert></section>
+  <section class="reading" id="reading" aria-label="News" hidden></section>
+  </section>
 
   <section class="chatv" id="chat" aria-label="Chat" inert>
     <div class="c-top">
-      <button class="round glass" id="chatBack" aria-label="Back to browsing">${svg('back')}</button>
+      <button class="round" id="chatHistory" aria-label="Open chat history" aria-controls="chatSidebar">${svg('menu')}</button>
       <span class="c-orb" aria-hidden="true"></span>
-      <div class="c-title"><button class="brand-btn" id="brandBtn2" aria-label="Dubai-io. Tap to restart the demo"><b>Dubai-<i>io</i></b></button><span>Your Dubai companion</span></div>
-      <button class="round" id="chatSearch" aria-label="Browse services">${svg('search')}</button>
+      <div class="c-title"><button class="brand-btn" id="brandBtn2" aria-label="Dubai-io. Tap to restart the demo"><b>Dubai-<i>io</i></b></button><span>Your Dubai assistant</span></div>
+      <button class="round" id="chatUser" aria-label="Your profile">${svg('person')}</button>
     </div>
     <div class="c-scroll" id="chatScroll">
       <div class="chat-empty" id="chatEmpty">
         <span class="chat-empty-orb" aria-hidden="true"></span>
-        <p>Your Dubai companion</p><h1>What’s your next step?</h1>
+        <p>For your life and work in Dubai</p><h1>What’s your next step?</h1>
         <div class="chat-starters" aria-label="Start a conversation">
-          <button data-chat-ask="Guide me through the airport">${svg('plane', 'ic sm')} Guide me to arrivals ${svg('chev', 'ic xs')}</button>
+          <button data-chat-task>${svg('cal', 'ic sm')} Keep track of something ${svg('chev', 'ic xs')}</button>
           <button data-chat-ask="I need a shirt pressed by 9 tomorrow">${svg('drop', 'ic sm')} Press a shirt ${svg('chev', 'ic xs')}</button>
           <button data-chat-ask="Coffee near me">${svg('cup', 'ic sm')} Find coffee nearby ${svg('chev', 'ic xs')}</button>
         </div>
       </div>
-      <div class="c-list" id="chatList"></div>
+      <div class="chat-focus" id="chatProject" hidden></div><div class="chat-focus" id="chatFocus" hidden></div><div class="c-list" id="chatList"></div>
     </div>
   </section>
+
+  <dialog class="chat-sidebar" id="chatSidebar" aria-labelledby="chatSidebarTitle">
+    <header><h2 id="chatSidebarTitle">Dubai-io</h2><button class="round" data-close-history aria-label="Close chat history">${svg('close')}</button></header>
+    <nav aria-label="Assistant"><button data-history-home>${svg('grid', 'ic sm')} Tasks</button><button data-history-projects>${svg('folder', 'ic sm')} Projects</button><button data-new-chat>${svg('spark', 'ic sm')} New chat</button></nav>
+    <h3>Chats</h3><p class="chat-history-note">Saved on this device</p><div id="chatHistoryList"></div>
+    <footer><button id="chatBack">${svg('back', 'ic sm')} Back to browsing</button></footer>
+  </dialog>
 
   <section id="results" class="results" aria-label="Map near you">
     <div id="mapEl" class="mapbox" hidden></div>
     <img id="gmap" class="gmap" alt="" hidden>
+    <div id="gliveMap" class="gmap glive" role="region" aria-label="Interactive Google map of the results" hidden></div>
     <div id="mapPlaceholder" class="map-placeholder" role="status"><span>${svg('map')}</span><p>Finding places…</p></div>
     <div class="map-fallback" id="mapFallback" hidden>Map needs WebGL. The list below has every place.</div>
     <div class="r-top">
@@ -104,6 +134,8 @@ document.body.insertAdjacentHTML('beforeend', `
   </section>
 
   <section class="svcgrid" id="svcGrid" aria-label="Services"></section>
+  <section class="tabview" id="chatHub" aria-label="Chat" inert></section>
+  <section class="tabview" id="feedView" aria-label="Feed" inert></section>
 
   <form class="composer glass" id="composer" aria-label="Message Dubai-io" autocomplete="off" inert>
     <label class="sr" for="q">Ask Dubai-io</label>
@@ -112,13 +144,15 @@ document.body.insertAdjacentHTML('beforeend', `
     <button type="submit" class="c-send" aria-label="Send">${svg('up', 'ic sm')}</button>
   </form>
 
+  <button class="browse-toggle glass" id="browseToggle" aria-label="Expand navigation" aria-controls="browseDock" aria-expanded="false" inert>${svg('stack')}</button>
+
   <div class="browse-dock" id="browseDock">
   <nav class="tabbar glass" aria-label="Tabs">
     <span class="tab-selection" aria-hidden="true"></span>
-    <button data-tab="home" aria-current="page">${svg('orb')}<span>io</span></button>
-    <button data-tab="maps">${svg('map')}<span>Maps</span></button>
+    <button data-tab="home" aria-current="page">${svg('orb')}<span>Home</span></button>
+    <button data-tab="chat">${svg('bubble')}<span>Chat</span></button>
     <button data-tab="services">${svg('grid')}<span>Services</span></button>
-    <button data-tab="me">${svg('person')}<span>Me</span></button>
+    <button data-tab="feed">${svg('feed')}<span>Feed</span></button>
   </nav>
   <button class="chat-launch glass" id="chatLaunch" aria-label="Search or chat with Dubai-io">${svg('search')}<span>Ask</span></button>
   </div>
@@ -159,16 +193,33 @@ const S = {
   tune: { ribs: 8.5, foil: 1, grain: 0.07, aura: 0.95 },
   shape: { falloff: 2.4, height: 0.85, glow: 0.24 },
   overrides: {}, asOf: T1, active: -1,
+  currentWork: [],
   lift: 0, liftFrom: 0, liftTo: 0, liftStart: 0, liftDur: 820,
   ask: null, cat: 'all', sub: null, src: null, detail: null, snap: 'peek', chatReturn: 'home', mapMode: '2d',
 };
 const G = {};
+const today = createToday($('#today'), () => {
+  if (S.mode === 'onboard') { store.set('onboarded', '1'); buildHome(); }
+  enterServices();
+});
+const reading = createReading($('#reading'));
+const hub = createHub($('#chatHub'), { openAssistant: () => beginChat(), openMe: () => openMe() });
+const feed = createFeed($('#feedView'), { openMe: () => openMe() });
+const homeSourceWatchers = new Map();
+function followHomeSources(items) {
+  const ids = new Set(items.map(item => item.source.id));
+  for (const [id, stop] of homeSourceWatchers) if (!ids.has(id)) { stop(); homeSourceWatchers.delete(id); }
+  for (const item of items) if (!homeSourceWatchers.has(item.source.id))
+    homeSourceWatchers.set(item.source.id, watchOrder(item.source.id, action => sourceMoment(item.task, action, () => openTask(item.task.id))));
+}
+let sourceSummaryTimer;
+addEventListener('dubaiio:source-changed', () => { clearTimeout(sourceSummaryTimer); sourceSummaryTimer = setTimeout(() => today.refreshSummary(), 100); });
 window.__lab = { S, G };
 let seedN = 1, onboardingExitTimer = 0;
 const mkCard = def => ({ ...def, holo: CARD_REFLECTION_STRENGTH, variant: VARIANT[def.kind] ?? 0, seed: (seedN++ * 7.31) % 13, rev: reduced ? 1 : 0, revStart: 0, revDur: 1100, out: false, outFrom: 1, exitProgress: 0, el: null });
 
 // ---------------------------------------------------------------- views
-const VIEWS = ['home', 'chat', 'results', 'services'];
+const VIEWS = ['home', 'chat', 'results', 'services', 'hub', 'feed'];
 let restoringView = false;
 function setView(v) {
   if (v === 'chat' && S.view !== 'chat') {
@@ -179,20 +230,29 @@ function setView(v) {
   }
   if (S.view !== v) S.from = S.view;
   S.view = v;
+  app.classList.remove('nav-expanded');
+  $('#browseToggle').setAttribute('aria-expanded', 'false');
+  $('#browseToggle').inert = v !== 'chat';
   for (const x of VIEWS) app.classList.toggle('mode-' + x, x === v);
-  setTab(v === 'results' ? 'maps' : v === 'services' ? 'services' : 'home');
-  $('#browseDock').inert = v === 'chat';
+  setTab(v === 'hub' ? 'chat' : v === 'feed' ? 'feed' : v === 'services' || v === 'results' ? 'services' : 'home');
+  $('#browseDock').inert = v === 'chat' || S.mode === 'onboard';
   $('#composer').inert = v !== 'chat';
   $('#chat').inert = v !== 'chat';
   stageEl.inert = v !== 'home';
   railEl.inert = v !== 'home';
+  $('#homeFeed').inert = v !== 'home';
+  $('#todayLaunch').inert = v !== 'home';
+  today.show(v === 'home');
+  reading.show(v === 'home');
   $('#svcGrid').inert = v !== 'services';
+  $('#chatHub').inert = v !== 'hub'; hub.show(v === 'hub');
+  $('#feedView').inert = v !== 'feed'; feed.show(v === 'feed');
   $('#results').inert = v !== 'results';
   document.querySelector('.top').inert = v !== 'home';
   if (v !== 'chat') $('#q').blur();
   setLift(v === 'home' ? 0 : 1);
 }
-function showChat() { closeOffers(); if (S.view !== 'chat') setView('chat'); }
+function showChat() { closeOffers(); if (S.view !== 'chat') { refreshProjectContext(); setView('chat'); } }
 function setTab(t) {
   const buttons = [...document.querySelectorAll('.tabbar button')];
   buttons.forEach(b => { if (b.dataset.tab === t) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
@@ -200,6 +260,7 @@ function setTab(t) {
 }
 function beginChat() {
   if (S.onboardingExit) buildHome();
+  setNavigationExpanded(false);
   showChat();
   $('#q').focus({ preventScroll: true });
 }
@@ -222,8 +283,8 @@ addEventListener('popstate', e => {
 // ---------------------------------------------------------------- layout
 function layout() {
   const r = app.getBoundingClientRect();
-  const s = stageEl.getBoundingClientRect();
-  Object.assign(G, { W: r.width, H: r.height, sx: s.left - r.left, sy: s.top - r.top, sw: s.width, sh: s.height });
+  const s = stageEl.getBoundingClientRect(), hero = $('#homeHero').getBoundingClientRect();
+  Object.assign(G, { W: r.width, H: r.height, sx: s.left - hero.left, sy: s.top - hero.top, sw: s.width, sh: s.height });
   G.cw = Math.round(Math.min(318, G.sw * 0.78));
   G.ch = Math.round(Math.min(G.sh * 0.96, G.cw * 1.46));
   G.bandH = Math.round(G.ch * 0.52);
@@ -298,9 +359,17 @@ function buildRail() {
 
 // ---------------------------------------------------------------- flows: intro, home
 function startOnboarding() {
+  app.classList.add('is-onboarding', 'has-today-entry');
+  $('#browseDock').hidden = true; $('#browseDock').inert = true;
+  $('#homeFeed').scrollTop = 0;
+  $('#todayLaunch').inert = false;
+  today.show(true);
+  stageEl.inert = false; railEl.inert = false;
+  setLift(0);
   clearTimeout(onboardingExitTimer);
   S.onboardingExit = false;
   S.mode = 'onboard';
+  layout();
   S.deck = [mkCard(ONBOARDING[0])];
   S.pos = S.target = 0; S.vel = 0;
   mountDeck();
@@ -329,33 +398,52 @@ function finishOnboarding() {
   });
   onboardingExitTimer = setTimeout(() => {
     // A replay/restart may have replaced the deck while the cards were leaving.
-    if (S.deck === deck) buildHome();
+    if (S.deck === deck) { buildHome(); enterServices(); }
   }, reduced ? 0 : end + 40);
 }
 function homeOrder() {
   const p = profileAt(profileEpisodes(), HYPOTHESES, S.asOf, S.overrides);
   const byId = Object.fromEntries([...p.noticed, ...p.confirmed].map(h => [h.id, h]));
   return CASES.map((c, k) => {
+    const recommendation = homeRank(c.id);
+    if (recommendation?.reason) return { c, h: { reason: recommendation.reason, provenance: recommendation.provenance }, score: (recommendation.influence < 0 ? -100 : 100) + recommendation.score };
     const h = c.because && byId[c.because];
     // Tier rule: hypotheses may only re-rank, with a visible Because chip (allowed(h, 'rerank')).
     const boost = h && allowed(h, 'rerank') && (h.surfaced || h.provenance === 'user_supplied') ? h.conf : 0;
-    return { c, h: boost ? h : null, score: boost * 10 - k };
+    return { c, h: boost ? h : null, score: boost * 10 - (c.id === 'C5' ? 100 : k) };
   }).sort((a, b) => b.score - a.score);
 }
 function buildHome() {
   clearTimeout(onboardingExitTimer);
   S.onboardingExit = false;
   S.mode = 'home';
-  S.deck = [mkCard(PROFILE_CARD), ...homeOrder().map(o => mkCard({ ...o.c, becauseHyp: o.h }))];
-  S.pos = S.target = 1; S.vel = 0;
+  app.classList.remove('is-onboarding');
+  $('#browseDock').hidden = false; $('#browseDock').inert = S.view === 'chat';
+  app.classList.add('has-today-entry');
+  stageEl.inert = S.view !== 'home'; railEl.inert = S.view !== 'home';
+  $('#todayLaunch').inert = S.view !== 'home';
+  setLift(S.view === 'home' ? 0 : 1);
+  today.refreshSummary();
+  layout();
+  S.deck = homeDeck().map(mkCard);
+  S.pos = S.target = 0; S.vel = 0;
   mountDeck();
-  S.deck.forEach((c, i) => reveal(c, 120 + Math.abs(i - 1) * 140, 1000));
+  S.deck.forEach((c, i) => reveal(c, 120 + i * 140, 1000));
+}
+function homeDeck() {
+  if (S.currentWork.length) return S.currentWork.map(({task, source}) => ({
+    id: 'task:' + task.id, taskId: task.id, kind: 'silk', eyebrow: 'Your task', title: task.outcome,
+    body: task.next_step || statusLabel(source.status), meta: [statusLabel(source.status), ...(source.capability_id === 'order.request' ? ['Sandbox merchant'] : [])],
+    caption: 'Your saved task. Open it for the latest details.',
+  }));
+  return homeOrder().slice(0, 5).map(o => ({ ...o.c, eyebrow: 'Start a task', meta: ['Your choice'], becauseHyp: o.h }));
 }
 function captionFor(c) {
   if (!c) return '';
-  if (S.mode === 'onboard') return c.next === 'Start' ? 'Tap Start, or tap Ask to chat.' : 'Swipe, tap Next, or tap Ask to chat.';
+  if (S.mode === 'onboard') return c.next === 'Start' ? 'Start a new task in Services, or scroll down to your tasks.' : 'Swipe across or tap Next. Scroll down for your tasks.';
   if (c.becauseHyp) {
     const h = c.becauseHyp;
+    if (h.reason) return `${esc(h.reason)} <span class="tag">${h.provenance === 'user_supplied' ? 'you confirmed' : 'inferred from choices'}</span>`;
     const tag = h.provenance === 'user_supplied' ? 'you confirmed' : `I noticed, ${Math.round(h.conf * 100)}%`;
     return `<span class="because">Because</span> ${esc(h.label.toLowerCase())} <span class="tag">${tag}</span>`;
   }
@@ -461,8 +549,7 @@ function setLift(to) { if (S.liftTo === to) return; S.liftDur = S.mode === 'onbo
 // ---------------------------------------------------------------- stage input
 function onDown(e) {
   if (S.view !== 'home' || S.onboardingExit || e.button > 0 || e.target.closest('button')) return;
-  S.drag = { x: e.clientX, pos: S.pos, lastX: e.clientX, lastT: performance.now(), v: 0, moved: false, id: e.pointerId, card: e.target.closest('.card') };
-  stageEl.setPointerCapture(e.pointerId);
+  S.drag = { x: e.clientX, y: e.clientY, pos: S.pos, lastX: e.clientX, lastT: performance.now(), v: 0, moved: false, id: e.pointerId, card: e.target.closest('.card') };
   const r = S.drag.card;
   if (r && r.classList.contains('is-center')) {
     const b = r.getBoundingClientRect();
@@ -471,8 +558,13 @@ function onDown(e) {
 }
 function onMove(e) {
   const d = S.drag; if (!d || e.pointerId !== d.id) return;
-  const dx = e.clientX - d.x;
-  if (Math.abs(dx) > 6) d.moved = true;
+  const dx = e.clientX - d.x, dy = e.clientY - d.y;
+  // The browser owns vertical scrolling; only claim a horizontal card drag.
+  if (!d.moved) {
+    if (Math.abs(dy) > 6 && Math.abs(dy) > Math.abs(dx)) { S.drag = null; S.tiltTarget = [0, 0]; return; }
+    if (Math.abs(dx) <= 6) return;
+    d.moved = true; stageEl.setPointerCapture(e.pointerId);
+  }
   const now = performance.now();
   d.v = d.v * 0.7 + ((e.clientX - d.lastX) / Math.max(1, now - d.lastT)) * 0.3; d.lastX = e.clientX; d.lastT = now;
   let pos = d.pos - dx / G.spacing; const max = S.deck.length - 1;
@@ -483,6 +575,7 @@ function onMove(e) {
 function onUp(e) {
   const d = S.drag; if (!d || e.pointerId !== d.id) return;
   S.drag = null;
+  if (!d.moved && Math.abs(e.clientY - d.y) > 6) return;
   const max = S.deck.length - 1;
   if (!d.moved) {
     if (d.card) { const i = +d.card.dataset.i; if (i !== Math.round(S.pos)) S.target = i; else openCard(S.deck[i]); }
@@ -493,16 +586,39 @@ function onUp(e) {
   const t = Math.max(Math.round(d.pos) - 2, Math.min(Math.round(d.pos) + 2, Math.round(S.pos + fling * 0.18)));
   S.target = Math.max(0, Math.min(max, t));
 }
+// Trackpad two-finger swipe arrives as horizontal wheel deltas (including macOS
+// momentum). Treat it as a drag: the deck follows, then snaps when the swipe ends.
+let wheelEnd = 0;
+function onWheel(e) {
+  if (S.view !== 'home' || S.onboardingExit || !S.deck.length || Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+  e.preventDefault();
+  if (S.drag && !S.drag.wheel) return;
+  S.drag ||= { wheel: true, id: null, start: S.pos };
+  const max = S.deck.length - 1, step = e.deltaMode === 1 ? e.deltaX * 16 : e.deltaX;
+  let pos = S.pos + step / G.spacing;
+  if (pos < 0) pos = Math.max(-0.35, pos * 0.6); else if (pos > max) pos = Math.min(max + 0.35, max + (pos - max) * 0.6);
+  S.pos = pos;
+  clearTimeout(wheelEnd);
+  wheelEnd = setTimeout(() => {
+    const d = S.drag; if (!d?.wheel) return;
+    S.drag = null; S.vel = 0;
+    if (S.pendingDeck) refreshHomeCaptions();
+    const moved = S.pos - d.start;  // a deliberate swipe moves at least one card
+    S.target = Math.max(0, Math.min(max, Math.abs(moved) > 0.15 ? Math.round(d.start) + Math.sign(moved) * Math.max(1, Math.round(Math.abs(moved))) : Math.round(d.start)));
+  }, 140);
+}
+stageEl.addEventListener('wheel', onWheel, { passive: false });
 stageEl.addEventListener('pointerdown', onDown);
 stageEl.addEventListener('pointermove', onMove);
 stageEl.addEventListener('pointerup', onUp);
-stageEl.addEventListener('pointercancel', onUp);
+stageEl.addEventListener('pointercancel', () => { S.drag = null; S.tiltTarget = [0, 0]; });
 stageEl.addEventListener('click', e => { if (e.target.closest('[data-act="next"]')) { e.stopPropagation(); advance(); } });
 railEl.addEventListener('click', e => { const d = e.target.closest('.dot'); if (d && !S.onboardingExit) S.target = +d.dataset.i; });
 addEventListener('keydown', e => {
-  if (e.target.closest?.('input')) return;
+  if (e.defaultPrevented || e.target.closest?.('input,textarea,select,button,a,summary,[contenteditable="true"]')) return;
   if (!$('#sheet').hidden) { if (e.key === 'Escape') closeSheet(); return; }
   if (S.view !== 'home') { if (e.key === 'Escape') goBack(); return; }
+  if ($('#homeFeed').scrollTop > $('#homeHero').clientHeight / 2) return;
   if (S.onboardingExit) { if (['ArrowLeft', 'ArrowRight', 'Enter'].includes(e.key)) e.preventDefault(); return; }
   if (e.key === 'ArrowRight') { if (S.mode === 'onboard' && Math.round(S.pos) === S.deck.length - 1) advance(); else S.target = Math.min(S.deck.length - 1, Math.round(S.pos) + 1); }
   if (e.key === 'ArrowLeft') S.target = Math.max(0, Math.round(S.pos) - 1);
@@ -514,6 +630,7 @@ $('#scrim').addEventListener('click', closeSheet);
 function openCard(c) {
   if (!c) return;
   if (S.mode === 'onboard') { advance(); return; }
+  if (c.taskId) { openTask(c.taskId); return; }
   if (c.id === 'you') { openProfile(); return; }
   if (c.ask) { handle(c.ask); return; }
   const cat = catOf(c.category);
@@ -536,13 +653,22 @@ function openProfile() {
     <p class="lead">Everything I believe about you, and why. Drag the timeline to see it change.</p>
     <div class="scrub"><label for="asof">As of <b id="asofLbl"></b></label>
       <input type="range" id="asof" min="${T0}" max="${T1}" step="3600000" value="${S.asOf}" />
-      <div class="scrub-ends"><span>1 Oct</span><span>13 Oct</span></div></div>
-    <div id="prof"></div>
+      <div class="scrub-ends"><span>${esc(new Date(T0).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }))}</span><span>${esc(new Date(T1).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }))}</span></div></div>
+    <div id="liveInterests"></div><div id="prof"></div>
     <p class="fine">Things I noticed can reorder suggestions, always with a “Because” note. They never fill a form, reach a shop or send you a reminder until you confirm them. Health, religion, ethnicity, nationality, gender, sexuality and politics are never inferred.</p>
   `, () => { renderYouMini(); refreshHomeCaptions(); });
   const input = $('#asof');
   input.addEventListener('input', () => { S.asOf = +input.value; renderProfile(); });
   renderProfile();
+  renderInterests($('#liveInterests'), ({ refresh = true } = {}) => {
+    refreshHomeCaptions();
+    if (S.view === 'results' && S.mapMode === '2d') {
+      S.detail = null;
+      if (refresh) loadLive();
+      renderResults(); refit();
+    }
+    if (refresh) refreshRecommendations(CASES);
+  });
 }
 function renderProfile() {
   $('#asofLbl').textContent = fmtDate(S.asOf);
@@ -577,10 +703,17 @@ function renderProfile() {
 }
 function refreshHomeCaptions() {
   if (S.mode !== 'home') return;
-  const order = homeOrder();
-  for (const c of S.deck) { const o = order.find(x => x.c.id === c.id); if (o) c.becauseHyp = o.h; }
-  S.active = -1;
+  if (S.drag) { S.pendingDeck = true; return; }
+  S.pendingDeck = false;
+  const selected = S.deck[Math.round(S.pos)]?.id, definitions = homeDeck();
+  const previous = new Map(S.deck.map(c => [c.id, c]));
+  S.deck = definitions.map(def => { const old = previous.get(def.id); return old ? Object.assign(old, def) : mkCard(def); });
+  S.pos = S.target = Math.max(0, S.deck.findIndex(c => c.id === selected)); S.vel = 0;
+  mountDeck(); S.deck.forEach(c => { if (!previous.has(c.id)) reveal(c, 0, 700); });
 }
+stageEl.addEventListener('pointerup', () => { if (S.pendingDeck) refreshHomeCaptions(); });
+stageEl.addEventListener('pointercancel', () => { if (S.pendingDeck) refreshHomeCaptions(); });
+addEventListener('dubaiio:recommendations-changed', refreshHomeCaptions);
 
 // ---------------------------------------------------------------- Maps: near me
 let MAP = null;
@@ -594,7 +727,8 @@ function ensureMap() {
   MAP?.ready.catch(() => { if (S.mapMode === '3d') { $('#mapFallback').textContent = 'The 3D preview could not load. Demo places are still listed below.'; $('#mapFallback').hidden = false; } });
 }
 // Explicit views: live Google content stays on its Google map; the separate 3D preview uses demo places.
-const placeCache = new Map();
+const placeCache = discovery;
+let placeSort = 'recommended', placeOpen = false, placeRadius = 10;
 let cameraGeneration = 0, lastCameraKey = '';
 const cameraKey = () => `${S.cat}|${S.sub || ''}|${S.src || ''}|${S.detail || ''}`;
 function areaCenter() {
@@ -602,43 +736,39 @@ function areaCenter() {
   const hit = AREA_LABELS.find(([name]) => area.includes(name));
   return hit ? { lat: hit[1], lng: hit[2], label: told.area || HOME.label } : { lat: HOME.lat, lng: HOME.lng, label: told.area || HOME.label };
 }
-const liveKey = () => `${S.cat}|${S.sub || ''}|${areaCenter().label}`;
+const liveKey = () => `${S.query || ''}|${S.cat}|${S.sub || ''}|${areaCenter().lat},${areaCenter().lng}|${placeSort}|${placeOpen}|${placeRadius}|${browsingSession()}`;
 function liveState() { return placeCache.get(liveKey()); }
-function loadLive() {
+function loadLive(force = false) {
   if (S.mapMode !== '2d') return;
   const key = liveKey();
-  if (placeCache.has(key)) return;
-  const c = areaCenter(), cat = catOf(S.cat);
-  const what = S.sub || (cat ? cat.label : 'Popular places');
-  placeCache.set(key, { status: 'loading' });
-  fetch('/api/places/search', { method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(9000),
-    body: JSON.stringify({ query: `${what} near ${c.label}`, lat: c.lat, lng: c.lng }) })
-    .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
-    .then(d => placeCache.set(key, { status: 'ok', at: d.as_of, places: d.places.filter(x => x.lat != null).map(x => ({
-      id: 'g:' + x.id, live: true, name: x.name, rating: x.rating || 0, count: x.ratings || 0, lat: x.lat, lng: x.lng,
-      area: x.short_address || x.address || '', address: x.address, cat: S.cat, sub: S.sub, open: x.open_now, phone: x.phone, website: x.website, maps: x.maps_url,
-      img: x.photo ? '/api/places/photo?w=480&name=' + encodeURIComponent(x.photo) : null, photoBy: (x.photo_by || [])[0] || '' })) }))
-    .catch(() => placeCache.set(key, { status: 'error' }))
+  const c = areaCenter();
+  placeCache.refresh(key, { session_id: browsingSession(), category: S.cat, subcategory: S.sub, lat: c.lat, lng: c.lng,
+    sort: placeSort, open_now: placeOpen, radius_km: placeRadius, ...(S.query ? { query: S.query } : {}) }, force)
     .finally(() => { if (S.view === 'results' && S.mapMode === '2d' && liveKey() === key) { renderResults(); refit(); } });
 }
-const kmFrom = (c, p) => { const R = 6371, dLat = (p.lat - c.lat) * Math.PI / 180, dLng = (p.lng - c.lng) * Math.PI / 180;
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(c.lat * Math.PI / 180) * Math.cos(p.lat * Math.PI / 180) * Math.sin(dLng / 2) ** 2; return Math.round(2 * R * Math.asin(Math.sqrt(a)) * 10) / 10; };
 function filtered() {
   const live = liveState();
   if (S.mapMode === '2d') {
     if (live?.status !== 'ok') return [];
-    const c = areaCenter(); return live.places.map(p => ({ ...p, km: kmFrom(c, p) })).sort((a, b) => a.km - b.km || b.rating - a.rating);
+    // Preserve the server snapshot order, including explicit closest sorting.
+    return live.places.map(x => ({
+      id: 'g:' + x.id, live: true, name: x.name, rating: x.rating || 0, count: x.ratings || 0, lat: x.lat, lng: x.lng,
+      area: x.short_address || x.address || '', address: x.address, cat: S.cat, sub: S.sub, open: x.open_now,
+      phone: x.phone, website: x.website, maps: x.maps_url, km: x.distance_km,
+      reason: x.recommendation?.reason, variety: x.recommendation?.variety,
+      img: x.photo ? '/api/places/photo?w=480&name=' + encodeURIComponent(x.photo) : null, photoBy: (x.photo_by || [])[0] || '',
+    }));
   }
   return PLACES.filter(p => (S.cat === 'all' || p.cat === S.cat) && (!S.sub || p.sub === S.sub) && (!S.src || p.why === S.src))
     .map(p => ({ ...p, km: km(p) }))
     .sort((a, b) => (a.km ?? 99) - (b.km ?? 99) || b.rating - a.rating);
 }
-function enterResults({ ask = null, cat = 'all', sub = null } = {}) {
-  S.ask = ask; S.cat = cat; S.sub = sub; S.src = null; S.detail = null;
+function enterResults({ ask = null, cat = 'all', sub = null, query = null } = {}) {
+  S.ask = ask; S.cat = cat; S.sub = sub; S.query = query; S.src = null; S.detail = null;
   closeSheet(); closeOffers();
   setView('results');
   setSnap('peek', true);
-  loadLive();
+  loadLive(true);
   renderResults();
   refit();
 }
@@ -654,13 +784,24 @@ function goBack() {
   if (S.view === 'results' && S.from === 'chat') { setView('chat'); return; }
   setView('home');
 }
+// Live results draw on an interactive Google map inside the app; the static image
+// is only a fallback when the interactive map cannot load.
+let liveMap = null, liveMapFailed = false, liveMapGeneration = 0;
 function showGoogleMap(list, one) {
-  const g = $('#gmap'), live = liveState();
+  const g = $('#gmap'), live = liveState(), mine = ++liveMapGeneration;
   g.hidden = true;
   if (S.mapMode !== '2d') return;
   $('#mapPlaceholder').hidden = false;
-  $('#mapPlaceholder p').textContent = live?.status === 'error' ? 'Places are unavailable right now.' : live?.status === 'ok' ? 'Loading your 2D map…' : 'Finding places…';
+  $('#mapPlaceholder p').textContent = live?.status === 'error' ? 'Places are unavailable right now.' : live?.status === 'ok' ? 'Loading your map…' : 'Finding places…';
   if (live?.status !== 'ok') return;
+  if (!liveMapFailed) {
+    (liveMap ||= createLiveMap($('#gliveMap'), { onPick: id => openDetail(id) })).then(m => {
+      if (mine !== liveMapGeneration || S.mapMode !== '2d' || S.view !== 'results') return;
+      $('#gliveMap').hidden = false; $('#mapPlaceholder').hidden = true;
+      m.show(list.slice(0, 20), { one, center: areaCenter() });
+    }).catch(() => { liveMapFailed = true; liveMap = null; if (mine === liveMapGeneration) showGoogleMap(list, one); });
+    return;
+  }
   const c = areaCenter(), pins = (one ? [one] : list.slice(0, 9)).map(p => `${p.lat.toFixed(6)},${p.lng.toFixed(6)}`).join('|');
   const src = `/api/staticmap?s=tall&c=${c.lat},${c.lng}&m=${encodeURIComponent(pins)}${one ? '&z=16' : ''}`;
   g.alt = one ? `Google map: ${one.name}` : 'Google map of the results';
@@ -672,6 +813,7 @@ function refit() {
   const is3D = S.mapMode === '3d', generation = ++cameraGeneration;
   $('#mapEl').hidden = !is3D;
   $('#gmap').hidden = true;
+  if (is3D) $('#gliveMap').hidden = true;
   $('#mapPlaceholder').hidden = is3D;
   $('#mapFallback').hidden = true;
   $('#rDemo').hidden = !is3D;
@@ -722,8 +864,10 @@ function renderChips() {
   row.scrollLeft = on ? Math.max(0, on.offsetLeft - 12) : 0;
 }
 function selectMapCategory(cat, sub = null) {
+  selectFocus(null);
   S.cat = cat; S.sub = sub; S.src = null; S.detail = null; S.ask = null;
-  loadLive(); renderResults(); refit();
+  if (S.mapMode === '2d') observe('category', topicFor(cat, sub), 'category:' + cat + (sub ? ':' + sub.replace(/[^A-Za-z0-9_-]/g, '_') : '')).then(ok => { if (ok) refreshRecommendations(CASES); });
+  loadLive(true); renderResults(); refit();
 }
 const WHY = {
   video: p => `${svg('play', 'ic xs')} ${esc(p.video.handle)} · ${esc(p.video.at)}`,
@@ -738,7 +882,7 @@ function renderResults() {
   if (S.ask) {
     const cat = catOf(S.cat);
     ask.hidden = false;
-    ask.innerHTML = `<span class="ask-q">${esc(S.ask)}</span><span class="ask-u">${svg('orb', 'ic xs')} ${cat ? `Near you · ${esc(cat.label)}${S.sub ? ' › ' + esc(S.sub) : ''}` : 'Near you · everything'}</span>`;
+    ask.innerHTML = `<span class="ask-q">${esc(S.ask)}</span><span class="ask-u">${svg('orb', 'ic xs')} ${cat ? `Near you · ${esc(cat.label)}${S.sub ? ' › ' + esc(S.sub) : ''}${S.query ? ' · ' + esc(S.query) : ''}` : 'Near you · everything'}</span>`;
   } else ask.hidden = true;
   if (S.detail) { renderDetail(); return; }
   const live = liveState();
@@ -778,22 +922,28 @@ function renderResults() {
 }
 function renderLiveResults(live) {
   const cat = catOf(S.cat), c = areaCenter();
-  const what = S.sub ? S.sub.toLowerCase() : cat ? cat.label.toLowerCase() : 'places';
+  const what = S.query ? S.query.toLowerCase() + (S.cat === 'food' ? ' places' : '') : S.sub ? S.sub.toLowerCase() : cat ? cat.label.toLowerCase() : 'places';
   if (live.status === 'loading') { rsScroll.innerHTML = `<div class="rs-head"><h3>Finding ${esc(what)} near ${esc(c.label)}…</h3><p>Live from Google Maps</p></div>`; return; }
   if (live.status === 'error') {
     rsScroll.innerHTML = `<div class="rs-head"><h3>Live places are unavailable</h3><p>Try again, or choose the separate 3D demo above.</p></div><button class="btn wide" data-retry-places>Try again</button>`;
     return;
   }
   const list = filtered();
-  const at = live.at ? new Date(live.at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '';
+  const at = live.as_of ? new Date(live.as_of).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '';
   const credits = [...new Set(list.map(p => p.photoBy).filter(Boolean))].slice(0, 4).join(', ');
   const img = p => p.img ? `<div class="hc-img" style="background-image:url('${p.img}')"></div>` : `<div class="hc-img glyph">${svg(cat?.glyph || 'pin', 'ic lg')}</div>`;
   rsScroll.innerHTML = `
-    <div class="rs-head"><h3>${list.length} ${esc(what)} near ${esc(c.label)}</h3><p>Live from Google Maps · closest first · distances are straight-line estimates</p></div>
+    <div class="rs-head"><h3>${list.length} ${esc(what)} near ${esc(c.label)}</h3><p>Live from Google Maps · ${placeSort === 'closest' ? 'closest first' : 'recommended from this result set'} · straight-line distances</p></div>
+    <div class="place-controls">
+      <div class="seg glass" role="group" aria-label="Place ordering"><button data-place-sort="recommended" aria-pressed="${placeSort === 'recommended'}">Recommended</button><button data-place-sort="closest" aria-pressed="${placeSort === 'closest'}">Closest</button></div>
+      <label><input type="checkbox" data-place-open ${placeOpen ? 'checked' : ''}> Open now</label>
+      <label><span class="sr">Search radius</span><select data-place-radius aria-label="Search radius">${[1,3,6,10,25].map(n => `<option value="${n}" ${n === placeRadius ? 'selected' : ''}>Within ${n} km</option>`).join('')}</select></label>
+      <button class="btn sm" data-refresh-places>Refresh</button>
+    </div>
     <div class="hcards" id="hcards">${list.map((p, i) => `
       <button class="hcard" data-p="${esc(p.id)}">${img(p)}
         <span class="hc-txt"><b>${i + 1}. ${esc(p.name)}</b><span>${p.rating ? `★ ${p.rating.toFixed(1)} · ` : ''}${p.km} km${p.open === true ? ' · open now' : p.open === false ? ' · closed' : ''}</span>
-        <span class="chip mini ghost">Google</span></span>
+        <span class="chip mini ghost">${p.variety ? 'Something different nearby' : 'Google'}</span>${p.reason ? `<small class="place-reason">${esc(p.reason)}</small>` : ''}</span>
       </button>`).join('')}</div>
     <h4 class="sec">All results <span class="count">${list.length}</span></h4>
     <div class="masonry live">${list.map((p, i) => `
@@ -803,8 +953,10 @@ function renderLiveResults(live) {
           <div class="tile-row"><b>${esc(p.name)}</b>${p.rating ? `<span class="rt">★ ${p.rating.toFixed(1)}</span>` : ''}</div>
           <span class="tile-area">${esc(p.area)} · ${p.km} km</span>
           <span class="tile-why">${p.open === true ? '<span class="open">Open now</span>' : p.open === false ? '<span class="closed">Closed now</span>' : ''}${p.count ? ` · ${fmtN(p.count)} Google reviews` : ''}</span>
+          ${p.reason ? `<span class="place-reason">${esc(p.reason)}</span>` : ''}
         </div>
-      </button>`).join('') || `<p class="empty">Google found no ${esc(what)} near ${esc(c.label)}.</p>`}</div>
+      </button>`).join('') || `<p class="empty">No ${esc(what)} matched these filters in this Google result set. Try a wider radius or turn off Open now. Unknown opening hours are excluded when Open now is selected.</p>`}</div>
+    ${live.notice ? `<p class="fine">${esc(live.notice)}</p>` : ''}
     <p class="fine">Live from Google Maps${at ? ', ' + at : ''}. Not partners: no ordering here; Directions, Call and Website hand off.${credits ? ' Photos: ' + esc(credits) + ' (Google Maps).' : ''}</p>`;
 }
 function renderLiveDetail(p) {
@@ -819,13 +971,30 @@ function renderLiveDetail(p) {
       ${p.open != null ? `<li>${svg('clock', 'ic sm')}<span>${p.open ? 'Open now' : 'Closed now'} · Google</span></li>` : ''}
       <li>${svg('pin', 'ic sm')}<span>${esc(p.address || p.area)} · ${p.km} km (straight line)</span></li>
     </ul>
-    ${p.maps ? `<a class="btn primary wide big" href="${esc(p.maps)}" target="_blank" rel="noopener noreferrer">${svg('nav', 'ic sm')} Directions in Google Maps</a>` : ''}
+    <button class="btn primary wide big" id="showOnMap">${svg('map', 'ic sm')} Show on the map</button>
     <div class="actions">${p.phone ? `<a class="btn" href="tel:${esc(p.phone.replace(/[^+0-9]/g, ''))}">${svg('phone', 'ic sm')} Call</a>` : ''}${p.website ? `<a class="btn" href="${esc(p.website)}" target="_blank" rel="noopener noreferrer">${svg('globe', 'ic sm')} Website</a>` : ''}</div>
-    <p class="fine">Live from Google Maps. Not a Dubai-io partner: nothing is ordered or shared here.${p.photoBy ? ' Photo: ' + esc(p.photoBy) + ' (Google Maps).' : ''}</p>`;
+    <button class="btn wide" id="askPlace">Ask about this place</button>
+    ${topicFor(S.cat, S.sub) ? '<button class="btn wide" id="hidePlace">Hide this place for 7 days</button><p class="fine" id="hidePlaceStatus" role="status"></p>' : ''}
+    <p class="fine">Live from Google Maps. Not a Dubai-io partner: nothing is ordered or shared here.${p.photoBy ? ' Photo: ' + esc(p.photoBy) + ' (Google Maps).' : ''}${p.maps ? ` <a href="${esc(p.maps)}" target="_blank" rel="noopener noreferrer">Navigate with Google Maps</a>` : ''}</p>`;
   $('#dBack').addEventListener('click', backToList);
+  $('#showOnMap').addEventListener('click', () => { setSnap('peek'); showGoogleMap([], p); });
+  $('#askPlace').addEventListener('click', beginChat);
+  $('#hidePlace')?.addEventListener('click', async e => {
+    const button = e.currentTarget, id = p.id;
+    button.disabled = true;
+    const ok = await observe('dismiss', topicFor(p.cat, p.sub), id);
+    if (S.detail !== id || !button.isConnected) return;
+    if (!ok) { button.disabled = false; $('#hidePlaceStatus').textContent = 'Could not save this change. Try again.'; return; }
+    S.detail = null; loadLive(true); renderResults(); refit();
+  });
 }
 function openDetail(id) {
-  if (String(id).startsWith('g:')) { S.detail = id; renderResults(); setSnap('half'); rsScroll.scrollTop = 0; return; }
+  if (String(id).startsWith('g:')) {
+    const place = filtered().find(p => p.id === id);
+    if (place) selectFocus({ entity_id: id, entity_name: place.name, source: 'google', card: 'place_detail', area: areaCenter().label });
+    observe('detail', topicFor(S.cat, S.sub), id).then(ok => { if (ok) refreshRecommendations(CASES); });
+    S.detail = id; renderResults(); setSnap('half'); rsScroll.scrollTop = 0; return;
+  }
   if (S.view !== 'results') enterResults({ cat: PLACES.find(p => p.id === id).cat });
   S.detail = id;
   renderResults();
@@ -875,11 +1044,19 @@ $('#rChips').addEventListener('click', e => {
 });
 rsScroll.addEventListener('click', e => {
   if (rsheet.dataset.dragged === '1') return;
-  if (e.target.closest('[data-retry-places]')) { placeCache.delete(liveKey()); loadLive(); renderResults(); refit(); return; }
+  if (e.target.closest('[data-retry-places], [data-refresh-places]')) { loadLive(true); renderResults(); refit(); return; }
+  const order = e.target.closest('[data-place-sort]');
+  if (order) { placeSort = order.dataset.placeSort; loadLive(true); renderResults(); refit(); return; }
   const s = e.target.closest('[data-src]');
   if (s) { S.src = S.src === s.dataset.src ? null : s.dataset.src; renderResults(); refit(); return; }
   const t = e.target.closest('[data-p]');
   if (t) openDetail(t.dataset.p);
+});
+rsScroll.addEventListener('change', e => {
+  if (e.target.matches('[data-place-open]')) placeOpen = e.target.checked;
+  else if (e.target.matches('[data-place-radius]')) placeRadius = Number(e.target.value);
+  else return;
+  loadLive(true); renderResults(); refit();
 });
 function setSnap(name, instant) {
   S.snap = name;
@@ -925,11 +1102,6 @@ function setSnap(name, instant) {
 })();
 
 // ---------------------------------------------------------------- Services: competing offers
-// Chat header: search opens Services; the mode pill explains that resident mode comes later.
-document.addEventListener('click', e => {
-  if (e.target.closest('#chatSearch')) enterServices();
-  if (e.target.closest('#chatMode')) toast('Visitor mode. Resident mode comes after the contest build.');
-});
 function enterServices() { closeSheet(); renderServicesLanding($('#svcGrid'), told.area); setView('services'); }
 $('#svcGrid').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
@@ -940,15 +1112,73 @@ $('#svcGrid').addEventListener('click', e => {
 });
 
 // ---------------------------------------------------------------- chat, composer, tabs
-initChat({ enterResults, openOffers, startGuide, showChat });
+initChat({ enterResults, openOffers, startGuide, showChat, areaCenter });
+refreshProjectContext();
 initOffers({ post, update, showChat, trackOrder });
 loadProfile().then(o => { Object.assign(S.overrides, o); refreshHomeCaptions(); });
 wireChat(); wireOffers(); wireGuide(); initPageHost(); initProviderPages();
-$('#chatBack').addEventListener('click', leaveChat);
+const chatSidebar = $('#chatSidebar');
+$('#chatHistory').addEventListener('click', () => {
+  const conversations = listConversations().filter(chat => !chat.project_id);
+  $('#chatHistoryList').innerHTML = conversations.length ? conversations.map(c => `<button data-conversation="${esc(c.id)}" ${c.active ? 'aria-current="page"' : ''}>${esc(c.title)}</button>`).join('') : '<p class="chat-history-note">Your conversations will appear here.</p>';
+  chatSidebar.showModal();
+});
+chatSidebar.addEventListener('click', e => {
+  const target = e.target.closest('button');
+  if (target?.matches('[data-close-history]')) chatSidebar.close();
+  if (target?.matches('[data-new-chat]')) { try { startNewChat(); chatSidebar.close(); $('#q').focus({ preventScroll: true }); } catch (error) { toast(error.message); } }
+  if (target?.matches('[data-conversation]')) { try { openConversation(target.dataset.conversation); chatSidebar.close(); $('#q').focus({ preventScroll: true }); } catch (error) { toast(error.message); } }
+  if (target?.matches('[data-history-home]')) { chatSidebar.close(); setView('home'); $('#homeFeed').scrollTop = 0; }
+  if (target?.matches('[data-history-projects]')) { chatSidebar.close(); openProjects(); }
+  if (e.target === chatSidebar) { const r = chatSidebar.getBoundingClientRect(); if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) chatSidebar.close(); }
+});
+$('#chatBack').addEventListener('click', () => { chatSidebar.close(); leaveChat(); });
+$('#chatUser').addEventListener('click', openMe);
+addEventListener('dubaiio:focus', e => {
+  const el = $('#chatFocus'); el.hidden = !e.detail;
+  el.innerHTML = e.detail ? '<span>' + (e.detail.task_id ? 'Task: ' : 'About ') + esc(e.detail.entity_name) + '</span><button class="btn sm" aria-label="Clear selected context">Clear</button>' : '';
+  el.querySelector('button')?.addEventListener('click', () => selectFocus(null));
+});
 $('#chatLaunch').addEventListener('click', beginChat);
-$('#q').addEventListener('focus', showChat);
+$('#homeMe').addEventListener('click', () => openMe());
+function setNavigationExpanded(expanded) {
+  app.classList.toggle('nav-expanded', expanded);
+  $('#browseToggle').setAttribute('aria-expanded', String(expanded));
+  $('#browseDock').inert = S.mode === 'onboard' || (S.view === 'chat' && !expanded);
+  $('#composer').inert = S.view !== 'chat' || expanded;
+  if (expanded) { $('#q').blur(); document.querySelector('.tabbar button[aria-current]')?.focus({ preventScroll: true }); }
+}
+$('#browseToggle').addEventListener('click', () => setNavigationExpanded(true));
+addEventListener('dubaiio:task-chat', beginChat);
+addEventListener('dubaiio:project-chat', beginChat);
+addEventListener('dubaiio:news-chat', beginChat);
+addEventListener('dubaiio:project-focus', event => {
+  const el = $('#chatProject'), project = event.detail; el.hidden = !project;
+  el.innerHTML = project ? `<span>Project: ${esc(project.name)}</span><button class="btn sm" data-project-page="${esc(project.project_id)}">Open project</button>` : '';
+});
+function openToday() {
+  if (S.view !== 'home') return;
+  today.open();
+}
+$('#todayLaunch').addEventListener('click', openToday);
+$('#todayLaunch').addEventListener('keydown', e => {
+  if (e.key === 'ArrowUp') { e.preventDefault(); e.stopPropagation(); openToday(); }
+});
+addEventListener('dubaiio:today-summary', e => {
+  if (e.detail?.current_work) { S.currentWork = e.detail.current_work; followHomeSources(S.currentWork); refreshHomeCaptions(); }
+  const counts = e.detail?.counts, parts = ['Today'];
+  if (counts?.needs_you > 0) parts.push(counts.needs_you + (counts.needs_you === 1 ? ' needs you' : ' need you'));
+  if (counts?.running > 0) parts.push(counts.running + ' moving');
+  if (counts?.on_list > 0) parts.push(counts.on_list + ' on your list');
+  $('#todayHandleLabel').textContent = parts.join(' · ');
+  $('#todayLaunch').setAttribute('aria-label', 'Open Today tasks' + (parts.length > 1 ? ': ' + parts.slice(1).join(', ') : ''));
+});
+$('#q').addEventListener('focus', () => { setNavigationExpanded(false); showChat(); });
 $('#q').addEventListener('keydown', e => { if (e.key === 'Escape') { e.preventDefault(); leaveChat(); } });
-$('#chatEmpty').addEventListener('click', e => { const b = e.target.closest('[data-chat-ask]'); if (b) { $('#q').blur(); handle(b.dataset.chatAsk); } });
+$('#chatEmpty').addEventListener('click', e => {
+  if (e.target.closest('[data-chat-task]')) { $('#q').blur(); openPage('tasks.new'); return; }
+  const b = e.target.closest('[data-chat-ask]'); if (b) { $('#q').blur(); handle(b.dataset.chatAsk); }
+});
 
 $('#composer').addEventListener('submit', e => {
   e.preventDefault();
@@ -966,10 +1196,14 @@ document.querySelector('.tabbar').addEventListener('click', e => {
   const t = b.dataset.tab;
   if (S.onboardingExit) buildHome();
   closeOffers();
-  if (t === 'home') setView(hasThread() && S.view === 'home' ? 'chat' : 'home');
-  else if (t === 'maps') enterResults({ cat: 'all' });
+  if (t === 'home') {
+    if (S.mode !== 'home') { store.set('onboarded', '1'); buildHome(); }
+    setView('home');
+    $('#homeFeed').scrollTo({ top: 0, behavior: 'instant' });
+  }
+  else if (t === 'chat') { closeSheet(); setView('hub'); }
   else if (t === 'services') enterServices();
-  else if (t === 'me') openMe();
+  else if (t === 'feed') { closeSheet(); setView('feed'); }
 });
 registerPage('account.me', { title: 'Me', source: 'Dubai-io', render: () => `
     <p class="lead">Lab build · palette: ${esc(paletteName)}</p>
@@ -980,14 +1214,28 @@ registerPage('account.me', { title: 'Me', source: 'Dubai-io', render: () => `
       <button class="btn" id="meProfile">${svg('person', 'ic sm')} You, over time</button>
       <button class="btn" id="meIntro">${svg('orb', 'ic sm')} Replay the intro</button>
       <button class="btn" id="meWifi">${svg('wifi', 'ic sm')} Replay landing and Wi-Fi sign-in</button>
+      <button class="btn" id="meNotify">${svg('clock', 'ic sm')} Allow notifications on this device</button>
+      <button class="btn" id="meNotifyDemo">${svg('spark', 'ic sm')} Preview a “task done” notification (demo)</button>
     </div>
-    <p class="fine">Flags: add #fps, #tune or #nogl to the link (join with dots, e.g. #fps.tune).</p>`, mount: () => {
+    ${assistHTML()}
+    <p class="fine">Flags: add #fps, #tune or #nogl to the link (join with dots, e.g. #fps.tune).</p>`, mount: root => {
+  mountAssist(root);
+  $('#meNotify').addEventListener('click', async () => {
+    const result = await allowNotifications();
+    toast(result === 'granted' ? 'Notifications on. Done tasks reach you when the app is in the background.' : result === 'unsupported' ? 'This browser cannot show notifications.' : 'Notifications are off. Change it in your browser settings.');
+  });
+  $('#meNotifyDemo').addEventListener('click', async () => {
+    closeSheet();
+    let task = null;
+    try { task = (await api('/api/tasks?limit=1')).tasks[0] || null; } catch { /* offline: generic preview */ }
+    setTimeout(() => notify({ title: 'Task done: ' + (task?.outcome || 'Press three shirts'), body: 'A preview of how a finished task reaches you. Nothing changed.', demo: true, onOpen: () => task && openTask(task.id) }), 400);
+  });
   $('#meDetails').addEventListener('click', openSavedDetails);
   $('#meRequests').addEventListener('click', openSavedRequests);
   $('#meConnections').addEventListener('click', () => openConnections());
   $('#meProfile').addEventListener('click', () => { closeSheet(); setTimeout(openProfile, 340); });
   $('#meIntro').addEventListener('click', () => { closeSheet(); setView('home'); startOnboarding(); });
-  $('#meWifi').addEventListener('click', () => { closeSheet(); setView('home'); S.deck = []; stageEl.innerHTML = ''; railEl.innerHTML = ''; startArrival(() => startOnboarding()); });
+  $('#meWifi').addEventListener('click', () => { closeSheet(); setView('home'); app.classList.add('is-onboarding'); $('#browseDock').hidden = true; $('#browseDock').inert = true; $('#homeFeed').scrollTop = 0; today.show(false); S.deck = []; stageEl.innerHTML = ''; railEl.innerHTML = ''; startArrival(() => startOnboarding()); });
 } });
 function openMe() { openPage('account.me'); }
 
@@ -996,6 +1244,8 @@ function restartDemo() {
   resetChat(); resetPageHost();
   clearTimeout(onboardingExitTimer); S.onboardingExit = false;
   closeSheet(); closeOffers(); setView('home');
+  app.classList.add('is-onboarding'); $('#browseDock').hidden = true; $('#browseDock').inert = true;
+  $('#homeFeed').scrollTop = 0; today.show(false);
   try { localStorage.removeItem('dubaiio.lab.onboarded'); } catch { /* private mode */ }
   S.deck = []; stageEl.innerHTML = ''; railEl.innerHTML = ''; captionEl.textContent = '';
   toast('Restarting the demo from landing.');
@@ -1020,6 +1270,7 @@ addEventListener('resize', layout);
 // iOS resizes the visual viewport for the keyboard while the layout viewport stays tall.
 const viewport = window.visualViewport;
 function fitChatViewport() {
+  if (app.classList.contains('sim-keyboard-open')) return;  // the preview keyboard owns the inset
   const open = document.activeElement === $('#q') && viewport && Math.abs(viewport.scale - 1) < .01 && viewport.height < innerHeight - 100;
   app.classList.toggle('keyboard-open', !!open);
   app.style.setProperty('--keyboard-inset', open ? Math.max(0, innerHeight - viewport.height - viewport.offsetTop) + 'px' : '0px');
@@ -1028,14 +1279,17 @@ viewport?.addEventListener('resize', fitChatViewport);
 viewport?.addEventListener('scroll', fitChatViewport);
 $('#q').addEventListener('focus', fitChatViewport);
 $('#q').addEventListener('blur', fitChatViewport);
+initSimKeyboard(app, $('#q'), $('#composer'));
 document.addEventListener('visibilitychange', () => { last = performance.now(); });
 layout();
+refreshRecommendations(CASES);
 setView('home');
 const firstRun = !store.get('onboarded');
-const direct = ['intro', 'services', 'maps', 'guide', 'profile'].some(f => flags.has(f));
+const direct = ['home', 'today', 'intro', 'services', 'maps', 'guide', 'profile'].some(f => flags.has(f));
 if (flags.has('wifi') || (firstRun && !direct)) startArrival(() => startOnboarding());
 else if (flags.has('intro')) startOnboarding();
 else buildHome();
+if (flags.has('today')) requestAnimationFrame(openToday);
 if (flags.has('services')) { if (S.mode === 'onboard') buildHome(); enterServices(); }
 if (flags.has('maps')) { if (S.mode === 'onboard') buildHome(); enterResults({ cat: 'pets' }); }
 if (flags.has('guide')) { if (S.mode === 'onboard') buildHome(); handle('Guide me through the airport'); }

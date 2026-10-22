@@ -32,7 +32,7 @@ class ProfileStore:
 
     def __init__(self, store_provider, legacy_json: Path | None = None):
         """store_provider returns the ActionStore, so profile writes share its connection and lock."""
-        self._store, self.legacy, self._ready = store_provider, legacy_json, False
+        self._store, self.legacy, self._ready = store_provider, legacy_json, None
 
     @property
     def lock(self):
@@ -41,7 +41,7 @@ class ProfileStore:
     @property
     def db(self):
         db = self._store().db
-        if not self._ready:
+        if self._ready is not db:
             db.execute("""CREATE TABLE IF NOT EXISTS user_profile (owner TEXT PRIMARY KEY, display_name TEXT, home_area TEXT, language TEXT,
                 mode TEXT, attributes JSON NOT NULL DEFAULT '{}', version INTEGER NOT NULL DEFAULT 0, created_at TEXT, updated_at TEXT)""")
             db.execute("""CREATE TABLE IF NOT EXISTS profile_facts (id TEXT PRIMARY KEY, owner TEXT NOT NULL, facet TEXT NOT NULL, key TEXT NOT NULL,
@@ -52,7 +52,7 @@ class ProfileStore:
                 db.execute("ALTER TABLE profile_facts ADD COLUMN IF NOT EXISTS embedding vector(1536)")
                 db.execute("CREATE INDEX IF NOT EXISTS profile_facts_attributes ON user_profile USING gin (attributes)")
             db.commit()
-            self._ready = True
+            self._ready = db
             self._import_legacy(db)
         return db
 
@@ -71,7 +71,8 @@ class ProfileStore:
         self.legacy.rename(self.legacy.with_suffix(".json.migrated"))
 
     # ------------------------------------------------------------ writes
-    def add(self, owner: str, key: str, value: str, source: str, facet: str | None = None, status: str = "told", evidence=None) -> dict:
+    def add(self, owner: str, key: str, value: str, source: str, facet: str | None = None, status: str = "told", evidence=None, *, commit: bool = True) -> dict:
+        """Save a stated fact; initialized callers can share a transaction with commit=False."""
         facet = facet or KEY_FACET.get(key, "context")
         if facet not in FACETS:
             raise ValueError("Unknown facet")
@@ -87,15 +88,18 @@ class ProfileStore:
             db.execute("INSERT INTO profile_facts VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,NULL)",
                        (new_id, owner, facet, key, json.dumps(value), "user_supplied", status, 1.0, source[:140], json.dumps(evidence or []), at, None, at))
             self._project(db, owner)
-            db.commit()
+            if commit:
+                db.commit()
             return self._as_fact(db.execute("SELECT * FROM profile_facts WHERE id=?", (new_id,)).fetchone())
 
-    def forget(self, owner: str, key: str) -> int:
+    def forget(self, owner: str, key: str, *, commit: bool = True) -> int:
+        """Remove a key's history, optionally inside the caller's transaction."""
         with self.lock:
             db = self.db
             n = db.execute("DELETE FROM profile_facts WHERE owner=? AND key=?", (owner, key)).rowcount
             self._project(db, owner)
-            db.commit()
+            if commit:
+                db.commit()
             return n
 
     def _project(self, db, owner):

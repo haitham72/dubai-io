@@ -2,6 +2,9 @@ import { getFacts, saveFacts } from './session-state.js';
 // Shared UI helpers for the lab modules. DOM lookups are lazy, so modules can
 // import this before app.js has inserted the shell.
 export const ICON = {
+  menu: '<path d="M4 6h16M4 12h12M4 18h16" />',
+  stack: '<rect x="4" y="3" width="16" height="13" rx="3" /><path d="M6 19h12M8 22h8" />',
+  folder: '<path d="M3 7a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v9H3z" />',
   search: '<circle cx="11" cy="11" r="6.5" /><path d="M16 16l4.5 4.5" />',
   orb: '<circle cx="12" cy="12" r="8" /><path d="M8.5 13.5c1.8 1.6 5.2 1.6 7 0" />',
   grid: '<rect x="4" y="4" width="7" height="7" rx="2" /><rect x="13" y="4" width="7" height="7" rx="2" /><rect x="4" y="13" width="7" height="7" rx="2" /><rect x="13" y="13" width="7" height="7" rx="2" />',
@@ -26,6 +29,10 @@ export const ICON = {
   bag: '<path d="M5 8h14l-1 12H6zM9 8V6a3 3 0 0 1 6 0v2" />',
   wrench: '<path d="M14.5 6.5a4 4 0 0 0 5 5L13 18a2.1 2.1 0 0 1-3-3l6.5-6.5a4 4 0 0 0-5-5l2.5 2.5-1.5 1.5z" />',
   dots: '<circle cx="6" cy="12" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="18" cy="12" r="1.6" />',
+  plus: '<path d="M12 5v14M5 12h14" />',
+  bubble: '<path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4 3.5V17h0.5H6.5A2.5 2.5 0 0 1 4 14.5z" />',
+  feed: '<rect x="4" y="4" width="16" height="7" rx="2" /><path d="M4 15h16M4 19h10" />',
+  keep: '<path d="M7 4h10v16l-5-3.6L7 20z" />',
   pin: '<path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z" /><circle cx="12" cy="10" r="2.3" />',
   nav: '<path d="M4 11.5L20 4l-7.5 16-1.8-6.7z" />',
   phone: '<path d="M6.5 3.5h3l1.5 4-2 1.5a11 11 0 0 0 6 6l1.5-2 4 1.5v3a2 2 0 0 1-2 2A16 16 0 0 1 4.5 5.5a2 2 0 0 1 2-2z" />',
@@ -69,7 +76,7 @@ export function openSheet(html, onClose) {
   requestAnimationFrame(() => {
     if (generation !== sheetGeneration) return;
     sheet.classList.add('open'); scrim.classList.add('open');
-    if (!body.contains(document.activeElement)) (body.querySelector('[autofocus], .page-host-back, .page-host-close, button, input, textarea, a[href]') || $('#sheetClose')).focus({ preventScroll: true });
+    if (!body.contains(document.activeElement)) (body.querySelector('[autofocus]') || body.querySelector('.page-host-back, .page-host-close, button, input, textarea, a[href]') || $('#sheetClose')).focus({ preventScroll: true });
   });
   body.scrollTop = 0;
   return body;
@@ -83,6 +90,7 @@ export function closeSheet() {
   sheetHideTimer = setTimeout(() => {
     if (generation !== sheetGeneration) return;
     sheet.hidden = true; scrim.hidden = true;
+    document.dispatchEvent(new CustomEvent('dubaiio:sheet-closed'));
     if (sheetReturnFocus?.isConnected) sheetReturnFocus.focus({ preventScroll: true });
     sheetReturnFocus = null;
   }, reduced ? 0 : 320);

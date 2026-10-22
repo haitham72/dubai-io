@@ -1,0 +1,419 @@
+{
+  "id": "dubai-makers",
+  "name": "Dubai Makers & Small Shops",
+  "handle": "dxbmakers",
+  "topic": "Local Business",
+  "about": "Independent makers, repairers, artists, and small shops sharing process, advice, and fair local collaborations.",
+  "image": "media/cafe-counter.jpg",
+  "members": 8700,
+  "stories": [
+    {
+      "author": "p70",
+      "text": "Small shops deserve clear hours and clear prices.",
+      "image": "media/cafe-counter.jpg",
+      "hours_ago": 6
+    },
+    {
+      "author": "p31",
+      "text": "Sketching the old market colours today.",
+      "image": "media/cloth.jpg",
+      "hours_ago": 22
+    }
+  ],
+  "posts": [
+    {
+      "id": "dubai-makers-01",
+      "author": "p70",
+      "text": "Small-business owners: which detail did you wish you had documented before your first collaboration? Mine is agreeing who owns the final photos.",
+      "image": "media/cafe-counter.jpg",
+      "hours_ago": 7,
+      "likes": 174,
+      "comments": [
+        {
+          "id": "dubai-makers-01-c00",
+          "author": "p31",
+          "text": "Usage rights and delivery dates, in writing. Friendly projects still need a clear note.",
+          "parent_id": null,
+          "hours_ago": 6,
+          "likes": 14
+        },
+        {
+          "id": "dubai-makers-01-c01",
+          "author": "p70",
+          "text": "Yes, and naming the files consistently saves a surprising amount of time.",
+          "parent_id": "dubai-makers-01-c00",
+          "hours_ago": 5,
+          "likes": 12
+        },
+        {
+          "id": "dubai-makers-01-c02",
+          "author": "p34",
+          "text": "I also record deposits and what happens if a delivery date moves.",
+          "parent_id": "dubai-makers-01-c01",
+          "hours_ago": 4,
+          "likes": 9
+        },
+        {
+          "id": "dubai-makers-01-c03",
+          "author": "p13",
+          "text": "A one-page scope is enough; it does not need to sound like a huge contract.",
+          "parent_id": "dubai-makers-01-c02",
+          "hours_ago": 3,
+          "likes": 15
+        }
+      ]
+    },
+    {
+      "id": "dubai-makers-02",
+      "author": "p14",
+      "text": "I have a few oak offcuts available for a beginner shelf workshop in Al Quoz. Who would like a small, practical project rather than a perfect one?",
+      "image": "media/laundry-shelf.jpg",
+      "hours_ago": 14,
+      "likes": 119,
+      "comments": [
+        {
+          "id": "dubai-makers-02-c00",
+          "author": "p63",
+          "text": "I would join. Could the workshop include safe sanding and finishing basics?",
+          "parent_id": null,
+          "hours_ago": 13,
+          "likes": 8
+        },
+        {
+          "id": "dubai-makers-02-c01",
+          "author": "p14",
+          "text": "Yes, safety first, and everyone leaves with a small shelf or a clear plan.",
+          "parent_id": "dubai-makers-02-c00",
+          "hours_ago": 12,
+          "likes": 12
+        },
+        {
+          "id": "dubai-makers-02-c02",
+          "author": "p93",
+          "text": "Please post the accessible route and the tool list when you set a date.",
+          "parent_id": "dubai-makers-02-c01",
+          "hours_ago": 11,
+          "likes": 6
+        }
+      ]
+    },
+    {
+      "id": "dubai-makers-03",
+      "author": "p14",
+      "text": "What makes a small local collaboration feel fair to both sides?",
+      "image": "media/cloth.jpg",
+      "hours_ago": 5,
+      "likes": 138,
+      "comments": [
+        {
+          "id": "dubai-makers-03-c00",
+          "author": "p30",
+          "text": "What makes a small local collaboration feel fair to both sides?",
+          "parent_id": null,
+          "hours_ago": 12,
+          "likes": 3
+        },
+        {
+          "id": "dubai-makers-03-c01",
+          "author": "p37",
+          "text": "I tried this recently and the clear version saved both sides a second trip.",
+          "parent_id": "dubai-makers-03-c00",
+          "hours_ago": 11,
+          "likes": 4
+        },
+        {
+          "id": "dubai-makers-03-c02",
+          "author": "p44",
+          "text": "Adding the area and a realistic time window made the replies much better.",
+          "parent_id": "dubai-makers-03-c01",
+          "hours_ago": 10,
+          "likes": 5
+        },
+        {
+          "id": "dubai-makers-03-c03",
+          "author": "p51",
+          "text": "I agree; a small checklist keeps a friendly exchange from becoming confusing.",
+          "parent_id": "dubai-makers-03-c02",
+          "hours_ago": 9,
+          "likes": 6
+        },
+        {
+          "id": "dubai-makers-03-c04",
+          "author": "p58",
+          "text": "That is useful context. I would also confirm the practical constraint first.",
+          "parent_id": "dubai-makers-03-c03",
+          "hours_ago": 8,
+          "likes": 7
+        },
+        {
+          "id": "dubai-makers-03-c05",
+          "author": "p65",
+          "text": "Our building group used the same approach and it reduced back-and-forth.",
+          "parent_id": "dubai-makers-03-c04",
+          "hours_ago": 7,
+          "likes": 8
+        },
+        {
+          "id": "dubai-makers-03-c06",
+          "author": "p72",
+          "text": "I will try this and report what changed, with the caveat that every situation differs.",
+          "parent_id": "dubai-makers-03-c05",
+          "hours_ago": 6,
+          "likes": 9
+        },
+        {
+          "id": "dubai-makers-03-c07",
+          "author": "p79",
+          "text": "One more detail: keep the original message updated so people do not rely on stale information.",
+          "parent_id": "dubai-makers-03-c06",
+          "hours_ago": 5,
+          "likes": 10
+        },
+        {
+          "id": "dubai-makers-03-c08",
+          "author": "p86",
+          "text": "Thanks for asking this openly. Someone new to Dubai will probably find it useful.",
+          "parent_id": "dubai-makers-03-c07",
+          "hours_ago": 4,
+          "likes": 11
+        },
+        {
+          "id": "dubai-makers-03-c09",
+          "author": "p93",
+          "text": "I have saved the idea for our next community meetup.",
+          "parent_id": "dubai-makers-03-c08",
+          "hours_ago": 3,
+          "likes": 12
+        },
+        {
+          "id": "dubai-makers-03-c10",
+          "author": "p100",
+          "text": "That follow-through is exactly what makes a local thread helpful.",
+          "parent_id": "dubai-makers-03-c09",
+          "hours_ago": 2,
+          "likes": 13
+        },
+        {
+          "id": "dubai-makers-03-c11",
+          "author": "p07",
+          "text": "Closing the loop: I used the checklist and the decision was much clearer.",
+          "parent_id": "dubai-makers-03-c10",
+          "hours_ago": 1,
+          "likes": 3
+        }
+      ]
+    },
+    {
+      "id": "dubai-makers-04",
+      "author": "p14",
+      "text": "Which beginner repair skill has saved you the most money?",
+      "image": "media/cloth.jpg",
+      "hours_ago": 6,
+      "likes": 155,
+      "comments": [
+        {
+          "id": "dubai-makers-04-c00",
+          "author": "p33",
+          "text": "Which beginner repair skill has saved you the most money?",
+          "parent_id": null,
+          "hours_ago": 12,
+          "likes": 3
+        },
+        {
+          "id": "dubai-makers-04-c01",
+          "author": "p40",
+          "text": "I tried this recently and the clear version saved both sides a second trip.",
+          "parent_id": "dubai-makers-04-c00",
+          "hours_ago": 11,
+          "likes": 4
+        },
+        {
+          "id": "dubai-makers-04-c02",
+          "author": "p47",
+          "text": "Adding the area and a realistic time window made the replies much better.",
+          "parent_id": "dubai-makers-04-c01",
+          "hours_ago": 10,
+          "likes": 5
+        },
+        {
+          "id": "dubai-makers-04-c03",
+          "author": "p54",
+          "text": "I agree; a small checklist keeps a friendly exchange from becoming confusing.",
+          "parent_id": "dubai-makers-04-c02",
+          "hours_ago": 9,
+          "likes": 6
+        },
+        {
+          "id": "dubai-makers-04-c04",
+          "author": "p61",
+          "text": "That is useful context. I would also confirm the practical constraint first.",
+          "parent_id": "dubai-makers-04-c03",
+          "hours_ago": 8,
+          "likes": 7
+        },
+        {
+          "id": "dubai-makers-04-c05",
+          "author": "p68",
+          "text": "Our building group used the same approach and it reduced back-and-forth.",
+          "parent_id": "dubai-makers-04-c04",
+          "hours_ago": 7,
+          "likes": 8
+        },
+        {
+          "id": "dubai-makers-04-c06",
+          "author": "p75",
+          "text": "I will try this and report what changed, with the caveat that every situation differs.",
+          "parent_id": "dubai-makers-04-c05",
+          "hours_ago": 6,
+          "likes": 9
+        },
+        {
+          "id": "dubai-makers-04-c07",
+          "author": "p82",
+          "text": "One more detail: keep the original message updated so people do not rely on stale information.",
+          "parent_id": "dubai-makers-04-c06",
+          "hours_ago": 5,
+          "likes": 10
+        },
+        {
+          "id": "dubai-makers-04-c08",
+          "author": "p89",
+          "text": "Thanks for asking this openly. Someone new to Dubai will probably find it useful.",
+          "parent_id": "dubai-makers-04-c07",
+          "hours_ago": 4,
+          "likes": 11
+        },
+        {
+          "id": "dubai-makers-04-c09",
+          "author": "p96",
+          "text": "I have saved the idea for our next community meetup.",
+          "parent_id": "dubai-makers-04-c08",
+          "hours_ago": 3,
+          "likes": 12
+        },
+        {
+          "id": "dubai-makers-04-c10",
+          "author": "p03",
+          "text": "That follow-through is exactly what makes a local thread helpful.",
+          "parent_id": "dubai-makers-04-c09",
+          "hours_ago": 2,
+          "likes": 13
+        },
+        {
+          "id": "dubai-makers-04-c11",
+          "author": "p10",
+          "text": "Closing the loop: I used the checklist and the decision was much clearer.",
+          "parent_id": "dubai-makers-04-c10",
+          "hours_ago": 1,
+          "likes": 3
+        }
+      ]
+    },
+    {
+      "id": "dubai-makers-05",
+      "author": "p14",
+      "text": "Show us a tiny shop improvement that made customers more comfortable.",
+      "image": "media/cloth.jpg",
+      "hours_ago": 7,
+      "likes": 172,
+      "comments": [
+        {
+          "id": "dubai-makers-05-c00",
+          "author": "p36",
+          "text": "Show us a tiny shop improvement that made customers more comfortable.",
+          "parent_id": null,
+          "hours_ago": 12,
+          "likes": 3
+        },
+        {
+          "id": "dubai-makers-05-c01",
+          "author": "p43",
+          "text": "I tried this recently and the clear version saved both sides a second trip.",
+          "parent_id": "dubai-makers-05-c00",
+          "hours_ago": 11,
+          "likes": 4
+        },
+        {
+          "id": "dubai-makers-05-c02",
+          "author": "p50",
+          "text": "Adding the area and a realistic time window made the replies much better.",
+          "parent_id": "dubai-makers-05-c01",
+          "hours_ago": 10,
+          "likes": 5
+        },
+        {
+          "id": "dubai-makers-05-c03",
+          "author": "p57",
+          "text": "I agree; a small checklist keeps a friendly exchange from becoming confusing.",
+          "parent_id": "dubai-makers-05-c02",
+          "hours_ago": 9,
+          "likes": 6
+        },
+        {
+          "id": "dubai-makers-05-c04",
+          "author": "p64",
+          "text": "That is useful context. I would also confirm the practical constraint first.",
+          "parent_id": "dubai-makers-05-c03",
+          "hours_ago": 8,
+          "likes": 7
+        },
+        {
+          "id": "dubai-makers-05-c05",
+          "author": "p71",
+          "text": "Our building group used the same approach and it reduced back-and-forth.",
+          "parent_id": "dubai-makers-05-c04",
+          "hours_ago": 7,
+          "likes": 8
+        },
+        {
+          "id": "dubai-makers-05-c06",
+          "author": "p78",
+          "text": "I will try this and report what changed, with the caveat that every situation differs.",
+          "parent_id": "dubai-makers-05-c05",
+          "hours_ago": 6,
+          "likes": 9
+        },
+        {
+          "id": "dubai-makers-05-c07",
+          "author": "p85",
+          "text": "One more detail: keep the original message updated so people do not rely on stale information.",
+          "parent_id": "dubai-makers-05-c06",
+          "hours_ago": 5,
+          "likes": 10
+        },
+        {
+          "id": "dubai-makers-05-c08",
+          "author": "p92",
+          "text": "Thanks for asking this openly. Someone new to Dubai will probably find it useful.",
+          "parent_id": "dubai-makers-05-c07",
+          "hours_ago": 4,
+          "likes": 11
+        },
+        {
+          "id": "dubai-makers-05-c09",
+          "author": "p99",
+          "text": "I have saved the idea for our next community meetup.",
+          "parent_id": "dubai-makers-05-c08",
+          "hours_ago": 3,
+          "likes": 12
+        },
+        {
+          "id": "dubai-makers-05-c10",
+          "author": "p06",
+          "text": "That follow-through is exactly what makes a local thread helpful.",
+          "parent_id": "dubai-makers-05-c09",
+          "hours_ago": 2,
+          "likes": 13
+        },
+        {
+          "id": "dubai-makers-05-c11",
+          "author": "p13",
+          "text": "Closing the loop: I used the checklist and the decision was much clearer.",
+          "parent_id": "dubai-makers-05-c10",
+          "hours_ago": 1,
+          "likes": 3
+        }
+      ]
+    }
+  ]
+}

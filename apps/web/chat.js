@@ -1,4 +1,8 @@
+import { offerAutoHTML, answerOffer } from './assist.js';
+import { createLiveMap } from './gmap.js';
+import { browsingSession } from './recommendation-client.js';
 import { labFetch } from './api-client.js';
+import { requestContext, selectFocus, selectTaskFocus, waitForProjectContext } from './assistant-context.js';
 import { openServiceRequest } from './service-workflow.js';
 // io chat. A lab stand-in for Luna: a deterministic intent router (clearly
 // labelled "lab router") until the LangGraph service in apps/api replaces it.
@@ -11,8 +15,9 @@ import { SERVICE_GROUPS, matchService, byNear, openProvider } from './offers.js'
 import { createLunaClient } from './luna-client.js';
 import { orderCardHTML, watchOrder, requestEarlier, remindWhenReady } from './orders.js';
 import { api } from './service-workflow.js';
-import { identity, getMessages, saveMessages, resetSession } from './session-state.js';
+import { identity, getMessages, saveMessages, resetSession, newConversation, switchConversation } from './session-state.js';
 import { initRecovery, startRecovery, resetRecovery, handleRecoveryClick, restoreReport } from './recovery.js';
+import { taskStateLabel, reviewTaskChange, briefHTML, routineHTML } from './tasks.js';
 
 let ctx = null; // { enterResults, openOffers, startGuide, showChat }
 const items = [];
@@ -20,21 +25,38 @@ let seq = 0, threadEpoch = 0;
 // Luna runs wherever the API answers with a configured model key; one probe, re-tried after a failure.
 let health=null, healthAt=0;
 const lunaReady=()=>{if(!health||(health.failed&&Date.now()-healthAt>30000)){healthAt=Date.now();health=fetch('/api/health',{signal:AbortSignal.timeout(3000)}).then(r=>r.ok?r.json():null).then(h=>!!h?.openai_key).catch(()=>false);health.then(ok=>{health.failed=!ok;});}return health;};
-const luna = createLunaClient({fetcher:labFetch,enabled:lunaReady,identity});
+const luna = createLunaClient({fetcher:labFetch,enabled:lunaReady,identity,context:requestContext});
 
 export function initChat(c) {
   ctx = c; initRecovery({ say: botSay, post, update, near: () => ctx.enterResults({ cat: 'all' }) });
-  for(const saved of getMessages()) {
-    if(!['me','bot'].includes(saved?.who)||typeof saved.text!=='string')continue;
-    if(saved.who==='bot'&&typeof saved.msgId==='string'){items.push({id:++seq,who:'bot',msgId:saved.msgId,msgSource:saved.msgSource,text:saved.text,html:proactiveHTML(saved.msgSource,saved.text.slice(0,600))});continue;}
-    if(saved.who==='bot'&&saved.rich&&typeof saved.rich.kind==='string'){const html=richHTML(saved.rich);if(html){items.push({id:++seq,who:'bot',wide:true,rich:saved.rich,text:saved.text,html});continue;}}
-    if(saved.who==='bot'&&typeof saved.actionId==='string'){const id=++seq;items.push({id,who:'bot',type:'order',actionId:saved.actionId,action:null,text:saved.text});follow(id,saved.actionId);continue;}
-    items.push({id:++seq,who:saved.who,text:saved.text.slice(0,6000),r:saved.who==='me'?saved.r:null,html:saved.who==='bot'?'<p>'+esc(saved.text.slice(0,6000))+'</p>':null,recoveryReport:saved.recoveryReport});
-  }
-  render();
+  restoreMessages();
   followMessages();
 }
-export function resetChat() { threadEpoch++; for(const stop of watchers.values())stop(); watchers.clear(); luna.reset(); resetSession(); for(const key of Object.keys(told))delete told[key]; items.length = 0; resetRecovery(); render(); }
+function restoreMessages() {
+  for(const saved of getMessages()) {
+    if(!['me','bot'].includes(saved?.who)||typeof saved.text!=='string')continue;
+    if(saved.who==='bot'&&typeof saved.msgId==='string'){const checkTask=typeof saved.taskId==='string'?saved.taskId:null;items.push({id:++seq,who:'bot',msgId:saved.msgId,msgSource:saved.msgSource,text:saved.text,html:proactiveHTML(saved.msgSource,saved.text.slice(0,600),checkTask&&'task_checkback'),...(checkTask?{taskId:checkTask}:{})});continue;}
+    if(saved.who==='bot'&&saved.rich&&typeof saved.rich.kind==='string'){const html=richHTML(saved.rich);if(html){items.push({id:++seq,who:'bot',wide:true,rich:saved.rich,text:saved.text,html});continue;}}
+    if(saved.who==='bot'&&typeof saved.actionId==='string'){const id=++seq;items.push({id,who:'bot',type:'order',actionId:saved.actionId,action:null,text:saved.text});follow(id,saved.actionId);continue;}
+    items.push({id:++seq,who:saved.who,text:saved.text.slice(0,6000),r:saved.who==='me'?saved.r:null,html:saved.who==='bot'?saved.text.slice(0,6000).split(/\n+/).filter(Boolean).map(line=>'<p>'+esc(line)+'</p>').join(''):null,recoveryReport:saved.recoveryReport,taskId:typeof saved.taskId==='string'?saved.taskId:null,taskProposal:saved.taskProposal&&typeof saved.taskProposal==='object'?saved.taskProposal:null});
+  }
+  render();
+}
+export function resetChat() { selectFocus(null); threadEpoch++; for(const stop of watchers.values())stop(); watchers.clear(); luna.reset(); resetSession(); dispatchEvent(new CustomEvent('dubaiio:conversation-changed',{detail:identity()})); for(const key of Object.keys(told))delete told[key]; items.length = 0; resetRecovery(); render(); }
+
+function reloadConversation() {
+  selectFocus(null); threadEpoch++;
+  for(const stop of watchers.values())stop(); watchers.clear(); luna.reset();
+  items.length=0; resetRecovery(); restoreMessages(); ctx.showChat();
+  dispatchEvent(new CustomEvent('dubaiio:conversation-changed',{detail:identity()}));
+  $('#q').value=''; $('#q').focus({preventScroll:true});
+}
+export function startNewChat() { newConversation(); reloadConversation(); }
+export function openConversation(id) {
+  if(identity().thread_id===id)return;
+  if(!switchConversation(id))throw new Error('This conversation is no longer available on this device.');
+  reloadConversation();
+}
 
 // ---------------------------------------------------------------- router
 const LOST_VERB = /\b(lost|lose|losing|left|forgot|forgotten|missing|can'?t find|cannot find|dropped)\b/;
@@ -43,6 +65,7 @@ const AIRPORT = /\b(airport|dxb|terminal|t1|t2|t3|landed|landing|arrivals?|immig
 const NEAR = /\b(near|nearby|around|close by|closest|nearest|map|where is|where's|walking distance)\b/;
 const HELLO = /^(hi|hello|hey|salam|salaam|marhaba|good (morning|evening|afternoon))\b/;
 const THANKS = /\b(thanks|thank you|shukran)\b/;
+const BRIEF = /\b(brief me|my brief|morning brief|daily brief|my day|what'?s on (today|my list)|what needs me|what'?s (moving|pending))\b/;
 
 export function route(text) {
   const q = text.toLowerCase().trim();
@@ -52,6 +75,8 @@ export function route(text) {
     return { intent: 'lost_item', item: m ? m[1].replace(/s$/, '') : 'item', where, conf: m ? 0.92 : 0.7 };
   }
   if (AIRPORT.test(q)) return { intent: 'airport_guide', conf: 0.9 };
+  const dish = q.match(/^(?:i want to |i'?d like to |can you |please )?(?:order|get me|craving|deliver(?:y of)?)\s+(?:some |a |an )?([a-z][a-z '&-]{1,40})$/);
+  if (dish && !matchService(q)) return { intent: 'places_near', cat: 'food', sub: 'Delivery', query: dish[1].trim(), conf: 0.7 };
   const svc = matchService(q);
   const cat = CATEGORIES.find(c => c.keywords.some(k => q.includes(k)));
   if (svc && !NEAR.test(q)) return { intent: 'service_offers', service: svc.id, conf: 0.85 };
@@ -79,12 +104,12 @@ function follow(itemId, actionId) {
   api('/api/actions/' + encodeURIComponent(actionId)).then(a => update(itemId, it => { it.action = a; })).catch(() => update(itemId, it => { it.missing = true; }));
   watchers.set(itemId, watchOrder(actionId, a => update(itemId, it => { it.action = a; })));
 }
-const proactiveHTML = (source, text) => `<p><span class="upd-pill">${svg(source === 'demo' ? 'spark' : 'clock', 'ic xs')} ${source === 'demo' ? 'Demo trigger' : 'Reminder you asked for'}</span></p><p>${esc(text)}</p>`;
+const proactiveHTML = (source, text, kind) => `<p><span class="upd-pill">${svg(source === 'demo' ? 'spark' : 'clock', 'ic xs')} ${source === 'demo' ? 'Demo trigger' : source === 'routine' ? 'Your daily brief' : source === 'auto_follow_up' ? 'Automatic follow-up' : kind === 'task_checkback' ? 'Check-back you asked for' : 'Reminder you asked for'}</span></p><p>${esc(text)}</p>`;
 // Proactive messages: delivered by the server outbox (deduped, consented, quiet hours), shown once each.
 let messageStream = null;
 function followMessages() {
   if (messageStream) return;
-  const show = list => { for (const m of list || []) if (!items.some(it => it.msgId === m.id)) post({ who: 'bot', msgId: m.id, msgSource: m.trigger_source, text: m.text, html: proactiveHTML(m.trigger_source, m.text) }); };
+  const show = list => { for (const m of list || []) if (!items.some(it => it.msgId === m.id)) post({ who: 'bot', msgId: m.id, msgSource: m.trigger_source, text: m.text, html: proactiveHTML(m.trigger_source, m.text, m.kind), ...(m.task_id ? { taskId: m.task_id } : {}) }); };
   const start = () => { try { messageStream = new EventSource('/api/messages/stream'); messageStream.onmessage = e => { try { show(JSON.parse(e.data)); } catch { /* ignore */ } }; messageStream.onerror = () => { messageStream.close(); setTimeout(() => { messageStream = null; followMessages(); }, 5000); }; } catch { /* no SSE */ } };
   api('/api/session').then(start).catch(() => setTimeout(followMessages, 10000));
 }
@@ -108,15 +133,19 @@ function render() {
   const empty = $('#chatEmpty'); if (empty) empty.hidden = items.length > 0;
   saveMessages(items.filter(it=>!it.typing).map(it=>{
     const box=document.createElement('div');box.innerHTML=it.html||'';
-    const text=it.who==='me'?it.text:it.type==='order'?'Order '+(it.action?.recipient||''):box.textContent;
-    return {who:it.who==='me'?'me':'bot',text,r:it.r||null,recoveryReport:it.recoveryReport||null,...(it.type==='order'?{actionId:it.actionId}:{}),...(it.msgId?{msgId:it.msgId,msgSource:it.msgSource,text:it.text}:{}),...(it.rich?{rich:it.rich}:{})};
+    // Preserve block boundaries in the plain-text history; concatenated card
+    // labels must not turn into unreadable words after reload. No HTML is saved.
+    for(const block of box.querySelectorAll('p,div,li,h1,h2,h3,h4,dt,dd,small')){block.prepend('\n');block.append('\n');}
+    const text=it.who==='me'?it.text:it.type==='order'?'Order '+(it.action?.recipient||''):box.textContent.replace(/\n{3,}/g,'\n\n').trim();
+    return {who:it.who==='me'?'me':'bot',text,r:it.r||null,recoveryReport:it.recoveryReport||null,...(it.taskId?{taskId:it.taskId}:{}),...(it.taskProposal?{taskProposal:it.taskProposal}:{}),...(it.type==='order'?{actionId:it.actionId}:{}),...(it.msgId?{msgId:it.msgId,msgSource:it.msgSource,text:it.text}:{}),...(it.rich?{rich:it.rich}:{})};
   }));
   list.innerHTML = items.map(it => {
     if (it.who === 'me') return `<div class="msg me"><p>${esc(it.text)}</p></div>${it.pending ? `<div class="understood pending">${svg('spark', 'ic xs')}<span>Luna is understanding…</span></div>` : ''}${it.r ? understoodHTML(it) : ''}`;
     if (it.typing) return `<div class="msg bot typing"><span class="orbdot"></span><span class="orbdot"></span><span class="orbdot"></span></div>`;
     if (it.type === 'order') return it.missing ? `<div class="msg bot"><p>This order is no longer available on this device.</p></div>` : orderCardHTML(it.action);
-    return `<div class="msg bot ${it.wide ? 'wide' : ''} ${it.rich ? 'rich' : ''}">${it.html}${it.recoveryReport ? `<button class="btn sm" data-restored-report="${it.id}">Review saved report</button>` : ''}</div>`;
+    return `<div class="msg bot ${it.wide ? 'wide' : ''} ${it.rich ? 'rich' : ''}">${it.html}${it.chatMap ? chatMapHTML(it) : ''}${it.taskProposal ? `<button class="btn sm" data-review-task-change="${it.id}">Review proposed task change</button>` : ''}${it.taskId ? `<button class="btn sm" data-chat-task="${esc(it.taskId)}">Open task</button>` : ''}${it.recoveryReport ? `<button class="btn sm" data-restored-report="${it.id}">Review saved report</button>` : ''}</div>`;
   }).join('');
+  mountChatMaps(list);
   requestAnimationFrame(() => { const s = $('#chatScroll'); if (s) s.scrollTop = s.scrollHeight; });
 }
 
@@ -125,8 +154,25 @@ export async function handle(text) {
   text=String(text).trim();if(!text)return;
   if(text.length>600){toast('Keep this message under 600 characters.');return;}
   const ep=threadEpoch, id=post({who:'me',text,pending:true});ctx.showChat();
-  const r=await luna.understand(text,route);
+  try { await waitForProjectContext(); }
+  catch { if(ep===threadEpoch){update(id,it=>{it.pending=false;});post({who:'bot',html:'<p>The workspace context could not be checked. Reconnect and reopen this chat before asking again.</p>'});}return; }
+  if(ep!==threadEpoch)return;
+  if(BRIEF.test(text.toLowerCase())&&!requestContext().task_focus){
+    update(id,it=>{it.pending=false;it.r={intent:'brief',conf:1};});
+    try{return await botSay(await briefHTML(),{wide:true});}catch{return botSay('<p>Your tasks could not load. Reconnect and ask again.</p>');}
+  }
+  const projectBefore=requestContext().project_focus;
+  const taskFocus=requestContext().task_focus;
+  const r=await luna.understand(text,taskFocus?()=>({intent:'task_help',conf:1}):route);
   if(!r||ep!==threadEpoch)return;
+  try { await waitForProjectContext(); }
+  catch { if(ep===threadEpoch){update(id,it=>{it.pending=false;});post({who:'bot',html:'<p>The workspace context could not be checked. Reopen this chat before asking again.</p>'});}return; }
+  if(ep!==threadEpoch)return;
+  const projectAfter=requestContext().project_focus;
+  if((projectBefore?.project_id||'')!==(projectAfter?.project_id||'')||projectBefore?.revision!==projectAfter?.revision){
+    update(id,it=>{it.pending=false;});
+    post({who:'bot',html:'<p>The shared project context changed while I was answering. Ask again using the latest context.</p>'});return;
+  }
   update(id,it=>{it.pending=false;it.r=r;});
   const factKeys={area:'area',hotel:'hotel',terminal:'terminal',taxi_plate:'plate',taxi_roof:'roof',deadline:'deadline',pet:'pet',language:'language',other:'other'};
   // Show only facts that are new or changed this turn; known ones are already in "You told me".
@@ -138,14 +184,10 @@ export async function handle(text) {
     case 'lost_item': return startRecovery({ item: r.item, where: r.where });
     case 'airport_guide': return r.terminal ? startGuideFlow(r.terminal) : airport();
     case 'service_offers': return offers(r.service);
-    case 'places_near': {
-      await botSay(`<p>Here’s what’s near you, closest first. Opening the map.</p>`);
-      await wait(500);
-      if(ep!==threadEpoch)return;
-      return ctx.enterResults({ ask: text, cat: r.cat, sub: r.sub });
-    }
-    case 'greeting': return botSay(`<p>Hi! Ask me for a service, a place nearby or help at the airport, or tell me if you’ve lost something.</p>${chips(['Guide me through the airport', 'Home cleaning prices', 'Coffee near me', 'I lost my wallet'])}`);
+    case 'places_near': return chatMap({ ask: text, cat: r.cat, sub: r.sub || null, query: r.query || null }, r.reply);
+    case 'greeting': return botSay(`<p>Hi! I can help with a service, a place nearby or your saved tasks.</p>${chips(['Home cleaning prices', 'Coffee near me', 'I lost my wallet'])}<button class="btn sm" data-chat-task-list>View my tasks</button>`);
     case 'order_status': return orderStatus();
+    case 'task_help': return taskHelp(taskFocus,r.reply,r.task_edits);
     case 'info_question': case 'market_quote': { const rich = { kind: 'answer', r: { answer: r.answer, reply: r.reply, sources: r.sources, tool: r.tool } }; return botSay(richHTML(rich), { rich }); }
     case 'product_search': { const rich = { kind: 'products', r: { answer: r.answer, products: r.products } }; return botSay(richHTML(rich), { wide: true, rich }); }
     case 'smalltalk': return botSay('<p>'+esc(r.reply||'How can I help?')+'</p>');
@@ -154,6 +196,57 @@ export async function handle(text) {
   }
 }
 const chips = list => `<div class="qchips">${list.map(t => `<button data-say="${esc(t)}">${esc(t)}</button>`).join('')}</div>`;
+
+async function taskHelp(reference, reply, edits=[]) {
+  if(!reference)return botSay('<p>Open a saved task and choose Discuss this task to give me its context.</p><button class="btn sm" data-chat-task-list>View my tasks</button>');
+  try {
+    const {task}=await api('/api/tasks/'+encodeURIComponent(reference.task_id));
+    if(requestContext().task_focus?.task_id===task.id)selectTaskFocus(task);
+    if(task.revision!==reference.revision){reply='The task changed. Here are its latest saved details.';edits=[];}
+    const changes=Object.fromEntries(edits.map(edit=>[edit.field,edit.field==='due_at'&&!edit.value?null:edit.value]));
+    const taskProposal=edits.length&&Object.keys(changes).length===edits.length?{task_id:task.id,expected_revision:task.revision,changes}:null;
+    const at=new Date(task.as_of).toLocaleString('en-GB',{timeZone:'Asia/Dubai',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+    return botSay(`${reply?'<p>'+esc(reply)+'</p>':''}<div class="task-next"><span>${esc(task.outcome)}</span><p>${esc(taskStateLabel(task.status))}</p>${task.next_step?'<p>Next step: '+esc(task.next_step)+'</p>':''}<small>Saved task · ${esc(at)} Dubai time. Review its details to make a change; this conversation has not sent or changed anything.</small></div>`,{taskId:task.id,taskProposal});
+  } catch {return botSay('<p>The saved task could not be loaded. Reopen its latest details or clear the task context and try again.</p>');}
+}
+
+// ---------------------------------------------------------------- in-chat map
+// A small live Google map with the top places, right in the conversation; it
+// expands into the Maps view with the same search. Each map is created once and
+// its node is moved back in after every chat re-render.
+const chatMapNodes = new Map();
+async function chatMap(search, reply) {
+  const what = search.query || (CATEGORIES.find(c => c.id === search.cat)?.label || 'places').toLowerCase();
+  const id = await botSay(`<p>${esc(reply || 'Here are places near you.')}</p>`, { wide: true, chatMap: { ...search, what, status: 'loading', places: [] } });
+  if (!id) return;
+  const c = ctx.areaCenter();
+  try {
+    const data = await api('/api/discovery/places', { method: 'POST', signal: AbortSignal.timeout(12000), body: JSON.stringify({ session_id: browsingSession(), category: search.cat, subcategory: search.sub, lat: c.lat, lng: c.lng, ...(search.query ? { query: search.query } : {}) }) });
+    update(id, it => { it.chatMap = { ...it.chatMap, status: 'ok', area: c.label, places: data.places.slice(0, 8).map(x => ({ id: x.id, name: x.name, lat: x.lat, lng: x.lng, rating: x.rating, km: x.distance_km, open: x.open_now })) }; });
+  } catch { update(id, it => { it.chatMap = { ...it.chatMap, status: 'error' }; }); }
+}
+function chatMapHTML(it) {
+  const m = it.chatMap;
+  const rows = m.places.slice(0, 3).map((x, i) => `<li><span class="chat-map-n">${i + 1}</span><b>${esc(x.name)}</b><small>${x.rating ? '★ ' + x.rating.toFixed(1) + ' · ' : ''}${x.km != null ? x.km + ' km' : ''}${x.open != null ? ' · ' + (x.open ? 'Open now' : 'Closed') : ''}</small></li>`).join('');
+  return `<div class="chat-map">${m.status === 'ok' && m.places.length ? `<div class="chat-map-canvas" data-chat-map="${it.id}"></div>` : `<p class="hint">${m.status === 'loading' ? 'Finding ' + esc(m.what) + ' near you…' : m.status === 'error' ? 'Live places are unavailable right now.' : 'No places matched. Try the full map.'}</p>`}
+    ${rows ? `<ol class="chat-map-list">${rows}</ol>` : ''}
+    <button class="btn sm" data-expand-map="${it.id}">${svg('map', 'ic xs')} ${m.places.length ? 'See all ' + esc(m.what) + ' on the map' : 'Open Maps'}</button>
+    <p class="fine">Live from Google Maps${m.area ? ' · near ' + esc(m.area) : ''}. Nothing is ordered here.</p></div>`;
+}
+function mountChatMaps(list) {
+  for (const slot of list.querySelectorAll('[data-chat-map]')) {
+    const it = items.find(x => x.id === +slot.dataset.chatMap); if (!it) continue;
+    let node = chatMapNodes.get(it.id);
+    if (!node) {
+      node = Object.assign(document.createElement('div'), { className: 'chat-map-live' });
+      chatMapNodes.set(it.id, node);
+      createLiveMap(node, { compact: true, onPick: () => ctx.enterResults(it.chatMap) })
+        .then(m => m.show(it.chatMap.places, { center: ctx.areaCenter() }))
+        .catch(() => { node.innerHTML = '<p class="hint">The map could not load. The places are listed below.</p>'; });
+    }
+    slot.append(node);
+  }
+}
 
 // ---------------------------------------------------------------- flows
 async function offers(id) {
@@ -182,7 +275,7 @@ function richHTML(rich) {
   return '';
 }
 
-const INTENT_LABEL = { lost_item: 'Lost item', airport_guide: 'Airport guide', service_offers: 'Service', places_near: 'Places near you', order_status: 'Order status', info_question: 'Question',
+const INTENT_LABEL = { brief: 'Your brief', lost_item: 'Lost item', airport_guide: 'Airport guide', service_offers: 'Service', places_near: 'Places near you', order_status: 'Order status', task_help: 'Your saved task', info_question: 'Question',
   market_quote: 'Market quote', product_search: 'Shopping', greeting: 'Greeting', smalltalk: 'Chat', thanks: 'Thanks', unclear: 'Not sure yet' };
 // "Luna understood: Service · Laundry" (reference 02-rows); tap for the technical line.
 function understoodHTML(it) {
@@ -244,13 +337,27 @@ export function wireChat() {
   $('#sheetBody').addEventListener('click', handleRecoveryClick);
   $('#chatList').addEventListener('click', e => {
     if (handleRecoveryClick(e)) return;
+    const proposal=e.target.closest('[data-review-task-change]');
+    if(proposal){const item=items.find(it=>it.id===Number(proposal.dataset.reviewTaskChange));if(item?.taskProposal)reviewTaskChange(item.taskProposal);return;}
     const saved=e.target.closest('[data-restored-report]');if(saved){const it=items.find(i=>i.id===Number(saved.dataset.restoredReport));if(it?.recoveryReport)restoreReport(it.recoveryReport);return;}
     const tech = e.target.closest('[data-tech]');
     if (tech) { const it = items.find(i => i.id === Number(tech.dataset.tech)); if (it) { it.tech = !it.tech; render(); } return; }
     const op = e.target.closest('[data-open-provider]');
     if (op) { const [g, pid] = op.dataset.openProvider.split('|'); openProvider(g, pid); return; }
     const rem = e.target.closest('[data-remind]');
-    if (rem) { rem.disabled = true; remindWhenReady(rem.dataset.remind).then(() => render()).catch(err => { toast(err.message); rem.disabled = false; }); return; }
+    if (rem) { rem.disabled = true; remindWhenReady(rem.dataset.remind).then(r => { render(); if (r.offer_auto) botSay(offerAutoHTML()); }).catch(err => { toast(err.message); rem.disabled = false; }); return; }
+    const expand = e.target.closest('[data-expand-map]');
+    if (expand) { const it = items.find(x => x.id === +expand.dataset.expandMap); if (it?.chatMap) ctx.enterResults(it.chatMap); return; }
+    const daily = e.target.closest('[data-brief-routine]');
+    if (daily) {
+      daily.disabled = true;
+      api('/api/routines/brief', { method: 'PUT', body: JSON.stringify({ active: daily.dataset.briefRoutine === 'on', at_time: '08:00' }) })
+        .then(r => { daily.closest('.rec-choices').outerHTML = routineHTML(r); toast(r.active ? 'Daily brief on at 08:00. Stop it any time.' : 'Daily brief stopped.'); })
+        .catch(err => { toast(err.message); daily.disabled = false; });
+      return;
+    }
+    const offer = e.target.closest('[data-assist-offer]');
+    if (offer) { offer.parentElement.querySelectorAll('button').forEach(b => { b.disabled = true; }); answerOffer(offer.dataset.assistOffer).catch(err => toast(err.message)); return; }
     const early = e.target.closest('[data-earlier]');
     if (early) { early.disabled = true; requestEarlier(early.dataset.earlier, early.dataset.target).catch(err => { toast(err.message); early.disabled = false; }); return; }
     const say = e.target.closest('[data-say]');

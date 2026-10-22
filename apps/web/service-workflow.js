@@ -1,3 +1,4 @@
+import { statusLabel } from './status-labels.js';
 // Host request workflow. Merchant widgets cannot access anonymous sessions.
 import { registerPage, openPage } from './page-host.js';
 import { $, esc, toast, told } from './ui.js';
@@ -13,7 +14,7 @@ const SERVICES={laundry:'Laundry',cleaning:'Home cleaning',ac:'AC service',groom
 export async function api(url, options={}) {
   if(!sessionPromise)sessionPromise=fetch('/api/session',{credentials:'same-origin',signal:AbortSignal.timeout(4000)}).then(r=>{if(!r.ok)throw new Error('Session unavailable');return r.json();}).catch(e=>{sessionPromise=null;throw e;});
   await sessionPromise;
-  const r=await fetch(url,{...options,credentials:'same-origin',signal:AbortSignal.timeout(5000),headers:{'Content-Type':'application/json',...options.headers}});
+  const r=await fetch(url,{...options,credentials:'same-origin',signal:options.signal||AbortSignal.timeout(5000),headers:{'Content-Type':'application/json',...options.headers}});
   const data=await r.json();if(!r.ok)throw new Error(typeof data.detail==='string'?data.detail:'Could not save this request');return data;
 }
 function ownBody(){return document.querySelector('[data-page-id="service.request"] .page-host-content');}
@@ -46,7 +47,8 @@ registerPage('service.request', {
 function renderResult(body,c){
   const result=c.result, box=body.querySelector('#serviceRequestResult');
   const missing=result.status==='DRAFT'&&result.missing?.length;
-  box.innerHTML='<article class="request-result"><span class="page-tag">'+esc(({SUBMITTED:'Provider response',DISPATCHING:'Sending',UNKNOWN_STATUS:'Needs checking',CANCELLED:'Discarded draft'})[result.status]||'Saved draft')+'</span><h3>'+esc(({DRAFT:'A few details are missing',AWAITING_APPROVAL:'Review before sending',SUBMITTED:'Provider received the request',DISPATCHING:'Sending request',UNKNOWN_STATUS:'Provider outcome unknown',CANCELLED:'Draft discarded'})[result.status]||'Prepared · not sent')+'</h3><p>'+esc(missing?'Add '+result.missing.map(key=>LABELS[key]||key).join(', ')+'.':result.blocked_reason||'Check the recipient and exact details below.')+'</p><p><b>Recipient:</b> '+esc(result.recipient)+'</p><p>'+esc(result.effect||'')+(result.fixed_total_aed!=null?' · AED '+esc(result.fixed_total_aed):'')+'</p><dl>'+Object.entries(result.fields).map(([key,f])=>'<div><dt>'+esc(LABELS[key]||key)+'</dt><dd>'+esc(f.value)+'</dd></div>').join('')+'</dl>'+(result.evidence?'<p>Provider reference: <b>'+esc(result.evidence.reference)+'</b></p>':'')+(result.status==='AWAITING_APPROVAL'&&result.execution_available?'<button class="btn primary wide" id="serviceApprove">Approve and send these details</button>':'')+(['DRAFT','BLOCKED','AWAITING_APPROVAL'].includes(result.status)?'<button class="btn wide" id="serviceDiscard">Discard draft</button>':'')+'</article>';
+  box.innerHTML='<article class="request-result" data-status="'+esc(result.status)+'"><span class="page-tag">'+esc(({SUBMITTED:'Provider response',DISPATCHING:'Sending',UNKNOWN_STATUS:'Needs checking',CANCELLED:'Discarded draft'})[result.status]||'Saved draft')+'</span><h3>'+esc(({DRAFT:'A few details are missing',AWAITING_APPROVAL:'Review before sending',SUBMITTED:'Provider received the request',DISPATCHING:'Sending request',UNKNOWN_STATUS:'Provider outcome unknown',CANCELLED:'Draft discarded'})[result.status]||'Prepared · not sent')+'</h3><p>'+esc(missing?'Add '+result.missing.map(key=>LABELS[key]||key).join(', ')+'.':result.blocked_reason||'Check the recipient and exact details below.')+'</p><p><b>Recipient:</b> '+esc(result.recipient)+'</p><p>'+esc(result.effect||'')+(result.fixed_total_aed!=null?' · AED '+esc(result.fixed_total_aed):'')+'</p><dl>'+Object.entries(result.fields).map(([key,f])=>'<div><dt>'+esc(LABELS[key]||key)+'</dt><dd>'+esc(f.value)+'</dd></div>').join('')+'</dl>'+(result.evidence?'<p>Provider reference: <b>'+esc(result.evidence.reference)+'</b></p>':'')+(result.status==='AWAITING_APPROVAL'&&result.execution_available?'<button class="btn primary wide" id="serviceApprove">Approve and send these details</button>':'')+(['DRAFT','BLOCKED','AWAITING_APPROVAL'].includes(result.status)?'<button class="btn wide" id="serviceDiscard">Discard draft</button>':'')+'</article>';
+  box.querySelector('article').insertAdjacentHTML('beforeend','<button class="btn wide" data-track-action="'+esc(result.id)+'">Keep on Today</button>');
   if(result.status==='CANCELLED')body.querySelectorAll('[data-request-field], #serviceRequestForm button').forEach(el=>el.disabled=true);
   box.querySelector('#serviceDiscard')?.addEventListener('click',async e=>{e.target.disabled=true;try{c.result=await api('/api/actions/'+encodeURIComponent(result.id)+'/cancel',{method:'POST'});saveDraft(draftKey(c),null);if(visible(body))renderResult(body,c);}catch(error){toast(error.message);if(e.target.isConnected)e.target.disabled=false;}});
   box.querySelector('#serviceApprove')?.addEventListener('click',async e=>{
@@ -72,6 +74,56 @@ export function openRecoveryRequest(report){
 registerPage('service.saved',{
   title:'Saved requests',source:'Dubai-io · your progress',
   render:()=>'<div id="savedRequests"><p>Loading your saved requests…</p></div>',
-  mount:body=>{api('/api/actions').then(data=>{if(!body.isConnected)return;body.querySelector('#savedRequests').innerHTML=data.actions.length?data.actions.map(a=>'<button class="btn wide" data-saved-action="'+esc(a.id)+'">'+esc(SERVICES[a.capability_id.split('.')[0]]||'Taxi lost item')+' · '+esc(a.status==='BLOCKED'?'Prepared, not sent':a.status.toLowerCase().replaceAll('_',' '))+'</button>').join(''):'<p>No saved requests yet.</p>';body.querySelectorAll('[data-saved-action]').forEach(button=>button.addEventListener('click',async()=>{try{const a=await api('/api/actions/'+button.dataset.savedAction),service=a.capability_id.split('.')[0];openPage('service.request',{capability:a.capability_id,title:SERVICES[service]||'Taxi lost item report',fields:completeFields(a.capability_id,safeFields(Object.fromEntries(Object.entries(a.fields).map(([k,f])=>[k,f.value])))),required:a.capability_id==='recovery.rta'?REQUIRED.recovery:REQUIRED.request,draft_id:a.id,result:a});}catch(e){toast(e.message);}}));}).catch(()=>{if(body.isConnected)body.querySelector('#savedRequests').innerHTML='<p>The request server is unavailable. Draft edits remain saved in this browser.</p>';});},
+  mount:body=>{api('/api/actions').then(data=>{if(!body.isConnected)return;body.querySelector('#savedRequests').innerHTML=data.actions.length?data.actions.map(a=>'<button class="btn wide" data-saved-action="'+esc(a.id)+'" data-status="'+esc(a.status)+'">'+esc(SERVICES[a.capability_id.split('.')[0]]||'Taxi lost item')+' · '+esc(statusLabel(a.status))+'</button>').join(''):'<p>No saved requests yet.</p>';body.querySelectorAll('[data-saved-action]').forEach(button=>button.addEventListener('click',async()=>{try{const a=await api('/api/actions/'+button.dataset.savedAction),service=a.capability_id.split('.')[0];openPage('service.request',{capability:a.capability_id,title:SERVICES[service]||'Taxi lost item report',fields:completeFields(a.capability_id,safeFields(Object.fromEntries(Object.entries(a.fields).map(([k,f])=>[k,f.value])))),required:a.capability_id==='recovery.rta'?REQUIRED.recovery:REQUIRED.request,draft_id:a.id,result:a});}catch(e){toast(e.message);}}));}).catch(()=>{if(body.isConnected)body.querySelector('#savedRequests').innerHTML='<p>The request server is unavailable. Draft edits remain saved in this browser.</p>';});},
 });
 export function openSavedRequests(){openPage('service.saved');}
+
+registerPage('service.action', {
+  title:'Linked item', source:'Your saved request',
+  render:()=>'<div data-linked-source><p role="status">Loading the saved item…</p></div>',
+  mount(body,c) {
+    let busy=false;
+    async function load(change) {
+      if(busy)return; busy=true;
+      try {
+        const action=change||await api('/api/actions/'+encodeURIComponent(c.id));
+        if(!body.isConnected)return;
+        if(action.capability_id!=='order.request') {
+          const service=action.capability_id.split('.')[0];
+          openPage('service.request',{capability:action.capability_id,title:SERVICES[service]||'Taxi lost item report',
+            fields:completeFields(action.capability_id,safeFields(Object.fromEntries(Object.entries(action.fields).map(([key,f])=>[key,f.value])))),
+            required:action.capability_id==='recovery.rta'?REQUIRED.recovery:REQUIRED.request,draft_id:action.id,result:action},{replace:true});
+          return;
+        }
+        const {orderCardHTML,orderDecisionHTML}=await import('./orders.js');
+        c.action=action.status==='AWAITING_APPROVAL'?action:null;
+        if(c.action){if(body.isConnected)body.innerHTML=orderDecisionHTML(action,{yes:'decisionYes',later:'decisionLater',discard:'decisionDiscard'});return;}
+        if(body.isConnected)body.innerHTML=orderCardHTML(action)+'<button class="btn wide" data-source-refresh>Refresh from the shop</button><p class="fine">Status comes from the saved order. Tracking and task completion do not change the order.</p>';
+      } catch(error) {if(body.isConnected)body.innerHTML='<p role="alert">'+esc(error.message)+'</p><button class="btn wide" data-source-refresh>Try again</button>';}
+      finally {busy=false;}
+    }
+    body.addEventListener('click',async event=>{
+      const button=event.target.closest('button'); if(!button||busy)return;
+      if(button.hasAttribute('data-source-refresh'))return load();
+      if(c.action&&['decisionLater','decisionDiscard'].includes(button.id)){const orders=await import('./orders.js');return button.id==='decisionLater'?orders.later(c.action,button):orders.discard(c.action,button);}
+      if(c.action&&button.id==='decisionYes'){
+        // Approves exactly the revision/snapshot on screen; a changed draft is rejected by the server.
+        button.disabled=true; c.approvalKey||=crypto.randomUUID();
+        try{const sent=await api('/api/actions/'+encodeURIComponent(c.id)+'/approve',{method:'POST',headers:{'Idempotency-Key':c.approvalKey},body:JSON.stringify({snapshot_hash:c.action.snapshot_hash,revision:c.action.revision})});c.action=null;dispatchEvent(new CustomEvent('dubaiio:source-changed',{detail:{id:c.id}}));await load(sent);}
+        catch(error){toast(error.message);if(button.isConnected)button.disabled=false;}
+        return;
+      }
+      if(button.hasAttribute('data-earlier')||button.hasAttribute('data-remind')) {
+        button.disabled=true;
+        try {
+          const {requestEarlier,remindWhenReady}=await import('./orders.js');
+          if(button.hasAttribute('data-earlier'))await requestEarlier(c.id,button.dataset.target);
+          else await remindWhenReady(c.id);
+          await load();
+        } catch(error) {toast(error.message);if(button.isConnected)button.disabled=false;}
+      }
+    });
+    body.addEventListener('dubaiio:page-restored',()=>load());
+    load();
+  },
+});
