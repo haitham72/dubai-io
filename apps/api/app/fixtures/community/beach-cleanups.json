@@ -1,0 +1,1631 @@
+{
+ "id": "beach-cleanups",
+ "name": "Beach Cleanups",
+ "handle": "beachcleanupsdxb",
+ "topic": "Community",
+ "about": "Volunteer beach clean-ups along Jumeirah and the Marina, with gloves, bags and coffee afterwards. Every bag counts.",
+ "image": "media/marina.jpg",
+ "members": 3900,
+ "stories": [
+  {
+   "author": "p10",
+   "text": "Kite Beach clean-up: 14 bags, 3 lost sunglasses and one very confused crab.",
+   "image": "media/rest-room.jpg",
+   "hours_ago": 5
+  },
+  {
+   "author": "p05",
+   "text": "Puppy watched the team from the water's edge. Very good boy.",
+   "image": "media/puppy.jpg",
+   "hours_ago": 16
+  },
+  {
+   "author": "p08",
+   "text": "Coffee urn at the clean-up, the best reward for the volunteers. Thank you all.",
+   "image": "media/coffee.jpg",
+   "hours_ago": 30
+  }
+ ],
+ "posts": [
+  {
+   "id": "beach-cleanups-01",
+   "author": "p10",
+   "text": "Saturday clean-up at Kite Beach, meeting 6:30am at the lifeguard tower. Gloves and bags provided, but bring water and a hat. We finish by 8:30 before the heat.",
+   "image": "media/marina.jpg",
+   "hours_ago": 6,
+   "likes": 344,
+   "comments": [
+    {
+     "author": "p02",
+     "text": "Count me in, I'll run to the beach and then join the crew. Early start is my favourite.",
+     "hours_ago": 5,
+     "likes": 12
+    },
+    {
+     "author": "p04",
+     "text": "I'll bring the bike and a trailer for the full bags. Easier to carry them back.",
+     "hours_ago": 5,
+     "likes": 14
+    },
+    {
+     "author": "p01",
+     "text": "Gloves and bags are provided, great. I'll bring my friend who wants to volunteer for the first time.",
+     "hours_ago": 4,
+     "likes": 8
+    },
+    {
+     "author": "p03",
+     "text": "Coffee for the crew after, I'm baking the cupcakes now. Count me in for the morning.",
+     "hours_ago": 4,
+     "likes": 13
+    },
+    {
+     "author": "p05",
+     "text": "Puppy wants to help, but the beach is a no-dog zone for the clean-up. He'll cheer from the car.",
+     "hours_ago": 4,
+     "likes": 11
+    },
+    {
+     "author": "p06",
+     "text": "6:30 is early but the sunrise over the water is worth it. Count me in with the playlist.",
+     "hours_ago": 3,
+     "likes": 7
+    },
+    {
+     "author": "p07",
+     "text": "Will there be a first aid kit? Asking for the first-time volunteers in our group.",
+     "hours_ago": 3,
+     "likes": 6
+    },
+    {
+     "author": "p10",
+     "text": "@anjali_rao yes, the lifeguards have a kit and water. Safety is part of the plan.",
+     "hours_ago": 3,
+     "likes": 9
+    },
+    {
+     "author": "p08",
+     "text": "Coffee urn is coming from my cafe, I'll bring it at 7am. Hot and strong.",
+     "hours_ago": 3,
+     "likes": 10
+    },
+    {
+     "author": "p09",
+     "text": "Our office team of six wants to come. Can we do a group photo with the bags?",
+     "hours_ago": 2,
+     "likes": 8
+    },
+    {
+     "author": "p04",
+     "text": "Group photo with the bags is the best, the picture shows the impact. Yes.",
+     "hours_ago": 2,
+     "likes": 6
+    },
+    {
+     "author": "p02",
+     "text": "Bring a reusable bottle, the plastic bottles on the sand are the biggest problem.",
+     "hours_ago": 2,
+     "likes": 12
+    },
+    {
+     "author": "p07",
+     "text": "Please wear closed shoes. Broken glass and sharp shells are hidden in the sand.",
+     "hours_ago": 2,
+     "likes": 11
+    },
+    {
+     "author": "p06",
+     "text": "Closed shoes and a long-sleeve shirt for the sun. The sand gets hot quickly, friends.",
+     "hours_ago": 2,
+     "likes": 7
+    },
+    {
+     "author": "p03",
+     "text": "Sunscreen on the back of the neck, the most forgotten spot. Trust the pastry chef.",
+     "hours_ago": 1,
+     "likes": 9
+    },
+    {
+     "author": "p01",
+     "text": "Thanks for the tips, everyone. I'll bring the sunscreen, the water and the good mood.",
+     "hours_ago": 1,
+     "likes": 5
+    },
+    {
+     "author": "p10",
+     "text": "Bring a small bag for your own rubbish too. Every little bag is a win for the beach.",
+     "hours_ago": 1,
+     "likes": 10
+    },
+    {
+     "author": "p05",
+     "text": "Puppy's clean-up tip: a poop bag for the walk, always. Please keep the dogs in mind too.",
+     "hours_ago": 1,
+     "likes": 13
+    },
+    {
+     "author": "p04",
+     "text": "Good point, Mariam. Dog walkers should clear up after their dogs, always.",
+     "hours_ago": 1,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "We'll bring the sorting boxes for plastic, glass and cans. Sort at the beach if you can.",
+     "hours_ago": 1,
+     "likes": 7
+    },
+    {
+     "author": "p02",
+     "text": "Sorting at the beach saves time for the team at the end. Smart plan, Hannah.",
+     "hours_ago": 0,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "Cupcakes, coffee and gloves. The perfect volunteer breakfast, I'm sure.",
+     "hours_ago": 0,
+     "likes": 8
+    },
+    {
+     "author": "p07",
+     "text": "Count me in. Looking forward to a clean beach and a happy crew.",
+     "hours_ago": 0,
+     "likes": 5
+    },
+    {
+     "author": "p06",
+     "text": "Yalla, clean beach Saturday. See you at the lifeguard tower at 6:30 🌊",
+     "hours_ago": 0,
+     "likes": 12
+    },
+    {
+     "author": "p01",
+     "text": "Thank you Omar for organising this every month. The beach is lucky to have you.",
+     "hours_ago": 0,
+     "likes": 14
+    }
+   ]
+  },
+  {
+   "id": "beach-cleanups-02",
+   "author": "p05",
+   "text": "Dog-walker tips for beach clean-ups: always bag the dog's mess, use a separate bag for it, and keep the puppy on a lead near the cleaning crew. Thanks for reading, friends.",
+   "image": "media/puppy.jpg",
+   "hours_ago": 18,
+   "likes": 276,
+   "comments": [
+    {
+     "author": "p10",
+     "text": "Thank you, Mariam. A dog bag on the walk is the simplest way to help the beach.",
+     "hours_ago": 16,
+     "likes": 12
+    },
+    {
+     "author": "p02",
+     "text": "Dog owners who clean up after their pets are real heroes of the beach. Respect.",
+     "hours_ago": 15,
+     "likes": 10
+    },
+    {
+     "author": "p04",
+     "text": "A separate bag for dog waste is a smart tip. Keeps the rest of the rubbish clean.",
+     "hours_ago": 15,
+     "likes": 8
+    },
+    {
+     "author": "p03",
+     "text": "Puppy on a lead near the crew is very wise. Pastry bags are handy too, for the sticky stuff.",
+     "hours_ago": 14,
+     "likes": 7
+    },
+    {
+     "author": "p06",
+     "text": "Lead for the puppy, bags for the mess, and a treat for the good behaviour. Clear rules.",
+     "hours_ago": 13,
+     "likes": 9
+    },
+    {
+     "author": "p07",
+     "text": "Clean-up teams really appreciate it when dog walkers help. Let's make that normal.",
+     "hours_ago": 13,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "Coffee for the dog walkers too, after they've cleaned up. A fair deal for the beach.",
+     "hours_ago": 12,
+     "likes": 5
+    },
+    {
+     "author": "p09",
+     "text": "We'll post the rules on the sign at the lifeguard tower. Thanks for the clear list, Mariam.",
+     "hours_ago": 11,
+     "likes": 8
+    },
+    {
+     "author": "p01",
+     "text": "Clear rules, friendly reminders. Dog walkers and clean-up crews can be good partners.",
+     "hours_ago": 10,
+     "likes": 6
+    },
+    {
+     "author": "p10",
+     "text": "Keep the water bowl for dogs out of the way of the cleaning crew, it helps.",
+     "hours_ago": 9,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "Good tip, Omar. Water bowls by the path, not in the sand, so nobody trips.",
+     "hours_ago": 9,
+     "likes": 4
+    },
+    {
+     "author": "p02",
+     "text": "Running and dog walking on the beach needs the same respect for the clean-up zone.",
+     "hours_ago": 8,
+     "likes": 6
+    },
+    {
+     "author": "p04",
+     "text": "Clean-up zone respect is key. Please keep the path clear for the bikes too.",
+     "hours_ago": 7,
+     "likes": 5
+    },
+    {
+     "author": "p06",
+     "text": "Lovely to see the group working together. Dogs, people, bags, and a clean beach.",
+     "hours_ago": 7,
+     "likes": 8
+    },
+    {
+     "author": "p03",
+     "text": "Dog cake for the clean-up crew, a sweet thank you for the dogs who behave.",
+     "hours_ago": 6,
+     "likes": 9
+    },
+    {
+     "author": "p08",
+     "text": "Dog bag dispensers near the path would help too. Maybe the group can ask the council.",
+     "hours_ago": 5,
+     "likes": 7
+    },
+    {
+     "author": "p09",
+     "text": "Great idea, Yusuf. A simple request to the council, the group can sign it.",
+     "hours_ago": 5,
+     "likes": 6
+    },
+    {
+     "author": "p07",
+     "text": "I'll help draft the request. Short and polite, with photos of the bins.",
+     "hours_ago": 4,
+     "likes": 5
+    },
+    {
+     "author": "p10",
+     "text": "Thanks, Anjali. Keep it friendly, and the council will be happy to help.",
+     "hours_ago": 4,
+     "likes": 4
+    },
+    {
+     "author": "p05",
+     "text": "Puppy is excited to see the new dog bags. He will be the first to test one.",
+     "hours_ago": 3,
+     "likes": 12
+    },
+    {
+     "author": "p02",
+     "text": "Thanks everyone for the ideas. The beach gets better with each clean-up.",
+     "hours_ago": 3,
+     "likes": 5
+    },
+    {
+     "author": "p04",
+     "text": "Good luck with the request. Let's keep the beach clean for the dogs and the people.",
+     "hours_ago": 2,
+     "likes": 6
+    },
+    {
+     "author": "p06",
+     "text": "Yalla, clean beaches for everyone, four-legged friends included 🐶",
+     "hours_ago": 2,
+     "likes": 9
+    },
+    {
+     "author": "p09",
+     "text": "We'll share the request in the office too. Team dogs will love the clean beach.",
+     "hours_ago": 1,
+     "likes": 5
+    },
+    {
+     "author": "p03",
+     "text": "Pastry and puppy-friendly beaches, a dream combination. Thank you, Mariam.",
+     "hours_ago": 1,
+     "likes": 7
+    }
+   ]
+  },
+  {
+   "id": "beach-cleanups-03",
+   "author": "p02",
+   "text": "Results from last month: 42 bags collected, 18 kilograms of plastic sorted, and a surprising number of lost trainers. If you lose one, check the lost-and-found box first.",
+   "image": "media/rest-room.jpg",
+   "hours_ago": 30,
+   "likes": 298,
+   "comments": [
+    {
+     "author": "p10",
+     "text": "Great numbers, Ravi. 42 bags is a huge effort from the team. Thank you all.",
+     "hours_ago": 28,
+     "likes": 13
+    },
+    {
+     "author": "p04",
+     "text": "Eighteen kilograms of plastic is impressive. Sorting at the beach was the key, I think.",
+     "hours_ago": 27,
+     "likes": 10
+    },
+    {
+     "author": "p09",
+     "text": "Lost trainers are the funniest part of the clean-up. Someone always finds a single shoe.",
+     "hours_ago": 26,
+     "likes": 9
+    },
+    {
+     "author": "p06",
+     "text": "Lost-and-found box is a brilliant idea. Give the shoes a second life, I say.",
+     "hours_ago": 25,
+     "likes": 8
+    },
+    {
+     "author": "p03",
+     "text": "42 bags, one pastry box per volunteer, the math works. Proud of the team.",
+     "hours_ago": 24,
+     "likes": 7
+    },
+    {
+     "author": "p05",
+     "text": "Puppy approves of the numbers, especially the one about the dogs cleaning up after themselves, lol.",
+     "hours_ago": 23,
+     "likes": 11
+    },
+    {
+     "author": "p07",
+     "text": "Good work everyone. Could we share the bag count per zone next time, for the map?",
+     "hours_ago": 22,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "Coffee urn ran out at 8am, so next time I'll bring the second urn. Lesson learned.",
+     "hours_ago": 21,
+     "likes": 9
+    },
+    {
+     "author": "p01",
+     "text": "Second urn, yes, the volunteers deserve a second round. I'll help carry it.",
+     "hours_ago": 20,
+     "likes": 7
+    },
+    {
+     "author": "p02",
+     "text": "@yusuf_d the coffee was the best part of the morning. Two urns is the new rule.",
+     "hours_ago": 19,
+     "likes": 8
+    },
+    {
+     "author": "p10",
+     "text": "Keep the sorting boxes at the same spot each time, the team finds them faster.",
+     "hours_ago": 18,
+     "likes": 6
+    },
+    {
+     "author": "p04",
+     "text": "Route map of the beach zones next time would help the teams cover the whole shoreline.",
+     "hours_ago": 17,
+     "likes": 5
+    },
+    {
+     "author": "p09",
+     "text": "I'll help make the zone map. Our team has the drawing skills, I think.",
+     "hours_ago": 16,
+     "likes": 7
+    },
+    {
+     "author": "p06",
+     "text": "Please keep the numbers on the group board, Ravi. The history is motivating.",
+     "hours_ago": 15,
+     "likes": 6
+    },
+    {
+     "author": "p03",
+     "text": "Numbers on a board, a pastry chart for the clean-up, I love it.",
+     "hours_ago": 14,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "Puppy's contribution to the count: zero bags, but a lot of attention. He tries.",
+     "hours_ago": 13,
+     "likes": 10
+    },
+    {
+     "author": "p08",
+     "text": "Lost property tip: the lifeguard tower keeps the box, and they reunite the owners fast.",
+     "hours_ago": 12,
+     "likes": 8
+    },
+    {
+     "author": "p02",
+     "text": "Thanks, Yusuf. The lifeguards are amazing partners for the group.",
+     "hours_ago": 11,
+     "likes": 5
+    },
+    {
+     "author": "p07",
+     "text": "Keep the stats honest and simple, the volunteers feel the progress that way.",
+     "hours_ago": 10,
+     "likes": 6
+    },
+    {
+     "author": "p01",
+     "text": "A clean beach is a happy beach. Great job to everyone who came out.",
+     "hours_ago": 9,
+     "likes": 7
+    },
+    {
+     "author": "p10",
+     "text": "Yalla, next month's clean-up is on. Bring two bags each, the beach is hungry.",
+     "hours_ago": 8,
+     "likes": 8
+    },
+    {
+     "author": "p04",
+     "text": "Two bags each, I'll bring the big trailer again. Let's beat the record.",
+     "hours_ago": 7,
+     "likes": 5
+    },
+    {
+     "author": "p09",
+     "text": "Record-breaking is the goal for next time. Team Hannah is in.",
+     "hours_ago": 6,
+     "likes": 6
+    },
+    {
+     "author": "p06",
+     "text": "Let's beat the 42. Yalla, the crew is growing every month 🌊",
+     "hours_ago": 5,
+     "likes": 7
+    },
+    {
+     "author": "p03",
+     "text": "Pastries for the record-breakers. A little motivation never hurt anyone.",
+     "hours_ago": 4,
+     "likes": 6
+    }
+   ]
+  },
+  {
+   "id": "beach-cleanups-04",
+   "author": "p08",
+   "text": "Reusable coffee cups at the clean-up: we tested a deposit scheme at the cafe for the volunteers, and it worked. Less plastic, more happy baristas. Want to try it at the next event?",
+   "image": "media/coffee.jpg",
+   "hours_ago": 44,
+   "likes": 232,
+   "comments": [
+    {
+     "author": "p03",
+     "text": "Reusable cups for the pastry team too. Nice idea, Yusuf, and it's easy to wash at the bakery.",
+     "hours_ago": 42,
+     "likes": 9
+    },
+    {
+     "author": "p10",
+     "text": "A deposit scheme for reusable cups is great. Small gestures add up on the beach.",
+     "hours_ago": 41,
+     "likes": 10
+    },
+    {
+     "author": "p04",
+     "text": "Reusable cups are a must for the cycling crew too. Keeps the bike bags tidy.",
+     "hours_ago": 40,
+     "likes": 6
+    },
+    {
+     "author": "p02",
+     "text": "Bring your own bottle to the clean-up, and the cups come second. Water first, always.",
+     "hours_ago": 39,
+     "likes": 8
+    },
+    {
+     "author": "p06",
+     "text": "A deposit system with a small token, the volunteers would love it. Let's try.",
+     "hours_ago": 38,
+     "likes": 7
+    },
+    {
+     "author": "p05",
+     "text": "Puppy would not be allowed a reusable cup, but his water bowl is reusable, so that counts.",
+     "hours_ago": 37,
+     "likes": 12
+    },
+    {
+     "author": "p07",
+     "text": "Yes! Reusable cups are the easiest win for the beach. Count me in for the test.",
+     "hours_ago": 36,
+     "likes": 8
+    },
+    {
+     "author": "p09",
+     "text": "Our office has reusable cups now, and the plastic bin is much emptier. Great results.",
+     "hours_ago": 35,
+     "likes": 7
+    },
+    {
+     "author": "p01",
+     "text": "A small step, but the sea will thank us. Good idea, Yusuf.",
+     "hours_ago": 34,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "Thanks all. I'll bring the tokens and the washing station for the next clean-up.",
+     "hours_ago": 33,
+     "likes": 9
+    },
+    {
+     "author": "p10",
+     "text": "Washing station is essential. Clean cups keep the hygiene high for the crew.",
+     "hours_ago": 32,
+     "likes": 5
+    },
+    {
+     "author": "p04",
+     "text": "A washing station and a sign with the rules, the simplest solution. Good plan.",
+     "hours_ago": 31,
+     "likes": 4
+    },
+    {
+     "author": "p03",
+     "text": "Pastry tip: cups with a lid, the sand otherwise gets in every drink.",
+     "hours_ago": 30,
+     "likes": 6
+    },
+    {
+     "author": "p02",
+     "text": "Sand in the coffee is a scene I'd rather avoid. Lids are a great call, Layla.",
+     "hours_ago": 29,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "Puppy approves of the lidded cups, the sand gets in his water too. Very annoying.",
+     "hours_ago": 28,
+     "likes": 9
+    },
+    {
+     "author": "p07",
+     "text": "Let's make a checklist for the reusable cup test, so we can measure it well.",
+     "hours_ago": 27,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "Good idea, Anjali. We'll track the number of cups and the plastic saved.",
+     "hours_ago": 26,
+     "likes": 5
+    },
+    {
+     "author": "p06",
+     "text": "Simple measurements, honest numbers, a good test. Yalla, let's do it right.",
+     "hours_ago": 25,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "Yes. Thank you all for the support. The cups are coming to the next beach day.",
+     "hours_ago": 24,
+     "likes": 7
+    },
+    {
+     "author": "p10",
+     "text": "Coffee in reusable cups on a clean beach. The best possible Saturday.",
+     "hours_ago": 23,
+     "likes": 8
+    },
+    {
+     "author": "p04",
+     "text": "Good luck with the test, Yusuf. The beach is cheering you on.",
+     "hours_ago": 22,
+     "likes": 4
+    },
+    {
+     "author": "p02",
+     "text": "Coffee, clean sea, and friends who care. The good life, honestly.",
+     "hours_ago": 21,
+     "likes": 5
+    },
+    {
+     "author": "p03",
+     "text": "Thank you for the idea, Yusuf. A cupcake for the first reusable cup user.",
+     "hours_ago": 20,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "Let's do it. Next clean-up is the cup test day, mark your calendars.",
+     "hours_ago": 19,
+     "likes": 5
+    },
+    {
+     "author": "p07",
+     "text": "Yalla, reusable cups and clean sand. Simple steps, big impact 🌊",
+     "hours_ago": 18,
+     "likes": 6
+    }
+   ]
+  },
+  {
+   "id": "beach-cleanups-05",
+   "author": "p06",
+   "text": "Music at the beach clean-up: a small speaker with a playlist kept the volunteers going for two hours. Keep the volume low, of course, so the birds and neighbours stay happy.",
+   "image": null,
+   "hours_ago": 58,
+   "likes": 187,
+   "comments": [
+    {
+     "author": "p10",
+     "text": "Music makes the clean-up feel like a party. Low volume is the rule, and it works well.",
+     "hours_ago": 56,
+     "likes": 9
+    },
+    {
+     "author": "p02",
+     "text": "Running playlist for the clean-up crew, yes. The beat keeps the pace up.",
+     "hours_ago": 55,
+     "likes": 7
+    },
+    {
+     "author": "p04",
+     "text": "A speaker on the beach can annoy the families nearby. Keep it to the team, please.",
+     "hours_ago": 54,
+     "likes": 8
+    },
+    {
+     "author": "p08",
+     "text": "Coffee with music, the perfect volunteer atmosphere. The urn and the speaker are a good team.",
+     "hours_ago": 53,
+     "likes": 6
+    },
+    {
+     "author": "p03",
+     "text": "Pastry making with music is a joy too. The clean-up crew deserves a good soundtrack.",
+     "hours_ago": 52,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "Puppy hates the speaker, but he loves the beat of the clean-up bags. Two different opinions.",
+     "hours_ago": 51,
+     "likes": 10
+    },
+    {
+     "author": "p07",
+     "text": "Headphones for the volunteers who want to listen while they pick up the bags, that's my preference.",
+     "hours_ago": 50,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "Headphones are great for the solo volunteers. Keep the speaker for the group break.",
+     "hours_ago": 49,
+     "likes": 5
+    },
+    {
+     "author": "p01",
+     "text": "A group break with a song, a small joy after the hard work. I'm in for that.",
+     "hours_ago": 48,
+     "likes": 7
+    },
+    {
+     "author": "p06",
+     "text": "Thanks all for the feedback. Next time: headphones for the pickers, speaker for the break.",
+     "hours_ago": 47,
+     "likes": 8
+    },
+    {
+     "author": "p10",
+     "text": "Good compromise. Keep the beach respectful, and everyone can enjoy the morning.",
+     "hours_ago": 46,
+     "likes": 6
+    },
+    {
+     "author": "p04",
+     "text": "Good compromise, Kwame. Respect for the neighbours and the wildlife, always.",
+     "hours_ago": 45,
+     "likes": 4
+    },
+    {
+     "author": "p02",
+     "text": "Music in the morning with the sunrise is my favourite combo. Good call.",
+     "hours_ago": 44,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "Puppy wants to join the break dance. Sorry, Kwame, I'll keep him in the car.",
+     "hours_ago": 43,
+     "likes": 11
+    },
+    {
+     "author": "p08",
+     "text": "A dance break after the clean-up, the best way to finish. Coffee in one hand, music in the other.",
+     "hours_ago": 42,
+     "likes": 7
+    },
+    {
+     "author": "p03",
+     "text": "Dance break and cupcakes, my two favourite things. Count me in, Kwame.",
+     "hours_ago": 41,
+     "likes": 6
+    },
+    {
+     "author": "p07",
+     "text": "Music, sunshine, and a clean beach. A lovely way to spend a Saturday.",
+     "hours_ago": 40,
+     "likes": 5
+    },
+    {
+     "author": "p09",
+     "text": "Our office team will bring a playlist for the next clean-up. Team Hannah, ready.",
+     "hours_ago": 39,
+     "likes": 4
+    },
+    {
+     "author": "p06",
+     "text": "Great, the more the merrier. Yalla, dance break on the sand 🎶",
+     "hours_ago": 38,
+     "likes": 8
+    },
+    {
+     "author": "p10",
+     "text": "Keep the sound low and the smiles high. A fine rule for any beach day.",
+     "hours_ago": 37,
+     "likes": 5
+    },
+    {
+     "author": "p02",
+     "text": "Thanks for the great thread. The clean-up crew is the best crew in town.",
+     "hours_ago": 36,
+     "likes": 6
+    },
+    {
+     "author": "p04",
+     "text": "Enjoy the music and the sea breeze, friends. A clean beach is a happy beach.",
+     "hours_ago": 35,
+     "likes": 4
+    },
+    {
+     "author": "p03",
+     "text": "Yalla, music, cupcakes, and a clean shore. Thank you, Kwame, for the playlist.",
+     "hours_ago": 34,
+     "likes": 7
+    },
+    {
+     "author": "p05",
+     "text": "Puppy approves of the playlist, if the playlist has a squeaky toy track. Almost.",
+     "hours_ago": 33,
+     "likes": 9
+    },
+    {
+     "author": "p08",
+     "text": "Coffee break, music, and a clean beach, a very good Saturday plan.",
+     "hours_ago": 32,
+     "likes": 5
+    }
+   ]
+  },
+  {
+   "id": "beach-cleanups-06",
+   "author": "p04",
+   "text": "Cycling to the clean-up is my favourite way to volunteer. Bike rack at the lifeguard tower, bags on the handlebars, and a cold drink at the end. Who wants to ride with me?",
+   "image": "media/rest-water.jpg",
+   "hours_ago": 72,
+   "likes": 201,
+   "comments": [
+    {
+     "author": "p02",
+     "text": "Ride and run to the beach, my favourite combo. Count me in for the next clean-up.",
+     "hours_ago": 70,
+     "likes": 8
+    },
+    {
+     "author": "p10",
+     "text": "Bikes at the tower, good. Keep the path clear for the swimmers and the lifeguards.",
+     "hours_ago": 69,
+     "likes": 7
+    },
+    {
+     "author": "p06",
+     "text": "Riding with the bags on the handlebars is a good workout too. Respect, Tomasz.",
+     "hours_ago": 68,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "Cold drink at the end, yes, I'll bring the cold brew for the riders. Deal.",
+     "hours_ago": 67,
+     "likes": 9
+    },
+    {
+     "author": "p03",
+     "text": "A bike ride with a cake in the basket, that's my kind of volunteering. Count me in!",
+     "hours_ago": 66,
+     "likes": 7
+    },
+    {
+     "author": "p05",
+     "text": "Puppy can't ride, but he'd love the wind on the seafront. Maybe a walk after.",
+     "hours_ago": 65,
+     "likes": 10
+    },
+    {
+     "author": "p07",
+     "text": "A bike rack at the tower is so useful. Let's ask the council to add more.",
+     "hours_ago": 64,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "Our office has a bike group, we'll ride over together. Great idea.",
+     "hours_ago": 63,
+     "likes": 5
+    },
+    {
+     "author": "p01",
+     "text": "Bike ride to the beach, bags in the front, music in the ears, what a morning.",
+     "hours_ago": 62,
+     "likes": 8
+    },
+    {
+     "author": "p04",
+     "text": "@hannah_b the bike group is welcome. Meet at the Business Bay metro at 6.",
+     "hours_ago": 61,
+     "likes": 5
+    },
+    {
+     "author": "p10",
+     "text": "Keep helmets on and the speed low on the seafront. Pedestrians come first.",
+     "hours_ago": 60,
+     "likes": 9
+    },
+    {
+     "author": "p02",
+     "text": "Good rule. Shared path, shared respect, that's the seafront motto.",
+     "hours_ago": 59,
+     "likes": 6
+    },
+    {
+     "author": "p06",
+     "text": "A bell on the bike for the people walking, a small courtesy that matters.",
+     "hours_ago": 58,
+     "likes": 5
+    },
+    {
+     "author": "p03",
+     "text": "Pastry box on the back rack for the riders. Please ride gently, the cakes are fragile.",
+     "hours_ago": 57,
+     "likes": 8
+    },
+    {
+     "author": "p08",
+     "text": "Cold brew, bikes, and a clean beach. Thank you, Tomasz, the ride is a great idea.",
+     "hours_ago": 56,
+     "likes": 7
+    },
+    {
+     "author": "p05",
+     "text": "Puppy approves the bike plan, he watched the bikes go by with great interest.",
+     "hours_ago": 55,
+     "likes": 9
+    },
+    {
+     "author": "p07",
+     "text": "I'll join with the e-bike, so I'm the slow one. Save me a seat at the drinks stop.",
+     "hours_ago": 54,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "E-bike is a good option, Anjali. We'll wait for you at the tower.",
+     "hours_ago": 53,
+     "likes": 4
+    },
+    {
+     "author": "p01",
+     "text": "Yalla, the bike clean-up crew is forming. Ride safe, friends.",
+     "hours_ago": 52,
+     "likes": 6
+    },
+    {
+     "author": "p10",
+     "text": "Good luck, riders. The beach is waiting for your bags and your smiles.",
+     "hours_ago": 51,
+     "likes": 7
+    },
+    {
+     "author": "p04",
+     "text": "Thanks, everyone. Let's make the ride part of the clean-up tradition.",
+     "hours_ago": 50,
+     "likes": 5
+    },
+    {
+     "author": "p02",
+     "text": "Ride, run, and clean, a triple win for the seafront. Thanks, Tomasz.",
+     "hours_ago": 49,
+     "likes": 6
+    },
+    {
+     "author": "p03",
+     "text": "Yalla, cycle the clean-up, cake at the end. See you all on the seafront 🚴",
+     "hours_ago": 48,
+     "likes": 7
+    },
+    {
+     "author": "p07",
+     "text": "Pedal-friendly lock points near the tower would help too. Bring a sturdy chain, friends.",
+     "hours_ago": 60,
+     "likes": 6
+    },
+    {
+     "author": "p10",
+     "text": "Riders, sunscreen on the ears and neck, the sea breeze hides the sun. Stay safe.",
+     "hours_ago": 58,
+     "likes": 9
+    }
+   ]
+  },
+  {
+   "id": "beach-cleanups-07",
+   "author": "p09",
+   "text": "Corporate clean-up day idea for offices in Dubai: a morning of bags and gloves, a team breakfast, and a short talk on reducing plastic. We are planning ours for next month.",
+   "image": "media/rest-room.jpg",
+   "hours_ago": 98,
+   "likes": 223,
+   "comments": [
+    {
+     "author": "p10",
+     "text": "Corporate clean-ups are a great way to bring a team together. Yes, please, Hannah.",
+     "hours_ago": 96,
+     "likes": 9
+    },
+    {
+     "author": "p04",
+     "text": "Team breakfast after the clean-up is the best part of the day. Keep it simple.",
+     "hours_ago": 95,
+     "likes": 8
+    },
+    {
+     "author": "p02",
+     "text": "Short talk on plastics is a good idea, and invite the lifeguard team to speak too.",
+     "hours_ago": 94,
+     "likes": 7
+    },
+    {
+     "author": "p06",
+     "text": "Team building on a beach is much better than another office lunch. Count us in.",
+     "hours_ago": 93,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "Coffee for the whole office, from my cafe. The cups will be the reusable kind, promise.",
+     "hours_ago": 92,
+     "likes": 10
+    },
+    {
+     "author": "p03",
+     "text": "Pastries for the breakfast, I'll deliver the box at 7am. Team morale is baked in.",
+     "hours_ago": 91,
+     "likes": 8
+    },
+    {
+     "author": "p05",
+     "text": "Puppy would love to attend the office clean-up, he has been practising his bag-carrying.",
+     "hours_ago": 90,
+     "likes": 11
+    },
+    {
+     "author": "p07",
+     "text": "We did one with a local school, the kids loved the sorting. A good event for families too.",
+     "hours_ago": 89,
+     "likes": 7
+    },
+    {
+     "author": "p01",
+     "text": "Schools and offices together would be a great partnership. Maybe in the spring.",
+     "hours_ago": 88,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "Good suggestions, all. I'll draft the plan and share it in the group this week.",
+     "hours_ago": 87,
+     "likes": 5
+    },
+    {
+     "author": "p10",
+     "text": "Keep the safety brief short, and the lifeguards will be happy to run it.",
+     "hours_ago": 86,
+     "likes": 6
+    },
+    {
+     "author": "p04",
+     "text": "Put the timing on the invite and keep the start time before the heat, please.",
+     "hours_ago": 85,
+     "likes": 4
+    },
+    {
+     "author": "p02",
+     "text": "Early start, team breakfast, and a clean beach by nine. A perfect morning.",
+     "hours_ago": 84,
+     "likes": 5
+    },
+    {
+     "author": "p08",
+     "text": "Coffee and a clean beach, the office will love it. I'll make the staff brew list.",
+     "hours_ago": 83,
+     "likes": 7
+    },
+    {
+     "author": "p03",
+     "text": "Cake plus clean sand, the perfect office outing. Pastry chef's approval.",
+     "hours_ago": 82,
+     "likes": 6
+    },
+    {
+     "author": "p05",
+     "text": "Puppy's offer: he'll sit at the picnic table and receive treats for good behaviour.",
+     "hours_ago": 81,
+     "likes": 9
+    },
+    {
+     "author": "p07",
+     "text": "A team breakfast with a view of the sea sounds perfect. Keep us posted, Hannah.",
+     "hours_ago": 80,
+     "likes": 5
+    },
+    {
+     "author": "p01",
+     "text": "Clean beach, good company, and a team that cares. A brilliant initiative.",
+     "hours_ago": 79,
+     "likes": 6
+    },
+    {
+     "author": "p06",
+     "text": "Let's do a list of companies who want to join. A good network for the beach.",
+     "hours_ago": 78,
+     "likes": 5
+    },
+    {
+     "author": "p09",
+     "text": "Great idea, Kwame. I'll start the list in the group, friends welcome.",
+     "hours_ago": 77,
+     "likes": 4
+    },
+    {
+     "author": "p10",
+     "text": "Thanks all, a corporate clean-up with a clear purpose is what the beach needs.",
+     "hours_ago": 76,
+     "likes": 7
+    },
+    {
+     "author": "p04",
+     "text": "Yalla, office crews, bring the bags and the energy. The beach is ready for you.",
+     "hours_ago": 75,
+     "likes": 6
+    },
+    {
+     "author": "p02",
+     "text": "Looking forward to it. Let's make the beach a model for the city.",
+     "hours_ago": 74,
+     "likes": 5
+    },
+    {
+     "author": "p08",
+     "text": "Coffee, clean sand, and a team breakfast. Count on me for the urn 🌊",
+     "hours_ago": 73,
+     "likes": 6
+    },
+    {
+     "author": "p03",
+     "text": "Thanks, Hannah. The pastry team will be there with the sweets. Yalla!",
+     "hours_ago": 72,
+     "likes": 5
+    }
+   ]
+  },
+  {
+   "id": "beach-cleanups-08",
+   "author": "p07",
+   "text": "Clean-up volunteers: please report any injured wildlife to the lifeguards or the environment hotline, do not try to move turtles or birds yourself. Quick, calm, and safe.",
+   "image": "media/rest-room.jpg",
+   "hours_ago": 124,
+   "likes": 344,
+   "comments": [
+    {
+     "author": "p10",
+     "text": "Very important, Anjali. Always call the professionals for injured wildlife, and keep distance.",
+     "hours_ago": 122,
+     "likes": 14
+    },
+    {
+     "author": "p05",
+     "text": "Vet nurse here: animals in pain can bite even if they look calm. Stay back and call for help.",
+     "hours_ago": 121,
+     "likes": 12
+    },
+    {
+     "author": "p04",
+     "text": "Keep the dogs on the leash near the nesting areas too. Wildlife deserves the space.",
+     "hours_ago": 120,
+     "likes": 9
+    },
+    {
+     "author": "p02",
+     "text": "A running route near the nesting area should avoid the sand zone during the season. Good to know.",
+     "hours_ago": 119,
+     "likes": 7
+    },
+    {
+     "author": "p08",
+     "text": "Coffee shops also see the injured birds sometimes. The staff know who to call.",
+     "hours_ago": 118,
+     "likes": 6
+    },
+    {
+     "author": "p03",
+     "text": "Pastry chef-level precision is not needed for wildlife rescue. Please leave it to the experts.",
+     "hours_ago": 117,
+     "likes": 8
+    },
+    {
+     "author": "p06",
+     "text": "Share the hotline number in the group, Anjali, so everyone has it saved on their phone.",
+     "hours_ago": 116,
+     "likes": 10
+    },
+    {
+     "author": "p09",
+     "text": "Saved, and I'll put it on the sign-in sheet for the corporate clean-up too.",
+     "hours_ago": 115,
+     "likes": 6
+    },
+    {
+     "author": "p01",
+     "text": "Good safety reminder. A calm, quick report is the best help we can give to animals.",
+     "hours_ago": 114,
+     "likes": 7
+    },
+    {
+     "author": "p10",
+     "text": "Keep your distance and keep the group calm. Well said, everyone.",
+     "hours_ago": 113,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "Puppy has been a very good boy around the sea birds, he watches from a distance.",
+     "hours_ago": 112,
+     "likes": 11
+    },
+    {
+     "author": "p04",
+     "text": "Good boy, Puppy. Respect for the wildlife is a shared responsibility.",
+     "hours_ago": 111,
+     "likes": 6
+    },
+    {
+     "author": "p02",
+     "text": "Thanks for this post, Anjali. It's a reminder I needed, I'll share it with the running crew.",
+     "hours_ago": 110,
+     "likes": 8
+    },
+    {
+     "author": "p08",
+     "text": "Share it widely, the more people know, the better for the birds and the turtles.",
+     "hours_ago": 109,
+     "likes": 5
+    },
+    {
+     "author": "p03",
+     "text": "Keep the cake away from the birds too, bread and sweets are bad for them. A small note.",
+     "hours_ago": 108,
+     "likes": 9
+    },
+    {
+     "author": "p06",
+     "text": "Good point, Layla. Feed no wildlife, leave the beach to the birds, always.",
+     "hours_ago": 107,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "Thanks for the calm reminder, everyone. Our corporate team will get the briefing.",
+     "hours_ago": 106,
+     "likes": 5
+    },
+    {
+     "author": "p10",
+     "text": "Yalla, safe wildlife, clean beaches, and kind volunteers. Good work, all.",
+     "hours_ago": 105,
+     "likes": 7
+    },
+    {
+     "author": "p04",
+     "text": "I'm sharing this in the cycling group too, the seafront is for everyone.",
+     "hours_ago": 104,
+     "likes": 4
+    },
+    {
+     "author": "p02",
+     "text": "Good thread. Respect for the animals makes the beach a better place.",
+     "hours_ago": 103,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "Puppy says thank you to the people who help the animals. He's a fan of the rescue team.",
+     "hours_ago": 102,
+     "likes": 12
+    },
+    {
+     "author": "p08",
+     "text": "Coffee for the rescue team on the next day, a small thank you from our cafe.",
+     "hours_ago": 101,
+     "likes": 6
+    },
+    {
+     "author": "p03",
+     "text": "Thank you, Anjali, for keeping us all informed and safe. Yalla, beach friends 🐢",
+     "hours_ago": 100,
+     "likes": 8
+    },
+    {
+     "author": "p09",
+     "text": "Stay safe and stay calm, friends. Thanks again for the reminder.",
+     "hours_ago": 99,
+     "likes": 4
+    },
+    {
+     "author": "p06",
+     "text": "Good advice for the whole community. Stay safe, and keep the beach happy 🌊",
+     "hours_ago": 98,
+     "likes": 6
+    }
+   ]
+  },
+  {
+   "id": "beach-cleanups-09",
+   "author": "p01",
+   "text": "Found a lost wedding ring in the sand during the last clean-up and returned it to the lifeguard tower. It took twenty minutes of sifting, but it reached its owner by the evening. Worth every minute.",
+   "image": null,
+   "hours_ago": 146,
+   "likes": 402,
+   "comments": [
+    {
+     "author": "p10",
+     "text": "That is a wonderful story, Sara. The lifeguards are proud of you, I'm sure.",
+     "hours_ago": 144,
+     "likes": 16
+    },
+    {
+     "author": "p02",
+     "text": "Twenty minutes of sifting for a ring is a heroic effort. Thank you for doing that.",
+     "hours_ago": 143,
+     "likes": 12
+    },
+    {
+     "author": "p04",
+     "text": "A returned ring is the best clean-up reward I've heard. Congratulations on the reunion.",
+     "hours_ago": 142,
+     "likes": 10
+    },
+    {
+     "author": "p05",
+     "text": "Puppy would have found it faster, he has a nose for shiny things. Well done, Sara.",
+     "hours_ago": 141,
+     "likes": 14
+    },
+    {
+     "author": "p08",
+     "text": "Coffee after the sifting, the well-earned reward. Good to hear the ring found its owner.",
+     "hours_ago": 140,
+     "likes": 7
+    },
+    {
+     "author": "p03",
+     "text": "A ring returned, a happy couple, a clean beach. The best kind of Saturday story.",
+     "hours_ago": 139,
+     "likes": 11
+    },
+    {
+     "author": "p06",
+     "text": "Found items at the beach are a small miracle when they reach their owners. Thank you, Sara.",
+     "hours_ago": 138,
+     "likes": 9
+    },
+    {
+     "author": "p07",
+     "text": "This is why we clean the beach, Sara. Lovely story and lovely effort.",
+     "hours_ago": 137,
+     "likes": 8
+    },
+    {
+     "author": "p09",
+     "text": "Brilliant. Our office will add a lost-and-found bin to the next clean-up.",
+     "hours_ago": 136,
+     "likes": 6
+    },
+    {
+     "author": "p01",
+     "text": "Thank you all. The lifeguards were the real heroes, they helped me sift for ten minutes.",
+     "hours_ago": 135,
+     "likes": 9
+    },
+    {
+     "author": "p10",
+     "text": "Lifeguards are always happy to help. A team effort, as always on the beach.",
+     "hours_ago": 134,
+     "likes": 7
+    },
+    {
+     "author": "p02",
+     "text": "Team effort and a little luck. Good story to share with the running group.",
+     "hours_ago": 133,
+     "likes": 5
+    },
+    {
+     "author": "p04",
+     "text": "A small act of care can mean a lot to someone. Thank you, Sara, for taking the time.",
+     "hours_ago": 132,
+     "likes": 8
+    },
+    {
+     "author": "p05",
+     "text": "Puppy approves of the ring rescue. He would like a bone for his heroism, please.",
+     "hours_ago": 131,
+     "likes": 10
+    },
+    {
+     "author": "p08",
+     "text": "Coffee is on me next clean-up, Sara, for the ring hero. A small thank you.",
+     "hours_ago": 130,
+     "likes": 6
+    },
+    {
+     "author": "p03",
+     "text": "Cake for the ring hero too, obviously. Pastry chef's gratitude.",
+     "hours_ago": 129,
+     "likes": 7
+    },
+    {
+     "author": "p06",
+     "text": "Beautiful post, thank you. A reminder that the beach holds more than rubbish, friends.",
+     "hours_ago": 128,
+     "likes": 8
+    },
+    {
+     "author": "p09",
+     "text": "Let's create a lost-and-found board in the group for the clean-up items. Good idea.",
+     "hours_ago": 127,
+     "likes": 5
+    },
+    {
+     "author": "p07",
+     "text": "Yes, a board for found items is smart. Share photos, return the items, close the loop.",
+     "hours_ago": 126,
+     "likes": 6
+    },
+    {
+     "author": "p01",
+     "text": "I'll start it with the ring story as the first entry. Thanks for the ideas.",
+     "hours_ago": 125,
+     "likes": 4
+    },
+    {
+     "author": "p10",
+     "text": "Perfect start. Keep it simple and the lifeguards will check it too.",
+     "hours_ago": 124,
+     "likes": 5
+    },
+    {
+     "author": "p04",
+     "text": "A ring returned is a reason to smile, and to keep cleaning the sand. Yalla.",
+     "hours_ago": 123,
+     "likes": 6
+    },
+    {
+     "author": "p02",
+     "text": "Cheers to the ring and the reunion. Great story, Sara.",
+     "hours_ago": 122,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "Puppy wags his tail for the happy ending. Good work, everyone 🐾",
+     "hours_ago": 121,
+     "likes": 11
+    },
+    {
+     "author": "p08",
+     "text": "A small story with a big heart. Thank you for sharing, Sara.",
+     "hours_ago": 120,
+     "likes": 7
+    }
+   ]
+  },
+  {
+   "id": "beach-cleanups-10",
+   "author": "p10",
+   "text": "Next clean-up: first Saturday of the month at Kite Beach, 6:30am. Gloves, bags, water and a brief safety talk from the lifeguards. Bring a friend and a reusable bottle. See you there!",
+   "image": "media/marina.jpg",
+   "hours_ago": 160,
+   "likes": 366,
+   "comments": [
+    {
+     "author": "p02",
+     "text": "Count me in for the first Saturday. The beach is my running route, so it's a good cause.",
+     "hours_ago": 156,
+     "likes": 12
+    },
+    {
+     "author": "p04",
+     "text": "I'll be there with the bike and the trailer. The bags are getting heavier, but so is the happiness.",
+     "hours_ago": 155,
+     "likes": 9
+    },
+    {
+     "author": "p06",
+     "text": "First Saturday, Kite Beach, 6:30. My calendar is set, and the playlist is ready.",
+     "hours_ago": 154,
+     "likes": 8
+    },
+    {
+     "author": "p08",
+     "text": "Coffee urn is booked for the first Saturday, two urns this time. Lesson learned.",
+     "hours_ago": 153,
+     "likes": 10
+    },
+    {
+     "author": "p03",
+     "text": "Pastry box for the volunteers, I'll be there with cupcakes for the team. Count me in.",
+     "hours_ago": 152,
+     "likes": 9
+    },
+    {
+     "author": "p05",
+     "text": "Puppy can't come to the beach clean-up, but he'll be waiting with a happy tail at home.",
+     "hours_ago": 151,
+     "likes": 12
+    },
+    {
+     "author": "p01",
+     "text": "Bringing a friend who's never volunteered before. Hope the first clean-up is a great one.",
+     "hours_ago": 150,
+     "likes": 7
+    },
+    {
+     "author": "p07",
+     "text": "I'll bring the new volunteers from the newcomers group. Welcome to the beach family.",
+     "hours_ago": 149,
+     "likes": 8
+    },
+    {
+     "author": "p09",
+     "text": "Our office team of six is confirmed. Thanks for the clear details, Omar.",
+     "hours_ago": 148,
+     "likes": 6
+    },
+    {
+     "author": "p10",
+     "text": "Great to see so many people joining. Bring water, sunscreen, and the good mood.",
+     "hours_ago": 147,
+     "likes": 10
+    },
+    {
+     "author": "p04",
+     "text": "Reusable bottles are the rule. The lifeguard tower has refill water, I checked.",
+     "hours_ago": 146,
+     "likes": 7
+    },
+    {
+     "author": "p02",
+     "text": "Refill water at the tower is a great detail. Thank you for checking, Tomasz.",
+     "hours_ago": 145,
+     "likes": 5
+    },
+    {
+     "author": "p06",
+     "text": "The safety talk is a must. Listen carefully, friends, the sea is beautiful and strong.",
+     "hours_ago": 144,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "Coffee is ready for the crew at 7am. Hot, strong and very welcome after the sand.",
+     "hours_ago": 143,
+     "likes": 8
+    },
+    {
+     "author": "p03",
+     "text": "A bag full of cupcakes and a box of smiles, the perfect morning kit.",
+     "hours_ago": 142,
+     "likes": 7
+    },
+    {
+     "author": "p05",
+     "text": "Puppy's message to the volunteers: thank you for keeping the beach beautiful for the dogs.",
+     "hours_ago": 141,
+     "likes": 13
+    },
+    {
+     "author": "p01",
+     "text": "Thank you, Omar, for organising this every month. The beach is lucky to have you.",
+     "hours_ago": 140,
+     "likes": 9
+    },
+    {
+     "author": "p07",
+     "text": "Yalla, first Saturday, Kite Beach. Let's clean it together, one bag at a time.",
+     "hours_ago": 139,
+     "likes": 8
+    },
+    {
+     "author": "p09",
+     "text": "Looking forward to it. The team is excited for the beach and the breakfast.",
+     "hours_ago": 138,
+     "likes": 5
+    },
+    {
+     "author": "p04",
+     "text": "See you on the sand, friends. Bring the bags and the energy.",
+     "hours_ago": 137,
+     "likes": 6
+    },
+    {
+     "author": "p02",
+     "text": "Early morning, clean beach, good company. The best way to start a Saturday.",
+     "hours_ago": 136,
+     "likes": 7
+    },
+    {
+     "author": "p08",
+     "text": "Coffee and clean sand, the two best things about the first Saturday. See you there ☕",
+     "hours_ago": 135,
+     "likes": 6
+    },
+    {
+     "author": "p03",
+     "text": "Pastries, friends, and a beach to clean. Yalla, first Saturday 🌊",
+     "hours_ago": 134,
+     "likes": 8
+    },
+    {
+     "author": "p06",
+     "text": "Thanks, Omar, for keeping the community together. See you on the sand 🎶",
+     "hours_ago": 133,
+     "likes": 5
+    },
+    {
+     "author": "p10",
+     "text": "Thank you all, see you at 6:30 on the first Saturday. Let's make a difference 🐚",
+     "hours_ago": 132,
+     "likes": 9
+    }
+   ]
+  }
+ ]
+}

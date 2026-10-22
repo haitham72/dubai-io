@@ -1,0 +1,1631 @@
+{
+ "id": "home-cooks",
+ "name": "Home Cooks DXB",
+ "handle": "homecooksdxb",
+ "topic": "Cooking",
+ "about": "Recipes from our kitchens in Dubai: weeknight dinners, family classics, sourdough disasters and the occasional spice-cabinet rescue.",
+ "image": "media/spread.jpg",
+ "members": 11200,
+ "stories": [
+  {
+   "author": "p07",
+   "text": "Fresh curry leaves from the Deira market. The whole flat smells like home.",
+   "image": "media/spread.jpg",
+   "hours_ago": 3
+  },
+  {
+   "author": "p03",
+   "text": "Sourdough loaf number nine. It finally rose! Crumb shot coming tomorrow.",
+   "image": "media/cloth.jpg",
+   "hours_ago": 11
+  },
+  {
+   "author": "p06",
+   "text": "Jollof night at my place, friends came with their own spices. Potluck legend.",
+   "image": "media/food.jpg",
+   "hours_ago": 24
+  }
+ ],
+ "posts": [
+  {
+   "id": "home-cooks-01",
+   "author": "p07",
+   "text": "Weeknight dal tadka in twenty minutes: red lentils, a pinch of turmeric, ghee, cumin seeds and garlic chips fried until golden. Serve with rice and a squeeze of lime.",
+   "image": "media/spread.jpg",
+   "hours_ago": 4,
+   "likes": 356,
+   "comments": [
+    {
+     "author": "p02",
+     "text": "Twenty minutes is my kind of dinner after a long run. Garlic chips are the secret, yes.",
+     "hours_ago": 3,
+     "likes": 10
+    },
+    {
+     "author": "p06",
+     "text": "Ghee and cumin seeds sizzling in the pan is the sound of home. Thanks, Anjali.",
+     "hours_ago": 3,
+     "likes": 12
+    },
+    {
+     "author": "p03",
+     "text": "Lentils are my comfort food. Do you add tomato or keep it simple?",
+     "hours_ago": 2,
+     "likes": 6
+    },
+    {
+     "author": "p07",
+     "text": "@layla_h a little tomato if you like, but I keep it simple most nights.",
+     "hours_ago": 2,
+     "likes": 8
+    },
+    {
+     "author": "p04",
+     "text": "Dal with rice and a fried egg on top, my student-era favourite. Very cheap, very good.",
+     "hours_ago": 2,
+     "likes": 9
+    },
+    {
+     "author": "p10",
+     "text": "Protein after the swim, perfect. I'll cook this tonight with extra lime.",
+     "hours_ago": 1,
+     "likes": 7
+    },
+    {
+     "author": "p08",
+     "text": "Cumin seeds in hot ghee is the step people skip. Respect for doing it right.",
+     "hours_ago": 1,
+     "likes": 5
+    },
+    {
+     "author": "p09",
+     "text": "Does the dal freeze well? I'm trying to batch cook for the week.",
+     "hours_ago": 1,
+     "likes": 4
+    },
+    {
+     "author": "p05",
+     "text": "Puppy sniffs the cumin from the kitchen door, every single time. Very dramatic.",
+     "hours_ago": 2,
+     "likes": 11
+    },
+    {
+     "author": "p07",
+     "text": "@hannah_b freezes beautifully for up to a month. Add a splash of water when reheating.",
+     "hours_ago": 1,
+     "likes": 9
+    },
+    {
+     "author": "p01",
+     "text": "Garlic chips are the best part, I could eat them alone. Thanks for the recipe.",
+     "hours_ago": 1,
+     "likes": 8
+    },
+    {
+     "author": "p06",
+     "text": "Fresh curry leaves in the tadka would make it even better, Anjali. Just saying.",
+     "hours_ago": 1,
+     "likes": 6
+    },
+    {
+     "author": "p03",
+     "text": "Lime squeezed at the end is the trick. Brightens the whole pot.",
+     "hours_ago": 1,
+     "likes": 5
+    },
+    {
+     "author": "p02",
+     "text": "Cooking in twenty minutes after a run, I will try it this week for sure.",
+     "hours_ago": 0,
+     "likes": 4
+    },
+    {
+     "author": "p04",
+     "text": "Lentils and yoghurt on the side, the cooling partner for a spicy dal.",
+     "hours_ago": 1,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "I'd add a fresh chilli in the tadka. Mild heat, big flavour. Your call.",
+     "hours_ago": 0,
+     "likes": 4
+    },
+    {
+     "author": "p10",
+     "text": "Dal is the best recovery meal I know. Yoghurt, rice, and lime, done.",
+     "hours_ago": 1,
+     "likes": 7
+    },
+    {
+     "author": "p05",
+     "text": "Puppy is not allowed dal, too much spice for his tummy, sadly. He watches anyway.",
+     "hours_ago": 0,
+     "likes": 9
+    },
+    {
+     "author": "p09",
+     "text": "Going to make this for the team potluck. Recipe credit to Anjali, promise.",
+     "hours_ago": 0,
+     "likes": 6
+    },
+    {
+     "author": "p07",
+     "text": "Yes please, credit the Home Cooks group, that's the spirit. Enjoy the cooking!",
+     "hours_ago": 0,
+     "likes": 8
+    },
+    {
+     "author": "p06",
+     "text": "This is a weeknight staple now. Thank you, Anjali, the group is grateful 🍛",
+     "hours_ago": 0,
+     "likes": 11
+    },
+    {
+     "author": "p03",
+     "text": "Yalla, dal night for everyone. Bring the bread and the good humour.",
+     "hours_ago": 0,
+     "likes": 7
+    },
+    {
+     "author": "p01",
+     "text": "Going to try it with the red lentils from the Deira market. Let's see how it goes.",
+     "hours_ago": 0,
+     "likes": 5
+    },
+    {
+     "author": "p02",
+     "text": "Quick dinner, big flavour, low effort. The perfect recipe for busy weeks.",
+     "hours_ago": 0,
+     "likes": 6
+    },
+    {
+     "author": "p04",
+     "text": "Thanks for the recipe, Anjali. Dal fans of the group, unite.",
+     "hours_ago": 0,
+     "likes": 4
+    }
+   ]
+  },
+  {
+   "id": "home-cooks-02",
+   "author": "p03",
+   "text": "Sourdough disaster log, week three: my starter smelled like nail polish remover, then I discovered it was just hungry. Feed it twice a day and it's a different animal.",
+   "image": "media/cloth.jpg",
+   "hours_ago": 12,
+   "likes": 412,
+   "comments": [
+    {
+     "author": "p08",
+     "text": "Nail polish smell means it's hungry, yes. Feed it at room temperature and it recovers quickly.",
+     "hours_ago": 11,
+     "likes": 14
+    },
+    {
+     "author": "p06",
+     "text": "Layla the pastry chef struggling with sourdough, I'm so entertained. Keep going!",
+     "hours_ago": 10,
+     "likes": 12
+    },
+    {
+     "author": "p01",
+     "text": "Feeding twice a day is the rule. Also keep the jar loosely covered so the gas escapes.",
+     "hours_ago": 10,
+     "likes": 9
+    },
+    {
+     "author": "p04",
+     "text": "My starter also smelled like paint thinner once. It got better after a week of feeding.",
+     "hours_ago": 9,
+     "likes": 8
+    },
+    {
+     "author": "p07",
+     "text": "Sourdough is a long relationship. You will both learn patience, I promise.",
+     "hours_ago": 9,
+     "likes": 10
+    },
+    {
+     "author": "p09",
+     "text": "I tried sourdough and gave up. Respect for the persistence, Layla.",
+     "hours_ago": 8,
+     "likes": 6
+    },
+    {
+     "author": "p10",
+     "text": "Long fermentation and a warm kitchen, my swimming friend says the dough loves the heat.",
+     "hours_ago": 8,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "Puppy tried to eat the starter once. Now the jar lives on the top shelf, sorry Layla.",
+     "hours_ago": 7,
+     "likes": 13
+    },
+    {
+     "author": "p03",
+     "text": "@mariam_s the top shelf is wise. A starter on the floor is a crime against bread.",
+     "hours_ago": 7,
+     "likes": 7
+    },
+    {
+     "author": "p02",
+     "text": "Week three is the turning point, they say. Keep notes on the rise time each day.",
+     "hours_ago": 6,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "Use a clear jar with a rubber band to track the rise. Visual notes are the best.",
+     "hours_ago": 6,
+     "likes": 8
+    },
+    {
+     "author": "p06",
+     "text": "Our local bakery says the starter needs a warm spot, near the kitchen light works.",
+     "hours_ago": 5,
+     "likes": 5
+    },
+    {
+     "author": "p01",
+     "text": "Warm spot plus the right flour is the combo. Try bread flour for the first loaves.",
+     "hours_ago": 5,
+     "likes": 7
+    },
+    {
+     "author": "p04",
+     "text": "Dubai's indoor temperature is great for sourdough in winter, but summer is a challenge.",
+     "hours_ago": 4,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "Summer sourdough is a special struggle. Fridge the dough overnight to slow it down.",
+     "hours_ago": 4,
+     "likes": 9
+    },
+    {
+     "author": "p10",
+     "text": "Cold retard overnight is the trick. Good luck with the loaf, Layla.",
+     "hours_ago": 3,
+     "likes": 4
+    },
+    {
+     "author": "p07",
+     "text": "Share the crumb photo when it's ready. The community wants to see the holes.",
+     "hours_ago": 3,
+     "likes": 12
+    },
+    {
+     "author": "p05",
+     "text": "Puppy's review of the sourdough: he sniffed it and walked away, very critical.",
+     "hours_ago": 3,
+     "likes": 10
+    },
+    {
+     "author": "p03",
+     "text": "Thanks all, you're the best support group a sourdough disaster could ask for.",
+     "hours_ago": 2,
+     "likes": 11
+    },
+    {
+     "author": "p02",
+     "text": "I'm following the thread for the crumb. Dedicated runner-baker.",
+     "hours_ago": 2,
+     "likes": 5
+    },
+    {
+     "author": "p08",
+     "text": "Coffee with sourdough toast, the best breakfast I know. Keep baking, Layla.",
+     "hours_ago": 2,
+     "likes": 9
+    },
+    {
+     "author": "p06",
+     "text": "Toast with honey from the Marina market, sweet and simple. Yes.",
+     "hours_ago": 1,
+     "likes": 6
+    },
+    {
+     "author": "p01",
+     "text": "Good luck, Layla. The first good loaf is worth all the disasters.",
+     "hours_ago": 1,
+     "likes": 8
+    },
+    {
+     "author": "p04",
+     "text": "Looking forward to the crumb shot. Please do a side view as well.",
+     "hours_ago": 1,
+     "likes": 4
+    },
+    {
+     "author": "p09",
+     "text": "Starter love, bread dreams. Yalla, Layla, you can do it.",
+     "hours_ago": 1,
+     "likes": 5
+    }
+   ]
+  },
+  {
+   "id": "home-cooks-03",
+   "author": "p06",
+   "text": "Jollof potluck recap: twelve dishes, four spice blends, one very competitive table of cousins. My jollof was the mild one and nobody was impressed, but the plantains were a hit.",
+   "image": "media/food.jpg",
+   "hours_ago": 26,
+   "likes": 298,
+   "comments": [
+    {
+     "author": "p07",
+     "text": "Mild jollof is a brave choice in this group, Kwame. The plantains were the star, I agree.",
+     "hours_ago": 24,
+     "likes": 11
+    },
+    {
+     "author": "p03",
+     "text": "Twelve dishes, I'm impressed. Plantains are my weakness, do you fry them or bake them?",
+     "hours_ago": 23,
+     "likes": 8
+    },
+    {
+     "author": "p08",
+     "text": "Competitive cousins make the best potluck. Spice blends are the real battle, I'm told.",
+     "hours_ago": 22,
+     "likes": 10
+    },
+    {
+     "author": "p01",
+     "text": "Four spice blends in one pot is an adventure. I'd have brought the cheese board.",
+     "hours_ago": 21,
+     "likes": 6
+    },
+    {
+     "author": "p04",
+     "text": "Jollof is one of those dishes where everyone has an opinion. The smoky ones always win for me.",
+     "hours_ago": 20,
+     "likes": 9
+    },
+    {
+     "author": "p10",
+     "text": "Plantains fried until dark on the outside, soft in the middle. Trust the process.",
+     "hours_ago": 19,
+     "likes": 7
+    },
+    {
+     "author": "p05",
+     "text": "Puppy got a small plantain piece and then a very dramatic dance. Good pup.",
+     "hours_ago": 18,
+     "likes": 12
+    },
+    {
+     "author": "p09",
+     "text": "Potlucks in Dubai are my favourite social event. The food is a passport to the world.",
+     "hours_ago": 17,
+     "likes": 8
+    },
+    {
+     "author": "p06",
+     "text": "@layla_h I bake them with a little honey and a pinch of salt, sweet and smoky. Try it.",
+     "hours_ago": 16,
+     "likes": 9
+    },
+    {
+     "author": "p07",
+     "text": "Honey and salt on plantains is a genius combo. Next potluck I'm copying that.",
+     "hours_ago": 15,
+     "likes": 7
+    },
+    {
+     "author": "p02",
+     "text": "Carb-heavy potluck, my kind of evening after a long run. The rice was perfect too.",
+     "hours_ago": 14,
+     "likes": 5
+    },
+    {
+     "author": "p03",
+     "text": "Dessert table at a potluck is the real competition, can I bring a lemon tart?",
+     "hours_ago": 13,
+     "likes": 10
+    },
+    {
+     "author": "p01",
+     "text": "Lemon tart plus jollof, the best fusion in the group. Layla, please bring it.",
+     "hours_ago": 12,
+     "likes": 8
+    },
+    {
+     "author": "p04",
+     "text": "Dish labels with the ingredients, please. Allergy-safe potlucks are a kindness.",
+     "hours_ago": 11,
+     "likes": 9
+    },
+    {
+     "author": "p06",
+     "text": "Good call, Tomasz. I'll make the label template for the next event.",
+     "hours_ago": 10,
+     "likes": 6
+    },
+    {
+     "author": "p10",
+     "text": "Swimmers eat a lot at potlucks. I came hungry and left full, good job everyone.",
+     "hours_ago": 9,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "Puppy's favourite dish was the chicken, he begged all night. Lucky he's not allowed.",
+     "hours_ago": 8,
+     "likes": 11
+    },
+    {
+     "author": "p07",
+     "text": "Potluck photos please, the table looked amazing from the photos in the group.",
+     "hours_ago": 7,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "Coffee after the potluck was the right call. Digestion and espresso, a Dubai classic.",
+     "hours_ago": 6,
+     "likes": 7
+    },
+    {
+     "author": "p09",
+     "text": "Let's do a team potluck next Thursday. Kwame, the mild jollof stays home, lol.",
+     "hours_ago": 5,
+     "likes": 8
+    },
+    {
+     "author": "p06",
+     "text": "Ha, the mild jollof will get a rematch with extra pepper. Accepting the challenge.",
+     "hours_ago": 5,
+     "likes": 9
+    },
+    {
+     "author": "p03",
+     "text": "Rematch on Thursday, I'm bringing the tart and the judges' scorecards.",
+     "hours_ago": 4,
+     "likes": 7
+    },
+    {
+     "author": "p02",
+     "text": "Scorecards at a potluck, the most fun thing I've read all week.",
+     "hours_ago": 3,
+     "likes": 4
+    },
+    {
+     "author": "p01",
+     "text": "Yalla, rematch and recipes in the group. Good energy as always.",
+     "hours_ago": 2,
+     "likes": 6
+    },
+    {
+     "author": "p04",
+     "text": "Thanks for the great potluck, Kwame. Jollof forever, rice wars forever.",
+     "hours_ago": 2,
+     "likes": 5
+    }
+   ]
+  },
+  {
+   "id": "home-cooks-04",
+   "author": "p04",
+   "text": "Question for the home cooks: what is the easiest way to get a decent bowl of pho at home? I have the broth ingredients but not the time for a twelve hour simmer.",
+   "image": null,
+   "hours_ago": 40,
+   "likes": 183,
+   "comments": [
+    {
+     "author": "p07",
+     "text": "Pressure cooker is your friend. Ninety minutes gives a deep broth, not a perfect one but close.",
+     "hours_ago": 38,
+     "likes": 12
+    },
+    {
+     "author": "p06",
+     "text": "Toast the onion and ginger first. That step alone makes the broth taste like a long simmer.",
+     "hours_ago": 37,
+     "likes": 10
+    },
+    {
+     "author": "p03",
+     "text": "Star anise and cinnamon in small amounts, the secret is restraint. Don't overdo it.",
+     "hours_ago": 36,
+     "likes": 8
+    },
+    {
+     "author": "p08",
+     "text": "Use good beef bones and roast them first, the colour and flavour are better.",
+     "hours_ago": 35,
+     "likes": 7
+    },
+    {
+     "author": "p01",
+     "text": "Fish sauce is the secret umami, a tablespoon at the end. Trust me, you'll see.",
+     "hours_ago": 34,
+     "likes": 9
+    },
+    {
+     "author": "p10",
+     "text": "Clear broth needs a gentle simmer, not a boil. The pressure cooker can be too aggressive.",
+     "hours_ago": 33,
+     "likes": 6
+    },
+    {
+     "author": "p05",
+     "text": "Puppy is not allowed broth with onion, so I'm watching the pho from a distance, sadly.",
+     "hours_ago": 32,
+     "likes": 11
+    },
+    {
+     "author": "p02",
+     "text": "Post-run pho is a dream, I need to try this. Noodles are the easy part.",
+     "hours_ago": 31,
+     "likes": 5
+    },
+    {
+     "author": "p09",
+     "text": "Rice noodles from the store, cooked just before serving. Don't soak them too long.",
+     "hours_ago": 30,
+     "likes": 6
+    },
+    {
+     "author": "p04",
+     "text": "@anjali_rao the pressure cooker tip is great. I'll try it on Friday with the beef.",
+     "hours_ago": 29,
+     "likes": 7
+    },
+    {
+     "author": "p07",
+     "text": "Keep the herbs fresh on the side, Thai basil and bean sprouts, the finishing touch.",
+     "hours_ago": 28,
+     "likes": 8
+    },
+    {
+     "author": "p06",
+     "text": "Lime, chilli, and hoisin on the table, let everyone customise. Good for a group dinner.",
+     "hours_ago": 27,
+     "likes": 6
+    },
+    {
+     "author": "p03",
+     "text": "Pho with a cake for dessert? Not traditional, but I'd still come to your dinner.",
+     "hours_ago": 26,
+     "likes": 9
+    },
+    {
+     "author": "p08",
+     "text": "Coffee after pho is not traditional, but I've been doing it for years, so.",
+     "hours_ago": 25,
+     "likes": 5
+    },
+    {
+     "author": "p01",
+     "text": "Pho is worth the effort. Let us know how the broth turns out, Tomasz.",
+     "hours_ago": 24,
+     "likes": 7
+    },
+    {
+     "author": "p10",
+     "text": "A cold drink on the side for the spice, a must in Dubai's summer heat.",
+     "hours_ago": 23,
+     "likes": 4
+    },
+    {
+     "author": "p05",
+     "text": "The puppy is very sad that pho is off the menu for him, but he supports your cooking.",
+     "hours_ago": 22,
+     "likes": 10
+    },
+    {
+     "author": "p09",
+     "text": "I'd love to try a home pho night. Thank you all for the brilliant tips.",
+     "hours_ago": 21,
+     "likes": 6
+    },
+    {
+     "author": "p04",
+     "text": "Thanks everyone. Pho night on Friday, I'll post the result in the group.",
+     "hours_ago": 20,
+     "likes": 8
+    },
+    {
+     "author": "p07",
+     "text": "Good luck, Tomasz. Share a photo of the bowl, the broth colour is the test.",
+     "hours_ago": 19,
+     "likes": 6
+    },
+    {
+     "author": "p02",
+     "text": "Pho plus a run is not a combo I expected, but I'm sold on the idea.",
+     "hours_ago": 18,
+     "likes": 5
+    },
+    {
+     "author": "p06",
+     "text": "Yalla, pho night. Make it a group cooking night next time, with the crew.",
+     "hours_ago": 17,
+     "likes": 7
+    },
+    {
+     "author": "p03",
+     "text": "Pho night with the friends sounds like a lovely way to spend a Friday.",
+     "hours_ago": 16,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "Coffee and pho, the two warmest things in the world, lol. Good luck!",
+     "hours_ago": 15,
+     "likes": 5
+    },
+    {
+     "author": "p01",
+     "text": "Keep us posted, Tomasz. The home cooks are cheering you on 🍜",
+     "hours_ago": 14,
+     "likes": 8
+    }
+   ]
+  },
+  {
+   "id": "home-cooks-05",
+   "author": "p01",
+   "text": "Meal prep Sunday: chicken shawarma spice mix, roasted sweet potatoes, a big pot of lentils and a jar of tahini sauce. Five lunches for the week, under 100 AED total.",
+   "image": "media/shawarma.jpg",
+   "hours_ago": 56,
+   "likes": 277,
+   "comments": [
+    {
+     "author": "p07",
+     "text": "Five lunches for under 100 AED, that's a masterclass in budget cooking. Well done, Sara.",
+     "hours_ago": 54,
+     "likes": 12
+    },
+    {
+     "author": "p02",
+     "text": "Shawarma spice mix for the chicken is the flavour bomb of the week. Thanks for the recipe.",
+     "hours_ago": 53,
+     "likes": 8
+    },
+    {
+     "author": "p03",
+     "text": "Meal prep is a love letter to your future self. Sweet potatoes are my favourite.",
+     "hours_ago": 52,
+     "likes": 9
+    },
+    {
+     "author": "p04",
+     "text": "Tahini sauce with lemon and garlic, the best quick sauce. Keeps well in the fridge.",
+     "hours_ago": 51,
+     "likes": 7
+    },
+    {
+     "author": "p10",
+     "text": "Protein-packed and cheap, a swimmer's dream. The lentils are my favourite part.",
+     "hours_ago": 50,
+     "likes": 6
+    },
+    {
+     "author": "p05",
+     "text": "Puppy watches the sweet potatoes with great interest, as always. Very suspicious of them.",
+     "hours_ago": 49,
+     "likes": 10
+    },
+    {
+     "author": "p06",
+     "text": "Five containers in a row in the fridge is my dream, I need to start doing this too.",
+     "hours_ago": 48,
+     "likes": 5
+    },
+    {
+     "author": "p08",
+     "text": "Coffee at the start of meal prep Sunday, the rule is clear. Cooking needs fuel.",
+     "hours_ago": 47,
+     "likes": 7
+    },
+    {
+     "author": "p09",
+     "text": "Please share the spice mix ratio. I want to recreate it for the team lunches.",
+     "hours_ago": 46,
+     "likes": 8
+    },
+    {
+     "author": "p01",
+     "text": "@hannah_b cumin, paprika, cinnamon, coriander and a pinch of cardamom. Adjust to taste.",
+     "hours_ago": 45,
+     "likes": 10
+    },
+    {
+     "author": "p07",
+     "text": "Cardamom in shawarma is the secret. Lovely detail, Sara.",
+     "hours_ago": 44,
+     "likes": 6
+    },
+    {
+     "author": "p04",
+     "text": "Meal prep with a friend is the best, we can split the batch and swap containers.",
+     "hours_ago": 43,
+     "likes": 5
+    },
+    {
+     "author": "p02",
+     "text": "Lentils for the runners, sweet potatoes for the carbs. My meal prep, all in.",
+     "hours_ago": 42,
+     "likes": 6
+    },
+    {
+     "author": "p03",
+     "text": "Labels on the containers with the date, please. Future you will thank present you.",
+     "hours_ago": 41,
+     "likes": 9
+    },
+    {
+     "author": "p10",
+     "text": "Good tip. I'll label mine with the protein grams too, very swimmer.",
+     "hours_ago": 40,
+     "likes": 4
+    },
+    {
+     "author": "p05",
+     "text": "Puppy's favourite meal prep is the chicken offcuts, for the record. He is always supervising.",
+     "hours_ago": 39,
+     "likes": 11
+    },
+    {
+     "author": "p06",
+     "text": "Shawarma wraps on a Monday, the best start to the week. Thank you Sara.",
+     "hours_ago": 38,
+     "likes": 7
+    },
+    {
+     "author": "p08",
+     "text": "Cold tahini with fresh bread, my favourite afternoon snack. Keep it simple.",
+     "hours_ago": 37,
+     "likes": 5
+    },
+    {
+     "author": "p09",
+     "text": "Adding meal prep Sunday to the team's wellbeing list. Thank you, Sara.",
+     "hours_ago": 36,
+     "likes": 8
+    },
+    {
+     "author": "p07",
+     "text": "Good luck with the week, Sara. Lunch is sorted, the group is proud 🥗",
+     "hours_ago": 35,
+     "likes": 9
+    },
+    {
+     "author": "p04",
+     "text": "Five lunches, zero stress. A perfect Sunday plan for busy weeks.",
+     "hours_ago": 34,
+     "likes": 4
+    },
+    {
+     "author": "p02",
+     "text": "Thanks for the great prep ideas. I'll try the lentils on Monday after my run.",
+     "hours_ago": 33,
+     "likes": 5
+    },
+    {
+     "author": "p10",
+     "text": "Yalla, meal prep crew. Good food, good plan, good week ahead.",
+     "hours_ago": 32,
+     "likes": 6
+    },
+    {
+     "author": "p06",
+     "text": "Five lunches, one happy Kwame. I'm starting this Sunday for sure.",
+     "hours_ago": 31,
+     "likes": 7
+    },
+    {
+     "author": "p03",
+     "text": "Thanks for the inspiration, Sara. The fridge is about to get very organised 🍽️",
+     "hours_ago": 30,
+     "likes": 6
+    }
+   ]
+  },
+  {
+   "id": "home-cooks-06",
+   "author": "p02",
+   "text": "Iftar recipes for the week, from my grandmother's kitchen: dates, a light lentil soup, and a sweet semolina dessert. Share your family favourites too, I want to try them all.",
+   "image": null,
+   "hours_ago": 74,
+   "likes": 245,
+   "comments": [
+    {
+     "author": "p07",
+     "text": "Lentil soup with lemon is a family classic in my house too. Lovely recipe, Ravi.",
+     "hours_ago": 72,
+     "likes": 11
+    },
+    {
+     "author": "p06",
+     "text": "Semolina dessert with rose water, my childhood favourite. Thank you for the memory.",
+     "hours_ago": 71,
+     "likes": 9
+    },
+    {
+     "author": "p03",
+     "text": "Dates and a warm drink, the perfect start to the evening. Beautiful tradition.",
+     "hours_ago": 70,
+     "likes": 8
+    },
+    {
+     "author": "p05",
+     "text": "Puppy waits for the dates, he thinks the dates are for him. A very hopeful dog.",
+     "hours_ago": 69,
+     "likes": 12
+    },
+    {
+     "author": "p08",
+     "text": "Coffee with dates after a long day, a tradition I love. Respect to all the families.",
+     "hours_ago": 68,
+     "likes": 7
+    },
+    {
+     "author": "p01",
+     "text": "A warm soup with a light touch of cumin, my grandmother's trick. Thank you for sharing, Ravi.",
+     "hours_ago": 67,
+     "likes": 8
+    },
+    {
+     "author": "p04",
+     "text": "Family recipes are the best part of the community. Keep them coming, everyone.",
+     "hours_ago": 66,
+     "likes": 6
+    },
+    {
+     "author": "p10",
+     "text": "Dates are my running fuel too. Simple, sweet, and useful, a good tradition.",
+     "hours_ago": 65,
+     "likes": 5
+    },
+    {
+     "author": "p09",
+     "text": "Semolina dessert with nuts, I'd love the exact recipe. Can you share it, Ravi?",
+     "hours_ago": 64,
+     "likes": 6
+    },
+    {
+     "author": "p02",
+     "text": "@hannah_b of course. Semolina, butter, sugar, milk, nuts, a splash of rose water. Simple.",
+     "hours_ago": 63,
+     "likes": 9
+    },
+    {
+     "author": "p03",
+     "text": "Butter-toasted semolina is a pastry chef's secret. Slow and golden is the key.",
+     "hours_ago": 62,
+     "likes": 7
+    },
+    {
+     "author": "p07",
+     "text": "Share the lentil soup portions too, Ravi. A big pot is good for the whole family.",
+     "hours_ago": 61,
+     "likes": 5
+    },
+    {
+     "author": "p06",
+     "text": "Family pot of soup and sweets, the most generous thing in the world.",
+     "hours_ago": 60,
+     "likes": 8
+    },
+    {
+     "author": "p05",
+     "text": "Puppy approves of the generous spirit, but not the onions in the soup, sadly.",
+     "hours_ago": 59,
+     "likes": 10
+    },
+    {
+     "author": "p08",
+     "text": "Warm bread with the soup is my favourite. Please tell me the bakery name.",
+     "hours_ago": 58,
+     "likes": 4
+    },
+    {
+     "author": "p01",
+     "text": "Good bread from the Deira bakeries. Ask at the counter for the flat bread, it's fresh.",
+     "hours_ago": 57,
+     "likes": 5
+    },
+    {
+     "author": "p10",
+     "text": "Thank you for sharing your family recipes. The group is richer for it.",
+     "hours_ago": 56,
+     "likes": 7
+    },
+    {
+     "author": "p04",
+     "text": "I'd love to share my grandmother's bean stew too, next week. Stay tuned.",
+     "hours_ago": 55,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "Family recipes, family stories, family dinners. My favourite kind of group.",
+     "hours_ago": 54,
+     "likes": 8
+    },
+    {
+     "author": "p02",
+     "text": "Thanks all, cooking this week for the family. Share yours too, please.",
+     "hours_ago": 53,
+     "likes": 5
+    },
+    {
+     "author": "p07",
+     "text": "Yes, the family recipe thread is growing. Yalla, let's keep sharing 🥣",
+     "hours_ago": 52,
+     "likes": 9
+    },
+    {
+     "author": "p03",
+     "text": "I'll share my mum's date cake recipe next. Warm, sticky, and very simple.",
+     "hours_ago": 51,
+     "likes": 7
+    },
+    {
+     "author": "p06",
+     "text": "Date cake, yes! Make it on the same day as the soup for a feast.",
+     "hours_ago": 50,
+     "likes": 6
+    },
+    {
+     "author": "p01",
+     "text": "A feast of family recipes, what a lovely thread. Thanks, everyone.",
+     "hours_ago": 49,
+     "likes": 5
+    },
+    {
+     "author": "p10",
+     "text": "Dates and water after the fast, then the soup, the perfect order, I think.",
+     "hours_ago": 66,
+     "likes": 6
+    }
+   ]
+  },
+  {
+   "id": "home-cooks-07",
+   "author": "p05",
+   "text": "Vet nurse tip for home cooks: never use onion, garlic or grapes in dishes you plan to share with your dog. Keep the puppy safe, and label the leftovers clearly.",
+   "image": "media/vet.jpg",
+   "hours_ago": 90,
+   "likes": 401,
+   "comments": [
+    {
+     "author": "p10",
+     "text": "Important reminder, Mariam. Shared food is the number one cause of accidental pet poisoning.",
+     "hours_ago": 88,
+     "likes": 14
+    },
+    {
+     "author": "p07",
+     "text": "Grapes and raisins in cakes are a real risk, good to be reminded. Thank you.",
+     "hours_ago": 87,
+     "likes": 12
+    },
+    {
+     "author": "p03",
+     "text": "Pastry chef alert: raisins and chocolate in cookies are a no-go for dogs. Noted.",
+     "hours_ago": 86,
+     "likes": 11
+    },
+    {
+     "author": "p01",
+     "text": "Keep the food counter clear and the bin closed. Dogs are very clever with bins.",
+     "hours_ago": 85,
+     "likes": 9
+    },
+    {
+     "author": "p08",
+     "text": "Coffee grounds and chocolate are also not for dogs, I learned that from a vet friend.",
+     "hours_ago": 84,
+     "likes": 8
+    },
+    {
+     "author": "p04",
+     "text": "Clear labels on leftovers are a good idea for the whole house, not just the dog.",
+     "hours_ago": 83,
+     "likes": 6
+    },
+    {
+     "author": "p06",
+     "text": "Puppy-proof kitchen is a real skill. Gates and high shelves work for us.",
+     "hours_ago": 82,
+     "likes": 7
+    },
+    {
+     "author": "p09",
+     "text": "Our office dog ate a chocolate biscuit once. We learned the hard way, please be careful.",
+     "hours_ago": 81,
+     "likes": 10
+    },
+    {
+     "author": "p02",
+     "text": "Good reminder for the group. Share the list of unsafe foods, Mariam, it's helpful.",
+     "hours_ago": 80,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "Here is the list: onion, garlic, grapes, raisins, chocolate, xylitol and cooked bones. Keep these away.",
+     "hours_ago": 79,
+     "likes": 18
+    },
+    {
+     "author": "p10",
+     "text": "Cooked bones can splinter, so the broth rule is important, thank you for mentioning it.",
+     "hours_ago": 78,
+     "likes": 9
+    },
+    {
+     "author": "p07",
+     "text": "Save the list on the fridge. The best reminders are the visible ones.",
+     "hours_ago": 77,
+     "likes": 8
+    },
+    {
+     "author": "p03",
+     "text": "A printed list on the fridge for the whole flat, with the cake recipes too. Ha.",
+     "hours_ago": 76,
+     "likes": 6
+    },
+    {
+     "author": "p01",
+     "text": "Puppy-safe recipes would be a great next thread, Mariam. Please consider it.",
+     "hours_ago": 75,
+     "likes": 7
+    },
+    {
+     "author": "p06",
+     "text": "Yes! Dog-safe treats recipes would be a lovely addition to the group.",
+     "hours_ago": 74,
+     "likes": 9
+    },
+    {
+     "author": "p04",
+     "text": "Carrot and oat biscuits are a safe treat, I've made them for our dog. Easy.",
+     "hours_ago": 73,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "Coffee-free and chocolate-free treats for pups, a rule I'm proud to follow.",
+     "hours_ago": 72,
+     "likes": 5
+    },
+    {
+     "author": "p09",
+     "text": "Please share the biscuit recipe when you have it, Tomasz. Team dog deserves a treat.",
+     "hours_ago": 71,
+     "likes": 7
+    },
+    {
+     "author": "p02",
+     "text": "Carrot and oat treats are my running dog's favourite. Keep them coming.",
+     "hours_ago": 70,
+     "likes": 6
+    },
+    {
+     "author": "p10",
+     "text": "Vet nurse and home cooks together, a dream combination. Thanks for the knowledge.",
+     "hours_ago": 69,
+     "likes": 8
+    },
+    {
+     "author": "p07",
+     "text": "Stay safe, puppies. And thank you, Mariam, for looking after us all.",
+     "hours_ago": 68,
+     "likes": 7
+    },
+    {
+     "author": "p03",
+     "text": "Puppy-safe baking is my new challenge. Carrot cake for the pup, no raisins, promise.",
+     "hours_ago": 67,
+     "likes": 9
+    },
+    {
+     "author": "p01",
+     "text": "Good luck with the puppy-safe recipes, Layla. The pup is lucky to have you.",
+     "hours_ago": 66,
+     "likes": 6
+    },
+    {
+     "author": "p06",
+     "text": "Yalla, safe kitchens, happy pups. Thank you, Mariam 🐾",
+     "hours_ago": 65,
+     "likes": 10
+    },
+    {
+     "author": "p04",
+     "text": "Thanks again, Mariam. Let's keep the group safe and fed.",
+     "hours_ago": 64,
+     "likes": 5
+    }
+   ]
+  },
+  {
+   "id": "home-cooks-08",
+   "author": "p09",
+   "text": "Tried a Lebanese fattoush for the first time at home, and I now understand why people fight about the sumac. A dressing with lemon, sumac and a touch of pomegranate molasses. Perfect summer salad.",
+   "image": "media/spread.jpg",
+   "hours_ago": 110,
+   "likes": 221,
+   "comments": [
+    {
+     "author": "p03",
+     "text": "Sumac is the flavour of the Levant. Good job, Hannah, the dressing is the heart of fattoush.",
+     "hours_ago": 108,
+     "likes": 9
+    },
+    {
+     "author": "p06",
+     "text": "Pomegranate molasses is a little bit extra but worth it. Summer salad perfection.",
+     "hours_ago": 107,
+     "likes": 7
+    },
+    {
+     "author": "p07",
+     "text": "Crispy toasted pita on top, the crunch is what makes fattoush. Never skip it.",
+     "hours_ago": 106,
+     "likes": 8
+    },
+    {
+     "author": "p01",
+     "text": "Fattoush with grilled chicken is a meal in a bowl. Add it next time.",
+     "hours_ago": 105,
+     "likes": 6
+    },
+    {
+     "author": "p04",
+     "text": "Summer salad with a cold drink, the perfect Dubai lunch. Thanks for sharing, Hannah.",
+     "hours_ago": 104,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "Puppy wants the pita crumbs. Please keep them to yourself, sweetheart.",
+     "hours_ago": 103,
+     "likes": 10
+    },
+    {
+     "author": "p10",
+     "text": "Fresh salad after a swim is the best. The lemon dressing is refreshing.",
+     "hours_ago": 102,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "Sumac in coffee is not a thing, I've checked. Just in the salad, please.",
+     "hours_ago": 101,
+     "likes": 4
+    },
+    {
+     "author": "p02",
+     "text": "Quick salad with lots of herbs, my favourite lunch before a long run. Thanks.",
+     "hours_ago": 100,
+     "likes": 5
+    },
+    {
+     "author": "p09",
+     "text": "@yusuf_d ha, no sumac in the coffee, I promise. The salad was enough adventure.",
+     "hours_ago": 99,
+     "likes": 6
+    },
+    {
+     "author": "p03",
+     "text": "Hannah, next time add a little mint from the balcony pot. It lifts the whole bowl.",
+     "hours_ago": 98,
+     "likes": 7
+    },
+    {
+     "author": "p06",
+     "text": "Mint, parsley and radish, the classic fattoush trio. Delicious.",
+     "hours_ago": 97,
+     "likes": 5
+    },
+    {
+     "author": "p07",
+     "text": "Fresh herbs on the balcony are the best. Mine are thriving in the morning sun.",
+     "hours_ago": 96,
+     "likes": 6
+    },
+    {
+     "author": "p10",
+     "text": "Balcony herbs and lemon, the perfect summer kitchen. Keep it simple, Hannah.",
+     "hours_ago": 95,
+     "likes": 4
+    },
+    {
+     "author": "p04",
+     "text": "A tangy salad is a great side for grilled meat. Try it at your next barbecue.",
+     "hours_ago": 94,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "Puppy has been sniffing the balcony herbs all week. Very into mint now.",
+     "hours_ago": 93,
+     "likes": 8
+    },
+    {
+     "author": "p08",
+     "text": "Coffee after the salad? A bit unusual, but I'll allow it on a hot day.",
+     "hours_ago": 92,
+     "likes": 3
+    },
+    {
+     "author": "p01",
+     "text": "Summer lunch done right. Thanks for the recipe, Hannah, it's a keeper.",
+     "hours_ago": 91,
+     "likes": 7
+    },
+    {
+     "author": "p09",
+     "text": "Thanks, everyone. Fattoush is now my weekly lunch habit, the team has started asking.",
+     "hours_ago": 90,
+     "likes": 8
+    },
+    {
+     "author": "p03",
+     "text": "Yalla, fattoush crew. Make it, share it, and bring a bowl to the potluck.",
+     "hours_ago": 89,
+     "likes": 6
+    },
+    {
+     "author": "p02",
+     "text": "Lovely salad, lovely thread. Keep sharing these fresh ideas, friends.",
+     "hours_ago": 88,
+     "likes": 5
+    },
+    {
+     "author": "p06",
+     "text": "Fattoush for the win. Enjoy the summer lunches, Hannah 🥗",
+     "hours_ago": 87,
+     "likes": 6
+    },
+    {
+     "author": "p07",
+     "text": "A fresh salad and good company, the best way to beat the heat.",
+     "hours_ago": 86,
+     "likes": 4
+    },
+    {
+     "author": "p10",
+     "text": "Keep the salads coming. I'll try the sumac dressing after my next swim.",
+     "hours_ago": 85,
+     "likes": 5
+    },
+    {
+     "author": "p04",
+     "text": "Fattoush with grilled halloumi on top is my weekend version. Try it.",
+     "hours_ago": 100,
+     "likes": 5
+    }
+   ]
+  },
+  {
+   "id": "home-cooks-09",
+   "author": "p07",
+   "text": "Spice cabinet rescue: my cumin, coriander and turmeric have been in the cupboard since I moved in. Tips on when to replace them, and how to store them so they stay bright?",
+   "image": null,
+   "hours_ago": 130,
+   "likes": 152,
+   "comments": [
+    {
+     "author": "p03",
+     "text": "Ground spices lose their punch after about six months. Whole spices last much longer.",
+     "hours_ago": 128,
+     "likes": 10
+    },
+    {
+     "author": "p06",
+     "text": "Store them away from heat and light, in a dark jar or tin. The kitchen counter is bad.",
+     "hours_ago": 127,
+     "likes": 12
+    },
+    {
+     "author": "p04",
+     "text": "Buy whole spices and grind them when you need them. Huge difference in the flavour.",
+     "hours_ago": 126,
+     "likes": 11
+    },
+    {
+     "author": "p08",
+     "text": "Test them by smelling. If the scent is weak, it's time to replace the jar.",
+     "hours_ago": 125,
+     "likes": 8
+    },
+    {
+     "author": "p01",
+     "text": "I keep the spice jars in a drawer, away from the oven. Simple, and the colour stays.",
+     "hours_ago": 124,
+     "likes": 7
+    },
+    {
+     "author": "p10",
+     "text": "A quick toast in a dry pan wakes up old spices, though the flavour is never the same.",
+     "hours_ago": 123,
+     "likes": 6
+    },
+    {
+     "author": "p05",
+     "text": "Puppy has been eating the cumin dust from the floor, so please keep the jars sealed.",
+     "hours_ago": 122,
+     "likes": 9
+    },
+    {
+     "author": "p09",
+     "text": "Label the jars with the purchase date, it's the easiest way to track freshness.",
+     "hours_ago": 121,
+     "likes": 8
+    },
+    {
+     "author": "p02",
+     "text": "Good tip. I'll replace the turmeric, it's been in my cupboard since the last summer.",
+     "hours_ago": 120,
+     "likes": 5
+    },
+    {
+     "author": "p07",
+     "text": "@ravi_menon yes, turmeric fades fast. Buy a small jar, you'll use it up quicker.",
+     "hours_ago": 119,
+     "likes": 6
+    },
+    {
+     "author": "p03",
+     "text": "Buy from shops with high turnover, the spices are fresher. Ask the seller how often they restock.",
+     "hours_ago": 118,
+     "likes": 7
+    },
+    {
+     "author": "p04",
+     "text": "The Deira spice market is a great place to buy fresh spices in small amounts.",
+     "hours_ago": 117,
+     "likes": 9
+    },
+    {
+     "author": "p06",
+     "text": "Deira spice souk is a sensory feast. Bring your nose and a small bag.",
+     "hours_ago": 116,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "Coffee beans and spices in the same cupboard? Please, keep them apart, the aroma travels.",
+     "hours_ago": 115,
+     "likes": 5
+    },
+    {
+     "author": "p01",
+     "text": "Good point, Yusuf. Smell transfer is real, especially with coffee.",
+     "hours_ago": 114,
+     "likes": 4
+    },
+    {
+     "author": "p10",
+     "text": "Clean the spice jars and dry them well, moisture makes them clump quickly.",
+     "hours_ago": 113,
+     "likes": 6
+    },
+    {
+     "author": "p05",
+     "text": "Puppy supports the new spice rules. He prefers the bowl of water on the counter.",
+     "hours_ago": 112,
+     "likes": 8
+    },
+    {
+     "author": "p09",
+     "text": "A spice label sheet and a clear shelf, the perfect kitchen system. Thanks, Anjali.",
+     "hours_ago": 111,
+     "likes": 7
+    },
+    {
+     "author": "p02",
+     "text": "Thanks, all. I'll do the spice audit this weekend, one jar at a time.",
+     "hours_ago": 110,
+     "likes": 5
+    },
+    {
+     "author": "p03",
+     "text": "Spice audit plus a cake baking day, the perfect Saturday. Good luck, Anjali.",
+     "hours_ago": 109,
+     "likes": 6
+    },
+    {
+     "author": "p06",
+     "text": "Let the cabinet breathe and the spices shine. Yalla, spice cabinet glow up 🌶️",
+     "hours_ago": 108,
+     "likes": 7
+    },
+    {
+     "author": "p04",
+     "text": "Fresh spices make the difference. Happy cooking, friends.",
+     "hours_ago": 107,
+     "likes": 4
+    },
+    {
+     "author": "p07",
+     "text": "Thank you all for the great tips. The spice cabinet is getting a makeover this weekend.",
+     "hours_ago": 106,
+     "likes": 8
+    },
+    {
+     "author": "p08",
+     "text": "Coffee break during the spice audit, a necessary pause. Enjoy the cleaning, Anjali.",
+     "hours_ago": 105,
+     "likes": 3
+    },
+    {
+     "author": "p01",
+     "text": "Good luck with the makeover, Anjali. The cabinet will smell amazing again.",
+     "hours_ago": 104,
+     "likes": 5
+    }
+   ]
+  },
+  {
+   "id": "home-cooks-10",
+   "author": "p06",
+   "text": "Kitchen time with the family this Friday: I'm teaching my nephews to make chapati from scratch. Flour everywhere, a lot of laughs, and the best warm bread on the table.",
+   "image": "media/food.jpg",
+   "hours_ago": 150,
+   "likes": 318,
+   "comments": [
+    {
+     "author": "p07",
+     "text": "Flour everywhere is the sign of a good kitchen day. Chapati with the kids is a lovely idea.",
+     "hours_ago": 146,
+     "likes": 12
+    },
+    {
+     "author": "p03",
+     "text": "Teaching kids to bake is my favourite thing. Flour on the nose is a rite of passage.",
+     "hours_ago": 144,
+     "likes": 10
+    },
+    {
+     "author": "p01",
+     "text": "Warm chapati with butter and a little salt, the simplest joy. Have fun, Kwame.",
+     "hours_ago": 142,
+     "likes": 9
+    },
+    {
+     "author": "p04",
+     "text": "Chapati from scratch is a skill worth learning. The rolling pin is the hardest part.",
+     "hours_ago": 140,
+     "likes": 7
+    },
+    {
+     "author": "p05",
+     "text": "Puppy would love to help with the flour, but he would eat the dough. Supervision required.",
+     "hours_ago": 138,
+     "likes": 13
+    },
+    {
+     "author": "p08",
+     "text": "Family kitchen days are the best. Coffee for the grown-ups and milk for the kids.",
+     "hours_ago": 136,
+     "likes": 8
+    },
+    {
+     "author": "p10",
+     "text": "Kids in the kitchen, the best team sport. Keep the knives on the high shelf, friends.",
+     "hours_ago": 134,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "My nephews would love this too. Maybe I'll invite them for a pastry day next week.",
+     "hours_ago": 132,
+     "likes": 5
+    },
+    {
+     "author": "p02",
+     "text": "Chapati with my mum was my first cooking lesson. Lovely memory, Kwame.",
+     "hours_ago": 130,
+     "likes": 7
+    },
+    {
+     "author": "p06",
+     "text": "@ravi_menon your mum's chapati is legendary, I'm sure. Thanks for the memory.",
+     "hours_ago": 128,
+     "likes": 6
+    },
+    {
+     "author": "p07",
+     "text": "Share the kids' chapati photos, please. Even the lopsided ones are very cute.",
+     "hours_ago": 126,
+     "likes": 9
+    },
+    {
+     "author": "p03",
+     "text": "Lopsided chapati is the best kind. It tastes exactly the same, I promise.",
+     "hours_ago": 124,
+     "likes": 8
+    },
+    {
+     "author": "p01",
+     "text": "Kids' cooking is always messy and delicious. Good luck with the rolling pin, Kwame.",
+     "hours_ago": 122,
+     "likes": 5
+    },
+    {
+     "author": "p04",
+     "text": "A rolling pin and a little patience. Perfect for a family Friday.",
+     "hours_ago": 120,
+     "likes": 4
+    },
+    {
+     "author": "p08",
+     "text": "Warm bread from the family kitchen, the sweetest smell in the world.",
+     "hours_ago": 118,
+     "likes": 6
+    },
+    {
+     "author": "p10",
+     "text": "Yalla, kids and chapati, a beautiful Friday plan. Enjoy the flour fight.",
+     "hours_ago": 116,
+     "likes": 7
+    },
+    {
+     "author": "p09",
+     "text": "Flour fight is the best kind of food fight, honest. Send photos please.",
+     "hours_ago": 114,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "Puppy wants to join the flour fight, he has been practising his sneeze for it.",
+     "hours_ago": 112,
+     "likes": 9
+    },
+    {
+     "author": "p02",
+     "text": "Thank you for sharing the family moment, Kwame. Cooking together is the best.",
+     "hours_ago": 110,
+     "likes": 6
+    },
+    {
+     "author": "p07",
+     "text": "Family cooking days are the heart of this group. Thanks for the lovely story.",
+     "hours_ago": 108,
+     "likes": 8
+    },
+    {
+     "author": "p03",
+     "text": "Kids, flour, warm bread. The three things that make a Friday perfect.",
+     "hours_ago": 106,
+     "likes": 7
+    },
+    {
+     "author": "p01",
+     "text": "Enjoy the cooking day, Kwame. The chapati will taste like love 🫓",
+     "hours_ago": 104,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "Coffee break during the chapati making, a short and sweet pause for the parents.",
+     "hours_ago": 102,
+     "likes": 4
+    },
+    {
+     "author": "p04",
+     "text": "Good luck to the chefs in training, from the home cooks of the group.",
+     "hours_ago": 100,
+     "likes": 5
+    },
+    {
+     "author": "p06",
+     "text": "Thanks, everyone. Chapati crew is ready. Yalla, let's cook together 🍞",
+     "hours_ago": 98,
+     "likes": 8
+    }
+   ]
+  }
+ ]
+}

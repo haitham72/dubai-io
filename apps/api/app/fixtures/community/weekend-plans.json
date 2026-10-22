@@ -1,0 +1,1631 @@
+{
+ "id": "weekend-plans",
+ "name": "Weekend Plans",
+ "handle": "weekendplansdxb",
+ "topic": "Lifestyle",
+ "about": "Friday-to-Sunday ideas across Dubai: rooftop nights, beach days, markets, museums and spontaneous road trips. Post yours.",
+ "image": "media/marina-night.jpg",
+ "members": 15800,
+ "stories": [
+  {
+   "author": "p06",
+   "text": "Friday night jazz on a Downtown rooftop. Bring a jacket, the breeze is lovely.",
+   "image": "media/marina-night.jpg",
+   "hours_ago": 6
+  },
+  {
+   "author": "p01",
+   "text": "Saturday brunch and a beach walk, sunscreen check done. Simple, perfect.",
+   "image": "media/spread.jpg",
+   "hours_ago": 15
+  },
+  {
+   "author": "p10",
+   "text": "Sunday sea swim at 6am, then coffee. Weekend reset complete.",
+   "image": "media/marina.jpg",
+   "hours_ago": 28
+  }
+ ],
+ "posts": [
+  {
+   "id": "weekend-plans-01",
+   "author": "p06",
+   "text": "Friday night plan: rooftop jazz in Downtown, then a late dessert walk by the fountains. Who's joining? I'll bring the playlist and the good headphones for the walk.",
+   "image": "media/marina-night.jpg",
+   "hours_ago": 5,
+   "likes": 488,
+   "comments": [
+    {
+     "author": "p03",
+     "text": "Rooftop jazz plus dessert walk is my perfect Friday. Count me in, I'll bring the cake.",
+     "hours_ago": 4,
+     "likes": 15
+    },
+    {
+     "author": "p01",
+     "text": "Yes! I'm in, Kwame. Bring the good playlist, I'll bring the friends who love jazz.",
+     "hours_ago": 4,
+     "likes": 12
+    },
+    {
+     "author": "p09",
+     "text": "Downtown on a Friday is busy, what time should we meet? Need a plan for the team.",
+     "hours_ago": 3,
+     "likes": 8
+    },
+    {
+     "author": "p02",
+     "text": "After my long run I'm always hungry, so the dessert walk is my reward. In.",
+     "hours_ago": 3,
+     "likes": 7
+    },
+    {
+     "author": "p07",
+     "text": "Which rooftop? The views at sunset are the best, please say the name.",
+     "hours_ago": 3,
+     "likes": 9
+    },
+    {
+     "author": "p06",
+     "text": "@anjali_rao the one with the live band near the old souk. Doors open at 8.",
+     "hours_ago": 2,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "Coffee before the jazz, please, I'm a coffee guy and I need the energy.",
+     "hours_ago": 2,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "Puppy is not allowed on rooftops, he's too excited. Next time with the walk.",
+     "hours_ago": 2,
+     "likes": 11
+    },
+    {
+     "author": "p10",
+     "text": "Late dessert walk after a jazz night, the perfect combo. I'll be there after my swim.",
+     "hours_ago": 2,
+     "likes": 6
+    },
+    {
+     "author": "p04",
+     "text": "Dessert walk by the fountains is my favourite Downtown evening. Bring a light jacket.",
+     "hours_ago": 1,
+     "likes": 8
+    },
+    {
+     "author": "p03",
+     "text": "Dessert plan: the cardamom ice cream place near the fountains, then the cheesecake.",
+     "hours_ago": 1,
+     "likes": 10
+    },
+    {
+     "author": "p06",
+     "text": "Cheesecake is non-negotiable. Yalla, the Friday crew is growing!",
+     "hours_ago": 1,
+     "likes": 12
+    },
+    {
+     "author": "p09",
+     "text": "We'll be a group of six, I think. Tell us the metro stop for the rooftop.",
+     "hours_ago": 1,
+     "likes": 5
+    },
+    {
+     "author": "p07",
+     "text": "Metro to Burj Khalifa station, then a ten minute walk. Easy and no parking stress.",
+     "hours_ago": 1,
+     "likes": 13
+    },
+    {
+     "author": "p01",
+     "text": "Metro is the smart choice for a Friday night in Downtown. No car, no problem.",
+     "hours_ago": 1,
+     "likes": 7
+    },
+    {
+     "author": "p02",
+     "text": "I'll pick up the group water bottles on the way. Dehydrated jazz fans are sad jazz fans.",
+     "hours_ago": 1,
+     "likes": 9
+    },
+    {
+     "author": "p08",
+     "text": "Water and coffee, the two things needed for a long Friday. Good plan, Ravi.",
+     "hours_ago": 0,
+     "likes": 4
+    },
+    {
+     "author": "p05",
+     "text": "Puppy sends his best wishes to the jazz crowd. He is sleeping on my feet right now.",
+     "hours_ago": 1,
+     "likes": 10
+    },
+    {
+     "author": "p10",
+     "text": "A night of music and fountains sounds like a great end to the work week.",
+     "hours_ago": 0,
+     "likes": 6
+    },
+    {
+     "author": "p04",
+     "text": "Good luck with the crowd. Let me know if the band plays something slow.",
+     "hours_ago": 0,
+     "likes": 5
+    },
+    {
+     "author": "p06",
+     "text": "They always play something slow at the end, it's their signature. Bring tissues.",
+     "hours_ago": 0,
+     "likes": 14
+    },
+    {
+     "author": "p03",
+     "text": "Tissues are in my bag. Cake and tissues, a complete Friday kit.",
+     "hours_ago": 0,
+     "likes": 9
+    },
+    {
+     "author": "p09",
+     "text": "I'll bring a power bank for the phones. The photos at the fountains need battery.",
+     "hours_ago": 0,
+     "likes": 6
+    },
+    {
+     "author": "p07",
+     "text": "See you all at 8pm. Let's keep the group chat short and the music loud 🎶",
+     "hours_ago": 0,
+     "likes": 11
+    },
+    {
+     "author": "p01",
+     "text": "Jazz, fountains and friends. This is why I love this city. See you there.",
+     "hours_ago": 0,
+     "likes": 12
+    }
+   ]
+  },
+  {
+   "id": "weekend-plans-02",
+   "author": "p01",
+   "text": "Saturday beach day plan: sunrise at Jumeirah, a swim, a shaded brunch on the sand, then a nap under an umbrella. Anyone want to join? Bring the good snacks.",
+   "image": "media/spread.jpg",
+   "hours_ago": 14,
+   "likes": 366,
+   "comments": [
+    {
+     "author": "p10",
+     "text": "Sunrise swim is the best way to start a Saturday. I'll bring the lifeguard energy.",
+     "hours_ago": 12,
+     "likes": 14
+    },
+    {
+     "author": "p04",
+     "text": "I'm in for the sunrise, but I'll cycle there. Shade stop at the midpoint please.",
+     "hours_ago": 11,
+     "likes": 8
+    },
+    {
+     "author": "p03",
+     "text": "Brunch on the sand with cake is my dream. I'll bring a box of pastries.",
+     "hours_ago": 11,
+     "likes": 12
+    },
+    {
+     "author": "p02",
+     "text": "Sunrise run then swim then brunch. The perfect three-part weekend, count me in.",
+     "hours_ago": 10,
+     "likes": 9
+    },
+    {
+     "author": "p05",
+     "text": "Dogs are not allowed on the public beach, sadly. But the puppy will wave from the balcony.",
+     "hours_ago": 10,
+     "likes": 13
+    },
+    {
+     "author": "p07",
+     "text": "Umbrella rental on the beach costs a bit, bring your own if you can. Saves money.",
+     "hours_ago": 9,
+     "likes": 7
+    },
+    {
+     "author": "p08",
+     "text": "Coffee in a thermos for the sunrise, the perfect pairing with the sea breeze.",
+     "hours_ago": 9,
+     "likes": 8
+    },
+    {
+     "author": "p06",
+     "text": "Sand, sea and snacks. Bring a speaker, but keep the volume low for the others.",
+     "hours_ago": 8,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "Sunrise is at 5:50am, I'll be there with the group. Not sure I'll be awake, but I'll try.",
+     "hours_ago": 8,
+     "likes": 5
+    },
+    {
+     "author": "p01",
+     "text": "Set two alarms, Hannah. The sea will wake you up when you arrive.",
+     "hours_ago": 7,
+     "likes": 9
+    },
+    {
+     "author": "p10",
+     "text": "Bring a towel, sunscreen and a hat. The beach at 10am is a different beast.",
+     "hours_ago": 7,
+     "likes": 11
+    },
+    {
+     "author": "p04",
+     "text": "Sun cream reapplication every two hours, that's the rule from my swim coach.",
+     "hours_ago": 6,
+     "likes": 6
+    },
+    {
+     "author": "p03",
+     "text": "Snacks: hummus, pita and fruit. Easy to carry, easy to share.",
+     "hours_ago": 6,
+     "likes": 10
+    },
+    {
+     "author": "p02",
+     "text": "Coconut water on the beach is a must. Cold, sweet and very refreshing.",
+     "hours_ago": 5,
+     "likes": 7
+    },
+    {
+     "author": "p07",
+     "text": "Keep the rubbish in a bag, please. The beach cleaners will love you for it.",
+     "hours_ago": 5,
+     "likes": 12
+    },
+    {
+     "author": "p05",
+     "text": "Puppy's favourite beach activity is the rubbish bag. Please do not share the bag with him.",
+     "hours_ago": 4,
+     "likes": 8
+    },
+    {
+     "author": "p08",
+     "text": "Coffee after the swim, from the thermos, the best cup of the week. Trust me.",
+     "hours_ago": 4,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "Adding this to our team Saturday list. Thank you for the detailed plan, Sara.",
+     "hours_ago": 3,
+     "likes": 5
+    },
+    {
+     "author": "p06",
+     "text": "Good plan. The sand brunch will be full of stories, bring the music.",
+     "hours_ago": 3,
+     "likes": 4
+    },
+    {
+     "author": "p10",
+     "text": "Swim buddies wanted for the sunrise, the flags will be up. Stay in the zone.",
+     "hours_ago": 2,
+     "likes": 9
+    },
+    {
+     "author": "p01",
+     "text": "Yes, the flags are up on the public beach. Safety first, friends.",
+     "hours_ago": 2,
+     "likes": 7
+    },
+    {
+     "author": "p04",
+     "text": "I'll be there at 5:45, bringing an extra towel for anyone who forgot one.",
+     "hours_ago": 2,
+     "likes": 6
+    },
+    {
+     "author": "p03",
+     "text": "Extra towel plus cake plus coffee, the team has everything covered.",
+     "hours_ago": 1,
+     "likes": 8
+    },
+    {
+     "author": "p02",
+     "text": "See you at sunrise. Let's make the sea the start of a great weekend.",
+     "hours_ago": 1,
+     "likes": 5
+    },
+    {
+     "author": "p08",
+     "text": "Thermos is ready. Coffee for the sunrise crew, and nobody is allowed to be late.",
+     "hours_ago": 1,
+     "likes": 7
+    }
+   ]
+  },
+  {
+   "id": "weekend-plans-03",
+   "author": "p07",
+   "text": "Family-friendly Sunday idea: the Mirdif park with a picnic, a bike ride around the lake, and an ice cream stop. Low cost, big smiles. Anyone else doing this?",
+   "image": "media/home-green.jpg",
+   "hours_ago": 22,
+   "likes": 254,
+   "comments": [
+    {
+     "author": "p05",
+     "text": "Mirdif park is perfect for families and dogs. My puppy will love the picnic blanket.",
+     "hours_ago": 20,
+     "likes": 12
+    },
+    {
+     "author": "p03",
+     "text": "Picnic with homemade cake is my Sunday ritual. I'll bring a lemon loaf.",
+     "hours_ago": 19,
+     "likes": 10
+    },
+    {
+     "author": "p01",
+     "text": "Low cost and big smiles, that's the best kind of weekend. I'm in next week.",
+     "hours_ago": 18,
+     "likes": 8
+    },
+    {
+     "author": "p04",
+     "text": "Bike ride around the lake is the best part of the day. Helmet on, bell ringing.",
+     "hours_ago": 17,
+     "likes": 9
+    },
+    {
+     "author": "p06",
+     "text": "Ice cream stop after the bike ride, the best end to a Sunday afternoon.",
+     "hours_ago": 16,
+     "likes": 7
+    },
+    {
+     "author": "p08",
+     "text": "Coffee in the picnic basket, my family rule. The kids have juice, the parents have coffee.",
+     "hours_ago": 15,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "Our team is new to Dubai parks, so this list is a big help. Thank you, Anjali.",
+     "hours_ago": 14,
+     "likes": 11
+    },
+    {
+     "author": "p10",
+     "text": "Lake ride then a swim in the shallow pool if it's open. Family day, Omar style.",
+     "hours_ago": 13,
+     "likes": 5
+    },
+    {
+     "author": "p02",
+     "text": "Early morning picnic before the heat is the way to go. Sunday at 7am is perfect.",
+     "hours_ago": 12,
+     "likes": 8
+    },
+    {
+     "author": "p07",
+     "text": "@ravi_menon yes, 7am is perfect for the picnic. Bring water and a hat.",
+     "hours_ago": 12,
+     "likes": 6
+    },
+    {
+     "author": "p05",
+     "text": "Puppy's ice cream is a dog-safe frozen yoghurt. Ask the stall, they know the rules.",
+     "hours_ago": 11,
+     "likes": 9
+    },
+    {
+     "author": "p03",
+     "text": "Frozen yoghurt for the puppy, a lovely treat. Good tip, Mariam.",
+     "hours_ago": 10,
+     "likes": 7
+    },
+    {
+     "author": "p01",
+     "text": "Park is clean and well kept, the staff are friendly too. Good choice, Anjali.",
+     "hours_ago": 9,
+     "likes": 6
+    },
+    {
+     "author": "p04",
+     "text": "Helmets for the kids and a bell for the adults. The lake loop is safe and flat.",
+     "hours_ago": 8,
+     "likes": 5
+    },
+    {
+     "author": "p06",
+     "text": "Shade is key, so choose the trees near the play area. The grass stays cool.",
+     "hours_ago": 8,
+     "likes": 8
+    },
+    {
+     "author": "p09",
+     "text": "My kids would love this. Maybe next Sunday we'll try it with the whole team.",
+     "hours_ago": 7,
+     "likes": 10
+    },
+    {
+     "author": "p08",
+     "text": "A team picnic at Mirdif, with coffee for everyone. A brilliant idea, Hannah.",
+     "hours_ago": 6,
+     "likes": 7
+    },
+    {
+     "author": "p10",
+     "text": "Keep the water bottles, the heat is the enemy of all picnics, even the good ones.",
+     "hours_ago": 6,
+     "likes": 4
+    },
+    {
+     "author": "p02",
+     "text": "Running around the lake first, then the picnic. A runner's family day, I love it.",
+     "hours_ago": 5,
+     "likes": 6
+    },
+    {
+     "author": "p05",
+     "text": "Puppy approves of the picnic plan, he wants the sausage rolls and he knows it.",
+     "hours_ago": 5,
+     "likes": 11
+    },
+    {
+     "author": "p03",
+     "text": "Sausage rolls are for the humans, puppy. Your treat is the frozen yoghurt.",
+     "hours_ago": 4,
+     "likes": 8
+    },
+    {
+     "author": "p07",
+     "text": "Thanks, everyone. I'll post a photo of the picnic next Sunday, the kids are excited.",
+     "hours_ago": 4,
+     "likes": 9
+    },
+    {
+     "author": "p01",
+     "text": "Yalla, family picnic in Mirdif. See you there, Anjali 🌳",
+     "hours_ago": 3,
+     "likes": 7
+    },
+    {
+     "author": "p09",
+     "text": "Our team picnic is on the calendar now. Thank you for the great idea, everyone.",
+     "hours_ago": 2,
+     "likes": 5
+    },
+    {
+     "author": "p04",
+     "text": "Good plan. Keep the lake loop clear for the bikes, please. Shared path, shared joy.",
+     "hours_ago": 1,
+     "likes": 4
+    }
+   ]
+  },
+  {
+   "id": "weekend-plans-04",
+   "author": "p03",
+   "text": "Museum weekend: the new art gallery in Al Quoz has a free Saturday tour at 11am. Afterwards we can get lunch at the cafe next door. Who wants to come?",
+   "image": null,
+   "hours_ago": 40,
+   "likes": 201,
+   "comments": [
+    {
+     "author": "p08",
+     "text": "Al Quoz gallery is a favourite of mine. The cafe next door has excellent coffee, yes.",
+     "hours_ago": 38,
+     "likes": 9
+    },
+    {
+     "author": "p06",
+     "text": "Free tour plus lunch is a bargain weekend. I'll join with the playlist for the walk.",
+     "hours_ago": 37,
+     "likes": 8
+    },
+    {
+     "author": "p01",
+     "text": "Art and lunch on a Saturday, perfect. Is the tour in English or Arabic?",
+     "hours_ago": 36,
+     "likes": 7
+    },
+    {
+     "author": "p09",
+     "text": "Tours in English, Arabic and sometimes French. Check the schedule on the website.",
+     "hours_ago": 35,
+     "likes": 10
+    },
+    {
+     "author": "p04",
+     "text": "I'll cycle there after the morning ride. The bike rack by the gallery is covered.",
+     "hours_ago": 34,
+     "likes": 6
+    },
+    {
+     "author": "p10",
+     "text": "Art and a swim would be an odd combo, but I'll pass on the swim and join for lunch.",
+     "hours_ago": 33,
+     "likes": 4
+    },
+    {
+     "author": "p07",
+     "text": "Museums are my favourite rainy-day weekend plan, even in Dubai. Count me in.",
+     "hours_ago": 32,
+     "likes": 8
+    },
+    {
+     "author": "p05",
+     "text": "Puppy is not allowed in the gallery, but he'd love the murals outside. Sad but fair.",
+     "hours_ago": 31,
+     "likes": 11
+    },
+    {
+     "author": "p02",
+     "text": "Art plus a run around Al Quoz after the tour. The murals are a great route.",
+     "hours_ago": 30,
+     "likes": 6
+    },
+    {
+     "author": "p03",
+     "text": "Lunch at the cafe after the tour, I'll bring a dessert for the table.",
+     "hours_ago": 29,
+     "likes": 9
+    },
+    {
+     "author": "p08",
+     "text": "Coffee after the tour is on me for the first ten people. Yusuf's rule for this weekend.",
+     "hours_ago": 28,
+     "likes": 12
+    },
+    {
+     "author": "p09",
+     "text": "Free coffee and free tour, I'm definitely coming. The team will love it.",
+     "hours_ago": 27,
+     "likes": 7
+    },
+    {
+     "author": "p01",
+     "text": "Thanks for the info, Layla. I'll be there at 10:45 to get a good spot.",
+     "hours_ago": 26,
+     "likes": 5
+    },
+    {
+     "author": "p06",
+     "text": "Good spot for the tour is near the front, the guide speaks loudly and clearly.",
+     "hours_ago": 25,
+     "likes": 4
+    },
+    {
+     "author": "p10",
+     "text": "Dubai's art scene is growing fast. Glad to see the community turn out for it.",
+     "hours_ago": 24,
+     "likes": 6
+    },
+    {
+     "author": "p04",
+     "text": "The gallery has a bike parking and a water fountain, a good place for cyclists.",
+     "hours_ago": 23,
+     "likes": 5
+    },
+    {
+     "author": "p07",
+     "text": "Art lovers are the best company on a weekend. Looking forward to it.",
+     "hours_ago": 22,
+     "likes": 7
+    },
+    {
+     "author": "p02",
+     "text": "Art and lunch, I've marked it on the calendar. A great way to spend Saturday.",
+     "hours_ago": 21,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "Puppy's art review: the murals outside get five paws, the gallery gets maybe three.",
+     "hours_ago": 20,
+     "likes": 13
+    },
+    {
+     "author": "p03",
+     "text": "Ha, the puppy critic is harsh but fair. See you all Saturday, bring your curiosity.",
+     "hours_ago": 19,
+     "likes": 9
+    },
+    {
+     "author": "p09",
+     "text": "Looking forward to it, Layla. Thanks for organising the group.",
+     "hours_ago": 18,
+     "likes": 4
+    },
+    {
+     "author": "p08",
+     "text": "Art, coffee and friends, my favourite weekend formula. See you there.",
+     "hours_ago": 17,
+     "likes": 8
+    },
+    {
+     "author": "p06",
+     "text": "Let's do a photo walk after lunch, the murals are very photogenic.",
+     "hours_ago": 16,
+     "likes": 6
+    },
+    {
+     "author": "p01",
+     "text": "Yes to the photo walk. I'll bring the camera and a snack for the group.",
+     "hours_ago": 15,
+     "likes": 7
+    },
+    {
+     "author": "p10",
+     "text": "Enjoy the art, everyone. A good Saturday is one with a bit of culture and a lot of coffee.",
+     "hours_ago": 14,
+     "likes": 5
+    }
+   ]
+  },
+  {
+   "id": "weekend-plans-05",
+   "author": "p09",
+   "text": "Spontaneous road trip idea: drive to Hatta on Saturday morning, a short hike, a lunch by the dam, then back before sunset. Who has a car and wants to share the fuel?",
+   "image": "media/rest-water.jpg",
+   "hours_ago": 62,
+   "likes": 277,
+   "comments": [
+    {
+     "author": "p04",
+     "text": "I have a car and I'll drive. Leave at 6am to beat the heat and the traffic.",
+     "hours_ago": 60,
+     "likes": 14
+    },
+    {
+     "author": "p01",
+     "text": "Hatta is beautiful in the early morning. I'll bring water, sunscreen and the good snacks.",
+     "hours_ago": 59,
+     "likes": 11
+    },
+    {
+     "author": "p10",
+     "text": "A hike in the morning is great, and a swim in the dam later if it's allowed. Check the rules.",
+     "hours_ago": 58,
+     "likes": 9
+    },
+    {
+     "author": "p02",
+     "text": "Hatta trail is my favourite long run in the mountains. I'll bring the running shoes.",
+     "hours_ago": 57,
+     "likes": 8
+    },
+    {
+     "author": "p06",
+     "text": "Road trip playlist ready. I'll bring the good music and the tangerines.",
+     "hours_ago": 56,
+     "likes": 12
+    },
+    {
+     "author": "p03",
+     "text": "Lunch by the dam with a picnic blanket, pastries and coffee. My dream road trip.",
+     "hours_ago": 55,
+     "likes": 10
+    },
+    {
+     "author": "p05",
+     "text": "Puppy can come if the hike is dog-friendly. Please check before we all get in the car.",
+     "hours_ago": 54,
+     "likes": 13
+    },
+    {
+     "author": "p07",
+     "text": "Carry more water than you think you need. The mountains are hotter than the city.",
+     "hours_ago": 53,
+     "likes": 11
+    },
+    {
+     "author": "p08",
+     "text": "Coffee before the drive, thermos ready. A good road trip begins with a good cup.",
+     "hours_ago": 52,
+     "likes": 7
+    },
+    {
+     "author": "p09",
+     "text": "Thanks Tomasz! I'll split the fuel with you, and I'll bring the snacks for the car.",
+     "hours_ago": 51,
+     "likes": 6
+    },
+    {
+     "author": "p04",
+     "text": "Share the petrol and the playlist, that's the fair deal. See you at 6.",
+     "hours_ago": 50,
+     "likes": 8
+    },
+    {
+     "author": "p10",
+     "text": "Mountain roads can be windy, so drive safely and take breaks. No rush at all.",
+     "hours_ago": 49,
+     "likes": 5
+    },
+    {
+     "author": "p01",
+     "text": "Plan the route in advance and check the weather. Summer hikes need careful planning.",
+     "hours_ago": 48,
+     "likes": 9
+    },
+    {
+     "author": "p02",
+     "text": "Sunrise in the mountains with a cold water and a run. My idea of a holy morning.",
+     "hours_ago": 47,
+     "likes": 6
+    },
+    {
+     "author": "p06",
+     "text": "Yalla, road trip with the crew. Will the car have enough seats for the cooler box?",
+     "hours_ago": 46,
+     "likes": 7
+    },
+    {
+     "author": "p03",
+     "text": "I'll bring the cooler box and a few cake slices. There's always room for cake.",
+     "hours_ago": 45,
+     "likes": 10
+    },
+    {
+     "author": "p07",
+     "text": "Sunset back in the city after the dam is a lovely finish. Plan the timing well.",
+     "hours_ago": 44,
+     "likes": 8
+    },
+    {
+     "author": "p09",
+     "text": "Let's do a group check-in on Friday night to confirm the car list.",
+     "hours_ago": 43,
+     "likes": 4
+    },
+    {
+     "author": "p05",
+     "text": "Puppy's answer is yes, but only with a seat belt and a bed in the back seat.",
+     "hours_ago": 42,
+     "likes": 12
+    },
+    {
+     "author": "p08",
+     "text": "Coffee in the mountains, I'm already imagining the view and the aroma.",
+     "hours_ago": 41,
+     "likes": 6
+    },
+    {
+     "author": "p04",
+     "text": "Good, group chat check-in Friday at 9pm, I'll post the car plan there.",
+     "hours_ago": 40,
+     "likes": 5
+    },
+    {
+     "author": "p01",
+     "text": "Confirmed for Saturday, I'll be the one with the snack bag. Thank you all.",
+     "hours_ago": 39,
+     "likes": 7
+    },
+    {
+     "author": "p10",
+     "text": "Good luck with the trip, and have fun in the mountains. Yalla, road trip 🚗",
+     "hours_ago": 38,
+     "likes": 9
+    },
+    {
+     "author": "p07",
+     "text": "Pack a cooler with cold water, the road is long and the sun is strong.",
+     "hours_ago": 50,
+     "likes": 6
+    },
+    {
+     "author": "p03",
+     "text": "Dates and a flask of coffee for the dam picnic, the classic road trip snacks.",
+     "hours_ago": 44,
+     "likes": 7
+    }
+   ]
+  },
+  {
+   "id": "weekend-plans-06",
+   "author": "p02",
+   "text": "Weekend long run at Umm Suqeim beach at sunrise, eight kilometres, flat and beautiful. Anyone want a pace group? I'll be the chatty one at the back.",
+   "image": "media/marina.jpg",
+   "hours_ago": 80,
+   "likes": 189,
+   "comments": [
+    {
+     "author": "p10",
+     "text": "Chatty at the back is my favourite pace group. Count me in, with the swim after.",
+     "hours_ago": 78,
+     "likes": 8
+    },
+    {
+     "author": "p06",
+     "text": "Umm Suqeim at sunrise is a special place. The sea is calm and the sky is pink.",
+     "hours_ago": 77,
+     "likes": 9
+    },
+    {
+     "author": "p04",
+     "text": "I'll join on the bike, and sweep the group at the back. Safety first.",
+     "hours_ago": 76,
+     "likes": 6
+    },
+    {
+     "author": "p03",
+     "text": "Run then pancakes, the rule of the weekend. I'll bring the batter.",
+     "hours_ago": 75,
+     "likes": 10
+    },
+    {
+     "author": "p05",
+     "text": "Puppy is a sprinter, not a long runner. He will join for the first two kilometres.",
+     "hours_ago": 74,
+     "likes": 12
+    },
+    {
+     "author": "p07",
+     "text": "Eight kilometres on flat sand is a good target for a new runner. Going to try.",
+     "hours_ago": 73,
+     "likes": 7
+    },
+    {
+     "author": "p08",
+     "text": "After the run, the coffee stand by the beach is open. Bring cash, just in case.",
+     "hours_ago": 72,
+     "likes": 5
+    },
+    {
+     "author": "p09",
+     "text": "Sunrise runs are the one thing I want to start doing. Maybe this is the day.",
+     "hours_ago": 71,
+     "likes": 6
+    },
+    {
+     "author": "p01",
+     "text": "Hannah, you can do it. Start with the walk breaks and enjoy the views.",
+     "hours_ago": 70,
+     "likes": 8
+    },
+    {
+     "author": "p02",
+     "text": "@anjali_rao the route is flat, the sand is firm near the water, great for a steady pace.",
+     "hours_ago": 69,
+     "likes": 5
+    },
+    {
+     "author": "p10",
+     "text": "Stay close to the water edge for firmer sand, and watch out for the lifeguard flags.",
+     "hours_ago": 68,
+     "likes": 7
+    },
+    {
+     "author": "p06",
+     "text": "Music at the sunrise run is a great idea. Headphones on, volume low, and enjoy.",
+     "hours_ago": 67,
+     "likes": 4
+    },
+    {
+     "author": "p03",
+     "text": "Pancakes after the run, and I'll bring a jar of honey for the group.",
+     "hours_ago": 66,
+     "likes": 9
+    },
+    {
+     "author": "p04",
+     "text": "Honey on pancakes after a long run is my favourite post-run treat, Layla. Respect.",
+     "hours_ago": 65,
+     "likes": 6
+    },
+    {
+     "author": "p05",
+     "text": "The puppy wants to know if pancakes are dog-safe. Don't let him near the honey.",
+     "hours_ago": 64,
+     "likes": 8
+    },
+    {
+     "author": "p07",
+     "text": "Coffee and sunrise on the sand, the way to start a lovely weekend.",
+     "hours_ago": 63,
+     "likes": 5
+    },
+    {
+     "author": "p08",
+     "text": "I'll be the one with the thermos and the cups. Don't forget your cups.",
+     "hours_ago": 62,
+     "likes": 4
+    },
+    {
+     "author": "p09",
+     "text": "Okay, I'm convinced. Setting two alarms and laying out the running shoes now.",
+     "hours_ago": 61,
+     "likes": 7
+    },
+    {
+     "author": "p01",
+     "text": "Good energy, everyone. Sunrise run, see you at the beach entrance.",
+     "hours_ago": 60,
+     "likes": 6
+    },
+    {
+     "author": "p10",
+     "text": "Yalla, a great weekend start. Stay hydrated, friends, the sun gets strong fast.",
+     "hours_ago": 59,
+     "likes": 5
+    },
+    {
+     "author": "p02",
+     "text": "Thank you all, the pace group is growing. Let's make it a regular Saturday thing.",
+     "hours_ago": 58,
+     "likes": 8
+    },
+    {
+     "author": "p06",
+     "text": "A regular Saturday run club with pancakes, I'm very happy about this plan.",
+     "hours_ago": 57,
+     "likes": 9
+    },
+    {
+     "author": "p03",
+     "text": "Pancakes forever. See you at sunrise, bring your appetite and your smile 🥞",
+     "hours_ago": 56,
+     "likes": 11
+    },
+    {
+     "author": "p04",
+     "text": "I'll bring the bike for the cool-down ride along the beach after the run.",
+     "hours_ago": 70,
+     "likes": 5
+    },
+    {
+     "author": "p08",
+     "text": "Coffee cups for the beach runners, bring a few extra. Shared joy.",
+     "hours_ago": 64,
+     "likes": 4
+    }
+   ]
+  },
+  {
+   "id": "weekend-plans-07",
+   "author": "p05",
+   "text": "Dog-friendly weekend escape idea: a drive to a quiet beach with a dog run, a shaded picnic area and a water fountain. Anyone know a spot that is open on Sundays?",
+   "image": "media/puppy.jpg",
+   "hours_ago": 96,
+   "likes": 233,
+   "comments": [
+    {
+     "author": "p10",
+     "text": "Umm Suqeim has a quiet corner on Sundays with a shaded area. Dogs are allowed in the early morning.",
+     "hours_ago": 94,
+     "likes": 12
+    },
+    {
+     "author": "p02",
+     "text": "Lake park in JLT has a dog run, and it's open daily. Good for the morning run too.",
+     "hours_ago": 93,
+     "likes": 9
+    },
+    {
+     "author": "p07",
+     "text": "Mushrif park has a shaded picnic area and a water fountain, the Sunday crowd is calm.",
+     "hours_ago": 92,
+     "likes": 11
+    },
+    {
+     "author": "p04",
+     "text": "A small beach with a dog run is rare in the city. Check the rules before going.",
+     "hours_ago": 91,
+     "likes": 7
+    },
+    {
+     "author": "p03",
+     "text": "Picnic with a dog, cake, and a flask of coffee, the classic Sunday in the park.",
+     "hours_ago": 90,
+     "likes": 10
+    },
+    {
+     "author": "p01",
+     "text": "Shaded picnic area is key for a puppy, he needs the cool grass and the water bowl.",
+     "hours_ago": 89,
+     "likes": 8
+    },
+    {
+     "author": "p06",
+     "text": "Bring a collapsible bowl and a towel, dogs get hot faster than people in the sun.",
+     "hours_ago": 88,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "Coffee shop with a dog bowl on the way is a nice stop for the drive home.",
+     "hours_ago": 87,
+     "likes": 7
+    },
+    {
+     "author": "p09",
+     "text": "Our team dog is very social, and the picnic idea would be a hit with the office.",
+     "hours_ago": 86,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "Thank you all. Mushrif on Sunday sounds like the easiest choice for the puppy.",
+     "hours_ago": 85,
+     "likes": 10
+    },
+    {
+     "author": "p10",
+     "text": "Mushrif is a solid pick. Bring the puppy early, the afternoon is too hot for the paws.",
+     "hours_ago": 84,
+     "likes": 8
+    },
+    {
+     "author": "p02",
+     "text": "Early morning dog run at Mushrif is my favourite for the sprint training. Join me.",
+     "hours_ago": 83,
+     "likes": 6
+    },
+    {
+     "author": "p07",
+     "text": "Mushrif park meetup is also on the Pet Parents calendar, Mariam. See you there.",
+     "hours_ago": 82,
+     "likes": 7
+    },
+    {
+     "author": "p04",
+     "text": "The fountain at Mushrif is a bit slow, but the shade is worth it.",
+     "hours_ago": 81,
+     "likes": 4
+    },
+    {
+     "author": "p03",
+     "text": "Puppy approves the picnic plan, the cake is for the humans, the biscuits are for him.",
+     "hours_ago": 80,
+     "likes": 9
+    },
+    {
+     "author": "p06",
+     "text": "Puppy's weekend is planned better than mine. Good job, Mariam.",
+     "hours_ago": 79,
+     "likes": 11
+    },
+    {
+     "author": "p08",
+     "text": "Dogs and coffee are a fine weekend pair, as long as the dog stays on water.",
+     "hours_ago": 78,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "Adding this to my weekend list. Thanks for the ideas, everyone.",
+     "hours_ago": 77,
+     "likes": 5
+    },
+    {
+     "author": "p01",
+     "text": "Good luck on the Sunday trip, Mariam. Send us the photos from the shade.",
+     "hours_ago": 76,
+     "likes": 8
+    },
+    {
+     "author": "p10",
+     "text": "Keep the puppy cool, the sea breeze is only good in the mornings. Enjoy the day.",
+     "hours_ago": 75,
+     "likes": 5
+    },
+    {
+     "author": "p02",
+     "text": "Enjoy the park and the run. The puppy is a natural athlete, I can tell.",
+     "hours_ago": 74,
+     "likes": 6
+    },
+    {
+     "author": "p07",
+     "text": "A perfect dog day, I'll be there with the cat's photos for comparison, lol.",
+     "hours_ago": 73,
+     "likes": 7
+    },
+    {
+     "author": "p03",
+     "text": "Dog and cat photo comparison contest. Who will win, the puppy or the cat?",
+     "hours_ago": 72,
+     "likes": 9
+    },
+    {
+     "author": "p04",
+     "text": "The puppy wins by a tail wag, obviously. Yalla, have a great Sunday.",
+     "hours_ago": 71,
+     "likes": 6
+    },
+    {
+     "author": "p05",
+     "text": "Thanks everyone, the puppy is already asleep, dreaming of Sunday 🐶",
+     "hours_ago": 70,
+     "likes": 13
+    }
+   ]
+  },
+  {
+   "id": "weekend-plans-08",
+   "author": "p08",
+   "text": "Saturday morning coffee crawl: five roasters in five neighbourhoods, one cup each, and a map. Anyone want to try the crawl with me this weekend? Bring a notebook for scores.",
+   "image": "media/coffee.jpg",
+   "hours_ago": 108,
+   "likes": 243,
+   "comments": [
+    {
+     "author": "p09",
+     "text": "Five cups before noon, my heart is already racing. But yes, I'm in with a notebook.",
+     "hours_ago": 106,
+     "likes": 10
+    },
+    {
+     "author": "p03",
+     "text": "Pastry stop in the middle of the crawl, please. I'll bring the lemon tart as a bribe.",
+     "hours_ago": 105,
+     "likes": 12
+    },
+    {
+     "author": "p06",
+     "text": "A coffee crawl with a map and a notebook is very Kwame-approved. Count me in.",
+     "hours_ago": 104,
+     "likes": 8
+    },
+    {
+     "author": "p01",
+     "text": "Five roasters is a lot of caffeine, Yusuf. Let's do three and a long lunch.",
+     "hours_ago": 103,
+     "likes": 9
+    },
+    {
+     "author": "p04",
+     "text": "I'll cycle between the stops. Smart route, short distances, very fun.",
+     "hours_ago": 102,
+     "likes": 7
+    },
+    {
+     "author": "p10",
+     "text": "Coffee crawl after a swim is my kind of morning. I'll join the second stop.",
+     "hours_ago": 101,
+     "likes": 6
+    },
+    {
+     "author": "p07",
+     "text": "Please keep the cups small, the crawl is about tasting, not drinking a full mug each time.",
+     "hours_ago": 100,
+     "likes": 11
+    },
+    {
+     "author": "p02",
+     "text": "Coffee crawl plus a run in between, the perfect combo for a runner who loves espresso.",
+     "hours_ago": 99,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "Puppy will stay home with the water bowl, but he wants a full report on the scores.",
+     "hours_ago": 98,
+     "likes": 12
+    },
+    {
+     "author": "p08",
+     "text": "Small cups, yes. A coffee crawl is about curiosity, not caffeine overload. Good call.",
+     "hours_ago": 97,
+     "likes": 8
+    },
+    {
+     "author": "p03",
+     "text": "Notebook scores for the lemon tart, too. Please don't forget the pastry category.",
+     "hours_ago": 96,
+     "likes": 9
+    },
+    {
+     "author": "p09",
+     "text": "Hannah's scoring sheet is ready, I'll share it in the group. Acidity, body, sweetness.",
+     "hours_ago": 95,
+     "likes": 10
+    },
+    {
+     "author": "p01",
+     "text": "A scoring sheet is a must. I'll bring a pen, the mint for my tea, and a big appetite.",
+     "hours_ago": 94,
+     "likes": 6
+    },
+    {
+     "author": "p06",
+     "text": "Let's name the best cup of the crawl, a trophy of sorts. Maybe a paper crown.",
+     "hours_ago": 93,
+     "likes": 7
+    },
+    {
+     "author": "p04",
+     "text": "A paper crown for the best cup, the most Dubai thing I've heard all week.",
+     "hours_ago": 92,
+     "likes": 5
+    },
+    {
+     "author": "p10",
+     "text": "Keep the crawl to the morning, the coffee and the sea make the best pairing.",
+     "hours_ago": 91,
+     "likes": 4
+    },
+    {
+     "author": "p07",
+     "text": "Yusuf, your map is a gift for the group. Thank you for planning it.",
+     "hours_ago": 90,
+     "likes": 8
+    },
+    {
+     "author": "p02",
+     "text": "Map is great. Tag the cafes with the cycling access, runners need shade too.",
+     "hours_ago": 89,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "Puppy gives the crawl ten paws for the idea, and zero for the coffee he can't have.",
+     "hours_ago": 88,
+     "likes": 11
+    },
+    {
+     "author": "p03",
+     "text": "Pastry plus coffee plus friends, the best crawl the city has seen, I'm sure.",
+     "hours_ago": 87,
+     "likes": 9
+    },
+    {
+     "author": "p09",
+     "text": "Final list is ready, I'll share it tonight. See you all at the first stop.",
+     "hours_ago": 86,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "Coffee crawl confirmed, the first stop opens at 8am. Bring your curiosity.",
+     "hours_ago": 85,
+     "likes": 7
+    },
+    {
+     "author": "p01",
+     "text": "Good luck with the crawl, Yusuf. Let the coffee guide the day ☕",
+     "hours_ago": 84,
+     "likes": 5
+    },
+    {
+     "author": "p06",
+     "text": "Yalla, a weekend of coffee and friendship. See you all on Saturday.",
+     "hours_ago": 83,
+     "likes": 8
+    },
+    {
+     "author": "p07",
+     "text": "Coffee crawl, map and friends, the way to a happy Saturday. Let's go!",
+     "hours_ago": 82,
+     "likes": 6
+    }
+   ]
+  },
+  {
+   "id": "weekend-plans-09",
+   "author": "p10",
+   "text": "Night swim with friends at the public beach, under the stars and the lights of the Marina towers. Not allowed everywhere, so only in the lit zone and with a buddy.",
+   "image": "media/marina-night.jpg",
+   "hours_ago": 124,
+   "likes": 311,
+   "comments": [
+    {
+     "author": "p02",
+     "text": "Night swim under the Marina lights sounds magical. Buddy system is a must, of course.",
+     "hours_ago": 122,
+     "likes": 14
+    },
+    {
+     "author": "p06",
+     "text": "Please stay in the lit zone and check the flags, the sea at night can surprise you.",
+     "hours_ago": 121,
+     "likes": 12
+    },
+    {
+     "author": "p04",
+     "text": "Cycling to the beach for a night swim is my kind of weekend. Count me in next time.",
+     "hours_ago": 120,
+     "likes": 7
+    },
+    {
+     "author": "p05",
+     "text": "Puppy watches from the balcony with a sad face, every time someone swims at night.",
+     "hours_ago": 119,
+     "likes": 13
+    },
+    {
+     "author": "p03",
+     "text": "Night swim, then dessert at the beach cafe. The perfect late weekend, I'm sure.",
+     "hours_ago": 118,
+     "likes": 9
+    },
+    {
+     "author": "p01",
+     "text": "Night swims are the best memories I have from this city. Please go safely, friends.",
+     "hours_ago": 117,
+     "likes": 10
+    },
+    {
+     "author": "p07",
+     "text": "Keep your phone in a waterproof bag and tell someone where you are. Good habit.",
+     "hours_ago": 116,
+     "likes": 8
+    },
+    {
+     "author": "p08",
+     "text": "Coffee after the night swim is a bold move, but I'll be the one with hot chocolate.",
+     "hours_ago": 115,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "We did this once with the team and it was the best team bonding we've ever had.",
+     "hours_ago": 114,
+     "likes": 11
+    },
+    {
+     "author": "p10",
+     "text": "@hannah_b team bonding in the sea is the best kind. Just keep the buddies close.",
+     "hours_ago": 113,
+     "likes": 9
+    },
+    {
+     "author": "p04",
+     "text": "Lights of the towers reflecting on the water, a view I'd never tire of. Thanks for sharing.",
+     "hours_ago": 112,
+     "likes": 8
+    },
+    {
+     "author": "p02",
+     "text": "Night swim with the lights is one of the best Dubai experiences. Thanks for the tip.",
+     "hours_ago": 111,
+     "likes": 6
+    },
+    {
+     "author": "p06",
+     "text": "Music on the beach at night? Please, the speakers should be off for the swimmers.",
+     "hours_ago": 110,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "Night dog walk on the beach, no swimming, just the sea sounds. Puppy approves.",
+     "hours_ago": 109,
+     "likes": 10
+    },
+    {
+     "author": "p03",
+     "text": "Dessert on the beach with the sea sounds, the lovely end to any evening.",
+     "hours_ago": 108,
+     "likes": 7
+    },
+    {
+     "author": "p01",
+     "text": "Night swimmers are a special kind of people. Brave and happy, I like them.",
+     "hours_ago": 107,
+     "likes": 9
+    },
+    {
+     "author": "p07",
+     "text": "A safe night swim with a buddy and a lit zone, the rules are clear. Thank you Omar.",
+     "hours_ago": 106,
+     "likes": 12
+    },
+    {
+     "author": "p08",
+     "text": "Hot chocolate on the sand, a good end to the swim. My team will love the idea.",
+     "hours_ago": 105,
+     "likes": 5
+    },
+    {
+     "author": "p09",
+     "text": "Next team night swim is planned for the summer. Lifeguard coverage, of course.",
+     "hours_ago": 104,
+     "likes": 8
+    },
+    {
+     "author": "p10",
+     "text": "Good to hear. Plan with the lifeguards, and let them know your group size.",
+     "hours_ago": 103,
+     "likes": 7
+    },
+    {
+     "author": "p04",
+     "text": "Pedal to the beach, swim, and pedal back under the stars. Yes.",
+     "hours_ago": 102,
+     "likes": 4
+    },
+    {
+     "author": "p02",
+     "text": "I'll try the night swim after the next night run. Double session, the brave way.",
+     "hours_ago": 101,
+     "likes": 6
+    },
+    {
+     "author": "p05",
+     "text": "Puppy says good luck to the swimmers, from the balcony with a very loud bark.",
+     "hours_ago": 100,
+     "likes": 11
+    },
+    {
+     "author": "p06",
+     "text": "Enjoy the night, stay safe, and let the stars do the rest. Yalla 🌊",
+     "hours_ago": 99,
+     "likes": 9
+    },
+    {
+     "author": "p03",
+     "text": "Lovely post, Omar. Dessert is on me for the first night swimmers who return.",
+     "hours_ago": 98,
+     "likes": 10
+    }
+   ]
+  },
+  {
+   "id": "weekend-plans-10",
+   "author": "p07",
+   "text": "Weekend ideas for the rainy-season surprise: an indoor climbing gym, a board game cafe in Business Bay, and a cosy hotel tea. Dubai has more indoor fun than you think. Share yours!",
+   "image": null,
+   "hours_ago": 150,
+   "likes": 268,
+   "comments": [
+    {
+     "author": "p06",
+     "text": "Board game cafe in Business Bay is a great shout. I'll bring the strategy games.",
+     "hours_ago": 146,
+     "likes": 12
+    },
+    {
+     "author": "p01",
+     "text": "Indoor climbing gym is a fun workout, and the staff are very helpful for beginners.",
+     "hours_ago": 144,
+     "likes": 9
+    },
+    {
+     "author": "p04",
+     "text": "Hotel tea with a view is a treat, a great way to slow down on a Sunday.",
+     "hours_ago": 142,
+     "likes": 8
+    },
+    {
+     "author": "p03",
+     "text": "Hotel afternoon tea with pastries, a Layla favourite. Count me in for the scones.",
+     "hours_ago": 140,
+     "likes": 13
+    },
+    {
+     "author": "p05",
+     "text": "Puppy's indoor fun is the sofa and the tug toy. Simple, but he's very happy.",
+     "hours_ago": 138,
+     "likes": 11
+    },
+    {
+     "author": "p08",
+     "text": "Board game cafe with good coffee is my dream. I'll bring my favourite card game.",
+     "hours_ago": 136,
+     "likes": 7
+    },
+    {
+     "author": "p10",
+     "text": "Indoor pool and a sauna, if you need a rainy day that feels like a spa. Recommended.",
+     "hours_ago": 134,
+     "likes": 6
+    },
+    {
+     "author": "p02",
+     "text": "Climbing gym after a run is a good cross training session. My legs were shaking, lol.",
+     "hours_ago": 132,
+     "likes": 8
+    },
+    {
+     "author": "p09",
+     "text": "Board game night is the team's favourite. Maybe the next office event at the cafe.",
+     "hours_ago": 130,
+     "likes": 9
+    },
+    {
+     "author": "p07",
+     "text": "@hannah_b great idea. Board game night with a coffee menu, the perfect office party.",
+     "hours_ago": 128,
+     "likes": 7
+    },
+    {
+     "author": "p06",
+     "text": "Indoor cinema and a bowl of popcorn is still my favourite rainy day plan.",
+     "hours_ago": 126,
+     "likes": 5
+    },
+    {
+     "author": "p03",
+     "text": "Popcorn and cake at the cinema, bring both, the snack is the best part of a movie.",
+     "hours_ago": 124,
+     "likes": 10
+    },
+    {
+     "author": "p01",
+     "text": "Indoor markets in the malls are good on hot days too. Pick a cool corner and wander.",
+     "hours_ago": 122,
+     "likes": 6
+    },
+    {
+     "author": "p04",
+     "text": "Malls are the summer version of the park. Cool air and window shopping.",
+     "hours_ago": 120,
+     "likes": 7
+    },
+    {
+     "author": "p05",
+     "text": "Pet-friendly malls are a thing now, I'm told. Check the rules first.",
+     "hours_ago": 118,
+     "likes": 8
+    },
+    {
+     "author": "p08",
+     "text": "The coffee shops in the malls are often better than you'd expect. Give them a try.",
+     "hours_ago": 116,
+     "likes": 5
+    },
+    {
+     "author": "p10",
+     "text": "Indoor pools are great for the heat. Fun, cool, and no sunburn, a very good plan.",
+     "hours_ago": 114,
+     "likes": 6
+    },
+    {
+     "author": "p02",
+     "text": "Thanks for the ideas, Anjali. I'm trying the climbing gym this week.",
+     "hours_ago": 112,
+     "likes": 4
+    },
+    {
+     "author": "p09",
+     "text": "We'll do the board game cafe for the team on Friday. Thanks for the spot.",
+     "hours_ago": 110,
+     "likes": 7
+    },
+    {
+     "author": "p06",
+     "text": "Board games and dessert, that's the Kwame winter plan too. Yalla.",
+     "hours_ago": 108,
+     "likes": 8
+    },
+    {
+     "author": "p03",
+     "text": "Hotel tea on Sunday, I'll bring the scones. We'll make it a tradition.",
+     "hours_ago": 106,
+     "likes": 9
+    },
+    {
+     "author": "p07",
+     "text": "Thank you all. Dubai's indoor fun is a lot more fun with friends. Enjoy the weekend 🎲",
+     "hours_ago": 104,
+     "likes": 10
+    },
+    {
+     "author": "p01",
+     "text": "Yes! Indoor fun with good people is the best kind. See you around the city.",
+     "hours_ago": 102,
+     "likes": 6
+    },
+    {
+     "author": "p10",
+     "text": "Cosy and bright, your weekend ideas are a treat, Anjali. Stay cool everyone.",
+     "hours_ago": 100,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "Puppy would love the indoor pet-friendly corner, if there's a mat for him.",
+     "hours_ago": 140,
+     "likes": 9
+    }
+   ]
+  }
+ ]
+}

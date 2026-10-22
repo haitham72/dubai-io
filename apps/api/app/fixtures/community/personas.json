@@ -1,0 +1,12 @@
+[
+ {"id":"p01", "name":"Sara Khalid", "handle":"sarak", "emoji":"🌴", "bio":"Product designer in JLT. Brunch critic.", "area":"JLT"},
+ {"id":"p02", "name":"Ravi Menon", "handle":"ravi_menon", "emoji":"🏃", "bio":"Backend engineer and aspiring marathoner. Dawn runs on the Marina walk, coffee after.", "area":"Dubai Marina"},
+ {"id":"p03", "name":"Layla Haddad", "handle":"layla_h", "emoji":"🧁", "bio":"Pastry chef in Downtown. I measure everything in grams and feelings.", "area":"Downtown"},
+ {"id":"p04", "name":"Tomasz Nowak", "handle":"tomasz_n", "emoji":"🚴", "bio":"Civil engineer from Gdansk. Cycling Business Bay at 6am before the heat hits.", "area":"Business Bay"},
+ {"id":"p05", "name":"Mariam Al Suwaidi", "handle":"mariam_s", "emoji":"🐾", "bio":"Vet nurse by day, puppy foster by night. Always bring treats to the clinic.", "area":"Al Barsha"},
+ {"id":"p06", "name":"Kwame Asante", "handle":"kwame_a", "emoji":"🎧", "bio":"Piano teacher and weekend DJ. Silicon Oasis is home, Jumeirah is my escape.", "area":"Silicon Oasis"},
+ {"id":"p07", "name":"Anjali Rao", "handle":"anjali_rao", "emoji":"🏠", "bio":"Interior architect in Mirdif. Home cook who swears by fresh curry leaves.", "area":"Mirdif"},
+ {"id":"p08", "name":"Yusuf Demir", "handle":"yusuf_d", "emoji":"☕", "bio":"Roasting beans in Al Quoz. Ask me about pour-over, not about football.", "area":"Al Quoz"},
+ {"id":"p09", "name":"Hannah Brooks", "handle":"hannah_b", "emoji":"🚀", "bio":"Startup founder on Palm Jumeirah. Coffee first, pitch decks second.", "area":"Palm Jumeirah"},
+ {"id":"p10", "name":"Omar Qasim", "handle":"omar_q", "emoji":"🌊", "bio":"Swim coach on Jumeirah beach. Yes, I will tell you to put sunscreen on.", "area":"Jumeirah"}
+]

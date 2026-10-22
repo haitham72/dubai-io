@@ -1,0 +1,1631 @@
+{
+ "id": "coffee-hunters",
+ "name": "Coffee Hunters",
+ "handle": "coffeehuntersdxb",
+ "topic": "Coffee",
+ "about": "Specialty cafes, pour-over tips, roasters and the best iced latte in the heat. Honest reviews, no paid placements.",
+ "image": "media/coffee.jpg",
+ "members": 12700,
+ "stories": [
+  {
+   "author": "p08",
+   "text": "New single origin on the menu at my Al Quoz bar. Notes of jasmine and peach.",
+   "image": "media/coffee.jpg",
+   "hours_ago": 2
+  },
+  {
+   "author": "p03",
+   "text": "Coffee and cake pairing night, Downtown, this Thursday. Limited seats!",
+   "image": "media/cafe-counter.jpg",
+   "hours_ago": 13
+  },
+  {
+   "author": "p09",
+   "text": "Cold brew tasting done. Cold brew wins for summer, no argument.",
+   "image": "media/cafe-bulbs.jpg",
+   "hours_ago": 22
+  }
+ ],
+ "posts": [
+  {
+   "id": "coffee-hunters-01",
+   "author": "p08",
+   "text": "Pour over tip of the week: bloom your grounds for 45 seconds with just enough water to wet them. The gas escapes, the flavour opens up. Try it tomorrow morning.",
+   "image": "media/coffee.jpg",
+   "hours_ago": 3,
+   "likes": 402,
+   "comments": [
+    {
+     "author": "p06",
+     "text": "45 seconds feels like forever when the kettle is singing. Worth it, though.",
+     "hours_ago": 2,
+     "likes": 10
+    },
+    {
+     "author": "p03",
+     "text": "Pastry brain says this is like proofing dough. Let the gas out, then go.",
+     "hours_ago": 2,
+     "likes": 14
+    },
+    {
+     "author": "p04",
+     "text": "I tried it this morning and the cup tastes clearer. Thank you, Yusuf!",
+     "hours_ago": 1,
+     "likes": 12
+    },
+    {
+     "author": "p01",
+     "text": "Bloom time for light roasts versus dark roasts, is it different? Asking for my new beans.",
+     "hours_ago": 2,
+     "likes": 8
+    },
+    {
+     "author": "p09",
+     "text": "Coffee nerd question: what grind size do you use for a V60 at home?",
+     "hours_ago": 1,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "@hannah_b medium-fine, like sea salt. Adjust by taste, not by the book.",
+     "hours_ago": 1,
+     "likes": 9
+    },
+    {
+     "author": "p02",
+     "text": "Running fuel and coffee nerdery, the perfect combo. Going to try it before my run.",
+     "hours_ago": 1,
+     "likes": 4
+    },
+    {
+     "author": "p07",
+     "text": "My kettle is too slow, so I bloom while the water cools a little. Works fine.",
+     "hours_ago": 1,
+     "likes": 5
+    },
+    {
+     "author": "p10",
+     "text": "Swim coach needs his espresso to start the day, so the bloom tip is noted.",
+     "hours_ago": 0,
+     "likes": 6
+    },
+    {
+     "author": "p05",
+     "text": "Puppy lies next to me during the coffee ritual now. He's a true coffee dog.",
+     "hours_ago": 1,
+     "likes": 13
+    },
+    {
+     "author": "p08",
+     "text": "@mariam_s the puppy gets water, not coffee, please. The rule stands.",
+     "hours_ago": 1,
+     "likes": 11
+    },
+    {
+     "author": "p03",
+     "text": "Bloom then pour in circles, slow and steady. My grandmother's tea technique, almost.",
+     "hours_ago": 1,
+     "likes": 7
+    },
+    {
+     "author": "p06",
+     "text": "I'll try it on the balcony this morning. Hope the neighbours don't notice the kettle.",
+     "hours_ago": 0,
+     "likes": 5
+    },
+    {
+     "author": "p01",
+     "text": "Good tip. The bloom step is the one most people skip, and it shows in the cup.",
+     "hours_ago": 1,
+     "likes": 9
+    },
+    {
+     "author": "p04",
+     "text": "Scale and timer, that's my advice. Weighing the water changes everything.",
+     "hours_ago": 1,
+     "likes": 8
+    },
+    {
+     "author": "p09",
+     "text": "Weighing is the nerdy step I finally accept. Got a cheap scale yesterday.",
+     "hours_ago": 0,
+     "likes": 6
+    },
+    {
+     "author": "p02",
+     "text": "A little cheap scale is a big life upgrade for a runner who loves coffee, sure.",
+     "hours_ago": 0,
+     "likes": 4
+    },
+    {
+     "author": "p10",
+     "text": "Good coffee after a cold swim is the reward I keep dreaming about.",
+     "hours_ago": 1,
+     "likes": 3
+    },
+    {
+     "author": "p08",
+     "text": "Tell me how it goes, I want the feedback from everyone in the group.",
+     "hours_ago": 0,
+     "likes": 7
+    },
+    {
+     "author": "p03",
+     "text": "Will report on the flavour. I'm expecting an upgrade from my usual pour.",
+     "hours_ago": 0,
+     "likes": 5
+    },
+    {
+     "author": "p07",
+     "text": "Please share the beans you use for the bloom test, it helps with the comparison.",
+     "hours_ago": 1,
+     "likes": 6
+    },
+    {
+     "author": "p05",
+     "text": "Puppy approves of the bloom tip. The water part, obviously, he's a fan.",
+     "hours_ago": 0,
+     "likes": 9
+    },
+    {
+     "author": "p06",
+     "text": "Coffee is my favourite morning ritual. Thank you for turning it into a science.",
+     "hours_ago": 0,
+     "likes": 10
+    },
+    {
+     "author": "p01",
+     "text": "Going to try it tomorrow with my favourite Ethiopian beans. Report incoming.",
+     "hours_ago": 0,
+     "likes": 12
+    },
+    {
+     "author": "p09",
+     "text": "Bloom, pour, sip, repeat. Yalla, coffee lovers, let's make the group the best in town ☕",
+     "hours_ago": 0,
+     "likes": 14
+    }
+   ]
+  },
+  {
+   "id": "coffee-hunters-02",
+   "author": "p06",
+   "text": "Cold brew versus iced latte in the summer heat. I know which one wins for flavour, but my wallet votes for cold brew since it lasts longer. What is your pick?",
+   "image": null,
+   "hours_ago": 9,
+   "likes": 188,
+   "comments": [
+    {
+     "author": "p08",
+     "text": "Cold brew, every time. Slow extraction tastes sweeter with less bitterness.",
+     "hours_ago": 8,
+     "likes": 14
+    },
+    {
+     "author": "p03",
+     "text": "Iced latte for the milk and the cake pairing. Cold brew is too strong for me with sweets.",
+     "hours_ago": 7,
+     "likes": 9
+    },
+    {
+     "author": "p04",
+     "text": "Cold brew in a bottle is a lifesaver for the commute. Keep one in the fridge.",
+     "hours_ago": 7,
+     "likes": 8
+    },
+    {
+     "author": "p01",
+     "text": "Iced latte with oat milk is my summer ritual. The milk makes it feel like a treat.",
+     "hours_ago": 6,
+     "likes": 10
+    },
+    {
+     "author": "p09",
+     "text": "I'm team cold brew with a splash of tonic, very Dubai in the summer.",
+     "hours_ago": 6,
+     "likes": 12
+    },
+    {
+     "author": "p02",
+     "text": "Cold brew before a run, not sure about the stomach. Iced latte after the run.",
+     "hours_ago": 5,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "Puppy would pick the milk. He licked the foam off my cup this morning, shameless.",
+     "hours_ago": 5,
+     "likes": 16
+    },
+    {
+     "author": "p10",
+     "text": "Iced espresso tonic is my pick. Fizzy, bold and refreshing after the sea.",
+     "hours_ago": 4,
+     "likes": 7
+    },
+    {
+     "author": "p07",
+     "text": "Cold brew costs less per cup when you batch it at home. My wallet thanks me too.",
+     "hours_ago": 4,
+     "likes": 11
+    },
+    {
+     "author": "p06",
+     "text": "@anjali_rao that's the honest answer. Batch brew is the winner for the budget.",
+     "hours_ago": 4,
+     "likes": 4
+    },
+    {
+     "author": "p08",
+     "text": "Batch brew with good beans is the best money you'll ever spend, I promise.",
+     "hours_ago": 3,
+     "likes": 6
+    },
+    {
+     "author": "p03",
+     "text": "Try a cold brew with vanilla syrup and a drop of cream. It tastes like dessert.",
+     "hours_ago": 3,
+     "likes": 9
+    },
+    {
+     "author": "p04",
+     "text": "Vanilla in cold brew is a cheat code. Layla, you are right.",
+     "hours_ago": 3,
+     "likes": 5
+    },
+    {
+     "author": "p01",
+     "text": "I'd never thought about the tonic, Hannah. Will try it this weekend.",
+     "hours_ago": 2,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "Tonic is an acquired taste, but once you're in, there's no going back.",
+     "hours_ago": 2,
+     "likes": 4
+    },
+    {
+     "author": "p02",
+     "text": "Cold brew stays smooth in the fridge for days. Good for a busy week.",
+     "hours_ago": 2,
+     "likes": 7
+    },
+    {
+     "author": "p10",
+     "text": "Cold brew with ice cubes made of coffee, no dilution. A clever trick from a friend.",
+     "hours_ago": 2,
+     "likes": 8
+    },
+    {
+     "author": "p05",
+     "text": "Coffee ice cubes for the puppy's water bowl? No, I'm kidding. Maybe.",
+     "hours_ago": 1,
+     "likes": 12
+    },
+    {
+     "author": "p08",
+     "text": "@mariam_s please not, the puppy must stay on water, I beg you.",
+     "hours_ago": 1,
+     "likes": 9
+    },
+    {
+     "author": "p07",
+     "text": "Honest poll result so far: cold brew leads, iced latte is close behind.",
+     "hours_ago": 1,
+     "likes": 5
+    },
+    {
+     "author": "p06",
+     "text": "Let's see the final result by the end of the week. Cold brew is my bet.",
+     "hours_ago": 1,
+     "likes": 6
+    },
+    {
+     "author": "p03",
+     "text": "Iced latte forever for me, I need the sweetness to survive the heat.",
+     "hours_ago": 1,
+     "likes": 7
+    },
+    {
+     "author": "p04",
+     "text": "A fair debate. Both are good, the best is the one you enjoy right now.",
+     "hours_ago": 0,
+     "likes": 4
+    },
+    {
+     "author": "p01",
+     "text": "Good answer, Tomasz. Enjoy the coffee and the sun, whichever you pick.",
+     "hours_ago": 0,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "Summer, iced, and friends. My kind of coffee chat. Yalla ☕",
+     "hours_ago": 0,
+     "likes": 8
+    }
+   ]
+  },
+  {
+   "id": "coffee-hunters-03",
+   "author": "p03",
+   "text": "Review: a Downtown cafe with a lemon tart and a flat white that tastes like a sunny afternoon. Service was calm, the seats are comfortable, and the price is fair for the area.",
+   "image": "media/cafe-counter.jpg",
+   "hours_ago": 16,
+   "likes": 276,
+   "comments": [
+    {
+     "author": "p08",
+     "text": "Lemon tart plus flat white is my ideal Downtown order. The tart base is crisp, nice.",
+     "hours_ago": 15,
+     "likes": 11
+    },
+    {
+     "author": "p01",
+     "text": "Which cafe is it? The seats sound perfect for a long Saturday brunch with laptops.",
+     "hours_ago": 14,
+     "likes": 9
+    },
+    {
+     "author": "p04",
+     "text": "Price fair for Downtown is a rare compliment. Good find, Layla.",
+     "hours_ago": 13,
+     "likes": 10
+    },
+    {
+     "author": "p06",
+     "text": "Calm service is underrated. The staff there remember your name after two visits.",
+     "hours_ago": 12,
+     "likes": 8
+    },
+    {
+     "author": "p09",
+     "text": "Comfortable seats and power sockets make it a work spot for me. Going this Monday.",
+     "hours_ago": 11,
+     "likes": 7
+    },
+    {
+     "author": "p02",
+     "text": "A flat white after a run is my favourite. Glad the place has proper cups and not paper.",
+     "hours_ago": 10,
+     "likes": 6
+    },
+    {
+     "author": "p07",
+     "text": "The lemon tart is my weak spot. Sharp, sweet, and the pastry is buttery.",
+     "hours_ago": 10,
+     "likes": 12
+    },
+    {
+     "author": "p10",
+     "text": "Lemon, coffee and sunshine. Sounds like the perfect Dubai afternoon to me.",
+     "hours_ago": 9,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "Puppy-friendly? I'm asking for a friend, who is a very small puppy.",
+     "hours_ago": 8,
+     "likes": 7
+    },
+    {
+     "author": "p03",
+     "text": "@mariam_s the terrace is dog-friendly, but ask first. The staff are kind.",
+     "hours_ago": 8,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "Flat white with a good milk texture is an art. Let me know if they steam it well.",
+     "hours_ago": 7,
+     "likes": 9
+    },
+    {
+     "author": "p01",
+     "text": "@yusuf_d I'll be the judge of milk. Will report the steam quality on Monday.",
+     "hours_ago": 7,
+     "likes": 4
+    },
+    {
+     "author": "p04",
+     "text": "Good thing you're thorough, Sara. The milk deserves a proper review.",
+     "hours_ago": 6,
+     "likes": 3
+    },
+    {
+     "author": "p06",
+     "text": "Afternoon light through the windows is gorgeous. Great for photos and for daydreaming.",
+     "hours_ago": 6,
+     "likes": 8
+    },
+    {
+     "author": "p09",
+     "text": "Downtown is busy, but this place feels like a little secret. Keep it quiet, please.",
+     "hours_ago": 5,
+     "likes": 5
+    },
+    {
+     "author": "p02",
+     "text": "Keeping it quiet is impossible when the tart is this good, sorry Hannah.",
+     "hours_ago": 5,
+     "likes": 7
+    },
+    {
+     "author": "p10",
+     "text": "Honest review, five stars for the vibe and four for the parking. Traffic is brutal.",
+     "hours_ago": 4,
+     "likes": 6
+    },
+    {
+     "author": "p07",
+     "text": "Parking Downtown is a challenge, use the metro and walk through the mall. Easy.",
+     "hours_ago": 4,
+     "likes": 9
+    },
+    {
+     "author": "p05",
+     "text": "I'll bring the puppy to the terrace this weekend, if it is open and happy with dogs.",
+     "hours_ago": 3,
+     "likes": 10
+    },
+    {
+     "author": "p03",
+     "text": "Puppy visit would make my week. Please send a photo with the tart.",
+     "hours_ago": 3,
+     "likes": 8
+    },
+    {
+     "author": "p08",
+     "text": "A good review is one that makes you want to visit. Mission accomplished, Layla.",
+     "hours_ago": 3,
+     "likes": 6
+    },
+    {
+     "author": "p01",
+     "text": "Going this weekend for the tart. Thanks for the detailed review, very helpful.",
+     "hours_ago": 2,
+     "likes": 5
+    },
+    {
+     "author": "p04",
+     "text": "The fair price and calm vibe, the two things I look for. Good call.",
+     "hours_ago": 2,
+     "likes": 4
+    },
+    {
+     "author": "p06",
+     "text": "Tart plus flat white equals a perfect Saturday, I agree with everything here.",
+     "hours_ago": 1,
+     "likes": 7
+    },
+    {
+     "author": "p09",
+     "text": "I'll bring the team next Thursday for a proper lemon tart session.",
+     "hours_ago": 1,
+     "likes": 6
+    }
+   ]
+  },
+  {
+   "id": "coffee-hunters-04",
+   "author": "p04",
+   "text": "Hot take: the best coffee in Dubai is served in a small corner shop, not a big chain. The owner remembers your order and the espresso never tastes burnt. Fight me.",
+   "image": "media/cafe-bulbs.jpg",
+   "hours_ago": 28,
+   "likes": 351,
+   "comments": [
+    {
+     "author": "p08",
+     "text": "Small shops win every time. Less pressure on the beans, more care in the cup.",
+     "hours_ago": 26,
+     "likes": 18
+    },
+    {
+     "author": "p03",
+     "text": "I agree, the corner bakery shop feels like home, and the coffee is consistent.",
+     "hours_ago": 25,
+     "likes": 12
+    },
+    {
+     "author": "p01",
+     "text": "Chains have their place for speed, but the small shops are where the magic is.",
+     "hours_ago": 24,
+     "likes": 10
+    },
+    {
+     "author": "p06",
+     "text": "No fight from me. Corner shop coffee is the one I miss when I travel.",
+     "hours_ago": 23,
+     "likes": 9
+    },
+    {
+     "author": "p09",
+     "text": "Small shops are where founders go to think. Fewer people, better ideas, better coffee.",
+     "hours_ago": 22,
+     "likes": 11
+    },
+    {
+     "author": "p02",
+     "text": "Corner shop coffee after an early run is a special thing. The staff knows the runner.",
+     "hours_ago": 21,
+     "likes": 8
+    },
+    {
+     "author": "p05",
+     "text": "Puppy loves the corner shop owner, he gives him a biscuit every time. Small shops are the best.",
+     "hours_ago": 20,
+     "likes": 16
+    },
+    {
+     "author": "p10",
+     "text": "Big chains are consistent, but small shops are personal. Both have a place in the city.",
+     "hours_ago": 19,
+     "likes": 6
+    },
+    {
+     "author": "p07",
+     "text": "Shops that roast in house tend to have better coffee. Ask where the beans come from.",
+     "hours_ago": 18,
+     "likes": 12
+    },
+    {
+     "author": "p04",
+     "text": "@yusuf_d and I think your place counts as a corner shop, so I'm biased.",
+     "hours_ago": 17,
+     "likes": 7
+    },
+    {
+     "author": "p08",
+     "text": "Thank you, Tomasz. The corner shop is a family business and we love every customer.",
+     "hours_ago": 17,
+     "likes": 14
+    },
+    {
+     "author": "p03",
+     "text": "A family-run cafe is the heart of any neighbourhood. Keep supporting them, friends.",
+     "hours_ago": 16,
+     "likes": 10
+    },
+    {
+     "author": "p01",
+     "text": "Make a list of your favourite small shops and share it, let's build a map together.",
+     "hours_ago": 15,
+     "likes": 9
+    },
+    {
+     "author": "p06",
+     "text": "Yes, a shared list would be amazing. Please include the good seats and the good wifi.",
+     "hours_ago": 14,
+     "likes": 8
+    },
+    {
+     "author": "p09",
+     "text": "Wifi is important for the founders. Add the password status to the list, not the password.",
+     "hours_ago": 13,
+     "likes": 5
+    },
+    {
+     "author": "p02",
+     "text": "Coffee after the group run should be on the map. Include the ones with cold water.",
+     "hours_ago": 12,
+     "likes": 6
+    },
+    {
+     "author": "p10",
+     "text": "Cold water at the counter is the first thing a good coffee shop offers. Keep that in mind.",
+     "hours_ago": 11,
+     "likes": 7
+    },
+    {
+     "author": "p05",
+     "text": "Dog water bowls too, please. The corner shop test: do they have a water bowl for pups?",
+     "hours_ago": 10,
+     "likes": 9
+    },
+    {
+     "author": "p07",
+     "text": "Yes, that's a great test. A shop with a dog bowl is a shop that cares.",
+     "hours_ago": 9,
+     "likes": 11
+    },
+    {
+     "author": "p04",
+     "text": "I'll start a list today and share it in the group. Let's see how many corners we can find.",
+     "hours_ago": 8,
+     "likes": 5
+    },
+    {
+     "author": "p08",
+     "text": "Great idea. A map of corner shops will help the small roasters too.",
+     "hours_ago": 7,
+     "likes": 8
+    },
+    {
+     "author": "p03",
+     "text": "Pastry plus coffee plus corner shop equals my favourite afternoon. Count me in.",
+     "hours_ago": 6,
+     "likes": 6
+    },
+    {
+     "author": "p01",
+     "text": "Sending my list soon. Thanks for starting this, Tomasz.",
+     "hours_ago": 5,
+     "likes": 4
+    },
+    {
+     "author": "p06",
+     "text": "Corner shop lovers unite. Yalla, let's support them all 🎧",
+     "hours_ago": 4,
+     "likes": 9
+    },
+    {
+     "author": "p09",
+     "text": "Hear, hear! Small shops for the win, and the best coffee for everyone.",
+     "hours_ago": 3,
+     "likes": 7
+    }
+   ]
+  },
+  {
+   "id": "coffee-hunters-05",
+   "author": "p09",
+   "text": "Cold brew tasting at home: four beans, three brew times, one winner. Notes: the Kenyan coffee was bright, the Colombian was chocolate and calm. Full results coming soon.",
+   "image": "media/coffee.jpg",
+   "hours_ago": 40,
+   "likes": 226,
+   "comments": [
+    {
+     "author": "p08",
+     "text": "Kenyan bright and Colombian chocolate is a classic pairing. Nice tasting, Hannah.",
+     "hours_ago": 38,
+     "likes": 12
+    },
+    {
+     "author": "p03",
+     "text": "Chocolate notes plus a slice of cake, the Colombian is my winner too.",
+     "hours_ago": 37,
+     "likes": 10
+    },
+    {
+     "author": "p01",
+     "text": "Brew time for the cold brew, how long did you steep? Twelve hours?",
+     "hours_ago": 36,
+     "likes": 7
+    },
+    {
+     "author": "p04",
+     "text": "Four beans and three brew times, the science is strong. Results with a scoring sheet?",
+     "hours_ago": 35,
+     "likes": 8
+    },
+    {
+     "author": "p06",
+     "text": "A scoring sheet would be great. Acidity, sweetness, body, aftertaste, the classic five.",
+     "hours_ago": 34,
+     "likes": 9
+    },
+    {
+     "author": "p02",
+     "text": "Cold brew is my runner's fuel. Chocolate and calm is exactly what I need after a hard session.",
+     "hours_ago": 33,
+     "likes": 6
+    },
+    {
+     "author": "p05",
+     "text": "Puppy gets a cold water bowl during every tasting. He is very professional about it.",
+     "hours_ago": 32,
+     "likes": 14
+    },
+    {
+     "author": "p10",
+     "text": "Bright and fruity for summer, chocolate for winter. A year-round coffee plan.",
+     "hours_ago": 31,
+     "likes": 7
+    },
+    {
+     "author": "p07",
+     "text": "@hannah_b did you use filtered water? Water makes a huge difference in cold brew.",
+     "hours_ago": 30,
+     "likes": 8
+    },
+    {
+     "author": "p09",
+     "text": "Filtered water, yes, and the same batch of beans. Controlled test, I promise.",
+     "hours_ago": 29,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "Hannah the founder with a lab notebook. Next thing, a coffee startup pitch deck.",
+     "hours_ago": 28,
+     "likes": 11
+    },
+    {
+     "author": "p03",
+     "text": "Ha, a coffee startup pitch deck would be lovely, with pastries in the appendix.",
+     "hours_ago": 27,
+     "likes": 9
+    },
+    {
+     "author": "p04",
+     "text": "Hannah, please share the notebook pages. I'm curious about the extraction ratio.",
+     "hours_ago": 26,
+     "likes": 5
+    },
+    {
+     "author": "p01",
+     "text": "Extraction ratio is the number I always forget. Write it on the bag, people.",
+     "hours_ago": 25,
+     "likes": 6
+    },
+    {
+     "author": "p06",
+     "text": "I'll try the Colombian at home this weekend, cold brew for the family.",
+     "hours_ago": 24,
+     "likes": 4
+    },
+    {
+     "author": "p02",
+     "text": "Cold brew for the post-run cool-down, the plan is set. Thanks for the tasting notes.",
+     "hours_ago": 23,
+     "likes": 5
+    },
+    {
+     "author": "p10",
+     "text": "Good tasting notes, Hannah. The scoring sheet will be the most useful thing you post.",
+     "hours_ago": 22,
+     "likes": 7
+    },
+    {
+     "author": "p07",
+     "text": "Please post the grind size too. It's the variable that people always forget.",
+     "hours_ago": 21,
+     "likes": 8
+    },
+    {
+     "author": "p05",
+     "text": "Puppy is now asking for cold brew. The answer is still no, sweetheart.",
+     "hours_ago": 20,
+     "likes": 13
+    },
+    {
+     "author": "p08",
+     "text": "@mariam_s water only, he'll survive without the coffee, I promise you.",
+     "hours_ago": 19,
+     "likes": 6
+    },
+    {
+     "author": "p03",
+     "text": "I'll bake a coffee cake to go with the next tasting. Deal?",
+     "hours_ago": 18,
+     "likes": 9
+    },
+    {
+     "author": "p09",
+     "text": "Deal, Layla. The cake is the official sponsor of the tasting.",
+     "hours_ago": 17,
+     "likes": 7
+    },
+    {
+     "author": "p04",
+     "text": "Looking forward to the full results. Keep the scoring honest, please.",
+     "hours_ago": 16,
+     "likes": 4
+    },
+    {
+     "author": "p01",
+     "text": "Yalla, let's make the tasting a monthly thing in the group. Good energy here.",
+     "hours_ago": 15,
+     "likes": 8
+    },
+    {
+     "author": "p06",
+     "text": "Monthly tasting night sounds perfect. Count me in, I'll bring the playlist.",
+     "hours_ago": 14,
+     "likes": 6
+    }
+   ]
+  },
+  {
+   "id": "coffee-hunters-06",
+   "author": "p01",
+   "text": "Brewing equipment question: is a moka pot worth it for everyday coffee in Dubai, or should I invest in a proper espresso machine for the flat? Budget is modest.",
+   "image": null,
+   "hours_ago": 60,
+   "likes": 142,
+   "comments": [
+    {
+     "author": "p08",
+     "text": "A moka pot is excellent for the budget. Strong, simple and reliable, I roast with one at home.",
+     "hours_ago": 58,
+     "likes": 13
+    },
+    {
+     "author": "p04",
+     "text": "Moka pot for daily, pour-over for weekends. That's my setup and it works well.",
+     "hours_ago": 57,
+     "likes": 9
+    },
+    {
+     "author": "p03",
+     "text": "Get a moka pot first, learn the basics, then decide if you need the espresso machine.",
+     "hours_ago": 56,
+     "likes": 10
+    },
+    {
+     "author": "p06",
+     "text": "Espresso machines are fun but expensive to maintain. Moka pots are very forgiving.",
+     "hours_ago": 55,
+     "likes": 8
+    },
+    {
+     "author": "p09",
+     "text": "I went with a moka and a cheap grinder. Best purchase of the year for my team mornings.",
+     "hours_ago": 54,
+     "likes": 11
+    },
+    {
+     "author": "p02",
+     "text": "A moka pot on the stove is perfect for a runner's breakfast, quick and strong.",
+     "hours_ago": 53,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "Puppy approves of the moka pot. He likes the sound of the bubbling, honestly.",
+     "hours_ago": 52,
+     "likes": 14
+    },
+    {
+     "author": "p10",
+     "text": "Moka is great, but make sure the water doesn't boil too hard. Keeps the taste clean.",
+     "hours_ago": 51,
+     "likes": 7
+    },
+    {
+     "author": "p07",
+     "text": "Grinder matters more than the machine. A good grinder with a cheap brewer beats the reverse.",
+     "hours_ago": 50,
+     "likes": 12
+    },
+    {
+     "author": "p01",
+     "text": "@anjali_rao that's the advice I needed. Grinder first, then the brewer.",
+     "hours_ago": 49,
+     "likes": 5
+    },
+    {
+     "author": "p08",
+     "text": "Exactly. Burr grinder, even if it's a basic model, changes the whole cup.",
+     "hours_ago": 48,
+     "likes": 8
+    },
+    {
+     "author": "p03",
+     "text": "I still use a hand grinder in the flat. It's slow but therapeutic, like kneading dough.",
+     "hours_ago": 47,
+     "likes": 9
+    },
+    {
+     "author": "p04",
+     "text": "Hand grinders are a workout, but the coffee is worth the arm pain. Respect, Layla.",
+     "hours_ago": 46,
+     "likes": 6
+    },
+    {
+     "author": "p06",
+     "text": "Moka pot with fresh beans, from a roaster nearby, is the simplest pleasure in life.",
+     "hours_ago": 45,
+     "likes": 7
+    },
+    {
+     "author": "p02",
+     "text": "Cleaning the moka pot matters too. Rinse, dry, and no soap, the old rule.",
+     "hours_ago": 44,
+     "likes": 6
+    },
+    {
+     "author": "p10",
+     "text": "No soap in the moka, yes, the coffee oils are part of the flavour. Good reminder.",
+     "hours_ago": 43,
+     "likes": 5
+    },
+    {
+     "author": "p09",
+     "text": "Let's do a moka pot comparison at the next tasting night, I'll bring three brands.",
+     "hours_ago": 42,
+     "likes": 8
+    },
+    {
+     "author": "p05",
+     "text": "Puppy will supervise the comparison from the rug, as usual.",
+     "hours_ago": 41,
+     "likes": 10
+    },
+    {
+     "author": "p08",
+     "text": "Bring the beans and I'll bring the roast notes. Let's make it a proper night.",
+     "hours_ago": 40,
+     "likes": 7
+    },
+    {
+     "author": "p07",
+     "text": "Good plan, and the moka comparison will help the newcomers a lot.",
+     "hours_ago": 39,
+     "likes": 4
+    },
+    {
+     "author": "p03",
+     "text": "Yes, and cake. Always cake. Everything is better with cake.",
+     "hours_ago": 38,
+     "likes": 9
+    },
+    {
+     "author": "p01",
+     "text": "Thanks everyone. I'll buy a moka pot this weekend and start from there.",
+     "hours_ago": 37,
+     "likes": 6
+    },
+    {
+     "author": "p04",
+     "text": "Good luck Sara. Your first cup will be a little rough, that's part of the fun.",
+     "hours_ago": 36,
+     "likes": 5
+    },
+    {
+     "author": "p06",
+     "text": "Enjoy the journey, and remember to smile at your first cup, it's a milestone ☕",
+     "hours_ago": 35,
+     "likes": 8
+    },
+    {
+     "author": "p10",
+     "text": "Descale the moka pot every few months if your water is hard. Dubai water needs care.",
+     "hours_ago": 49,
+     "likes": 8
+    }
+   ]
+  },
+  {
+   "id": "coffee-hunters-07",
+   "author": "p07",
+   "text": "Coffee in the afternoon, do you have a cut-off time? Mine is 3pm, after that I am staring at the ceiling at midnight. Anyone else hit the same wall?",
+   "image": null,
+   "hours_ago": 76,
+   "likes": 118,
+   "comments": [
+    {
+     "author": "p02",
+     "text": "My cut-off is noon for runs. Even an afternoon espresso keeps me up, so I switched to decaf.",
+     "hours_ago": 74,
+     "likes": 8
+    },
+    {
+     "author": "p05",
+     "text": "My cut-off is 2pm. Puppy needs a long afternoon nap and so do I, honestly.",
+     "hours_ago": 73,
+     "likes": 9
+    },
+    {
+     "author": "p08",
+     "text": "I'm a coffee man, so my cut-off is a myth. I drink decaf after 4 and sleep fine.",
+     "hours_ago": 72,
+     "likes": 10
+    },
+    {
+     "author": "p03",
+     "text": "Pastry chef at 5am means my cut-off is 6pm. Bread needs me to be sharp at dawn.",
+     "hours_ago": 71,
+     "likes": 11
+    },
+    {
+     "author": "p01",
+     "text": "Caffeine half-life is around five hours, so an afternoon coffee does reach bed time.",
+     "hours_ago": 70,
+     "likes": 12
+    },
+    {
+     "author": "p06",
+     "text": "I drink cold brew late and still sleep. It's all about your body, I think.",
+     "hours_ago": 69,
+     "likes": 6
+    },
+    {
+     "author": "p04",
+     "text": "Decaf is a surprisingly good cup now. The better roasts make a big difference.",
+     "hours_ago": 68,
+     "likes": 7
+    },
+    {
+     "author": "p09",
+     "text": "Startup life means coffee at 9pm. My cut-off is basically a dream, sadly.",
+     "hours_ago": 67,
+     "likes": 8
+    },
+    {
+     "author": "p10",
+     "text": "Swim training makes me sleepy after eight, so I stop caffeine by two. Recovery matters.",
+     "hours_ago": 66,
+     "likes": 5
+    },
+    {
+     "author": "p07",
+     "text": "@omar_q that's a smart rule. Maybe I'll copy your two o'clock stop.",
+     "hours_ago": 65,
+     "likes": 4
+    },
+    {
+     "author": "p02",
+     "text": "Try a light roast after noon, it's lower in caffeine per cup. A small trick.",
+     "hours_ago": 64,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "Light roasts actually have a bit more caffeine by weight, a common myth. Just so you know.",
+     "hours_ago": 63,
+     "likes": 9
+    },
+    {
+     "author": "p05",
+     "text": "Puppy does not drink coffee, but he sleeps like a champion. Life lessons from dogs.",
+     "hours_ago": 62,
+     "likes": 13
+    },
+    {
+     "author": "p03",
+     "text": "Herbal tea after three, my secret. Mint and lemon, the sleep is much better.",
+     "hours_ago": 61,
+     "likes": 7
+    },
+    {
+     "author": "p01",
+     "text": "Herbal tea is underrated in this heat. Cold mint tea with lemon is my afternoon ritual.",
+     "hours_ago": 60,
+     "likes": 6
+    },
+    {
+     "author": "p06",
+     "text": "Cold mint tea is a great alternative. I'll try it on the balcony this summer.",
+     "hours_ago": 59,
+     "likes": 4
+    },
+    {
+     "author": "p04",
+     "text": "Coffee at three is a choice, not a rule. Enjoy it and sleep well.",
+     "hours_ago": 58,
+     "likes": 5
+    },
+    {
+     "author": "p09",
+     "text": "Thanks everyone, this thread is the best sleep advice I've had all year.",
+     "hours_ago": 57,
+     "likes": 8
+    },
+    {
+     "author": "p10",
+     "text": "Sleep is the real recovery. Coffee is a bonus, so keep the cut-off honest.",
+     "hours_ago": 56,
+     "likes": 7
+    },
+    {
+     "author": "p02",
+     "text": "Agreed, sleep is the thing I protect the most. Good luck with the cut-off, Anjali.",
+     "hours_ago": 55,
+     "likes": 4
+    },
+    {
+     "author": "p08",
+     "text": "I'll stop arguing about caffeine and keep roasting. My sleep is fine, honest.",
+     "hours_ago": 54,
+     "likes": 10
+    },
+    {
+     "author": "p05",
+     "text": "Well said. Sleep is important for humans and dogs alike, wise words from the puppy.",
+     "hours_ago": 53,
+     "likes": 9
+    },
+    {
+     "author": "p03",
+     "text": "Let's keep the afternoon coffee for the friends who need it, and the tea for the rest.",
+     "hours_ago": 52,
+     "likes": 6
+    },
+    {
+     "author": "p07",
+     "text": "Good plan, Layla. I'll do the mint tea after three from today. Thanks all 🌿",
+     "hours_ago": 51,
+     "likes": 9
+    },
+    {
+     "author": "p09",
+     "text": "Tea at the office is my compromise, a hot mint brew even in the summer heat.",
+     "hours_ago": 70,
+     "likes": 5
+    }
+   ]
+  },
+  {
+   "id": "coffee-hunters-08",
+   "author": "p10",
+   "text": "Cafe etiquette rant: please don't camp at a two-seater for four hours with one latte. Share the space, order something else, and say thank you to the staff. Simple.",
+   "image": "media/cafe-counter.jpg",
+   "hours_ago": 104,
+   "likes": 287,
+   "comments": [
+    {
+     "author": "p03",
+     "text": "Yes! The staff are juggling a full bar and a full queue. Respect the small spaces.",
+     "hours_ago": 102,
+     "likes": 18
+    },
+    {
+     "author": "p08",
+     "text": "As a cafe owner, the four hour latte is a real challenge. Please buy a second item, thank you.",
+     "hours_ago": 101,
+     "likes": 16
+    },
+    {
+     "author": "p01",
+     "text": "I work from cafes often. I order a snack every two hours. Fair deal for everyone.",
+     "hours_ago": 100,
+     "likes": 12
+    },
+    {
+     "author": "p04",
+     "text": "Long sessions are fine when the cafe is quiet. Busy hours need turnover, simple.",
+     "hours_ago": 99,
+     "likes": 9
+    },
+    {
+     "author": "p06",
+     "text": "Say thank you to the barista, every time. It takes two seconds and changes the whole vibe.",
+     "hours_ago": 98,
+     "likes": 14
+    },
+    {
+     "author": "p09",
+     "text": "Laptop with headphones at a two-seater is the worst. Please move to the big table.",
+     "hours_ago": 97,
+     "likes": 10
+    },
+    {
+     "author": "p02",
+     "text": "I don't camp anywhere. Quick coffee, quick run, quick goodbye. Fair game.",
+     "hours_ago": 96,
+     "likes": 6
+    },
+    {
+     "author": "p05",
+     "text": "Puppy would be asked to leave any cafe that has a laptop and a latte fight. Tragic.",
+     "hours_ago": 95,
+     "likes": 11
+    },
+    {
+     "author": "p07",
+     "text": "Cafes that charge for the wifi after an hour are a whole other conversation. Hmm.",
+     "hours_ago": 94,
+     "likes": 8
+    },
+    {
+     "author": "p10",
+     "text": "@sarak fair, but a clear time limit on the sign helps everyone. Polite and clear.",
+     "hours_ago": 93,
+     "likes": 7
+    },
+    {
+     "author": "p03",
+     "text": "Staff should be able to say we have a queue, nicely. It's their business too.",
+     "hours_ago": 92,
+     "likes": 9
+    },
+    {
+     "author": "p08",
+     "text": "Exactly. A friendly reminder goes a long way. Most people just forget.",
+     "hours_ago": 91,
+     "likes": 10
+    },
+    {
+     "author": "p04",
+     "text": "Good rule: buy a second item every hour and nobody complains. Simple.",
+     "hours_ago": 90,
+     "likes": 8
+    },
+    {
+     "author": "p01",
+     "text": "Oat latte and a cookie for a three-hour meeting. That's my rule, and it works.",
+     "hours_ago": 89,
+     "likes": 12
+    },
+    {
+     "author": "p06",
+     "text": "Quiet music, good seats, and a friendly team, that's the perfect cafe for me.",
+     "hours_ago": 88,
+     "likes": 6
+    },
+    {
+     "author": "p02",
+     "text": "Mornings are the worst for camping, the commuters need the table. Be mindful.",
+     "hours_ago": 87,
+     "likes": 7
+    },
+    {
+     "author": "p05",
+     "text": "Dogs at a cafe must also be well behaved, same principle. Thank you Omar for the reminder.",
+     "hours_ago": 86,
+     "likes": 9
+    },
+    {
+     "author": "p09",
+     "text": "Let's make a cafe etiquette card for the group. Five simple rules to share.",
+     "hours_ago": 85,
+     "likes": 11
+    },
+    {
+     "author": "p10",
+     "text": "Yes please, and keep it short. Nobody reads a long rule list in a cafe.",
+     "hours_ago": 84,
+     "likes": 8
+    },
+    {
+     "author": "p03",
+     "text": "Rule one: say thank you. Rule two: the big table is for groups. Rule three, cake.",
+     "hours_ago": 83,
+     "likes": 13
+    },
+    {
+     "author": "p08",
+     "text": "Rule four: the barista is not a waiter, a tip jar is enough. Hmm, I'll hush now.",
+     "hours_ago": 82,
+     "likes": 10
+    },
+    {
+     "author": "p04",
+     "text": "Rule five: bring a good mood. The cafe smells better with a smile in it.",
+     "hours_ago": 81,
+     "likes": 7
+    },
+    {
+     "author": "p01",
+     "text": "Good list. I'll put it on the cafe window in my head, very wise.",
+     "hours_ago": 80,
+     "likes": 5
+    },
+    {
+     "author": "p06",
+     "text": "We're a group of coffee lovers with good manners, what a lovely community.",
+     "hours_ago": 79,
+     "likes": 9
+    },
+    {
+     "author": "p02",
+     "text": "Keep the cafes happy, and the coffee will keep us happy. Balance.",
+     "hours_ago": 78,
+     "likes": 6
+    }
+   ]
+  },
+  {
+   "id": "coffee-hunters-09",
+   "author": "p05",
+   "text": "Dog friendly cafe check: I visited a new cafe in Mirdif with a shaded terrace, a water bowl for pups, and a barista who asked my puppy's name. Five stars from both of us.",
+   "image": "media/cafe-bulbs.jpg",
+   "hours_ago": 120,
+   "likes": 365,
+   "comments": [
+    {
+     "author": "p08",
+     "text": "A barista who asks the puppy's name is a barista who deserves a tip. Excellent service.",
+     "hours_ago": 118,
+     "likes": 14
+    },
+    {
+     "author": "p07",
+     "text": "Name of the cafe please, I'm in Mirdif too. Need a cafe with a dog bowl near home.",
+     "hours_ago": 117,
+     "likes": 11
+    },
+    {
+     "author": "p03",
+     "text": "Shaded terrace plus a dog bowl is a great combo. The puppy is lucky to have you.",
+     "hours_ago": 116,
+     "likes": 9
+    },
+    {
+     "author": "p01",
+     "text": "Name the puppy in the post, please. I want to know the official name for the group.",
+     "hours_ago": 115,
+     "likes": 12
+    },
+    {
+     "author": "p04",
+     "text": "Good to see dog-friendly coffee places growing. Keep these reviews coming, Mariam.",
+     "hours_ago": 114,
+     "likes": 8
+    },
+    {
+     "author": "p06",
+     "text": "Mirdif is getting cafes that care about pets. Let's celebrate the neighbourhood.",
+     "hours_ago": 112,
+     "likes": 7
+    },
+    {
+     "author": "p10",
+     "text": "A water bowl at a cafe is the best sign of a good owner. Respect to that team.",
+     "hours_ago": 110,
+     "likes": 10
+    },
+    {
+     "author": "p09",
+     "text": "Puppy with a coffee shop name tag, cutest content of the week. Thank you Mariam.",
+     "hours_ago": 108,
+     "likes": 13
+    },
+    {
+     "author": "p02",
+     "text": "I'll run to this cafe with my dog next Sunday, if the terrace is open early.",
+     "hours_ago": 106,
+     "likes": 6
+    },
+    {
+     "author": "p05",
+     "text": "@ravi_menon open at 8am on weekends, the terrace is the best spot in the morning.",
+     "hours_ago": 104,
+     "likes": 5
+    },
+    {
+     "author": "p08",
+     "text": "Coffee shops that welcome dogs are good for business too. More people sit longer.",
+     "hours_ago": 102,
+     "likes": 8
+    },
+    {
+     "author": "p03",
+     "text": "Dog water bowl and a cake display, the perfect balance of kind and tempting.",
+     "hours_ago": 100,
+     "likes": 9
+    },
+    {
+     "author": "p07",
+     "text": "Thanks for the review, Mariam. I'll bring my cat to the window seat, she loves the view.",
+     "hours_ago": 98,
+     "likes": 7
+    },
+    {
+     "author": "p04",
+     "text": "Cat in the window seat is a whole vibe. A cat cafe would be a hit in Mirdif.",
+     "hours_ago": 96,
+     "likes": 6
+    },
+    {
+     "author": "p06",
+     "text": "Good review, the puppy looks happy in the photo. Yalla, more of these stories.",
+     "hours_ago": 94,
+     "likes": 9
+    },
+    {
+     "author": "p01",
+     "text": "Puppy name please. Hashtag puppy goals, I can't stop looking at that tail.",
+     "hours_ago": 92,
+     "likes": 11
+    },
+    {
+     "author": "p10",
+     "text": "A friendly barista and a dog bowl. Sounds like a community to me.",
+     "hours_ago": 90,
+     "likes": 7
+    },
+    {
+     "author": "p02",
+     "text": "I'll share the review in the running group too, the dogs and the runners need more coffee spots.",
+     "hours_ago": 88,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "Thank you, everyone. The puppy's name is Biscuit, and he is now a cafe regular.",
+     "hours_ago": 86,
+     "likes": 21
+    },
+    {
+     "author": "p08",
+     "text": "Biscuit the cafe regular, a great name for a great dog. Welcome to the team.",
+     "hours_ago": 84,
+     "likes": 12
+    },
+    {
+     "author": "p03",
+     "text": "Biscuit is perfect for a pastry-loving puppy. Let's make a Biscuit menu item.",
+     "hours_ago": 82,
+     "likes": 10
+    },
+    {
+     "author": "p09",
+     "text": "Biscuit is the best name I've heard all week. Sending the group a high five.",
+     "hours_ago": 80,
+     "likes": 8
+    },
+    {
+     "author": "p07",
+     "text": "Biscuit and Mango would be great friends, maybe a dog and cat meetup at the window.",
+     "hours_ago": 78,
+     "likes": 9
+    },
+    {
+     "author": "p04",
+     "text": "A cafe meetup with Biscuit, a coffee, and a cat, a perfect Thursday.",
+     "hours_ago": 76,
+     "likes": 6
+    },
+    {
+     "author": "p06",
+     "text": "Biscuit approved by the Coffee Hunters. Keep the stories coming, Mariam ☕🐶",
+     "hours_ago": 74,
+     "likes": 10
+    }
+   ]
+  },
+  {
+   "id": "coffee-hunters-10",
+   "author": "p08",
+   "text": "Roaster shout-out: our new Ethiopian light roast is out this week, 250g bags sold at the counter. Come try a cup, tell us what you taste, and bring your own jar for a discount.",
+   "image": "media/coffee.jpg",
+   "hours_ago": 150,
+   "likes": 309,
+   "comments": [
+    {
+     "author": "p03",
+     "text": "Ethiopian light roast with a lemon tart is the best combo in the city. Coming Saturday.",
+     "hours_ago": 146,
+     "likes": 15
+    },
+    {
+     "author": "p01",
+     "text": "Bring your own jar discount is a brilliant idea. Less waste and a better price.",
+     "hours_ago": 144,
+     "likes": 12
+    },
+    {
+     "author": "p04",
+     "text": "Floral notes and bright acidity, my favourite summer roast. Buying two bags.",
+     "hours_ago": 142,
+     "likes": 9
+    },
+    {
+     "author": "p06",
+     "text": "Tasting notes please, Yusuf. Jasmine, bergamot, anything else?",
+     "hours_ago": 140,
+     "likes": 8
+    },
+    {
+     "author": "p02",
+     "text": "Light roast after a run is a dream, the taste is so clean. Bringing my jar.",
+     "hours_ago": 138,
+     "likes": 7
+    },
+    {
+     "author": "p05",
+     "text": "Puppy wants a bag for his bed. Sorry, the coffee bags are not dog toys, sweetheart.",
+     "hours_ago": 136,
+     "likes": 14
+    },
+    {
+     "author": "p09",
+     "text": "Ordering a bag for the office. The team will be very happy with the Ethiopian roast.",
+     "hours_ago": 134,
+     "likes": 10
+    },
+    {
+     "author": "p10",
+     "text": "I'll come with the swimming crowd on Sunday morning, after the sea. Perfect timing.",
+     "hours_ago": 132,
+     "likes": 8
+    },
+    {
+     "author": "p07",
+     "text": "Jar discount and a tasting, the best Saturday plan I've seen in a while.",
+     "hours_ago": 130,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "@sarak the notes are jasmine, peach and a soft honey finish. Come taste and judge.",
+     "hours_ago": 128,
+     "likes": 11
+    },
+    {
+     "author": "p03",
+     "text": "Peach and honey with a lemon tart, that's dessert and coffee in one cup.",
+     "hours_ago": 126,
+     "likes": 9
+    },
+    {
+     "author": "p01",
+     "text": "I'll bring my own jar and a friend who doesn't like coffee, a true challenge.",
+     "hours_ago": 124,
+     "likes": 7
+    },
+    {
+     "author": "p04",
+     "text": "Do you sell the beans in whole or ground? Whole is better for the freshness.",
+     "hours_ago": 122,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "@tomasz_n whole beans are the best, we also grind at the counter if you ask.",
+     "hours_ago": 120,
+     "likes": 8
+    },
+    {
+     "author": "p06",
+     "text": "Free grinding at the counter is a generous touch. Good service, Yusuf.",
+     "hours_ago": 118,
+     "likes": 7
+    },
+    {
+     "author": "p02",
+     "text": "A good roaster is a good neighbour. Thanks for supporting the community, friend.",
+     "hours_ago": 116,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "The puppy and I will not be there, sadly, but I'll send the team to taste for us.",
+     "hours_ago": 114,
+     "likes": 9
+    },
+    {
+     "author": "p09",
+     "text": "I'll bring the coffee nerds from the Hunters group for a tasting session. Expect us.",
+     "hours_ago": 112,
+     "likes": 10
+    },
+    {
+     "author": "p10",
+     "text": "Good to see local roasters doing well. The city has so much talent.",
+     "hours_ago": 110,
+     "likes": 6
+    },
+    {
+     "author": "p03",
+     "text": "I'll bake a lemon loaf to pair with the light roast. Bring your appetite.",
+     "hours_ago": 108,
+     "likes": 12
+    },
+    {
+     "author": "p07",
+     "text": "Lemon loaf and light roast, the perfect pairing. Sold, I'm coming.",
+     "hours_ago": 106,
+     "likes": 8
+    },
+    {
+     "author": "p08",
+     "text": "Thank you all, this community makes me very happy. See you at the counter ☕",
+     "hours_ago": 104,
+     "likes": 14
+    },
+    {
+     "author": "p01",
+     "text": "Ethiopian roast tasting, lemon loaf, good friends. A lovely weekend ahead.",
+     "hours_ago": 102,
+     "likes": 9
+    },
+    {
+     "author": "p04",
+     "text": "Good luck with the launch, Yusuf. The roast deserves a crowd.",
+     "hours_ago": 100,
+     "likes": 5
+    },
+    {
+     "author": "p06",
+     "text": "Yalla, coffee lovers, see you at the roaster on Saturday 🎶",
+     "hours_ago": 98,
+     "likes": 8
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,1631 @@
+{
+ "id": "new-in-dubai",
+ "name": "New in Dubai",
+ "handle": "newindubai",
+ "topic": "Living",
+ "about": "Just landed? Ask anything about visas, apartments, metro cards, schools and making friends in the city. We were all new once.",
+ "image": "media/home.jpg",
+ "members": 23500,
+ "stories": [
+  {
+   "author": "p07",
+   "text": "Welcome, newcomers! Metro tip: get your Nol card at the station, not online.",
+   "image": "media/home-green.jpg",
+   "hours_ago": 5
+  },
+  {
+   "author": "p09",
+   "text": "Apartment hunting tip: check the AC units before you sign. Ask me how I know.",
+   "image": "media/ac.jpg",
+   "hours_ago": 14
+  },
+  {
+   "author": "p01",
+   "text": "First weekend in Dubai done. Brunch, a walk, lots of sunscreen. Feeling home.",
+   "image": "media/marina.jpg",
+   "hours_ago": 26
+  }
+ ],
+ "posts": [
+  {
+   "id": "new-in-dubai-01",
+   "author": "p09",
+   "text": "Just landed from Toronto with two suitcases and one very confused cat. What are the first three things you wish someone told you about moving here? I'll make a list.",
+   "image": "media/home.jpg",
+   "hours_ago": 4,
+   "likes": 512,
+   "comments": [
+    {
+     "author": "p07",
+     "text": "Get a Nol card on day one, and keep the balance topped up. Welcome Hannah!",
+     "hours_ago": 3,
+     "likes": 22
+    },
+    {
+     "author": "p05",
+     "text": "Register your pet with the municipality early, it saves a lot of paperwork later.",
+     "hours_ago": 3,
+     "likes": 14
+    },
+    {
+     "author": "p01",
+     "text": "Buy a fan for the balcony before summer. Trust me, the first heat wave is a shock.",
+     "hours_ago": 2,
+     "likes": 18
+    },
+    {
+     "author": "p04",
+     "text": "The cat will adjust faster than you, cats are very good at Dubai. Give her time.",
+     "hours_ago": 2,
+     "likes": 12
+    },
+    {
+     "author": "p02",
+     "text": "Learn the metro routes early, the Red Line is your friend. Welcome to the city!",
+     "hours_ago": 3,
+     "likes": 9
+    },
+    {
+     "author": "p06",
+     "text": "Make a bank account early, and keep a copy of your visa paperwork in your phone.",
+     "hours_ago": 2,
+     "likes": 11
+    },
+    {
+     "author": "p03",
+     "text": "Find a good bakery in the first week. It's the fastest way to feel at home.",
+     "hours_ago": 1,
+     "likes": 16
+    },
+    {
+     "author": "p08",
+     "text": "Coffee shops are the best community centres. Find one near your flat and be a regular.",
+     "hours_ago": 2,
+     "likes": 13
+    },
+    {
+     "author": "p10",
+     "text": "Sunscreen before you leave the house, always. The sun here is not a joke in summer.",
+     "hours_ago": 1,
+     "likes": 15
+    },
+    {
+     "author": "p09",
+     "text": "@sarak thanks for the note on the bank account. I'm already on the list.",
+     "hours_ago": 1,
+     "likes": 5
+    },
+    {
+     "author": "p07",
+     "text": "Hannah, also check the water filter at the flat. Tap water is safe but many people filter it.",
+     "hours_ago": 1,
+     "likes": 8
+    },
+    {
+     "author": "p05",
+     "text": "Welcome to Dubai, the cat will love the AC. Enjoy the best months of the year.",
+     "hours_ago": 1,
+     "likes": 7
+    },
+    {
+     "author": "p01",
+     "text": "Good luck with the move, Hannah. The community here is very friendly, you'll be fine.",
+     "hours_ago": 1,
+     "likes": 12
+    },
+    {
+     "author": "p04",
+     "text": "Get a local SIM for the data, roaming is expensive and slow in the first weeks.",
+     "hours_ago": 0,
+     "likes": 10
+    },
+    {
+     "author": "p02",
+     "text": "Learn the basic greetings in Arabic, people love it when newcomers try. Marhaba!",
+     "hours_ago": 1,
+     "likes": 14
+    },
+    {
+     "author": "p06",
+     "text": "Join a sports group or a language class, it's the fastest way to make friends here.",
+     "hours_ago": 0,
+     "likes": 11
+    },
+    {
+     "author": "p03",
+     "text": "Welcome to the group. Come to the next coffee morning, the newcomers always meet there.",
+     "hours_ago": 1,
+     "likes": 9
+    },
+    {
+     "author": "p08",
+     "text": "Keep the receipts, the paperwork in Dubai has a lot of stamps. Trust me.",
+     "hours_ago": 0,
+     "likes": 6
+    },
+    {
+     "author": "p10",
+     "text": "Swimming at the public beach is a great way to meet locals. Early mornings are best.",
+     "hours_ago": 1,
+     "likes": 8
+    },
+    {
+     "author": "p07",
+     "text": "Join the Tuesday meetup at the park, it's the biggest newcomer group in town.",
+     "hours_ago": 0,
+     "likes": 12
+    },
+    {
+     "author": "p09",
+     "text": "Thanks all, the list is already two pages. Going to pin this for the new arrivals.",
+     "hours_ago": 0,
+     "likes": 17
+    },
+    {
+     "author": "p05",
+     "text": "Puppy says welcome too, he greeted the cat with a very big tail wag.",
+     "hours_ago": 0,
+     "likes": 21
+    },
+    {
+     "author": "p01",
+     "text": "Yalla Hannah, you've made the right choice. Welcome to Dubai 🌴",
+     "hours_ago": 0,
+     "likes": 19
+    },
+    {
+     "author": "p04",
+     "text": "Welcome, Hannah. I'm happy to show you the bike paths when you're settled in.",
+     "hours_ago": 0,
+     "likes": 6
+    },
+    {
+     "author": "p02",
+     "text": "The newcomers' run club is on Sunday, you're invited. Bring the cat's blessing, lol.",
+     "hours_ago": 0,
+     "likes": 8
+    }
+   ]
+  },
+  {
+   "id": "new-in-dubai-02",
+   "author": "p07",
+   "text": "Apartment search tip list from my own mistakes: check the water pressure, ask about the chiller bills, and confirm which utilities are included before signing the lease.",
+   "image": "media/home-green.jpg",
+   "hours_ago": 18,
+   "likes": 388,
+   "comments": [
+    {
+     "author": "p09",
+     "text": "Chiller bills! Nobody warns you about that. Ask for last year's average, please.",
+     "hours_ago": 16,
+     "likes": 25
+    },
+    {
+     "author": "p04",
+     "text": "Check the balcony orientation too. West-facing means the sunset is gorgeous and the heat is brutal.",
+     "hours_ago": 15,
+     "likes": 18
+    },
+    {
+     "author": "p01",
+     "text": "Water pressure is so important for showers. Turn on every tap before you sign anything.",
+     "hours_ago": 14,
+     "likes": 12
+    },
+    {
+     "author": "p06",
+     "text": "Read the tenancy contract carefully, the deposit rules and notice periods are in the small print.",
+     "hours_ago": 13,
+     "likes": 16
+    },
+    {
+     "author": "p03",
+     "text": "A kitchen with a real oven is a deal breaker for a pastry chef. Measure it, really.",
+     "hours_ago": 12,
+     "likes": 9
+    },
+    {
+     "author": "p05",
+     "text": "Pet-friendly building? Check the rules before you fall in love with the flat.",
+     "hours_ago": 11,
+     "likes": 10
+    },
+    {
+     "author": "p08",
+     "text": "The coffee corner in a building is the best sign of a good neighbourhood. Check it out.",
+     "hours_ago": 10,
+     "likes": 7
+    },
+    {
+     "author": "p10",
+     "text": "Look at the gym and the pool hours too. A good building with good amenities is worth it.",
+     "hours_ago": 9,
+     "likes": 6
+    },
+    {
+     "author": "p02",
+     "text": "Check the noise levels at night and during the morning rush. Some streets are louder than they seem.",
+     "hours_ago": 8,
+     "likes": 11
+    },
+    {
+     "author": "p07",
+     "text": "@hannah_b yes, always visit at the same time you'd come home. That's the best test.",
+     "hours_ago": 8,
+     "likes": 9
+    },
+    {
+     "author": "p09",
+     "text": "Visit twice, once at night and once in the morning. Different city at different hours.",
+     "hours_ago": 7,
+     "likes": 13
+    },
+    {
+     "author": "p04",
+     "text": "Ask the agent for the building's management contact, it helps when things break.",
+     "hours_ago": 6,
+     "likes": 8
+    },
+    {
+     "author": "p01",
+     "text": "A written inventory of the flat with photos on move-in day saves your deposit later.",
+     "hours_ago": 6,
+     "likes": 14
+    },
+    {
+     "author": "p06",
+     "text": "Make sure the internet provider can reach your building before you commit. Some are limited.",
+     "hours_ago": 5,
+     "likes": 7
+    },
+    {
+     "author": "p03",
+     "text": "Thanks, Anjali, this list is gold for newcomers. Printing it for my cousin.",
+     "hours_ago": 5,
+     "likes": 6
+    },
+    {
+     "author": "p05",
+     "text": "Balcony for the dog and cat, check if it's safe with railings. Important for pets.",
+     "hours_ago": 4,
+     "likes": 8
+    },
+    {
+     "author": "p10",
+     "text": "Lovely tips. The shade on the balcony matters more than the view, trust the swim coach.",
+     "hours_ago": 4,
+     "likes": 5
+    },
+    {
+     "author": "p02",
+     "text": "Parking spaces are rare in some buildings. Ask before you sign, it's a real problem.",
+     "hours_ago": 3,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "Shared laundry in some buildings, ask whether it's included or paid per load.",
+     "hours_ago": 3,
+     "likes": 4
+    },
+    {
+     "author": "p07",
+     "text": "Good point, Yusuf. Some buildings charge for laundry, and that adds up fast.",
+     "hours_ago": 2,
+     "likes": 7
+    },
+    {
+     "author": "p09",
+     "text": "Also check the air-conditioning maintenance schedule. You don't want a breakdown in August.",
+     "hours_ago": 2,
+     "likes": 12
+    },
+    {
+     "author": "p04",
+     "text": "Summer breakdown is the worst call in Dubai. Ask the agent for the AC service history.",
+     "hours_ago": 2,
+     "likes": 9
+    },
+    {
+     "author": "p01",
+     "text": "Good list. Save it in your phone so you can tick off each point during the viewing.",
+     "hours_ago": 1,
+     "likes": 10
+    },
+    {
+     "author": "p06",
+     "text": "Viewing with a checklist is very professional. Bring a torch for the cupboards.",
+     "hours_ago": 1,
+     "likes": 8
+    },
+    {
+     "author": "p03",
+     "text": "A torch, a tape measure and a calm head. That's the viewing kit for me.",
+     "hours_ago": 1,
+     "likes": 5
+    }
+   ]
+  },
+  {
+   "id": "new-in-dubai-03",
+   "author": "p01",
+   "text": "Got my Emirates ID appointment after three tries online, and the trick was checking the slots at 7am. Hope that saves someone the stress of refreshing all day.",
+   "image": null,
+   "hours_ago": 30,
+   "likes": 264,
+   "comments": [
+    {
+     "author": "p07",
+     "text": "7am is the golden hour for appointment slots. Good tip, Sara, thank you.",
+     "hours_ago": 28,
+     "likes": 14
+    },
+    {
+     "author": "p05",
+     "text": "Bring the original documents and copies, the staff always ask for both.",
+     "hours_ago": 27,
+     "likes": 11
+    },
+    {
+     "author": "p04",
+     "text": "The waiting area is quieter in the afternoon, I'm told. Pick your time wisely.",
+     "hours_ago": 26,
+     "likes": 6
+    },
+    {
+     "author": "p02",
+     "text": "Refreshing the page all day is the worst. Set a reminder for 7am, it's easier.",
+     "hours_ago": 25,
+     "likes": 9
+    },
+    {
+     "author": "p09",
+     "text": "I spent two hours in a queue last week. A tip for the next time: take a number early.",
+     "hours_ago": 24,
+     "likes": 8
+    },
+    {
+     "author": "p06",
+     "text": "Good luck to everyone, the process is slow but it works. Keep calm and take a snack.",
+     "hours_ago": 23,
+     "likes": 12
+    },
+    {
+     "author": "p03",
+     "text": "Snack in the bag, always. My last appointment was four hours and I was starving.",
+     "hours_ago": 22,
+     "likes": 10
+    },
+    {
+     "author": "p10",
+     "text": "Water bottle and a book, the waiting room is a test of patience. Be prepared.",
+     "hours_ago": 21,
+     "likes": 7
+    },
+    {
+     "author": "p08",
+     "text": "Coffee before the appointment is not allowed, lol, but the vending machine has water.",
+     "hours_ago": 20,
+     "likes": 5
+    },
+    {
+     "author": "p01",
+     "text": "@hannah_b bring a fully charged phone, the queue number app is handy.",
+     "hours_ago": 19,
+     "likes": 8
+    },
+    {
+     "author": "p07",
+     "text": "Copies of everything in one folder, in the same order as the form. Makes the staff happy.",
+     "hours_ago": 18,
+     "likes": 11
+    },
+    {
+     "author": "p04",
+     "text": "Organise the documents in clear plastic sleeves. Little details like that help a lot.",
+     "hours_ago": 17,
+     "likes": 7
+    },
+    {
+     "author": "p05",
+     "text": "Puppy doesn't need an ID, but he has a microchip. Very easy life, honestly.",
+     "hours_ago": 16,
+     "likes": 13
+    },
+    {
+     "author": "p02",
+     "text": "Thanks for the tip, Sara. I'll check at 7am tomorrow for my renewal.",
+     "hours_ago": 15,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "Renewal reminders should be on the phone calendar, at least a month before expiry.",
+     "hours_ago": 14,
+     "likes": 9
+    },
+    {
+     "author": "p06",
+     "text": "A month before the expiry is a smart rule. Don't wait until the last week.",
+     "hours_ago": 13,
+     "likes": 8
+    },
+    {
+     "author": "p03",
+     "text": "I'll make a checklist for the next newcomer appointment. Anyone want a copy?",
+     "hours_ago": 12,
+     "likes": 10
+    },
+    {
+     "author": "p10",
+     "text": "Yes please, the checklist would be useful for the swimmers' visa too.",
+     "hours_ago": 11,
+     "likes": 4
+    },
+    {
+     "author": "p08",
+     "text": "Keep the checklist short. Long lists scare people more than the queue does.",
+     "hours_ago": 10,
+     "likes": 5
+    },
+    {
+     "author": "p01",
+     "text": "Good point, Yusuf. Five items, big font, one page. Simple.",
+     "hours_ago": 9,
+     "likes": 7
+    },
+    {
+     "author": "p07",
+     "text": "Sara, you're the hero of this week. The 7am trick is very useful for everyone.",
+     "hours_ago": 8,
+     "likes": 12
+    },
+    {
+     "author": "p04",
+     "text": "Thanks for sharing your experience. It's exactly the kind of post this group needs.",
+     "hours_ago": 7,
+     "likes": 6
+    },
+    {
+     "author": "p02",
+     "text": "Congrats on the ID! The first step is the hardest, now enjoy the city.",
+     "hours_ago": 6,
+     "likes": 9
+    },
+    {
+     "author": "p09",
+     "text": "Congratulations, Sara! Next: the bank account, and then the coffee tour.",
+     "hours_ago": 5,
+     "likes": 8
+    },
+    {
+     "author": "p05",
+     "text": "Puppy celebrates your ID with a happy bark. He is very proud of the newcomers.",
+     "hours_ago": 4,
+     "likes": 11
+    }
+   ]
+  },
+  {
+   "id": "new-in-dubai-04",
+   "author": "p05",
+   "text": "Best places to meet other dog owners in the city if you just moved here with a puppy? Feeling lonely and the puppy wants to play with everything.",
+   "image": "media/puppy.jpg",
+   "hours_ago": 46,
+   "likes": 301,
+   "comments": [
+    {
+     "author": "p10",
+     "text": "The Marina walk is full of dog owners in the morning. Say hi, that's how it starts.",
+     "hours_ago": 44,
+     "likes": 14
+    },
+    {
+     "author": "p07",
+     "text": "Mushrif park on Saturdays, the pet parents group meets there. Everyone is welcoming.",
+     "hours_ago": 43,
+     "likes": 16
+    },
+    {
+     "author": "p04",
+     "text": "Puppy classes are a great way to meet owners. Ask your vet for a recommendation.",
+     "hours_ago": 42,
+     "likes": 11
+    },
+    {
+     "author": "p02",
+     "text": "Running with a dog is a good way to make friends at dawn, the early birds are friendly.",
+     "hours_ago": 41,
+     "likes": 9
+    },
+    {
+     "author": "p09",
+     "text": "Join the Pet Parents group, Mariam runs great meetups. Very welcoming for newcomers.",
+     "hours_ago": 40,
+     "likes": 12
+    },
+    {
+     "author": "p06",
+     "text": "The cafe with the dog bowl in Mirdif is a good meeting point. The baristas are lovely.",
+     "hours_ago": 39,
+     "likes": 8
+    },
+    {
+     "author": "p01",
+     "text": "Puppy playdates are the best. Start small and let the pups decide the pace.",
+     "hours_ago": 38,
+     "likes": 10
+    },
+    {
+     "author": "p03",
+     "text": "Lonely in a new city is so real. Coffee mornings and pet meetups are the cure.",
+     "hours_ago": 37,
+     "likes": 13
+    },
+    {
+     "author": "p08",
+     "text": "Coffee shops with a community table are amazing for meeting people. Ask for the big table.",
+     "hours_ago": 36,
+     "likes": 7
+    },
+    {
+     "author": "p05",
+     "text": "@hannah_b thank you, everyone. I'll go to the Mushrif meetup this Saturday with the puppy.",
+     "hours_ago": 35,
+     "likes": 9
+    },
+    {
+     "author": "p10",
+     "text": "Good plan. Bring water for the pup, the park gets warm quickly after eight.",
+     "hours_ago": 34,
+     "likes": 8
+    },
+    {
+     "author": "p07",
+     "text": "Look out for the friendly golden retriever there, he's the unofficial greeter.",
+     "hours_ago": 33,
+     "likes": 6
+    },
+    {
+     "author": "p02",
+     "text": "Marina dog walkers are very social on Friday evenings too. Good for newcomers.",
+     "hours_ago": 32,
+     "likes": 5
+    },
+    {
+     "author": "p04",
+     "text": "Add a dog park visit in the summer evening, shaded lanes, and a lot of happy dogs.",
+     "hours_ago": 31,
+     "likes": 4
+    },
+    {
+     "author": "p09",
+     "text": "Puppy will have a lot of friends by the end of the month, I predict it.",
+     "hours_ago": 30,
+     "likes": 7
+    },
+    {
+     "author": "p06",
+     "text": "Lonely feelings pass with time. Keep putting yourself out there, Mariam. You've got this.",
+     "hours_ago": 29,
+     "likes": 11
+    },
+    {
+     "author": "p03",
+     "text": "Puppy's first friend in Dubai should be a cat, obviously. Call Anjali, she has Mango.",
+     "hours_ago": 28,
+     "likes": 10
+    },
+    {
+     "author": "p07",
+     "text": "Mango is available for playdates, but she is strict about the rules. Heh.",
+     "hours_ago": 27,
+     "likes": 12
+    },
+    {
+     "author": "p08",
+     "text": "Dog and cat playdates are the hottest social events in the city this season.",
+     "hours_ago": 26,
+     "likes": 6
+    },
+    {
+     "author": "p10",
+     "text": "Let the puppy make friends at his own pace, and you'll make friends too.",
+     "hours_ago": 25,
+     "likes": 8
+    },
+    {
+     "author": "p01",
+     "text": "Welcome to Dubai, Mariam. The community is kind, and the puppy will be the star.",
+     "hours_ago": 24,
+     "likes": 9
+    },
+    {
+     "author": "p02",
+     "text": "See you on the Marina walk at dawn, I'll bring the puppy's favourite treat.",
+     "hours_ago": 23,
+     "likes": 5
+    },
+    {
+     "author": "p04",
+     "text": "Dog people are the best people. Good luck settling in, Mariam.",
+     "hours_ago": 22,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "Let me know how the Saturday meetup goes. Pictures please, the puppy deserves them.",
+     "hours_ago": 21,
+     "likes": 7
+    },
+    {
+     "author": "p06",
+     "text": "Yalla, new friends and new routines. Welcome to the city, habibti 🐾",
+     "hours_ago": 20,
+     "likes": 10
+    }
+   ]
+  },
+  {
+   "id": "new-in-dubai-05",
+   "author": "p02",
+   "text": "Newcomer question: how do you find a good doctor in Dubai? Do I need insurance first or can I just walk into a clinic and pay? Trying to understand the basics.",
+   "image": null,
+   "hours_ago": 58,
+   "likes": 208,
+   "comments": [
+    {
+     "author": "p05",
+     "text": "Insurance first, always. Check which clinics are in your network before you need one.",
+     "hours_ago": 56,
+     "likes": 14
+    },
+    {
+     "author": "p07",
+     "text": "Clinics do take cash and card, but insurance makes it much cheaper. Ask at reception.",
+     "hours_ago": 55,
+     "likes": 10
+    },
+    {
+     "author": "p10",
+     "text": "Ask neighbours and colleagues for a GP recommendation. Word of mouth beats the directories.",
+     "hours_ago": 54,
+     "likes": 9
+    },
+    {
+     "author": "p04",
+     "text": "A family doctor near home is the best starting point. Book a check-up in the first month.",
+     "hours_ago": 53,
+     "likes": 8
+    },
+    {
+     "author": "p09",
+     "text": "Our office insurance covers a network of clinics, the HR team shared the list. Ask your employer.",
+     "hours_ago": 52,
+     "likes": 12
+    },
+    {
+     "author": "p06",
+     "text": "Take the insurance card to every visit. The receptionists are very strict about it.",
+     "hours_ago": 51,
+     "likes": 6
+    },
+    {
+     "author": "p03",
+     "text": "Ask your doctor for a written summary after each visit, it helps when you move or switch.",
+     "hours_ago": 50,
+     "likes": 7
+    },
+    {
+     "author": "p08",
+     "text": "Pharmacies have many common medicines without a prescription, but check the label first.",
+     "hours_ago": 49,
+     "likes": 5
+    },
+    {
+     "author": "p01",
+     "text": "Keep a list of allergies and past medicines on your phone. Good habit for any new city.",
+     "hours_ago": 48,
+     "likes": 11
+    },
+    {
+     "author": "p02",
+     "text": "Thanks all, this is exactly what I needed. Insurance card goes in the wallet today.",
+     "hours_ago": 47,
+     "likes": 8
+    },
+    {
+     "author": "p05",
+     "text": "@ravi_menon also check if the clinic has a pharmacy inside, it saves a trip.",
+     "hours_ago": 46,
+     "likes": 6
+    },
+    {
+     "author": "p10",
+     "text": "Sports injuries in Dubai are common, so a sports physio on your list is a smart idea.",
+     "hours_ago": 45,
+     "likes": 7
+    },
+    {
+     "author": "p07",
+     "text": "Ask about a second opinion policy, some insurers need a referral for specialists.",
+     "hours_ago": 44,
+     "likes": 9
+    },
+    {
+     "author": "p04",
+     "text": "Referral rules are the part that surprised me most. Read the policy carefully.",
+     "hours_ago": 43,
+     "likes": 5
+    },
+    {
+     "author": "p09",
+     "text": "Keep your health records in one place too, digital copies are easiest.",
+     "hours_ago": 42,
+     "likes": 8
+    },
+    {
+     "author": "p06",
+     "text": "Emergency numbers saved in the phone, and the nearest hospital on the map. Basic but vital.",
+     "hours_ago": 41,
+     "likes": 10
+    },
+    {
+     "author": "p03",
+     "text": "The emergency number is 999 for ambulance, saving that one today. Stay safe everyone.",
+     "hours_ago": 40,
+     "likes": 12
+    },
+    {
+     "author": "p08",
+     "text": "Good call, Layla. Add the non-emergency clinic number too, it's useful for weekends.",
+     "hours_ago": 39,
+     "likes": 4
+    },
+    {
+     "author": "p01",
+     "text": "Thanks everyone. Doctor search is on my list for this weekend.",
+     "hours_ago": 38,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "Puppy's vet is great, I'm happy to recommend one for the newcomers too.",
+     "hours_ago": 37,
+     "likes": 9
+    },
+    {
+     "author": "p10",
+     "text": "Good luck, Ravi. Settling in takes time, be kind to yourself.",
+     "hours_ago": 36,
+     "likes": 6
+    },
+    {
+     "author": "p07",
+     "text": "This thread is super useful. Pin it for the next newcomer, please.",
+     "hours_ago": 35,
+     "likes": 11
+    },
+    {
+     "author": "p04",
+     "text": "Pinned by the group admin? Let me ask, otherwise I'll do it myself. Yalla.",
+     "hours_ago": 34,
+     "likes": 4
+    },
+    {
+     "author": "p09",
+     "text": "Great community spirit. Everyone helps the next newcomer, that's Dubai at its best.",
+     "hours_ago": 33,
+     "likes": 13
+    },
+    {
+     "author": "p02",
+     "text": "Thank you all, I feel much more prepared now. The city is starting to feel friendly.",
+     "hours_ago": 32,
+     "likes": 7
+    }
+   ]
+  },
+  {
+   "id": "new-in-dubai-06",
+   "author": "p03",
+   "text": "Found the best bakery for sourdough in the city, tucked behind a supermarket in Downtown. The owner is from Lebanon and his manakish is life-changing. Share your favourite local finds!",
+   "image": "media/cafe-counter.jpg",
+   "hours_ago": 72,
+   "likes": 342,
+   "comments": [
+    {
+     "author": "p01",
+     "text": "Manakish for breakfast is my new ritual. Thank you, Layla, I'm going tomorrow.",
+     "hours_ago": 70,
+     "likes": 12
+    },
+    {
+     "author": "p08",
+     "text": "Lebanese bakeries are the heart of this city. The za'atar is always fresh.",
+     "hours_ago": 69,
+     "likes": 10
+    },
+    {
+     "author": "p04",
+     "text": "Sourdough behind a supermarket is the most Dubai secret ever. Keep sharing.",
+     "hours_ago": 68,
+     "likes": 9
+    },
+    {
+     "author": "p05",
+     "text": "Puppy requested a sample but I told him the manakish is for humans only, sorry.",
+     "hours_ago": 67,
+     "likes": 13
+    },
+    {
+     "author": "p07",
+     "text": "My favourite local find is a shawarma place in Deira with the best garlic sauce.",
+     "hours_ago": 66,
+     "likes": 11
+    },
+    {
+     "author": "p02",
+     "text": "The bakery near the running track has amazing date bread. Perfect for a post-run snack.",
+     "hours_ago": 65,
+     "likes": 8
+    },
+    {
+     "author": "p09",
+     "text": "Local finds are my favourite part of the city. Adding this bakery to the newcomer list.",
+     "hours_ago": 64,
+     "likes": 7
+    },
+    {
+     "author": "p06",
+     "text": "Kwame's favourite find is a jazz cafe in Al Quoz. Live music on Thursdays, very cool.",
+     "hours_ago": 63,
+     "likes": 9
+    },
+    {
+     "author": "p10",
+     "text": "A late breakfast at the Lebanese bakery after my swim is the best routine ever.",
+     "hours_ago": 62,
+     "likes": 6
+    },
+    {
+     "author": "p03",
+     "text": "Thanks all, the sourdough is getting a fan club. Let's do a bakery crawl next month.",
+     "hours_ago": 61,
+     "likes": 12
+    },
+    {
+     "author": "p08",
+     "text": "Bakery crawl is brilliant. Add a coffee stop between each one, it's the law.",
+     "hours_ago": 60,
+     "likes": 8
+    },
+    {
+     "author": "p01",
+     "text": "Yes! Bakery crawl with the newcomers, that's a great way to meet people.",
+     "hours_ago": 59,
+     "likes": 10
+    },
+    {
+     "author": "p04",
+     "text": "I'll make the map for the bakery crawl. Send me your favourite spots.",
+     "hours_ago": 58,
+     "likes": 5
+    },
+    {
+     "author": "p09",
+     "text": "Please include the one near the metro, it has the best croissants in the area.",
+     "hours_ago": 57,
+     "likes": 7
+    },
+    {
+     "author": "p07",
+     "text": "A croissant at the metro bakery, the perfect commuter snack. Adding it.",
+     "hours_ago": 56,
+     "likes": 6
+    },
+    {
+     "author": "p02",
+     "text": "Map plus snack plus friends, the perfect Saturday for a newcomer like me.",
+     "hours_ago": 55,
+     "likes": 9
+    },
+    {
+     "author": "p05",
+     "text": "Puppy is now officially invited to the bakery crawl, as long as the dog bowl is there.",
+     "hours_ago": 54,
+     "likes": 16
+    },
+    {
+     "author": "p10",
+     "text": "Dog-friendly bakery stop, yes. Please bring a bowl, puppy has earned it.",
+     "hours_ago": 53,
+     "likes": 7
+    },
+    {
+     "author": "p06",
+     "text": "Bakery crawl on a Friday morning, I'll bring my appetite and a notebook for the recs.",
+     "hours_ago": 52,
+     "likes": 8
+    },
+    {
+     "author": "p03",
+     "text": "The notebook is a great idea, Kwame. We should make a little recipe guide too.",
+     "hours_ago": 51,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "Recipe guide with coffee pairings. My dream project, honestly.",
+     "hours_ago": 50,
+     "likes": 9
+    },
+    {
+     "author": "p01",
+     "text": "Layla, your bakery finds are the reason I'm getting out of the flat more. Thank you.",
+     "hours_ago": 49,
+     "likes": 11
+    },
+    {
+     "author": "p04",
+     "text": "The map is ready soon. I'll post it in the group, no external links here.",
+     "hours_ago": 48,
+     "likes": 4
+    },
+    {
+     "author": "p07",
+     "text": "Yalla, bakery crawl next month, I'm in. Sourdough and friends 🥖",
+     "hours_ago": 47,
+     "likes": 10
+    },
+    {
+     "author": "p09",
+     "text": "Brilliant spirit in this thread. I love how the newcomers are helping each other.",
+     "hours_ago": 46,
+     "likes": 8
+    }
+   ]
+  },
+  {
+   "id": "new-in-dubai-07",
+   "author": "p06",
+   "text": "Salik tags: I got charged for a toll I didn't know I passed. Is there a simple way to check my account and set up a top up? Trying to avoid surprises at month end.",
+   "image": null,
+   "hours_ago": 88,
+   "likes": 176,
+   "comments": [
+    {
+     "author": "p04",
+     "text": "Check your account in the official app or the portal, it lists every crossing with the time and place.",
+     "hours_ago": 86,
+     "likes": 11
+    },
+    {
+     "author": "p07",
+     "text": "Set a low-balance alert if the option is available. It's easier than checking every month.",
+     "hours_ago": 85,
+     "likes": 9
+    },
+    {
+     "author": "p01",
+     "text": "Many newcomers get caught by the toll gates on the highway. Keep an eye on the rental car.",
+     "hours_ago": 84,
+     "likes": 10
+    },
+    {
+     "author": "p08",
+     "text": "Rental car tolls are charged to the company, then they bill you later. Ask the agency.",
+     "hours_ago": 83,
+     "likes": 8
+    },
+    {
+     "author": "p10",
+     "text": "I'd keep a small balance in the tag account, just a habit that helps.",
+     "hours_ago": 82,
+     "likes": 6
+    },
+    {
+     "author": "p05",
+     "text": "Puppy's trips in the car are free, but the tolls are not. Sadly that is life.",
+     "hours_ago": 81,
+     "likes": 12
+    },
+    {
+     "author": "p03",
+     "text": "Ask your landlord if the car park is included. Parking charges can be a surprise too.",
+     "hours_ago": 80,
+     "likes": 7
+    },
+    {
+     "author": "p02",
+     "text": "I read the statement every month, it's boring but it saves money.",
+     "hours_ago": 79,
+     "likes": 5
+    },
+    {
+     "author": "p09",
+     "text": "Thanks Kwame, I'll check the official portal tonight and set the alert.",
+     "hours_ago": 78,
+     "likes": 6
+    },
+    {
+     "author": "p06",
+     "text": "@hannah_b good plan. Save the link in your phone so you don't have to search for it.",
+     "hours_ago": 77,
+     "likes": 4
+    },
+    {
+     "author": "p07",
+     "text": "Official portal only, never trust random links. The scam messages are getting clever.",
+     "hours_ago": 76,
+     "likes": 13
+    },
+    {
+     "author": "p04",
+     "text": "Good warning. Always check the official site address before you enter any details.",
+     "hours_ago": 75,
+     "likes": 9
+    },
+    {
+     "author": "p01",
+     "text": "A quick check of the tag balance each week is a nice habit. Good luck, Kwame.",
+     "hours_ago": 74,
+     "likes": 5
+    },
+    {
+     "author": "p10",
+     "text": "Tolls are fair in exchange for fast roads. Plan the trip and the budget together.",
+     "hours_ago": 73,
+     "likes": 6
+    },
+    {
+     "author": "p08",
+     "text": "Coffee budget and toll budget, the two line items that keep me honest.",
+     "hours_ago": 72,
+     "likes": 7
+    },
+    {
+     "author": "p05",
+     "text": "Thanks for the warning about the messages. Puppy is safer than I thought, lol.",
+     "hours_ago": 71,
+     "likes": 4
+    },
+    {
+     "author": "p03",
+     "text": "This is a good thread for newcomers. Keep the tips coming, friends 🙌",
+     "hours_ago": 70,
+     "likes": 8
+    },
+    {
+     "author": "p02",
+     "text": "Also consider a car-free plan, the metro and taxis are good in the city centre.",
+     "hours_ago": 69,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "Metro plus a bike is my plan for the summer. Fewer tolls, more sunshine.",
+     "hours_ago": 68,
+     "likes": 9
+    },
+    {
+     "author": "p06",
+     "text": "Thanks, everyone. Off to check the account now, and then a long coffee.",
+     "hours_ago": 67,
+     "likes": 5
+    },
+    {
+     "author": "p04",
+     "text": "Good luck, Kwame. Tolls are a small price for a city this fast.",
+     "hours_ago": 66,
+     "likes": 4
+    },
+    {
+     "author": "p07",
+     "text": "Remember the official app, and check the statement once a month. You've got this 🙂",
+     "hours_ago": 65,
+     "likes": 8
+    },
+    {
+     "author": "p03",
+     "text": "Keep the toll tags stuck on the windscreen the right way, that's a common mistake.",
+     "hours_ago": 80,
+     "likes": 5
+    },
+    {
+     "author": "p08",
+     "text": "Ask a friend to check the account with you the first time, it's less stressful.",
+     "hours_ago": 75,
+     "likes": 4
+    },
+    {
+     "author": "p02",
+     "text": "Save the official app on the home screen so you don't have to search for it.",
+     "hours_ago": 70,
+     "likes": 6
+    }
+   ]
+  },
+  {
+   "id": "new-in-dubai-08",
+   "author": "p04",
+   "text": "Winter is coming to Dubai soon and I'm told the evenings are perfect for walks. Which neighbourhood has the best outdoor spaces for a new arrival who wants to explore?",
+   "image": "media/marina-night.jpg",
+   "hours_ago": 112,
+   "likes": 226,
+   "comments": [
+    {
+     "author": "p01",
+     "text": "The Marina walk is lovely in winter, cool breeze and sunsets. Also Jumeirah beach at night.",
+     "hours_ago": 110,
+     "likes": 12
+    },
+    {
+     "author": "p08",
+     "text": "Al Quoz has the best art walks in the cooler months. The murals are worth a slow walk.",
+     "hours_ago": 109,
+     "likes": 10
+    },
+    {
+     "author": "p10",
+     "text": "Jumeirah beach at sunset is a must. The sea breeze in winter is refreshing.",
+     "hours_ago": 108,
+     "likes": 9
+    },
+    {
+     "author": "p02",
+     "text": "Running trails by the lake in JLT are good in winter, the air is crisp and clear.",
+     "hours_ago": 107,
+     "likes": 8
+    },
+    {
+     "author": "p07",
+     "text": "Mirdif has big parks with shaded paths. Perfect for weekend picnics and dog walks.",
+     "hours_ago": 106,
+     "likes": 7
+    },
+    {
+     "author": "p06",
+     "text": "Downtown has the lake promenade with the fountains. Winter nights there are magical.",
+     "hours_ago": 105,
+     "likes": 11
+    },
+    {
+     "author": "p03",
+     "text": "Downtown is so pretty at night, and the bakeries are open late. Dangerous, but worth it.",
+     "hours_ago": 104,
+     "likes": 9
+    },
+    {
+     "author": "p09",
+     "text": "Business Bay has a canal walk with cafes, very good for a quiet evening after work.",
+     "hours_ago": 103,
+     "likes": 8
+    },
+    {
+     "author": "p05",
+     "text": "Puppy approves any park with a long grass patch. Mirdif is his winter favourite.",
+     "hours_ago": 102,
+     "likes": 13
+    },
+    {
+     "author": "p04",
+     "text": "@anjali_rao thanks for Mirdif, that's on the list. Explore everything.",
+     "hours_ago": 101,
+     "likes": 5
+    },
+    {
+     "author": "p10",
+     "text": "Dress in layers, the evenings can be cooler than you expect near the water.",
+     "hours_ago": 100,
+     "likes": 6
+    },
+    {
+     "author": "p01",
+     "text": "Also bring a light jacket. The sea wind in winter feels colder than the thermometer.",
+     "hours_ago": 99,
+     "likes": 7
+    },
+    {
+     "author": "p08",
+     "text": "Coffee and a walk, the perfect winter ritual. Please make the most of the season.",
+     "hours_ago": 98,
+     "likes": 9
+    },
+    {
+     "author": "p02",
+     "text": "Winter runs are the best of the year, honest. Dress warm and enjoy the lake.",
+     "hours_ago": 97,
+     "likes": 6
+    },
+    {
+     "author": "p07",
+     "text": "Dubai winters are short and sweet. Plan a few outdoor brunches before the heat returns.",
+     "hours_ago": 96,
+     "likes": 8
+    },
+    {
+     "author": "p06",
+     "text": "Winter is the season of picnics and rooftop nights, so enjoy the cool air.",
+     "hours_ago": 95,
+     "likes": 5
+    },
+    {
+     "author": "p03",
+     "text": "Picnic with a cake and a flask of coffee on the grass. My dream winter weekend.",
+     "hours_ago": 94,
+     "likes": 10
+    },
+    {
+     "author": "p09",
+     "text": "Winter in Dubai is the season I love most. Everyone's outside, the city feels alive.",
+     "hours_ago": 93,
+     "likes": 7
+    },
+    {
+     "author": "p05",
+     "text": "Good luck Tomasz, and welcome to the best season in the city. Puppy is very excited.",
+     "hours_ago": 92,
+     "likes": 9
+    },
+    {
+     "author": "p10",
+     "text": "Swim season is still open in winter for the brave. Try it once, you'll be hooked.",
+     "hours_ago": 91,
+     "likes": 6
+    },
+    {
+     "author": "p01",
+     "text": "Winter sunsets over the Marina are the best free show in the city. Don't miss them.",
+     "hours_ago": 90,
+     "likes": 11
+    },
+    {
+     "author": "p02",
+     "text": "Thanks everyone, this is a great list. I'll try a different neighbourhood each weekend.",
+     "hours_ago": 89,
+     "likes": 5
+    },
+    {
+     "author": "p08",
+     "text": "A different neighbourhood each weekend, the best way to know a city. Yalla 🌅",
+     "hours_ago": 88,
+     "likes": 8
+    },
+    {
+     "author": "p07",
+     "text": "Make sure to tell us what you liked. The group loves a good neighbourhood review.",
+     "hours_ago": 87,
+     "likes": 4
+    },
+    {
+     "author": "p04",
+     "text": "I will. Thanks for the warm welcome, everyone. Dubai is already feeling like home.",
+     "hours_ago": 86,
+     "likes": 7
+    }
+   ]
+  },
+  {
+   "id": "new-in-dubai-09",
+   "author": "p08",
+   "text": "Friendly reminder that the newcomer coffee morning is back this Saturday at 9am. Bring a friend, a question, or a cake. We have a corner table reserved, just ask for it.",
+   "image": "media/cafe-bulbs.jpg",
+   "hours_ago": 134,
+   "likes": 298,
+   "comments": [
+    {
+     "author": "p03",
+     "text": "I'll bring a box of pastries for the table, lemon and chocolate. Count me in!",
+     "hours_ago": 132,
+     "likes": 12
+    },
+    {
+     "author": "p07",
+     "text": "Saturday 9am is perfect for newcomers. Bringing my friend who just arrived from Manila.",
+     "hours_ago": 131,
+     "likes": 10
+    },
+    {
+     "author": "p09",
+     "text": "Great to see this tradition continue. I'll be there with a question about the office lease.",
+     "hours_ago": 130,
+     "likes": 8
+    },
+    {
+     "author": "p01",
+     "text": "Coffee morning and a corner table, the most welcoming thing in the group. See you there.",
+     "hours_ago": 128,
+     "likes": 9
+    },
+    {
+     "author": "p05",
+     "text": "Puppy will come to the coffee morning if the corner table has a water bowl. Please.",
+     "hours_ago": 127,
+     "likes": 14
+    },
+    {
+     "author": "p04",
+     "text": "Corner table reserved for the new arrivals, what a lovely idea. Thank you, Yusuf.",
+     "hours_ago": 126,
+     "likes": 6
+    },
+    {
+     "author": "p10",
+     "text": "I'll be there after the swim, a little late but full of energy.",
+     "hours_ago": 124,
+     "likes": 5
+    },
+    {
+     "author": "p02",
+     "text": "Ask me anything about the running groups over coffee, I'll be happy to talk.",
+     "hours_ago": 122,
+     "likes": 7
+    },
+    {
+     "author": "p06",
+     "text": "Coffee morning with a DJ playlist in the background would be a nice touch, Yusuf.",
+     "hours_ago": 120,
+     "likes": 4
+    },
+    {
+     "author": "p08",
+     "text": "No DJ, but a calm playlist, deal? And bring the questions, we answer them all.",
+     "hours_ago": 118,
+     "likes": 8
+    },
+    {
+     "author": "p03",
+     "text": "I'll bring the lemon tart for the corner table. Very easy to share.",
+     "hours_ago": 116,
+     "likes": 9
+    },
+    {
+     "author": "p07",
+     "text": "Thank you for organising this every week, Yusuf. It makes the city smaller.",
+     "hours_ago": 114,
+     "likes": 11
+    },
+    {
+     "author": "p09",
+     "text": "Let's make a rule: nobody sits alone in the coffee morning. Find a neighbour and talk.",
+     "hours_ago": 112,
+     "likes": 12
+    },
+    {
+     "author": "p01",
+     "text": "Good rule. I met my best friend in Dubai at a coffee morning, so I'm a fan.",
+     "hours_ago": 110,
+     "likes": 10
+    },
+    {
+     "author": "p05",
+     "text": "Puppy's first coffee morning is planned, he wants to meet the newcomers properly.",
+     "hours_ago": 108,
+     "likes": 13
+    },
+    {
+     "author": "p04",
+     "text": "Looking forward to meeting everyone, the city feels friendlier already.",
+     "hours_ago": 106,
+     "likes": 5
+    },
+    {
+     "author": "p02",
+     "text": "I'm bringing my running shoes, in case the coffee morning becomes a run club.",
+     "hours_ago": 104,
+     "likes": 6
+    },
+    {
+     "author": "p10",
+     "text": "Ha, Ravi, you'd turn any coffee morning into a training session. Love it.",
+     "hours_ago": 102,
+     "likes": 7
+    },
+    {
+     "author": "p06",
+     "text": "Coffee morning, cake, and a good conversation. The best start to a Saturday.",
+     "hours_ago": 100,
+     "likes": 8
+    },
+    {
+     "author": "p08",
+     "text": "See you all Saturday at 9. The coffee is on the house for newcomers, every week.",
+     "hours_ago": 98,
+     "likes": 12
+    },
+    {
+     "author": "p03",
+     "text": "Yusuf, you're the best host in the city. Thank you for keeping the tradition alive.",
+     "hours_ago": 96,
+     "likes": 9
+    },
+    {
+     "author": "p07",
+     "text": "Keep the tradition, and keep the coffee coming. Yalla, see you on Saturday ☕",
+     "hours_ago": 94,
+     "likes": 10
+    },
+    {
+     "author": "p09",
+     "text": "Coffee morning confirmed in my calendar, with a reminder set. See you there.",
+     "hours_ago": 92,
+     "likes": 6
+    },
+    {
+     "author": "p01",
+     "text": "Warm welcome to everyone who's new to Dubai. You're in the right place 🌴",
+     "hours_ago": 90,
+     "likes": 11
+    },
+    {
+     "author": "p10",
+     "text": "Swimmers can join the coffee morning too, I'll bring a towel and a good story.",
+     "hours_ago": 120,
+     "likes": 5
+    }
+   ]
+  },
+  {
+   "id": "new-in-dubai-10",
+   "author": "p10",
+   "text": "Lost my keys at the beach last week and the lost-and-found team found them in ten minutes. Dubai has kind people everywhere, and I wanted to say thank you to the staff.",
+   "image": "media/marina.jpg",
+   "hours_ago": 160,
+   "likes": 412,
+   "comments": [
+    {
+     "author": "p06",
+     "text": "Love this story. Kind staff make the city feel safe for newcomers. Well done, Omar.",
+     "hours_ago": 156,
+     "likes": 16
+    },
+    {
+     "author": "p02",
+     "text": "Lost items at the beach happen all the time, so good to hear the team is quick.",
+     "hours_ago": 154,
+     "likes": 9
+    },
+    {
+     "author": "p05",
+     "text": "Puppy once found a lost wallet on the beach and brought it to the lifeguards. A hero.",
+     "hours_ago": 152,
+     "likes": 21
+    },
+    {
+     "author": "p03",
+     "text": "Thank you to the staff at the beach, it's the small kindnesses that make a city.",
+     "hours_ago": 150,
+     "likes": 12
+    },
+    {
+     "author": "p07",
+     "text": "Dubai is full of helpful people. The taxi driver who returned my phone was a lovely example.",
+     "hours_ago": 148,
+     "likes": 14
+    },
+    {
+     "author": "p04",
+     "text": "Good to hear. Lost and found teams are underrated, they deserve a thank you card.",
+     "hours_ago": 146,
+     "likes": 8
+    },
+    {
+     "author": "p08",
+     "text": "Staff kindness is what keeps the city warm. Coffee on me for the lifeguard team next time.",
+     "hours_ago": 144,
+     "likes": 10
+    },
+    {
+     "author": "p09",
+     "text": "I'd love to see a thank-you wall for the good people in the city. A nice idea for the group.",
+     "hours_ago": 142,
+     "likes": 7
+    },
+    {
+     "author": "p01",
+     "text": "Omar, you're a good example of the spirit here. Thanks for sharing the story.",
+     "hours_ago": 140,
+     "likes": 9
+    },
+    {
+     "author": "p10",
+     "text": "Thank you all, the staff really do look after the beach. A big respect to them.",
+     "hours_ago": 138,
+     "likes": 11
+    },
+    {
+     "author": "p06",
+     "text": "Let's start a thank-you thread for the people who help us. A kind habit for the group.",
+     "hours_ago": 136,
+     "likes": 8
+    },
+    {
+     "author": "p03",
+     "text": "Yes! I'll post a thank-you for the bakery owner who saved my order last week.",
+     "hours_ago": 134,
+     "likes": 9
+    },
+    {
+     "author": "p02",
+     "text": "Thank the running coach who helped me with the first ten kilometres, that counts too.",
+     "hours_ago": 132,
+     "likes": 6
+    },
+    {
+     "author": "p05",
+     "text": "Thank the vet nurse who stayed late with my puppy's check, very kind of her.",
+     "hours_ago": 130,
+     "likes": 12
+    },
+    {
+     "author": "p04",
+     "text": "Good thread. People in this city work hard for the community, it's good to say so.",
+     "hours_ago": 128,
+     "likes": 7
+    },
+    {
+     "author": "p07",
+     "text": "Keys are a small thing, but the trust they show is big. Thank you, Omar.",
+     "hours_ago": 126,
+     "likes": 10
+    },
+    {
+     "author": "p08",
+     "text": "Keys, wallets and phones, the lost property team in this city is amazing.",
+     "hours_ago": 124,
+     "likes": 6
+    },
+    {
+     "author": "p09",
+     "text": "I'll share the thank-you thread in the office too, we need to say thank you more.",
+     "hours_ago": 122,
+     "likes": 8
+    },
+    {
+     "author": "p01",
+     "text": "Gratitude is free and makes the day better. Thank you all for these kind words.",
+     "hours_ago": 120,
+     "likes": 9
+    },
+    {
+     "author": "p10",
+     "text": "Keep being kind to each other, and the city will keep being kind to you. Yalla.",
+     "hours_ago": 118,
+     "likes": 11
+    },
+    {
+     "author": "p06",
+     "text": "Beautiful end to the thread. Thank you Omar for starting it, the city is lucky to have you.",
+     "hours_ago": 116,
+     "likes": 12
+    },
+    {
+     "author": "p03",
+     "text": "A warm and happy thread. Cake for the lost-and-found team, from my kitchen.",
+     "hours_ago": 114,
+     "likes": 13
+    },
+    {
+     "author": "p02",
+     "text": "Thanks for sharing, Omar. Good news is rare, and this is the best kind.",
+     "hours_ago": 112,
+     "likes": 5
+    },
+    {
+     "author": "p05",
+     "text": "Puppy wants to say thank you too, with a very wet kiss for the lifeguard.",
+     "hours_ago": 110,
+     "likes": 15
+    },
+    {
+     "author": "p07",
+     "text": "Lovely to end the week on a kind note. Thank you all, the group is a great home 🌴",
+     "hours_ago": 108,
+     "likes": 10
+    }
+   ]
+  }
+ ]
+}
