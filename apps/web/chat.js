@@ -1,5 +1,5 @@
 import { labFetch } from './api-client.js';
-import { requestContext, selectFocus } from './assistant-context.js';
+import { requestContext, selectFocus, selectTaskFocus } from './assistant-context.js';
 import { openServiceRequest } from './service-workflow.js';
 // io chat. A lab stand-in for Luna: a deterministic intent router (clearly
 // labelled "lab router") until the LangGraph service in apps/api replaces it.
@@ -14,6 +14,7 @@ import { orderCardHTML, watchOrder, requestEarlier, remindWhenReady } from './or
 import { api } from './service-workflow.js';
 import { identity, getMessages, saveMessages, resetSession } from './session-state.js';
 import { initRecovery, startRecovery, resetRecovery, handleRecoveryClick, restoreReport } from './recovery.js';
+import { taskStateLabel } from './tasks.js';
 
 let ctx = null; // { enterResults, openOffers, startGuide, showChat }
 const items = [];
@@ -30,7 +31,7 @@ export function initChat(c) {
     if(saved.who==='bot'&&typeof saved.msgId==='string'){items.push({id:++seq,who:'bot',msgId:saved.msgId,msgSource:saved.msgSource,text:saved.text,html:proactiveHTML(saved.msgSource,saved.text.slice(0,600))});continue;}
     if(saved.who==='bot'&&saved.rich&&typeof saved.rich.kind==='string'){const html=richHTML(saved.rich);if(html){items.push({id:++seq,who:'bot',wide:true,rich:saved.rich,text:saved.text,html});continue;}}
     if(saved.who==='bot'&&typeof saved.actionId==='string'){const id=++seq;items.push({id,who:'bot',type:'order',actionId:saved.actionId,action:null,text:saved.text});follow(id,saved.actionId);continue;}
-    items.push({id:++seq,who:saved.who,text:saved.text.slice(0,6000),r:saved.who==='me'?saved.r:null,html:saved.who==='bot'?'<p>'+esc(saved.text.slice(0,6000))+'</p>':null,recoveryReport:saved.recoveryReport});
+    items.push({id:++seq,who:saved.who,text:saved.text.slice(0,6000),r:saved.who==='me'?saved.r:null,html:saved.who==='bot'?saved.text.slice(0,6000).split(/\n+/).filter(Boolean).map(line=>'<p>'+esc(line)+'</p>').join(''):null,recoveryReport:saved.recoveryReport,taskId:typeof saved.taskId==='string'?saved.taskId:null});
   }
   render();
   followMessages();
@@ -109,14 +110,17 @@ function render() {
   const empty = $('#chatEmpty'); if (empty) empty.hidden = items.length > 0;
   saveMessages(items.filter(it=>!it.typing).map(it=>{
     const box=document.createElement('div');box.innerHTML=it.html||'';
-    const text=it.who==='me'?it.text:it.type==='order'?'Order '+(it.action?.recipient||''):box.textContent;
-    return {who:it.who==='me'?'me':'bot',text,r:it.r||null,recoveryReport:it.recoveryReport||null,...(it.type==='order'?{actionId:it.actionId}:{}),...(it.msgId?{msgId:it.msgId,msgSource:it.msgSource,text:it.text}:{}),...(it.rich?{rich:it.rich}:{})};
+    // Preserve block boundaries in the plain-text history; concatenated card
+    // labels must not turn into unreadable words after reload. No HTML is saved.
+    for(const block of box.querySelectorAll('p,div,li,h1,h2,h3,h4,dt,dd,small')){block.prepend('\n');block.append('\n');}
+    const text=it.who==='me'?it.text:it.type==='order'?'Order '+(it.action?.recipient||''):box.textContent.replace(/\n{3,}/g,'\n\n').trim();
+    return {who:it.who==='me'?'me':'bot',text,r:it.r||null,recoveryReport:it.recoveryReport||null,...(it.taskId?{taskId:it.taskId}:{}),...(it.type==='order'?{actionId:it.actionId}:{}),...(it.msgId?{msgId:it.msgId,msgSource:it.msgSource,text:it.text}:{}),...(it.rich?{rich:it.rich}:{})};
   }));
   list.innerHTML = items.map(it => {
     if (it.who === 'me') return `<div class="msg me"><p>${esc(it.text)}</p></div>${it.pending ? `<div class="understood pending">${svg('spark', 'ic xs')}<span>Luna is understanding…</span></div>` : ''}${it.r ? understoodHTML(it) : ''}`;
     if (it.typing) return `<div class="msg bot typing"><span class="orbdot"></span><span class="orbdot"></span><span class="orbdot"></span></div>`;
     if (it.type === 'order') return it.missing ? `<div class="msg bot"><p>This order is no longer available on this device.</p></div>` : orderCardHTML(it.action);
-    return `<div class="msg bot ${it.wide ? 'wide' : ''} ${it.rich ? 'rich' : ''}">${it.html}${it.recoveryReport ? `<button class="btn sm" data-restored-report="${it.id}">Review saved report</button>` : ''}</div>`;
+    return `<div class="msg bot ${it.wide ? 'wide' : ''} ${it.rich ? 'rich' : ''}">${it.html}${it.taskId ? `<button class="btn sm" data-chat-task="${esc(it.taskId)}">Open task</button>` : ''}${it.recoveryReport ? `<button class="btn sm" data-restored-report="${it.id}">Review saved report</button>` : ''}</div>`;
   }).join('');
   requestAnimationFrame(() => { const s = $('#chatScroll'); if (s) s.scrollTop = s.scrollHeight; });
 }
@@ -126,7 +130,8 @@ export async function handle(text) {
   text=String(text).trim();if(!text)return;
   if(text.length>600){toast('Keep this message under 600 characters.');return;}
   const ep=threadEpoch, id=post({who:'me',text,pending:true});ctx.showChat();
-  const r=await luna.understand(text,route);
+  const taskFocus=requestContext().task_focus;
+  const r=await luna.understand(text,taskFocus?()=>({intent:'task_help',conf:1}):route);
   if(!r||ep!==threadEpoch)return;
   update(id,it=>{it.pending=false;it.r=r;});
   const factKeys={area:'area',hotel:'hotel',terminal:'terminal',taxi_plate:'plate',taxi_roof:'roof',deadline:'deadline',pet:'pet',language:'language',other:'other'};
@@ -145,8 +150,9 @@ export async function handle(text) {
       if(ep!==threadEpoch)return;
       return ctx.enterResults({ ask: text, cat: r.cat, sub: r.sub });
     }
-    case 'greeting': return botSay(`<p>Hi! Ask me for a service, a place nearby or help at the airport, or tell me if you’ve lost something.</p>${chips(['Guide me through the airport', 'Home cleaning prices', 'Coffee near me', 'I lost my wallet'])}`);
+    case 'greeting': return botSay(`<p>Hi! I can help with a service, a place nearby or your saved tasks.</p>${chips(['Home cleaning prices', 'Coffee near me', 'I lost my wallet'])}<button class="btn sm" data-chat-task-list>View my tasks</button>`);
     case 'order_status': return orderStatus();
+    case 'task_help': return taskHelp(taskFocus,r.reply);
     case 'info_question': case 'market_quote': { const rich = { kind: 'answer', r: { answer: r.answer, reply: r.reply, sources: r.sources, tool: r.tool } }; return botSay(richHTML(rich), { rich }); }
     case 'product_search': { const rich = { kind: 'products', r: { answer: r.answer, products: r.products } }; return botSay(richHTML(rich), { wide: true, rich }); }
     case 'smalltalk': return botSay('<p>'+esc(r.reply||'How can I help?')+'</p>');
@@ -155,6 +161,17 @@ export async function handle(text) {
   }
 }
 const chips = list => `<div class="qchips">${list.map(t => `<button data-say="${esc(t)}">${esc(t)}</button>`).join('')}</div>`;
+
+async function taskHelp(reference, reply) {
+  if(!reference)return botSay('<p>Open a saved task and choose Discuss this task to give me its context.</p><button class="btn sm" data-chat-task-list>View my tasks</button>');
+  try {
+    const {task}=await api('/api/tasks/'+encodeURIComponent(reference.task_id));
+    if(requestContext().task_focus?.task_id===task.id)selectTaskFocus(task);
+    if(task.revision!==reference.revision)reply='The task changed. Here are its latest saved details.';
+    const at=new Date(task.as_of).toLocaleString('en-GB',{timeZone:'Asia/Dubai',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+    return botSay(`${reply?'<p>'+esc(reply)+'</p>':''}<div class="task-next"><span>${esc(task.outcome)}</span><p>${esc(taskStateLabel(task.status))}</p>${task.next_step?'<p>Next step: '+esc(task.next_step)+'</p>':''}<small>Saved task · ${esc(at)} Dubai time. Review its details to make a change; this conversation has not sent or changed anything.</small></div>`,{taskId:task.id});
+  } catch {return botSay('<p>The saved task could not be loaded. Reopen its latest details or clear the task context and try again.</p>');}
+}
 
 // ---------------------------------------------------------------- flows
 async function offers(id) {
@@ -183,7 +200,7 @@ function richHTML(rich) {
   return '';
 }
 
-const INTENT_LABEL = { lost_item: 'Lost item', airport_guide: 'Airport guide', service_offers: 'Service', places_near: 'Places near you', order_status: 'Order status', info_question: 'Question',
+const INTENT_LABEL = { lost_item: 'Lost item', airport_guide: 'Airport guide', service_offers: 'Service', places_near: 'Places near you', order_status: 'Order status', task_help: 'Your saved task', info_question: 'Question',
   market_quote: 'Market quote', product_search: 'Shopping', greeting: 'Greeting', smalltalk: 'Chat', thanks: 'Thanks', unclear: 'Not sure yet' };
 // "Luna understood: Service · Laundry" (reference 02-rows); tap for the technical line.
 function understoodHTML(it) {

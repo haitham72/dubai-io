@@ -1,9 +1,12 @@
 // Manual responsibilities. No model, provider dispatch or background monitor.
 import { labFetch } from './api-client.js';
-import { esc, svg } from './ui.js';
+import { esc, svg, toast, closeSheet } from './ui.js';
 import { registerPage, openPage } from './page-host.js';
+import { selectTaskFocus } from './assistant-context.js';
+import { statusLabel } from './status-labels.js';
 
 const labels = { WAITING_USER: 'Waiting for your update', PAUSED: 'Paused', COMPLETED: 'Done · you reported', CANCELLED: 'Cancelled' };
+export const taskStateLabel = status => labels[status] || 'Status unavailable';
 const active = task => ['WAITING_USER', 'PAUSED'].includes(task.status);
 const date = value => value ? new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Dubai', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(value)) : '';
 const localDate = value => value ? new Date(Date.parse(value) + 4 * 3600000).toISOString().slice(0, 16) : '';
@@ -114,6 +117,8 @@ function detailHTML(data) {
     ${active(t) && t.next_step && t.next_step !== 'Add an update when you are ready.' ? `<section class="task-next"><span>Your next step</span><p>${esc(t.next_step)}</p></section>` : ''}
     ${t.result ? `<section class="task-next"><span>Result · you reported</span><p>${esc(t.result.text)}</p><small>${esc(date(t.result.as_of))} · Dubai time</small></section>` : ''}
     <p class="task-boundary">${t.status === 'CANCELLED' ? 'Tracking stopped. No request was sent from this task.' : 'Saved for your updates. Automatic checks and sending are not active yet.'}</p>
+    ${t.source ? `<section class="task-next"><span>Linked ${data.linked_item?.capability_id === 'order.request' ? 'order' : 'request'}</span><p>${esc(data.linked_item ? statusLabel(data.linked_item.status) : 'The linked item is unavailable.')}</p>${data.linked_item ? `<button class="btn wide" data-open-linked-item="${esc(t.source.id)}">Open linked item ${svg('chev', 'ic xs')}</button>` : ''}<small>Tracking does not send, cancel or complete the linked item.</small></section>` : ''}
+    <button class="btn wide" data-task-chat>Discuss this task ${svg('orb', 'ic sm')}</button>
     <p role="alert" data-task-error hidden></p><div data-task-editor></div>
     ${active(t) ? `<div class="task-actions"><button class="btn" data-task-edit>Edit task</button><button class="btn" data-task-command="${t.status === 'PAUSED' ? 'resume' : 'pause'}">${t.status === 'PAUSED' ? 'Resume' : 'Pause'}</button><button class="btn primary" data-task-complete>Mark done</button><button class="task-cancel" data-task-command="cancel">Cancel task</button></div>` : ''}
     <details class="task-activity"><summary>Activity</summary><ol>${data.events.map(e => `<li><b>${esc({created:'Saved by you',edited:'Details edited',paused:'Paused by you',resumed:'Resumed by you',cancelled:'Cancelled by you',completed:'Completion reported by you'}[e.kind] || e.kind)}</b><span>${esc(date(e.at))} · Dubai time</span>${e.fields ? `<small>Changed: ${esc(e.fields.join(', ').replaceAll('_', ' '))}</small>` : ''}</li>`).join('')}</ol>${data.before_seq ? '<button class="btn wide" data-older-events>Earlier activity</button>' : ''}</details>
@@ -169,6 +174,10 @@ registerPage('tasks.detail', {
       if (event.target.closest('[data-task-reload]')) { pending = null; load(); return; }
       if (event.target.closest('[data-task-retry]')) { send(pending.kind); return; }
       if (!data) return;
+      if (event.target.closest('[data-open-linked-item]')) { openPage('service.action', { id: data.task.source.id }); return; }
+      if (event.target.closest('[data-task-chat]')) {
+        selectTaskFocus(data.task); closeSheet(); window.dispatchEvent(new CustomEvent('dubaiio:task-chat')); return;
+      }
       const control = event.target.closest('[data-task-command]');
       const editor = root.querySelector('[data-task-editor]');
       if (control) {
@@ -217,6 +226,28 @@ registerPage('tasks.detail', {
 });
 
 function openTask(id) { openPage('tasks.detail', { id }); }
+
+export async function trackReport(report) {
+  const fields = { description: { value: report.description, provenance: 'user_supplied' } };
+  for (const field of report.fields || []) if (field.provenance === 'user_supplied' && field.value) fields[field.key] = { value: field.value, provenance: 'user_supplied' };
+  const result = await request('/api/tasks/from-report', { fields });
+  changed(); openTask(result.task.id); return result.task;
+}
+
+// Source IDs are resolved by the owner on the server. Repeated taps reopen the
+// same task, including after an ambiguous response; no action is dispatched.
+document.addEventListener('click', async event => {
+  const source = event.target.closest('[data-track-action]');
+  if (source && !source.disabled) {
+    source.disabled = true;
+    try { const result = await request('/api/tasks/from-action', { action_id: source.dataset.trackAction }); changed(); openTask(result.task.id); }
+    catch (error) { toast(error.message); }
+    finally { if (source.isConnected) source.disabled = false; }
+  }
+  const task = event.target.closest('[data-chat-task]');
+  if (task) openTask(task.dataset.chatTask);
+  if (event.target.closest('[data-chat-task-list]')) openPage('tasks.list');
+});
 
 export function createToday(root) {
   let generation = 0, visible = false, summaryGeneration = 0;

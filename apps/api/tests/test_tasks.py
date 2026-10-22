@@ -1,6 +1,6 @@
 """Owner, command/revision, recovery and honest manual-status contracts."""
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 
 from fastapi import FastAPI
@@ -9,6 +9,7 @@ import pytest
 
 from app import actions, tasks
 from app.actions import ActionEngine, ActionStore
+from app.luna.schema import TaskFocusContext
 
 
 @pytest.fixture
@@ -217,3 +218,73 @@ def test_title_only_capture_has_no_invented_next_step(client):
     task = create(c)
     assert task["next_step"] == ""
     assert command(c, task, "edit", changes={"next_step":" "}).json()["task"]["next_step"] == ""
+
+
+def report_fields():
+    return {key:{"value":value} for key,value in {"description":"Blue backpack", "when":"22 Oct 2026 10:00 Dubai time",
+            "from":"Airport Terminal 3", "to":"Deira", "payment":"Cash"}.items()}
+
+
+def test_tracking_report_is_idempotent_and_never_files_or_sends(client):
+    c, store, *_ = client
+    body = {"fields":report_fields()}
+    first = c.post("/api/tasks/from-report",json=body)
+    assert first.status_code == 200, first.text
+    task = first.json()["task"]
+    assert task["source"]["kind"] == "action" and task["mode"] == "manual"
+    second = c.post("/api/tasks/from-report",json=body).json()
+    assert second["replayed"] and second["task"]["id"] == task["id"]
+    detail = c.get(f'/api/tasks/{task["id"]}').json()
+    source = detail["linked_item"]
+    assert source["status"] == "BLOCKED" and source["evidence"] is None
+    assert source["capability_id"] == "recovery.rta" and len(source["events"]) == 1
+    assert store.db.execute("SELECT COUNT(*) FROM actions").fetchone()[0] == 1
+    assert store.db.execute("SELECT COUNT(*) FROM approvals").fetchone()[0] == 0
+    assert len(detail["events"]) == 1
+
+
+def test_tracking_order_does_not_approve_and_reopens_terminal_tracking(client):
+    c, store, *_ = client
+    action = c.post("/api/actions/prepare",json={"capability_id":"order.request", "fields":{"area":{"value":"JLT"}},
+        "order":{"provider_id":"marinaexpress","items":[{"name":"Shirt wash + press","qty":1}]}}).json()
+    assert action["status"] == "AWAITING_APPROVAL"
+    body = {"action_id":action["id"]}
+    task = c.post("/api/tasks/from-action",json=body).json()["task"]
+    cancelled = command(c, task, "cancel").json()["task"]
+    assert c.post("/api/tasks/from-action",json=body).json()["task"] == cancelled
+    assert c.get(f'/api/actions/{action["id"]}').json()["status"] == "AWAITING_APPROVAL"
+    assert store.db.execute("SELECT COUNT(*) FROM approvals").fetchone()[0] == 0
+    assert len(c.get("/api/tasks").json()["tasks"]) == 1
+
+
+def test_source_link_and_context_are_owner_bound_and_cannot_be_forged(client):
+    c, store, owner, _ = client
+    task = c.post("/api/tasks/from-report",json={"fields":report_fields()}).json()["task"]
+    other = TestClient(c.app)
+    other_owner = other.get("/api/session").json()["user_id"]
+    assert other.post("/api/tasks/from-action",json={"action_id":task["source"]["id"]}).status_code == 404
+    assert other.get("/api/tasks").json()["tasks"] == []
+    assert c.post("/api/tasks",json={"outcome":"Fake", "creation_key":"fake-source-key", "source":task["source"]}).status_code == 422
+    assert c.post("/api/tasks",json={"outcome":"Fake", "creation_key":"source:action:anything"}).status_code == 422
+    assert c.post("/api/tasks/from-report",json={"fields":{"owner":{"value":"other"}}}).status_code == 422
+    reference = TaskFocusContext(task_id=task["id"], revision=1, selected_at=datetime.now(timezone.utc))
+    with pytest.raises(tasks.HTTPException) as error:
+        tasks.resolve_context(store,other_owner,reference)
+    assert error.value.status_code == 404
+    resolved = tasks.resolve_context(store,owner,reference)
+    assert resolved["outcome"] == task["outcome"] and resolved["linked_item"]["status"] == "BLOCKED"
+    command(c,task,"edit",changes={"outcome":"New tracking title"})
+    with pytest.raises(tasks.HTTPException) as error:
+        tasks.resolve_context(store,owner,reference)
+    assert error.value.status_code == 409
+    expired = reference.model_copy(update={"selected_at":datetime.now(timezone.utc)-timedelta(hours=1)})
+    assert tasks.resolve_context(store,owner,expired) is None
+
+
+def test_missing_source_does_not_hide_task_or_its_history(client):
+    c, store, *_ = client
+    task = c.post("/api/tasks/from-report",json={"fields":report_fields()}).json()["task"]
+    store.db.execute("DELETE FROM actions WHERE id=?",(task["source"]["id"],))
+    store.db.commit()
+    detail = c.get(f'/api/tasks/{task["id"]}').json()
+    assert detail["task"]["id"] == task["id"] and detail["linked_item"] is None and detail["events"]

@@ -1,5 +1,5 @@
 // Understanding only; this module never executes service actions.
-const INTENTS = new Set(['lost_item','airport_guide','service_offers','places_near','order_status','info_question','market_quote','product_search','greeting','smalltalk','unclear']);
+const INTENTS = new Set(['lost_item','airport_guide','service_offers','places_near','order_status','task_help','info_question','market_quote','product_search','greeting','smalltalk','unclear']);
 const SERVICES = new Set(['laundry','cleaning','ac','grooming','carwash','pharmacy','maid']);
 const CATEGORIES = new Set(['pets','food','coffee','barber','home-help','laundry','clothing','fix-it']);
 export function mapUnderstanding(value) {

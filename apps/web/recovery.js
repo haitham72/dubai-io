@@ -1,4 +1,5 @@
 import { statusLabel } from './status-labels.js';
+import { trackReport } from './tasks.js';
 import { openRecoveryRequest } from './service-workflow.js';
 // C6: user-given reports and explicitly simulated card/cash trace paths.
 import { $, svg, esc, toast, closeSheet, told, reduced } from './ui.js';
@@ -31,6 +32,12 @@ export function handleRecoveryClick(e) {
 registerPage('recovery.detail', { title: c => c.title, source: 'Dubai-io · lost item', render: c => '<div class="rec-sheet">' + c.body + '</div>' });
 function sheet(title, body, options) { return openPage('recovery.detail', { title, body }, options); }
 function reportButton(s, label = 'Prepare RTA report') { return button(svg('globe', 'ic sm') + ' ' + label, () => openReport(s), 'sm'); }
+async function keepTrackReport(report, control) {
+  control.disabled = true;
+  try { await trackReport(report); }
+  catch (error) { toast(error.message); }
+  finally { if (control.isConnected) control.disabled = false; }
+}
 const itemName = s => s.item === 'item' ? 'something' : 'your ' + s.item;
 
 export async function startRecovery({ item = 'item', where = null } = {}) {
@@ -106,7 +113,7 @@ function openReport(s) {
     e.target.querySelector('button').disabled = true;
     saveDraft('recovery', {item:s.item,where:s.where,report:s.report});
     reportReady(s);
-    ctx.post({ wide: true, recoveryReport:{item:s.item,where:s.where,report:s.report}, html: `<div class="rec-card"><div class="rec-title"><span class="rec-icon">${svg('check')}</span><h3>Report prepared</h3></div><span class="rec-code" data-status="PREPARED_NOT_FILED">${esc(statusLabel('PREPARED_NOT_FILED'))}</span><p>${esc(s.report.description)}</p><p class="rec-fine">Not filed · not recovered.</p>${button('View report', () => reportReady(s), 'sm', true)}</div>` });
+    ctx.post({ wide: true, recoveryReport:{item:s.item,where:s.where,report:s.report}, html: `<div class="rec-card"><div class="rec-title"><span class="rec-icon">${svg('check')}</span><h3>Report prepared</h3></div><span class="rec-code" data-status="PREPARED_NOT_FILED">${esc(statusLabel('PREPARED_NOT_FILED'))}</span><p>${esc(s.report.description)}</p><p class="rec-fine">Not filed · not recovered.</p>${button('View report', () => reportReady(s), 'sm', true)}${button('Keep track of this', b => keepTrackReport(s.report, b), 'sm', true)}</div>` });
   });
 }
 async function copyReport(report) {
@@ -116,7 +123,7 @@ async function copyReport(report) {
 }
 function reportReady(s) {
   const report = s.report;
-  sheet('Report ready', `<div class="rec-ready"><span class="rec-icon">${svg('check')}</span><div><h3>Prepared, not filed</h3><span class="rec-code" data-status="PREPARED_NOT_FILED">${esc(statusLabel('PREPARED_NOT_FILED'))}</span></div></div><p class="rec-intro">${esc(report.description)}</p><section class="rec-report-trip"><dl>${report.fields.filter(f => s.where !== 'metro' || ['when', 'from', 'to'].includes(f.key)).map(f => `<div><dt>${esc(f.label)}</dt><dd>${esc(f.value || 'Not given')}</dd></div>`).join('')}</dl></section><p class="rec-not-recovered">Your item is not recovered.</p><div class="rec-sheet-actions">${button(svg('globe', 'ic sm') + ' Continue with this report', () => openRecoveryRequest(report), 'primary wide', true)}<a class="btn wide" href="tel:8009090">${svg('phone', 'ic sm')} Call RTA · 800 9090</a><details class="rec-external"><summary>Manual alternatives</summary>${button(svg('wallet', 'ic sm') + ' Copy report', () => copyReport(report), 'wide', true)}</details><textarea id="recCopyText" class="rec-copy" readonly hidden aria-label="Report text to copy"></textarea></div><p class="rec-fine">Continue keeps this report as a saved request. The RTA reporting integration is not connected; nothing has been filed.</p>`, { replace: true });
+  sheet('Report ready', `<div class="rec-ready"><span class="rec-icon">${svg('check')}</span><div><h3>Prepared, not filed</h3><span class="rec-code" data-status="PREPARED_NOT_FILED">${esc(statusLabel('PREPARED_NOT_FILED'))}</span></div></div><p class="rec-intro">${esc(report.description)}</p><section class="rec-report-trip"><dl>${report.fields.filter(f => s.where !== 'metro' || ['when', 'from', 'to'].includes(f.key)).map(f => `<div><dt>${esc(f.label)}</dt><dd>${esc(f.value || 'Not given')}</dd></div>`).join('')}</dl></section><p class="rec-not-recovered">Your item is not recovered.</p><div class="rec-sheet-actions">${button('Keep track of this', b => keepTrackReport(report, b), 'primary wide', true)}${button(svg('globe', 'ic sm') + ' Continue with this report', () => openRecoveryRequest(report), 'wide', true)}<a class="btn wide" href="tel:8009090">${svg('phone', 'ic sm')} Call RTA · 800 9090</a><details class="rec-external"><summary>Manual alternatives</summary>${button(svg('wallet', 'ic sm') + ' Copy report', () => copyReport(report), 'wide', true)}</details><textarea id="recCopyText" class="rec-copy" readonly hidden aria-label="Report text to copy"></textarea></div><p class="rec-fine">Continue keeps this report as a saved request. The RTA reporting integration is not connected; nothing has been filed.</p>`, { replace: true });
 }
 
 export function restoreReport(record) {

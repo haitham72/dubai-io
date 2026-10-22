@@ -71,3 +71,14 @@ def test_selected_context_is_bounded_and_not_checkpointed_or_reused(memory):
 
 def test_recent_working_memory_is_bounded():
     assert len(luna.recent_history([{"role":"user","text":"old"}]*24,[{"role":"user","text":"new"}]*2)) == 24
+
+
+def test_resolved_task_context_is_transient_and_does_not_become_memory(memory):
+    saver,prompts = memory
+    context = {"task_id":"private-task", "revision":3, "outcome":"Task-only private reference", "status":"PAUSED"}
+    luna.turn("one","alice","What should I do next?",task_context=context)
+    assert "Task-only private reference" in prompts[-1] and "no execution authority" in prompts[-1]
+    assert "Task-only private reference" not in json.dumps([row.checkpoint for row in saver.list(None)])
+    luna.turn("one","alice","Hello again")
+    assert "Task-only private reference" not in prompts[-1]
+    assert luna.facts.current("alice") == []

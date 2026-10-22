@@ -6,5 +6,9 @@ export function selectFocus(value) {
 }
 export function requestContext() {
   if (!focus || Date.now() - Date.parse(focus.selected_at) > 1800000) return {};
+  if (focus.task_id) return { task_focus: { task_id: focus.task_id, revision: focus.revision, selected_at: focus.selected_at } };
   return { focus: { ...focus } };
+}
+export function selectTaskFocus(task) {
+  selectFocus({ task_id: task.id, revision: task.revision, entity_name: task.outcome });
 }

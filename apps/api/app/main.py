@@ -23,8 +23,9 @@ from .profile import router as profile_router
 from .recommendations import router as recommendations_router
 from .discovery import router as discovery_router
 from .tasks import router as tasks_router
+from .tasks import resolve_context as resolve_task_context
 from .luna import graph as luna
-from .luna.schema import FactKey, FocusContext
+from .luna.schema import FactKey, FocusContext, TaskFocusContext
 
 app = FastAPI(title="Dubai-io API", version="0.1.0")
 app.include_router(auth_router)
@@ -59,6 +60,7 @@ class TurnIn(BaseModel):
     thread_id: str = Field(default_factory=lambda: uuid.uuid4().hex, max_length=64)
     user_id: str = Field(default="demo-user", max_length=64)
     focus: FocusContext | None = None
+    task_focus: TaskFocusContext | None = None
 
 
 class PlacesIn(BaseModel):
@@ -99,7 +101,10 @@ def luna_turn(body: TurnIn, request: Request):
         raise HTTPException(503, "OPENAI_API_KEY is not set")
     try:
         owner = engine().store.owner(request.cookies.get(COOKIE))
-        return luna.turn(body.thread_id, owner, body.text, **({"focus":body.focus} if body.focus else {}))
+        context = {"focus": body.focus} if body.focus else {}
+        if body.task_focus:
+            context["task_context"] = resolve_task_context(engine().store, owner, body.task_focus)
+        return luna.turn(body.thread_id, owner, body.text, **context)
     except HTTPException:
         raise
     except Exception as err:  # the web falls back to its lab router

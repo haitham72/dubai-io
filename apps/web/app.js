@@ -1006,10 +1006,11 @@ wireChat(); wireOffers(); wireGuide(); initPageHost(); initProviderPages();
 $('#chatBack').addEventListener('click', leaveChat);
 addEventListener('dubaiio:focus', e => {
   const el = $('#chatFocus'); el.hidden = !e.detail;
-  el.innerHTML = e.detail ? '<span>About ' + esc(e.detail.entity_name) + '</span><button class="btn sm" aria-label="Clear selected place">Clear</button>' : '';
+  el.innerHTML = e.detail ? '<span>' + (e.detail.task_id ? 'Task: ' : 'About ') + esc(e.detail.entity_name) + '</span><button class="btn sm" aria-label="Clear selected context">Clear</button>' : '';
   el.querySelector('button')?.addEventListener('click', () => selectFocus(null));
 });
 $('#chatLaunch').addEventListener('click', beginChat);
+addEventListener('dubaiio:task-chat', beginChat);
 function openToday() {
   if (S.view !== 'home' || S.mode !== 'home') return;
   today.open(); $('#todayLaunch').setAttribute('aria-expanded', 'true');

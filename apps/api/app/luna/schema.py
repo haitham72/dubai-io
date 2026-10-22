@@ -4,9 +4,22 @@ statuses (CLAUDE.md rules 1, 2, 7). The host decides what happens next."""
 from typing import Literal, Optional
 
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 
-Intent = Literal["lost_item", "airport_guide", "service_offers", "places_near", "order_status", "info_question", "market_quote", "product_search", "greeting", "smalltalk", "unclear"]
+Intent = Literal[
+    "lost_item",
+    "airport_guide",
+    "service_offers",
+    "places_near",
+    "order_status",
+    "task_help",
+    "info_question",
+    "market_quote",
+    "product_search",
+    "greeting",
+    "smalltalk",
+    "unclear",
+]
 Service = Literal["laundry", "cleaning", "ac", "grooming", "carwash", "pharmacy", "maid"]
 Category = Literal["pets", "food", "coffee", "barber", "home-help", "laundry", "clothing", "fix-it"]
 FactKey = Literal["area", "hotel", "terminal", "taxi_plate", "taxi_roof", "deadline", "pet", "language", "other"]
@@ -24,6 +37,14 @@ class FocusContext(BaseModel):
     area: str | None = Field(default=None, max_length=80)
     plan_id: str | None = Field(default=None, max_length=64)
     plan_revision: int | None = Field(default=None, ge=1)
+
+
+class TaskFocusContext(BaseModel):
+    """Only a reference leaves the client; task content is resolved by its owner."""
+    model_config = ConfigDict(extra="forbid")
+    task_id: str = Field(min_length=1, max_length=64)
+    revision: int = Field(ge=1)
+    selected_at: AwareDatetime
 
 
 class StatedFact(BaseModel):

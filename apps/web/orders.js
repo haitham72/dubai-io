@@ -146,6 +146,7 @@ export function orderCardHTML(a) {
       <div><b>${title}</b><span>${o.lines.map(l => `${l.qty}× ${esc(l.name)}`).join(', ')} · ${money(a.fixed_total_aed)} · sandbox merchant</span></div><span class="st-pill" data-status="${esc(a.status)}">${esc(statusLabel(a.status))}</span></div>
     <ol class="st-steps">${steps.map(x => `<li class="done"><span class="st-dot">${svg('check', 'ic xs')}</span><div><b>${esc(x.label)}</b><span>${fmt(x.at)}</span></div></li>`).join('')}${waiting && !done ? `<li class="now"><span class="st-dot"></span><div><b>${waiting}</b><span>No status changes until the shop taps</span></div></li>` : ''}</ol>
     ${conflict}${pending}${remind}
+    <button class="btn sm" data-track-action="${esc(a.id)}">Keep track of this ${svg('chev', 'ic xs')}</button>
     <p class="st-ref">${a.evidence ? `Ref ${esc(a.evidence.reference)} · ` : ''}the price can’t change now</p>
   </div>`;
 }

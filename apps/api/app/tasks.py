@@ -13,7 +13,7 @@ from uuid import uuid4
 from fastapi import APIRouter, HTTPException, Query, Request, Response
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from .actions import COOKIE, engine, fingerprint
+from .actions import COOKIE, InputValue, PrepareIn, annotate, engine, fingerprint
 
 router = APIRouter(tags=["tasks"])
 clock = lambda: datetime.now(timezone.utc)
@@ -50,6 +50,23 @@ class TaskFields(BaseModel):
 
 class CreateTask(TaskFields):
     creation_key: str = Field(min_length=8, max_length=100)
+
+    @field_validator("creation_key")
+    @classmethod
+    def reserved_source_keys(cls, value):
+        if value.startswith("source:"):
+            raise ValueError("This save key is reserved for linked items")
+        return value
+
+
+class TrackAction(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    action_id: str = Field(min_length=1, max_length=64)
+
+
+class TrackReport(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    fields: dict[str, InputValue] = Field(min_length=1, max_length=10)
 
 
 class TaskChanges(BaseModel):
@@ -159,14 +176,44 @@ class Tasks:
                 if row[1] != digest:
                     raise HTTPException(409, "This save key already belongs to different task details")
                 return {"task": self.get(owner, row[0]), "replayed": True}
-            at = clock().isoformat()
-            task = {"id": uuid4().hex, **data, "revision": 1, "status": "WAITING_USER",
-                    "mode": "manual", "created_at": at, "updated_at": at, "cancelled_at": None,
-                    "result": None, "provenance": "user_supplied", "as_of": at}
-            self.store.db.execute("INSERT INTO tasks VALUES (?,?,?,?,?,?,?,?,?)",
-                                  (task["id"], owner, body.creation_key, digest, 1, task["status"], None, at, json.dumps(task)))
-            self.event(owner, task, "create:" + body.creation_key, digest, "created", {"actor": "user"})
-            return {"task": task, "replayed": False}
+            return self.insert(owner, body.creation_key, digest, data)
+
+    def insert(self, owner, creation_key, digest, data):
+        """Called only within the owner write transaction; reference capture never executes."""
+        at = clock().isoformat()
+        task = {"id": uuid4().hex, **data, "revision": 1, "status": "WAITING_USER",
+                "mode": "manual", "created_at": at, "updated_at": at, "cancelled_at": None,
+                "result": None, "provenance": "user_supplied", "as_of": at}
+        self.store.db.execute("INSERT INTO tasks VALUES (?,?,?,?,?,?,?,?,?)",
+                              (task["id"], owner, creation_key, digest, 1, task["status"], None, at, json.dumps(task)))
+        self.event(owner, task, "create:" + creation_key, digest, "created", {"actor": "user"})
+        return {"task": task, "replayed": False}
+
+    def track_action(self, owner, action_id):
+        with self.transaction(owner, write=True):
+            # Read, never reconcile or dispatch, the canonical owner-bound item.
+            action = self.store.get(owner, action_id)
+            creation_key = "source:action:" + action_id
+            row = self.store.db.execute("SELECT id FROM tasks WHERE owner=? AND creation_key=?", (owner, creation_key)).fetchone()
+            if row:
+                return {"task": self.get(owner, row[0]), "replayed": True}
+            recovery = action["capability_id"] == "recovery.rta"
+            title = ("Lost item: " + action["fields"].get("description", {}).get("value", "my report")) if recovery else (
+                "Follow up with " + ((action.get("order") or {}).get("provider") or action["recipient"]))
+            data = values(TaskFields(outcome=title[:240]))
+            data["source"] = {"kind": "action", "id": action_id}
+            return self.insert(owner, creation_key, fingerprint(data), data)
+
+    def linked_item(self, owner, task):
+        source = task.get("source")
+        if not source or source["kind"] != "action":
+            return None
+        try:
+            return annotate(self.store.get(owner, source["id"]))
+        except HTTPException as error:
+            if error.status_code != 404:
+                raise
+            return None  # Tracking/history remain readable if its source disappears.
 
     def command(self, owner, task_id, body):
         payload = values(body, exclude={"command_key"})
@@ -248,6 +295,23 @@ def presented_result(result):
     return {**result, "task": present(result["task"])}
 
 
+def resolve_context(store, owner, reference):
+    """Resolve IDs, ownership and revision before supplying transient model context."""
+    if not 0 <= (clock() - reference.selected_at).total_seconds() <= 1800:
+        return None
+    tasks = Tasks(store)
+    with tasks.transaction(owner):
+        task = tasks.get(owner, reference.task_id)
+        if task["revision"] != reference.revision:
+            raise HTTPException(409, "This task changed. Reopen its latest details before discussing it.")
+        item = tasks.linked_item(owner, task)
+        return {"task_id": task["id"], "revision": task["revision"], "outcome": task["outcome"],
+                "next_step": task["next_step"], "details": task["details"], "due_at": task["due_at"],
+                "status": task["status"], "result": task["result"], "mode": task["mode"],
+                "linked_item": {"id": item["id"], "status": item["status"], "missing": item["missing"],
+                    "evidence": item.get("evidence"), "fields": {k: v["value"][:300] for k, v in item["fields"].items()}} if item else None}
+
+
 @router.post("/api/tasks")
 def create_task(body: CreateTask, request: Request, response: Response):
     tasks, owner = owned(request, response)
@@ -261,6 +325,22 @@ def list_tasks(request: Request, response: Response, offset: int = Query(default
         rows = tasks.store.db.execute("SELECT data FROM tasks WHERE owner=? ORDER BY updated_at DESC,id DESC LIMIT ? OFFSET ?",
                                        (owner, limit + 1, offset)).fetchall()
         return {"tasks": [present(json.loads(r[0])) for r in rows[:limit]], "next_offset": offset + limit if len(rows) > limit else None}
+
+
+@router.post("/api/tasks/from-action")
+def track_action(body: TrackAction, request: Request, response: Response):
+    tasks, owner = owned(request, response)
+    return presented_result(tasks.track_action(owner, body.action_id))
+
+
+@router.post("/api/tasks/from-report")
+def track_report(body: TrackReport, request: Request, response: Response):
+    tasks, owner = owned(request, response)
+    # Saving the prepared report has a stable payload key across retries/reloads.
+    # The fixed capability has no adapter; this endpoint never calls approve.
+    action = engine().prepare(owner, PrepareIn(capability_id="recovery.rta", fields=body.fields,
+        preparation_key="report-task:" + fingerprint({k: v.model_dump() for k, v in body.fields.items()})))
+    return presented_result(tasks.track_action(owner, action["id"]))
 
 
 @router.get("/api/today")
@@ -286,7 +366,8 @@ def today(request: Request, response: Response):
 def task_detail(task_id: str, request: Request, response: Response):
     tasks, owner = owned(request, response)
     with tasks.transaction(owner):
-        return {"task": present(tasks.get(owner, task_id)), **tasks.activity(owner, task_id)}
+        task = tasks.get(owner, task_id)
+        return {"task": present(task), "linked_item": tasks.linked_item(owner, task), **tasks.activity(owner, task_id)}
 
 
 @router.get("/api/tasks/{task_id}/activity")
