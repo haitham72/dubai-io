@@ -183,6 +183,17 @@ async def places_photo(name: str = Query(max_length=1200), w: int = 480):
     return Response(data, media_type=kind, headers={"Cache-Control": "private, max-age=3600"})
 
 
+@app.get("/api/maps/config")
+def maps_config(request: Request):
+    """Browser key for the interactive in-app Google map. The server Places key is
+    lent only to a local preview (localhost) so it never ships to real users."""
+    if settings.google_maps_browser_key:
+        return {"key": settings.google_maps_browser_key, "source": "browser_key"}
+    if request.url.hostname in {"localhost", "127.0.0.1", "::1"} and settings.google_key:
+        return {"key": settings.google_key, "source": "local_preview_fallback"}
+    raise HTTPException(503, "Interactive map not configured")
+
+
 @app.get("/api/staticmap")
 async def staticmap(c: str = Query(pattern=r"^-?\d+(\.\d+)?,-?\d+(\.\d+)?$"), m: str = Query(default="", max_length=400), z: int | None = Query(default=None, ge=3, le=20), s: str = Query(default="wide", pattern="^(wide|tall)$")):
     """Google map image with up to 9 numbered pins: c=lat,lng · m=lat,lng|lat,lng · z=zoom."""

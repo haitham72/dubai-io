@@ -1,3 +1,4 @@
+import { createLiveMap } from './gmap.js';
 import { notify, sourceMoment, allowNotifications } from './notify.js';
 import { initSimKeyboard } from './sim-keyboard.js';
 import { assistHTML, mountAssist } from './assist.js';
@@ -109,6 +110,7 @@ document.body.insertAdjacentHTML('beforeend', `
   <section id="results" class="results" aria-label="Map near you">
     <div id="mapEl" class="mapbox" hidden></div>
     <img id="gmap" class="gmap" alt="" hidden>
+    <div id="gliveMap" class="gmap glive" role="region" aria-label="Interactive Google map of the results" hidden></div>
     <div id="mapPlaceholder" class="map-placeholder" role="status"><span>${svg('map')}</span><p>Finding places…</p></div>
     <div class="map-fallback" id="mapFallback" hidden>Map needs WebGL. The list below has every place.</div>
     <div class="r-top">
@@ -773,13 +775,24 @@ function goBack() {
   if (S.view === 'results' && S.from === 'chat') { setView('chat'); return; }
   setView('home');
 }
+// Live results draw on an interactive Google map inside the app; the static image
+// is only a fallback when the interactive map cannot load.
+let liveMap = null, liveMapFailed = false, liveMapGeneration = 0;
 function showGoogleMap(list, one) {
-  const g = $('#gmap'), live = liveState();
+  const g = $('#gmap'), live = liveState(), mine = ++liveMapGeneration;
   g.hidden = true;
   if (S.mapMode !== '2d') return;
   $('#mapPlaceholder').hidden = false;
-  $('#mapPlaceholder p').textContent = live?.status === 'error' ? 'Places are unavailable right now.' : live?.status === 'ok' ? 'Loading your 2D map…' : 'Finding places…';
+  $('#mapPlaceholder p').textContent = live?.status === 'error' ? 'Places are unavailable right now.' : live?.status === 'ok' ? 'Loading your map…' : 'Finding places…';
   if (live?.status !== 'ok') return;
+  if (!liveMapFailed) {
+    (liveMap ||= createLiveMap($('#gliveMap'), { onPick: id => openDetail(id) })).then(m => {
+      if (mine !== liveMapGeneration || S.mapMode !== '2d' || S.view !== 'results') return;
+      $('#gliveMap').hidden = false; $('#mapPlaceholder').hidden = true;
+      m.show(list.slice(0, 20), { one, center: areaCenter() });
+    }).catch(() => { liveMapFailed = true; liveMap = null; if (mine === liveMapGeneration) showGoogleMap(list, one); });
+    return;
+  }
   const c = areaCenter(), pins = (one ? [one] : list.slice(0, 9)).map(p => `${p.lat.toFixed(6)},${p.lng.toFixed(6)}`).join('|');
   const src = `/api/staticmap?s=tall&c=${c.lat},${c.lng}&m=${encodeURIComponent(pins)}${one ? '&z=16' : ''}`;
   g.alt = one ? `Google map: ${one.name}` : 'Google map of the results';
@@ -791,6 +804,7 @@ function refit() {
   const is3D = S.mapMode === '3d', generation = ++cameraGeneration;
   $('#mapEl').hidden = !is3D;
   $('#gmap').hidden = true;
+  if (is3D) $('#gliveMap').hidden = true;
   $('#mapPlaceholder').hidden = is3D;
   $('#mapFallback').hidden = true;
   $('#rDemo').hidden = !is3D;
@@ -948,12 +962,13 @@ function renderLiveDetail(p) {
       ${p.open != null ? `<li>${svg('clock', 'ic sm')}<span>${p.open ? 'Open now' : 'Closed now'} · Google</span></li>` : ''}
       <li>${svg('pin', 'ic sm')}<span>${esc(p.address || p.area)} · ${p.km} km (straight line)</span></li>
     </ul>
-    ${p.maps ? `<a class="btn primary wide big" href="${esc(p.maps)}" target="_blank" rel="noopener noreferrer">${svg('nav', 'ic sm')} Directions in Google Maps</a>` : ''}
+    <button class="btn primary wide big" id="showOnMap">${svg('map', 'ic sm')} Show on the map</button>
     <div class="actions">${p.phone ? `<a class="btn" href="tel:${esc(p.phone.replace(/[^+0-9]/g, ''))}">${svg('phone', 'ic sm')} Call</a>` : ''}${p.website ? `<a class="btn" href="${esc(p.website)}" target="_blank" rel="noopener noreferrer">${svg('globe', 'ic sm')} Website</a>` : ''}</div>
     <button class="btn wide" id="askPlace">Ask about this place</button>
     ${topicFor(S.cat, S.sub) ? '<button class="btn wide" id="hidePlace">Hide this place for 7 days</button><p class="fine" id="hidePlaceStatus" role="status"></p>' : ''}
-    <p class="fine">Live from Google Maps. Not a Dubai-io partner: nothing is ordered or shared here.${p.photoBy ? ' Photo: ' + esc(p.photoBy) + ' (Google Maps).' : ''}</p>`;
+    <p class="fine">Live from Google Maps. Not a Dubai-io partner: nothing is ordered or shared here.${p.photoBy ? ' Photo: ' + esc(p.photoBy) + ' (Google Maps).' : ''}${p.maps ? ` <a href="${esc(p.maps)}" target="_blank" rel="noopener noreferrer">Navigate with Google Maps</a>` : ''}</p>`;
   $('#dBack').addEventListener('click', backToList);
+  $('#showOnMap').addEventListener('click', () => { setSnap('peek'); showGoogleMap([], p); });
   $('#askPlace').addEventListener('click', beginChat);
   $('#hidePlace')?.addEventListener('click', async e => {
     const button = e.currentTarget, id = p.id;

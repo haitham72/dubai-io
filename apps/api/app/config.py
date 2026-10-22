@@ -28,6 +28,9 @@ class Settings:
     luna_timeout_s = float(os.getenv("LUNA_TIMEOUT_S", "20"))
     openai_api_key = os.getenv("OPENAI_API_KEY", "")
     google_key = os.getenv("GOOGLE_PLACES_KEY", "")
+    # Maps JavaScript keys are visible in the browser by design: use a separate key
+    # restricted to your site (HTTP referrer) and to the Maps JavaScript API.
+    google_maps_browser_key = os.getenv("GOOGLE_MAPS_BROWSER_KEY", "")
     google_oauth_client_id = os.getenv("GOOGLE_OAUTH_CLIENT_ID", "")
     google_oauth_client_secret = os.getenv("GOOGLE_OAUTH_CLIENT_SECRET", "")
     google_oauth_redirect_uri = os.getenv("GOOGLE_OAUTH_REDIRECT_URI", "")

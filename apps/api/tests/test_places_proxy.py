@@ -33,3 +33,14 @@ def test_static_map_validates_coordinates(client):
 def test_key_never_appears_in_search_output_shape():
     # the browser receives a photo *name*, never a URL carrying the key
     assert "key=" not in google_maps.PLACE_FIELDS
+
+
+def test_maps_config_never_lends_the_server_key_off_localhost(monkeypatch):
+    from fastapi.testclient import TestClient
+    from app import main
+    monkeypatch.setattr(main.settings, "google_maps_browser_key", "")
+    monkeypatch.setattr(main.settings, "google_key", "server-key")
+    assert TestClient(main.app, base_url="http://127.0.0.1").get("/api/maps/config").json() == {"key": "server-key", "source": "local_preview_fallback"}
+    assert TestClient(main.app, base_url="https://dubai.example").get("/api/maps/config").status_code == 503
+    monkeypatch.setattr(main.settings, "google_maps_browser_key", "browser-key")
+    assert TestClient(main.app, base_url="https://dubai.example").get("/api/maps/config").json()["key"] == "browser-key"
