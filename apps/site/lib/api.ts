@@ -107,7 +107,7 @@ export interface NewsArticle {
   url?: string;
   source?: string;
   published_at?: string;
-  image?: string | null;
+  thumbnail?: { url?: string; credit?: string } | null;
   provenance?: string;
 }
 

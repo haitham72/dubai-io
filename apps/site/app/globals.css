@@ -71,3 +71,179 @@ a {
     transition: none !important;
   }
 }
+
+/* ---------- Signed-in app shared utilities ---------- */
+
+.appWrap {
+  margin: 0 auto;
+  max-width: var(--max-width);
+  padding: 0 24px 96px;
+}
+
+.tabbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--background);
+  border-bottom: 1px solid var(--line);
+}
+
+.tabbarInner {
+  margin: 0 auto;
+  max-width: var(--max-width);
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow-x: auto;
+}
+
+.tabbar a {
+  padding: 14px 14px;
+  font-size: 0.95rem;
+  text-decoration: none;
+  color: var(--muted);
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+}
+
+.tabbar a[aria-current="page"] {
+  color: var(--foreground);
+  border-bottom-color: var(--accent);
+  font-weight: 600;
+}
+
+.appHead {
+  padding: 32px 0 8px;
+}
+
+.appHead h1 {
+  margin: 0 0 8px;
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  letter-spacing: -0.02em;
+}
+
+.appHead p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.listRows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.rowCard {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--background);
+  padding: 16px 18px;
+}
+
+.rowCard h3 {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+}
+
+.rowCard h3 a {
+  color: var(--foreground);
+  text-decoration: none;
+}
+
+.rowCard h3 a:hover {
+  text-decoration: underline;
+}
+
+.rowCard p {
+  margin: 0 0 8px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.rowMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  align-items: center;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.inlineForm {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.textInput {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 10px 18px;
+  font-size: 1rem;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.btnPrimary,
+.btnGhost {
+  border-radius: 999px;
+  padding: 10px 22px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  white-space: nowrap;
+  border: 1px solid var(--accent);
+}
+
+.btnPrimary {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.btnGhost {
+  background: transparent;
+  color: var(--accent);
+}
+
+.btnGhost:disabled,
+.btnPrimary:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.chip {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  color: var(--muted);
+  background: var(--band);
+  text-decoration: none;
+}
+
+a.chip[aria-pressed="true"],
+button.chip[aria-pressed="true"] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+img.appImg {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  border-radius: var(--radius);
+  background: var(--band);
+}
