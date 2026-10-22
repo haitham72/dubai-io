@@ -1,6 +1,6 @@
 # Detailed implementation plan
 
-Execution detail for the authoritative [PLAN.md](../PLAN.md). This is the durable task breakdown, not a second scope document. Updated 22 Oct 2026 after temporal qualification/trusted discovery and the founder's product-direction change. The active planning proposal is [personal-assistant-direction.md](references/personal-assistant-direction.md). Consult code to establish progress; never infer that a proposal or service case is implemented.
+Execution detail for the authoritative [PLAN.md](../PLAN.md). Updated 22 Oct 2026 after temporal qualification/trusted discovery and the founder's product-direction change. Product rationale: [personal-assistant-direction.md](references/personal-assistant-direction.md). Expanded screens, source/task contracts, delivery slices and acceptance gates: [assistant-experience-plan.md](references/assistant-experience-plan.md). External review: [assistant-plan-review-prompt.md](references/assistant-plan-review-prompt.md). These linked plans are proposals, not implementation claims; existing checkpoint details remain below.
 
 ## 0. Decisions that survive a session change
 
@@ -12,6 +12,10 @@ Execution detail for the authoritative [PLAN.md](../PLAN.md). This is the durabl
 6. Preserve Wi-Fi concept onboarding, slow gradients, cyan and approved purple fringe, no shadows, one category row with Back, explicit 2D/3D selection, and the browse dock that collapses into one chat composer.
 7. Keep FastAPI/LangGraph, the deterministic action engine, fixed published prices, approval snapshots, idempotency, outbox and SSE. Supabase supplies Postgres and later Auth/Storage/Edge integrations. Do not rewrite orchestration into Edge Functions just to use another service.
 8. No bidding, purchasing/payments, government execution, invented locations/statuses or fake provider integrations. Provider access limits produce a truthful draft/handoff, not a fake Send or a dead TBD button. No provider applications/outreach without an explicit request.
+
+## Extended assistant proposal — active planning/review
+
+The extended proposal adds UX-01 through UX-04, BRF-01 through BRF-06, DATA-01, API-01, RUN-01 and ATTN-01 planning contracts. Suggested delivery: EXP-00 experience review -> CORE-01/02 complete task outcomes -> BRIEF-01 reviewed-source briefing -> CONNECT-01 -> ROUTINE-01 -> CHANNEL-01 -> justified expansion. The first pilot jobs/audience and source shortlist remain open; do not implement every proposed slice or resume native work automatically. Background reliability still depends on healthy durable writes.
 
 ## 1. Database foundation — local checkpoint reached
 

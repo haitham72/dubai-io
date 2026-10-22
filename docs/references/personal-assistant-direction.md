@@ -2,6 +2,8 @@
 
 Status: **product direction and feature proposal, not implemented capabilities**. The founder explicitly changed the visitor-first framing. PLAN.md remains authoritative; this document develops the proposed product and pilot. Current source checkpoint: `6470ad4` on `redesign`. Native work stays parked.
 
+Expanded screen/state, task/source and phased delivery detail is in [assistant-experience-plan.md](assistant-experience-plan.md), including the founder's swipe-up personalized briefing addition. The [external review prompt](assistant-plan-review-prompt.md) requests critique before implementation. The targeted redesign preserves the approved visual language and existing discovery/action foundations.
+
 ## 1. Founder instruction and audience
 
 > no, change of plans, learn from openai dots/grok dots/claude due and suggest features in a mature way, it is for dubai but it is not a companion for visitios

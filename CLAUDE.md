@@ -23,6 +23,7 @@ Civic guidance is LATER. **Status:** source checkpoint `6470ad4` has documented 
 | `docs/request-backlog.md` | Ordered requests, clarifications and outstanding work |
 | `docs/implementation-plan.md` | Nested implementation tasks and acceptance gates under PLAN.md |
 | `docs/references/personal-assistant-direction.md` | Researched everyday-assistant proposal, pilot decisions and dependencies; not implemented scope |
+| `docs/references/assistant-experience-plan.md` | Expanded Today/task/briefing UX, source contracts, delivery slices and gates; external review prompt is beside it |
 | `docs/user-app-review-guide.md` | Founder review checklist |
 | `docs/references/` | `redesign.md` (screen references), `visuals-libraries.md` (supplied prompts, verbatim), `api-catalog.md` |
 | `docs/services/` | `cases.md` + `intake.md`. New ideas go here, never into `PLAN.md` |

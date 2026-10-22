@@ -2,6 +2,8 @@
 
 **Historical screen prompts, with current overrides (13 Oct).** Use these for visual anatomy and exact copy only where consistent with `CLAUDE.md` and `PLAN.md`. Supplied prompt blocks below are preserved; they do not override newer founder decisions.
 
+**22 Oct override:** visitor-first framing is superseded. The proposed next design is a targeted Today/task experience with an accessible swipe-up personal briefing, specified in `assistant-experience-plan.md`. Preserve approved cyan/gradients, no shadows, single composer and explicit map modes. The older coverflow/arrival prompts below are historical references, not requirements to force every user through a visitor journey. New screens remain proposed, not implemented.
+
 - Current tabs: **io · Maps · Services · Me**; Civic remains LATER. Idle has one bottom composer above the tab bar; active chat hides the bar. Top-search/no-idle-composer instructions below are superseded (`PLAN.md` §4 (reference parity)).
 - Home is the cyan coverflow stage. The `01-home.png` hero/card layout now belongs at the top of Services (`PLAN.md` §4 (reference parity)); remove duplicate assistant inputs.
 - Cyan is selected. Every stage card uses C1’s preferred laser/chromatic reflection at 70% of its previous strength; onboarding card movement must be slower and smoother (`PLAN.md` §4 (reference parity)).

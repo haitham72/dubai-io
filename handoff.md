@@ -4,6 +4,8 @@ The primary continuity artifact is **PLAN.md**, with nested tasks and acceptance
 
 Source checkpoint `6470ad4` was committed/pushed on `redesign`. REC-03A/B are SQLite/browser verified; restore local Supabase write health and complete PostgreSQL verification/reconciliation before runtime adoption. Work stays on `redesign`; do not switch/merge `ios-swift` or start native work. A pilot-audience question was asked; check later founder replies rather than treating the working individual-resident assumption as approval.
 
+Latest planning extension: `docs/references/assistant-experience-plan.md` specifies the targeted Home/task redesign, swipe-up personalized news/newsletter briefing, source/regulation/privacy contracts, persistent jobs and phased acceptance gates. `assistant-plan-review-prompt.md` beside it is the requested external LLM critique prompt. These are planning artifacts; no new app features, sources or connectors were implemented.
+
 ## Runtime checkpoint
 
 - The 21 Oct baseline used API 8000/widget 8001 with dedicated Supabase `dubai-io`. No new Supabase runtime deployment is claimed on 22 Oct. Existing anonymous tester cookies own data; Google OAuth remains last.
