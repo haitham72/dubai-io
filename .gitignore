@@ -18,3 +18,11 @@ output/
 .uvicorn.log
 # Reproducible Vercel installs for the marketing site
 !apps/site/package-lock.json
+
+# Native build and local signing/IDE state
+.build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+*.xcresult/
+apps/ios/Local.xcconfig
