@@ -2,6 +2,15 @@
 
 Current state: [status.md](status.md).
 
+## Native/site requests — 23 Oct (from track agents)
+
+- iOS Maps SDK needs an iOS-restricted key + dependency decision (static map used meanwhile). Founder keys/decision required.
+- provider→mini-app entry mapping unpublished (clients use provisional `{provider_id}.html`). Backend endpoint deferred; convention stands.
+- Prayer-times contract: implemented (`GET /api/prayer-times`, Aladhan, cached) — done this session.
+- Mark-thread-read: implemented (`POST /api/chats/{id}/read`) — done this session.
+- Keypad-dialed numbers now loggable (`POST /api/calls` accepts phone+name) — done this session.
+- Staged taxi replies / recovery flows in the iOS client: client-side follow-up, backend TAXI-02 commands already exist.
+
 ## Project workspaces checkpoint - verified, 22 Oct
 
 Home/feed/navigation baseline `212b82c` is pushed. PROJECT-01 is now implemented: owner-scoped persistent workspaces, name/shared-context editing, saved task links, device-local chat references, new project chat, opening previous project chats, unlink, archive/restore, revision fences and replay-safe command receipts. Organization never starts/approves/cancels a task or provider request. Removing a link and archiving preserve the underlying records. The Ask sidebar now has working Tasks / Projects / New chat / Chats entries; project chats are grouped under Projects.

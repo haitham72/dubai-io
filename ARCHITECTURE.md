@@ -97,7 +97,7 @@ Anonymous cookie sessions own their actions, profile and threads; merchants see 
 
 ## 10. Deliberately not built
 
-Payments/escrow, third-party purchasing, government write actions, background geofencing, indoor maps, ticket wallet, community, merchant-authored widgets, merchant webhooks, Redis, PostGIS, microservices.
+Payments/escrow, third-party purchasing, government write actions, background geofencing, indoor maps, ticket wallet, community, merchant-authored widgets, merchant webhooks, Redis, PostGIS, microservices. (Two items left this list by founder direction: community was built as the 23 Oct redesign; Redis/RabbitMQ/Celery were adopted the same day for the ML pipeline. The rest stands.)
 
 ## 11. Remaining architecture gaps
 

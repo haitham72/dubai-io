@@ -1,0 +1,41 @@
+# ML backend infra: RabbitMQ (Celery broker) + Redis (results/cache).
+# Demo SQLite data is shared between api/worker via api-data; use Postgres
+# (DATABASE_URL) for anything beyond local review.
+# Usage: docker compose -f docker-compose.infra.yml up -d rabbitmq redis   # infra only
+#        docker compose -f docker-compose.infra.yml up -d --build           # + api + worker
+name: dubaiio-ml
+services:
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    ports: ["5672:5672", "15672:15672"]
+    volumes: [rabbitmq-data:/var/lib/rabbitmq]
+    healthcheck: {test: ["CMD", "rabbitmq-diagnostics", "ping"], interval: 10s, timeout: 5s, retries: 5}
+  redis:
+    image: redis:7-alpine
+    ports: ["6380:6379"] # host 6379 belongs to this Mac's system redis
+    volumes: [redis-data:/data]
+    healthcheck: {test: ["CMD", "redis-cli", "ping"], interval: 10s, timeout: 5s, retries: 5}
+  api:
+    build: .
+    ports: ["8000:8000"]
+    environment:
+      CELERY_EAGER: "0"
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672//
+      REDIS_URL: redis://redis:6379/0
+      APP_DATA_DIR: /srv/data
+    volumes: [api-data:/srv/data]
+    depends_on: [rabbitmq, redis]
+  worker:
+    build: .
+    command: ["celery", "-A", "app.ml_tasks", "worker", "--loglevel=info", "--concurrency=2"]
+    environment:
+      CELERY_EAGER: "0"
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672//
+      REDIS_URL: redis://redis:6379/0
+      APP_DATA_DIR: /srv/data
+    volumes: [api-data:/srv/data]
+    depends_on: [rabbitmq, redis]
+volumes:
+  rabbitmq-data:
+  redis-data:
+  api-data:
