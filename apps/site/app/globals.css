@@ -1,27 +1,40 @@
 /* Dubai-io marketing site tokens. Plain CSS only: no UI kit, no shadows. */
 
 :root {
-  --background: #ffffff;
-  --foreground: #1d1d1f;
-  --muted: #6e6e73;
-  --accent: #0090b3;
-  --accent-ink: #ffffff;
-  --band: #f5f5f7;
-  --line: #e5e5e7;
+  --background: #fbfcfc;
+  --foreground: #0b1b21;
+  --muted: #4f636b;
+  --accent: #0a9cc2;
+  --accent-text: #087696;
+  --accent-ink: #04161c;
+  --band: #eaf3f6;
+  --line: #d8e4e9;
+  --night: #04161c;
+  --night-text: #e8f3f6;
+  --night-muted: #8fa9b3;
   --radius: 14px;
   --max-width: 1020px;
+  --wide: 1240px;
+  --ok: #1d7a4d;
+  --warn: #8a5a00;
+  --err: #b3261e;
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #000000;
-    --foreground: #f5f5f7;
-    --muted: #a1a1a6;
-    --accent: #38d6f5;
-    --accent-ink: #062e38;
-    --band: #161617;
-    --line: #2c2c2e;
+    --background: #050f13;
+    --foreground: #e8f3f6;
+    --muted: #8fa6af;
+    --accent: #2cc3e8;
+    --accent-text: #4fd0ee;
+    --accent-ink: #04161c;
+    --band: #0b1b21;
+    --line: #1b2f37;
+    --night: #020b0e;
+    --ok: #4cc58a;
+    --warn: #e0b04a;
+    --err: #ff8a80;
     color-scheme: dark;
   }
 }
@@ -40,8 +53,8 @@ body {
   margin: 0;
   color: var(--foreground);
   background: var(--background);
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text",
-    "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter",
+    "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -51,7 +64,7 @@ body {
 }
 
 a {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 :focus-visible {
@@ -203,11 +216,12 @@ a {
 .btnPrimary {
   background: var(--accent);
   color: var(--accent-ink);
+  font-weight: 600;
 }
 
 .btnGhost {
   background: transparent;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .btnGhost:disabled,
@@ -236,7 +250,7 @@ a {
 a.chip[aria-pressed="true"],
 button.chip[aria-pressed="true"] {
   border-color: var(--accent);
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 img.appImg {
@@ -246,4 +260,13 @@ img.appImg {
   object-fit: cover;
   border-radius: var(--radius);
   background: var(--band);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }

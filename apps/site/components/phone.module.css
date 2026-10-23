@@ -1,0 +1,260 @@
+/* Phone frame + faithful chat screens. Fixed light screen: the app is shown
+   as it looks, independent of the page theme. No shadows. */
+
+.phone {
+  --ph-bg: #f1f4f6;
+  --ph-ink: #0b1b21;
+  --ph-muted: #5a6b73;
+  --ph-line: #dfe7ea;
+  --ph-cyan: #0a9cc2;
+  width: 300px;
+  aspect-ratio: 300 / 620;
+  border-radius: 46px;
+  border: 9px solid #0b1b21;
+  background: var(--ph-bg);
+  position: relative;
+  overflow: hidden;
+  flex: none;
+  color: var(--ph-ink);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+@media (prefers-color-scheme: dark) {
+  .phone {
+    border-color: #26363d;
+  }
+}
+
+.island {
+  position: absolute;
+  top: 9px;
+  left: 50%;
+  width: 86px;
+  height: 24px;
+  border-radius: 14px;
+  background: #0b1b21;
+  transform: translateX(-50%);
+  z-index: 3;
+}
+
+.screen {
+  position: absolute;
+  inset: 0;
+}
+
+.layer {
+  position: absolute;
+  inset: 0;
+  padding: 44px 14px 14px;
+  opacity: 0;
+  transform: translateY(8px);
+  visibility: hidden;
+  transition: opacity 0.45s ease, transform 0.45s ease, visibility 0s 0.45s;
+  pointer-events: none;
+}
+
+.layer[data-active="true"] {
+  opacity: 1;
+  transform: none;
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+.composer {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 14px;
+  height: 38px;
+  border-radius: 19px;
+  background: #fff;
+  border: 1px solid var(--ph-line);
+  color: var(--ph-muted);
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  z-index: 2;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 4px 12px;
+}
+
+.barTitle {
+  font-weight: 650;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+}
+
+.demo {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #087696;
+  border: 1px solid var(--ph-cyan);
+  border-radius: 999px;
+  padding: 1px 8px;
+}
+
+.thread {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+
+.you {
+  margin: 0 0 0 36px;
+  background: #d4eef6;
+  border-radius: 16px 16px 4px 16px;
+  padding: 9px 12px;
+}
+
+.bot {
+  margin: 0 12px 0 2px;
+  color: var(--ph-ink);
+}
+
+.card {
+  background: #fff;
+  border: 1px solid var(--ph-line);
+  border-radius: 18px;
+  padding: 14px;
+}
+
+.cardTitle {
+  margin: 0 0 8px;
+  font-weight: 650;
+  font-size: 14px;
+}
+
+.label {
+  margin: 10px 0 4px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--ph-muted);
+}
+
+.facts {
+  margin: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.facts div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--ph-line);
+}
+
+.facts div:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.facts dt {
+  color: var(--ph-muted);
+}
+
+.facts dd {
+  margin: 0;
+  font-weight: 600;
+  text-align: right;
+}
+
+.list {
+  margin: 0;
+  padding: 0 0 0 16px;
+}
+
+.fine {
+  margin: 10px 0 0;
+  font-size: 11.5px;
+  color: var(--ph-muted);
+}
+
+.row {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.primary,
+.ghost {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-weight: 600;
+  font-size: 12.5px;
+}
+
+.card > .primary {
+  margin-top: 12px;
+}
+
+.primary {
+  background: var(--ph-cyan);
+  color: #04161c;
+}
+
+.ghost {
+  border: 1px solid var(--ph-line);
+  color: var(--ph-ink);
+}
+
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.steps li {
+  display: grid;
+  grid-template-columns: 14px 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 10px;
+  align-items: center;
+}
+
+.steps li::before {
+  content: "";
+  grid-row: 1 / span 2;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid #b7c5cb;
+  box-sizing: border-box;
+}
+
+.steps li[data-state="done"]::before {
+  background: #1d7a4d;
+  border-color: #1d7a4d;
+}
+
+.steps li[data-state="wait"]::before {
+  border-color: var(--ph-cyan);
+}
+
+.steps span {
+  font-weight: 600;
+}
+
+.steps em {
+  font-style: normal;
+  font-size: 11.5px;
+  color: var(--ph-muted);
+}
+
+@media (max-width: 420px) {
+  .phone {
+    width: 272px;
+    font-size: 12.5px;
+  }
+}
