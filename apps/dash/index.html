@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dubai-io Ops</title>
+<link rel="stylesheet" href="dash.css">
+</head>
+<body>
+<div class="banner" role="note">Founder tool — shows real usage data</div>
+<header class="top">
+  <h1>Ops</h1>
+  <span class="note" id="token-state"></span>
+  <button id="token-btn" type="button">Set token</button>
+</header>
+<main class="grid">
+  <section class="panel" aria-labelledby="h-health">
+    <div class="panel-head"><h2 id="h-health">Backend &amp; infra health</h2>
+      <button id="health-refresh" type="button">Refresh</button></div>
+    <div id="health-body" aria-live="polite"><p class="note">Loading…</p></div>
+  </section>
+  <section class="panel" aria-labelledby="h-ml">
+    <div class="panel-head"><h2 id="h-ml">ML pipeline &amp; jobs</h2>
+      <button id="ml-refresh" type="button">Refresh</button></div>
+    <div id="ml-body" aria-live="polite"><p class="note">Loading…</p></div>
+    <div class="placeholder">Content &amp; moderation — Coming in S3–S5</div>
+  </section>
+  <section class="panel" aria-labelledby="h-later">
+    <div class="panel-head"><h2 id="h-later">Funnel, clients, mobile view</h2></div>
+    <div class="placeholder">Coming in S3–S5</div>
+  </section>
+</main>
+<script type="module" src="dash.js"></script>
+</body>
+</html>

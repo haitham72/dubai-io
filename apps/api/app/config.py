@@ -59,6 +59,8 @@ class Settings:
     widget_port = int(os.getenv("WIDGET_PORT", "8001"))  # separate mini-app origin; 0 disables
     merchant_pin = os.getenv("MERCHANT_PIN", "")  # sandbox merchant sign-in; generated into data/ when unset
     web_dir = ROOT / "apps" / "web"
+    dash_dir = ROOT / "apps" / "dash"
+    ops_token = os.getenv("OPS_TOKEN", "")  # founder ops access; empty disables /api/ops/* (404)
     lab_dir = web_dir  # backward compatibility alias
     data_dir = Path(os.getenv("APP_DATA_DIR", str(ROOT / "apps" / "api" / "data")))
 

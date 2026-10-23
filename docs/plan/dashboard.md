@@ -115,6 +115,8 @@ Recommended: new `apps/dash/` static page served by the API (same origin, no new
 - S4: events ingest + funnel panel. Gate: handcrafted events posted with curl or a test appear in the funnel panel with correct step counts, and the ingest hardening tests pass. Site instrumentation is not required (the site rebuild depends on this slice, not the reverse; `docs/plan/website-rebuild.md` §6 gate 3). If the founder wants the site rebuild to start first, S4's ingest half can ship alone ahead of S1.
 - S5: client status + mobile side view + polish. Gate: drift flag fires on a deliberate route rename in a scratch branch (reverted after).
 
+S1/S2 implemented (23 Oct): `apps/api/app/ops.py` (`/api/ops/health`, `/api/ops/ml`, `X-Ops-Token` from `OPS_TOKEN`), `apps/dash/` served at `/dash/`. RAG hybrid/fallback ratio is `unavailable` until the per-query search method is persisted; queue/active/failed jobs are `unavailable` under `CELERY_EAGER=1`.
+
 ## 10. Open questions for sign-off
 
 1. ~~Scope A/B/C (§1)?~~ Decided 23 Oct: B (founder ops + mobile side view).
