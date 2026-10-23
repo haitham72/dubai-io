@@ -20,6 +20,17 @@ Acceptance:
 - Tests stay green: `apps/api/tests/test_communities.py::test_contacts_and_call_log_are_private_and_deletable`, `apps/api/tests/test_reddit.py::test_keypad_number_logs_without_contact`, `apps/web/tests/social-ui.test.mjs` (calls search + favorites).
 - S1 adds a regression per client asserting that call-log writes, including keypad-dialed numbers, go through `POST /api/calls` (iOS: a `DubaiIOCore` contract test; web: a site test).
 
+## 1b. Chat + Calls redesign (founder reference, 23 Oct) — supersedes §1 layout
+
+Reference: `design/references/chat/chat.jpg` (founder-supplied). Founder: copy WhatsApp/Telegram behavior and layout as closely as possible; ignore the reference's bottom menu (our tab bar stays). Keep our name, cyan accent and icons — no WhatsApp/Telegram logos, green, or names in the UI.
+
+- **Chat tab has two views that swap in place:** Chats ⇄ Calls. Top bar: "…" menu (left); right side = swap icon (phone on Chats, chat bubble on Calls) + the shared **profile icon** (same component on every tab, opens Settings/profile).
+- **Chats view:** large title "Chats"; search field "Ask Dubai-io or Search" (typing filters threads; submitting hands the text to Ask); filter chips All | Unread | Favorites | Groups | + (the + is the existing join-community/new-chat entry); an **Archived** row with count (`archived_count`) that opens archived threads (`GET /api/chats?filter=archived`); thread rows WhatsApp-style (avatar, title, last message preview 2 lines, time, unread badge, pin glyph). Swipe-left on a row (or long-press menu) → Archive / Unarchive (`PUT|DELETE /api/chats/{id}/archive`). Threads open in the slide-in panel (§3).
+- **Calls view:** large title "Calls"; round action row: Call · Contacts · Keypad · Favorites · Add. Under it a **favorites carousel** (horizontally swipeable avatars of favorite people/groups; tap = call handoff for contacts, open thread for demo people). "Recent" list: real calls (`calls`, outgoing, "Started in Dubai-io") merged by time with `demo_calls` (missed in red / incoming, each with a Demo pill; no phone → tapping opens their chat thread, never dials). ⓘ opens the contact/person detail.
+- **Favorites screen** (from the Favorites action, slide-in panel): back + Edit; "Add people or groups"; rows with avatar, name, phone button (contacts: `POST /api/calls` + `tel:` handoff) and video button (shows "Video calls are coming later" — no simulated call). Edit = reorder/remove. Favorites stay device-local (existing behavior) for now.
+- Keypad and Contacts keep today's behavior from the merged S1 work (`hub.js` Call page), re-homed into the Calls view.
+- Truth rules unchanged: no in-app call screen; Demo pills on all seeded people/calls; status words only from evidence.
+
 ## 2. Services — 3.1 thumbnails per row
 
 - Touch points: iOS `ServicesView` (`apps/ios/DubaiIO/DiscoveryViews.swift:33`); web `apps/site/app/app/services/page.tsx`. Sandbox reference only: `apps/web/navigation.css:133–140` (current rail: `grid-auto-columns: 68%`, about 1.5 tiles visible, `scroll-snap-type: x proximity`) and the duplicate `.service-category-grid` rule at `apps/web/services.css:40` (static 3-column grid). `navigation.css` loads after `services.css` (`index.html` lines 11 vs 8), so its rule wins today. Consolidate into one rule in `navigation.css`, delete the dead one, and size tiles as `calc((100% - 2 * gap) / 3.1)`.
