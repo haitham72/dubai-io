@@ -159,7 +159,7 @@ The detailed, nested task breakdown and acceptance gates are in [docs/implementa
 | Hosting + domain | submission | Local + tunnel |
 | Purchasing / payments decision | before any purchase feature | Deep-link handoff only |
 
-## 6. Native iOS app (authorized, now parked for Mac testing)
+## 6. Native iOS app (resumed 23 Oct: full Liquid Glass upgrade, see `docs/plan/ios-upgrade.md`)
 
 A second client of the same `apps/api`. SwiftUI, iOS 26 Liquid Glass, no added shadows, with ShipSwift (`signerlabs/ShipSwift`, MIT) and Libraries.dev retained as references. Use platform components first; add dependencies only when justified. The founder has a Mac + iPhone. Current authoring environment is Windows without Swift/Xcode; compilation must be verified on a macOS runner or Mac. Detailed slices, browser policy and validation gates: `docs/references/ios-swift-plan.md`.
 

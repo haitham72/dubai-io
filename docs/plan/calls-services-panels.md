@@ -1,10 +1,12 @@
 # Calls + services + panels plan — DRAFT, awaiting founder sign-off (23 Oct 2026)
 
+**Target (founder, 23 Oct 2026): the website's in-app section (`apps/site/app/app/**`) and the iOS app (`apps/ios/DubaiIO/`).** The sandbox (`apps/web`) gets no further UI work; it stays as an internal test bench until the website reaches parity. The `apps/web` file notes below record the sandbox's current behavior only as a reference. Web work in `apps/site` lands as requirements in `docs/plan/website-rebuild.md` (the rebuild owner works there); iOS work is done directly.
+
 Status: plan only. Covers the founder's WhatsApp-style calls feedback, services 3.1 thumbnails, panels-not-popups, and services directory expansion. Do not implement until signed off. Source log: `docs/request-backlog.md` ("Calls WhatsApp-style + services 3.1 thumbnails").
 
 ## 1. Calls screen — WhatsApp style
 
-Target surface: `apps/web` calls destination. Touch points: `apps/web/hub.js` (calls/keypad/contacts render, ~lines 75–85), `apps/web/social-ui.js` (`filterCallPeople`), `apps/web/community.css`. No unrelated refactoring.
+Touch points: iOS `apps/ios/DubaiIO/ChatHubView.swift` (`ChatHubView`, `ContactsView` at line 224); web `apps/site/app/app/chat/page.tsx` (threads + contacts + call log). The sandbox's search/favorites logic (`apps/web/social-ui.js` `filterCallPeople`) is the behavior reference. No unrelated refactoring.
 
 - Header reads "Call". Directly under it a subheader carousel with tabs: call | keypad | favorites.
 - A search row sits on top (filter contacts/calls).
@@ -16,11 +18,11 @@ Target surface: `apps/web` calls destination. Touch points: `apps/web/hub.js` (c
 Acceptance:
 - Visual: the founder supplies the WhatsApp screenshot into `design/screens/`; none is committed today. If it is absent, judge against the five properties above (Call header, tab carousel, search row, right-fixed contacts column, keypad in-surface). Checked at 390x844 and 428x926, normal + reduced motion. The founder's visual approval is still required.
 - Tests stay green: `apps/api/tests/test_communities.py::test_contacts_and_call_log_are_private_and_deletable`, `apps/api/tests/test_reddit.py::test_keypad_number_logs_without_contact`, `apps/web/tests/social-ui.test.mjs` (calls search + favorites).
-- S1 adds one web regression asserting that call-log writes, including keypad-dialed numbers, go through `POST /api/calls`.
+- S1 adds a regression per client asserting that call-log writes, including keypad-dialed numbers, go through `POST /api/calls` (iOS: a `DubaiIOCore` contract test; web: a site test).
 
 ## 2. Services — 3.1 thumbnails per row
 
-- Touch points: `apps/web/navigation.css:133–140` (current rail: `grid-auto-columns: 68%`, about 1.5 tiles visible, `scroll-snap-type: x proximity`) and the duplicate `.service-category-grid` rule at `apps/web/services.css:40` (static 3-column grid). `navigation.css` loads after `services.css` (`index.html` lines 11 vs 8), so its rule wins today. Consolidate into one rule in `navigation.css`, delete the dead one, and size tiles as `calc((100% - 2 * gap) / 3.1)`.
+- Touch points: iOS `ServicesView` (`apps/ios/DubaiIO/DiscoveryViews.swift:33`); web `apps/site/app/app/services/page.tsx`. Sandbox reference only: `apps/web/navigation.css:133–140` (current rail: `grid-auto-columns: 68%`, about 1.5 tiles visible, `scroll-snap-type: x proximity`) and the duplicate `.service-category-grid` rule at `apps/web/services.css:40` (static 3-column grid). `navigation.css` loads after `services.css` (`index.html` lines 11 vs 8), so its rule wins today. Consolidate into one rule in `navigation.css`, delete the dead one, and size tiles as `calc((100% - 2 * gap) / 3.1)`.
 - Exactly 3 full thumbnails per row plus ~10% of the next (3.1) to signal horizontal scroll; snap alignment so a swipe lands cleanly.
 - The 1.5-per-row state must be gone at 390/428 widths. If a category has too few entries to scroll, the row renders left-aligned full tiles with no phony peek.
 - Thumbnails: real imagery; every tile keeps its provenance label behavior (no invented ratings/prices).
@@ -33,7 +35,7 @@ DMs, the Reddit-style feed thread view, and settings stop opening in the bottom 
 
 Current state (verified on `main`): these are not centered modals. DM threads (`hub.js`) and the feed thread view (`feed.js`) are `page-host` page definitions. `apps/web/page-host.js` opens them inside the shared bottom sheet through `openSheet()` (`apps/web/ui.js:69`, styled by `.sheet` at `apps/web/stage.css:289`: bottom-anchored, `max-height: 88%`, scrim behind). No standalone settings view exists. The closest surface is the profile sheet `openProfile()` (`apps/web/app.js`, "You, over time"); sign-off question 4 confirms what "settings" means.
 
-- Touch points: `apps/web/page-host.js` (add a full-height panel host beside the sheet), `apps/web/ui.js` (sheet API stays for non-panel content), `apps/web/stage.css` (panel styles), plus `hub.js`/`feed.js` page definitions only where their open call changes.
+- Touch points: iOS — push DMs (`ThreadView`), post threads (`PostDetail`, `FeedView.swift:360`) and the new settings screen onto a `NavigationStack` (native edge-swipe back) instead of `.sheet`; the profile/maps/task sheets in `RootView.swift:60–67` are reviewed case by case. Web — `apps/site/app/app/chat/[id]` and `feed/[postId]` routes render as full-height slide-in panels over their list, with browser back closing them.
 - Back gesture/button parity: system back and the in-panel back control both dismiss to the exact previous scroll position.
 - Deep-linkable: an open panel has a route/hash so reload restores it (or lands on its parent honestly — never a blank panel).
 - Reduced motion: instant swap, no slide animation. Focus moves into the panel on open and returns on close (keyboard path).
