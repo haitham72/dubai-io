@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { ArrowUp } from "lucide-react";
+import { ArrowUp, Plus } from "lucide-react";
 import { apiPost } from "../data/api";
 import { useApp } from "../state";
 import s from "./assistant.module.css";
@@ -24,6 +24,7 @@ export function Composer() {
   const { draft, setDraft, addMessages, chatThreadId } = useApp();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [menu, setMenu] = useState(false);
 
   const send = async () => {
     const text = draft.trim();
@@ -58,6 +59,8 @@ export function Composer() {
           rows={2}
         />
         <div className={s.composerBar}>
+          <button className={s.plus} aria-label="Add" aria-expanded={menu} onClick={() => setMenu((m) => !m)}><Plus size={20} strokeWidth={1.8} /></button>
+          {menu && <div className={s.menu} role="menu"><span className={s.menuItem} role="menuitem" aria-disabled="true">Connect apps — not available yet</span></div>}
           <button className={s.send} onClick={() => void send()} disabled={busy || !draft.trim()} aria-label="Send">
             <ArrowUp size={18} strokeWidth={2.2} />
           </button>

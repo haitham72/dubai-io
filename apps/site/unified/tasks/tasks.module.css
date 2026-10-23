@@ -6,8 +6,8 @@
 .rowActive, .rowActive:hover { background: var(--accent-soft); }
 .rowIcon { display: grid; place-items: center; width: 40px; height: 40px; flex-shrink: 0; border-radius: 50%; background: var(--tone); color: #fff; }
 .rowText { display: flex; flex-direction: column; min-width: 0; flex: 1; }
-.rowTitle { display: flex; align-items: center; gap: 6px; min-width: 0; font-size: var(--fs-md); font-weight: 600; }
-.rowTitle > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.rowTitle { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-width: 0; font-size: var(--fs-md); font-weight: 600; }
+.rowTitle > span:first-child { min-width: 0; overflow-wrap: anywhere; }
 .rowSub { font-size: var(--fs-sm); color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rowMeta { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; font-size: var(--fs-xs); color: var(--text-3); flex-shrink: 0; min-height: 30px; }
 .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); }
