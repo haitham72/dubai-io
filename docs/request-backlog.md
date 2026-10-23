@@ -2,6 +2,14 @@
 
 Current state: [status.md](status.md).
 
+## Website redo — founder verdict: absolute trash, full rebuild required
+
+The shipped `apps/site` passes builds but fails the design bar: static marketing bands, no onboarding funnel, no signup→first-win journey, no SaaS-grade polish. It stays in the tree only as a route/API-integration reference. Redo scope (state-of-the-art SaaS onboarding style): sharp hero showing the product in action; social proof + benefit sections + pricing skeleton (ties to SaaS licensing idea) + FAQ; signup → guided setup (areas, household, services) → first win (first task + first decision) → dashboard, with progress, skips, and teaching empty states; try-before-signup interactive demo moment; funnel step events for drop-off measurement; Linear/Stripe-grade motion and typography (light/dark + reduced motion kept). NEW GATE from this miss: no UI track is done without founder visual review of a staged preview — build-green is not design-accepted.
+
+## SaaS licensing (idea only, 23 Oct)
+
+Maybe one day: license the approvals engine (prepare → approve exact side effect → adapter → provider evidence) as SaaS to other apps/agents. No code, no landing page, no commitments. Revisit after the daily-driver phase proves the engine.
+
 ## Native/site requests — 23 Oct (from track agents)
 
 - iOS Maps SDK needs an iOS-restricted key + dependency decision (static map used meanwhile). Founder keys/decision required.

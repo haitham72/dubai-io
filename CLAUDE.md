@@ -43,8 +43,9 @@ Do not read every doc up front. Nested `CLAUDE.md` files govern their folder; th
 
 ```
 apps/api/   FastAPI + LangGraph backend, tests/
-apps/web/   PWA: plain HTML/CSS + ES modules, tests/
-apps/ios/   Native SwiftUI client (ios-swift branch)
+apps/web/   PWA prototype + reference client, tests/
+apps/site/  Next.js website (design rejected; redo queued for another LLM)
+apps/ios/   Native SwiftUI client
 supabase/   Migrations, local project config
 docs/       Backlog, plans, references, services/
 design/     Screen references

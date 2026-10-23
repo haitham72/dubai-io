@@ -18,7 +18,9 @@ Single current-state file. Detail lives in `handoff.md`, `docs/request-backlog.m
 
 ## Next
 
-Web (`dubai-io-web`) and iOS (`ios-swift`) tracks from this baseline. One track at a time, tight briefs, review gates; see `docs/references/ios-web-agent-prompt.md` and `docs/references/ios-swift-plan.md`.
+- Website: FOUNDER REJECTED (absolute trash) — full redo as state-of-the-art SaaS onboarding, LEFT FOR ANOTHER LLM (see backlog). Current `apps/site` stays only as a route/API-integration reference, not shippable design.
+- iOS: stands; device/Simulator-UI passes still required.
+- Next phase: real APIs + real users + daily-driver dogfooding; API authorization outreach; unified dashboard plan pending scope answer.
 
 ## Still pending (not claimed)
 

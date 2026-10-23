@@ -5,6 +5,15 @@ Current state: [docs/status.md](docs/status.md).
 **Updated:** 22 Oct 2026 · **Owner:** Haitham · **Branches:** see `docs/status.md` · Runtime checkpoint: `handoff.md` · Review checklist: `docs/user-app-review-guide.md`
 This is the single plan. Done work lives in git history; this file keeps locks, scope, the demo arc and what remains.
 
+## Next phase — real APIs, real users, daily driver (23 Oct)
+
+Monorepo is merged; prototype + site + iOS build from `main`. The journey now: founder dogfoods the app daily while provider access is pursued.
+- Keys: populate missing provider keys in local `.env` only (never committed); each newly-keyed path must show real data or its honest unavailable state — no silent fixture substitution.
+- Staging: a staging API + staging data set before any real user touches it; demo fixtures never presented as real.
+- Pilot: single tester first (existing cookie session; Google OAuth stays last); user-visible errors stay honest; provenance on every number.
+- Outreach: provider authorization tracker + templates in `docs/references/api-authorization-outreach.md`.
+- Possible future (idea only): license the approvals engine as SaaS — see backlog. No code, no commitments.
+
 ## Founder locks and decisions
 
 - **Current verified navigation checkpoint:** Home cards -> complete inline task history -> attributed News now works; adaptive current-source cards/starter recommendations, flat Services, standard Ask chat history/profile, full-screen intro and left stacked dock are implemented. SQLite 175 passed/11 skipped; JS and both phone sizes/motion settings passed. Projects workspaces now group chats, tasks and explicit shared context; a synthetic live scope check passed without writing global facts. Real Decisions and scheduled checks remain required. This supersedes the older 154-test/next-Decisions checkpoint and all earlier Today-as-sheet instructions.
