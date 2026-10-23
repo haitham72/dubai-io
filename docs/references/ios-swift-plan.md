@@ -30,7 +30,9 @@ Bottom bar: **Home | Chat | Services | Feed**, plus a separate **Ask** button. P
 - Assistant: `/api/luna/turn` (intents incl. `places_near` with `query`), `/api/messages` + `/api/messages/stream` (outbox), `/api/assist` (ask/auto/learn), `/api/routines/brief`.
 - Places/maps: `/api/discovery/places` (category, subcategory, optional `query`), `/api/places/search`, `/api/places/photo`, `/api/maps/config`.
 - News: `/api/reading`, `/api/reading/thumbnails/{id}`.
-- Community: `/api/communities`, `/api/communities/{id}/join|leave|posts|stories`, `/api/feed`, `/api/posts/{id}/comments|hide`, `/api/chats`, `/api/chats/{id}/messages`, `/api/contacts`, `/api/calls`.
+- Community: `/api/communities`, `/api/communities/{id}/join|leave|posts|stories`, `/api/feed?sort=new|top|hot`, `/api/posts/{id}`, `/api/posts/{id}/comments?sort=new|top`, `/api/posts/{id}/hide`, `/api/votes` (post|comment, -1|+1, repeat toggles), `/api/me/posts`, `/api/chats`, `/api/chats/{id}/messages|read`, `/api/contacts`, `/api/calls` (contact_id or keypad phone+name).
+- ML/search: `/api/community/search?q=&limit=` (hybrid semantic+keyword RAG, degrades to keyword honestly), `/api/ml/status` (redacted); comments carry `analysis` (sentiment/topics/harsh) when labelled; posts+comments carry `score`/`my_vote`.
+- Prayer: `/api/prayer-times?city=&country=` (Aladhan method 16, cached; `status: unavailable` when down).
 - The rules don't change in any client:
   - no status without an authoritative event;
   - approval before any send or share;

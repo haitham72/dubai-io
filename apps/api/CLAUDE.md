@@ -21,6 +21,13 @@ Stop the dev server by its PID only.
 
 - Luna contract changes start in `app/luna/schema.py`.
 - Model IDs live only in `app/config.py` (`LUNA_MODEL`, `SOCIAL_MODEL`, …); never hard-code elsewhere. Keys stay server-side, from env.
-- DB: Supabase PostgreSQL 17 + pgvector via `DATABASE_URL`, backend-only `DATABASE_SCHEMA=dubaiio`. SQLite is the test/offline fallback. No Redis/PostGIS/microservices. See `supabase/CLAUDE.md`.
+- DB: Supabase PostgreSQL 17 + pgvector via `DATABASE_URL`, backend-only `DATABASE_SCHEMA=dubaiio`. SQLite is the test/offline fallback. No PostGIS/microservices. Redis (Celery results/cache) + RabbitMQ (broker) adopted 23 Oct for the ML pipeline — see ML section. See `supabase/CLAUDE.md`.
 - Only registered action IDs execute; the agent fills data, never code/SQL/URLs.
 - Fixtures under `app/fixtures/` are large: validate via loader/counts/tests, never `cat` them into context.
+
+## ML pipeline (23 Oct)
+
+- Broker RabbitMQ, results/cache Redis (`docker-compose.infra.yml`: rabbitmq, redis, api, worker). Dev/tests run `CELERY_EAGER=1` (inline, no broker).
+- Models (Faz3 reference, overridable in config): sentiment `cardiffnlp/twitter-xlm-roberta-base-sentiment-multilingual`, embeddings `sentence-transformers/all-MiniLM-L6-v2`.
+- `harsh` is sentiment-derived, never a moderation verdict; nothing auto-hides. Missing models/deps → analysis null, search keyword-only, status honest.
+- Heavy deps live in `requirements-ml.txt` (Docker worker only); dev venv stays light.

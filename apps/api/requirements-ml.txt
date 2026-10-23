@@ -1,0 +1,7 @@
+# Heavy ML dependencies: installed in the Docker worker image, NOT required for
+# the dev venv or tests (the ML backend reports unavailable without them).
+# torch uses the CPU index to keep the image small.
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.7.0
+transformers==4.48.3
+sentence-transformers==3.4.1

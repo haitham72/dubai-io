@@ -12,9 +12,11 @@ Single current-state file. Detail lives in `handoff.md`, `docs/request-backlog.m
 
 ## Verified on the baseline
 
-- Backend: 210 passed / 11 live skipped (SQLite). Web suites: all pass.
+- Backend: 227 passed / 11 live skipped (SQLite). Web suites: all pass.
 - Community: chat hub, contacts/call log, feed + stories, nested replies, 100 personas / 15 communities / 15 chat threads, backend-orchestrated Agnes replies with dedupe and honest failures. Fixtures are `demo_fixture`/`ai_demo`, never real people.
 - Docs: `docs/references/community-data-storage-plan.md` is a plan, not a deployed backend.
+- ML pipeline: Celery/RabbitMQ/Redis (eager default), Faz3 sentiment + embedding models (lazy), hybrid comment search + `/api/ml/status`; 8 tests green. Heavy deps in `requirements-ml.txt` (Docker worker only).
+- Reddit section: votes (toggle), feed sort (new/top/hot), comment top-sort, my-posts, mark-read, keypad call logging, prayer-times (Aladhan), prototype UI wired; 9 tests green.
 
 ## Next
 
