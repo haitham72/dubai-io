@@ -41,6 +41,18 @@ Founder: these three are "extremely close" to what Dubai-io should be. Reference
 - **Investigation loop (the Puffy run):** fan out across every connected source (mail accounts, notes/vault, files/repos, tasks, chats, memory) → small fast model (`FAST_MODEL`) reads each hit into a minimal JSON summary → main model (Luna) reviews with memory context → advice + draft in the *originating* app (Outlook vs Gmail) + proposals → approval card before any send/change. Progress lines in the thread come only from real steps actually run (truth rules).
 - Model routing exists: chat = Luna first (agnes fallback); feed personas = agnes first (Luna fallback) — `AI_main` / `fallback_model` / `FEED_*` in `apps/api/.env`.
 
+### 2.1 Feasibility of the founder's Puffy run in Dubai-io
+
+| Step | Doable? | Needs |
+|---|---|---|
+| Search notes/files/repos for "puffy" | Yes, via connectors | GitHub connector (repos) and a notes/vault connector; a browser app cannot read local folders — local files need a desktop/agent bridge (vault-control style) |
+| Search Gmail + Outlook | Yes | Google OAuth Gmail read scope + Microsoft Graph (Outlook) app registration; both new backend slices |
+| Small LLM reads each email → JSON | Yes | `FAST_MODEL` fan-out in the backend (exists as config) |
+| Main model reviews + advice | Yes | Luna + memory context pack |
+| Draft reply in Outlook (the right account) | Yes, with approval | Graph "create draft" (draft only; sending needs the approval card) |
+| "You recently changed your title" | Yes | temporal_note-style memory events from connected sources |
+| Change LinkedIn title | Suggest only | LinkedIn has no general profile-edit API; Dubai-io drafts the text, user applies it |
+
 ## 3. Memory: temporal_note as the engine
 
 The founder's `temporal_note` (`~/VsCode/Claude---Cowork/temporal_note`; Python, Postgres 16 + pgvector, BM25 + vector RRF hybrid search, 36 MCP tools, ~317 tests) becomes the model for Dubai-io's memory — **engine and schema, not the founder's personal data**:
@@ -60,7 +72,7 @@ The founder's `temporal_note` (`~/VsCode/Claude---Cowork/temporal_note`; Python,
 - **One React codebase in `apps/site`** (Next.js 16 / React 19); replaces the marketing site and, after parity, `apps/web`. iOS/Swift stopped (`docs/plan/ios-upgrade.md` = history).
 - **Three presentations of the same screens** (from Mirsal): **Website** (real; desktop >820 px, phone ≤820 px), **Desktop app** (`?desktop`, Mirsal `MacDesktop` window + menu bar + Dock), **iPhone view** (`?device`, Mirsal iPhone frame + Dynamic Island). Plain URL is the deliverable; demo modes use the same live API.
 - **Navigation (desktop):** slim rail ≤6 items — Assistant, Chats, Services, Maps, Dashboard, Me — + task-thread sidebar + main; Assistant ⇄ Community pill top-center. **Phone:** tabs Home, Chat, Services, Feed + Ask; Dynamic Island = live task.
-- **Palette (founder, 23 Oct): more white, accent toward grey.** Accent `#357F92` (muted steel-teal; replaces aqua `#0A9CC2`), backgrounds `#FFFFFF`, secondary `#F6F7F8`, neutral untinted glass. **Dark mode derived from the white design** (direction pending founder pick, §8).
+- **Palette (founder, 23 Oct): more white, accent toward grey.** Accent `#357F92` (muted steel-teal; replaces aqua `#0A9CC2`), backgrounds `#FFFFFF`, secondary `#F6F7F8`, neutral untinted glass. **Light mode is not flat (founder, 23 Oct):** a soft Gemini-style gradient haze behind the home greeting/composer and onboarding — steel-teal `#357F92` at ~8% blending into a faint warm sand/lavender at ~5% on white, fading to pure white below the fold; never behind dense content (lists, threads, forms). **Dark mode = Graphite** (`#141618` / `#1B1E21` / `#202428`, accent `#6FA9B8`) — Claude's call since the founder didn't pick; a user on/off toggle plus system setting; true black stays a possible later option.
 - Copy from Mirsal: tokens (recolored), `ui/` primitives, shell, `MacDesktop`, mobile shell + frame + Dynamic Island, Updates tray, weather view. Not ported: stocks, flights, files, history, Mirsal `server/`, AI action layer, e-sign, voice, Postgres photos.
 - Root UI rules: no shadows, plain AI text, tinted user box, white rounded action boxes.
 
@@ -104,7 +116,7 @@ The founder's `temporal_note` (`~/VsCode/Claude---Cowork/temporal_note`; Python,
 
 ## 8. Pending founder picks (design set in progress)
 
-- Dark mode direction (options being rendered).
+- Dark mode: Graphite chosen by Claude (founder may switch to true black).
 - Any further visual options shown in the brainstorm gallery.
 
 ## 9. Build order
