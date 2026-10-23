@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+const { panelHash, parsePanelHash, createStack, isPanelPage, ROUTES } = await import('../panels.js');
+assert.equal(panelHash('chat.thread', { id: 'a b' }), '#chat/thread/a%20b');
+assert.deepEqual(parsePanelHash('#chat/thread/a%20b').ctx, { id: 'a b' });
+assert.equal(parsePanelHash('#chat/thread/a%20b').route.page, 'chat.thread');
+assert.equal(parsePanelHash('#feed/post/p1').route.page, 'feed.post');
+assert.equal(parsePanelHash('#chat/community/c1').route.page, 'feed.community');
+assert.equal(parsePanelHash('#settings').route.page, 'settings');
+for (const bad of ['', '#', '#fps.tune', '#chat/thread/', '#chat/thread/%E0%A4%A', '#chat/thread/a/b', '#settings/x', '#chat/call']) assert.equal(parsePanelHash(bad), null, bad);
+assert.equal(panelHash('chat.thread', {}), '');
+assert.equal(isPanelPage('contacts'), false);
+for (const r of ROUTES) { assert.ok(isPanelPage(r.page)); assert.equal(parsePanelHash(panelHash(r.page, { id: 'x.y' })).route.page, r.page); }
+const s = createStack();
+assert.equal(s.top, undefined);
+s.push({ n: 1 }); s.push({ n: 2 });
+assert.equal(s.size, 2); assert.equal(s.top.n, 2);
+assert.equal(s.pop().n, 2); assert.equal(s.top.n, 1); s.pop(); assert.equal(s.pop(), undefined); assert.equal(s.size, 0);
+console.log('Panels: hash parse/serialize, malformed hashes and stack push/pop passed');

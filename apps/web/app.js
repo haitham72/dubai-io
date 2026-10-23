@@ -25,7 +25,9 @@ import { $, svg, esc, toast, openSheet, closeSheet, reduced, told } from './ui.j
 import { initChat, wireChat, handle, post, update, hasThread, resetChat, trackOrder, startNewChat, openConversation } from './chat.js';
 import { listConversations } from './session-state.js';
 import { initOffers, wireOffers, openOffers, closeOffers } from './offers.js';
-import { initPageHost, resetPageHost, registerPage, openPage } from './page-host.js';
+import { initPageHost, resetPageHost, registerPage, openPage, configurePanels, closeAllPanels, panelDepth, handlePanelPop, restorePanelFromHash } from './page-host.js';
+import { parsePanelHash } from './panels.js';
+import { labFetch } from './api-client.js';
 import { initProviderPages } from './provider-pages.js';
 import { openConnections } from './accounts.js';
 import { renderServicesLanding } from './services.js';
@@ -270,6 +272,7 @@ function leaveChat() {
   $('#chatLaunch').focus({ preventScroll: true });
 }
 addEventListener('popstate', e => {
+  if (handlePanelPop(e)) return;
   restoringView = true;
   if (e.state?.dubaiioChat) {
     showChat();
@@ -615,7 +618,7 @@ stageEl.addEventListener('pointercancel', () => { S.drag = null; S.tiltTarget = 
 stageEl.addEventListener('click', e => { if (e.target.closest('[data-act="next"]')) { e.stopPropagation(); advance(); } });
 railEl.addEventListener('click', e => { const d = e.target.closest('.dot'); if (d && !S.onboardingExit) S.target = +d.dataset.i; });
 addEventListener('keydown', e => {
-  if (e.defaultPrevented || e.target.closest?.('input,textarea,select,button,a,summary,[contenteditable="true"]')) return;
+  if (e.defaultPrevented || panelDepth() || e.target.closest?.('input,textarea,select,button,a,summary,[contenteditable="true"]')) return;
   if (!$('#sheet').hidden) { if (e.key === 'Escape') closeSheet(); return; }
   if (S.view !== 'home') { if (e.key === 'Escape') goBack(); return; }
   if ($('#homeFeed').scrollTop > $('#homeHero').clientHeight / 2) return;
@@ -1237,7 +1240,47 @@ registerPage('account.me', { title: 'Me', source: 'Dubai-io', render: () => `
   $('#meIntro').addEventListener('click', () => { closeSheet(); setView('home'); startOnboarding(); });
   $('#meWifi').addEventListener('click', () => { closeSheet(); setView('home'); app.classList.add('is-onboarding'); $('#browseDock').hidden = true; $('#browseDock').inert = true; $('#homeFeed').scrollTop = 0; today.show(false); S.deck = []; stageEl.innerHTML = ''; railEl.innerHTML = ''; startArrival(() => startOnboarding()); });
 } });
-function openMe() { openPage('account.me'); }
+function openMe() { openPage('settings'); }
+// Settings panel: every row calls behaviour that already exists.
+registerPage('settings', { title: 'Settings', source: 'Dubai-io', render: () => `
+    <div class="settings-list">
+      <h4>You</h4>
+      <button class="settings-row" data-s="details">${svg('person', 'ic sm')}<span><b>Saved details</b><small>What you told me</small></span>${svg('chev', 'ic xs')}</button>
+      <button class="settings-row" data-s="profile">${svg('person', 'ic sm')}<span><b>You, over time</b><small>What I noticed, with Confirm and Forget</small></span>${svg('chev', 'ic xs')}</button>
+      <button class="settings-row" data-s="requests">${svg('bag', 'ic sm')}<span><b>Saved requests</b></span>${svg('chev', 'ic xs')}</button>
+      <button class="settings-row" data-s="connections">${svg('lock', 'ic sm')}<span><b>Connected accounts</b></span>${svg('chev', 'ic xs')}</button>
+      <h4>This device</h4>
+      <button class="settings-row" data-s="notify">${svg('clock', 'ic sm')}<span><b>Notifications</b><small>Allow on this device</small></span>${svg('chev', 'ic xs')}</button>
+      <button class="settings-row" data-s="intro">${svg('orb', 'ic sm')}<span><b>Replay intro</b></span>${svg('chev', 'ic xs')}</button>
+      <button class="settings-row" data-s="demo">${svg('spark', 'ic sm')}<span><b>Demo tools</b><small>Wi-Fi sign-in replay, notification preview</small></span>${svg('chev', 'ic xs')}</button>
+      <h4>Connection</h4>
+      <div class="settings-row static" data-conn>${svg('wifi', 'ic sm')}<span><b>Session</b><small data-conn-text>Checking…</small></span></div>
+      <h4>Acknowledgements</h4>
+      <div class="settings-row static" data-ack>${svg('globe', 'ic sm')}<span><b>Imagery</b><small data-ack-text>Loading…</small></span></div>
+    </div>`, mount: root => {
+  labFetch('/api/session', { signal: AbortSignal.timeout(5000) }).then(r => { if (!r.ok) throw new Error(); return r.json(); })
+    .then(d => { root.querySelector('[data-conn-text]').textContent = d.mode === 'anonymous_lab_session' ? 'Anonymous lab session on this device (read-only)' : String(d.mode || 'Unknown'); })
+    .catch(() => { root.querySelector('[data-conn-text]').textContent = 'Could not reach the server. Status unknown.'; });
+  fetch('media.json').then(r => r.json()).then(m => {
+    const slots = m.slots || [], by = {};
+    slots.forEach(x => { const k = (x.licence || 'unspecified') + ' (' + (x.provenance || 'unknown') + ')'; by[k] = (by[k] || 0) + 1; });
+    root.querySelector('[data-ack-text]').textContent = slots.length ? slots.length + ' images: ' + Object.entries(by).map(([k, v]) => v + ' ' + k).join(', ') + '. Unsplash Licence: free to use.' : 'No imagery list found.';
+  }).catch(() => root.querySelector('[data-ack-text]').textContent = 'Image list could not load.');
+  root.addEventListener('click', async e => {
+    const b = e.target.closest('[data-s]'); if (!b) return;
+    const k = b.dataset.s;
+    if (k === 'details') openSavedDetails();
+    else if (k === 'requests') openSavedRequests();
+    else if (k === 'connections') openConnections();
+    else if (k === 'demo') openPage('account.me');
+    else if (k === 'profile') openProfile();
+    else if (k === 'notify') {
+      const result = await allowNotifications();
+      toast(result === 'granted' ? 'Notifications on. Done tasks reach you when the app is in the background.' : result === 'unsupported' ? 'This browser cannot show notifications.' : 'Notifications are off. Change it in your browser settings.');
+    } else if (k === 'intro') { closeAllPanels(); history.replaceState(history.state, '', location.pathname + location.search); setView('home'); startOnboarding(); }
+  });
+} });
+configurePanels({ showView: v => { closeSheet(); setView(v); } });
 
 // Tapping the Dubai-io logo restarts the demo from the airport Wi-Fi.
 function restartDemo() {
@@ -1285,7 +1328,7 @@ layout();
 refreshRecommendations(CASES);
 setView('home');
 const firstRun = !store.get('onboarded');
-const direct = ['home', 'today', 'intro', 'services', 'maps', 'guide', 'profile'].some(f => flags.has(f));
+const direct = !!parsePanelHash(location.hash) || ['home', 'today', 'intro', 'services', 'maps', 'guide', 'profile'].some(f => flags.has(f));
 if (flags.has('wifi') || (firstRun && !direct)) startArrival(() => startOnboarding());
 else if (flags.has('intro')) startOnboarding();
 else buildHome();
@@ -1293,5 +1336,6 @@ if (flags.has('today')) requestAnimationFrame(openToday);
 if (flags.has('services')) { if (S.mode === 'onboard') buildHome(); enterServices(); }
 if (flags.has('maps')) { if (S.mode === 'onboard') buildHome(); enterResults({ cat: 'pets' }); }
 if (flags.has('guide')) { if (S.mode === 'onboard') buildHome(); handle('Guide me through the airport'); }
+restorePanelFromHash();
 if (flags.has('profile')) { if (S.mode === 'onboard') buildHome(); setTimeout(openProfile, 400); }
 requestAnimationFrame(t => { last = t; frame(t); });
