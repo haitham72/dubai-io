@@ -45,9 +45,10 @@ DDL = (
     "CREATE TABLE IF NOT EXISTS chat_reads (owner TEXT NOT NULL, thread_id TEXT NOT NULL, read_at TEXT NOT NULL, PRIMARY KEY(owner, thread_id))",
     "CREATE TABLE IF NOT EXISTS contacts (id TEXT PRIMARY KEY, owner TEXT NOT NULL, name TEXT NOT NULL, phone TEXT NOT NULL, created_at TEXT NOT NULL)",
     "CREATE TABLE IF NOT EXISTS call_log (id TEXT PRIMARY KEY, owner TEXT NOT NULL, contact_id TEXT, name TEXT NOT NULL, phone TEXT NOT NULL, at TEXT NOT NULL)",
+    "CREATE TABLE IF NOT EXISTS chat_archived (owner TEXT NOT NULL, thread_id TEXT NOT NULL, at TEXT NOT NULL, PRIMARY KEY(owner, thread_id))",
 )
 TABLES = ("personas", "communities", "community_members", "posts", "comments", "hidden_posts", "chat_threads", "chat_messages",
-          "chat_reads", "contacts", "call_log", "votes")
+          "chat_reads", "contacts", "call_log", "votes", "chat_archived")
 
 FIXTURES = Path(__file__).parent / "fixtures" / "community"
 MEDIA = {f"media/{name}.jpg" for name in ("ac", "barber-dark", "barber", "cafe-bulbs", "cafe-counter", "cloth", "coffee", "food", "grill",
@@ -403,22 +404,48 @@ def thread_list(store, owner):
         FROM chat_threads t WHERE t.owner=? AND (t.community_id IS NULL OR EXISTS (SELECT 1 FROM community_members cm WHERE cm.owner=t.owner AND cm.community_id=t.community_id))""", (owner,)).fetchall()
     threads = [{"id": r[0], "kind": r[1], "title": r[2], "community_id": r[3], "last": r[4] or "", "last_author": r[5] or "",
                 "at": r[6] or "", "unread": int(r[7] or 0)} for r in rows]
+    archived = {r[0] for r in store.db.execute("SELECT thread_id FROM chat_archived WHERE owner=?", (owner,)).fetchall()}
     for thread in threads:
-        thread.update(social.thread_identity(store, thread["id"]))
+        thread.update(social.thread_identity(store, thread["id"]), archived=thread["id"] in archived)
     return sorted(threads, key=lambda t: t["at"], reverse=True)
 
 
 @router.get("/api/chats")
-def chats(request: Request, filter: str = Query(default="all", pattern="^(all|unread|groups|communities)$")):
+def chats(request: Request, filter: str = Query(default="all", pattern="^(all|unread|groups|communities|archived)$")):
     store, owner = scope(request)
     with store.lock:
         setup(store)
         ensure_threads(store, owner)
         store.db.commit()
         threads = thread_list(store, owner)
-    keep = {"all": lambda t: True, "unread": lambda t: t["unread"] > 0,
+    keep = {"all": lambda t: True, "unread": lambda t: t["unread"] > 0, "archived": lambda t: True,
             "groups": lambda t: t["kind"] == "group", "communities": lambda t: t["kind"] == "community"}[filter]
-    return {"threads": [t for t in threads if keep(t)], "unread": sum(t["unread"] for t in threads)}
+    shown = [t for t in threads if t["archived"] == (filter == "archived") and keep(t)]
+    return {"threads": shown, "unread": sum(t["unread"] for t in threads if not t["archived"]),
+            "archived_count": sum(t["archived"] for t in threads)}
+
+
+@router.put("/api/chats/{thread_id}/archive")
+def archive_thread(thread_id: str, request: Request):
+    store, owner = scope(request)
+    with store.lock:
+        setup(store)
+        own_thread(store, owner, thread_id)
+        store.db.execute("DELETE FROM chat_archived WHERE owner=? AND thread_id=?", (owner, thread_id))
+        store.db.execute("INSERT INTO chat_archived VALUES (?,?,?)", (owner, thread_id, clock().isoformat()))
+        store.db.commit()
+    return {"archived": True}
+
+
+@router.delete("/api/chats/{thread_id}/archive")
+def unarchive_thread(thread_id: str, request: Request):
+    store, owner = scope(request)
+    with store.lock:
+        setup(store)
+        own_thread(store, owner, thread_id)
+        store.db.execute("DELETE FROM chat_archived WHERE owner=? AND thread_id=?", (owner, thread_id))
+        store.db.commit()
+    return {"archived": False}
 
 
 def own_thread(store, owner, thread_id):
@@ -463,6 +490,10 @@ def send_message(thread_id: str, body: MessageIn, request: Request):
 
 
 # ---------------------------------------------------------------- contacts and calls
+# Founder-requested demo entries for the Recent calls look (23 Oct). A web app cannot read
+# the phone's call history, so these are fixtures: labelled demo, no phone number, never stored.
+DEMO_CALLS = (("p05", "Mariam Al Suwaidi", "chat-dog", "missed", 3), ("p01", "Sara Khalid", "chat-wife", "missed", 26),
+              ("p09", "Hannah Brooks", "chat-work", "incoming", 50), ("p01", "Sara Khalid", "chat-wife", "missed", 75))
 class ContactIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
     name: str = Field(min_length=1, max_length=80)
@@ -522,7 +553,13 @@ def calls(request: Request):
     with store.lock:
         setup(store)
         rows = store.db.execute("SELECT id,contact_id,name,phone,at FROM call_log WHERE owner=? ORDER BY at DESC LIMIT 100", (owner,)).fetchall()
-        return {"calls": [{"id": r[0], "contact_id": r[1], "name": r[2], "phone": r[3], "at": r[4], "source": "started_in_dubai_io"} for r in rows]}
+        now = clock()
+        demo = [{"id": f"demo-call-{i}", "persona_id": pid, "name": name, "avatar": social.avatar(store, pid), "thread_id": tid,
+                 "direction": direction, "at": (now - timedelta(hours=hours)).isoformat(), "phone": None, "provenance": "demo_fixture"}
+                for i, (pid, name, tid, direction, hours) in enumerate(DEMO_CALLS)]
+        return {"calls": [{"id": r[0], "contact_id": r[1], "name": r[2], "phone": r[3], "at": r[4], "source": "started_in_dubai_io",
+                           "direction": "outgoing", "provenance": "user_supplied"} for r in rows],
+                "demo_calls": demo}
 
 
 @router.post("/api/calls")

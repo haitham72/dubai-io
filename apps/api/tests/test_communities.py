@@ -136,3 +136,30 @@ def test_community_feed_filter_and_direct_post_visibility(client):
     story=c.get("/api/communities/jlt-runners/stories").json()["frames"][0]
     assert c.get(f"/api/posts/{story['id']}").status_code==404
     assert c.get("/api/feed?community_id=missing").status_code==404
+
+
+def test_archive_hides_thread_from_lists_and_is_owner_scoped(client):
+    c, _ = client
+    threads = c.get("/api/chats").json()["threads"]
+    tid = threads[0]["id"]
+    assert c.put(f"/api/chats/{tid}/archive").json() == {"archived": True}
+    listed = c.get("/api/chats").json()
+    assert tid not in [t["id"] for t in listed["threads"]] and listed["archived_count"] == 1
+    assert [t["id"] for t in c.get("/api/chats?filter=archived").json()["threads"]] == [tid]
+    assert tid not in [t["id"] for t in c.get("/api/chats?filter=unread").json()["threads"]]
+    assert other(c).get("/api/chats").json()["archived_count"] == 0  # another owner's list is untouched
+    assert c.delete(f"/api/chats/{tid}/archive").json() == {"archived": False}
+    assert tid in [t["id"] for t in c.get("/api/chats").json()["threads"]]
+    assert c.put("/api/chats/not-mine/archive").status_code == 404
+
+
+def test_demo_calls_are_labelled_and_never_dialable(client):
+    c, _ = client
+    log = c.get("/api/calls").json()
+    assert log["calls"] == [] and len(log["demo_calls"]) == 4
+    assert all(d["provenance"] == "demo_fixture" and d["phone"] is None and d["direction"] in ("missed", "incoming") for d in log["demo_calls"])
+    c.post("/api/calls", json={"phone": "+971 50 123 4567"})
+    real = c.get("/api/calls").json()["calls"]
+    assert real[0]["direction"] == "outgoing" and real[0]["provenance"] == "user_supplied"
+    c.delete("/api/calls")
+    assert c.get("/api/calls").json()["calls"] == [] and len(c.get("/api/calls").json()["demo_calls"]) == 4
