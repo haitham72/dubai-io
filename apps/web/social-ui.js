@@ -28,7 +28,7 @@ export function commentTree(comments) {
   const seen = new Set();
   const render = (m, depth) => {
     if (seen.has(m.id)) return ''; seen.add(m.id);
-    return `<li data-comment-id="${esc(m.id)}"><div class="comment-row">${avatar(m.author)}<div class="comment-copy"><b>${esc(m.author.name)}</b>${m.mine ? '' : ' <span class="pill demo">AI demo</span>'}<p>${esc(m.text)}</p><button data-reply="${esc(m.id)}" data-author="${esc(m.author.name)}">Reply</button></div></div>${children.has(m.id) ? `<ol class="comments replies${depth >= 2 ? ' deep' : ''}">${children.get(m.id).map(x => render(x, depth + 1)).join('')}</ol>` : ''}</li>`;
+    return `<li data-comment-id="${esc(m.id)}"><div class="comment-row">${avatar(m.author)}<div class="comment-copy"><b>${esc(m.author.name)}</b>${m.mine ? '' : ' <span class="pill demo">AI demo</span>'}${m.analysis?.harsh ? ' <span class="pill warn">Heated</span>' : ''}<p>${esc(m.text)}</p><button data-reply="${esc(m.id)}" data-author="${esc(m.author.name)}">Reply</button>${voteBox(m.id, 'comment', m.score ?? m.likes ?? 0, m.my_vote)}</div></div>${children.has(m.id) ? `<ol class="comments replies${depth >= 2 ? ' deep' : ''}">${children.get(m.id).map(x => render(x, depth + 1)).join('')}</ol>` : ''}</li>`;
   };
   let html = (children.get(null) || []).map(m => render(m, 0)).join('');
   html += comments.filter(m => !seen.has(m.id)).map(m => render(m, 0)).join('');
@@ -38,4 +38,11 @@ export function commentTree(comments) {
 export function filterCallPeople(people, query, favorites = null) {
   const text = String(query).trim().toLowerCase();
   return people.filter(p => (p.name + ' ' + p.phone).toLowerCase().includes(text) && (!favorites || favorites.has(p.id)));
+}
+export function voteBox(id, kind, score, mine) {
+  return `<span class="votes" data-votes="${esc(String(id))}" data-kind="${kind}" data-mine="${mine || 0}"><button data-vote="1" aria-label="Upvote">▲</button><b>${score ?? 0}</b><button data-vote="-1" aria-label="Downvote">▼</button></span>`;
+}
+export function paintVotes(box, result) {
+  box.dataset.mine = result.my_vote;
+  box.querySelector('b').textContent = result.score;
 }

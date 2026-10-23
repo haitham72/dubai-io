@@ -35,6 +35,7 @@ DDL = (
         text TEXT NOT NULL, created_at TEXT NOT NULL, likes INTEGER NOT NULL, provenance TEXT NOT NULL)""",
     "CREATE INDEX IF NOT EXISTS comments_post ON comments(post_id, created_at)",
     "CREATE TABLE IF NOT EXISTS hidden_posts (owner TEXT NOT NULL, post_id TEXT NOT NULL, reason TEXT, at TEXT NOT NULL, PRIMARY KEY(owner, post_id))",
+    "CREATE TABLE IF NOT EXISTS votes (target_type TEXT NOT NULL, target_id TEXT NOT NULL, owner TEXT NOT NULL, value INTEGER NOT NULL, PRIMARY KEY(target_type, target_id, owner))",
     """CREATE TABLE IF NOT EXISTS chat_threads (id TEXT NOT NULL, owner TEXT NOT NULL, kind TEXT NOT NULL, title TEXT NOT NULL,
         community_id TEXT, created_at TEXT NOT NULL, PRIMARY KEY(owner, id))""",
     """CREATE TABLE IF NOT EXISTS chat_messages (id TEXT PRIMARY KEY, owner TEXT NOT NULL, thread_id TEXT NOT NULL, author TEXT NOT NULL,
@@ -45,7 +46,7 @@ DDL = (
     "CREATE TABLE IF NOT EXISTS call_log (id TEXT PRIMARY KEY, owner TEXT NOT NULL, contact_id TEXT, name TEXT NOT NULL, phone TEXT NOT NULL, at TEXT NOT NULL)",
 )
 TABLES = ("personas", "communities", "community_members", "posts", "comments", "hidden_posts", "chat_threads", "chat_messages",
-          "chat_reads", "contacts", "call_log")
+          "chat_reads", "contacts", "call_log", "votes")
 
 FIXTURES = Path(__file__).parent / "fixtures" / "community"
 MEDIA = {f"media/{name}.jpg" for name in ("ac", "barber-dark", "barber", "cafe-bulbs", "cafe-counter", "cloth", "coffee", "food", "grill",
@@ -202,7 +203,8 @@ def leave(community_id: str, request: Request):
 
 
 @router.get("/api/feed")
-def feed(request: Request, limit: int = Query(default=20, ge=1, le=50), community_id: str | None = None):
+def feed(request: Request, limit: int = Query(default=20, ge=1, le=50), community_id: str | None = None,
+         sort: str = Query(default="new", pattern="^(new|top|hot)$")):
     """Posts from joined communities first, then discovery; hidden posts and other users' private posts excluded."""
     store, owner = scope(request)
     with store.lock:
@@ -213,13 +215,22 @@ def feed(request: Request, limit: int = Query(default=20, ge=1, le=50), communit
         if community_id:
             community(store, community_id)
         posts = [present_post(r, joined) for r in rows if r[0] not in hidden and (not community_id or r[1] == community_id)]
+        sums, mine = vote_maps(store, owner, "post", [p["id"] for p in posts])
+        for p in posts:
+            p["score"] = p["likes"] + sums.get(p["id"], 0)
+            p["my_vote"] = mine.get(p["id"], 0)
         stories = {}
         for p in posts:
             if p["kind"] == "story" and p["community"]["id"] not in stories:
                 stories[p["community"]["id"]] = {"community": p["community"], "author": p["author"], "image": p["image"], "at": p["created_at"],
                                                   "provenance": p["provenance"]}
         items = [p for p in posts if p["kind"] == "post"]
-        items.sort(key=lambda p: (not p["community"]["joined"],))  # stable: newest within each group
+        if sort == "top":
+            items.sort(key=lambda p: (not p["community"]["joined"], -p["score"]))
+        elif sort == "hot":
+            items.sort(key=lambda p: (not p["community"]["joined"], -hot_score(p["score"], p["created_at"])))
+        else:
+            items.sort(key=lambda p: (not p["community"]["joined"],))  # stable: newest within each group
         return {"posts": items[:limit], "stories": sorted(stories.values(), key=lambda s: not s["community"]["joined"])}
 
 
@@ -283,11 +294,15 @@ def get_post(post_id: str, request: Request):
         row = store.db.execute(POST_SQL + " WHERE p.id=? AND p.kind='post' AND (p.owner IS NULL OR p.owner=?) AND NOT EXISTS (SELECT 1 FROM hidden_posts h WHERE h.owner=? AND h.post_id=p.id)", (owner, post_id, owner, owner)).fetchone()
         if not row:
             raise HTTPException(404, "Post not found")
-        return {"post": present_post(row, joined_ids(store, owner))}
+        post = present_post(row, joined_ids(store, owner))
+        sums, mine = vote_maps(store, owner, "post", [post["id"]])
+        post["score"] = post["likes"] + sums.get(post["id"], 0)
+        post["my_vote"] = mine.get(post["id"], 0)
+        return {"post": post}
 
 
 @router.get("/api/posts/{post_id}/comments")
-def comments(post_id: str, request: Request):
+def comments(post_id: str, request: Request, sort: str = Query(default="new", pattern="^(new|top)$")):
     store, owner = scope(request)
     with store.lock:
         setup(store)
@@ -297,10 +312,17 @@ def comments(post_id: str, request: Request):
             LEFT JOIN personas pe ON pe.id=m.persona_id LEFT JOIN comment_labels l ON l.comment_id=m.id
             WHERE m.post_id=? AND (m.owner IS NULL OR m.owner=?) ORDER BY m.created_at""",
             (post_id, owner)).fetchall()
-        return {"comments": [{"id": r[0], "author": {"name": r[1], "handle": r[7] or "you", "emoji": r[8] or "🙂", "persona_id": r[9], "avatar": r[10]}, "text": r[2],
-                              "created_at": r[3], "likes": r[4], "provenance": r[5], "mine": r[6] is not None and r[9] is None, "parent_id": r[11], "model": r[12],
-                              "analysis": None if r[13] is None else {"sentiment": r[13], "neg": r[14], "topics": json.loads(r[15] or "[]"),
-                              "harsh": bool(r[16]), "harsh_basis": "sentiment_negative", "model": r[17]}} for r in rows]}
+        out = [{"id": r[0], "author": {"name": r[1], "handle": r[7] or "you", "emoji": r[8] or "🙂", "persona_id": r[9], "avatar": r[10]}, "text": r[2],
+                "created_at": r[3], "likes": r[4], "provenance": r[5], "mine": r[6] is not None and r[9] is None, "parent_id": r[11], "model": r[12],
+                "analysis": None if r[13] is None else {"sentiment": r[13], "neg": r[14], "topics": json.loads(r[15] or "[]"),
+                "harsh": bool(r[16]), "harsh_basis": "sentiment_negative", "model": r[17]}} for r in rows]
+        sums, mine = vote_maps(store, owner, "comment", [m["id"] for m in out])
+        for m in out:
+            m["score"] = m["likes"] + sums.get(m["id"], 0)
+            m["my_vote"] = mine.get(m["id"], 0)
+        if sort == "top":
+            out.sort(key=lambda m: -m["score"])
+        return {"comments": out}
 
 
 class CommentIn(PostIn):
@@ -481,7 +503,9 @@ def delete_contact(contact_id: str, request: Request):
 
 class CallIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    contact_id: str = Field(min_length=1, max_length=64)
+    contact_id: str | None = Field(default=None, min_length=1, max_length=64)
+    phone: str | None = Field(default=None, min_length=7, max_length=32)
+    name: str | None = Field(default=None, min_length=1, max_length=80)
 
 
 @router.get("/api/calls")
@@ -499,12 +523,22 @@ def log_call(body: CallIn, request: Request):
     store, owner = scope(request)
     with store.lock:
         setup(store)
-        row = store.db.execute("SELECT name,phone FROM contacts WHERE id=? AND owner=?", (body.contact_id, owner)).fetchone()
-        if not row:
-            raise HTTPException(404, "Contact not found")
-        store.db.execute("INSERT INTO call_log VALUES (?,?,?,?,?,?)", (uuid4().hex, owner, body.contact_id, row[0], row[1], clock().isoformat()))
+        if body.contact_id:
+            row = store.db.execute("SELECT name,phone FROM contacts WHERE id=? AND owner=?", (body.contact_id, owner)).fetchone()
+            if not row:
+                raise HTTPException(404, "Contact not found")
+            name, phone, contact_id = row[0], row[1], body.contact_id
+        elif body.phone:
+            digits = "".join(ch for ch in body.phone if ch in "+0123456789")
+            if sum(ch.isdigit() for ch in digits) < 7:
+                raise HTTPException(422, "Enter a dialable phone number")
+            name, phone, contact_id = body.name or "Dialed number", body.phone, None
+        else:
+            raise HTTPException(422, "contact_id or phone is required")
+        lid = uuid4().hex
+        store.db.execute("INSERT INTO call_log VALUES (?,?,?,?,?,?)", (lid, owner, contact_id, name, phone, clock().isoformat()))
         store.db.commit()
-        return {"tel": "tel:" + "".join(ch for ch in row[1] if ch in "+0123456789")}
+        return {"tel": "tel:" + "".join(ch for ch in phone if ch in "+0123456789"), "logged": lid}
 
 
 @router.delete("/api/calls")
@@ -515,3 +549,97 @@ def clear_calls(request: Request):
         store.db.execute("DELETE FROM call_log WHERE owner=?", (owner,))
         store.db.commit()
         return {"cleared": True}
+
+
+# ---------------------------------------------------------------- votes, history, read markers
+
+def vote_maps(store, owner, target_type, ids):
+    ids = list(dict.fromkeys(ids))
+    if not ids:
+        return {}, {}
+    marks = ",".join("?" * len(ids))
+    sums = {r[0]: r[1] for r in store.db.execute(
+        f"SELECT target_id, SUM(value) FROM votes WHERE target_type=? AND target_id IN ({marks}) GROUP BY target_id",
+        (target_type, *ids)).fetchall()}
+    mine = {r[0]: r[1] for r in store.db.execute(
+        f"SELECT target_id, value FROM votes WHERE target_type=? AND owner=? AND target_id IN ({marks})",
+        (target_type, owner, *ids)).fetchall()}
+    return sums, mine
+
+
+def hot_score(score, created_at):
+    try:
+        age = max(0.0, (clock() - datetime.fromisoformat(created_at)).total_seconds() / 3600)
+    except Exception:
+        age = 24.0
+    return score / ((age + 2) ** 1.5)
+
+
+class VoteIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    target_type: str = Field(pattern="^(post|comment)$")
+    target_id: str = Field(min_length=1, max_length=100)
+    value: int
+
+
+@router.post("/api/votes")
+def vote(body: VoteIn, request: Request):
+    """Up/down vote a visible post or comment; repeating the same vote removes it."""
+    store, owner = scope(request)
+    with store.lock:
+        setup(store)
+        if body.value not in (-1, 1):
+            raise HTTPException(422, "value must be -1 or 1")
+        if body.target_type == "post":
+            visible_post(store, owner, body.target_id)
+            base = store.db.execute("SELECT likes FROM posts WHERE id=?", (body.target_id,)).fetchone()[0]
+        else:
+            row = store.db.execute("SELECT post_id,likes FROM comments WHERE id=? AND (owner IS NULL OR owner=?)",
+                                   (body.target_id, owner)).fetchone()
+            if not row:
+                raise HTTPException(404, "Comment not found")
+            visible_post(store, owner, row[0])
+            base = row[1]
+        current = store.db.execute("SELECT value FROM votes WHERE target_type=? AND target_id=? AND owner=?",
+                                   (body.target_type, body.target_id, owner)).fetchone()
+        if current and current[0] == body.value:
+            store.db.execute("DELETE FROM votes WHERE target_type=? AND target_id=? AND owner=?",
+                             (body.target_type, body.target_id, owner))
+            mine = 0
+        else:
+            store.db.execute("INSERT OR REPLACE INTO votes VALUES (?,?,?,?)",
+                             (body.target_type, body.target_id, owner, body.value))
+            mine = body.value
+        total = store.db.execute("SELECT COALESCE(SUM(value),0) FROM votes WHERE target_type=? AND target_id=?",
+                                 (body.target_type, body.target_id)).fetchone()[0]
+        store.db.commit()
+        return {"target_type": body.target_type, "target_id": body.target_id,
+                "score": base + total, "my_vote": mine}
+
+
+@router.get("/api/me/posts")
+def my_posts(request: Request):
+    store, owner = scope(request)
+    with store.lock:
+        setup(store)
+        rows = store.db.execute(POST_SQL + " WHERE p.owner=? AND p.kind='post' ORDER BY p.created_at DESC", (owner, owner)).fetchall()
+        joined = joined_ids(store, owner)
+        posts = [present_post(r, joined) for r in rows]
+        sums, mine = vote_maps(store, owner, "post", [p["id"] for p in posts])
+        for p in posts:
+            p["score"] = p["likes"] + sums.get(p["id"], 0)
+            p["my_vote"] = mine.get(p["id"], 0)
+        return {"posts": posts}
+
+
+@router.post("/api/chats/{thread_id}/read")
+def mark_read(thread_id: str, request: Request):
+    """Explicit read marker; opening messages already marks read implicitly."""
+    store, owner = scope(request)
+    with store.lock:
+        setup(store)
+        own_thread(store, owner, thread_id)
+        store.db.execute("DELETE FROM chat_reads WHERE owner=? AND thread_id=?", (owner, thread_id))
+        store.db.execute("INSERT INTO chat_reads VALUES (?,?,?)", (owner, thread_id, clock().isoformat()))
+        store.db.commit()
+        return {"thread": thread_id, "unread": 0}

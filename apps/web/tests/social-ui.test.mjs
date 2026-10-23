@@ -28,3 +28,12 @@ assert.equal(filterCallPeople(people, '456')[0].id, 'two');
 assert.deepEqual(filterCallPeople(people, 'Amina', new Set(['two'])), []);
 assert.equal(filterCallPeople(people, '', new Set(['two'])).length, 1);
 console.log('Calls search by name/number and favorites intersection passed');
+
+const { voteBox } = await import('../social-ui.js');
+const box = voteBox('p1', 'post', 12, 1);
+assert.ok(box.includes('data-votes="p1"') && box.includes('data-kind="post"'));
+assert.ok(box.includes('<b>12</b>') && box.includes('data-mine="1"'));
+assert.ok(box.includes('data-vote="1"') && box.includes('data-vote="-1"'));
+const heated = commentTree([{ id: 'h', author: { name: 'X' }, text: 'rawr', analysis: { harsh: true } }]);
+assert.ok(heated.includes('pill warn') && heated.includes('data-votes="h"'));
+console.log('Votes and heated badge passed');
