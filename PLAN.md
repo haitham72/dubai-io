@@ -2,12 +2,22 @@
 
 Current state: [docs/status.md](docs/status.md).
 
-**Updated:** 22 Oct 2026 · **Owner:** Haitham · **Branches:** see `docs/status.md` · Runtime checkpoint: `handoff.md` · Review checklist: `docs/user-app-review-guide.md`
+**Updated:** 23 Oct 2026 (EOD) · **Owner:** Haitham · **Branches:** see `docs/status.md` · Runtime checkpoint: `handoff.md` · Review checklist: `docs/user-app-review-guide.md`
 This is the single plan. Done work lives in git history; this file keeps locks, scope, the demo arc and what remains.
+
+## Current direction — unified app (23 Oct, supersedes conflicting sections below)
+
+- **Source of truth:** `docs/plan/unified-app-design.md`; next work: `docs/superpowers/plans/` (Plan 1 done, Plan 2 next); session start: `handoff.md`.
+- **Final delivery:** iOS/Android app + desktop app + website from ONE React codebase (`apps/site`). Swift/iOS native STOPPED.
+- **Classic mobile demo `apps/web` FROZEN** (tag `mobile-pwa-baseline-2026-10-23`), embedded at `/?devices` with an Old ⇄ New toggle; retire only after parity + founder approval.
+- Dubai-io is the product (Assistant, task threads, Community, Chats ⇄ Calls, Services, Maps, Me/memory, onboarding); Mirsal-redesign = visual craft; behaviour = Grok Bot + ChatGPT Dots + Claude Duet; memory engine modelled on temporal_note.
+- Must survive: DXB airport guide, lost item in a taxi.
+- Look: white + `#357F92`, soft home haze, Graphite dark.
+- This supersedes the 22 Oct Home/onboarding locks below (Home carousel, Today handle, Wi-Fi/gradient onboarding) and brings News/Reading + Connectors gallery into scope. Worker/cron stays out.
 
 ## Next phase — real APIs, real users, daily driver (23 Oct)
 
-Monorepo is merged; prototype + site + iOS build from `main`. The journey now: founder dogfoods the app daily while provider access is pursued.
+Monorepo is merged; `apps/site` (unified app) + frozen `apps/web` + `apps/api` build from `main`. The journey now: founder dogfoods the app daily while provider access is pursued.
 - Keys: populate missing provider keys in local `.env` only (never committed); each newly-keyed path must show real data or its honest unavailable state — no silent fixture substitution.
 - Staging: a staging API + staging data set before any real user touches it; demo fixtures never presented as real.
 - Pilot: single tester first (existing cookie session; Google OAuth stays last); user-visible errors stay honest; provenance on every number.
