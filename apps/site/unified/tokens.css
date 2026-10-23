@@ -1,0 +1,148 @@
+/* Dubai-io unified app tokens. Mirsal craft, recoloured: white + steel-teal. No shadows anywhere (root CLAUDE.md). */
+
+:root {
+  /* layout */
+  --nav-width: 232px;
+  --sidebar-width: 300px;
+  --header-height: 64px;
+  --gutter: 24px;
+
+  /* spacing */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-8: 32px;
+
+  /* radius */
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 20px;
+  --r-pill: 999px;
+
+  /* type */
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Inter, sans-serif;
+  --fs-xs: 11px;
+  --fs-sm: 13px;
+  --fs-md: 14px;
+  --fs-lg: 16px;
+  --fs-xl: 20px;
+  --fs-title: 28px;
+  --fs-hero: 44px;
+
+  /* colour: light */
+  --accent: #357F92;
+  --accent-soft: rgba(53, 127, 146, 0.1);
+  --accent-strong: #2A6676;
+  --on-accent: #ffffff;
+  --bg: #FFFFFF;
+  --surface-2: #F6F7F8;
+  --surface-hover: #F1F3F4;
+  --text: #15212A;
+  --text-2: #5A666F;
+  --text-3: #8A949C;
+  --border: rgba(21, 33, 42, 0.09);
+  --border-strong: rgba(21, 33, 42, 0.16);
+  --hover: rgba(21, 33, 42, 0.05);
+  --active: rgba(21, 33, 42, 0.09);
+  --input-bg: #F3F5F6;
+  --track: #E3E8EB;
+  --bubble-user: #E7F1F4;
+  --success: #1D7A4D;
+  --warning: #B7791F;
+  --danger: #C2412D;
+  --demo-bg: rgba(183, 121, 31, 0.12);
+  --demo-text: #8A5A00;
+  /* soft Gemini-style haze behind the home greeting + composer only (steel-teal ~8% + warm sand ~5%, fading to white) */
+  --home-haze:
+    radial-gradient(60% 55% at 28% 0%, rgba(53, 127, 146, 0.08), transparent 70%),
+    radial-gradient(50% 50% at 78% 6%, rgba(216, 188, 150, 0.06), transparent 72%),
+    radial-gradient(40% 40% at 55% 30%, rgba(160, 150, 200, 0.04), transparent 75%);
+  --nav-bg: #FBFBFC;
+
+  /* motion only; no shadow tokens */
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* desktop frame */
+  --mac-menubar-h: 28px;
+  --mac-titlebar-h: 38px;
+  --mac-dock-h: 76px;
+  --mac-window-r: 12px;
+  --mac-menubar-text: #1d2a33;
+  --mac-menubar-bg: rgba(255, 255, 255, 0.55);
+  --mac-dock-bg: rgba(255, 255, 255, 0.45);
+  --mac-window-edge: rgba(0, 0, 0, 0.16);
+  --mac-red: #ff5f57;
+  --mac-yellow: #febc2e;
+  --mac-green: #28c840;
+  --wall-1: #dfe5e8;
+  --wall-2: #eef0f2;
+  --wall-3: #cfd8dc;
+
+  /* phone */
+  --m-tabbar-h: 64px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --hw-island: #000000;
+  --hw-island-w: 126px;
+  --hw-island-h: 37px;
+  --hw-island-top: 11px;
+
+  /* layering */
+  --z-island: 40;
+  --z-modal: 90;
+}
+
+/* Graphite dark theme: <html data-theme="dark"> (system setting + user toggle) */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --accent: #6FA9B8;
+  --accent-soft: rgba(111, 169, 184, 0.16);
+  --accent-strong: #8CBFCC;
+  --on-accent: #0E1417;
+  --bg: #141618;
+  --surface-2: #1B1E21;
+  --surface-hover: #1F2326;
+  --text: #E8EBED;
+  --text-2: #A2ABB2;
+  --text-3: #727C84;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.15);
+  --hover: rgba(255, 255, 255, 0.06);
+  --active: rgba(255, 255, 255, 0.1);
+  --input-bg: #202428;
+  --track: #2A2F33;
+  --bubble-user: #22343A;
+  --success: #5CC18F;
+  --warning: #E0B04A;
+  --danger: #F08A78;
+  --demo-bg: rgba(224, 176, 74, 0.16);
+  --demo-text: #E0B04A;
+  --home-haze: none;
+  --nav-bg: #1B1E21;
+  --mac-menubar-text: #e8ebed;
+  --mac-menubar-bg: rgba(20, 22, 24, 0.55);
+  --mac-dock-bg: rgba(32, 36, 40, 0.55);
+  --wall-1: #23292d;
+  --wall-2: #1a1e21;
+  --wall-3: #2b3338;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  font-family: var(--font);
+  font-size: var(--fs-md);
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+button { font: inherit; color: inherit; cursor: pointer; border: 0; background: none; padding: 0; }
+input, textarea { font: inherit; color: inherit; }
+img { display: block; max-width: 100%; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 8px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
