@@ -131,16 +131,21 @@
 .services-group { margin-bottom: 22px; }
 .services-group h3 { font-size: 19px; font-weight: 700; letter-spacing: -.02em; color: var(--label); margin-bottom: 10px; }
 .service-category-grid {
-  display: grid; grid-auto-flow: column; grid-template-columns: none; grid-auto-columns: 68%;
+  --svc-gap: 10px;
+  display: grid; grid-auto-flow: column; grid-template-columns: none; grid-auto-columns: calc((100% + 18px - 3 * var(--svc-gap)) / 3.1); /* 3 tiles + ~10% of the 4th inside the 18px page gutter */
   overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none;
   margin-inline: -18px; padding: 3px 18px 10px; scroll-padding-inline: 18px;
-  scroll-snap-type: x proximity; gap: 12px;
+  scroll-snap-type: x mandatory; gap: var(--svc-gap);
 }
 .service-category-grid::-webkit-scrollbar { display: none; }
-.service-category { min-height: 178px; scroll-snap-align: start; border-radius: 22px; transition: transform .28s var(--dock-motion); }
+/* 3 or fewer tiles: full tiles, left-aligned, nothing to scroll and no fake peek. */
+.service-category-grid:not(:has(> :nth-child(4))) { grid-auto-columns: calc((100% - 2 * var(--svc-gap)) / 3); overflow-x: hidden; }
+.service-category { min-height: 150px; padding: 10px; scroll-snap-align: start; border-radius: 18px; transition: transform .28s var(--dock-motion); }
+.service-label b { overflow-wrap: anywhere; }
+@media (prefers-reduced-motion: reduce) { .service-category-grid { scroll-behavior: auto; } .service-category { transition: none; } }
 .service-category:active { transform: scale(.97); }
-.service-label b { font-size: 22px; letter-spacing: -.025em; }
-.service-label > span { font-size: 12px; }
+.service-label b { font-size: 14px; line-height: 1.15; letter-spacing: -.015em; }
+.service-label > span { font-size: 10.5px; line-height: 1.25; }
 .services-shortcuts button { transition: transform .25s var(--dock-motion); }
 .services-shortcuts button:active { transform: scale(.96); }
 @keyframes chat-welcome { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }

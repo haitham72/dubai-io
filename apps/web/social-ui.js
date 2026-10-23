@@ -39,6 +39,11 @@ export function filterCallPeople(people, query, favorites = null) {
   const text = String(query).trim().toLowerCase();
   return people.filter(p => (p.name + ' ' + p.phone).toLowerCase().includes(text) && (!favorites || favorites.has(p.id)));
 }
+// Request builder for the in-app call log (POST /api/calls). Keypad numbers and contacts both go here.
+export function callRequest({ contactId, number } = {}) {
+  const body = contactId ? { contact_id: contactId } : { phone: String(number || '').replace(/[^+0-9]/g, ''), name: 'Keypad' };
+  return ['/api/calls', { method: 'POST', body: JSON.stringify(body) }];
+}
 export function voteBox(id, kind, score, mine) {
   return `<span class="votes" data-votes="${esc(String(id))}" data-kind="${kind}" data-mine="${mine || 0}"><button data-vote="1" aria-label="Upvote">▲</button><b>${score ?? 0}</b><button data-vote="-1" aria-label="Downvote">▼</button></span>`;
 }
