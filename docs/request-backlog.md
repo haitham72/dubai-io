@@ -2,6 +2,10 @@
 
 Current state: [status.md](status.md).
 
+## Unified app — founder direction (23 Oct, ACTIVE)
+
+Founder rejected the rebuilt site and stopped Swift. Direction: one React app, Dubai-io-led, Mirsal-redesign craft, Grok Bot/Dots/Duet behaviour, temporal_note memory engine, connectors drive dashboard workspaces, task queue everywhere, airport + lost-in-taxi cases kept, palette white + `#357F92` with dark mode derived. Full design + decisions: `docs/plan/unified-app-design.md`. Open: dark-mode pick, final approval, vault-control location.
+
 ## iOS visual review (logged 23 Oct — founder wants to see the Swift output)
 
 Founder expects the native app "most likely still looks like shit" and has not seen it run. First look, 23 Oct: the app builds and runs on the iPhone 17 Pro Simulator (iOS 26.2), but only with `ARCHS=arm64 ONLY_ACTIVE_ARCH=YES`. The README command also builds x86_64 and fails (`Unable to find module dependency: 'DubaiIOCore'`). Home screenshot: big "Dubai-io" wordmark, a "Hello, visitor." hero image card, empty Today/Tasks/News sections ("Connect your API in Me…"), and a floating glass tab dock that sits over the content. A system notification prompt fires on cold launch, before any user action. Other tabs are not captured yet: the app has no deep links or launch args for tabs, so screenshots need a UI-test driver or a manual pass. Next: full-route screenshot set at 390/428-class devices for founder visual review (same gate as the website). **Update 23 Oct:** founder un-parked native — substantial Liquid Glass upgrade using ShipSwift (as a package) and further founder libraries (location pending). Plan: `docs/plan/ios-upgrade.md`.

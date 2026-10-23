@@ -4,7 +4,7 @@ Single current-state file. Detail lives in `handoff.md`, `docs/request-backlog.m
 
 ## Branches (monorepo — all tracks merged into main)
 
-- `main` @ `b3130d4`: backend (`apps/api`) + prototype (`apps/web`) + website (`apps/site`) + iOS (`apps/ios`).
+- `main` (23 Oct EOD): backend (`apps/api`) + mobile PWA (`apps/web`) + website (`apps/site`) + iOS (`apps/ios`, STOPPED).
 - `dubai-io-web`, `ios-swift`: merged into main; kept as history. New work goes on main.
 - `redesign-community`: merged; `redesign`: historical.
 
@@ -16,11 +16,11 @@ Single current-state file. Detail lives in `handoff.md`, `docs/request-backlog.m
 - ML pipeline: Celery/RabbitMQ/Redis (eager default), Faz3 sentiment + embedding models (lazy), hybrid comment search + `/api/ml/status`; 8 tests green. Heavy deps in `requirements-ml.txt` (Docker worker only).
 - Reddit section: votes (toggle), feed sort (new/top/hot), comment top-sort, my-posts, mark-read, keypad call logging, prayer-times (Aladhan), prototype UI wired; 9 tests green.
 
-## Next
+## Next (23 Oct, founder)
 
-- Website: FOUNDER REJECTED (absolute trash) — full redo as state-of-the-art SaaS onboarding, LEFT FOR ANOTHER LLM (see backlog). Current `apps/site` stays only as a route/API-integration reference, not shippable design.
-- iOS: stands; device/Simulator-UI passes still required.
-- Next phase: real APIs + real users + daily-driver dogfooding; API authorization outreach; unified dashboard plan pending scope answer.
+- **North star: `docs/plan/unified-app-design.md`** — one React app in `apps/site` (website real; `?desktop` macOS frame; `?device` iPhone frame), Dubai-io-led, Mirsal-redesign as visual craft, Grok Bot / ChatGPT Dots / Claude Duet behaviour, temporal_note-style memory, white + `#357F92` palette, dark mode from white. Airport guide + lost-in-taxi survive. Awaiting final approval after the white/dark design set; then writing-plans → subagent slices.
+- Swift/iOS STOPPED. `apps/web` stays as feature reference until parity, then retires.
+- Done 23 Oct: Luna-first chat replies (agnes fallback) / agnes-first feed (Luna fallback, background-queued); signup facts (household, services); chat archive + demo missed calls; dashboard S1–S2 (`/api/ops/*`, `/dash`); `apps/web` services 3.1 grid, WhatsApp-style Chats ⇄ Calls + Favorites, slide-in panels + Settings. Backend 249 passed / 11 skipped; web 12 suites pass.
 
 ## Still pending (not claimed)
 
