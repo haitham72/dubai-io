@@ -1,4 +1,44 @@
-# Handoff - 22 Oct 2026
+# Handoff - 23 Oct 2026 (end of day) — START HERE
+
+## Where we are (read in this order)
+
+1. **North star:** `docs/plan/unified-app-design.md` (Dubai-io-led unified app; decisions, calls, data map, cases that must survive).
+2. **Next plan to run:** `docs/superpowers/plans/2026-10-23-device-switch-and-phone-core.md` (Plan 2) — its bottom table is the full finalize roadmap (Plans 2–8).
+3. **Memory plan (later):** `docs/superpowers/plans/2026-10-23-temporal-memory.md` (Plan 6).
+4. Status: `docs/status.md`. Backlog: `docs/request-backlog.md` (top entry "Unified app").
+
+## Founder's non-negotiables
+
+- **Final delivery:** iOS/Android app + desktop app (Grok Bot / ChatGPT Codex / Claude Duet style) + website — all from ONE React codebase in `apps/site` (Capacitor mobile, Tauri/Electron desktop). Swift is STOPPED.
+- **The current mobile demo (`apps/web`) must never be lost or diluted.** It is frozen at git tag `mobile-pwa-baseline-2026-10-23` and must stay byte-identical (`git diff --quiet mobile-pwa-baseline-2026-10-23 HEAD -- apps/web`). Plan 2 Task 1 embeds it live inside the new app at **`/?devices`** with an **Old ⇄ New** toggle. Retire it only after parity AND explicit founder approval.
+- Dubai-io is the product; Mirsal-redesign (`~/VsCode/Mirsal-redesign`) is visual craft only. Behaviour target: Grok Bot + ChatGPT Dots + Claude Duet. Memory modelled on temporal_note (`~/VsCode/Claude---Cowork/temporal_note`, copy freely; founder's personal data never imported). Vault control: dropped.
+- Cases that must survive: **DXB airport guide** (iPhone) and **lost item in a taxi** (Plan 2 Tasks 3–4). Reuse the best of `design/references/01-home.png` on the phone Home (hero, "you told me" chips, quick chips) without the old "visitor" identity.
+- Look: white + accent `#357F92`, soft Gemini-style haze on home/onboarding, **dark = Graphite** (confirmed). Visual targets: `.superpowers/brainstorm/94241-1792742190/content/img/v3/` (`l01–l10` web/desktop, `m01–m06` phone, `d01` graphite). Gallery copies are flat in that `content/` folder (server serves `/files/<name>` only).
+
+## Done today (all on `main`)
+
+- Plan 1 unified app foundation merged (`eb6568f`): `/` app shell (floating sidebar card, task threads, greeting/composer/briefing, Assistant|Community, onboarding), `?desktop` macOS window, `?device` iPhone frame. Old landing → `/about`. 20 unit + 36 e2e green. Placeholders remain for Chats/Services/Maps/Dashboard/Me/Community (Plans 3–5).
+- `apps/web` (frozen): WhatsApp-style Chats ⇄ Calls + Favorites + archive, slide-in panels + Settings, services 3.1 grid.
+- Backend: Luna-first chat / agnes-first feed replies (queued), chat archive + demo missed calls, household/services facts, dashboard S1–S2 (`/api/ops/*`, `/dash`, `OPS_TOKEN` set). 249 passed / 11 skipped.
+
+## How to continue (new session)
+
+1. Read the files above. Run `git log --oneline -15` and the frozen-mobile check.
+2. Dispatch **Plan 2** to a Sonnet medium subagent in a worktree (founder's preferred split: Sonnet builds, main session reviews screenshots/code, patches, merges). Tell it: never touch `apps/web|api|ios|supabase`; route `/?devices`; Classic iframe = API origin `:8030/index.html`.
+3. Main session meanwhile does **Plan 2b** (backend: composer → real tasks + activity per step).
+4. Then Plans 3 → 8 per the roadmap table. Founder inputs needed later: Google OAuth keys (`GOOGLE_OAUTH_CLIENT_ID/SECRET/REDIRECT_URI`, `OAUTH_TOKEN_KEY`), Microsoft Graph app, GitHub token, `GOOGLE_MAPS_BROWSER_KEY`, `DATABASE_URL` (Supabase), Apple/Google developer accounts + desktop signing.
+
+## Run locally
+
+```sh
+cd apps/api && .venv/bin/python -m uvicorn app.main:app --port 8030      # API + classic mobile demo at :8030/index.html
+cd apps/site && npm run build && npm run start -- -p 3040               # new app: /, /?desktop, /?devices
+```
+Port 8000 belongs to another project (NeoHealth) on this Mac. Higgsfield CLI: never set a shell variable named `HOME` in scripts; jobs need `higgsfield workspace` unset (private account) — `higgsfield account status` shows the plan.
+
+---
+
+## Previous handoff - 22 Oct 2026
 
 ## Community redesign checkpoint - read first (23 Oct, branch `redesign-community`)
 

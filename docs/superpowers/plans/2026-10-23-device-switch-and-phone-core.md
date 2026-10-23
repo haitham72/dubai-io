@@ -31,8 +31,8 @@
 ### Task 1: Old ⇄ New toggle in the device frame
 
 **Files:** Create `apps/site/unified/mobile/ClassicFrame.tsx`, `apps/site/unified/mobile/DeviceToggle.tsx`; Modify `apps/site/unified/mobile/DeviceFrame.tsx`; Test `apps/site/tests/e2e/device-toggle.spec.ts`, `apps/site/tests/unit/classic-url.test.ts`
-**Interfaces:** `classicUrl(loc: {protocol: string; hostname: string}, env?: string): string` → `env` (`NEXT_PUBLIC_CLASSIC_URL`) if set, else `${protocol}//${hostname}:8030/index.html#home`; toggle values `'classic' | 'new'`, stored in localStorage `dubaiio.deviceMode` (default `'new'`); shown only in `?device`.
-- [ ] Tests: unit for `classicUrl` (env wins; default port 8030); e2e: toggle visible above the frame in `?device`, absent on plain website; switching to Classic renders `iframe[data-testid=classic-frame]` with the expected src; choice persists across reload; mocked load failure shows the unavailable message.
+**Interfaces:** `classicUrl(loc: {protocol: string; hostname: string}, env?: string): string` → `env` (`NEXT_PUBLIC_CLASSIC_URL`) if set, else `${protocol}//${hostname}:8030/index.html#home`; toggle values `'classic' | 'new'`, stored in localStorage `dubaiio.deviceMode` (default `'new'`). **Route: `/?devices`** (founder, 23 Oct) = iPhone frame with the Old ⇄ New toggle; `?device` stays as an alias; `presentation()` returns `'device'` for both.
+- [ ] Tests: unit for `classicUrl` (env wins; default port 8030); e2e: toggle visible above the frame at `/?devices` (and `?device`), absent on plain website; switching to Classic renders `iframe[data-testid=classic-frame]` with the expected src; choice persists across reload; mocked load failure shows the unavailable message.
 - [ ] FAIL → implement → PASS → commit.
 
 ### Task 2: Phone Home (best of 01-home)
@@ -58,7 +58,7 @@
 
 ### Task 5: Visual gate
 
-- [ ] Capture `?device` (New and Classic), phone 390 Home / guide / taxi, light + dark into `output/unified-shots/plan2/`; compare with `v3/m03-airport.jpg`, `v3/m04-taxi.jpg`, `v3/m01-chats.jpg` and `design/references/01-home.png`; fix; commit.
+- [ ] Capture `/?devices` (New and Classic), phone 390 Home / guide / taxi, light + dark into `output/unified-shots/plan2/`; compare with `v3/m03-airport.jpg`, `v3/m04-taxi.jpg`, `v3/m01-chats.jpg` and `design/references/01-home.png`; fix; commit.
 
 ---
 
