@@ -1,67 +1,162 @@
 /* Shared chrome: header, footer, labels, figures, state cards. No shadows. */
 
 .siteHeader {
+  position: sticky;
+  top: 0;
+  z-index: 40;
   border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--background) 86%, transparent);
+  backdrop-filter: saturate(160%) blur(14px);
 }
 
 .siteHeaderInner {
   margin: 0 auto;
-  max-width: var(--max-width);
-  padding: 16px 24px;
+  max-width: var(--wide);
+  padding: 0 24px;
+  height: 60px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  flex-wrap: wrap;
 }
 
 .wordmark {
-  font-size: 1.25rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.1rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
   color: var(--foreground);
   text-decoration: none;
+}
+
+.mark {
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  background: var(--accent);
+  display: inline-block;
+  position: relative;
+}
+
+.mark::after {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  background: var(--accent-ink);
 }
 
 .siteNav {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 4px 20px;
-  font-size: 0.95rem;
+  gap: 4px 26px;
+  font-size: 0.92rem;
 }
 
 .siteNav a {
   text-decoration: none;
+  color: var(--muted);
+  transition: color 0.15s;
 }
 
 .siteNav a:hover {
-  text-decoration: underline;
+  color: var(--foreground);
 }
 
-.navCta {
-  border: 1px solid var(--accent);
+.navLinks {
+  display: flex;
+  gap: 26px;
+}
+
+.siteNav a.navCta {
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
   border-radius: 999px;
-  padding: 8px 20px;
+  padding: 8px 18px;
 }
 
 .siteFooter {
   border-top: 1px solid var(--line);
-  margin: 64px auto 0;
-  max-width: var(--max-width);
-  padding: 24px 24px 48px;
+  margin: 0;
+  background: var(--band);
   color: var(--muted);
   font-size: 0.9rem;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px 32px;
-  justify-content: space-between;
 }
 
-.siteFooter p {
-  max-width: 560px;
+.footInner {
+  margin: 0 auto;
+  max-width: var(--wide);
+  padding: 56px 24px 48px;
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr 1fr;
+  gap: 40px;
+}
+
+.footInner h2 {
+  margin: 0 0 14px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.footInner ul {
+  list-style: none;
   margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.footInner a {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.footInner a:hover {
+  color: var(--foreground);
+  text-decoration: underline;
+}
+
+.footInner p {
+  margin: 12px 0 0;
   line-height: 1.6;
+  max-width: 34ch;
+}
+
+.footNote {
+  margin: 0 auto;
+  max-width: var(--wide);
+  padding: 20px 24px 40px;
+  border-top: 1px solid var(--line);
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+.footNote p {
+  margin: 0;
+  max-width: 90ch;
+}
+
+@media (max-width: 760px) {
+  .navLinks {
+    display: none;
+  }
+
+  .footInner {
+    grid-template-columns: 1fr 1fr;
+    padding-top: 40px;
+  }
+
+  .footInner > :first-child {
+    grid-column: 1 / -1;
+  }
+
+  .siteHeaderInner {
+    padding: 0 16px;
+  }
 }
 
 /* Trust labels */
@@ -72,7 +167,7 @@
   font-weight: 600;
   letter-spacing: 0.02em;
   border: 1px solid var(--accent);
-  color: var(--accent);
+  color: var(--accent-text);
   border-radius: 999px;
   padding: 2px 10px;
   white-space: nowrap;
@@ -139,7 +234,7 @@
 .retry {
   border: 1px solid var(--accent);
   background: transparent;
-  color: var(--accent);
+  color: var(--accent-text);
   border-radius: 999px;
   padding: 8px 20px;
   font-size: 0.95rem;

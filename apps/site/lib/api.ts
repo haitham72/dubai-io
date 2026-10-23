@@ -1,6 +1,9 @@
-/** Base URL of the Dubai-io API. Local default; no secrets here. */
-export const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8000";
+/**
+ * Base URL of the Dubai-io API. Empty = same-origin: calls go through the
+ * `/api/:path*` rewrite in next.config.ts, so the session cookie works and no
+ * CORS is needed. No secrets here.
+ */
+export const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "";
 
 /** Restricted browser Maps key (referrer-restricted in Google Cloud). Never a secret. */
 export const MAPS_KEY = process.env.NEXT_PUBLIC_MAPS_KEY ?? "";
@@ -61,11 +64,48 @@ export async function apiPost<T>(
   return (text ? JSON.parse(text) : undefined) as T;
 }
 
+/** PUT JSON to the API, carrying the anonymous cookie session. */
+export async function apiPut<T>(path: string, body: unknown): Promise<T> {
+  const res = await fetch(apiUrl(path), {
+    method: "PUT",
+    credentials: "include",
+    headers: { accept: "application/json", "content-type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new ApiError(res.status, text || `Request failed (${res.status})`);
+  }
+  return (await res.json()) as T;
+}
+
+/** Turn any thrown value into a short, honest sentence for the UI. */
+export function describeError(err: unknown): string {
+  if (err instanceof ApiError) {
+    try {
+      const parsed = JSON.parse(err.message) as { detail?: unknown };
+      if (typeof parsed.detail === "string") return parsed.detail;
+      if (Array.isArray(parsed.detail)) {
+        const first = parsed.detail[0] as { msg?: string } | undefined;
+        if (first?.msg) return first.msg;
+      }
+    } catch {
+      /* not JSON */
+    }
+    if (err.status >= 500) {
+      return `The server answered with an error (${err.status}).`;
+    }
+    return err.message.slice(0, 200);
+  }
+  return "Could not reach Dubai-io. Check your connection.";
+}
+
 /* Loose shapes for backend payloads. Fields stay optional so the site
    degrades gracefully when the backend adds or renames something. */
 
 export interface TaskItem {
   id?: string;
+  outcome?: string;
   title?: string;
   detail?: string;
   status?: string;

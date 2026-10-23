@@ -5,19 +5,30 @@ import styles from "./chrome.module.css";
 
 /* ---------- Marketing chrome ---------- */
 
+export function Wordmark() {
+  return (
+    <Link href="/" className={styles.wordmark} aria-label="Dubai-io home">
+      <span className={styles.mark} aria-hidden="true" />
+      Dubai-io
+    </Link>
+  );
+}
+
 export function SiteHeader() {
   return (
     <header className={styles.siteHeader}>
       <div className={styles.siteHeaderInner}>
-        <Link href="/" className={styles.wordmark}>
-          Dubai-io
-        </Link>
+        <Wordmark />
         <nav aria-label="Site" className={styles.siteNav}>
-          <Link href="/#features">Features</Link>
-          <Link href="/privacy">Privacy</Link>
-          <Link href="/demo">Contest demo</Link>
-          <Link href="/app" className={styles.navCta}>
-            Open the app
+          <span className={styles.navLinks}>
+            <Link href="/#how">How it works</Link>
+            <Link href="/#services">Services</Link>
+            <Link href="/#trust">Trust</Link>
+            <Link href="/#pricing">Pricing</Link>
+            <Link href="/demo">Demo</Link>
+          </span>
+          <Link href="/signup" className={styles.navCta}>
+            Get started
           </Link>
         </nav>
       </div>
@@ -28,16 +39,65 @@ export function SiteHeader() {
 export function SiteFooter() {
   return (
     <footer className={styles.siteFooter}>
-      <p>
-        Dubai-io is a contest demo. Photos are openly licensed; full credits in{" "}
-        <Link href="/demo#credits">image credits</Link>. Pictured people are not
-        affiliated with Dubai-io and do not endorse it.
-      </p>
-      <nav aria-label="Footer" className={styles.siteNav}>
-        <Link href="/privacy">Privacy</Link>
-        <Link href="/demo">Contest demo</Link>
-        <Link href="/app">Open the app</Link>
-      </nav>
+      <div className={styles.footInner}>
+        <div>
+          <Wordmark />
+          <p>
+            A personal assistant for everyday life and work in Dubai. Early
+            access, built in Dubai.
+          </p>
+        </div>
+        <div>
+          <h2>Product</h2>
+          <ul>
+            <li>
+              <Link href="/#how">How it works</Link>
+            </li>
+            <li>
+              <Link href="/#services">Services</Link>
+            </li>
+            <li>
+              <Link href="/#pricing">Pricing</Link>
+            </li>
+            <li>
+              <Link href="/#faq">FAQ</Link>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <h2>Try it</h2>
+          <ul>
+            <li>
+              <Link href="/demo">Demo, no signup</Link>
+            </li>
+            <li>
+              <Link href="/signup">Start setup</Link>
+            </li>
+            <li>
+              <Link href="/app">In-app preview</Link>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <h2>Trust</h2>
+          <ul>
+            <li>
+              <Link href="/privacy">What it never does</Link>
+            </li>
+            <li>
+              <Link href="/demo#credits">Image credits</Link>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div className={styles.footNote}>
+        <p>
+          Dubai-io is independent and not affiliated with any government body.
+          Services and prices shown today are demo data. Photographs are
+          openly licensed and illustrative; pictured people and places are not
+          affiliated with Dubai-io.
+        </p>
+      </div>
     </footer>
   );
 }
