@@ -1,0 +1,54 @@
+/* Assistant home. Container queries (not media queries) so the ?device frame lays out as a phone. */
+.frame { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; container-type: inline-size; }
+.home { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; overflow-y: auto; }
+.haze { position: absolute; inset: 0 0 auto 0; height: 640px; background: var(--home-haze); pointer-events: none; animation: none; mask-image: linear-gradient(to bottom, #000 55%, transparent); -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent); }
+.top { position: relative; display: flex; justify-content: center; padding: var(--s-4) var(--s-4) 0; flex-shrink: 0; }
+.body { position: relative; flex: 1; width: 100%; max-width: 860px; margin: 0 auto; padding: var(--s-4) var(--s-6) var(--s-8); display: flex; flex-direction: column; justify-content: center; gap: var(--s-6); }
+.bodyTalking { justify-content: flex-end; }
+
+.modeSwitch { display: inline-flex; gap: 2px; padding: 3px; border-radius: var(--r-pill); background: var(--bg); border: 1px solid var(--border); }
+.modeTab { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 var(--s-4); border-radius: var(--r-pill); font-size: var(--fs-md); font-weight: 550; color: var(--text-2); }
+.modeTab:hover { color: var(--text); }
+.modeTabActive, .modeTabActive:hover { background: var(--accent); color: var(--on-accent); }
+
+.hero { display: flex; flex-direction: column; align-items: center; text-align: center; gap: var(--s-3); }
+.skyline { width: 150px; height: 75px; color: var(--accent); }
+.greeting { margin: 0; font-size: var(--fs-hero); font-weight: 650; letter-spacing: -0.025em; line-height: 1.1; }
+.lede { margin: 0; max-width: 520px; font-size: var(--fs-lg); line-height: 1.5; color: var(--text-2); }
+
+.composerWrap { display: flex; flex-direction: column; gap: var(--s-2); }
+.composer { background: var(--bg); border: 1px solid var(--border-strong); border-radius: var(--r-lg); padding: var(--s-4) var(--s-4) var(--s-3); }
+.composer:focus-within { border-color: var(--accent); }
+.composerInput { display: block; width: 100%; resize: none; border: 0; outline: 0; background: transparent; font-size: var(--fs-lg); line-height: 1.45; color: var(--text); }
+.composerInput::placeholder { color: var(--text-3); }
+.composerBar { display: flex; justify-content: flex-end; margin-top: var(--s-2); }
+.send { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: var(--on-accent); }
+.send:disabled { opacity: 0.35; cursor: default; }
+.status { margin: 0; font-size: var(--fs-sm); color: var(--text-2); }
+.error { margin: 0; font-size: var(--fs-sm); color: var(--danger); }
+
+.messages { display: flex; flex-direction: column; gap: var(--s-4); overflow-y: auto; }
+.msgUser { align-self: flex-end; max-width: 80%; margin: 0; padding: var(--s-3) var(--s-4); border-radius: var(--r-lg); background: var(--bubble-user); line-height: 1.5; white-space: pre-wrap; }
+.msgAssistant { align-self: flex-start; max-width: 90%; margin: 0; line-height: 1.55; white-space: pre-wrap; }
+
+.strip { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-3); }
+.stripCard { display: flex; align-items: center; gap: var(--s-3); min-width: 0; padding: var(--s-3) var(--s-4); border-radius: var(--r-lg); background: var(--bg); border: 1px solid var(--border); text-align: start; transition: background 0.12s var(--ease); }
+.stripCard:hover { background: var(--surface-hover); }
+.stripIcon { display: grid; place-items: center; width: 42px; height: 42px; flex-shrink: 0; border-radius: 50%; background: color-mix(in srgb, currentColor 14%, transparent); }
+.stripText { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.stripLabel { font-size: var(--fs-xs); font-weight: 600; background: none; width: auto; height: auto; }
+.stripTitle { display: flex; align-items: center; gap: 6px; font-size: var(--fs-md); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stripSub { font-size: var(--fs-sm); color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stripChevron { color: var(--text-3); flex-shrink: 0; }
+.toneRed { color: var(--danger); }
+.toneGreen { color: var(--success); }
+.toneAmber { color: var(--warning); }
+.stripIcon.toneRed, .stripIcon.toneGreen, .stripIcon.toneAmber { background: color-mix(in srgb, currentColor 14%, transparent); }
+
+@container (max-width: 680px) {
+  .body { padding: var(--s-3) var(--s-4) var(--s-5); gap: var(--s-4); justify-content: flex-start; }
+  .greeting { font-size: 32px; }
+  .skyline { width: 120px; height: 60px; }
+  .lede { font-size: var(--fs-md); }
+  .strip { grid-template-columns: 1fr; }
+}

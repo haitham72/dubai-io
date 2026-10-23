@@ -9,6 +9,7 @@ import { MobileApp } from "./mobile/MobileApp";
 import { DeviceFrame } from "./mobile/DeviceFrame";
 import { useIsMobile } from "./mobile/useIsMobile";
 import { MainView, SidebarView } from "./views";
+import { ThreadsProvider } from "./data/threads";
 
 function Layout({ mode }: { mode: Presentation }) {
   const { screen } = useApp();
@@ -26,7 +27,9 @@ export default function App() {
   if (!mode) return null;
   return (
     <AppProvider>
-      <Layout mode={mode} />
+      <ThreadsProvider>
+        <Layout mode={mode} />
+      </ThreadsProvider>
     </AppProvider>
   );
 }

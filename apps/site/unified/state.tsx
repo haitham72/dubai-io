@@ -5,6 +5,7 @@ import type { ScreenId } from "./screens";
 
 export type Mode = "assistant" | "community";
 export type ThemePref = "system" | "light" | "dark";
+export type ChatMessage = { id: number; role: "user" | "assistant"; text: string };
 
 interface AppState {
   screen: ScreenId;
@@ -15,6 +16,9 @@ interface AppState {
   openThread: (id: string | null) => void;
   draft: string;
   setDraft: (v: string) => void;
+  messages: ChatMessage[];
+  addMessages: (m: Omit<ChatMessage, "id">[]) => void;
+  chatThreadId: string;
   themePref: ThemePref;
   setThemePref: (t: ThemePref) => void;
   resolvedTheme: "light" | "dark";
@@ -36,6 +40,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [mode, setMode] = useState<Mode>("assistant");
   const [threadId, setThreadId] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [chatThreadId] = useState(() => Math.random().toString(16).slice(2, 18) + Date.now().toString(16));
+  const addMessages = useCallback((m: Omit<ChatMessage, "id">[]) => {
+    setMessages((cur) => [...cur, ...m.map((x, i) => ({ ...x, id: cur.length + i }))]);
+  }, []);
   const [themePref, setPref] = useState<ThemePref>("system");
   const [systemDark, setSystemDark] = useState(false);
 
@@ -67,8 +76,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ screen, setScreen, mode, setMode, threadId, openThread, draft, setDraft, themePref, setThemePref, resolvedTheme }),
-    [screen, setScreen, mode, threadId, openThread, draft, themePref, setThemePref, resolvedTheme],
+    () => ({ screen, setScreen, mode, setMode, threadId, openThread, draft, setDraft, messages, addMessages, chatThreadId, themePref, setThemePref, resolvedTheme }),
+    [screen, setScreen, mode, threadId, openThread, draft, messages, addMessages, chatThreadId, themePref, setThemePref, resolvedTheme],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
