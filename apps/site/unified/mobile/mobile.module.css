@@ -1,5 +1,6 @@
 /* Phone layout + ?device frame. Flat: borders and tints only. */
 .phone { display: flex; flex-direction: column; height: 100%; min-height: 0; background: var(--bg); color: var(--text); }
+.pad { padding: var(--s-4); }
 .body { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; }
 
 .tabbar { display: flex; align-items: center; gap: var(--s-2); padding: var(--s-2) var(--s-3) calc(var(--s-2) + var(--safe-bottom)); background: var(--bg); flex-shrink: 0; }

@@ -1,0 +1,41 @@
+/* Task threads: sidebar list, thread view, Updates island. Flat. */
+.list { display: flex; flex-direction: column; gap: 2px; }
+.listTitle { margin: 0; padding: var(--s-2) var(--s-3); font-size: var(--fs-xs); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); }
+.row { display: flex; align-items: center; gap: var(--s-3); width: 100%; padding: var(--s-2) var(--s-3); border-radius: var(--r-md); text-align: start; transition: background 0.12s var(--ease); }
+.row:hover { background: var(--hover); }
+.rowActive, .rowActive:hover { background: var(--accent-soft); }
+.rowIcon { display: grid; place-items: center; width: 40px; height: 40px; flex-shrink: 0; border-radius: 50%; background: color-mix(in srgb, currentColor 14%, transparent); }
+.rowText { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.rowTitle { display: flex; align-items: center; gap: 6px; font-size: var(--fs-md); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rowSub { font-size: var(--fs-sm); color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rowMeta { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; font-size: var(--fs-xs); color: var(--text-3); flex-shrink: 0; min-height: 30px; }
+.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); }
+.toneRed { color: var(--danger); }
+.toneAccent { color: var(--accent); }
+.toneAmber { color: var(--warning); }
+.toneGreen { color: var(--success); }
+.toneGrey { color: var(--text-2); }
+.note { margin: 0; padding: var(--s-2) var(--s-3); font-size: var(--fs-sm); color: var(--text-2); }
+
+.view { flex: 1; min-height: 0; display: flex; flex-direction: column; container-type: inline-size; }
+.viewHead { display: flex; align-items: center; gap: var(--s-3); padding: var(--s-4) var(--s-6); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.back { display: grid; place-items: center; width: 36px; height: 36px; border-radius: var(--r-sm); color: var(--text-2); }
+.back:hover { background: var(--hover); color: var(--text); }
+.viewTitle { display: flex; flex-direction: column; min-width: 0; }
+.viewTitle h1 { display: flex; align-items: center; gap: var(--s-2); margin: 0; font-size: var(--fs-xl); font-weight: 650; }
+.viewTitle span { font-size: var(--fs-sm); color: var(--text-2); }
+.entries { flex: 1; overflow-y: auto; padding: var(--s-6); display: flex; flex-direction: column; gap: var(--s-4); max-width: 760px; width: 100%; margin: 0 auto; }
+.entry { display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--s-2); margin: 0; line-height: 1.55; }
+.when { margin-inline-start: auto; font-size: var(--fs-xs); color: var(--text-3); }
+.next { margin: 0; padding: var(--s-3) var(--s-4); border-radius: var(--r-md); background: var(--surface-2); line-height: 1.5; }
+.next strong { margin-inline-end: var(--s-2); color: var(--text-2); font-weight: 600; }
+
+.islandBtn, .pill { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; color: inherit; font-size: 12px; font-weight: 550; }
+.pill { height: 32px; margin: var(--s-2) auto 0; padding: 0 var(--s-3); border-radius: var(--r-pill); background: var(--surface-2); border: 1px solid var(--border); color: var(--text); }
+.islandDot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+.islandText { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+@container (max-width: 680px) {
+  .viewHead { padding: var(--s-3) var(--s-4); }
+  .entries { padding: var(--s-4); }
+}

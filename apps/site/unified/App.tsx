@@ -9,6 +9,7 @@ import { MobileApp } from "./mobile/MobileApp";
 import { DeviceFrame } from "./mobile/DeviceFrame";
 import { useIsMobile } from "./mobile/useIsMobile";
 import { MainView, SidebarView } from "./views";
+import { UpdatesIsland } from "./tasks/UpdatesIsland";
 import { ThreadsProvider } from "./data/threads";
 
 function Layout({ mode }: { mode: Presentation }) {
@@ -16,7 +17,7 @@ function Layout({ mode }: { mode: Presentation }) {
   const mobile = useIsMobile();
   const desktopLayout = <Shell screen={screen} sidebar={<SidebarView />} main={<MainView screen={screen} />} />;
 
-  if (mode === "device") return <DeviceFrame><MobileApp /></DeviceFrame>;
+  if (mode === "device") return <DeviceFrame island={<UpdatesIsland />}><MobileApp hardwareIsland /></DeviceFrame>;
   if (mode === "desktop") return <MacDesktop>{desktopLayout}</MacDesktop>;
   return <div style={{ height: "100vh" }}>{mobile ? <MobileApp /> : desktopLayout}</div>;
 }
