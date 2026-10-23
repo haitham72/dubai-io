@@ -1,7 +1,7 @@
 // Feed tab: Reddit-like community discovery with a Snapchat-style stories rail.
 // Seeded people, communities and comments are demo data and labelled; posts are
 // members' words, never instructions to the assistant.
-import { esc, svg, toast } from './ui.js';
+import { esc, svg, toast, profileButton } from './ui.js';
 import { api } from './service-workflow.js';
 import { registerPage, openPage, closeTopPanel } from './page-host.js';
 import { ago } from './hub.js';
@@ -24,7 +24,7 @@ export function createFeed(root, { openMe }) {
   function render() {
     const posts = data?.posts || [], stories = data?.stories || [];
     const discover = communities.filter(c => !c.joined);
-    root.innerHTML = `<header class="tab-head"><h1>Feed</h1><div><button class="round" data-compose aria-label="New post">${svg('plus')}</button><button class="round" data-me aria-label="Your profile">${svg('person')}</button></div></header>
+    root.innerHTML = `<header class="tab-head"><h1>Feed</h1><div><button class="round" data-compose aria-label="New post">${svg('plus')}</button>${profileButton()}</div></header>
       ${stories.length ? `<div class="stories-rail" role="list" aria-label="Stories">${stories.map(s => `<button role="listitem" class="story-dot" data-story="${esc(s.community.id)}"><span class="ring"><img src="${esc(s.image)}" alt=""></span><small>${esc(s.community.name)}</small></button>`).join('')}</div>` : ''}
       ${discover.length ? `<section class="discover"><h2>Communities for you</h2><div class="discover-row">${discover.map(c => `<div class="community-chip"><img src="${esc(c.image)}" alt=""><b>${esc(c.name)}</b><small>${fmt(c.members)} members · ${esc(c.topic)}</small><button class="btn sm" data-join="${esc(c.id)}">Join</button></div>`).join('')}</div></section>` : ''}
       <div class="sort-row" role="group" aria-label="Sort posts">${['new', 'top', 'hot'].map(s => `<button data-sort="${s}" aria-pressed="${s === sort}">${s[0].toUpperCase() + s.slice(1)}</button>`).join('')}</div>

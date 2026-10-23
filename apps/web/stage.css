@@ -215,7 +215,7 @@ button { font: inherit; color: inherit; cursor: pointer; border: 0; background: 
 .actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 10px; margin-top: 10px; }
 .actions.col { grid-template-columns: 1fr; }
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; height: 48px; border-radius: 16px; background: #fff; font-weight: 600; font-size: 15px; box-shadow: 0 0 0 .5px var(--sep), 0 4px 10px -8px rgba(8, 40, 56, .5); }
-.btn.primary { background: var(--tint); color: #fff; box-shadow: 0 10px 22px -12px rgba(10, 156, 194, .9); }
+.btn.primary { background: var(--tint); color: #fff; box-shadow: none; }
 .btn.big { height: 54px; font-size: 16.5px; border-radius: 18px; }
 .btn.wide { width: 100%; }
 .btn.sm { height: 34px; padding-inline: 12px; border-radius: 12px; font-size: 13.5px; }

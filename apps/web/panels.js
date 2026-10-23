@@ -4,6 +4,7 @@ export const ROUTES = [
   { page: 'chat.thread', prefix: 'chat/thread', id: true, parent: 'hub', probe: id => '/api/chats/' + encodeURIComponent(id) + '/messages' },
   { page: 'feed.community', prefix: 'chat/community', id: true, parent: 'hub', probe: id => '/api/feed?limit=1&community_id=' + encodeURIComponent(id) },
   { page: 'feed.post', prefix: 'feed/post', id: true, parent: 'feed', probe: id => '/api/posts/' + encodeURIComponent(id) },
+  { page: 'chat.favorites', prefix: 'chat/favorites', id: false, parent: 'hub' },
   { page: 'settings', prefix: 'settings', id: false, parent: 'home' },
 ];
 export const isPanelPage = page => ROUTES.some(r => r.page === page);

@@ -49,6 +49,13 @@ export const ICON = {
   taxi: '<path d="M5 16V11l2-4h10l2 4v5M4 16h16v3H4zM9 4.5h6M7.5 13h.01M16.5 13h.01" />',
   train: '<rect x="6" y="3.5" width="12" height="13" rx="3" /><path d="M6 11h12M9 20l-2 1.5M15 20l2 1.5M9.5 14h.01M14.5 14h.01" />',
   shield: '<path d="M12 3.5l7.5 3v5.5c0 4.5-3.2 7.8-7.5 9-4.3-1.2-7.5-4.5-7.5-9V6.5z" />',
+  archive: '<rect x="3.5" y="4.5" width="17" height="4.5" rx="1.5" /><path d="M5 9v9.5a1.5 1.5 0 0 0 1.5 1.5h11a1.5 1.5 0 0 0 1.5-1.5V9M10 13h4" />',
+  heart: '<path d="M12 20s-7.5-4.6-7.5-10.2A4.2 4.2 0 0 1 12 7.6a4.2 4.2 0 0 1 7.5 2.2C19.5 15.4 12 20 12 20z" />',
+  video: '<rect x="3" y="6.5" width="12.5" height="11" rx="2.5" /><path d="M15.5 10.5l5.5-3v9l-5.5-3z" />',
+  info: '<circle cx="12" cy="12" r="8.5" /><path d="M12 11v5.5M12 7.8h.01" />',
+  keypad: '<circle cx="6" cy="5.5" r="1.4" /><circle cx="12" cy="5.5" r="1.4" /><circle cx="18" cy="5.5" r="1.4" /><circle cx="6" cy="11" r="1.4" /><circle cx="12" cy="11" r="1.4" /><circle cx="18" cy="11" r="1.4" /><circle cx="6" cy="16.5" r="1.4" /><circle cx="12" cy="16.5" r="1.4" /><circle cx="18" cy="16.5" r="1.4" /><circle cx="12" cy="21" r="1.4" />',
+  missed: '<path d="M5 5l8 8M5 10.5V5h5.5M10 15l-1.5 1.5a11 11 0 0 0 6 6L16 21l4 1.5v-3" />',
+  up2: '<path d="M12 19V5M6 11l6-6 6 6" />',
   eye: '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z" /><circle cx="12" cy="12" r="3" />',
 };
 export const svg = (name, cls = 'ic') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICON[name] || ICON.dots}</svg>`;
@@ -58,9 +65,20 @@ export const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 export const wait = ms => new Promise(r => setTimeout(r, reduced ? 0 : ms));
 
 let toastTimer = 0;
+// Toast with one action (Undo). Auto-hides after 6s; the action runs at most once.
+export function toastAction(msg, label, onAction) {
+  const t = $('#toast'); if (!t) return;
+  clearTimeout(toastTimer); t.classList.add('bottom'); t.textContent = msg + ' ';
+  const b = document.createElement('button'); b.type = 'button'; b.className = 'toast-action'; b.textContent = label;
+  b.addEventListener('click', () => { t.classList.remove('show'); t.hidden = true; onAction(); }, { once: true });
+  t.append(b); t.hidden = false; t.classList.add('show');
+  toastTimer = setTimeout(() => { t.classList.remove('show'); setTimeout(() => { t.hidden = true; }, 250); }, 6000);
+}
+// The one profile control every tab header uses; the host opens Settings on tap.
+export const profileButton = () => `<button class="round" data-me aria-label="Your profile">${svg('person')}</button>`;
 export function toast(msg) {
   const t = $('#toast'); if (!t) return;
-  t.textContent = msg; t.hidden = false; t.classList.add('show');
+  t.classList.remove('bottom'); t.textContent = msg; t.hidden = false; t.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => { t.classList.remove('show'); setTimeout(() => { t.hidden = true; }, 250); }, 2800);
 }
