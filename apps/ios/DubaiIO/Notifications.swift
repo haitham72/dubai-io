@@ -18,7 +18,7 @@ final class OutboxPoller {
     func start(_ client: APIClient) async {
         guard !polling else { return }
         polling = true
-        await requestPermission()
+        if DebugLaunch.screen == nil { await requestPermission() }
         while !Task.isCancelled {
             await poll(client)
             try? await Task.sleep(for: .seconds(30))

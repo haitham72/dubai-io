@@ -28,8 +28,11 @@ Native merchant approval/mini-app/SSE parity, production Auth, APNs/Live Activit
 swift test --package-path apps/ios/Core
 xcodebuild -project apps/ios/DubaiIO.xcodeproj -scheme DubaiIO \
   -configuration Debug -destination 'generic/platform=iOS Simulator' \
-  -derivedDataPath output/ios-build CODE_SIGNING_ALLOWED=NO build
+  -derivedDataPath output/ios-build ARCHS=arm64 ONLY_ACTIVE_ARCH=YES CODE_SIGNING_ALLOWED=NO build
+apps/ios/tools/screens.sh            # every screen, both phone sizes, light + dark (needs a running API)
 ```
+
+`ARCHS=arm64` is required: the x86_64 simulator slice fails to resolve the local `DubaiIOCore` package.
 
 The macOS CI workflow runs these checks. A successful compile does not establish iPhone appearance/performance or a completed app conversion. See [native plan](../../docs/references/ios-swift-plan.md) and [handoff](../../handoff.md) for actual status.
 

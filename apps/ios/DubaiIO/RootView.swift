@@ -50,7 +50,6 @@ struct RootView: View {
                     .transition(.opacity.combined(with: .move(edge: .bottom)))
             }
         }
-        .environment(session)
         .safeAreaInset(edge: .bottom) {
             if !askOpen { tabBar.padding(.horizontal, 16).padding(.bottom, 8) }
         }
@@ -73,12 +72,14 @@ struct RootView: View {
             OnboardingView { hasSeenIntro = true }
         }
         .task {
+            openDebugScreen()
             if !session.baseAddress.isEmpty { await session.connect(to: session.baseAddress) }
         }
         .task(id: session.client != nil ? session.revision : nil) {
             if let client = session.client { await poller.start(client) }
         }
         .onChange(of: session.revision) { _, _ in chat.reset() }
+        .environment(session)  // outermost, so sheets and covers inherit it too
     }
 
     private var tabBar: some View {
@@ -115,6 +116,15 @@ struct RootView: View {
     }
     private func transition(_ changes: () -> Void) {
         withAnimation(reduceMotion ? nil : .smooth(duration: 0.3), changes)
+    }
+    private func openDebugScreen() {
+        switch DebugLaunch.screen {
+        case "ask": askOpen = true
+        case "me": profileOpen = true
+        case "maps": mapsOpen = true
+        case let name?: if let tab = AppTab(rawValue: name) { selectedTab = tab }
+        case nil: break
+        }
     }
     private func openLink(_ value: String) {
         guard let url = WebLink.url(value) else { return }
