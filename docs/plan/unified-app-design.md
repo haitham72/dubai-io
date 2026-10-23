@@ -23,6 +23,8 @@ All three ship from the one React codebase: website as-is; mobile wrapped with C
 
 **The original mobile app (`apps/web`) is the reference, not a 'classic' or old version (founder, 23 Oct).** The new app's phone experience mirrors it with minimal changes — same flows, structure and copy unless the founder asks otherwise. Never label it classic, old, legacy or stale.
 
+**Quality bar (founder, 23 Oct):** in the original app, **Feed is the best screen and Services is the lowest quality**. Use Feed as the benchmark; when Services moves to the new app (Plan 4) it gets a founder-requested quality uplift to Feed's level — the one sanctioned exception to 'minimal changes'.
+
 ## 1. Product: Dubai-io first
 
 A personal assistant for everyday life and work in Dubai (not a visitor/tourist app). Its surfaces, in priority order:

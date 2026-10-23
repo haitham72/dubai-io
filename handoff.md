@@ -10,6 +10,7 @@
 ## Founder's non-negotiables
 
 - **The original mobile app (`apps/web`) is the reference, not a 'classic' or old version (founder, 23 Oct).** The new app's phone experience mirrors it with minimal changes — same flows, structure and copy unless the founder asks otherwise. Never label it classic, old, legacy or stale.
+- **Quality bar (founder, 23 Oct):** in the original app, **Feed is the best screen and Services is the lowest quality**. Use Feed as the benchmark; when Services moves to the new app (Plan 4) it gets a founder-requested quality uplift to Feed's level — the one sanctioned exception to 'minimal changes'.
 
 - **Final delivery:** iOS/Android app + desktop app (Grok Bot / ChatGPT Codex / Claude Duet style) + website — all from ONE React codebase in `apps/site` (Capacitor mobile, Tauri/Electron desktop). Swift is STOPPED.
 - **The original mobile app (`apps/web`) must never be lost or diluted.** It is frozen at git tag `mobile-pwa-baseline-2026-10-23` and must stay byte-identical (`git diff --quiet mobile-pwa-baseline-2026-10-23 HEAD -- apps/web`). Plan 2 Task 1 embeds it live inside the new app at **`/?devices`** with an **Original ⇄ New** toggle. Retire it only after parity AND explicit founder approval.

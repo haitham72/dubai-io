@@ -70,7 +70,7 @@
 | **2** | **Original ⇄ New device toggle; phone Home; airport guide; lost-in-taxi** | Sonnet subagent |
 | 2b | Backend: composer → real tasks + activity per step | Claude (main) |
 | 3 | Community + Chats ⇄ Calls (port from `apps/web`) | Sonnet subagent |
-| 4 | Services + Maps (Google Places key is set) | Sonnet subagent |
+| 4 | Services + Maps (Google Places key is set). **Services gets a quality uplift to the Feed screen's level** (founder: Services is the weakest original screen, Feed the best) | Sonnet subagent |
 | 5 | Dashboard (Weather, Prayer, News — keys set) + Connectors gallery + "What Dubai-io can see" | Sonnet subagent |
 | 6 | Memory engine (`2026-10-23-temporal-memory.md`) | Sonnet + Claude review |
 | 7 | Connectors (Gmail/Outlook/GitHub; Google OAuth when founder adds keys) + investigation loop | Claude + Sonnet |

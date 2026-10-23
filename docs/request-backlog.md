@@ -4,7 +4,7 @@ Current state: [status.md](status.md).
 
 ## Unified app — founder direction (23 Oct, ACTIVE)
 
-Founder rejected the rebuilt site and stopped Swift. Direction: one React app, Dubai-io-led, Mirsal-redesign craft, Grok Bot/Dots/Duet behaviour, temporal_note memory engine, connectors drive dashboard workspaces, task queue everywhere, airport + lost-in-taxi cases kept, palette white + `#357F92` with dark mode derived. Full design + decisions: `docs/plan/unified-app-design.md`. Open: dark-mode pick, final approval, vault-control location.
+Founder rejected the rebuilt site and stopped Swift. Direction: one React app, Dubai-io-led, Mirsal-redesign craft, Grok Bot/Dots/Duet behaviour, temporal_note memory engine, connectors drive dashboard workspaces, task queue everywhere, airport + lost-in-taxi cases kept, palette white + `#357F92` with dark mode derived. Full design + decisions: `docs/plan/unified-app-design.md`. Founder 23 Oct: `apps/web` is the original mobile app (reference, never 'classic'); new app mirrors it minimally. Feed = best screen (benchmark); Services = weakest → quality uplift in Plan 4.
 
 ## iOS visual review (logged 23 Oct — founder wants to see the Swift output)
 
