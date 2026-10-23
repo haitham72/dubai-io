@@ -19,6 +19,8 @@ interface AppState {
   messages: ChatMessage[];
   addMessages: (m: Omit<ChatMessage, "id">[]) => void;
   chatThreadId: string;
+  onboarded: boolean | null;
+  finishOnboarding: () => void;
   themePref: ThemePref;
   setThemePref: (t: ThemePref) => void;
   resolvedTheme: "light" | "dark";
@@ -26,6 +28,7 @@ interface AppState {
 
 const Ctx = createContext<AppState | null>(null);
 const THEME_KEY = "dubaiio.theme";
+export const ONBOARDED_KEY = "dubaiio.onboarded";
 
 function readPref(): ThemePref {
   try {
@@ -44,6 +47,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [chatThreadId] = useState(() => Math.random().toString(16).slice(2, 18) + Date.now().toString(16));
   const addMessages = useCallback((m: Omit<ChatMessage, "id">[]) => {
     setMessages((cur) => [...cur, ...m.map((x, i) => ({ ...x, id: cur.length + i }))]);
+  }, []);
+  const [onboarded, setOnboarded] = useState<boolean | null>(null);
+  useEffect(() => {
+    try { setOnboarded(localStorage.getItem(ONBOARDED_KEY) === "1"); } catch { setOnboarded(true); }
+  }, []);
+  const finishOnboarding = useCallback(() => {
+    setOnboarded(true);
+    try { localStorage.setItem(ONBOARDED_KEY, "1"); } catch { /* storage blocked */ }
   }, []);
   const [themePref, setPref] = useState<ThemePref>("system");
   const [systemDark, setSystemDark] = useState(false);
@@ -76,8 +87,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ screen, setScreen, mode, setMode, threadId, openThread, draft, setDraft, messages, addMessages, chatThreadId, themePref, setThemePref, resolvedTheme }),
-    [screen, setScreen, mode, threadId, openThread, draft, messages, addMessages, chatThreadId, themePref, setThemePref, resolvedTheme],
+    () => ({ screen, setScreen, mode, setMode, threadId, openThread, draft, setDraft, messages, addMessages, chatThreadId, onboarded, finishOnboarding, themePref, setThemePref, resolvedTheme }),
+    [screen, setScreen, mode, threadId, openThread, draft, messages, addMessages, chatThreadId, onboarded, finishOnboarding, themePref, setThemePref, resolvedTheme],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

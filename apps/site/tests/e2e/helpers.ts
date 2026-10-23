@@ -22,8 +22,7 @@ export interface ApiMock {
 
 /** Hermetic API: every /api call is answered here, so e2e never depends on a running backend. */
 export async function mockApi(page: Page, mock: ApiMock = {}) {
-  const told: Record<string, { value: string }> = {};
-  for (const [k, v] of Object.entries(mock.memory ?? {})) told[k] = { value: v };
+  const told: { key: string; value: string }[] = Object.entries(mock.memory ?? {}).map(([key, value]) => ({ key, value }));
   await page.route("**/api/**", async (route) => {
     const req = route.request();
     const url = new URL(req.url());
@@ -40,7 +39,8 @@ export async function mockApi(page: Page, mock: ApiMock = {}) {
     const put = path.match(/^\/api\/session\/memory\/(\w+)$/);
     if (put && req.method() === "PUT") {
       const value = JSON.parse(req.postData() ?? "{}").value as string;
-      told[put[1]] = { value };
+      const i = told.findIndex((f) => f.key === put[1]);
+      if (i >= 0) told[i] = { key: put[1], value }; else told.push({ key: put[1], value });
       return json({ fact: { key: put[1], value } });
     }
     const detail = path.match(/^\/api\/tasks\/([^/]+)(\/activity)?$/);
