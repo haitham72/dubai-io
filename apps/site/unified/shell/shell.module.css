@@ -1,0 +1,22 @@
+/* Desktop shell: left column + main. Flat, white. */
+.app { display: flex; height: 100%; min-width: 0; overflow: hidden; background: var(--bg); color: var(--text); }
+.left { display: flex; flex-direction: column; width: var(--nav-width); flex-shrink: 0; padding: var(--s-4) var(--s-3) var(--s-3); background: var(--nav-bg); border-inline-end: 1px solid var(--border); min-height: 0; }
+.brand { display: flex; align-items: flex-start; gap: var(--s-3); padding: var(--s-1) var(--s-2) var(--s-4); }
+.logo { display: grid; place-items: center; width: 36px; height: 36px; flex-shrink: 0; border-radius: 10px; background: var(--accent); color: var(--on-accent); font-weight: 750; font-size: 20px; }
+.brandText { display: flex; flex-direction: column; min-width: 0; }
+.brandText strong { font-size: var(--fs-xl); font-weight: 700; letter-spacing: -0.01em; line-height: 1.15; }
+.brandText small { margin-top: 2px; font-size: 11.5px; line-height: 1.35; color: var(--text-3); }
+
+.rail { padding-bottom: var(--s-3); border-bottom: 1px solid var(--border); }
+.railItems { display: flex; flex-direction: column; gap: 2px; }
+.railItem { display: flex; align-items: center; gap: var(--s-3); height: 42px; padding: 0 var(--s-3); border-radius: var(--r-md); color: var(--text-2); font-size: var(--fs-lg); font-weight: 450; text-align: start; transition: background 0.12s var(--ease), color 0.12s var(--ease); }
+.railItem:hover { background: var(--hover); color: var(--text); }
+.railItemActive, .railItemActive:hover { background: var(--active); color: var(--text); font-weight: 550; }
+.railItemActive svg { color: var(--accent); }
+
+.sidebar { flex: 1; min-height: 0; overflow-y: auto; padding-top: var(--s-3); }
+.leftFoot { display: flex; align-items: center; padding-top: var(--s-3); border-top: 1px solid var(--border); }
+.themeBtn { display: inline-flex; align-items: center; gap: var(--s-2); height: 34px; padding: 0 var(--s-3); border-radius: var(--r-sm); font-size: var(--fs-sm); color: var(--text-2); }
+.themeBtn:hover { background: var(--hover); color: var(--text); }
+
+.main { position: relative; flex: 1; min-width: 0; display: flex; flex-direction: column; background: var(--bg); overflow: hidden; }
