@@ -119,10 +119,12 @@
 .pill.warn { background: #FDEBD3; color: #8A4B08; border-radius: 999px; padding: 2px 8px; font-size: 11px; }
 .votes { display: inline-flex; align-items: center; gap: 4px; margin-left: 8px; vertical-align: middle; }
 .votes button { min-height: 32px; min-width: 32px; border-radius: 10px; background: var(--tint-soft); color: var(--tint-ink); font-size: 12px; }
-.votes[data-mine="1"] [data-vote="1"], .votes[data-mine="-1"] [data-vote="-1"] { outline: 2px solid var(--tint-ink); }
+.votes[data-mine="1"] [data-vote="1"], .votes[data-mine="-1"] [data-vote="-1"] { background: var(--tint); color: #fff; }
 .votes b { min-width: 20px; text-align: center; font-size: 13px; }
 .sort-row { display: flex; gap: 6px; margin: 8px 0; }
-.sort-row button[aria-pressed="true"] { outline: 2px solid var(--tint-ink); }
+.sort-row button { padding: 6px 14px; border-radius: 999px; background: var(--card); border: .5px solid var(--sep); font-size: 13.5px; font-weight: 600; outline: none; }
+.sort-row button:focus:not(:focus-visible) { outline: none; }
+.sort-row button[aria-pressed="true"] { background: var(--tint-soft); color: var(--tint-ink); border-color: var(--tint); }
 .search-row { display: flex; gap: 6px; margin: 8px 0; }
 .search-row input { flex: 1; border: 1px solid var(--sep); border-radius: 14px; padding: 10px 12px; font-size: 15px; }
 

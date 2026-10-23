@@ -205,7 +205,13 @@ const today = createToday($('#today'), () => {
   enterServices();
 });
 const reading = createReading($('#reading'));
-const hub = createHub($('#chatHub'), { openAssistant: () => beginChat(), openMe: () => openMe() });
+const hub = createHub($('#chatHub'), {
+  openAssistant: () => beginChat(), openMe: () => openMe(),
+  // Hand typed text to Ask as a draft in the composer; the user sends it.
+  openAsk: text => { beginChat(); $('#q').value = text; },
+  // New group / + : the existing join-a-community entry lives in the Communities tab.
+  openJoin: () => { closeSheet(); setView('feed'); },
+});
 const feed = createFeed($('#feedView'), { openMe: () => openMe() });
 const homeSourceWatchers = new Map();
 function followHomeSources(items) {
