@@ -11,6 +11,14 @@ Status: design, founder-steered; awaiting final approval after the white/dark de
 - Founder's reference run (Grok Bot, "why didn't my Puffy job application pay off"): searched 5–7 repos for "puffy", found a notes `.md` about the email, searched Gmail/Outlook, found 12 emails, fanned out a small LLM to read them into minimal JSON summaries, the main model reviewed → advice → drafted the reply in **Outlook** (the account the thread lived in) → proposed a LinkedIn title change, after noticing in `CLAUDE.md` that the founder had recently changed title. This is the assistant behaviour Dubai-io must reach.
 - Visual references: `.superpowers/brainstorm/94241-1792742190/content/img/` (GPT Image 2.5 concepts: `concept1–3`, `v2/s1–s9`, **v3 = current reference set: `v3/l01–l10` light desktop/web, `v3/m01–m06` phone (guided by the real `apps/web` screens + `chat.jpg`), `v3/d01` graphite / `v3/d02` true-black dark candidates**), `design/references/chat/chat.jpg` (WhatsApp Chats/Calls), `design/references/chat/grok-bot.jpeg` (Grok Bot task threads), `design/references/claude duet/` (Duet frames), Mirsal `Slides/output_grid/*.jpg`.
 
+## 0.1 Final delivery (founder, 23 Oct — non-negotiable)
+
+1. **iOS + Android app**
+2. **Desktop app** (like Grok Bot / ChatGPT Codex / Claude Duet desktop)
+3. **Website**
+
+All three ship from the one React codebase: website as-is; mobile wrapped with Capacitor (iOS/Android); desktop wrapped with Tauri or Electron (decided in the packaging plan). `?device` / `?desktop` frames are demo previews until the wrappers exist. No Swift/native rewrite.
+
 ## 1. Product: Dubai-io first
 
 A personal assistant for everyday life and work in Dubai (not a visitor/tourist app). Its surfaces, in priority order:
