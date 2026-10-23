@@ -26,4 +26,5 @@ Single current-state file. Detail lives in `handoff.md`, `docs/request-backlog.m
 
 - REC-03C/REC-04 (service/product eligibility, measurement, scheduled cleanup); no community-feed ranker.
 - PostgreSQL migration application, hosted Auth/Storage, live Agnes connectivity.
-- Missing keys: `NEWSDATA_API_KEY`, `TVLY_API_KEY`, `SERPAPI_KEY`, `GOOGLE_MAPS_BROWSER_KEY`.
+- Keys (23 Oct): Tavily, NewsData, SerpAPI, Google Places, OpenAI, NaraRouter, Finnhub, ops token set. Missing: Google OAuth trio + `OAUTH_TOKEN_KEY` (founder connects later), `GOOGLE_MAPS_BROWSER_KEY`, `DATABASE_URL` (dev runs SQLite).
+- Plans: `docs/superpowers/plans/2026-10-23-unified-app-foundation.md` (Plan 1, in progress), `docs/superpowers/plans/2026-10-23-temporal-memory.md` (Plan 6).

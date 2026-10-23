@@ -71,16 +71,14 @@ The founder's `temporal_note` (`~/VsCode/Claude---Cowork/temporal_note`; Python,
 - Existing Dubai-io pieces to connect: `user_profile.py`, `recommendations.py`, `profile.py` (episodes/overrides), session facts (`area`, `household`, `services`, …).
 - Separately: temporal_note can serve as an MCP for the agents building this repo; its plugin launcher is Windows-only (`run.ps1`) — point it at `mcp_server/run.sh` on the Mac.
 - **Founder permission (23 Oct): copy/learn freely from temporal_note.**
-- **Vault control** (founder's "Claude control" extension UI; same family as temporal_note): indexes code/files, has an LLM summarise and document tasks for later sessions, and mainly **guides and controls what local info agents see and how it's shown**. In Dubai-io this becomes:
-  1. **"What Dubai-io can see" control page** (Me/Settings): every source (connectors, notes/vault, files, memory) with what is indexed, the summaries made from it, and per-source on/off + scope. Rule 9 as a real panel; bounds the investigation loop.
-  2. **Persistent task write-ups:** when a task thread finishes, a short summary (what was done, sources, outcome) is stored as a memory event so later chats and the briefing build on it — same engine as §3.
+- **Vault control: dropped by founder (23 Oct).** Its ideas live on via temporal_note: a "What Dubai-io can see" page (sources, what is indexed, per-source toggles) and persistent task write-ups. Memory plan: `docs/superpowers/plans/2026-10-23-temporal-memory.md`.
 
 ## 4. Shell, presentations, look
 
 - **One React codebase in `apps/site`** (Next.js 16 / React 19); replaces the marketing site and, after parity, `apps/web`. iOS/Swift stopped (`docs/plan/ios-upgrade.md` = history).
 - **Three presentations of the same screens** (from Mirsal): **Website** (real; desktop >820 px, phone ≤820 px), **Desktop app** (`?desktop`, Mirsal `MacDesktop` window + menu bar + Dock), **iPhone view** (`?device`, Mirsal iPhone frame + Dynamic Island). Plain URL is the deliverable; demo modes use the same live API.
 - **Navigation (desktop):** slim rail ≤6 items — Assistant, Chats, Services, Maps, Dashboard, Me — + task-thread sidebar + main; Assistant ⇄ Community pill top-center. **Phone:** tabs Home, Chat, Services, Feed + Ask; Dynamic Island = live task.
-- **Palette (founder, 23 Oct): more white, accent toward grey.** Accent `#357F92` (muted steel-teal; replaces aqua `#0A9CC2`), backgrounds `#FFFFFF`, secondary `#F6F7F8`, neutral untinted glass. **Light mode is not flat (founder, 23 Oct):** a soft Gemini-style gradient haze behind the home greeting/composer and onboarding — steel-teal `#357F92` at ~8% blending into a faint warm sand/lavender at ~5% on white, fading to pure white below the fold; never behind dense content (lists, threads, forms). **Dark mode = Graphite** (`#141618` / `#1B1E21` / `#202428`, accent `#6FA9B8`) — Claude's call since the founder didn't pick; a user on/off toggle plus system setting; true black stays a possible later option.
+- **Palette (founder, 23 Oct): more white, accent toward grey.** Accent `#357F92` (muted steel-teal; replaces aqua `#0A9CC2`), backgrounds `#FFFFFF`, secondary `#F6F7F8`, neutral untinted glass. **Light mode is not flat (founder, 23 Oct):** a soft Gemini-style gradient haze behind the home greeting/composer and onboarding — steel-teal `#357F92` at ~8% blending into a faint warm sand/lavender at ~5% on white, fading to pure white below the fold; never behind dense content (lists, threads, forms). **Dark mode = Graphite** (founder confirmed 23 Oct): `#141618` / `#1B1E21` / `#202428`, accent `#6FA9B8`; user on/off toggle plus system setting.
 - Copy from Mirsal: tokens (recolored), `ui/` primitives, shell, `MacDesktop`, mobile shell + frame + Dynamic Island, Updates tray, weather view. Not ported: stocks, flights, files, history, Mirsal `server/`, AI action layer, e-sign, voice, Postgres photos.
 - Root UI rules: no shadows, plain AI text, tinted user box, white rounded action boxes.
 
@@ -117,14 +115,14 @@ The founder's `temporal_note` (`~/VsCode/Claude---Cowork/temporal_note`; Python,
 | Community | `/api/feed`, `/api/communities*`, `/api/posts*` (replies queued in background) | seeded demo + real user content |
 | Services | `/api/catalog`, actions/orders | demo catalog, sandbox merchant |
 | Maps | Google Places / static maps (`google_maps.py`) | real with key |
-| Weather / Prayer / News | Open-Meteo (browser) / `/api/prayer-times` / `/api/reading` | real / real / real if key |
+| Weather / Prayer / News | Open-Meteo (browser) / `/api/prayer-times` / `/api/reading` | real / real / real (`TVLY_API_KEY` set) |
 | Memory | session facts, profile episodes/overrides, recommendations | real; temporal_note engine = new slice |
-| Connectors | `/api/auth/*` (Google identity only) | Gmail/Outlook/Calendar = new slice |
+| Connectors | `/api/auth/*` (Google identity only) | Gmail/Outlook/Calendar = new slice; Google OAuth env (`GOOGLE_OAUTH_CLIENT_ID/SECRET/REDIRECT_URI`, `OAUTH_TOKEN_KEY`) not set yet — founder connects later |
 | Airport guide / taxi recovery | `apps/web` arrival/guide, TAXI-02 commands | real logic; RTA adapter BLOCKED |
 
 ## 8. Pending founder picks (design set in progress)
 
-- Dark mode: Graphite chosen by Claude (founder may switch to true black).
+- Dark mode: Graphite (founder confirmed).
 - Any further visual options shown in the brainstorm gallery.
 
 ## 9. Build order
