@@ -45,7 +45,7 @@ export function createHub(root, { openAssistant, openMe }) {
 }
 
 registerPage('chat.thread', {
-  title: c => c.title, source: 'Chat · fictional AI personas',
+  title: c => c.title, fallbackTitle: 'Conversation', source: 'Chat · fictional AI personas',
   render: () => '<div class="thread-view" data-messages><p role="status">Loading…</p></div><form class="thread-compose" data-compose><label class="sr" for="threadText">Message</label><input id="threadText" maxlength="500" placeholder="Message" autocomplete="off"><button class="btn primary" type="submit">Send</button></form><p class="fine" role="status" data-generation></p>',
   mount(root, c) {
     const box = root.querySelector('[data-messages]'), request = socialRequest(); let busy = false;

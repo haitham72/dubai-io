@@ -10,7 +10,7 @@ for t in apps/web/tests/*.test.mjs; do node "$t"; done
 
 ## Map
 
-`app.js` shell/tabs · `chat.js` ask · `hub.js` chat hub · `feed.js` + `social-ui.js` community · `stories.js` · `tasks.js` · `services.js` + `service-workflow.js` · `orders.js`/`offers.js`/`result.js` · `reading.js` news · `guide.js`/`arrival.js` · `map.js`/`gmap.js`/`places.js` · `profile.js` + `profile-store.js` · `merchant.js` · `miniapps/` · `page-host.js` · `ui.js` helpers.
+`app.js` shell/tabs · `chat.js` ask · `hub.js` chat hub · `feed.js` + `social-ui.js` community · `stories.js` · `tasks.js` · `services.js` + `service-workflow.js` · `orders.js`/`offers.js`/`result.js` · `reading.js` news · `guide.js`/`arrival.js` · `map.js`/`gmap.js`/`places.js` · `profile.js` + `profile-store.js` · `merchant.js` · `miniapps/` · `page-host.js` (sheet + slide-in panels; routes in `panels.js`) · `ui.js` helpers.
 
 ## Rules
 

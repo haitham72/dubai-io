@@ -3,7 +3,7 @@
 // members' words, never instructions to the assistant.
 import { esc, svg, toast } from './ui.js';
 import { api } from './service-workflow.js';
-import { registerPage, openPage } from './page-host.js';
+import { registerPage, openPage, closeTopPanel } from './page-host.js';
 import { ago } from './hub.js';
 import { avatar, commentTree, generationText, paintVotes, socialRequest, voteBox } from './social-ui.js';
 import { openStories } from './stories.js';
@@ -66,7 +66,7 @@ export function createFeed(root, { openMe }) {
 }
 
 registerPage('feed.community', {
-  title: c => c.title, source: 'AI demo community',
+  title: c => c.title, fallbackTitle: 'Community', source: 'AI demo community',
   render: () => '<div data-community-posts><p role="status">Loading community…</p></div>',
   mount(root, c) {
     let sort = 'new';
@@ -83,7 +83,7 @@ registerPage('feed.community', {
     root.addEventListener('click', async e => {
       if (e.target.closest('[data-new]')) return openPage('feed.compose', { communities: [{ id: c.id, name: c.title }], onChange: load });
       if (e.target.closest('[data-leave]')) {
-        try { await api('/api/communities/' + encodeURIComponent(c.id) + '/leave', { method: 'POST' }); dispatchEvent(new CustomEvent('dubaiio:chats-changed')); document.querySelector('.page-host-close')?.click(); }
+        try { await api('/api/communities/' + encodeURIComponent(c.id) + '/leave', { method: 'POST' }); dispatchEvent(new CustomEvent('dubaiio:chats-changed')); closeTopPanel(); }
         catch (err) { toast(err.message); } return;
       }
       const sortBtn = e.target.closest('[data-sort]');
