@@ -1,6 +1,6 @@
 # Calls + services + panels plan — DRAFT, awaiting founder sign-off (23 Oct 2026)
 
-**Target (founder, 23 Oct 2026): the website's in-app section (`apps/site/app/app/**`) and the iOS app (`apps/ios/DubaiIO/`).** The sandbox (`apps/web`) gets no further UI work; it stays as an internal test bench until the website reaches parity. The `apps/web` file notes below record the sandbox's current behavior only as a reference. Web work in `apps/site` lands as requirements in `docs/plan/website-rebuild.md` (the rebuild owner works there); iOS work is done directly.
+**Target (founder, 23 Oct 2026, final): the mobile app is the PWA in `apps/web`** (Swift is stopped; the sandbox is no longer being retired). The `apps/web` touch points below are the build targets. Website (`apps/site`) parity lands later via `docs/plan/website-rebuild.md`; iOS notes below are historical.
 
 Status: plan only. Covers the founder's WhatsApp-style calls feedback, services 3.1 thumbnails, panels-not-popups, and services directory expansion. Do not implement until signed off. Source log: `docs/request-backlog.md` ("Calls WhatsApp-style + services 3.1 thumbnails").
 
