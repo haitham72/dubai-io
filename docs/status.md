@@ -2,13 +2,11 @@
 
 Single current-state file. Detail lives in `handoff.md`, `docs/request-backlog.md`, git history.
 
-## Branches
+## Branches (monorepo — all tracks merged into main)
 
-- `main` @ `834a185`: verified baseline (community redesign + AI persona replies merged in).
-- `dubai-io-web` @ `834a185`: website track, fresh from main.
-- `ios-swift` @ `c9efee2`: native track; main merged in, `apps/ios` preserved.
-- `redesign-community` @ `834a185`: merged; no further work planned here.
-- `redesign`: historical, not a target.
+- `main` @ `b3130d4`: backend (`apps/api`) + prototype (`apps/web`) + website (`apps/site`) + iOS (`apps/ios`).
+- `dubai-io-web`, `ios-swift`: merged into main; kept as history. New work goes on main.
+- `redesign-community`: merged; `redesign`: historical.
 
 ## Verified on the baseline
 
