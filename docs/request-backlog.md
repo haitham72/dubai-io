@@ -2,9 +2,26 @@
 
 Current state: [status.md](status.md).
 
+## Unified dashboard (logged 23 Oct — plan only, NOT implemented)
+
+Founder asked for a thorough (not high-level) unified project dashboard with a mobile side view. Thorough plan: `docs/plan/dashboard.md` (DRAFT, awaiting sign-off). Recommendation inside: founder-ops scope (health, queues, content, funnel, client status) + embedded live PWA side view at 390/428. Scope decision is sign-off item #1.
+
+## Calls WhatsApp-style + services 3.1 thumbnails (logged 23 Oct — plan only, NOT implemented)
+
+Founder feedback: the calls screen missed the WhatsApp style; services still shows ~1.5 thumbnails per row instead of 3.1 (3 full + a ~10% peek of the next to signal scroll).
+Plan (do not implement until told):
+- Calls (`apps/web/hub.js` + `community.css`): header "Call"; subheader carousel with tabs call | keypad | favorites; contacts list fixed on the right; search row on top. Keep device-dialer handoff explicit (in-app log + `tel:`, no fake in-app calling).
+- Services (grid CSS): exactly 3 full thumbnails per row plus ~10% of the next (3.1) to signal horizontal scroll; snap alignment; no 1.5 state at 390/428 widths.
+- Acceptance: visual check at 390x844 + 428x926 (normal + reduced motion) against WhatsApp reference; existing contacts/calls tests stay green; no unrelated refactoring.
+- Panels, not popups (`apps/web/page-host.js` + hub/feed/settings surfaces): DMs, Reddit-style feed thread view, and settings slide in/out full-height (WhatsApp-style), with back-gesture/button parity and instant swap under reduced motion. No centered modal overlays on these surfaces.
+- Services directory expansion: full DubaiNow-equivalent COVERAGE as browsable entries in our own design — police info/contacts + filing where a real channel exists, DEWA/Salik/bill info + displays + top-ups, licensed-charity directory + donations, RTA/parking/visa/health info + booking. Every entry carries provenance; execution only via a real registered adapter with per-action approval and verified evidence (rule 1 intact); without an adapter it shows the blocker + "Open official portal" link and keeps the draft. Filed per category via `docs/services/intake.md`.
+- ✅ Lock removal granted 23 Oct: government transactions, bill top-ups/payments, in-app donations, third-party purchasing unlocked. STILL LOCKED: copying the DubaiNow look (NEVER), fake statuses, invented facts, bidding/negotiation. Say the word to revisit any of these.
+Thorough plan: `docs/plan/calls-services-panels.md` (DRAFT, awaiting sign-off).
+
 ## Website redo — founder verdict: absolute trash, full rebuild required
 
 The shipped `apps/site` passes builds but fails the design bar: static marketing bands, no onboarding funnel, no signup→first-win journey, no SaaS-grade polish. It stays in the tree only as a route/API-integration reference. Redo scope (state-of-the-art SaaS onboarding style): sharp hero showing the product in action; social proof + benefit sections + pricing skeleton (ties to SaaS licensing idea) + FAQ; signup → guided setup (areas, household, services) → first win (first task + first decision) → dashboard, with progress, skips, and teaching empty states; try-before-signup interactive demo moment; funnel step events for drop-off measurement; Linear/Stripe-grade motion and typography (light/dark + reduced motion kept). NEW GATE from this miss: no UI track is done without founder visual review of a staged preview — build-green is not design-accepted.
+Thorough brief: `docs/plan/website-rebuild.md` (DRAFT, for the other LLM after sign-off).
 
 ## SaaS licensing (idea only, 23 Oct)
 

@@ -81,15 +81,15 @@ Contest: Create AI Agents Championship, **Best Personal AI Agent**. Portal (chec
 
 ### IN since 23 Oct (founder)
 
-Demo-grade **community**: Chat (groups, community threads, contacts with an in-app call log), Feed (communities, posts, comments, stories). Seeded people and posts are labelled Demo; real multi-user accounts arrive with Supabase Auth. Payment history means Dubai-io's own fixed-price orders and receipts only ("No payment taken"); bills remain LATER, and the DubaiNow look remains NEVER.
+Demo-grade **community**: Chat (groups, community threads, contacts with an in-app call log), Feed (communities, posts, comments, stories). Seeded people and posts are labelled Demo; real multi-user accounts arrive with Supabase Auth. Payment history means Dubai-io's own fixed-price orders and receipts only ("No payment taken"); bills unlocked 23 Oct (founder) under verified-evidence rules; the DubaiNow look remains NEVER.
 
 ### LATER
 
-Civic RAG with citations · resident bills and Salik/DEWA displays · background geofencing · ticket wallet · **payments and third-party purchasing** · media memory · Arabic RTL UI · live AR try-on · affiliate marketplace feeds. A broader audience does not automatically activate these features. Native remains parked (§6). Everyday resident life/work is the product direction, separate from these deferred capabilities.
+Civic RAG with citations · background geofencing · ticket wallet · media memory · Arabic RTL UI · live AR try-on · affiliate marketplace feeds. A broader audience does not automatically activate these features. Native remains parked (§6). Everyday resident life/work is the product direction, separate from these deferred capabilities. (Unlocked 23 Oct by founder: resident bills + Salik/DEWA displays, payments and third-party purchasing, government transactions — each ships only behind a real adapter with verified evidence; no fake sends.)
 
 ### NEVER
 
-Fake "Confirmed/Booked/Paid" · invented positions, belts, queues or prices shown as real · government transactions (fines display-only) · copying the official DubaiNow look · bidding / quote / price negotiation in any form.
+Fake "Confirmed/Booked/Paid" · invented positions, belts, queues or prices shown as real · copying the official DubaiNow look · bidding / quote / price negotiation in any form.
 
 ## 3. Existing demo arc (historical visitor scenario)
 

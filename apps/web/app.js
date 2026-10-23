@@ -76,7 +76,7 @@ document.body.insertAdjacentHTML('beforeend', `
   <main id="stage" aria-roledescription="carousel" aria-label="Home cards"></main>
   <nav class="rail" id="rail" aria-label="Cards"></nav>
   <p class="caption" id="caption" aria-live="polite"></p>
-  <button class="today-launch" id="todayLaunch" aria-controls="today" aria-label="Open Today tasks"><span class="today-launch-grab" aria-hidden="true"></span><span><b id="todayHandleLabel">Today</b><small>Scroll down to your tasks</small></span>${svg('up', 'ic sm')}</button>
+  <button class="today-launch" id="todayLaunch" aria-controls="today" aria-label="Open Today tasks"><span class="today-launch-grab" aria-hidden="true"></span><span><b id="todayHandleLabel">Today</b></span>${svg('up', 'ic sm')}</button>
   </div>
   <section class="today" id="today" aria-label="Today" tabindex="-1" hidden inert></section>
   <section class="reading" id="reading" aria-label="News" hidden></section>
