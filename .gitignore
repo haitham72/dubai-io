@@ -27,3 +27,4 @@ xcuserdata/
 *.xcresult/
 apps/ios/Local.xcconfig
 .superpowers/
+.claude/worktrees/
