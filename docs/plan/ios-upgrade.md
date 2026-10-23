@@ -1,5 +1,7 @@
 # iOS upgrade plan — Liquid Glass rebuild of the native app (23 Oct 2026)
 
+**PARKED 23 Oct (founder): "Swift is slowing us down" — full focus moves to the web app and website.** Done before parking: S0 (screenshot harness + Me/Maps crash fix) and part of S1 (`DesignSystem.swift` with light/dark-adaptive colors fixing the unreadable dark-mode chips/pills/avatars; native iOS 26 `TabView` with Ask as the search tab; intro rebuilt on the mesh with everyday-life copy). Not done in S1: ShipSwift (it is an Xcode demo app, not a Swift package, so effects must be copied with the MIT notice; the orb needs `.metal` support in `tools/generate_project.py`). Home still says "Hello, visitor." (S2). Resume from here.
+
 Status: founder un-parked native work on 23 Oct ("built by a low-quality LLM, needs substantial upgrade… should be Liquid Glass"). This plan replaces the look and structure of `apps/ios/DubaiIO/` (about 2,900 lines across 13 views). `apps/ios/Core` (typed API client, models, contract tests) stays and only grows. Backend contracts are unchanged; anything new goes through `docs/request-backlog.md`.
 
 ## 1. Quality bar

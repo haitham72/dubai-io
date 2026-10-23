@@ -2,10 +2,10 @@ import DubaiIOCore
 import SwiftUI
 
 enum AppTab: String, CaseIterable, Identifiable {
-    case home, chat, services, feed
+    case home, chat, services, feed, ask
     var id: Self { self }
     var label: String {
-        switch self { case .home: "Home"; case .chat: "Chat"; case .services: "Services"; case .feed: "Feed" }
+        switch self { case .home: "Home"; case .chat: "Chat"; case .services: "Services"; case .feed: "Feed"; case .ask: "Ask" }
     }
     var symbol: String {
         switch self {
@@ -13,20 +13,20 @@ enum AppTab: String, CaseIterable, Identifiable {
         case .chat: "bubble.left.and.bubble.right"
         case .services: "square.grid.2x2"
         case .feed: "newspaper"
+        case .ask: "magnifyingglass"
         }
     }
 }
 
-/// App shell: Home | Chat | Services | Feed tab bar, a separate Ask button,
-/// profile top-right on each tab, full-screen gradient onboarding.
+/// App shell: native iOS 26 Liquid Glass tab bar (Home | Chat | Services | Feed,
+/// Ask as the search tab), profile top-right on each tab, gradient onboarding.
 /// Maps opens on demand (sheet), never as a tab.
 struct RootView: View {
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @AppStorage("hasSeenNativeIntro") private var hasSeenIntro = false
     @State private var session = SessionModel()
     @State private var chat = ChatModel()
     @State private var selectedTab = AppTab.home
-    @State private var askOpen = false
+    @State private var lastBrowseTab = AppTab.home
     @State private var mapsOpen = false
     @State private var profileOpen = false
     @State private var browser: BrowserDestination?
@@ -34,25 +34,25 @@ struct RootView: View {
     @State private var openTaskID: String?
 
     var body: some View {
-        ZStack {
-            Theme.background.ignoresSafeArea()
-            Group {
-                switch selectedTab {
-                case .home: HomeView(openChat: ask, openServices: { selectedTab = .services })
-                case .chat: ChatHubView(openAsk: { ask(nil) })
-                case .services: ServicesView(active: true, openMaps: { mapsOpen = true })
-                case .feed: FeedView()
-                }
+        TabView(selection: $selectedTab) {
+            Tab(AppTab.home.label, systemImage: AppTab.home.symbol, value: AppTab.home) {
+                HomeView(openChat: ask, openServices: { selectedTab = .services })
             }
-            .opacity(askOpen ? 0 : 1).allowsHitTesting(!askOpen).accessibilityHidden(askOpen)
-            if askOpen {
-                ChatView(model: chat, close: { transition { askOpen = false } }, openLink: openLink, openMaps: { mapsOpen = true })
-                    .transition(.opacity.combined(with: .move(edge: .bottom)))
+            Tab(AppTab.chat.label, systemImage: AppTab.chat.symbol, value: AppTab.chat) {
+                ChatHubView(openAsk: { ask(nil) })
+            }
+            Tab(AppTab.services.label, systemImage: AppTab.services.symbol, value: AppTab.services) {
+                ServicesView(active: true, openMaps: { mapsOpen = true })
+            }
+            Tab(AppTab.feed.label, systemImage: AppTab.feed.symbol, value: AppTab.feed) {
+                FeedView()
+            }
+            Tab(AppTab.ask.label, systemImage: AppTab.ask.symbol, value: AppTab.ask, role: .search) {
+                ChatView(model: chat, close: { selectedTab = lastBrowseTab }, openLink: openLink, openMaps: { mapsOpen = true })
             }
         }
-        .safeAreaInset(edge: .bottom) {
-            if !askOpen { tabBar.padding(.horizontal, 16).padding(.bottom, 8) }
-        }
+        .tabBarMinimizeBehavior(.onScrollDown)
+        .onChange(of: selectedTab) { _, tab in if tab != .ask { lastBrowseTab = tab } }
         .overlay(alignment: .top) {
             OutboxBanner(poller: poller) { openTaskID = $0 }
         }
@@ -82,44 +82,12 @@ struct RootView: View {
         .environment(session)  // outermost, so sheets and covers inherit it too
     }
 
-    private var tabBar: some View {
-        GlassEffectContainer(spacing: 12) {
-            HStack(spacing: 12) {
-                HStack(spacing: 0) {
-                    ForEach(AppTab.allCases) { tab in
-                        Button { transition { selectedTab = tab } } label: {
-                            VStack(spacing: 4) {
-                                Image(systemName: tab.symbol).font(.title3)
-                                Text(tab.label).font(.caption2)
-                            }
-                            .foregroundStyle(selectedTab == tab ? Theme.ink : .secondary)
-                            .frame(maxWidth: .infinity).padding(.vertical, 10)
-                            .background(selectedTab == tab ? Theme.soft : .clear, in: .capsule)
-                        }
-                        .accessibilityLabel(tab.label)
-                        .accessibilityAddTraits(selectedTab == tab ? .isSelected : [])
-                    }
-                }.padding(5).glassEffect(.regular, in: .capsule)
-                Button { ask(nil) } label: {
-                    VStack(spacing: 4) {
-                        Image(systemName: "magnifyingglass").font(.title3)
-                        Text("Ask").font(.caption2)
-                    }.frame(width: 64, height: 64)
-                }.glassEffect(.regular.interactive(), in: .circle).accessibilityLabel("Ask Dubai-io")
-            }.buttonStyle(.plain)
-        }
-    }
-
     private func ask(_ text: String?) {
         if let text { chat.draft = text }
-        transition { askOpen = true }
-    }
-    private func transition(_ changes: () -> Void) {
-        withAnimation(reduceMotion ? nil : .smooth(duration: 0.3), changes)
+        selectedTab = .ask
     }
     private func openDebugScreen() {
         switch DebugLaunch.screen {
-        case "ask": askOpen = true
         case "me": profileOpen = true
         case "maps": mapsOpen = true
         case let name?: if let tab = AppTab(rawValue: name) { selectedTab = tab }

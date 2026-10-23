@@ -58,7 +58,7 @@ struct DemoPill: View {
     var body: some View {
         if provenance == "demo_fixture" || provenance == "ai_demo" {
             Text(provenance == "ai_demo" ? "Demo reply" : "Demo data")
-                .font(.caption2.weight(.semibold))
+                .font(.caption2.weight(.semibold)).foregroundStyle(Theme.ink)
                 .padding(.horizontal, 8).padding(.vertical, 4)
                 .background(Theme.soft, in: .capsule)
                 .accessibilityLabel("Demonstration data, not real people")
