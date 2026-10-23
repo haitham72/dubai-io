@@ -1,0 +1,26 @@
+/* Onboarding: the orb wakes up, setup is the chat. Flat. */
+.wrap { position: relative; flex: 1; min-height: 0; overflow-y: auto; display: flex; }
+.inner { width: 100%; max-width: 560px; margin: 0 auto; padding: var(--s-6) var(--s-5) var(--s-8); display: flex; flex-direction: column; align-items: center; gap: var(--s-5); }
+.orb { display: grid; place-items: center; width: 92px; height: 92px; border-radius: 50%; color: var(--accent); background: radial-gradient(circle at 32% 28%, #ffffff 0%, rgba(53, 127, 146, 0.22) 55%, rgba(53, 127, 146, 0.38) 100%); border: 1px solid var(--border); animation: wake 3.6s var(--ease) infinite; }
+:root[data-theme="dark"] .orb { background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.25) 0%, rgba(111, 169, 184, 0.25) 55%, rgba(111, 169, 184, 0.4) 100%); }
+@keyframes wake { 0%, 100% { transform: scale(1); opacity: 0.92; } 50% { transform: scale(1.06); opacity: 1; } }
+.title { margin: 0; text-align: center; font-size: 34px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; }
+.chat { width: 100%; display: flex; flex-direction: column; gap: var(--s-5); }
+.turn { display: flex; flex-direction: column; gap: var(--s-3); align-items: flex-start; }
+.q { margin: 0; padding: var(--s-3) var(--s-4); border-radius: var(--r-lg); background: var(--surface-2); line-height: 1.45; }
+.a { margin: 0; align-self: flex-end; padding: var(--s-3) var(--s-4); border-radius: var(--r-lg); background: var(--bubble-user); }
+.chips { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+.chip { display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 var(--s-4); border-radius: var(--r-pill); border: 1px solid var(--border-strong); background: var(--bg); color: var(--accent); font-weight: 550; }
+.chip:hover:not(:disabled) { background: var(--accent-soft); }
+.chip:disabled { opacity: 0.5; cursor: default; }
+.free { display: flex; align-items: center; gap: var(--s-2); width: 100%; height: 44px; padding: 0 var(--s-2) 0 var(--s-4); border-radius: var(--r-pill); background: var(--input-bg); }
+.free input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; }
+.free button { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--accent); color: var(--on-accent); }
+.free button:disabled { opacity: 0.35; }
+.error { margin: 0; font-size: var(--fs-sm); color: var(--danger); }
+.connectors { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-3); width: 100%; }
+.connector { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: var(--s-4); border-radius: var(--r-lg); border: 1px solid var(--border); color: var(--text-2); }
+.connector span { color: var(--text); font-weight: 550; }
+.connector small { color: var(--text-3); }
+.skip { color: var(--text-2); font-size: var(--fs-sm); padding: var(--s-2) var(--s-3); border-radius: var(--r-sm); }
+.skip:hover { background: var(--hover); color: var(--text); }
