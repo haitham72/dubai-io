@@ -19,6 +19,10 @@ Status: design, founder-steered; awaiting final approval after the white/dark de
 
 All three ship from the one React codebase: website as-is; mobile wrapped with Capacitor (iOS/Android); desktop wrapped with Tauri or Electron (decided in the packaging plan). `?device` / `?desktop` frames are demo previews until the wrappers exist. No Swift/native rewrite.
 
+## 0.2 The original mobile app
+
+**The original mobile app (`apps/web`) is the reference, not a 'classic' or old version (founder, 23 Oct).** The new app's phone experience mirrors it with minimal changes — same flows, structure and copy unless the founder asks otherwise. Never label it classic, old, legacy or stale.
+
 ## 1. Product: Dubai-io first
 
 A personal assistant for everyday life and work in Dubai (not a visitor/tourist app). Its surfaces, in priority order:
@@ -76,7 +80,7 @@ The founder's `temporal_note` (`~/VsCode/Claude---Cowork/temporal_note`; Python,
 ## 4. Shell, presentations, look
 
 - **One React codebase in `apps/site`** (Next.js 16 / React 19); replaces the marketing site and, after parity, `apps/web`. iOS/Swift stopped (`docs/plan/ios-upgrade.md` = history).
-- **Three presentations of the same screens** (from Mirsal): **Website** (real; desktop >820 px, phone ≤820 px), **Desktop app** (`?desktop`, Mirsal `MacDesktop` window + menu bar + Dock), **iPhone view** (`/?devices`, alias `?device`: Mirsal iPhone frame + Dynamic Island, with an **Old ⇄ New toggle** that embeds the untouched `apps/web` mobile demo so it is never lost — founder, 23 Oct). Plain URL is the deliverable; demo modes use the same live API.
+- **Three presentations of the same screens** (from Mirsal): **Website** (real; desktop >820 px, phone ≤820 px), **Desktop app** (`?desktop`, Mirsal `MacDesktop` window + menu bar + Dock), **iPhone view** (`/?devices`, alias `?device`: Mirsal iPhone frame + Dynamic Island, with an **Original ⇄ New toggle** that embeds the untouched `apps/web` mobile demo so it is never lost — founder, 23 Oct). Plain URL is the deliverable; demo modes use the same live API.
 - **Navigation (desktop):** slim rail ≤6 items — Assistant, Chats, Services, Maps, Dashboard, Me — + task-thread sidebar + main; Assistant ⇄ Community pill top-center. **Phone:** tabs Home, Chat, Services, Feed + Ask; Dynamic Island = live task.
 - **Palette (founder, 23 Oct): more white, accent toward grey.** Accent `#357F92` (muted steel-teal; replaces aqua `#0A9CC2`), backgrounds `#FFFFFF`, secondary `#F6F7F8`, neutral untinted glass. **Light mode is not flat (founder, 23 Oct):** a soft Gemini-style gradient haze behind the home greeting/composer and onboarding — steel-teal `#357F92` at ~8% blending into a faint warm sand/lavender at ~5% on white, fading to pure white below the fold; never behind dense content (lists, threads, forms). **Dark mode = Graphite** (founder confirmed 23 Oct): `#141618` / `#1B1E21` / `#202428`, accent `#6FA9B8`; user on/off toggle plus system setting.
 - Copy from Mirsal: tokens (recolored), `ui/` primitives, shell, `MacDesktop`, mobile shell + frame + Dynamic Island, Updates tray, weather view. Not ported: stocks, flights, files, history, Mirsal `server/`, AI action layer, e-sign, voice, Postgres photos.

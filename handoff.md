@@ -9,8 +9,10 @@
 
 ## Founder's non-negotiables
 
+- **The original mobile app (`apps/web`) is the reference, not a 'classic' or old version (founder, 23 Oct).** The new app's phone experience mirrors it with minimal changes — same flows, structure and copy unless the founder asks otherwise. Never label it classic, old, legacy or stale.
+
 - **Final delivery:** iOS/Android app + desktop app (Grok Bot / ChatGPT Codex / Claude Duet style) + website — all from ONE React codebase in `apps/site` (Capacitor mobile, Tauri/Electron desktop). Swift is STOPPED.
-- **The current mobile demo (`apps/web`) must never be lost or diluted.** It is frozen at git tag `mobile-pwa-baseline-2026-10-23` and must stay byte-identical (`git diff --quiet mobile-pwa-baseline-2026-10-23 HEAD -- apps/web`). Plan 2 Task 1 embeds it live inside the new app at **`/?devices`** with an **Old ⇄ New** toggle. Retire it only after parity AND explicit founder approval.
+- **The original mobile app (`apps/web`) must never be lost or diluted.** It is frozen at git tag `mobile-pwa-baseline-2026-10-23` and must stay byte-identical (`git diff --quiet mobile-pwa-baseline-2026-10-23 HEAD -- apps/web`). Plan 2 Task 1 embeds it live inside the new app at **`/?devices`** with an **Original ⇄ New** toggle. Retire it only after parity AND explicit founder approval.
 - Dubai-io is the product; Mirsal-redesign (`~/VsCode/Mirsal-redesign`) is visual craft only. Behaviour target: Grok Bot + ChatGPT Dots + Claude Duet. Memory modelled on temporal_note (`~/VsCode/Claude---Cowork/temporal_note`, copy freely; founder's personal data never imported). Vault control: dropped.
 - Cases that must survive: **DXB airport guide** (iPhone) and **lost item in a taxi** (Plan 2 Tasks 3–4). Reuse the best of `design/references/01-home.png` on the phone Home (hero, "you told me" chips, quick chips) without the old "visitor" identity.
 - Look: white + accent `#357F92`, soft Gemini-style haze on home/onboarding, **dark = Graphite** (confirmed). Visual targets: `.superpowers/brainstorm/94241-1792742190/content/img/v3/` (`l01–l10` web/desktop, `m01–m06` phone, `d01` graphite). Gallery copies are flat in that `content/` folder (server serves `/files/<name>` only).
@@ -24,14 +26,14 @@
 ## How to continue (new session)
 
 1. Read the files above. Run `git log --oneline -15` and the frozen-mobile check.
-2. Dispatch **Plan 2** to a Sonnet medium subagent in a worktree (founder's preferred split: Sonnet builds, main session reviews screenshots/code, patches, merges). Tell it: never touch `apps/web|api|ios|supabase`; route `/?devices`; Classic iframe = API origin `:8030/index.html`.
+2. Dispatch **Plan 2** to a Sonnet medium subagent in a worktree (founder's preferred split: Sonnet builds, main session reviews screenshots/code, patches, merges). Tell it: never touch `apps/web|api|ios|supabase`; route `/?devices`; Original iframe = API origin `:8030/index.html`.
 3. Main session meanwhile does **Plan 2b** (backend: composer → real tasks + activity per step).
 4. Then Plans 3 → 8 per the roadmap table. Founder inputs needed later: Google OAuth keys (`GOOGLE_OAUTH_CLIENT_ID/SECRET/REDIRECT_URI`, `OAUTH_TOKEN_KEY`), Microsoft Graph app, GitHub token, `GOOGLE_MAPS_BROWSER_KEY`, `DATABASE_URL` (Supabase), Apple/Google developer accounts + desktop signing.
 
 ## Run locally
 
 ```sh
-cd apps/api && .venv/bin/python -m uvicorn app.main:app --port 8030      # API + classic mobile demo at :8030/index.html
+cd apps/api && .venv/bin/python -m uvicorn app.main:app --port 8030      # API + original mobile app at :8030/index.html
 cd apps/site && npm run build && npm run start -- -p 3040               # new app: /, /?desktop, /?devices
 ```
 Port 8000 belongs to another project (NeoHealth) on this Mac. Higgsfield CLI: never set a shell variable named `HOME` in scripts; jobs need `higgsfield workspace` unset (private account) — `higgsfield account status` shows the plan.

@@ -11,7 +11,7 @@ Personal assistant for everyday life and work in Dubai. Contest entry (Best Pers
 | Current branches, state, next work | `docs/status.md` |
 | Backend/API work | `apps/api/CLAUDE.md` |
 | Unified app (website + desktop + mobile, React) | `apps/site` + `docs/plan/unified-app-design.md` |
-| Classic mobile demo (FROZEN) | `apps/web/CLAUDE.md` — read-only, tag `mobile-pwa-baseline-2026-10-23` |
+| Original mobile app (FROZEN, the reference) | `apps/web/CLAUDE.md` — read-only, tag `mobile-pwa-baseline-2026-10-23` |
 | DB/migrations | `supabase/CLAUDE.md` |
 | Scope locks (IN / LATER / NEVER), demo arc | `PLAN.md` |
 | Architecture, contracts, state machine | `ARCHITECTURE.md` |
@@ -36,7 +36,9 @@ Do not read every doc up front. Nested `CLAUDE.md` files govern their folder; th
 
 **Service execution:** prepare from confirmed facts → approval of the exact side effect → a registered adapter → provider evidence. When no adapter exists, show the blocker and keep the draft; never a fake Send. **UI:** no shadows; plain AI text, tinted user box, white rounded action boxes.
 
-## Frozen mobile demo (founder, 23 Oct)
+## Original mobile app is the reference (founder, 23 Oct)
+
+**The original mobile app (`apps/web`) is the reference, not a 'classic' or old version (founder, 23 Oct).** The new app's phone experience mirrors it with minimal changes — same flows, structure and copy unless the founder asks otherwise. Never label it classic, old, legacy or stale.
 
 `apps/web` must not be modified, diluted or retired without explicit founder approval. Check before every merge: `git diff --quiet mobile-pwa-baseline-2026-10-23 HEAD -- apps/web`. Subagent briefs must forbid touching it.
 
@@ -51,7 +53,7 @@ Do not read every doc up front. Nested `CLAUDE.md` files govern their folder; th
 ```
 apps/api/   FastAPI + LangGraph backend, tests/
 apps/site/  THE app: one React codebase → website, desktop app (Tauri/Electron), iOS/Android (Capacitor)
-apps/web/   Classic mobile demo PWA — FROZEN (tag mobile-pwa-baseline-2026-10-23), embedded at /?devices
+apps/web/   Original mobile app PWA — FROZEN, the reference (tag mobile-pwa-baseline-2026-10-23), embedded at /?devices
 apps/ios/   Native SwiftUI client — STOPPED 23 Oct (history only)
 supabase/   Migrations, local project config
 docs/       Backlog, plans, references, services/

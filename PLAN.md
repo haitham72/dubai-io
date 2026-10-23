@@ -7,9 +7,11 @@ This is the single plan. Done work lives in git history; this file keeps locks, 
 
 ## Current direction — unified app (23 Oct, supersedes conflicting sections below)
 
+- **The original mobile app (`apps/web`) is the reference, not a 'classic' or old version (founder, 23 Oct).** The new app's phone experience mirrors it with minimal changes — same flows, structure and copy unless the founder asks otherwise. Never label it classic, old, legacy or stale.
+
 - **Source of truth:** `docs/plan/unified-app-design.md`; next work: `docs/superpowers/plans/` (Plan 1 done, Plan 2 next); session start: `handoff.md`.
 - **Final delivery:** iOS/Android app + desktop app + website from ONE React codebase (`apps/site`). Swift/iOS native STOPPED.
-- **Classic mobile demo `apps/web` FROZEN** (tag `mobile-pwa-baseline-2026-10-23`), embedded at `/?devices` with an Old ⇄ New toggle; retire only after parity + founder approval.
+- **Original mobile app `apps/web` FROZEN** (tag `mobile-pwa-baseline-2026-10-23`), embedded at `/?devices` with an Original ⇄ New toggle; retire only after parity + founder approval.
 - Dubai-io is the product (Assistant, task threads, Community, Chats ⇄ Calls, Services, Maps, Me/memory, onboarding); Mirsal-redesign = visual craft; behaviour = Grok Bot + ChatGPT Dots + Claude Duet; memory engine modelled on temporal_note.
 - Must survive: DXB airport guide, lost item in a taxi.
 - Look: white + `#357F92`, soft home haze, Graphite dark.
