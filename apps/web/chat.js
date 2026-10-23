@@ -174,7 +174,7 @@ export async function handle(text) {
     post({who:'bot',html:'<p>The shared project context changed while I was answering. Ask again using the latest context.</p>'});return;
   }
   update(id,it=>{it.pending=false;it.r=r;});
-  const factKeys={area:'area',hotel:'hotel',terminal:'terminal',taxi_plate:'plate',taxi_roof:'roof',deadline:'deadline',pet:'pet',language:'language',other:'other'};
+  const factKeys={area:'area',hotel:'hotel',terminal:'terminal',taxi_plate:'plate',taxi_roof:'roof',deadline:'deadline',pet:'pet',language:'language',household:'household',services:'services',other:'other'};
   // Show only facts that are new or changed this turn; known ones are already in "You told me".
   const fresh=(r.remembered||[]).filter(f=>factKeys[f.key]&&told[factKeys[f.key]]!==f.value.slice(0,80));
   for(const fact of fresh)told[factKeys[fact.key]]=fact.value.slice(0,80);

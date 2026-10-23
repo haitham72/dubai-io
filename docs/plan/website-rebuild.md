@@ -24,8 +24,8 @@ signup → guided setup → first win (first task created) → dashboard handoff
 |---|---|---|
 | signup | `GET /api/session` (`apps/api/app/actions.py:388`): sets the `dubaiio_lab_session` cookie, returns `{user_id, mode: "anonymous_lab_session"}` | Exists. Anonymous session only; real accounts (Supabase Auth) are not built. Copy must not say "account created". |
 | setup: area | `PUT /api/session/memory/area` (`apps/api/app/main.py:140`, body `{value}`, max 80 chars); stored as a "You told me" fact | Exists |
-| setup: household | none (`FactKey` in `apps/api/app/luna/schema.py:25` has no household key) | GAP (founder open item) |
-| setup: services | none (`/api/profile/interests` controls inferred interests; it does not record what the user states) | GAP (founder open item) |
+| setup: household | `PUT /api/session/memory/household` (body `{value}`, max 80 chars, e.g. "2 adults, 1 child, 1 dog"); a "You told me" fact | Exists (added 23 Oct) |
+| setup: services | `PUT /api/session/memory/services` (body `{value}`, max 80 chars, e.g. "DEWA, Salik, du"); a "You told me" fact | Exists (added 23 Oct) |
 | first win | `POST /api/tasks` (`apps/api/app/tasks.py:413`) | Exists |
 | first decision surfaced | none (service Decisions are still pending per `PLAN.md`) | Cut from the funnel; the PWA handles it after handoff |
 | dashboard | link to the PWA Home (§2) | No endpoint needed |
@@ -66,5 +66,5 @@ Requirements:
 
 ## 8. Open questions for sign-off
 
-1. ~~Setup GAPs (§3)~~ Decided 23 Oct: the backend adds household + stated-services contracts before the rebuild starts; the two GAP rows become real steps once those land.
+1. ~~Setup GAPs (§3)~~ Decided 23 Oct: the backend adds household + stated-services contracts before the rebuild starts; both landed the same day (`household`, `services` fact keys).
 2. Event ingest order: land `POST /api/ops/events` as a standalone slice before the site rebuild starts, or let gate 3 stay BLOCKED until dashboard S4?

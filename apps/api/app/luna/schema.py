@@ -22,7 +22,7 @@ Intent = Literal[
 ]
 Service = Literal["laundry", "cleaning", "ac", "grooming", "carwash", "pharmacy", "maid"]
 Category = Literal["pets", "food", "coffee", "barber", "home-help", "laundry", "clothing", "fix-it"]
-FactKey = Literal["area", "hotel", "terminal", "taxi_plate", "taxi_roof", "deadline", "pet", "language", "other"]
+FactKey = Literal["area", "hotel", "terminal", "taxi_plate", "taxi_roof", "deadline", "pet", "language", "household", "services", "other"]
 
 
 class FocusContext(BaseModel):

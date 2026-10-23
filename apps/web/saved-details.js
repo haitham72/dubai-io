@@ -1,7 +1,7 @@
 import { registerPage, openPage } from './page-host.js';
 import { labFetch } from './api-client.js';
 import { told, esc, toast } from './ui.js';
-const KEYS={area:['Area','area'],hotel:['Hotel','hotel'],terminal:['Terminal','terminal'],taxi_plate:['Taxi plate','plate'],taxi_roof:['Roof colour','roof'],deadline:['Deadline','deadline'],pet:['Pet','pet'],language:['Language','language'],other:['Other detail','other']};
+const KEYS={area:['Area','area'],hotel:['Hotel','hotel'],terminal:['Terminal','terminal'],taxi_plate:['Taxi plate','plate'],taxi_roof:['Roof colour','roof'],deadline:['Deadline','deadline'],pet:['Pet','pet'],language:['Language','language'],household:['Household','household'],services:['Services you use','services'],other:['Other detail','other']};
 let version=0;
 registerPage('memory.details',{
   title:'Your saved details',source:'You told me',

@@ -36,6 +36,17 @@ def test_memory_is_scoped_to_session_and_explicit_edits(clients):
     assert a.get('/api/session/memory').json()=={'told':[]}
 
 
+def test_signup_setup_household_and_services_are_told_facts(clients):
+    # Website funnel setup step (docs/plan/website-rebuild.md section 3): stated, never inferred.
+    a,_=clients
+    a.get('/api/session')
+    for key,value in (('household','2 adults, 1 child, 1 dog'),('services','DEWA, Salik, du')):
+        fact=a.put(f'/api/session/memory/{key}',json={'value':value}).json()['fact']
+        assert fact['key']==key and fact['value']==value and fact['provenance']=='user_supplied'
+    assert {f['key'] for f in a.get('/api/session/memory').json()['told']}=={'household','services'}
+    assert a.put('/api/session/memory/services',json={'value':'x'*81}).status_code==422
+
+
 def test_luna_uses_cookie_owner_instead_of_supplied_user_id(clients,monkeypatch):
     a,b=clients;first=a.get('/api/session').json()['user_id'];second=b.get('/api/session').json()['user_id'];calls=[]
     monkeypatch.setattr(main.settings,'openai_api_key','offline-test-key')
