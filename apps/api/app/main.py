@@ -28,6 +28,7 @@ from .reading import router as reading_router
 from .projects import router as projects_router
 from .communities import router as communities_router
 from .ml_api import router as ml_router
+from .ops import router as ops_router
 from .prayer import router as prayer_router
 from .projects import resolve_context as resolve_project_context
 from .tasks import resolve_context as resolve_task_context
@@ -56,6 +57,7 @@ app.include_router(reading_router)
 app.include_router(projects_router)
 app.include_router(communities_router)
 app.include_router(ml_router)
+app.include_router(ops_router)
 app.include_router(prayer_router)
 
 
@@ -231,5 +233,6 @@ def root():
     return RedirectResponse("/index.html")
 
 
+app.mount("/dash", StaticFiles(directory=settings.dash_dir, html=True), name="dash")  # before the "/" catch-all
 app.mount("/lab", StaticFiles(directory=settings.web_dir, html=True), name="lab")
 app.mount("/", StaticFiles(directory=settings.web_dir, html=True), name="web")
