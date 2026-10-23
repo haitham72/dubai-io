@@ -162,11 +162,26 @@ registerPage('feed.post', {
       busy = true; input.disabled = true; e.target.querySelector('button').disabled = true;
       root.querySelector('[data-generation]').textContent = 'Saving your reply and waiting for AI personas…';
       try {
-        const result = await api('/api/posts/' + encodeURIComponent(c.id) + '/comments', request({ text, parent_id: parent }));
+        const url = '/api/posts/' + encodeURIComponent(c.id) + '/comments', options = request({ text, parent_id: parent });
+        const result = await api(url, options);
         request.reset(); await load(); c.onChange?.(); root.querySelector('[data-generation]').textContent = generationText(result);
+        if (result.generation?.status === 'processing') settle(url, options);
       } catch (err) { root.querySelector('[data-generation]').textContent = 'Could not confirm the result. Retry to check the same reply.'; toast(err.message); }
       finally { busy = false; root.querySelector('#commentText').disabled = false; root.querySelector('[data-comment] button').disabled = false; }
     });
+    // Replies are written after the save; re-sending the same request ID returns the
+    // current receipt without generating again. Stops after ~60 s or when the view closes.
+    async function settle(url, options) {
+      for (let i = 0; i < 15 && root.isConnected; i++) {
+        await new Promise(r => setTimeout(r, 4000));
+        try {
+          const receipt = await api(url, { ...options, signal: AbortSignal.timeout(10000) });
+          if (receipt.generation?.status === 'processing') continue;
+          if (!root.isConnected) return;
+          await load(); root.querySelector('[data-generation]').textContent = generationText(receipt); return;
+        } catch { return; }
+      }
+    }
     load();
   },
 });

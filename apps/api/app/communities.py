@@ -7,11 +7,12 @@ untrusted text: it is never handed to the assistant as instructions and never
 turned into profile facts or hypotheses about the user.
 """
 from datetime import datetime, timedelta, timezone
+import copy
 import json
 from pathlib import Path
 from uuid import uuid4
 
-from fastapi import APIRouter, HTTPException, Query, Request
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Query, Request
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from .actions import COOKIE, engine
@@ -263,8 +264,15 @@ class PostIn(BaseModel):
         return value
 
 
+def queue_replies(background, store, owner, result, kind, target):
+    """Feed replies are written after the response (status stays "processing" until
+    then); re-sending the same request_id returns the current receipt."""
+    background.add_task(social.respond, store, owner, copy.deepcopy(result), kind, target)
+    return result
+
+
 @router.post("/api/communities/{community_id}/posts")
-def create_post(community_id: str, body: PostIn, request: Request):
+def create_post(community_id: str, body: PostIn, request: Request, background: BackgroundTasks):
     store, owner = scope(request)
     with store.lock:
         setup(store)
@@ -278,7 +286,7 @@ def create_post(community_id: str, body: PostIn, request: Request):
         store.db.execute("INSERT INTO posts VALUES (?,?,?,?,?,?,?,?,?,?,?)", (pid, community_id, owner, None, "You", "post", body.text, None,
                          clock().isoformat(), 0, "user_supplied"))
         store.db.commit()
-    return social.respond(store, owner, result, "post", pid)
+    return queue_replies(background, store, owner, result, "post", pid)
 
 
 def visible_post(store, owner, post_id):
@@ -330,7 +338,7 @@ class CommentIn(PostIn):
 
 
 @router.post("/api/posts/{post_id}/comments")
-def add_comment(post_id: str, body: CommentIn, request: Request):
+def add_comment(post_id: str, body: CommentIn, request: Request, background: BackgroundTasks):
     store, owner = scope(request)
     with store.lock:
         setup(store)
@@ -344,7 +352,7 @@ def add_comment(post_id: str, body: CommentIn, request: Request):
         store.db.execute("INSERT INTO comments (id,post_id,owner,persona_id,author,text,created_at,likes,provenance,parent_id) VALUES (?,?,?,?,?,?,?,?,?,?)", (cid, post_id, owner, None, "You", body.text, clock().isoformat(), 0, "user_supplied", body.parent_id))
         store.db.commit()
     ml_tasks.dispatch_comment(store, owner, cid, post_id, body.text, clock().isoformat())
-    return social.respond(store, owner, result, "comment", post_id)
+    return queue_replies(background, store, owner, result, "comment", post_id)
 
 
 class HideIn(BaseModel):

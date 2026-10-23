@@ -4,6 +4,12 @@ from app import social_generation as social
 from tests.test_communities import client, other
 
 
+def settled(store, result):
+    """Feed replies run after the response; read the final receipt from the store."""
+    status, count = store.db.execute("SELECT status, reply_count FROM social_generations WHERE trigger_id=?", (result['id'],)).fetchone()
+    return {'status': status, 'reply_count': count}
+
+
 def test_post_reply_slots_identity_scope_and_replay(client, monkeypatch):
     c, store = client
     seen = []
@@ -16,19 +22,20 @@ def test_post_reply_slots_identity_scope_and_replay(client, monkeypatch):
     c.post('/api/communities/marina-foodies/join')
     payload = {"text":"Where can I buy a second-hand table?", "request_id":"new-post-1"}
     posted = c.post('/api/communities/marina-foodies/posts', json=payload).json()
-    assert posted['generation']['status'] == 'completed'
+    assert posted['generation']['status'] == 'processing'
+    assert settled(store, posted) == {'status': 'completed', 'reply_count': 10}
     replies = c.get(f"/api/posts/{posted['id']}/comments").json()['comments']
     assert len(replies) == 10
     assert len({r['author']['persona_id'] for r in replies}) == 10
     assert all(not r['mine'] and r['provenance']=='ai_demo' and r['model']==social.settings.social_model for r in replies)
     again = c.post('/api/communities/marina-foodies/posts', json=payload).json()
-    assert again == posted and len(seen)==1
+    assert again['id'] == posted['id'] and again['generation']['status'] == 'completed' and len(seen)==1
     assert c.post('/api/communities/marina-foodies/posts', json={**payload,"text":"different"}).status_code==409
     assert other(c).get(f"/api/posts/{posted['id']}/comments").status_code==404
 
 
 def test_nested_reply_targets_parent_and_original_author(client, monkeypatch):
-    c, _ = client
+    c, store = client
     seen=[]
     def provider(actors, context):
         seen.append((actors,context))
@@ -38,7 +45,7 @@ def test_nested_reply_targets_parent_and_original_author(client, monkeypatch):
     comments=c.get(f"/api/posts/{post['id']}/comments").json()['comments']
     parent=next(m for m in comments if m['author']['persona_id']!=post['author']['persona_id'])
     result=c.post(f"/api/posts/{post['id']}/comments",json={"text":"Could you explain your suggestion?","parent_id":parent['id'],"request_id":"nested-1"}).json()
-    assert result['generation']['reply_count']==2
+    assert settled(store, result)['reply_count']==2
     assert [p['id'] for p in seen[0][0]][:2]==[parent['author']['persona_id'],post['author']['persona_id']]
     own=c.get(f"/api/posts/{post['id']}/comments").json()['comments']
     assert next(m for m in own if m['id']==result['id'])['parent_id']==parent['id']
@@ -49,16 +56,16 @@ def test_nested_reply_targets_parent_and_original_author(client, monkeypatch):
 
 
 def test_failure_preserves_input_without_fake_replies(client,monkeypatch):
-    c,_=client
+    c,store=client
     def fail(*args):
         raise TimeoutError('private upstream details')
     monkeypatch.setattr(social,'generate',fail)
     post=c.get('/api/feed').json()['posts'][0]
     payload={"text":"Can someone help?","request_id":"failed-1"}
     result=c.post(f"/api/posts/{post['id']}/comments",json=payload).json()
-    assert result['generation']['status']=='failed' and result['generation']['reply_count']==0
-    assert 'private' not in json.dumps(result)
-    assert c.post(f"/api/posts/{post['id']}/comments",json=payload).json()==result
+    assert result['generation']['status']=='processing' and settled(store,result)=={'status':'failed','reply_count':0}
+    replay=c.post(f"/api/posts/{post['id']}/comments",json=payload).json()
+    assert replay['id']==result['id'] and replay['generation']['status']=='failed' and 'private' not in json.dumps(replay)
     assert sum(m['text']==payload['text'] for m in c.get(f"/api/posts/{post['id']}/comments").json()['comments'])==1
 
 
@@ -91,7 +98,7 @@ def test_leaving_community_removes_chat_and_blocks_access(client):
 
 def test_provider_output_cannot_assign_identity(client, monkeypatch):
     from types import SimpleNamespace
-    c, _ = client
+    c, store = client
     monkeypatch.setattr(social.settings,'nararouter_api_key','test-only')
     monkeypatch.setattr(social.settings,'feed_main','agnes')
     class FakeProvider:
@@ -105,7 +112,7 @@ def test_provider_output_cannot_assign_identity(client, monkeypatch):
     monkeypatch.setattr(social,'OpenAI',FakeProvider)
     c.post('/api/communities/marina-foodies/join')
     result=c.post('/api/communities/marina-foodies/posts',json={'text':'Hello neighbours'}).json()
-    assert result['generation']['status']=='failed'
+    assert settled(store,result)['status']=='failed'
     assert c.get(f"/api/posts/{result['id']}/comments").json()['comments']==[]
 
 
@@ -158,7 +165,7 @@ def test_hiding_post_during_provider_wait_drops_late_reply(client,monkeypatch):
         return ['A late reply' for _ in actors]
     monkeypatch.setattr(social,'generate',provider)
     result=c.post(f"/api/posts/{post['id']}/comments",json={'text':'Tell me more'}).json()
-    assert result['generation']['status']=='failed'
+    assert settled(store,result)['status']=='failed'
     assert store.db.execute('SELECT COUNT(*) FROM comments WHERE trigger_id=?',(result['id'],)).fetchone()[0]==0
 
 
@@ -243,3 +250,12 @@ def test_chat_runs_luna_first_and_feed_runs_agnes_first(providers):
     assert social.generate([{'id': 'a'}, {'id': 'b'}], {'post': {'text': 'Brunch?'}, 'reply_to': 'hi'}).model == 'agnes-test'
     FakeOpenAI.fail = 'openai'
     assert social.generate([{'id': 'a'}, {'id': 'b'}], {'conversation': 'Family', 'reply_to': 'hi'}).model == 'agnes-test'
+
+
+def test_feed_post_returns_before_replies_are_written(client, monkeypatch):
+    c, store = client
+    monkeypatch.setattr(social, 'generate', lambda actors, context: ['Welcome!' for _ in actors])
+    c.post('/api/communities/marina-foodies/join')
+    posted = c.post('/api/communities/marina-foodies/posts', json={'text': 'New here', 'request_id': 'queued-1'}).json()
+    assert posted['generation']['status'] == 'processing' and posted['generation']['reply_count'] == 0
+    assert settled(store, posted) == {'status': 'completed', 'reply_count': 10}
