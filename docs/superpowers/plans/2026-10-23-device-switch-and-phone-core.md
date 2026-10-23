@@ -12,6 +12,9 @@
 
 ## Global Constraints
 
+- **Founder priorities (23 Oct, final word for this stage):** no rush to ship — polished, refined, high quality, working, and **easy to change all the time**: a design change must be **one edit that echoes everywhere** (website, desktop, iOS/Android). So: **one React codebase** (`apps/site`), one central design system (tokens + shared components; no per-screen styling forks), and every screen ported from the **original mobile app** looking **as close as possible to it**. **Light mode first**; dark (Graphite) comes after light is polished. Option 'wrap the original as the phone app' was considered and declined.
+- Port, don't reinvent: each new phone screen reproduces the original `apps/web` screen (layout, structure, copy) using shared components/tokens; deviations only where the founder asked (Services uplift).
+
 - All Plan 1 global constraints apply (palette, no shadows, truth rules, rail/tabs, presentations, wrap-friendly).
 - **Never modify `apps/web/**`, `apps/api/**`, `apps/ios/**`, `supabase/**`.** Check before every commit: `git diff --name-only HEAD | grep -E '^apps/(web|api|ios)/|^supabase/'` must be empty.
 - Airport guide: never claim an indoor position, belt, gate or queue time the user didn't confirm; map pins = user-confirmed places only; times labelled estimates (root rule 3).

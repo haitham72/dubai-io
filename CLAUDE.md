@@ -38,6 +38,8 @@ Do not read every doc up front. Nested `CLAUDE.md` files govern their folder; th
 
 ## Original mobile app is the reference (founder, 23 Oct)
 
+**Founder priorities (23 Oct, final word for this stage):** no rush to ship — polished, refined, high quality, working, and **easy to change all the time**: a design change must be **one edit that echoes everywhere** (website, desktop, iOS/Android). So: **one React codebase** (`apps/site`), one central design system (tokens + shared components; no per-screen styling forks), and every screen ported from the **original mobile app** looking **as close as possible to it**. **Light mode first**; dark (Graphite) comes after light is polished. Option 'wrap the original as the phone app' was considered and declined.
+
 **The original mobile app (`apps/web`) is the reference, not a 'classic' or old version (founder, 23 Oct).** The new app's phone experience mirrors it with minimal changes — same flows, structure and copy unless the founder asks otherwise. Never label it classic, old, legacy or stale.
 
 `apps/web` must not be modified, diluted or retired without explicit founder approval. Check before every merge: `git diff --quiet mobile-pwa-baseline-2026-10-23 HEAD -- apps/web`. Subagent briefs must forbid touching it.
