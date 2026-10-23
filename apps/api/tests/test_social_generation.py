@@ -1,3 +1,4 @@
+import pytest
 import json
 from app import social_generation as social
 from tests.test_communities import client, other
@@ -92,6 +93,7 @@ def test_provider_output_cannot_assign_identity(client, monkeypatch):
     from types import SimpleNamespace
     c, _ = client
     monkeypatch.setattr(social.settings,'nararouter_api_key','test-only')
+    monkeypatch.setattr(social.settings,'feed_main','agnes')
     class FakeProvider:
         def __init__(self, **kwargs):
             assert kwargs['max_retries']==0 and kwargs['timeout']==social.settings.social_timeout_s
@@ -158,3 +160,86 @@ def test_hiding_post_during_provider_wait_drops_late_reply(client,monkeypatch):
     result=c.post(f"/api/posts/{post['id']}/comments",json={'text':'Tell me more'}).json()
     assert result['generation']['status']=='failed'
     assert store.db.execute('SELECT COUNT(*) FROM comments WHERE trigger_id=?',(result['id'],)).fetchone()[0]==0
+
+
+
+class FakeOpenAI:
+    """Records clients and calls; `fail` names the base_url kind ('nararouter'/'openai') that raises."""
+    calls, fail = [], None
+    def __init__(self, **kw):
+        self.kind = 'nararouter' if 'base_url' in kw else 'openai'
+        FakeOpenAI.calls.append((self.kind, kw)); self.responses = self; self.chat = self; self.completions = self
+    def __enter__(self): return self
+    def __exit__(self, *a): return False
+    def create(self, **kw):
+        FakeOpenAI.calls.append(('create', kw))
+        if FakeOpenAI.fail == self.kind:
+            raise RuntimeError('provider down')
+        text = json.dumps({"replies": [f"{self.kind} one", f"{self.kind} two"]})
+        return type('R', (), {'output_text': text, 'choices': [type('C', (), {'message': type('M', (), {'content': text})()})()]})()
+
+
+@pytest.fixture
+def providers(monkeypatch):
+    FakeOpenAI.calls, FakeOpenAI.fail = [], None
+    monkeypatch.setattr(social, 'OpenAI', FakeOpenAI)
+    for key, value in {'social_main': 'agnes', 'social_fallback': 'luna', 'feed_main': 'agnes', 'feed_fallback': 'luna', 'social_model': 'agnes-test', 'luna_model': 'luna-test',
+                       'social_effort': 'medium', 'nararouter_api_key': 'nr-test', 'openai_api_key': 'sk-test'}.items():
+        monkeypatch.setattr(social.settings, key, value)
+    return monkeypatch
+
+
+def test_agnes_is_main_and_records_its_model(providers):
+    replies = social.generate([{'id': 'a'}, {'id': 'b'}], {'reply_to': 'hi'})
+    assert replies == ['nararouter one', 'nararouter two'] and replies.model == 'agnes-test'
+    assert [c[0] for c in FakeOpenAI.calls] == ['nararouter', 'create']
+    assert FakeOpenAI.calls[1][1]['model'] == 'agnes-test'
+
+
+def test_luna_fallback_runs_when_agnes_fails_with_medium_effort(providers):
+    FakeOpenAI.fail = 'nararouter'
+    replies = social.generate([{'id': 'a'}, {'id': 'b'}], {'reply_to': 'hi'})
+    assert replies == ['openai one', 'openai two'] and replies.model == 'luna-test'
+    luna = FakeOpenAI.calls[-1][1]
+    assert FakeOpenAI.calls[-2] == ('openai', {'api_key': 'sk-test', 'timeout': social.settings.social_timeout_s, 'max_retries': 0})
+    assert luna['model'] == 'luna-test' and luna['reasoning'] == {'effort': 'medium'}
+    assert luna['text'] == {'format': {'type': 'json_object'}} and 'json' in luna['input']  # Responses API rejects json_object otherwise
+
+
+def test_luna_fallback_runs_when_agnes_has_no_key(providers):
+    providers.setattr(social.settings, 'nararouter_api_key', '')
+    assert social.generate([{'id': 'a'}, {'id': 'b'}], {}).model == 'luna-test'
+
+
+def test_both_providers_down_raises_and_no_keys_is_unavailable(providers):
+    FakeOpenAI.fail = 'nararouter'
+    providers.setattr(social.settings, 'social_fallback', 'none')
+    with pytest.raises(RuntimeError):
+        social.generate([{'id': 'a'}, {'id': 'b'}], {})
+    providers.setattr(social.settings, 'social_fallback', 'luna')
+    providers.setattr(social.settings, 'nararouter_api_key', '')
+    providers.setattr(social.settings, 'openai_api_key', '')
+    assert social.generate([{'id': 'a'}], {}) is None
+
+
+def test_fallback_reply_saves_fallback_model(client, providers):
+    c, _ = client
+    providers.setattr(social, 'generate', lambda actors, payload: social.Replies(['Hi!'], 'luna-test'))
+    c.get('/api/chats')
+    result = c.post('/api/chats/chat-dog/messages', json={'text': 'hi', 'request_id': 'fallback-model'}).json()
+    assert result['generation'] == {'status': 'completed', 'model': 'luna-test', 'reply_count': 1}
+
+
+def test_unknown_or_none_providers_never_call_out(providers):
+    providers.setattr(social.settings, 'social_main', 'none')
+    providers.setattr(social.settings, 'social_fallback', 'typo')
+    assert social.generate([{'id': 'a'}], {}) is None and FakeOpenAI.calls == []
+
+
+def test_chat_runs_luna_first_and_feed_runs_agnes_first(providers):
+    providers.setattr(social.settings, 'social_main', 'luna')
+    providers.setattr(social.settings, 'social_fallback', 'agnes')
+    assert social.generate([{'id': 'a'}, {'id': 'b'}], {'conversation': 'Family', 'reply_to': 'hi'}).model == 'luna-test'
+    assert social.generate([{'id': 'a'}, {'id': 'b'}], {'post': {'text': 'Brunch?'}, 'reply_to': 'hi'}).model == 'agnes-test'
+    FakeOpenAI.fail = 'openai'
+    assert social.generate([{'id': 'a'}, {'id': 'b'}], {'conversation': 'Family', 'reply_to': 'hi'}).model == 'agnes-test'

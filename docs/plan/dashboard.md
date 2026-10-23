@@ -4,7 +4,7 @@ Status: plan only. Do not implement until the founder signs off, starting with t
 
 ## 1. Scope decision (sign-off item #1)
 
-Three candidate scopes were identified; the founder has not picked one. Recommendation: **B**.
+Three candidate scopes were identified. **Founder picked B (23 Oct 2026).**
 
 | Scope | Audience | What it is |
 |---|---|---|
@@ -24,8 +24,9 @@ Non-goals: end-user features; moderation *actions* beyond queue visibility in v1
 
 ## 3. Users and access
 
-- v1: localhost-only, no login. A visible banner states it is a founder tool showing real usage data.
-- Hosted later (explicit later slice): founder auth required before any hosted deploy; never a public URL.
+- v1: founder-only, no login UI. A visible banner states it is a founder tool showing real usage data.
+- Access is enforced from S1, not deferred: the submission plan exposes the API through a tunnel (`PLAN.md` "Local + tunnel"), and a local tunnel forwards requests from `127.0.0.1`, so a loopback-IP check would let every tunnelled request through. All `GET /api/ops/*` routes require an `X-Ops-Token` header matching a server-side `OPS_TOKEN` env var. They return 404 when the env var is unset and 403 when the token is wrong. The dashboard page reads the token from a local prompt into `sessionStorage`; it is never committed or baked into served files.
+- Hosted later (explicit later slice): real founder auth replaces the token before any hosted deploy; never a public URL.
 - Privacy: no PII beyond what the backend already stores; the dashboard adds no new user-data collection except funnel step events (§5.4), which carry no free-text user content.
 
 ## 4. Layout
@@ -35,6 +36,8 @@ Non-goals: end-user features; moderation *actions* beyond queue visibility in v1
 - Reduced-motion: instant swaps, no animated charts. Light/dark follows the existing tokens (cyan accent, no shadows).
 
 ## 5. Panels (each: purpose, source, cadence, states)
+
+No panel loads `apps/api/app/fixtures/` or any demo data; an empty table renders the panel's empty state.
 
 ### 5.1 Backend & infra health
 
@@ -67,7 +70,7 @@ Non-goals: end-user features; moderation *actions* beyond queue visibility in v1
 ### 5.5 Client / release status
 
 - Purpose: which client builds are current and against which backend contract.
-- Source: static manifest committed in-repo (client, expected route set, contract version) + `GET /api/ops/health` backend version; the dashboard compares and flags drift. No auto-discovery that could silently pass.
+- Source: static manifest `apps/api/app/ops_manifest.py` (a Python dict per client: expected route set + contract version, importable by tests) + `GET /api/ops/health` backend version and live route set. Compare rule: drift = any manifest route missing from the live route set, or a contract version mismatch. No auto-discovery that could silently pass. Test: `tests/test_ops.py` removes one route from a copy of the live set and asserts drift names it.
 - Cadence: on load + manual refresh.
 - States: match / drift (named route or shape) / unknown.
 
@@ -89,16 +92,19 @@ Non-goals: end-user features; moderation *actions* beyond queue visibility in v1
 
 Rules: read-only endpoints take no side-effect params; every number carries provenance + `as_of`; failures return honest 503 with the named dependency, never empty-200 masquerading as healthy.
 
+Access rules: `GET /api/ops/*` are token-gated as in §3. `POST /api/ops/events` is the one route browsers call (the site funnel), so it takes no token and is hardened instead: request body capped at 4 KB (413 above that); `step` and `surface` validated against server-side allowlists (422 otherwise); `session_ref` must be an opaque id of at most 64 characters; any extra field is rejected (no free text); a per-session rate limit (e.g. 60/min) returns 429; duplicate `dedupe_key` is a no-op.
+
 ## 7. Frontend home (sign-off item #2)
 
-Recommended: new `apps/dash/` static page served by the API (same origin, no new server, no new backend). Alternative: a route inside `apps/web` — rejected as default because the prototype must stay a clean mobile reference; a desktop ops grid inside it muddies that role. Either way: plain HTML/CSS/ES modules, existing tokens, no framework, no shadows.
+Recommended: new `apps/dash/` static page served by the API (same origin, no new server, no new backend). Wiring: add `dash_dir = ROOT / "apps" / "dash"` to `apps/api/app/config.py` (beside `web_dir`, line 52) and `app.mount("/dash", StaticFiles(directory=settings.dash_dir, html=True), name="dash")` in `apps/api/app/main.py` before the catch-all `/` mount at line 235, because a mount registered after it is never reached. The mobile side view iframes the PWA from the API's own origin (`/index.html`), not the 8010 preview port, so the session cookie applies inside it. Alternative: a route inside `apps/web` — rejected as default because the prototype must stay a clean mobile reference; a desktop ops grid inside it muddies that role. Either way: plain HTML/CSS/ES modules, existing tokens, no framework, no shadows.
 
 ## 8. Acceptance gates
 
 - All five aggregates render with real data on localhost; each dependency failure renders its honest degraded/unknown state (verified by stopping Redis/worker and screenshotting).
 - Poll cadences respected; hidden tab stops polling (verified in devtools).
 - Reduced-motion + light/dark pass; 1280px layout with no horizontal scroll; side view toggles both phone widths.
-- Backend: happy-path + failure-path tests per new endpoint (broker down, worker silent, empty tables); existing 227/11 suite stays green.
+- Backend: happy-path + failure-path tests per new endpoint (broker down, worker silent, empty tables); existing 227 passed / 11 skipped suite stays green (verified on `main` 23 Oct 2026).
+- Access failure-path tests: `GET /api/ops/health` returns 404 with `OPS_TOKEN` unset and 403 with a wrong token; `POST /api/ops/events` returns 413 for an oversized body, 422 for an unknown step or an extra field, and 429 past the rate limit.
 - No new top-level `*.md`; dashboard docs live here.
 
 ## 9. Slices (in order, each reviewed separately)
@@ -106,12 +112,12 @@ Recommended: new `apps/dash/` static page served by the API (same origin, no new
 - S1: `/api/ops/health` + health panel + page shell. Gate: kill Redis, see honest degraded.
 - S2: `/api/ops/ml` + jobs panel. Gate: failed job shows id + safe category.
 - S3: `/api/ops/content` + content panel. Gate: counts match direct DB counts.
-- S4: events ingest + funnel panel. Gate: site funnel steps appear end-to-end.
+- S4: events ingest + funnel panel. Gate: handcrafted events posted with curl or a test appear in the funnel panel with correct step counts, and the ingest hardening tests pass. Site instrumentation is not required (the site rebuild depends on this slice, not the reverse; `docs/plan/website-rebuild.md` §6 gate 3). If the founder wants the site rebuild to start first, S4's ingest half can ship alone ahead of S1.
 - S5: client status + mobile side view + polish. Gate: drift flag fires on a deliberate route rename in a scratch branch (reverted after).
 
 ## 10. Open questions for sign-off
 
-1. Scope A/B/C (§1)?
+1. ~~Scope A/B/C (§1)?~~ Decided 23 Oct: B (founder ops + mobile side view).
 2. Frontend home: `apps/dash/` vs prototype route (§7)?
 3. Mobile side view interactive in v1, or read-only locked?
 4. Funnel ingest from the PWA/iOS in v1, or site-only?

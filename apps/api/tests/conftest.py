@@ -28,3 +28,13 @@ def postgres_schema(monkeypatch):
     yield
     with psycopg.connect(URL, autocommit=True) as admin:
         admin.execute(f"DROP SCHEMA {schema} CASCADE")
+
+
+@pytest.fixture(autouse=True)
+def no_live_social_providers(monkeypatch):
+    """Persona replies never call agnes/Luna in tests; provider tests opt back in."""
+    from app.config import settings
+    monkeypatch.setattr(settings, "social_main", "none")
+    monkeypatch.setattr(settings, "social_fallback", "none")
+    monkeypatch.setattr(settings, "feed_main", "none")
+    monkeypatch.setattr(settings, "feed_fallback", "none")

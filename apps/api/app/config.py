@@ -28,7 +28,16 @@ class Settings:
     luna_timeout_s = float(os.getenv("LUNA_TIMEOUT_S", "20"))
     openai_api_key = os.getenv("OPENAI_API_KEY", "")
     nararouter_api_key = os.getenv("NARAROUTER_API_KEY", "")
+    # AI demo personas. Founder rule (23 Oct, apps/api/.env): chat replies wait on the
+    # user, so Luna (LUNA_MODEL at SOCIAL_EFFORT, 5/5 valid, ~3 s) runs first with agnes
+    # via NaraRouter as fallback; feed posts/comments use agnes first, Luna fallback.
+    # Values: agnes | luna | none.
+    social_main = os.getenv("AI_main", "luna")
+    social_fallback = os.getenv("fallback_model", "agnes")
+    feed_main = os.getenv("FEED_AI_main", "agnes")
+    feed_fallback = os.getenv("FEED_fallback_model", "luna")
     social_model = os.getenv("SOCIAL_MODEL", "agnes-2.5-flash")
+    social_effort = os.getenv("SOCIAL_EFFORT", "medium")
     social_base_url = os.getenv("NARAROUTER_BASE_URL", "https://router.bynara.id/v1")
     social_timeout_s = float(os.getenv("SOCIAL_TIMEOUT_S", "35"))
     rabbitmq_url = os.getenv("RABBITMQ_URL", "amqp://guest:guest@localhost:5672//")
