@@ -17,6 +17,6 @@
 .screenBody { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .screenBody > * { flex: 1; min-height: 0; }
 .island { position: absolute; z-index: var(--z-island); top: var(--hw-island-top); left: 50%; transform: translateX(-50%); display: flex; align-items: center; justify-content: center; gap: 8px; width: var(--hw-island-w); height: var(--hw-island-h); border-radius: var(--r-pill); background: var(--hw-island); color: #fff; font-size: 12px; overflow: hidden; transition: width 0.25s var(--ease); }
-.islandLive { width: 300px; padding: 0 14px; }
+.islandLive { width: 236px; padding: 0 14px; }
 .homeBar { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); width: 134px; height: 5px; border-radius: 3px; background: var(--text); opacity: 0.85; }
 @media (prefers-reduced-motion: reduce) { .island { transition: none; } }

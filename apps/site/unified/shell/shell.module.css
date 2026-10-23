@@ -11,7 +11,7 @@
 .railItems { display: flex; flex-direction: column; gap: 2px; }
 .railItem { display: flex; align-items: center; gap: var(--s-3); height: 42px; padding: 0 var(--s-3); border-radius: var(--r-md); color: var(--text-2); font-size: var(--fs-lg); font-weight: 450; text-align: start; transition: background 0.12s var(--ease), color 0.12s var(--ease); }
 .railItem:hover { background: var(--hover); color: var(--text); }
-.railItemActive, .railItemActive:hover { background: var(--active); color: var(--text); font-weight: 550; }
+.railItemActive, .railItemActive:hover { background: var(--accent-soft); color: var(--text); font-weight: 550; }
 .railItemActive svg { color: var(--accent); }
 
 .sidebar { flex: 1; min-height: 0; overflow-y: auto; padding-top: var(--s-3); }

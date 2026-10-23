@@ -4,17 +4,18 @@
 .row { display: flex; align-items: center; gap: var(--s-3); width: 100%; padding: var(--s-2) var(--s-3); border-radius: var(--r-md); text-align: start; transition: background 0.12s var(--ease); }
 .row:hover { background: var(--hover); }
 .rowActive, .rowActive:hover { background: var(--accent-soft); }
-.rowIcon { display: grid; place-items: center; width: 40px; height: 40px; flex-shrink: 0; border-radius: 50%; background: color-mix(in srgb, currentColor 14%, transparent); }
+.rowIcon { display: grid; place-items: center; width: 40px; height: 40px; flex-shrink: 0; border-radius: 50%; background: var(--tone); color: #fff; }
 .rowText { display: flex; flex-direction: column; min-width: 0; flex: 1; }
-.rowTitle { display: flex; align-items: center; gap: 6px; font-size: var(--fs-md); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rowTitle { display: flex; align-items: center; gap: 6px; min-width: 0; font-size: var(--fs-md); font-weight: 600; }
+.rowTitle > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .rowSub { font-size: var(--fs-sm); color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rowMeta { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; font-size: var(--fs-xs); color: var(--text-3); flex-shrink: 0; min-height: 30px; }
 .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); }
-.toneRed { color: var(--danger); }
-.toneAccent { color: var(--accent); }
-.toneAmber { color: var(--warning); }
-.toneGreen { color: var(--success); }
-.toneGrey { color: var(--text-2); }
+.toneRed { --tone: var(--danger); }
+.toneAccent { --tone: var(--accent); }
+.toneAmber { --tone: var(--warning); }
+.toneGreen { --tone: var(--success); }
+.toneGrey { --tone: var(--text-3); }
 .note { margin: 0; padding: var(--s-2) var(--s-3); font-size: var(--fs-sm); color: var(--text-2); }
 
 .view { flex: 1; min-height: 0; display: flex; flex-direction: column; container-type: inline-size; }

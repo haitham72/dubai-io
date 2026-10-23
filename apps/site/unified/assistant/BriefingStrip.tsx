@@ -22,7 +22,7 @@ export function BriefingStrip({ threads }: { threads: TaskThread[] }) {
           <span className={`${s.stripIcon} ${tone}`}><I size={20} strokeWidth={2} /></span>
           <span className={s.stripText}>
             <span className={`${s.stripLabel} ${tone}`}>{label}</span>
-            <span className={s.stripTitle}>{t.title}{t.demo && <DemoPill />}</span>
+            <span className={s.stripTitle}><span>{t.title}</span>{t.demo && <DemoPill />}</span>
             <span className={s.stripSub}>{t.preview}</span>
           </span>
           <ChevronRight size={16} className={s.stripChevron} />

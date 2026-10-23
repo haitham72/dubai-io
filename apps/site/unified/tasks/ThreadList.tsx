@@ -25,7 +25,7 @@ export function ThreadList({ title = "Task threads" }: { title?: string }) {
           <button key={t.id} data-testid="thread-row" className={`${s.row} ${threadId === t.id ? s.rowActive : ""}`} onClick={() => openThread(t.id)}>
             <span className={`${s.rowIcon} ${LANE_TONE[t.lane]}`}><I size={18} strokeWidth={2} /></span>
             <span className={s.rowText}>
-              <span className={s.rowTitle}>{t.title}{t.demo && <DemoPill />}</span>
+              <span className={s.rowTitle}><span>{t.title}</span>{t.demo && <DemoPill />}</span>
               <span className={s.rowSub}>{t.preview}</span>
             </span>
             <span className={s.rowMeta}>
