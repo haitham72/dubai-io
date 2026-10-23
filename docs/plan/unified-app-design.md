@@ -50,7 +50,10 @@ The founder's `temporal_note` (`~/VsCode/Claude---Cowork/temporal_note`; Python,
 - Rule 9 holds: everything visible and editable in Me; inferred items are hypotheses with Confirm/Forget; **never infer health, religion, ethnicity, nationality-as-trait, gender, sexuality, politics** (temporal_note's extractor needs this filter); unconfirmed hypotheses only re-rank, with a "Because…" chip.
 - Existing Dubai-io pieces to connect: `user_profile.py`, `recommendations.py`, `profile.py` (episodes/overrides), session facts (`area`, `household`, `services`, …).
 - Separately: temporal_note can serve as an MCP for the agents building this repo; its plugin launcher is Windows-only (`run.ps1`) — point it at `mcp_server/run.sh` on the Mac.
-- **Vault control** (founder's extension): location unknown — founder to provide; intended as a notes/vault connector for the investigation loop.
+- **Founder permission (23 Oct): copy/learn freely from temporal_note.**
+- **Vault control** (founder's "Claude control" extension UI; same family as temporal_note): indexes code/files, has an LLM summarise and document tasks for later sessions, and mainly **guides and controls what local info agents see and how it's shown**. In Dubai-io this becomes:
+  1. **"What Dubai-io can see" control page** (Me/Settings): every source (connectors, notes/vault, files, memory) with what is indexed, the summaries made from it, and per-source on/off + scope. Rule 9 as a real panel; bounds the investigation loop.
+  2. **Persistent task write-ups:** when a task thread finishes, a short summary (what was done, sources, outcome) is stored as a memory event so later chats and the briefing build on it — same engine as §3.
 
 ## 4. Shell, presentations, look
 
