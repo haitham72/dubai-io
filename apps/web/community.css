@@ -125,3 +125,21 @@
 .sort-row button[aria-pressed="true"] { outline: 2px solid var(--tint-ink); }
 .search-row { display: flex; gap: 6px; margin: 8px 0; }
 .search-row input { flex: 1; border: 1px solid var(--sep); border-radius: 14px; padding: 10px 12px; font-size: 15px; }
+
+/* Calls surface: tabs + search on top, main pane scrolls, contacts rail stays on the right. */
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.calls-search { margin-bottom: 10px; }
+.calls-tabs { scroll-snap-type: x proximity; }
+.calls-tabs button { scroll-snap-align: start; }
+.calls-surface { display: grid; grid-template-columns: minmax(0, 1fr) 72px; gap: 10px; height: min(58vh, 520px); }
+.calls-main { min-width: 0; overflow-y: auto; overscroll-behavior: contain; }
+.calls-rail { display: flex; flex-direction: column; align-items: center; gap: 8px; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; padding: 6px 0; background: #fff; border: 1px solid var(--sep); border-radius: 20px; }
+.calls-rail::-webkit-scrollbar { display: none; }
+.rail-person { display: grid; justify-items: center; gap: 2px; width: 100%; padding: 2px 4px; background: none; border: 0; border-radius: 14px; color: var(--label-2); }
+.rail-person:active { background: var(--tint-soft); }
+.rail-person .t-avatar { width: 40px; height: 40px; font-size: 15px; }
+.rail-person small { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10.5px; }
+.rail-add { flex: none; width: 40px; height: 40px; border-radius: 50%; background: var(--tint); color: #fff; font-size: 22px; line-height: 1; border: 0; }
+.calls-main .thread.contact { gap: 4px; padding: 8px 4px; }
+.calls-main .thread.contact .round { width: 30px; }
+.calls-main .call-keypad button { min-height: 46px; font-size: 22px; }

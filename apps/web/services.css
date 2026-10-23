@@ -37,7 +37,6 @@
 .services-section-head span { font-size: 10.5px; color: var(--label-3); }
 .services-group { margin-bottom: 20px; }
 .services-group h3 { font-size: 13px; color: var(--label-2); margin: 0 0 9px; font-weight: 600; }
-.service-category-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; }
 .service-category { position: relative; isolation: isolate; min-height: 144px; overflow: hidden; border-radius: 16px; background: linear-gradient(140deg,#076E89,#0A9CC2); color: #fff; text-align: left; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; }
 .service-photo { position: absolute; inset: 0; z-index: -2; background-size: cover; background-position: center; }
 .service-category::before { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg,rgba(0,0,0,.12),rgba(0,0,0,.08) 28%,rgba(0,0,0,.65)); }
