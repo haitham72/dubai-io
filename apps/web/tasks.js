@@ -5,6 +5,7 @@ import { registerPage, openPage } from './page-host.js';
 import { selectTaskFocus } from './assistant-context.js';
 import { statusLabel } from './status-labels.js';
 import { decisionHTML } from './decision.js';
+import { needsYouRows } from './decision-logic.js';
 
 const labels = { WAITING_USER: 'Waiting for your update', PAUSED: 'Paused', COMPLETED: 'Done · you reported', CANCELLED: 'Cancelled' };
 export const taskStateLabel = status => labels[status] || 'Status unavailable';
@@ -306,7 +307,7 @@ export async function trackReport(report) {
 export async function briefHTML() {
   const [data, routine] = await Promise.all([request('/api/today'), request('/api/routines/brief').catch(() => null)]), n = data.counts;
   const line = (task, ask, attr) => `<li><button class="brief-line" ${attr}><span class="brief-chip">${esc(task.outcome)}</span> ${esc(ask)}</button></li>`;
-  const needs = data.needs_you.tasks.map(t => line(t, t.decision.title + '.', `data-open-decision="${esc(t.decision.action_id)}"`));
+  const needs = needsYouRows(data.needs_you.tasks).map(t => line(t, t.decision.title + '.', `data-open-decision="${esc(t.decision.action_id)}"`));
   const moving = data.running.tasks.map(t => line(t, statusLabel(t.source_status) + '.', `data-chat-task="${esc(t.id)}"`));
   const list = data.on_list.tasks.map(t => line(t, t.due_at ? 'Due ' + date(t.due_at) + '.' : 'On your list.', `data-chat-task="${esc(t.id)}"`));
   const parts = [n.running && `${n.running} moving`, n.needs_you && `${n.needs_you} ${n.needs_you === 1 ? 'needs' : 'need'} you`].filter(Boolean);
@@ -323,6 +324,13 @@ export const routineHTML = r => r.active
 export async function keepForLater(actionId) {
   const result = await request('/api/tasks/from-action', { action_id: actionId });
   changed(); return result.task;
+}
+
+// Discard on a tracked order that is already out: stop tracking only. The order is never cancelled.
+export async function stopTracking(actionId) {
+  const { task } = await request('/api/tasks/from-action', { action_id: actionId });
+  await request('/api/tasks/' + encodeURIComponent(task.id) + '/commands', { kind: 'cancel', expected_revision: task.revision, command_key: key() });
+  changed();
 }
 
 // Source IDs are resolved by the owner on the server. Repeated taps reopen the
@@ -361,7 +369,7 @@ registerPage('tasks.lane', {
     const list = root.querySelector('[data-lane-list]');
     const load = () => request('/api/today/lanes/' + c.lane).then(data => {
       if (!root.isConnected) return;
-      list.innerHTML = data.tasks.length ? data.tasks.map(c.lane === 'needs_you' ? decisionRow : row).join('') + (data.has_more ? '<p class="today-quiet">Showing the first 100. Older ones are in Task history.</p>' : '')
+      list.innerHTML = data.tasks.length ? (c.lane === 'needs_you' ? needsYouRows(data.tasks).map(decisionRow) : data.tasks.map(row)).join('') + (data.has_more ? '<p class="today-quiet">Showing the first 100. Older ones are in Task history.</p>' : '')
         : (LANES[c.lane][2] || '<p class="today-quiet">Nothing here right now.</p>');
     }).catch(() => { if (root.isConnected) list.innerHTML = '<p role="alert">This list could not load.</p><button class="btn wide" data-lane-retry>Try again</button>'; });
     wireRows(root);
@@ -377,7 +385,7 @@ registerPage('tasks.lane', {
 });
 
 // A row in Needs you opens the linked source, where the shared decision card lives.
-const decisionRow = task => `<button class="task-row compact has-decision" data-open-decision="${esc(task.decision.action_id)}"><span class="task-row-icon">${svg('orb', 'ic sm')}</span><b>${esc(task.outcome)}</b><small class="task-meta act">${esc(task.decision.kind === 'approve' ? 'Approve' + (task.decision.amount_aed != null ? ' · AED ' + Number(task.decision.amount_aed).toFixed(2) : '') : task.decision.kind === 'deadline' ? 'Misses deadline' : 'Check status')}</small></button>`;
+const decisionRow = task => `<button class="task-row has-decision" data-open-decision="${esc(task.decision.action_id)}"><span class="task-row-icon">${svg('orb', 'ic sm')}</span><span class="task-row-copy"><b>${esc(task.outcome)}</b><small class="decision-ask">${esc(task.decision.title)}</small></span>${svg('chev', 'ic xs')}</button>`;
 
 let startTask = () => {};
 export function createToday(root, startNewTask) {
@@ -443,9 +451,9 @@ export function createToday(root, startNewTask) {
       const day = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Dubai', weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());
       historyRows = history.tasks; nextOffset = history.next_offset; historyBusy = false;
       const n = data.counts, parts = [n.needs_you && `${n.needs_you} ${n.needs_you === 1 ? 'needs' : 'need'} you`, n.running && `${n.running} moving`, data.scheduled.tasks.length && `${data.scheduled.tasks.length}${data.scheduled.has_more ? '+' : ''} scheduled`].filter(Boolean);
-      const top = [...data.needs_you.tasks.map(decisionRow), ...data.running.tasks.map(row), ...data.on_list.tasks.filter(t => t.due_state).map(row), ...data.on_list.tasks.filter(t => !t.due_state).map(row)].slice(0, 3);
+      const top = [...needsYouRows(data.needs_you.tasks).map(decisionRow), ...data.running.tasks.map(row), ...data.on_list.tasks.filter(t => t.due_state).map(row), ...data.on_list.tasks.filter(t => !t.due_state).map(row)].slice(0, 3);
       const chips = [['needs_you', n.needs_you], ['running', n.running], ['scheduled', data.scheduled.tasks.length], ['on_list', n.on_list], ['paused', data.paused.count], ['completed', data.completed.tasks.length]]
-        .filter(([lane, count]) => count || lane === 'on_list').map(([lane, count]) => `<button class="lane-chip ${lane === 'needs_you' ? 'act' : ''}" data-lane="${lane}">${LANES[lane][0]}<b>${count}${['scheduled', 'completed'].includes(lane) && data[lane].has_more ? '+' : ''}</b></button>`).join('');
+        .filter(([lane, count]) => count || lane === 'on_list').map(([lane, count]) => `<button class="lane-chip ${lane === 'needs_you' ? 'hot' : ''}" data-lane="${lane}">${LANES[lane][0]}<b>${count}${['scheduled', 'completed'].includes(lane) && data[lane].has_more ? '+' : ''}</b></button>`).join('');
       root.innerHTML = `<section class="today-card"><header><div><p>${esc(day)}</p><h1>Tasks</h1></div><button class="round" data-add-menu aria-expanded="false" aria-label="Add a task">${svg('plus')}</button></header>
         <div class="today-add" data-add-options hidden><button data-start-new-task>${svg('grid', 'ic sm')} Start a task in Services</button><button data-create-task>${svg('keep', 'ic sm')} Keep a note on your list</button></div>
         <p class="today-brief">${parts.length ? esc(parts.join(' · ')) : 'All clear. Nothing needs you.'}</p>

@@ -6,6 +6,7 @@ import { $, svg, esc, toast, told, openSheet, closeSheet } from './ui.js';
 import { api } from './service-workflow.js';
 import { statusLabel } from './status-labels.js';
 import { decisionHTML } from './decision.js';
+import { decisionKind, STALE_MESSAGE } from './decision-logic.js';
 import { updatedAt } from './result.js';
 
 const DAY_RE = /\btoday\b/i;
@@ -61,17 +62,47 @@ async function prepare() {
 }
 
 // The exact snapshot the user approves; shared by the review sheet and Today's Needs you.
+const NEVER = ['Your name', 'Phone number', 'Profile and anything I noticed', 'Other orders'];
+const sharedFields = (o, f) => [`${o.lines.map(l => `${l.qty}× ${l.name}`).join(', ')} · total`, o.slot && `Pickup ${o.slot}`,
+  f.area && `Area: ${f.area.value} (you told me)`, f.deadline && `Needed by ${f.deadline.value} (you told me)`].filter(Boolean);
+const provenanceLine = o => `Prices from the shop’s published list (${o.provenance.replace('_', ' ')}, as of ${o.as_of}), not from the mini-app.`;
+
 export function orderDecisionHTML(a, ids) {
+  if (a.status === 'UNKNOWN_STATUS') return unknownDecisionHTML(a, ids);
+  if (decisionKind(a) === 'deadline') return deadlineDecisionHTML(a, ids);
   const o = a.order, f = a.fields, shop = a.recipient.replace(' (sandbox merchant)', '');
-  const shared = [`${o.lines.map(l => `${l.qty}× ${l.name}`).join(', ')} · total`, o.slot && `pickup ${o.slot}`,
-    f.area && `area: ${f.area.value} (you told me)`, f.deadline && `needed by ${f.deadline.value} (you told me)`].filter(Boolean).join(' · ');
-  return decisionHTML({ context: 'Fixed-price order · sandbox merchant', amount: a.fixed_total_aed, meta: `${shop}’s published price`,
+  return decisionHTML({ kind: 'approve', context: 'Fixed-price order · sandbox merchant', demo: o.provenance === 'demo_fixture', amount: a.fixed_total_aed, meta: `${shop}’s published price`,
     title: a.status === 'DRAFT' ? `Add ${a.missing.join(', ')} to continue` : `Send this order to ${shop}?`,
-    rows: [{ label: 'Will be shared', value: shared }, { label: 'Never shared', value: 'Your name · phone number · profile and anything I noticed · other orders' }],
+    banner: ids.refreshed ? { text: STALE_MESSAGE, tone: 'warn' } : null,
+    shared: sharedFields(o, f), never: NEVER,
     note: 'Nothing is sent until you approve. The shop accepts or declines; the price can’t change.',
     primary: { label: 'Approve and send', attrs: { id: ids.yes }, disabled: a.status !== 'AWAITING_APPROVAL' },
     defer: { label: 'Not now', attrs: { id: ids.later } }, discard: { label: 'Discard draft', attrs: { id: ids.discard } },
-    fine: `Prices from the shop’s published list (${o.provenance.replace('_', ' ')}, as of ${o.as_of}), not from the mini-app.` });
+    fine: provenanceLine(o) });
+}
+
+// Unknown send outcome: never success. Offers a check, not a resend.
+function unknownDecisionHTML(a, ids) {
+  const o = a.order, shop = a.recipient.replace(' (sandbox merchant)', '');
+  return decisionHTML({ kind: 'check', context: 'Send outcome unknown', demo: o.provenance === 'demo_fixture', amount: a.fixed_total_aed, meta: `${shop}’s published price`,
+    title: `Check with ${shop} before resending`,
+    banner: { text: a.blocked_reason || 'I could not confirm whether the order reached the shop. Resending could duplicate it.', tone: 'warn' },
+    shared: sharedFields(o, a.fields), sharedLabel: 'Included in the send', never: NEVER,
+    note: 'Nothing is marked sent or confirmed until the shop answers.',
+    primary: { label: 'Check status', attrs: { id: ids.check } }, defer: { label: 'Not now', attrs: { id: ids.later } },
+    discard: { label: 'Stop tracking', attrs: { id: ids.discard } }, fine: provenanceLine(o) });
+}
+
+// Accepted order whose ready time misses the user's deadline: ask for earlier at the same price.
+function deadlineDecisionHTML(a, ids) {
+  const o = a.order, dc = a.deadline_check, shop = a.recipient.replace(' (sandbox merchant)', ''), target = earlierThan(dc.deadline);
+  return decisionHTML({ kind: 'deadline', context: 'Deadline at risk', demo: o.provenance === 'demo_fixture', amount: a.fixed_total_aed, meta: `${shop}’s published price`,
+    title: `Ready ${dc.ready_at} misses your ${dc.deadline} deadline`,
+    banner: { text: 'Ready time confirmed by the shop, not by me.', tone: 'warn' },
+    shared: target ? [`Request: ready by ${target}, same price`] : [], never: NEVER,
+    note: target ? 'Asking sends one short request to the shop. The price can’t change.' : 'No earlier time is possible before this deadline.',
+    primary: target ? { label: `Ask for ${target}, same price`, attrs: { id: ids.earlier, 'data-target': target } } : null,
+    defer: { label: 'Not now', attrs: { id: ids.later } }, discard: { label: 'Stop tracking', attrs: { id: ids.discard } }, fine: provenanceLine(o) });
 }
 
 function renderReview(a) {
@@ -83,6 +114,7 @@ function renderReview(a) {
 
 // Not now keeps a ready order on Today; an incomplete draft is simply left unsent.
 export async function later(a, control) {
+  if (decisionKind(a) && a.status !== 'AWAITING_APPROVAL') { closeSheet(); toast('Kept on Today under Needs you.'); return; }
   if (a.status !== 'AWAITING_APPROVAL') { closeSheet(); toast('Nothing was sent.'); return; }
   control.disabled = true;
   try { const { keepForLater } = await import('./tasks.js'); await keepForLater(a.id); closeSheet(); toast('Kept on Today under Needs you. Nothing was sent.'); }

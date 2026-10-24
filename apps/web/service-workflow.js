@@ -83,7 +83,7 @@ registerPage('service.action', {
   render:()=>'<div data-linked-source><p role="status">Loading the saved item…</p></div>',
   mount(body,c) {
     let busy=false;
-    async function load(change) {
+    async function load(change,refreshed) {
       if(busy)return; busy=true;
       try {
         const action=change||await api('/api/actions/'+encodeURIComponent(c.id));
@@ -96,8 +96,10 @@ registerPage('service.action', {
           return;
         }
         const {orderCardHTML,orderDecisionHTML}=await import('./orders.js');
-        c.action=action.status==='AWAITING_APPROVAL'?action:null;
-        if(c.action){if(body.isConnected)body.innerHTML=orderDecisionHTML(action,{yes:'decisionYes',later:'decisionLater',discard:'decisionDiscard'});return;}
+        // The shared decision card covers every Needs-you stop (approve, unknown outcome, missed deadline).
+        const {decisionKind}=await import('./decision-logic.js');
+        c.action=action.status==='AWAITING_APPROVAL'||decisionKind(action)?action:null;
+        if(c.action){if(body.isConnected)body.innerHTML=orderDecisionHTML(action,{yes:'decisionYes',later:'decisionLater',discard:'decisionDiscard',check:'decisionCheck',earlier:'decisionEarlier',refreshed});return;}
         if(body.isConnected)body.innerHTML=orderCardHTML(action)+'<button class="btn wide" data-source-refresh>Refresh from the shop</button><p class="fine">Status comes from the saved order. Tracking and task completion do not change the order.</p>';
       } catch(error) {if(body.isConnected)body.innerHTML='<p role="alert">'+esc(error.message)+'</p><button class="btn wide" data-source-refresh>Try again</button>';}
       finally {busy=false;}
@@ -105,12 +107,38 @@ registerPage('service.action', {
     body.addEventListener('click',async event=>{
       const button=event.target.closest('button'); if(!button||busy)return;
       if(button.hasAttribute('data-source-refresh'))return load();
-      if(c.action&&['decisionLater','decisionDiscard'].includes(button.id)){const orders=await import('./orders.js');return button.id==='decisionLater'?orders.later(c.action,button):orders.discard(c.action,button);}
-      if(c.action&&button.id==='decisionYes'){
-        // Approves exactly the revision/snapshot on screen; a changed draft is rejected by the server.
-        button.disabled=true; c.approvalKey||=crypto.randomUUID();
-        try{const sent=await api('/api/actions/'+encodeURIComponent(c.id)+'/approve',{method:'POST',headers:{'Idempotency-Key':c.approvalKey},body:JSON.stringify({snapshot_hash:c.action.snapshot_hash,revision:c.action.revision})});c.action=null;dispatchEvent(new CustomEvent('dubaiio:source-changed',{detail:{id:c.id}}));await load(sent);}
+      if(c.action&&button.id==='decisionLater'){const orders=await import('./orders.js');return orders.later(c.action,button);}
+      if(c.action&&button.id==='decisionDiscard'){
+        const orders=await import('./orders.js');
+        if(c.action.status==='AWAITING_APPROVAL'||c.action.status==='DRAFT')return orders.discard(c.action,button);
+        // Unknown outcome / missed deadline: stop tracking only; the order itself is never touched.
+        button.disabled=true;
+        try{const {stopTracking}=await import('./tasks.js');await stopTracking(c.action.id);toast('Stopped tracking. The order was not changed.');dispatchEvent(new CustomEvent('dubaiio:source-changed',{detail:{id:c.id}}));await load();}
         catch(error){toast(error.message);if(button.isConnected)button.disabled=false;}
+        return;
+      }
+      if(c.action&&button.id==='decisionCheck'){button.disabled=true;await load();return;}
+      if(c.action&&button.id==='decisionEarlier'){
+        button.disabled=true;
+        try{const {requestEarlier}=await import('./orders.js');await requestEarlier(c.id,button.dataset.target);await load();}
+        catch(error){toast(error.message);if(button.isConnected)button.disabled=false;}
+        return;
+      }
+      if(c.action&&button.id==='decisionYes'){
+        // Approval binds the revision/snapshot on screen. Re-read first: if the item changed
+        // since this card rendered, refuse and show the current card instead.
+        button.disabled=true; c.approvalKey||=crypto.randomUUID();
+        try{
+          const {approvalFor}=await import('./decision-logic.js');
+          const fresh=await api('/api/actions/'+encodeURIComponent(c.id)), guard=approvalFor(c.action,fresh);
+          if(!guard.ok){c.approvalKey=null;await load(fresh,true);return;}
+          const sent=await api('/api/actions/'+encodeURIComponent(c.id)+'/approve',{method:'POST',headers:{'Idempotency-Key':c.approvalKey},body:JSON.stringify(guard.body)});
+          c.action=null;dispatchEvent(new CustomEvent('dubaiio:source-changed',{detail:{id:c.id}}));await load(sent);
+        }
+        catch(error){
+          if(/changed|terms/i.test(error.message)){c.approvalKey=null;toast(error.message);await load(undefined,true);return;}
+          toast(error.message);if(button.isConnected)button.disabled=false;
+        }
         return;
       }
       if(button.hasAttribute('data-earlier')||button.hasAttribute('data-remind')) {
