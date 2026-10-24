@@ -1,5 +1,7 @@
 # Unified App Foundation (Plan 1 of 8) Implementation Plan
 
+> **PAUSED (24 Oct, founder):** the original mobile app (`apps/web`) is the app; the React port is paused. See `docs/request-backlog.md` top entry. Do not execute this plan unless the founder resumes it.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Replace the `apps/site` marketing site with the Dubai-io app shell — Mirsal-derived look in white + `#357F92`, three presentations, Assistant home with composer and briefing strip, task threads from real tasks, and first-run onboarding.

@@ -1,5 +1,7 @@
 # Device Switch + Phone Core (Plan 2 of 8) Implementation Plan
 
+> **PAUSED (24 Oct, founder):** the original mobile app (`apps/web`) is the app; the React port is paused. See `docs/request-backlog.md` top entry. Do not execute this plan unless the founder resumes it.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Guarantee the existing mobile demo is never lost — an Original ⇄ New toggle inside the iPhone frame — and bring the phone's core moments into the new app: a richer phone Home (best of `design/references/01-home.png`), the DXB airport guide, and lost-item-in-taxi recovery.

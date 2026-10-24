@@ -11,18 +11,18 @@ supabase/   Migrations, local project config
 docs/       Status, backlog, plans, references, services/
 ```
 
-## Run (this Mac; ports 8000/8010/8020 belong to other apps)
+## Run (ports 8000/8010 belong to other apps)
 
 ```sh
-cd apps/api && .venv/bin/python -m uvicorn app.main:app --host 0.0.0.0 --port 8002
-# Prototype + API:      http://localhost:8002
-# Merchant sandbox:     http://localhost:8002/merchant.html
+cd apps/api && .venv/Scripts/python -m uvicorn app.main:app --host 0.0.0.0 --port 8030   # macOS/Linux: .venv/bin/python
+# The app + API:        http://localhost:8030/index.html
+# Merchant sandbox:     http://localhost:8030/merchant.html
 
-cd apps/site && NEXT_PUBLIC_API_BASE=http://localhost:8002 npm run dev -- --port 3000
-# Website:              http://localhost:3000
+cd apps/site && NEXT_PUBLIC_API_BASE=http://localhost:8030 npm run dev -- --port 3000
+# React port (paused):  http://localhost:3000
 
 # iOS: open apps/ios/DubaiIO.xcodeproj in Xcode, pick a Simulator, Run.
-# API base in-app: http://<mac-ip>:8002 (localhost on-device means the phone)
+# API base in-app: http://<host-ip>:8030 (localhost on-device means the phone)
 
 cd apps/api && docker compose -f docker-compose.infra.yml up -d redis   # ML cache (6380; 6379 is the Mac's system redis)
 ```

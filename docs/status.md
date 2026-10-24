@@ -2,6 +2,10 @@
 
 Single current-state file. Detail lives in `handoff.md`, `docs/request-backlog.md`, git history.
 
+## 24 Oct — the original mobile app (`apps/web`) is the app again
+
+Founder decision: development resumes in `apps/web`; React port (`apps/site`, Plans 2–8) paused as a reference. See `docs/request-backlog.md` top entry. Windows machine (`D:\Vscode\dubai-io`, Python 3.13 venv): backend **249 passed / 11 skipped**, web **12/12** suites; API + app at `:8030/index.html`.
+
 ## Branches (monorepo — all tracks merged into main)
 
 - `main` (23 Oct EOD): backend (`apps/api`) + mobile PWA (`apps/web`) + website (`apps/site`) + iOS (`apps/ios`, STOPPED).

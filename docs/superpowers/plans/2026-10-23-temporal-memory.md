@@ -1,5 +1,7 @@
 # Temporal Memory (Plan 6 of 8) Implementation Plan
 
+> **PAUSED (24 Oct, founder):** the original mobile app (`apps/web`) is the app; the React port is paused. See `docs/request-backlog.md` top entry. Do not execute this plan unless the founder resumes it.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Give Dubai-io a long-term, time-aware memory modelled on the founder's temporal_note — events, entities with validity windows, hybrid search, memory ops and due advice — feeding the assistant's context, the Me timeline, "I noticed", and Keeping-track recommendations.

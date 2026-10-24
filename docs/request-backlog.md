@@ -2,6 +2,19 @@
 
 Current state: [status.md](status.md).
 
+## The original mobile app is the app — founder decision (24 Oct, ACTIVE, supersedes the 23 Oct unified-app entry below)
+
+All continued development happens in `apps/web` on its established flows (Home, Chat⇄Calls, Feed, Services, Maps, Me). The byte-freeze is lifted (tag `mobile-pwa-baseline-2026-10-23` stays as the historical baseline). The "wrap declined" line and the React mirroring strategy are superseded. React port Plans 2–8 are paused; `apps/site` stays untouched as a route/API reference. Unchanged: rules 1–10, provenance, approval before side effects, no shadows, no sensitive inference, quality bar (Feed = benchmark; Services → uplift to Feed level), language rule (never classic/old/legacy/stale).
+
+Working split: a Sonnet-medium subagent builds one slice at a time (`apps/web/**` freely; `apps/api/**` only for a needed contract change, keeping TAXI-02 semantics); the main session reviews diff + screenshots (390x844 + 428x926, normal + reduced motion) + tests, then merges to `main`.
+
+First build cycle (verified backend contracts from 22–23 Oct, client polish only):
+1. **FIN-01 Genuine Decisions / "Needs you"** — only approve-send, unknown send outcome, missed deadline are crucial stops.
+2. **FIN-04 TAXI-02 staged recovery** in the app UI.
+3. **FIN-05 Consented check-backs** — persisted, deduped, quiet hours, outbox message.
+
+Hygiene: CI (pytest + 12 node suites) on push — later.
+
 ## Unified app — founder direction (23 Oct, ACTIVE)
 
 Founder rejected the rebuilt site and stopped Swift. Direction: one React app, Dubai-io-led, Mirsal-redesign craft, Grok Bot/Dots/Duet behaviour, temporal_note memory engine, connectors drive dashboard workspaces, task queue everywhere, airport + lost-in-taxi cases kept, palette white + `#357F92` with dark mode derived. Full design + decisions: `docs/plan/unified-app-design.md`. Founder 23 Oct: `apps/web` is the original mobile app (reference, never 'classic'); new app mirrors it minimally. Feed = best screen (benchmark); Services = weakest → quality uplift in Plan 4.

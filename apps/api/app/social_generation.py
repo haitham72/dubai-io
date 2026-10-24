@@ -44,7 +44,7 @@ def migrate(store):
 
 def chat_fixture():
     path = Path(__file__).parent / "fixtures" / "chat_personas.json"
-    return json.loads(path.read_text()) if path.exists() else {"personas": [], "threads": []}
+    return json.loads(path.read_text(encoding="utf-8")) if path.exists() else {"personas": [], "threads": []}
 
 
 def legacy_personas(groups):

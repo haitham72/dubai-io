@@ -1,3 +1,11 @@
+# Handoff - 24 Oct 2026 — START HERE
+
+- **Founder decision (24 Oct):** the original mobile app (`apps/web`) is the app; all development continues there. The 23 Oct freeze and the React port (Plans 2–8, `apps/site`) are paused/superseded — see `docs/request-backlog.md` top entry. Sections below dated 23 Oct describe the paused direction.
+- **Machine:** Windows, `D:\Vscode\dubai-io`. Run: `cd apps/api && .venv/Scripts/python -m uvicorn app.main:app --port 8030` → app at `http://localhost:8030/index.html`. Venv is Python 3.13 (`py -3.13 -m venv .venv`). Tests: `.venv/Scripts/python -m pytest -q` (249 passed / 11 skipped); `for t in apps/web/tests/*.test.mjs; do node "$t"; done` (12 suites).
+- **Next:** first build cycle FIN-01 → FIN-04 → FIN-05 in `apps/web`.
+
+---
+
 # Handoff - 23 Oct 2026 (end of day) — START HERE
 
 ## Where we are (read in this order)

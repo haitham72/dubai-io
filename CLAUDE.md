@@ -6,12 +6,12 @@ Personal assistant for everyday life and work in Dubai. Contest entry (Best Pers
 
 | Task | Read |
 |---|---|
-| **Start of any session (23 Oct onward)** | `handoff.md` top section, then `docs/plan/unified-app-design.md` |
-| Current plans (unified app) | `docs/superpowers/plans/` (Plan 2 next; roadmap table at its bottom) |
+| **Start of any session (24 Oct onward)** | `handoff.md` top section, `docs/status.md`, then `apps/web/CLAUDE.md` |
+| Plans | Build cycle from `docs/request-backlog.md` top entry. React port plans in `docs/superpowers/plans/` are PAUSED (24 Oct) |
 | Current branches, state, next work | `docs/status.md` |
 | Backend/API work | `apps/api/CLAUDE.md` |
-| Unified app (website + desktop + mobile, React) | `apps/site` + `docs/plan/unified-app-design.md` |
-| Original mobile app (FROZEN, the reference) | `apps/web/CLAUDE.md` — read-only, tag `mobile-pwa-baseline-2026-10-23` |
+| **The app** (original mobile app, active development) | `apps/web/CLAUDE.md` — historical baseline tag `mobile-pwa-baseline-2026-10-23` |
+| React port (PAUSED, route/API reference only) | `apps/site` + `docs/plan/unified-app-design.md` — do not edit or delete |
 | DB/migrations | `supabase/CLAUDE.md` |
 | Scope locks (IN / LATER / NEVER), demo arc | `PLAN.md` |
 | Architecture, contracts, state machine | `ARCHITECTURE.md` |
@@ -36,13 +36,11 @@ Do not read every doc up front. Nested `CLAUDE.md` files govern their folder; th
 
 **Service execution:** prepare from confirmed facts → approval of the exact side effect → a registered adapter → provider evidence. When no adapter exists, show the blocker and keep the draft; never a fake Send. **UI:** no shadows; plain AI text, tinted user box, white rounded action boxes.
 
-## Original mobile app is the reference (founder, 23 Oct)
+## The original mobile app is the app (founder, 24 Oct — supersedes 23 Oct)
 
-**Founder priorities (23 Oct, final word for this stage):** no rush to ship — polished, refined, high quality, working, and **easy to change all the time**: a design change must be **one edit that echoes everywhere** (website, desktop, iOS/Android). So: **one React codebase** (`apps/site`), one central design system (tokens + shared components; no per-screen styling forks), and every screen ported from the **original mobile app** looking **as close as possible to it**. **Light mode first**; dark (Graphite) comes after light is polished. Option 'wrap the original as the phone app' was considered and declined.
+**All development happens in the original mobile app (`apps/web`)**, on top of its established flows (Home, Chat⇄Calls, Feed, Services, Maps, Me). The 23 Oct byte-freeze is lifted; tag `mobile-pwa-baseline-2026-10-23` stays as the historical baseline and work moves forward from it. The React port (`apps/site`, Plans 2–8) is **paused**: keep it untouched as a route/API reference, never delete it.
 
-**The original mobile app (`apps/web`) is the reference, not a 'classic' or old version (founder, 23 Oct).** The new app's phone experience mirrors it with minimal changes — same flows, structure and copy unless the founder asks otherwise. Never label it classic, old, legacy or stale.
-
-`apps/web` must not be modified, diluted or retired without explicit founder approval. Check before every merge: `git diff --quiet mobile-pwa-baseline-2026-10-23 HEAD -- apps/web`. Subagent briefs must forbid touching it.
+Still binding: the rules above, the founder's polish bar (polished, refined, easy to change — CSS-forward, no build step, shared tokens rather than per-screen forks), **Feed is the quality benchmark** and **Services is the weakest screen → uplift to Feed level**, light mode first. Call it "the original mobile app" or "the app" — never classic, old, legacy or stale. A UI slice is done only after screenshots at 390x844 and 428x926, normal and reduced motion.
 
 ## Gates
 
@@ -54,8 +52,8 @@ Do not read every doc up front. Nested `CLAUDE.md` files govern their folder; th
 
 ```
 apps/api/   FastAPI + LangGraph backend, tests/
-apps/site/  THE app: one React codebase → website, desktop app (Tauri/Electron), iOS/Android (Capacitor)
-apps/web/   Original mobile app PWA — FROZEN, the reference (tag mobile-pwa-baseline-2026-10-23), embedded at /?devices
+apps/web/   THE app: the original mobile app PWA, served by the API at :8030/index.html (baseline tag mobile-pwa-baseline-2026-10-23)
+apps/site/  React port — PAUSED 24 Oct, route/API reference only
 apps/ios/   Native SwiftUI client — STOPPED 23 Oct (history only)
 supabase/   Migrations, local project config
 docs/       Backlog, plans, references, services/
