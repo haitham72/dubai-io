@@ -11,6 +11,7 @@ Visual references only. Nothing in this folder is shipped code, and no image her
 | `references/claude duet/` | 12 timestamped JPG video frames of a Claude Duet presentation. Interaction references (approvals, artifacts, briefings) — not app assets, not freely licensed. Has its own `README.md` with a frame-by-frame review guide. Preserved with this review checkpoint. | Founder-supplied, 22 Oct |
 | `references/carousel/` | Holographic/cards effect reference: 4 JPGs + `holographi ccards.mp4`. Technique ref for glow/metal card work, pointed to from `docs/references/visuals-libraries.md` (ShipSwift update). | Founder-supplied effect ref |
 | `references/services/` | Founder's structured service refs. `shops/` = user buys an item (cloth, coffee, restaurants); `service/` = someone does something for the user (pets). Mirrors the groups in `docs/services/intake.md`. The `Pulled data services for agents - app.jpg` sits at the group root. | Founder-taken, filed with structure |
+| `references/concepts-24oct/` | 8 concept frames for the 24 Oct product model (community, `@io` mention, take-private, private assistant thread, taxi recovery, brief, check-back, Me). Has `README.md` (known drifts) and `prompts.txt`. | AI image tool (GPT Image 2.5) for this app, 24 Oct |
 | `references/01 - Visitor onboarding/` | Single file (`01 - visitor wifi.jpg`). Purpose unconfirmed — ask the founder before using it for anything. | Unknown |
 
 ## Rules for LLMs working here
