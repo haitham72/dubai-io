@@ -129,9 +129,9 @@ registerPage('service.action', {
         // since this card rendered, refuse and show the current card instead.
         button.disabled=true; c.approvalKey||=crypto.randomUUID();
         try{
-          const {approvalFor,STALE_MESSAGE}=await import('./decision-logic.js');
+          const {approvalFor}=await import('./decision-logic.js');
           const fresh=await api('/api/actions/'+encodeURIComponent(c.id)), guard=approvalFor(c.action,fresh);
-          if(!guard.ok){c.approvalKey=null;toast(STALE_MESSAGE);await load(fresh,true);return;}
+          if(!guard.ok){c.approvalKey=null;await load(fresh,true);return;}
           const sent=await api('/api/actions/'+encodeURIComponent(c.id)+'/approve',{method:'POST',headers:{'Idempotency-Key':c.approvalKey},body:JSON.stringify(guard.body)});
           c.action=null;dispatchEvent(new CustomEvent('dubaiio:source-changed',{detail:{id:c.id}}));await load(sent);
         }

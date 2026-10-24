@@ -87,7 +87,7 @@ function unknownDecisionHTML(a, ids) {
   return decisionHTML({ kind: 'check', context: 'Send outcome unknown', demo: o.provenance === 'demo_fixture', amount: a.fixed_total_aed, meta: `${shop}’s published price`,
     title: `Check with ${shop} before resending`,
     banner: { text: a.blocked_reason || 'I could not confirm whether the order reached the shop. Resending could duplicate it.', tone: 'warn' },
-    shared: sharedFields(o, a.fields), never: NEVER,
+    shared: sharedFields(o, a.fields), sharedLabel: 'Included in the send', never: NEVER,
     note: 'Nothing is marked sent or confirmed until the shop answers.',
     primary: { label: 'Check status', attrs: { id: ids.check } }, defer: { label: 'Not now', attrs: { id: ids.later } },
     discard: { label: 'Stop tracking', attrs: { id: ids.discard } }, fine: provenanceLine(o) });

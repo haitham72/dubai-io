@@ -11,14 +11,15 @@ export const aed = v => 'AED ' + Number(v).toLocaleString('en-US', { minimumFrac
 const list = (label, items, cls) => items?.length ? `<div class="decision-list ${cls}"><dt>${esc(label)}</dt><dd><ul>${items.map(i => `<li>${esc(i)}</li>`).join('')}</ul></dd></div>` : '';
 
 // kind: approve | check | deadline (data-decision on the card); demo adds the Demo data pill;
+// sharedLabel lets an already-attempted send say what went out, not what will;
 // banner is an honest state line (stale refresh, unknown outcome) shown above the title.
-export function decisionHTML({ kind = '', context = '', demo = false, amount = null, meta = '', title, banner = null, rows = [], shared = [], never = [], note = '', primary = null, defer = null, discard = null, fine = '' }) {
+export function decisionHTML({ kind = '', context = '', demo = false, amount = null, meta = '', title, banner = null, rows = [], shared = [], sharedLabel = 'Will be shared', never = [], note = '', primary = null, defer = null, discard = null, fine = '' }) {
   return `<article class="decision"${kind ? ` data-decision="${esc(kind)}"` : ''}>
     <div class="decision-top">${context ? `<span class="decision-context">${esc(context)}</span>` : ''}${demo ? '<span class="pill demo sm">Demo data</span>' : ''}</div>
     <div class="decision-head">${amount != null ? `<b class="decision-amount">${esc(aed(amount))}</b>` : ''}${meta ? `<span>${esc(meta)}</span>` : ''}</div>
     <h3 class="decision-title">${esc(title)}</h3>
     ${banner ? `<p class="decision-banner ${esc(banner.tone || '')}" role="status">${esc(banner.text)}</p>` : ''}
-    ${rows.length || shared.length || never.length ? `<dl class="decision-rows">${rows.map(r => `<div><dt>${esc(r.label)}</dt><dd>${esc(r.value)}</dd></div>`).join('')}${list('Will be shared', shared, 'shared')}${list('Never shared', never, 'never')}</dl>` : ''}
+    ${rows.length || shared.length || never.length ? `<dl class="decision-rows">${rows.map(r => `<div><dt>${esc(r.label)}</dt><dd>${esc(r.value)}</dd></div>`).join('')}${list(sharedLabel, shared, 'shared')}${list('Never shared', never, 'never')}</dl>` : ''}
     ${note ? `<p class="decision-note">${esc(note)}</p>` : ''}
     <div class="decision-actions">${btn(primary, 'primary wide')}${btn(defer, 'wide')}</div>
     ${discard ? `<button class="decision-discard"${attrs(discard.attrs)}>${esc(discard.label)}</button>` : ''}
