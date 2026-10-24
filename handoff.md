@@ -2,7 +2,9 @@
 
 - **Founder decision (24 Oct):** the original mobile app (`apps/web`) is the app; all development continues there. The 23 Oct freeze and the React port (Plans 2–8, `apps/site`) are paused/superseded — see `docs/request-backlog.md` top entry. Sections below dated 23 Oct describe the paused direction.
 - **Machine:** Windows, `D:\Vscode\dubai-io`. Run: `cd apps/api && .venv/Scripts/python -m uvicorn app.main:app --port 8030` → app at `http://localhost:8030/index.html`. Venv is Python 3.13 (`py -3.13 -m venv .venv`). Tests: `.venv/Scripts/python -m pytest -q` (249 passed / 11 skipped); `for t in apps/web/tests/*.test.mjs; do node "$t"; done` (12 suites).
-- **Next:** first build cycle FIN-01 → FIN-04 → FIN-05 in `apps/web`.
+- **Done 24 Oct:** FIN-01 + FIN-04 merged on `main` (250 passed / 11 skipped; 13 web suites). Windows UTF-8 fixture fix.
+- **End goal (founder):** website = x.com/reddit; desktop = Grok/ChatGPT/Claude; mobile = Claude/ChatGPT; `apps/web` is the main codebase, slightly restyled toward the new redesign.
+- **Now:** branch `Ultimate` — design via Higgsfield CLI images only (concepts in `design/references/concepts-24oct/`). FIN-05 + SOC slices wait. Subagent worktrees start from `origin/main`: tell them to `git rebase main` first (or push `main`).
 
 ---
 
