@@ -448,6 +448,23 @@ def test_staged_recovery_replies_are_scripted_ordered_and_never_recover(client):
     assert store.db.execute("SELECT COUNT(*) FROM approvals").fetchone()[0] == 0
 
 
+def test_recovery_can_end_not_recovered_and_blocked_handoff_cannot_be_approved(client):
+    c, store, *_ = client
+    task = c.post("/api/tasks/from-report",json={"fields":report_fields()}).json()["task"]
+    task = command(c, task, "staged_next").json()["task"]
+    # The RTA adapter is blocked: approval is refused and nothing becomes filed or sent.
+    source = c.get(f'/api/tasks/{task["id"]}').json()["linked_item"]
+    refused = c.post(f'/api/actions/{source["id"]}/approve', headers={"Idempotency-Key": "k" * 12},
+                     json={"snapshot_hash": source["snapshot_hash"], "revision": source["revision"]})
+    assert refused.status_code == 409
+    # "Not recovered" is a valid honest end: the user's own report, no provider evidence.
+    done = command(c, task, "complete", result="Not recovered. I closed this search; the item did not come back to me.")
+    assert done.status_code == 200 and done.json()["task"]["status"] == "COMPLETED"
+    detail = c.get(f'/api/tasks/{task["id"]}').json()
+    assert detail["linked_item"]["status"] == "BLOCKED" and detail["linked_item"]["evidence"] is None
+    assert store.db.execute("SELECT COUNT(*) FROM approvals").fetchone()[0] == 0
+
+
 def test_staged_replies_reject_orders_manual_tasks_and_other_owners(client):
     c, *_ = client
     manual = create(c)

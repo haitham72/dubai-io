@@ -1,6 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { tripFields, prepareReport, reportText } from '../recovery-state.js';
+import { tripFields, prepareReport, reportText, confirmTripFields } from '../recovery-state.js';
+test('cash: typed route and time are confirmed as user_supplied, other fields untouched', () => {
+  const out = confirmTripFields(tripFields(), { from: ' DXB T3 ', to: 'Business Bay', when: 'Today 20:40', plate: 'ignored' });
+  assert.equal(out.find(f => f.key === 'from').value, 'DXB T3');
+  assert.ok(out.filter(f => ['when', 'from', 'to'].includes(f.key)).every(f => f.provenance === 'user_supplied'));
+  assert.equal(out.find(f => f.key === 'plate').value, null);
+});
+test('not sure: "I don’t remember" leaves route and time unknown, never invented', () => {
+  const out = confirmTripFields(tripFields({ trip: { from: 'DXB T3', to: 'JLT', when: 'Yesterday' } }), null);
+  assert.ok(out.filter(f => ['when', 'from', 'to'].includes(f.key)).every(f => f.value === null && f.provenance === null));
+});
 
 test('saved trip facts preserve values and Dubai time', () => {
   const fields = tripFields({ plate: '12345', roof: 'red', trip: { from: 'DXB T3', to: 'Business Bay', at: new Date('2026-10-12T20:40:00Z') } });

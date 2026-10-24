@@ -14,6 +14,16 @@ export function tripFields(memory = {}) {
   return REPORT_FIELDS.map(([key, label]) => ({ key, label, value: values[key] || null, provenance: values[key] ? 'user_supplied' : null }));
 }
 
+// TAXI-02: route and time are confirmed by the user, never filled in. Blank stays unknown.
+export const TRIP_KEYS = ['when', 'from', 'to'];
+export function confirmTripFields(fields, typed = null) {
+  return fields.map(f => {
+    if (!TRIP_KEYS.includes(f.key)) return f;
+    const value = typed && Object.hasOwn(typed, f.key) ? text(typed[f.key]) : null;
+    return { ...f, value, provenance: value ? 'user_supplied' : null };
+  });
+}
+
 export function prepareReport(item, fields, description, values = {}) {
   const desc = text(description);
   if (!desc) throw new Error('Describe the item before preparing the report.');
