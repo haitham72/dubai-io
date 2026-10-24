@@ -132,8 +132,10 @@
 
 /* Shared decision card: context, exact effect, one primary action, Not now. No shadows. */
 .decision { background: #fff; border: 1px solid var(--sep); border-radius: 20px; padding: 16px; display: grid; gap: 10px; }
-.decision-context { justify-self: start; font-size: 12px; font-weight: 600; color: var(--tint-ink); background: var(--tint-soft); border-radius: 10px; padding: 4px 9px; }
-.decision-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.decision-top { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.decision-top:empty { display: none; }
+.decision-context { font-size: 12px; font-weight: 600; color: var(--tint-ink); background: var(--tint-soft); border-radius: 10px; padding: 4px 9px; }
+.decision-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 2px 12px; }
 .decision-head:empty { display: none; }
 .decision-amount { white-space: nowrap; font-size: 26px; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
 .decision-head span { font-size: 12.5px; color: var(--label-3); text-align: right; }
@@ -142,13 +144,20 @@
 .decision-rows div { display: grid; gap: 2px; padding: 9px 0; border-bottom: 1px solid var(--sep); }
 .decision-rows dt { font-size: 11.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--label-3); }
 .decision-rows dd { margin: 0; font-size: 14px; line-height: 1.4; }
+.decision-banner { margin: 0; font-size: 13px; line-height: 1.4; padding: 9px 12px; border-radius: 12px; background: var(--tint-soft); color: var(--tint-ink); }
+.decision-banner.warn { background: var(--warn-bg); color: var(--warn); }
+.decision-list ul { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 6px; }
+.decision-list li { font-size: 13px; line-height: 1.3; padding: 4px 9px; border-radius: 10px; background: var(--bg); }
+.decision-list.never li { color: var(--label-2); }
 .decision-note { margin: 0; font-size: 12.5px; color: var(--label-2); }
 .decision-actions { display: grid; gap: 8px; }
 .decision-actions .btn { min-height: 48px; border-radius: 14px; }
 .decision-discard { justify-self: center; min-height: 44px; font-size: 13px; color: var(--label-3); text-decoration: underline; }
 .decision .fine { margin: 0; }
 .task-row.has-decision { border-color: var(--tint); }
-.task-row-copy .decision-ask { color: var(--tint-ink); font-weight: 600; }
+.task-row-copy .decision-ask { color: var(--tint-ink); font-weight: 600; font-size: 12.5px; line-height: 1.35; }
+.task-row.has-decision .task-row-copy b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.today-top .task-row.has-decision { margin: 0 0 8px; background: #fff; }
 
 /* Shared result card: verdict first, updated time, Keep on Today, open. */
 .result { background: #fff; border: 1px solid var(--sep); border-radius: 20px; padding: 16px; display: grid; gap: 8px; }
@@ -210,9 +219,9 @@
 .today-add[hidden] { display: none; }
 .today-brief { margin: 0; font-size: 15px; font-weight: 600; }
 .lane-chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
-.lane-chip { flex: none; display: inline-flex; gap: 6px; align-items: center; min-height: 34px; padding: 0 12px; border-radius: 17px; border: 1px solid var(--sep); font-size: 13px; color: var(--label-2); background: #fff; }
+.lane-chip { white-space: nowrap; flex: none; display: inline-flex; gap: 6px; align-items: center; min-height: 34px; padding: 0 12px; border-radius: 17px; border: 1px solid var(--sep); font-size: 13px; color: var(--label-2); background: #fff; }
 .lane-chip b { color: var(--label); }
-.lane-chip.act { border-color: var(--tint); color: var(--tint-ink); }
+.lane-chip.hot { border-color: var(--tint); color: var(--tint-ink); }
 .today-top { display: grid; border-top: 1px solid var(--sep); }
 .task-row.compact { display: grid; grid-template-columns: 22px 1fr auto; gap: 10px; align-items: center; min-height: 48px; padding: 8px 4px; margin: 0; border: 0; border-bottom: 1px solid var(--sep); border-radius: 0; background: transparent; }
 .today-top .task-row.compact:last-child { border-bottom: 0; }
@@ -226,3 +235,4 @@
 .reading-articles article.has-thumb > p { order: 2; }
 .reading-articles article.has-thumb > .reading-subtitle { order: 2; }
 .reading-articles article.has-thumb > button { order: 3; }
+.decision-actions .btn:not(.primary) { border: 1px solid var(--sep); background: #fff; }
