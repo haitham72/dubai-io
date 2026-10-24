@@ -8,6 +8,7 @@ import { decisionHTML } from './decision.js';
 import { needsYouRows } from './decision-logic.js';
 
 const labels = { WAITING_USER: 'Waiting for your update', PAUSED: 'Paused', COMPLETED: 'Done · you reported', CANCELLED: 'Cancelled' };
+const NOT_RECOVERED = 'Not recovered. I closed this search; the item did not come back to me.';
 export const taskStateLabel = status => labels[status] || 'Status unavailable';
 const active = task => ['WAITING_USER', 'PAUSED'].includes(task.status);
 const date = value => value ? new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Dubai', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(value)) : '';
@@ -130,16 +131,22 @@ function stagedHTML(data) {
   if (data.linked_item?.capability_id !== 'recovery.rta' || t.status !== 'WAITING_USER') return '';
   const replies = data.events.filter(e => e.kind === 'staged_reply'), chosen = data.events.some(e => e.kind === 'collection_chosen');
   const list = replies.map(e => `<li><span class="rec-pill demo">Staged · demo</span><b>${esc(e.sender)}</b><p>${esc(e.text)}</p><small>${esc(date(e.at))} · Dubai time</small></li>`).join('');
+  const choice = decisionHTML({ context: 'Staged demo · lost item', title: 'How do you want it back?',
+    rows: [{ label: 'Collect in person', value: 'Taxi company lost property desk (staged place, confirm with RTA first)' }, { label: 'Delivery', value: 'Not available · no delivery service is connected' }],
+    primary: { label: 'I’ll collect it', attrs: { 'data-task-command': 'collect' } }, defer: { label: 'Delivery · not available', attrs: {}, disabled: true } });
   const next = replies.length < 2 ? `<button class="btn wide" data-task-command="staged_next">Show the next staged reply</button>`
-    : chosen ? '<p class="task-boundary">You chose to collect it. It is not recovered until you have it.</p>'
-    : decisionHTML({ context: 'Staged demo · lost item', title: 'How do you want it back?', note: 'No delivery service is connected, so delivery is not available.',
-        primary: { label: 'I’ll collect it', attrs: { 'data-task-command': 'collect' } }, defer: { label: 'Delivery · not available', attrs: {}, disabled: true } });
-  return `<section class="task-staged"><span>Replies · staged demo</span>${list ? `<ol>${list}</ol>` : '<p>No replies yet. Staged replies show how answers would arrive; nobody was contacted.</p>'}${next}</section>`;
+    : chosen ? '<p class="task-boundary">You chose to collect it. It is not recovered until you have it.</p>' : choice;
+  return `<section class="task-staged"><span>Replies · staged demo</span>${list ? `<ol>${list}</ol>` : '<p>No replies yet. Staged replies show how answers would arrive; nobody was contacted.</p>'}${next}<button class="btn wide" data-not-recovered>It wasn’t recovered</button></section>`;
+}
+
+function stateText(data) {
+  const t = data.task;
+  return t.status === 'COMPLETED' && data.linked_item?.capability_id === 'recovery.rta' && t.result?.text === NOT_RECOVERED ? 'Closed · not recovered' : labels[t.status] || t.status;
 }
 
 function detailHTML(data) {
   const t = data.task;
-  return `<article class="task-detail"><span class="task-state" data-status="${esc(t.status)}" tabindex="-1" role="status" aria-live="polite" aria-atomic="true">${esc(labels[t.status] || t.status)}</span><h3>${esc(t.outcome)}</h3>
+  return `<article class="task-detail"><span class="task-state" data-status="${esc(t.status)}" tabindex="-1" role="status" aria-live="polite" aria-atomic="true">${esc(stateText(data))}</span><h3>${esc(t.outcome)}</h3>
     ${t.due_at ? `<p class="task-due">${svg('cal', 'ic sm')} Due ${esc(date(t.due_at))} · Dubai time · you set this</p>` : ''}
     ${t.details ? `<p class="task-notes">${esc(t.details)}</p>` : ''}
     ${active(t) && t.next_step && t.next_step !== 'Add an update when you are ready.' ? `<section class="task-next"><span>Your next step</span><p>${esc(t.next_step)}</p></section>` : ''}
@@ -171,7 +178,7 @@ registerPage('tasks.detail', {
           data = result; pending = null; content.innerHTML = detailHTML(data);
           if (focusState && live(root)) {
             root.querySelector('.task-state').focus({ preventScroll: true });
-            announcement.textContent = message + ' ' + labels[data.task.status];
+            announcement.textContent = message + ' ' + stateText(data);
           }
         }
       } catch { if (root.isConnected && mine === generation) content.innerHTML = '<p role="alert">This task could not be loaded.</p><button class="btn wide" data-task-reload>Try again</button>'; }
@@ -220,6 +227,11 @@ registerPage('tasks.detail', {
         } else send(control.dataset.taskCommand);
         return;
       }
+      if (event.target.closest('[data-not-recovered]')) {
+        editor.innerHTML = '<section class="task-stop"><p>Close this search as not recovered?</p><p class="task-boundary">Recorded as your update. Nothing is sent to anyone, and the staged replies stay in the history.</p><button class="btn" data-keep-task>Keep searching</button><button class="btn primary" data-confirm-not-recovered>Close · not recovered</button></section>';
+        root.querySelector('.task-actions').hidden = true; editor.querySelector('[data-keep-task]').focus(); return;
+      }
+      if (event.target.closest('[data-confirm-not-recovered]')) { send('complete', { result: NOT_RECOVERED }); return; }
       if (event.target.closest('[data-confirm-cancel]')) { send('cancel'); return; }
       if (event.target.closest('[data-clear-check-back]')) { send('check_back', { at: null }); return; }
       if (event.target.closest('[data-keep-task]')) { content.innerHTML = detailHTML(data); root.querySelector('[data-task-command="cancel"]').focus(); return; }

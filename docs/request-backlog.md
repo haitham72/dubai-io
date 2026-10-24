@@ -15,6 +15,15 @@ First build cycle (verified backend contracts from 22–23 Oct, client polish on
 
 Hygiene: CI (pytest + 12 node suites) on push — later.
 
+### End goal and working mode (founder, 24 Oct, final for this stage)
+
+- **Website:** x.com / reddit.com shape — public Dubai community feed + the assistant tagged in threads.
+- **Desktop:** Grok / ChatGPT / Claude shape — the private assistant as the main surface.
+- **Mobile:** Claude / ChatGPT app shape.
+- **Codebase:** the original mobile app (`apps/web`) is the main codebase, restyled *slightly* toward the new redesign (`design/references/concepts-24oct/` on branch `Ultimate`). `apps/site` stays a frozen reference.
+- **Working mode:** design work continues on branch **`Ultimate`**, using Higgsfield CLI images only (GPT Image 2.5, sunburst, medium, 1k) until the founder says otherwise. FIN-01 and FIN-04 are merged on `main`; FIN-05 and the SOC slices wait.
+- **Open follow-ups (`apps/web`):** the report-ready sheet shows a green check and repeats "Prepared, not filed" twice (it predates FIN-04); the task's linked-request line labels BLOCKED as "Draft"/"Prepared, not sent"; "Order sent" card cramped (FIN-02); Home repeats "Ready for your approval".
+
 ### Product model — Dubai assistant + r/dubai (founder, 24 Oct, confirmed)
 
 Origin and identity: **an actual Dubai assistant + a Reddit r/dubai-style community.** X.com is only the analogy for how the two connect (private Grok session + public "@grok").
