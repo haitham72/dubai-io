@@ -236,3 +236,6 @@
 .reading-articles article.has-thumb > .reading-subtitle { order: 2; }
 .reading-articles article.has-thumb > button { order: 3; }
 .decision-actions .btn:not(.primary) { border: 1px solid var(--sep); background: #fff; }
+.task-stop { display: flex; flex-wrap: wrap; gap: 8px; }
+.task-stop > p { flex: 1 0 100%; margin: 0; }
+.task-stop .btn { margin: 0; padding: 0 16px; min-height: 44px; flex: 1 1 auto; }

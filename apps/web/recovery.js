@@ -6,7 +6,7 @@ import { openRecoveryRequest } from './service-workflow.js';
 import { $, svg, esc, toast, closeSheet, told } from './ui.js';
 import { registerPage, openPage } from './page-host.js';
 import { saveDraft } from './session-state.js';
-import { REPORT_FIELDS, tripFields, prepareReport, reportText } from './recovery-state.js';
+import { REPORT_FIELDS, TRIP_KEYS, tripFields, prepareReport, reportText, confirmTripFields } from './recovery-state.js';
 
 let ctx, active = null, epoch = 0, actionSeq = 0;
 const actions = new Map();
@@ -62,7 +62,7 @@ async function chooseWhere(s, where) {
 // TAXI-02: receipt first, as quick replies. Nothing is traced or contacted here.
 async function receiptChoice(s) {
   if (!live(s)) return;
-  await ctx.say(`<p>Do you have the taxi receipt? It usually shows the plate and the trip time.</p><div class="rec-choices quick">${button('I have a receipt', () => receiptForm(s), 'sm')}${button('Paid cash, no receipt', () => confirmTrip(s, 'cash'), 'sm')}${button('Not sure', () => confirmTrip(s, null), 'sm')}</div>`);
+  await ctx.say(`<p>Do you have the taxi receipt? It usually shows the plate and the trip time.</p><div class="rec-choices quick">${button('I have a receipt', () => receiptForm(s), 'sm')}${button('Paid cash',() => confirmTrip(s, 'cash'), 'sm')}${button('Not sure', () => confirmTrip(s, null), 'sm')}</div>`);
 }
 function receiptForm(s) {
   const value = key => esc(s.fields.find(f => f.key === key)?.value || '');
@@ -79,13 +79,29 @@ function receiptForm(s) {
     closeSheet(); confirmTrip(s, 'receipt');
   });
 }
+const TRIP_HINT = { when: 'e.g. Today about 20:40', from: 'e.g. Dubai Airport T3', to: 'e.g. Business Bay' };
 // Cash or unknown: confirm route and time before anything is prepared. Unknown stays unknown.
 async function confirmTrip(s, payment) {
   if (!live(s)) return;
   if (payment) { const f = s.fields.find(x => x.key === 'payment'); f.value = payment === 'cash' ? 'Cash' : 'Receipt'; f.provenance = 'user_supplied'; }
-  const trip = s.fields.filter(f => ['when', 'from', 'to'].includes(f.key));
-  if (!trip.some(f => f.value)) return openReport(s);
-  await ctx.say(`<div class="rec-memory"><span class="rec-pill told">You told me</span><h3>Is this the trip?</h3><dl>${trip.map(f => `<div><dt>${esc(f.label)}</dt><dd>${esc(f.value || 'Unknown')}</dd></div>`).join('')}</dl><div class="rec-choices quick">${button('Yes, that’s the trip', () => openReport(s), 'sm')}${button('Change the trip', () => { for (const f of trip) { f.value = null; f.provenance = null; } openReport(s); }, 'sm')}</div></div>`, { wide: true });
+  const trip = s.fields.filter(f => TRIP_KEYS.includes(f.key));
+  const remembered = trip.some(f => f.value);
+  if (payment === 'receipt' && !remembered) return openReport(s);
+  if (!remembered) return tripForm(s, trip);
+  await ctx.say(`<div class="rec-memory"><span class="rec-pill told">You told me</span><h3>Is this the trip?</h3><dl>${trip.map(f => `<div><dt>${esc(f.label)}</dt><dd>${esc(f.value || 'Unknown')}</dd></div>`).join('')}</dl><div class="rec-choices quick">${button('Yes, that’s the trip', () => openReport(s), 'sm')}${button('Change the trip', () => tripForm(s, trip), 'sm')}</div></div>`, { wide: true });
+}
+// Nothing is invented: a blank field stays unknown, and "I don't remember" is a valid answer.
+async function tripForm(s, trip) {
+  if (!live(s)) return;
+  const saved = trip.some(f => f.value);
+  await ctx.say(`<div class="rec-memory"><span class="rec-pill ${saved ? 'told' : 'draft'}">${saved ? 'You told me' : 'Not saved yet'}</span><h3>Confirm the route and time</h3><p class="rec-fine">${saved ? 'Edit anything that is wrong.' : 'I don’t have this trip saved.'} Type what you remember. Anything you leave empty stays unknown.</p><div class="rec-form rec-tripform">${trip.map(f => `<label for="trip-${f.key}">${esc(f.label)}</label><input id="trip-${f.key}" data-trip-field="${f.key}" maxlength="80" autocomplete="off" placeholder="${esc(TRIP_HINT[f.key])}" value="${esc(f.value || '')}">`).join('')}</div><div class="rec-choices quick">${button('Confirm trip', b => takeTrip(s, b, true), 'sm primary')}${button('I don’t remember', b => takeTrip(s, b, false), 'sm')}</div></div>`, { wide: true });
+}
+function takeTrip(s, control, confirmed) {
+  if (!live(s)) return;
+  const box = control.closest('.rec-memory');
+  const typed = confirmed ? Object.fromEntries([...box.querySelectorAll('[data-trip-field]')].map(el => [el.dataset.tripField, el.value])) : null;
+  s.fields = confirmTripFields(s.fields, typed);
+  openReport(s);
 }
 function openReport(s) {
   if (!live(s)) return;
@@ -109,7 +125,7 @@ async function copyReport(report) {
 }
 function reportReady(s) {
   const report = s.report;
-  sheet('Report ready', `<div class="rec-ready"><span class="rec-icon">${svg('check')}</span><div><h3>Prepared, not filed</h3><span class="rec-code" data-status="PREPARED_NOT_FILED">${esc(statusLabel('PREPARED_NOT_FILED'))}</span></div></div><p class="rec-intro">${esc(report.description)}</p><section class="rec-report-trip"><dl>${report.fields.filter(f => s.where !== 'metro' || ['when', 'from', 'to'].includes(f.key)).map(f => `<div><dt>${esc(f.label)}</dt><dd>${esc(f.value || 'Not given')}</dd></div>`).join('')}</dl></section><p class="rec-not-recovered">Your item is not recovered.</p><div class="rec-sheet-actions">${button('Keep on Today', b => keepTrackReport(report, b), 'primary wide', true)}${button(svg('globe', 'ic sm') + ' Continue with this report', () => openRecoveryRequest(report), 'wide', true)}<a class="btn wide" href="tel:8009090">${svg('phone', 'ic sm')} Call RTA · 800 9090</a><details class="rec-external"><summary>Manual alternatives</summary>${button(svg('wallet', 'ic sm') + ' Copy report', () => copyReport(report), 'wide', true)}</details><textarea id="recCopyText" class="rec-copy" readonly hidden aria-label="Report text to copy"></textarea></div><p class="rec-fine">Continue keeps this report as a saved request. The RTA reporting integration is not connected; nothing has been filed.</p>`, { replace: true });
+  sheet('Report ready', `<div class="rec-ready"><span class="rec-icon">${svg('check')}</span><div><h3>Prepared, not filed</h3><span class="rec-code" data-status="PREPARED_NOT_FILED">${esc(statusLabel('PREPARED_NOT_FILED'))}</span></div></div><p class="rec-intro">${esc(report.description)}</p><section class="rec-report-trip"><dl>${report.fields.filter(f => s.where !== 'metro' || ['when', 'from', 'to'].includes(f.key)).map(f => `<div><dt>${esc(f.label)}</dt><dd>${esc(f.value || 'Not given')}</dd></div>`).join('')}</dl></section><p class="rec-not-recovered">Your item is not recovered.</p><div class="rec-blocker" role="note"><span class="rec-pill draft">Blocked</span><p><b>Can’t be filed from here yet.</b> RTA’s reporting integration isn’t connected, so nothing has been sent. Your draft is kept.</p></div><div class="rec-sheet-actions">${button('Keep on Today', b => keepTrackReport(report, b), 'primary wide', true)}${button(svg('globe', 'ic sm') + ' Prepare RTA handoff', () => openRecoveryRequest(report), 'wide', true)}<a class="btn wide" href="tel:8009090">${svg('phone', 'ic sm')} Call RTA · 800 9090</a><details class="rec-external"><summary>Manual alternatives</summary>${button(svg('wallet', 'ic sm') + ' Copy report', () => copyReport(report), 'wide', true)}</details><textarea id="recCopyText" class="rec-copy" readonly hidden aria-label="Report text to copy"></textarea></div><p class="rec-fine">The RTA handoff keeps this report as a saved draft and shows the blocker. You can also call RTA yourself.</p>`, { replace: true });
 }
 
 export function restoreReport(record) {

@@ -81,3 +81,10 @@
 .rec-external[open] p { margin: 8px 0 12px; }
 /* TAXI-02 quick replies (Duet F11): short, reversible answers. */
 .rec-choices.quick .btn::before { content: "↳"; margin-right: 6px; color: var(--tint-ink); }
+/* FIN-04: honest blocker, route/time confirm, not-recovered end. Existing tokens only. */
+.rec-blocker { display: flex; flex-direction: column; gap: 6px; background: var(--warn-bg); border-radius: 16px; padding: 12px 14px; }
+.rec-blocker p { margin: 0; font-size: 13px; line-height: 1.45; color: var(--label-2); }
+.rec-tripform { margin: 10px 0 4px; }
+.rec-choices .btn.primary { color: #fff; }
+.rec-blocker .rec-pill { background: #fff; }
+.rec-choices.quick .btn.primary::before { content: none; }
