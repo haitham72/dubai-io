@@ -15,6 +15,13 @@ First build cycle (verified backend contracts from 22–23 Oct, client polish on
 
 Hygiene: CI (pytest + 12 node suites) on push — later.
 
+### Product model — X.com shape (founder, 24 Oct, confirmed)
+
+- **Social = online X.com:** Feed (communities, posts, comments, stories) is the public layer.
+- **Private assistant = Grok bot:** the private session holds tasks, Needs you, memory, approvals and services. All side effects live only here.
+- **Shared = "@ hey grok":** many users summon the SAME assistant in a public thread or group. Guardrails: thread context + public info only, never the summoner's private memory (rule 9; precedent `test_community_actor_never_receives_private_relationship_profile`); private facts enter a thread only via a "Share with thread" approval listing the fields (rule 6); public mentions never execute — "take this private" creates a private task for the summoner; replies only when mentioned, deduped + rate-limited per user per thread; every number with provenance/as_of; replies labelled AI (and Demo while other users are seeded personas, until Supabase Auth).
+- **Order unchanged:** the first build cycle above (FIN-01 → FIN-04 → FIN-05) runs first. Then queued: SOC-01 assistant mention in Feed comments (answers only), SOC-02 "take this private" handoff, SOC-03 mention in group chats. Assistant handle and whether Feed becomes the landing tab are settled at SOC-01. Group memory ("The group told me") is LATER.
+
 ## Unified app — founder direction (23 Oct, ACTIVE)
 
 Founder rejected the rebuilt site and stopped Swift. Direction: one React app, Dubai-io-led, Mirsal-redesign craft, Grok Bot/Dots/Duet behaviour, temporal_note memory engine, connectors drive dashboard workspaces, task queue everywhere, airport + lost-in-taxi cases kept, palette white + `#357F92` with dark mode derived. Full design + decisions: `docs/plan/unified-app-design.md`. Founder 23 Oct: `apps/web` is the original mobile app (reference, never 'classic'); new app mirrors it minimally. Feed = best screen (benchmark); Services = weakest → quality uplift in Plan 4.
