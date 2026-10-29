@@ -2,6 +2,8 @@
 // Task threads from /api/today. Polls every 20 s while the tab is visible and stops while hidden.
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { apiGet } from "./api";
+import { applyDomainOverrides, readDomainOverrides, writeDomainOverrides } from "./domain-overrides";
+import type { DomainId } from "./domains";
 import { toThreads, type TaskThread, type TodayResponse } from "./tasks";
 
 export const DISMISS_KEY = "dubaiio.dismissedDemo";
@@ -10,6 +12,7 @@ export const POLL_MS = 20_000;
 interface ThreadsState {
   threads: TaskThread[];
   dismissDemo: (id: string) => void;
+  moveThreadDomain: (id: string, domain: DomainId) => void;
   loaded: boolean;
   error: string | null;
 }
@@ -25,10 +28,14 @@ function readDismissed(): string[] {
 export function ThreadsProvider({ children }: { children: ReactNode }) {
   const [today, setToday] = useState<TodayResponse>({});
   const [dismissed, setDismissed] = useState<string[]>([]);
+  const [overrides, setOverrides] = useState<Record<string, DomainId>>({});
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => setDismissed(readDismissed()), []);
+  useEffect(() => {
+    setDismissed(readDismissed());
+    setOverrides(readDomainOverrides());
+  }, []);
 
   useEffect(() => {
     let alive = true;
@@ -57,8 +64,22 @@ export function ThreadsProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const threads = useMemo(() => toThreads(today, dismissed), [today, dismissed]);
-  const value = useMemo(() => ({ threads, dismissDemo, loaded, error }), [threads, dismissDemo, loaded, error]);
+  const moveThreadDomain = useCallback((id: string, domain: DomainId) => {
+    setOverrides((cur) => {
+      const next = { ...cur, [id]: domain };
+      writeDomainOverrides(next);
+      return next;
+    });
+  }, []);
+
+  const threads = useMemo(
+    () => applyDomainOverrides(toThreads(today, dismissed), overrides),
+    [today, dismissed, overrides],
+  );
+  const value = useMemo(
+    () => ({ threads, dismissDemo, moveThreadDomain, loaded, error }),
+    [threads, dismissDemo, moveThreadDomain, loaded, error],
+  );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 

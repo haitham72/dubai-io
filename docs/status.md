@@ -4,9 +4,9 @@ Single current-state file. Detail lives in `handoff.md`, `docs/request-backlog.m
 
 ## Branches (monorepo — all tracks merged into main)
 
-- `main` (23 Oct EOD): backend (`apps/api`) + mobile PWA (`apps/web`) + website (`apps/site`) + iOS (`apps/ios`, STOPPED).
-- `dubai-io-web`, `ios-swift`: merged into main; kept as history. New work goes on main.
-- `redesign-community`: merged; `redesign`: historical.
+- `main` (29 Oct): website-first React in `apps/site` + backend (`apps/api`) + frozen mobile reference (`apps/web`) + iOS (`apps/ios`, STOPPED until website/desktop done).
+- `next-steps` / `redesign`: historical; do not continue product work there — cherry-pick onto `main`.
+- `dubai-io-web`, `ios-swift`, `redesign-community`: merged history only.
 
 ## Verified on the baseline
 
@@ -16,9 +16,10 @@ Single current-state file. Detail lives in `handoff.md`, `docs/request-backlog.m
 - ML pipeline: Celery/RabbitMQ/Redis (eager default), Faz3 sentiment + embedding models (lazy), hybrid comment search + `/api/ml/status`; 8 tests green. Heavy deps in `requirements-ml.txt` (Docker worker only).
 - Reddit section: votes (toggle), feed sort (new/top/hot), comment top-sort, my-posts, mark-read, keypad call logging, prayer-times (Aladhan), prototype UI wired; 9 tests green.
 
-## Next (23 Oct, founder)
+## Next (29 Oct, founder)
 
-- **North star: `docs/plan/unified-app-design.md`** — one React app in `apps/site` (website real; `?desktop` macOS frame; `?device` iPhone frame), Dubai-io-led, Mirsal-redesign as visual craft, Grok Bot / ChatGPT Dots / Claude Duet behaviour, temporal_note-style memory, white + `#357F92` palette, dark mode from white. Airport guide + lost-in-taxi survive. Awaiting final approval after the white/dark design set; then writing-plans → subagent slices.
+- **Active:** domain-grouped task threads on the **website** (`apps/site` `/`). Spec `docs/plan/domains.md`. Desktop is the same React shell; do not divert into iOS.
+- **North star: `docs/plan/unified-app-design.md`** — one React app in `apps/site` (website real; `?desktop` macOS frame; `?device` iPhone frame), Dubai-io-led, Mirsal-redesign as visual craft, Grok Bot / ChatGPT Dots / Claude Duet behaviour **without** fake bot channels (use domains), temporal_note-style memory, white + `#357F92` palette, dark mode from white. Airport guide + lost-in-taxi survive.
 - **Plan 1 DONE (23 Oct, `eb6568f`):** `apps/site` is now the unified app — `/` website shell (floating sidebar card, task threads, greeting + composer + briefing strip, Assistant|Community switch, haze, Graphite dark), `?desktop` macOS window, `?device` iPhone frame + Dynamic Island, onboarding (orb → chat setup → session facts). Old landing at `/about`. 20 unit + 36 e2e pass. Next: **Plan 2** `docs/superpowers/plans/2026-10-23-device-switch-and-phone-core.md` (Original ⇄ New toggle at `/?devices`, phone Home, airport guide, lost-in-taxi) + Plan 2b backend; see `handoff.md` top. Refine later: background skyline silhouette looks blocky. `apps/web` unchanged (tag `mobile-pwa-baseline-2026-10-23`).
 - Swift/iOS STOPPED. `apps/web` stays as feature reference until parity, then retires.
 - Done 23 Oct: Luna-first chat replies (agnes fallback) / agnes-first feed (Luna fallback, background-queued); signup facts (household, services); chat archive + demo missed calls; dashboard S1–S2 (`/api/ops/*`, `/dash`); `apps/web` services 3.1 grid, WhatsApp-style Chats ⇄ Calls + Favorites, slide-in panels + Settings. Backend 249 passed / 11 skipped; web 12 suites pass.

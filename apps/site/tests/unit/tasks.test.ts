@@ -13,9 +13,10 @@ describe("toThreads", () => {
     expect(t.every((x) => x.demo)).toBe(true);
     expect(t.map((x) => x.title)).toEqual(["AC repair", "Laundry pickup", "DEWA bill"]);
     expect(t.map((x) => x.preview)).toEqual(["needs your approval", "waiting for provider", "due Thursday"]);
+    expect(t.map((x) => x.domain)).toEqual(["household", "services", "household"]);
   });
 
-  test("real tasks come first, ordered by lane, demo follow", () => {
+  test("real tasks come first, ordered by lane, demo follow, with domains", () => {
     const today: TodayResponse = {
       ...empty,
       on_list: { tasks: [task("t3", "Renew visa")] },
@@ -23,8 +24,8 @@ describe("toThreads", () => {
       needs_you: { tasks: [task("t1", "Approve AC visit")] },
     };
     const t = toThreads(today, []);
-    expect(t.slice(0, 3).map((x) => [x.id, x.lane, x.demo])).toEqual([
-      ["t1", "needs_you", false], ["t2", "running", false], ["t3", "on_list", false],
+    expect(t.slice(0, 3).map((x) => [x.id, x.lane, x.demo, x.domain])).toEqual([
+      ["t1", "needs_you", false, "household"], ["t2", "running", false, "services"], ["t3", "on_list", false, "work"],
     ]);
     expect(t.slice(3).map((x) => x.id)).toEqual(["demo-ac", "demo-laundry", "demo-dewa"]);
     expect(t[0].title).toBe("Approve AC visit");

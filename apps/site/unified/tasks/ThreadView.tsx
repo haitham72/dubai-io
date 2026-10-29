@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { apiGet } from "../data/api";
+import { DOMAIN_LABEL, DOMAIN_ORDER, type DomainId } from "../data/domains";
 import { LANE_LABEL, relTime, type TaskThread } from "../data/tasks";
 import { useThreads } from "../data/threads";
 import { useApp } from "../state";
@@ -54,14 +55,39 @@ function Header({ title, lane, demo, onBack }: { title: string; lane?: string; d
   );
 }
 
+function MoveDomain({ id, current }: { id: string; current: DomainId }) {
+  const { moveThreadDomain } = useThreads();
+  return (
+    <label className={s.moveDomain}>
+      <span>Move to</span>
+      <select
+        data-testid="move-domain"
+        aria-label="Move thread to domain"
+        value={current}
+        onChange={(e) => moveThreadDomain(id, e.target.value as DomainId)}
+      >
+        {DOMAIN_ORDER.map((d) => (
+          <option key={d} value={d}>{DOMAIN_LABEL[d]}</option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
 function DemoThread({ thread }: { thread: TaskThread }) {
   const { openThread } = useApp();
   const { dismissDemo } = useThreads();
   return (
     <div className={s.view} data-testid="thread-view">
-      <Header title={thread.title} lane={`${LANE_LABEL[thread.lane]} · example`} demo onBack={() => openThread(null)} />
+      <Header
+        title={thread.title}
+        lane={`${DOMAIN_LABEL[thread.domain]} · ${LANE_LABEL[thread.lane]} · example`}
+        demo
+        onBack={() => openThread(null)}
+      />
       <div className={s.entries}>
         <p className={s.entry}>This is an example task so you can see how threads look. Nothing was sent or booked.</p>
+        <MoveDomain id={thread.id} current={thread.domain} />
         <div><Button onClick={() => { dismissDemo(thread.id); openThread(null); }}>Dismiss demo</Button></div>
       </div>
     </div>
@@ -95,13 +121,17 @@ function RealThread({ id, fallback }: { id: string; fallback?: TaskThread }) {
 
   const title = detail?.task.outcome ?? fallback?.title ?? "Task";
   const events = [...older, ...(detail?.events ?? [])];
+  const lane = fallback
+    ? `${DOMAIN_LABEL[fallback.domain]} · ${LANE_LABEL[fallback.lane]}`
+    : undefined;
   return (
     <div className={s.view} data-testid="thread-view">
-      <Header title={title} lane={fallback ? LANE_LABEL[fallback.lane] : undefined} onBack={() => openThread(null)} />
+      <Header title={title} lane={lane} onBack={() => openThread(null)} />
       <div className={s.entries}>
         {failed && <p className={s.entry} data-testid="thread-error">This task could not be loaded.</p>}
         {!detail && !failed && <p className={s.note} role="status">Loading…</p>}
         {detail?.task.next_step && <p className={s.next}><strong>Next step</strong> {detail.task.next_step}</p>}
+        {fallback && <MoveDomain id={id} current={fallback.domain} />}
         {before != null && <div><Button variant="ghost" onClick={() => void loadOlder()}>Load earlier</Button></div>}
         {events.map((e) => (
           <div key={e.seq} className={s.entry} data-testid="activity-entry">

@@ -1,11 +1,19 @@
-# Handoff - 23 Oct 2026 (end of day) — START HERE
+# Handoff - 29 Oct 2026 — START HERE
+
+## Active (29 Oct)
+
+- **Branch:** `main` only for product work. Website React = `apps/site` at `/` (same shell as `?desktop`). iOS / packaging after website is solid. **Light mode first** (default theme `light`).
+- **Domains (not bot channels):** sidebar groups by Household / Places & trips / Services / Work & admin / General; composer chip + Move to domain; home starter chips. Spec: `docs/plan/domains.md`. Plan: `docs/superpowers/plans/2026-10-29-domains-website-light.md`.
+- **Image refs used:** `design/references/chat/grok-bot.jpeg`, `01-home.png`, `chat/chat.jpg`. v3 `l01–l10` not in this checkout.
+- **Journeys (design):** `docs/plan/journeys.md` — not adapters yet.
+- **Next:** Plan 4 Services screen in `apps/site` (Feed-quality uplift), then Plan 2 website-relevant bits; connectors later.
 
 ## Where we are (read in this order)
 
-1. **North star:** `docs/plan/unified-app-design.md` (Dubai-io-led unified app; decisions, calls, data map, cases that must survive).
-2. **Next plan to run:** `docs/superpowers/plans/2026-10-23-device-switch-and-phone-core.md` (Plan 2) — its bottom table is the full finalize roadmap (Plans 2–8).
+1. **North star:** `docs/plan/unified-app-design.md` + `docs/plan/domains.md`.
+2. **Next plan to run:** website assistant polish on `apps/site`; Plan 2 device work is secondary until website domains/threads feel right. Roadmap table still in `docs/superpowers/plans/2026-10-23-device-switch-and-phone-core.md`.
 3. **Memory plan (later):** `docs/superpowers/plans/2026-10-23-temporal-memory.md` (Plan 6).
-4. Status: `docs/status.md`. Backlog: `docs/request-backlog.md` (top entry "Unified app").
+4. Status: `docs/status.md`. Backlog: `docs/request-backlog.md` (top: Domains + website-first).
 
 ## Founder's non-negotiables
 

@@ -23,19 +23,31 @@
 .composer:focus-within { border-color: var(--accent); }
 .composerInput { display: block; width: 100%; resize: none; border: 0; outline: 0; background: transparent; font-size: var(--fs-lg); line-height: 1.45; color: var(--text); }
 .composerInput::placeholder { color: var(--text-3); }
-.composerBar { position: relative; display: flex; justify-content: space-between; align-items: center; margin-top: var(--s-2); }
-.plus { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--border-strong); color: var(--text-2); }
+.composerBar { position: relative; display: flex; justify-content: space-between; align-items: center; gap: var(--s-2); margin-top: var(--s-2); }
+.plus { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--border-strong); color: var(--text-2); flex-shrink: 0; }
 .plus:hover { background: var(--hover); color: var(--text); }
 .menu { position: absolute; left: 0; bottom: 48px; z-index: 5; min-width: 240px; padding: var(--s-2); border-radius: var(--r-md); background: var(--bg); border: 1px solid var(--border-strong); }
 .menuItem { display: block; width: 100%; padding: var(--s-2) var(--s-3); border-radius: var(--r-sm); text-align: start; font-size: var(--fs-sm); color: var(--text-2); cursor: default; }
-.send { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: var(--on-accent); }
+.domainChip { margin-inline-start: auto; margin-inline-end: var(--s-2); padding: 4px 10px; border-radius: var(--r-pill); background: var(--accent-soft); color: var(--accent-strong); font-size: var(--fs-xs); font-weight: 600; white-space: nowrap; }
+.send { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: var(--on-accent); flex-shrink: 0; }
 .send:disabled { opacity: 0.35; cursor: default; }
 .status { margin: 0; font-size: var(--fs-sm); color: var(--text-2); }
 .error { margin: 0; font-size: var(--fs-sm); color: var(--danger); }
 
 .messages { display: flex; flex-direction: column; gap: var(--s-4); overflow-y: auto; }
-.msgUser { align-self: flex-end; max-width: 80%; margin: 0; padding: var(--s-3) var(--s-4); border-radius: var(--r-lg); background: var(--bubble-user); line-height: 1.5; white-space: pre-wrap; }
-.msgAssistant { align-self: flex-start; max-width: 90%; margin: 0; line-height: 1.55; white-space: pre-wrap; }
+.msgUserWrap { align-self: flex-end; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; max-width: 80%; }
+.msgAssistantWrap { align-self: flex-start; max-width: 90%; }
+.msgDomain { font-size: var(--fs-xs); font-weight: 600; color: var(--accent-strong); }
+.msgUser { margin: 0; padding: var(--s-3) var(--s-4); border-radius: var(--r-lg); background: var(--bubble-user); line-height: 1.5; white-space: pre-wrap; }
+.msgAssistant { margin: 0; line-height: 1.55; white-space: pre-wrap; }
+
+.starters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-3); width: 100%; max-width: 640px; margin-top: var(--s-2); }
+.starter { display: flex; align-items: flex-start; gap: var(--s-3); padding: var(--s-3) var(--s-4); border-radius: var(--r-lg); background: var(--bg); border: 1px solid var(--border); text-align: start; }
+.starter:hover { background: var(--surface-hover); border-color: var(--border-strong); }
+.starterIcon { display: grid; place-items: center; width: 36px; height: 36px; flex-shrink: 0; border-radius: 50%; background: var(--accent-soft); color: var(--accent); }
+.starterText { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.starterText b { font-size: var(--fs-md); font-weight: 600; color: var(--text); }
+.starterText small { font-size: var(--fs-sm); color: var(--text-2); line-height: 1.35; }
 
 .strip { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-3); }
 .stripCard { display: flex; align-items: center; gap: var(--s-3); min-width: 0; padding: var(--s-3) var(--s-4); border-radius: var(--r-lg); background: var(--bg); border: 1px solid var(--border); text-align: start; transition: background 0.12s var(--ease); }
@@ -57,4 +69,5 @@
   .skyline { width: 220px; height: 110px; }
   .lede { font-size: var(--fs-md); }
   .strip { grid-template-columns: 1fr; }
+  .starters { grid-template-columns: 1fr; }
 }

@@ -2,6 +2,12 @@
 
 Current state: [status.md](status.md).
 
+## Domains + website-first (29 Oct, ACTIVE)
+
+Founder: use **product domains** (Household / Places & trips / Services / Work & admin / General) instead of Grok predetermined bot channels; 5–15 service categories under Services. Integrate on **`main`**; website React (`apps/site` `/`) is the focus (same shell as desktop); iOS after website/desktop. Spec: [plan/domains.md](plan/domains.md). Sidebar grouping shipped in `apps/site` threads.
+
+Journey design (KHDA, insurance B+, Mamzar outing): [plan/journeys.md](plan/journeys.md) — design only, not adapters.
+
 ## Unified app — founder direction (23 Oct, ACTIVE)
 
 Founder rejected the rebuilt site and stopped Swift. Direction: one React app, Dubai-io-led, Mirsal-redesign craft, Grok Bot/Dots/Duet behaviour, temporal_note memory engine, connectors drive dashboard workspaces, task queue everywhere, airport + lost-in-taxi cases kept, palette white + `#357F92` with dark mode derived. Full design + decisions: `docs/plan/unified-app-design.md`. Founder 23 Oct: `apps/web` is the original mobile app (reference, never 'classic'); new app mirrors it minimally. Feed = best screen (benchmark); Services = weakest → quality uplift in Plan 4.

@@ -1,6 +1,9 @@
 /* Task threads: sidebar list, thread view, Updates island. Flat. */
 .list { display: flex; flex-direction: column; gap: 2px; }
 .listTitle { margin: 0; padding: var(--s-2) var(--s-3); font-size: var(--fs-xs); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); }
+.domainGroup { display: flex; flex-direction: column; gap: 2px; margin-top: var(--s-2); }
+.domainGroup:first-of-type { margin-top: 0; }
+.domainTitle { margin: 0; padding: var(--s-2) var(--s-3) 2px; font-size: var(--fs-sm); font-weight: 600; color: var(--text-2); }
 .row { display: flex; align-items: center; gap: var(--s-3); width: 100%; padding: var(--s-2) var(--s-3); border-radius: var(--r-md); text-align: start; transition: background 0.12s var(--ease); }
 .row:hover { background: var(--hover); }
 .rowActive, .rowActive:hover { background: var(--accent-soft); }
@@ -30,6 +33,8 @@
 .when { margin-inline-start: auto; font-size: var(--fs-xs); color: var(--text-3); }
 .next { margin: 0; padding: var(--s-3) var(--s-4); border-radius: var(--r-md); background: var(--surface-2); line-height: 1.5; }
 .next strong { margin-inline-end: var(--s-2); color: var(--text-2); font-weight: 600; }
+.moveDomain { display: flex; align-items: center; gap: var(--s-3); margin: 0; font-size: var(--fs-sm); color: var(--text-2); }
+.moveDomain select { height: 36px; padding: 0 var(--s-3); border-radius: var(--r-sm); border: 1px solid var(--border-strong); background: var(--bg); color: var(--text); font-size: var(--fs-sm); }
 
 .islandBtn, .pill { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; color: inherit; font-size: 12px; font-weight: 550; }
 .pill { height: 32px; margin: var(--s-2) auto 0; padding: 0 var(--s-3); border-radius: var(--r-pill); background: var(--surface-2); border: 1px solid var(--border); color: var(--text); }

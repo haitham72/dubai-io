@@ -1,4 +1,7 @@
 // Task threads: the real /api/today lanes plus three labelled demo threads for a fresh visitor.
+// Sidebar groups by product domain (Household / Places / …), not by Grok-style bot channels.
+
+import { classifyDomain, type DomainId, type ServiceCategoryId } from "./domains";
 
 export type Lane = "needs_you" | "running" | "scheduled" | "on_list" | "paused" | "completed";
 
@@ -22,6 +25,8 @@ export type TaskThread = {
   at: string;
   unread: boolean;
   demo: boolean;
+  domain: DomainId;
+  category: ServiceCategoryId | null;
 };
 
 /** Open lanes in display order. Completed tasks are history, not open threads. */
@@ -32,9 +37,9 @@ export const LANE_LABEL: Record<Lane, string> = {
 };
 
 export const DEMO_TASKS: TaskThread[] = [
-  { id: "demo-ac", title: "AC repair", status: "DEMO", lane: "needs_you", preview: "needs your approval", at: "", unread: true, demo: true },
-  { id: "demo-laundry", title: "Laundry pickup", status: "DEMO", lane: "running", preview: "waiting for provider", at: "", unread: false, demo: true },
-  { id: "demo-dewa", title: "DEWA bill", status: "DEMO", lane: "scheduled", preview: "due Thursday", at: "", unread: true, demo: true },
+  { id: "demo-ac", title: "AC repair", status: "DEMO", lane: "needs_you", preview: "needs your approval", at: "", unread: true, demo: true, domain: "household", category: "ac" },
+  { id: "demo-laundry", title: "Laundry pickup", status: "DEMO", lane: "running", preview: "waiting for provider", at: "", unread: false, demo: true, domain: "services", category: "laundry" },
+  { id: "demo-dewa", title: "DEWA bill", status: "DEMO", lane: "scheduled", preview: "due Thursday", at: "", unread: true, demo: true, domain: "household", category: "bills" },
 ];
 
 function preview(t: TodayTask, lane: Lane): string {
@@ -45,6 +50,23 @@ function preview(t: TodayTask, lane: Lane): string {
   return LANE_LABEL[lane].toLowerCase();
 }
 
+function threadFromTask(t: TodayTask, lane: Lane): TaskThread {
+  const title = t.outcome?.trim() || "Untitled task";
+  const guess = classifyDomain([title, t.next_step ?? ""].filter(Boolean).join(" "));
+  return {
+    id: t.id,
+    title,
+    status: t.status ?? "",
+    lane,
+    preview: preview(t, lane),
+    at: t.updated_at ?? "",
+    unread: lane === "needs_you",
+    demo: false,
+    domain: guess.domain,
+    category: guess.category,
+  };
+}
+
 export function toThreads(today: TodayResponse, dismissedDemo: string[]): TaskThread[] {
   const seen = new Set<string>();
   const real: TaskThread[] = [];
@@ -52,10 +74,7 @@ export function toThreads(today: TodayResponse, dismissedDemo: string[]): TaskTh
     for (const t of today[lane]?.tasks ?? []) {
       if (!t.id || seen.has(t.id)) continue;
       seen.add(t.id);
-      real.push({
-        id: t.id, title: t.outcome?.trim() || "Untitled task", status: t.status ?? "", lane, preview: preview(t, lane),
-        at: t.updated_at ?? "", unread: lane === "needs_you", demo: false,
-      });
+      real.push(threadFromTask(t, lane));
     }
   }
   return [...real, ...DEMO_TASKS.filter((d) => !dismissedDemo.includes(d.id))];

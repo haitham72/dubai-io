@@ -1,11 +1,12 @@
 "use client";
 // App-level state lives above the layout switch, so crossing the 820 px breakpoint keeps the open thread and the composer draft.
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import type { DomainId } from "./data/domains";
 import type { ScreenId } from "./screens";
 
 export type Mode = "assistant" | "community";
 export type ThemePref = "system" | "light" | "dark";
-export type ChatMessage = { id: number; role: "user" | "assistant"; text: string };
+export type ChatMessage = { id: number; role: "user" | "assistant"; text: string; domain?: DomainId };
 
 interface AppState {
   screen: ScreenId;
@@ -35,7 +36,8 @@ function readPref(): ThemePref {
     const v = localStorage.getItem(THEME_KEY);
     if (v === "light" || v === "dark" || v === "system") return v;
   } catch { /* storage blocked */ }
-  return "system";
+  // Light mode first (founder, 23–29 Oct). Dark stays available from Me.
+  return "light";
 }
 
 export function AppProvider({ children }: { children: ReactNode }) {
@@ -56,7 +58,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setOnboarded(true);
     try { localStorage.setItem(ONBOARDED_KEY, "1"); } catch { /* storage blocked */ }
   }, []);
-  const [themePref, setPref] = useState<ThemePref>("system");
+  const [themePref, setPref] = useState<ThemePref>("light");
   const [systemDark, setSystemDark] = useState(false);
 
   useEffect(() => {

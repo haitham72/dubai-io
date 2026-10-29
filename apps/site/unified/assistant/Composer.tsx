@@ -1,7 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ArrowUp, Plus } from "lucide-react";
 import { apiPost } from "../data/api";
+import { classifyDomain, DOMAIN_LABEL } from "../data/domains";
 import { useApp } from "../state";
 import s from "./assistant.module.css";
 
@@ -25,17 +26,22 @@ export function Composer() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [menu, setMenu] = useState(false);
+  const guess = useMemo(() => classifyDomain(draft), [draft]);
 
   const send = async () => {
     const text = draft.trim();
     if (!text || busy) return;
     setBusy(true);
     setError(null);
+    const domain = classifyDomain(text).domain;
     try {
       const res = await apiPost<TurnResponse>("/api/luna/turn", { text, thread_id: chatThreadId });
       const reply = lunaReply(res);
       if (!reply) throw new Error("empty reply");
-      addMessages([{ role: "user", text }, { role: "assistant", text: reply }]);
+      addMessages([
+        { role: "user", text, domain },
+        { role: "assistant", text: reply },
+      ]);
       setDraft("");
     } catch {
       // Never a fake reply: keep the draft and say so.
@@ -61,6 +67,11 @@ export function Composer() {
         <div className={s.composerBar}>
           <button className={s.plus} aria-label="Add" aria-expanded={menu} onClick={() => setMenu((m) => !m)}><Plus size={20} strokeWidth={1.8} /></button>
           {menu && <div className={s.menu} role="menu"><span className={s.menuItem} role="menuitem" aria-disabled="true">Connect apps — not available yet</span></div>}
+          {draft.trim() ? (
+            <span className={s.domainChip} data-testid="composer-domain" data-domain={guess.domain} title="Where this ask would live in the sidebar">
+              {DOMAIN_LABEL[guess.domain]}
+            </span>
+          ) : <span />}
           <button className={s.send} onClick={() => void send()} disabled={busy || !draft.trim()} aria-label="Send">
             <ArrowUp size={18} strokeWidth={2.2} />
           </button>

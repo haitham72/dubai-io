@@ -23,16 +23,34 @@ test.beforeEach(async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
 });
 
-test("sidebar lists real threads first, then demo threads with Demo pills", async ({ page }) => {
+test("sidebar groups threads by domain, not bot channels", async ({ page }) => {
   await mockApi(page, { today: REAL_TODAY, tasks: TASKS });
   await page.goto("/");
+  const groups = page.getByTestId("domain-group");
+  await expect(groups).toHaveCount(2);
+  await expect(groups.nth(0)).toHaveAttribute("data-domain", "household");
+  await expect(groups.nth(1)).toHaveAttribute("data-domain", "services");
+  await expect(groups.nth(0)).toContainText("Household");
+  await expect(groups.nth(0)).toContainText("Approve AC visit");
+  await expect(groups.nth(0)).toContainText("AC repair");
+  await expect(groups.nth(0)).toContainText("DEWA bill");
+  await expect(groups.nth(1)).toContainText("Pressing order");
+  await expect(groups.nth(1)).toContainText("Laundry pickup");
   const rows = page.getByTestId("thread-row");
   await expect(rows).toHaveCount(5);
-  await expect(rows.nth(0)).toContainText("Approve AC visit");
-  await expect(rows.nth(1)).toContainText("Pressing order");
-  await expect(rows.nth(2)).toContainText("AC repair");
-  await expect(rows.nth(0).getByTestId("demo-pill")).toHaveCount(0);
-  await expect(rows.nth(2).getByTestId("demo-pill")).toHaveCount(1);
+  await expect(rows.filter({ hasText: "Approve AC visit" }).getByTestId("demo-pill")).toHaveCount(0);
+  await expect(rows.filter({ hasText: "AC repair" }).getByTestId("demo-pill")).toHaveCount(1);
+});
+
+test("moving a thread updates its domain section in the sidebar", async ({ page }) => {
+  await mockApi(page, { today: REAL_TODAY, tasks: TASKS });
+  await page.goto("/");
+  await page.getByTestId("thread-row").filter({ hasText: "Approve AC visit" }).click();
+  await expect(page.getByTestId("move-domain")).toHaveValue("household");
+  await page.getByTestId("move-domain").selectOption("places");
+  await page.getByRole("button", { name: "Back to assistant" }).click();
+  await expect(page.locator('[data-testid="domain-group"][data-domain="places"]')).toContainText("Approve AC visit");
+  await expect(page.locator('[data-testid="domain-group"][data-domain="household"]')).not.toContainText("Approve AC visit");
 });
 
 test("opening a real thread renders its activity entries in order", async ({ page }) => {

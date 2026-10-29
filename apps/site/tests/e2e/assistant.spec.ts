@@ -79,6 +79,8 @@ test("empty today briefs from the three labelled demo tasks", async ({ page }) =
 
 test("home haze is present in light, absent in dark, and static", async ({ page }) => {
   await mockApi(page);
+  // Website defaults to light; force system so OS colorScheme still drives the theme.
+  await page.addInitScript(() => localStorage.setItem("dubaiio.theme", "system"));
   await page.emulateMedia({ colorScheme: "light" });
   await page.goto("/");
   const haze = page.getByTestId("home-haze");
@@ -86,6 +88,27 @@ test("home haze is present in light, absent in dark, and static", async ({ page 
   expect(await haze.evaluate((el) => getComputedStyle(el).animationName)).toBe("none");
   await page.emulateMedia({ colorScheme: "dark" });
   await expect(page.getByTestId("home-haze")).toHaveCount(0);
+});
+
+test("domain starters fill the composer and show a live domain chip", async ({ page }) => {
+  await mockApi(page);
+  await page.goto("/");
+  await expect(page.getByTestId("domain-starter")).toHaveCount(3);
+  await page.getByTestId("domain-starter").filter({ hasText: "Household" }).click();
+  await expect(page.getByTestId("composer-input")).toHaveValue(/DEWA/i);
+  await expect(page.getByTestId("composer-domain")).toHaveAttribute("data-domain", "household");
+  await expect(page.getByTestId("composer-domain")).toHaveText("Household");
+});
+
+test("sent messages keep a domain label on the user bubble", async ({ page }) => {
+  await mockApi(page, {
+    turn: (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ reply: "Noted.", intent: "chat" }) }),
+  });
+  await page.goto("/");
+  await page.getByTestId("composer-input").fill("I need laundry pickup tomorrow");
+  await page.getByRole("button", { name: "Send" }).click();
+  await expect(page.getByTestId("msg-domain")).toHaveText("Services");
+  await expect(page.getByTestId("msg-user")).toContainText("laundry");
 });
 
 test("Community switch shows the placeholder until plan 3", async ({ page }) => {
