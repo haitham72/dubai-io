@@ -35,11 +35,39 @@ test("?desktop shows the Mac window", async ({ page }) => {
   await expect(page.getByTestId("rail-items")).toBeVisible();
 });
 
-test("non-home screens say which plan builds them", async ({ page }) => {
+test("Services rail opens the loaded services surface", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
   await page.getByTestId("rail-items").getByRole("button", { name: "Services" }).click();
-  await expect(page.getByText("Coming in plan 4")).toBeVisible();
+  await expect(page.getByTestId("services-view")).toBeVisible();
+});
+
+test("Maps rail is interactive in-app with photos near the user", async ({ page, context }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await context.grantPermissions(["geolocation"]);
+  await context.setGeolocation({ latitude: 25.09, longitude: 55.15 });
+  await page.goto("/");
+  await page.getByTestId("rail-items").getByRole("button", { name: "Maps" }).click();
+  await expect(page.getByTestId("maps-view")).toBeVisible();
+  await expect(page.getByTestId("maps-location")).toHaveAttribute("data-source", "device");
+  await expect(page.getByTestId("maps-interactive")).toBeVisible();
+  await expect(page.getByTestId("maps-place").first()).toBeVisible();
+  await expect(page.getByTestId("maps-place-photo").first()).toBeVisible();
+  await expect(page.getByText(/Coming in plan/i)).toHaveCount(0);
+});
+
+test("Dashboard rail embeds a near-you map strip", async ({ page, context }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await context.grantPermissions(["geolocation"]);
+  await context.setGeolocation({ latitude: 25.09, longitude: 55.15 });
+  await page.goto("/");
+  await page.getByTestId("rail-items").getByRole("button", { name: "Dashboard" }).click();
+  await expect(page.getByTestId("dashboard-view")).toBeVisible();
+  await expect(page.getByTestId("dashboard-map")).toBeVisible();
+  await expect(page.getByTestId("dashboard-map").getByTestId("maps-interactive")).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Prayer times/i })).toBeVisible();
+  await expect(page.getByText("Fajr")).toBeVisible();
+  await expect(page.getByText(/Coming in plan/i)).toHaveCount(0);
 });
 
 test("resizing 1440 to 390 keeps the typed composer draft", async ({ page }) => {

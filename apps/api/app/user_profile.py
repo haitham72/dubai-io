@@ -20,7 +20,7 @@ FACETS = {"identity", "context", "situation", "preference", "like", "dislike", "
 # Luna's stated-fact keys -> facet; anything new defaults to context.
 KEY_FACET = {"area": "context", "hotel": "situation", "terminal": "situation", "taxi_plate": "situation", "taxi_roof": "situation",
              "deadline": "situation", "pet": "identity", "language": "identity",
-             "household": "context", "services": "context", "other": "context"}
+             "household": "context", "services": "context", "clothing_size": "preference", "other": "context"}
 CORE = {"area": "home_area", "language": "language"}  # typed columns kept in sync from current facts
 
 

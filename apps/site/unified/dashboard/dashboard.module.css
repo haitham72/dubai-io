@@ -1,0 +1,53 @@
+.page { display: flex; flex-direction: column; height: 100%; min-height: 0; background: var(--bg); overflow: auto; }
+.inner { max-width: 1100px; width: 100%; margin: 0 auto; padding: var(--s-6); display: flex; flex-direction: column; gap: var(--s-5); }
+.head h1 { margin: 0; font-size: var(--fs-title); font-weight: 650; letter-spacing: -0.02em; }
+.lede { margin: 8px 0 0; font-size: var(--fs-sm); color: var(--text-2); line-height: 1.45; max-width: 640px; }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-4);
+}
+.card {
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--bg);
+  padding: var(--s-4);
+  display: flex; flex-direction: column; gap: var(--s-3); min-width: 0;
+}
+.card h2 { margin: 0; font-size: var(--fs-lg); font-weight: 650; }
+.card p { margin: 0; font-size: var(--fs-sm); color: var(--text-2); line-height: 1.45; }
+.wide { grid-column: 1 / -1; }
+
+.timings { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.timing {
+  padding: var(--s-3); border-radius: var(--r-md); background: var(--surface-2, #f3f6f7);
+  display: flex; flex-direction: column; gap: 2px;
+}
+.timing b { font-size: var(--fs-md); }
+.timing span { font-size: var(--fs-xs); color: var(--text-2); }
+
+.weather { display: flex; align-items: baseline; gap: var(--s-3); }
+.weather strong { font-size: 40px; font-weight: 650; letter-spacing: -0.03em; }
+.list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.row {
+  display: flex; justify-content: space-between; gap: var(--s-3); align-items: flex-start;
+  padding: var(--s-2) 0; border-bottom: 1px solid var(--border);
+}
+.row:last-child { border-bottom: 0; }
+.row a { color: var(--accent-strong); font-weight: 600; text-decoration: none; }
+.row small { display: block; color: var(--text-2); margin-top: 2px; line-height: 1.35; }
+.pill {
+  display: inline-flex; align-items: center; height: 22px; padding: 0 8px;
+  border-radius: var(--r-pill); background: var(--accent-soft); color: var(--accent-strong);
+  font-size: var(--fs-xs); font-weight: 650; flex-shrink: 0;
+}
+.foot { font-size: var(--fs-xs); color: var(--text-3); }
+.err { color: var(--danger); font-size: var(--fs-sm); }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+@media (max-width: 800px) {
+  .grid { grid-template-columns: 1fr; }
+  .wide { grid-column: auto; }
+  .timings { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

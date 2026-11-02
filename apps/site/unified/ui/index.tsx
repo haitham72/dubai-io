@@ -1,5 +1,5 @@
 // Shared primitives (ported from Mirsal, recoloured). Build every screen from these.
-import type { ComponentType, ReactNode } from "react";
+import type { ButtonHTMLAttributes, ComponentType, ReactNode } from "react";
 import type { LucideProps } from "lucide-react";
 import { Search } from "lucide-react";
 import s from "./ui.module.css";
@@ -45,12 +45,12 @@ export function IconButton({ icon: I, label, onClick }: { icon: Icon; label: str
   );
 }
 
-export function Button({ children, icon: I, variant = "secondary", onClick, disabled, type = "button" }: {
+export function Button({ children, icon: I, variant = "secondary", onClick, disabled, type = "button", ...rest }: {
   children: ReactNode; icon?: Icon; variant?: "primary" | "secondary" | "ghost";
   onClick?: () => void; disabled?: boolean; type?: "button" | "submit";
-}) {
+} & ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
-    <button type={type} className={cx(s.btn, s[variant])} onClick={onClick} disabled={disabled}>
+    <button type={type} className={cx(s.btn, s[variant])} onClick={onClick} disabled={disabled} {...rest}>
       {I && <I size={16} strokeWidth={2} />}
       {children}
     </button>

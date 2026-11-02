@@ -23,21 +23,14 @@ test.beforeEach(async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
 });
 
-test("sidebar groups threads by domain, not bot channels", async ({ page }) => {
+test("sidebar groups threads by UI bots", async ({ page }) => {
   await mockApi(page, { today: REAL_TODAY, tasks: TASKS });
   await page.goto("/");
-  const groups = page.getByTestId("domain-group");
-  await expect(groups).toHaveCount(2);
-  await expect(groups.nth(0)).toHaveAttribute("data-domain", "household");
-  await expect(groups.nth(1)).toHaveAttribute("data-domain", "services");
-  await expect(groups.nth(0)).toContainText("Household");
-  await expect(groups.nth(0)).toContainText("Approve AC visit");
-  await expect(groups.nth(0)).toContainText("AC repair");
-  await expect(groups.nth(0)).toContainText("DEWA bill");
-  await expect(groups.nth(1)).toContainText("Pressing order");
-  await expect(groups.nth(1)).toContainText("Laundry pickup");
+  await expect(page.locator('[data-testid="domain-group"][data-domain="household"]')).toContainText("Approve AC visit");
+  await expect(page.locator('[data-testid="domain-group"][data-domain="lifestyle"]')).toContainText("Pressing order");
+  await expect(page.locator('[data-testid="domain-group"][data-domain="travel"]')).toContainText("Lost bag in taxi");
   const rows = page.getByTestId("thread-row");
-  await expect(rows).toHaveCount(5);
+  await expect(rows).toHaveCount(10); // 2 real + 8 demos
   await expect(rows.filter({ hasText: "Approve AC visit" }).getByTestId("demo-pill")).toHaveCount(0);
   await expect(rows.filter({ hasText: "AC repair" }).getByTestId("demo-pill")).toHaveCount(1);
 });
@@ -47,17 +40,17 @@ test("moving a thread updates its domain section in the sidebar", async ({ page 
   await page.goto("/");
   await page.getByTestId("thread-row").filter({ hasText: "Approve AC visit" }).click();
   await expect(page.getByTestId("move-domain")).toHaveValue("household");
-  await page.getByTestId("move-domain").selectOption("places");
+  await page.getByTestId("move-domain").selectOption("travel");
   await page.getByRole("button", { name: "Back to assistant" }).click();
-  await expect(page.locator('[data-testid="domain-group"][data-domain="places"]')).toContainText("Approve AC visit");
+  await expect(page.locator('[data-testid="domain-group"][data-domain="travel"]')).toContainText("Approve AC visit");
   await expect(page.locator('[data-testid="domain-group"][data-domain="household"]')).not.toContainText("Approve AC visit");
 });
 
 test("opening a real thread renders its activity entries in order", async ({ page }) => {
   await mockApi(page, { today: REAL_TODAY, tasks: TASKS });
   await page.goto("/");
-  await expect(page.getByTestId("thread-row")).toHaveCount(5);
-  await page.getByTestId("thread-row").first().click();
+  await expect(page.getByTestId("thread-row")).toHaveCount(10);
+  await page.getByTestId("thread-row").filter({ hasText: "Approve AC visit" }).click();
   const entries = page.getByTestId("activity-entry");
   await expect(entries).toHaveCount(3);
   await expect(entries.nth(0)).toContainText("Task created");
@@ -70,23 +63,33 @@ test("opening a real thread renders its activity entries in order", async ({ pag
 test("a thread that cannot load says so instead of inventing content", async ({ page }) => {
   await mockApi(page, { today: REAL_TODAY, tasks: {} });
   await page.goto("/");
-  await expect(page.getByTestId("thread-row")).toHaveCount(5);
-  await page.getByTestId("thread-row").first().click();
+  await expect(page.getByTestId("thread-row")).toHaveCount(10);
+  await page.getByTestId("thread-row").filter({ hasText: "Approve AC visit" }).click();
   await expect(page.getByTestId("thread-error")).toHaveText("This task could not be loaded.");
 });
 
 test("dismissing a demo thread removes it and survives reload", async ({ page }) => {
   await mockApi(page);
   await page.goto("/");
-  await expect(page.getByTestId("thread-row")).toHaveCount(3);
+  await expect(page.getByTestId("thread-row")).toHaveCount(8);
   await page.getByTestId("thread-row").filter({ hasText: "AC repair" }).click();
   await expect(page.getByTestId("thread-view").getByTestId("demo-pill")).toBeVisible();
   await page.getByRole("button", { name: "Dismiss demo" }).click();
-  await expect(page.getByTestId("thread-row")).toHaveCount(2);
+  await expect(page.getByTestId("thread-row")).toHaveCount(7);
   await expect(page.getByTestId("thread-row").filter({ hasText: "AC repair" })).toHaveCount(0);
   expect(await page.evaluate(() => localStorage.getItem("dubaiio.dismissedDemo"))).toBe('["demo-ac"]');
   await page.reload();
-  await expect(page.getByTestId("thread-row")).toHaveCount(2);
+  await expect(page.getByTestId("thread-row")).toHaveCount(7);
+});
+
+test("taxi demo opens track-your-ride choices without asking for a plate", async ({ page }) => {
+  await mockApi(page);
+  await page.goto("/");
+  await page.getByTestId("thread-row").filter({ hasText: "Lost bag in taxi" }).click();
+  await expect(page.getByTestId("thread-view")).toContainText("Let’s track your ride");
+  await expect(page.getByTestId("thread-view")).not.toContainText("plate");
+  await page.getByTestId("choice-rideshare").click();
+  await expect(page.getByTestId("demo-trip-card")).toContainText("Careem");
 });
 
 test("Updates island shows the first needs-you thread on the phone", async ({ page }) => {
@@ -100,7 +103,7 @@ test("Updates island marks demo content as Demo", async ({ page }) => {
   await mockApi(page);
   await page.goto("/?device");
   await expect(page.getByTestId("dynamic-island")).toContainText("Demo");
-  await expect(page.getByTestId("dynamic-island")).toContainText("AC repair");
+  await expect(page.getByTestId("dynamic-island")).toContainText("Lost bag in taxi");
 });
 
 test("polls /api/today every 20 s while visible and stops while hidden", async ({ page }) => {

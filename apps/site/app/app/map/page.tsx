@@ -10,16 +10,9 @@ import {
 } from "@/components/chrome";
 import { MAPS_KEY } from "@/lib/api";
 
-declare global {
-  interface Window {
-    google?: {
-      maps?: {
-        Map?: new (el: HTMLElement, opts: Record<string, unknown>) => unknown;
-      };
-    };
-  }
-}
-
+type GMaps = {
+  maps?: { Map?: new (el: HTMLElement, opts: Record<string, unknown>) => unknown };
+};
 type MapState = "idle" | "no-key" | "loading" | "ready" | "failed";
 
 export default function MapPage() {
@@ -32,7 +25,8 @@ export default function MapPage() {
       setState("no-key");
       return;
     }
-    if (window.google?.maps?.Map) {
+    const g = (window as Window & { google?: GMaps }).google;
+    if (g?.maps?.Map) {
       setState("ready");
       return;
     }
@@ -41,12 +35,13 @@ export default function MapPage() {
     script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(MAPS_KEY)}&libraries=places`;
     script.async = true;
     script.onload = () => {
-      if (!ref.current || !window.google?.maps?.Map) {
+      const maps = (window as Window & { google?: GMaps }).google?.maps;
+      if (!ref.current || !maps?.Map) {
         setState("failed");
         setDetail("The Maps library loaded but did not initialise.");
         return;
       }
-      new window.google.maps.Map(ref.current, {
+      new maps.Map(ref.current, {
         center: { lat: 25.2048, lng: 55.2708 },
         zoom: 12,
       });

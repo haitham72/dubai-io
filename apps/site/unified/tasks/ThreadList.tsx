@@ -38,7 +38,7 @@ function ThreadRow({ t }: { t: TaskThread }) {
 }
 
 export function ThreadList({ title = "Task threads" }: { title?: string }) {
-  const { threads, error, loaded } = useThreads();
+  const { threads, error, loaded, dismissedCount, restoreDemos } = useThreads();
   const groups = groupByDomain(threads);
   return (
     <section aria-label={title} className={s.list} data-testid="thread-list">
@@ -49,8 +49,13 @@ export function ThreadList({ title = "Task threads" }: { title?: string }) {
           {g.items.map((t) => <ThreadRow key={t.id} t={t} />)}
         </div>
       ))}
+      {dismissedCount > 0 && (
+        <button type="button" className={s.pill} data-testid="restore-demos" onClick={restoreDemos}>
+          Restore {dismissedCount} demo{dismissedCount === 1 ? "" : "s"}
+        </button>
+      )}
       {loaded && error && <p className={s.note} role="status">Could not refresh tasks. Showing what was loaded.</p>}
-      {threads.length === 0 && <p className={s.note}>No open tasks.</p>}
+      {threads.length === 0 && <p className={s.note}>No open tasks.{dismissedCount ? " Restore demos above." : ""}</p>}
     </section>
   );
 }

@@ -12,6 +12,8 @@ export const POLL_MS = 20_000;
 interface ThreadsState {
   threads: TaskThread[];
   dismissDemo: (id: string) => void;
+  restoreDemos: () => void;
+  dismissedCount: number;
   moveThreadDomain: (id: string, domain: DomainId) => void;
   loaded: boolean;
   error: string | null;
@@ -64,6 +66,11 @@ export function ThreadsProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const restoreDemos = useCallback(() => {
+    setDismissed([]);
+    try { localStorage.removeItem(DISMISS_KEY); } catch { /* storage blocked */ }
+  }, []);
+
   const moveThreadDomain = useCallback((id: string, domain: DomainId) => {
     setOverrides((cur) => {
       const next = { ...cur, [id]: domain };
@@ -77,8 +84,8 @@ export function ThreadsProvider({ children }: { children: ReactNode }) {
     [today, dismissed, overrides],
   );
   const value = useMemo(
-    () => ({ threads, dismissDemo, moveThreadDomain, loaded, error }),
-    [threads, dismissDemo, moveThreadDomain, loaded, error],
+    () => ({ threads, dismissDemo, restoreDemos, dismissedCount: dismissed.length, moveThreadDomain, loaded, error }),
+    [threads, dismissDemo, restoreDemos, dismissed.length, moveThreadDomain, loaded, error],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

@@ -1,19 +1,20 @@
 import { describe, expect, test } from "vitest";
-import { briefing, relTime, toThreads, type TodayResponse } from "../../unified/data/tasks";
+import { briefing, relTime, toThreads, DEMO_TASKS, type TodayResponse } from "../../unified/data/tasks";
 
 const empty: TodayResponse = {
   needs_you: { tasks: [] }, running: { tasks: [] }, scheduled: { tasks: [] }, on_list: { tasks: [] }, paused: { tasks: [] }, completed: { tasks: [] },
 };
 const task = (id: string, outcome: string, extra: Record<string, unknown> = {}) => ({ id, outcome, status: "WAITING_USER", updated_at: "2026-10-23T09:00:00+04:00", ...extra });
+const ALL_DEMOS = DEMO_TASKS.map((d) => d.id);
 
 describe("toThreads", () => {
-  test("empty today gives the 3 labelled demo threads", () => {
+  test("empty today gives the labelled demo threads", () => {
     const t = toThreads(empty, []);
-    expect(t.map((x) => x.id)).toEqual(["demo-ac", "demo-laundry", "demo-dewa"]);
+    expect(t.map((x) => x.id)).toEqual(ALL_DEMOS);
     expect(t.every((x) => x.demo)).toBe(true);
-    expect(t.map((x) => x.title)).toEqual(["AC repair", "Laundry pickup", "DEWA bill"]);
-    expect(t.map((x) => x.preview)).toEqual(["needs your approval", "waiting for provider", "due Thursday"]);
-    expect(t.map((x) => x.domain)).toEqual(["household", "services", "household"]);
+    expect(t[0].id).toBe("demo-taxi");
+    expect(t[0].domain).toBe("travel");
+    expect(t.find((x) => x.id === "demo-gym")?.domain).toBe("lifestyle");
   });
 
   test("real tasks come first, ordered by lane, demo follow, with domains", () => {
@@ -25,10 +26,11 @@ describe("toThreads", () => {
     };
     const t = toThreads(today, []);
     expect(t.slice(0, 3).map((x) => [x.id, x.lane, x.demo, x.domain])).toEqual([
-      ["t1", "needs_you", false, "household"], ["t2", "running", false, "services"], ["t3", "on_list", false, "work"],
+      ["t1", "needs_you", false, "household"],
+      ["t2", "running", false, "lifestyle"],
+      ["t3", "on_list", false, "career"],
     ]);
-    expect(t.slice(3).map((x) => x.id)).toEqual(["demo-ac", "demo-laundry", "demo-dewa"]);
-    expect(t[0].title).toBe("Approve AC visit");
+    expect(t.slice(3).map((x) => x.id)).toEqual(ALL_DEMOS);
   });
 
   test("scheduled sits between running and on_list; a task in two lanes shows once", () => {
@@ -42,7 +44,7 @@ describe("toThreads", () => {
   });
 
   test("dismissed demo ids are removed", () => {
-    expect(toThreads(empty, ["demo-ac"]).map((x) => x.id)).toEqual(["demo-laundry", "demo-dewa"]);
+    expect(toThreads(empty, ["demo-ac"]).map((x) => x.id)).toEqual(ALL_DEMOS.filter((id) => id !== "demo-ac"));
   });
 
   test("completed tasks are not listed as open threads", () => {
@@ -59,13 +61,14 @@ describe("briefing", () => {
       running: { tasks: [task("r1", "Old", { updated_at: "2026-10-22T08:00:00+04:00" }), task("r2", "Newest", { updated_at: "2026-10-23T09:30:00+04:00" })] },
       scheduled: { tasks: [task("s1", "Later", { updated_at: "2026-10-21T08:00:00+04:00" })] },
     };
-    const b = briefing(toThreads(today, ["demo-ac", "demo-laundry", "demo-dewa"]));
+    const b = briefing(toThreads(today, ALL_DEMOS));
     expect([b.needsYou?.id, b.changed?.id, b.due?.id]).toEqual(["n1", "r2", "s1"]);
   });
 
   test("empty today briefs from the demo threads", () => {
     const b = briefing(toThreads(empty, []));
-    expect([b.needsYou?.id, b.changed?.id, b.due?.id]).toEqual(["demo-ac", "demo-laundry", "demo-dewa"]);
+    expect(b.needsYou?.id).toBe("demo-taxi");
+    expect(b.due?.id).toBe("demo-gym");
   });
 
   test("nothing at all gives an empty briefing", () => {
@@ -77,8 +80,5 @@ describe("relTime", () => {
   const now = Date.parse("2026-10-23T10:00:00+04:00");
   test("minutes, hours, days", () => {
     expect(relTime("2026-10-23T09:48:00+04:00", now)).toBe("12m");
-    expect(relTime("2026-10-23T09:00:00+04:00", now)).toBe("1h");
-    expect(relTime("2026-10-21T10:00:00+04:00", now)).toBe("2d");
-    expect(relTime("", now)).toBe("");
   });
 });

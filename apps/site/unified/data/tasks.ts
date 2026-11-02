@@ -36,10 +36,16 @@ export const LANE_LABEL: Record<Lane, string> = {
   needs_you: "Needs you", running: "Running", scheduled: "Scheduled", on_list: "On your list", paused: "Paused", completed: "Done",
 };
 
+/** Website demo threads (cursor-plan best-5 + classics) — labelled Demo; never invent provider success. */
 export const DEMO_TASKS: TaskThread[] = [
-  { id: "demo-ac", title: "AC repair", status: "DEMO", lane: "needs_you", preview: "needs your approval", at: "", unread: true, demo: true, domain: "household", category: "ac" },
-  { id: "demo-laundry", title: "Laundry pickup", status: "DEMO", lane: "running", preview: "waiting for provider", at: "", unread: false, demo: true, domain: "services", category: "laundry" },
-  { id: "demo-dewa", title: "DEWA bill", status: "DEMO", lane: "scheduled", preview: "due Thursday", at: "", unread: true, demo: true, domain: "household", category: "bills" },
+  { id: "demo-taxi", title: "Lost bag in taxi", status: "DEMO", lane: "needs_you", preview: "Let’s track your ride", at: "", unread: true, demo: true, domain: "travel", category: "transport" },
+  { id: "demo-khda", title: "School + home shortlist", status: "DEMO", lane: "needs_you", preview: "Year 5 · British · tours", at: "", unread: true, demo: true, domain: "household", category: "schools" },
+  { id: "demo-insurance", title: "Clinic on my network", status: "DEMO", lane: "needs_you", preview: "B+ match near JLT", at: "", unread: true, demo: true, domain: "money", category: "insurance" },
+  { id: "demo-mamzar", title: "Mamzar Saturday", status: "DEMO", lane: "running", preview: "Plan ready — Yes to all", at: "", unread: false, demo: true, domain: "lifestyle", category: "food" },
+  { id: "demo-guests", title: "Guests at 8", status: "DEMO", lane: "needs_you", preview: "Clean + dinner plan", at: "", unread: true, demo: true, domain: "household", category: "cleaning" },
+  { id: "demo-gym", title: "Gym renewal", status: "DEMO", lane: "scheduled", preview: "Fitness First Marina", at: "", unread: false, demo: true, domain: "lifestyle", category: "gym" },
+  { id: "demo-laundry", title: "Laundry pickup", status: "DEMO", lane: "running", preview: "Driver on the way — example only", at: "", unread: false, demo: true, domain: "lifestyle", category: "laundry" },
+  { id: "demo-ac", title: "AC repair", status: "DEMO", lane: "on_list", preview: "Before Friday", at: "", unread: false, demo: true, domain: "household", category: "ac" },
 ];
 
 function preview(t: TodayTask, lane: Lane): string {

@@ -18,17 +18,17 @@ describe("applyDomainOverrides", () => {
   test("moves a thread into another domain without changing others", () => {
     const threads = [
       base({ id: "a", domain: "household" }),
-      base({ id: "b", domain: "services" }),
+      base({ id: "b", domain: "lifestyle" }),
     ];
-    const next = applyDomainOverrides(threads, { a: "places" });
+    const next = applyDomainOverrides(threads, { a: "travel" });
     expect(next.map((t) => [t.id, t.domain])).toEqual([
-      ["a", "places"],
-      ["b", "services"],
+      ["a", "travel"],
+      ["b", "lifestyle"],
     ]);
   });
 
   test("ignores unknown override ids", () => {
     const threads = [base({ id: "a", domain: "general" })];
-    expect(applyDomainOverrides(threads, { missing: "work" })[0].domain).toBe("general");
+    expect(applyDomainOverrides(threads, { missing: "career" })[0].domain).toBe("general");
   });
 });

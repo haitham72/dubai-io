@@ -2,11 +2,37 @@
 // App-level state lives above the layout switch, so crossing the 820 px breakpoint keeps the open thread and the composer draft.
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { DomainId } from "./data/domains";
+import type { Place } from "./data/places";
 import type { ScreenId } from "./screens";
 
 export type Mode = "assistant" | "community";
 export type ThemePref = "system" | "light" | "dark";
-export type ChatMessage = { id: number; role: "user" | "assistant"; text: string; domain?: DomainId };
+export type ChatProduct = {
+  title?: string;
+  price?: string | null;
+  link?: string | null;
+  source?: string | null;
+  thumbnail?: string | null;
+  as_of?: string;
+  provenance?: string;
+};
+export type ChatBecause = { key: string; value: string; label?: string };
+export type ChatSource = { title?: string; url?: string; snippet?: string };
+export type ChatMessage = {
+  id: number;
+  role: "user" | "assistant";
+  text: string;
+  domain?: DomainId;
+  /** Live Google Places for this turn — never Demo when set. */
+  places?: Place[];
+  placesAsOf?: string;
+  placesAttribution?: string;
+  products?: ChatProduct[];
+  because?: ChatBecause[];
+  sources?: ChatSource[];
+  mailHeading?: string;
+  mailItems?: { id: string; title: string; body: string; provenance?: string; demo?: boolean }[];
+};
 
 interface AppState {
   screen: ScreenId;

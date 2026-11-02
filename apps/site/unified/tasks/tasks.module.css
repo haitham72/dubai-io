@@ -36,6 +36,91 @@
 .moveDomain { display: flex; align-items: center; gap: var(--s-3); margin: 0; font-size: var(--fs-sm); color: var(--text-2); }
 .moveDomain select { height: 36px; padding: 0 var(--s-3); border-radius: var(--r-sm); border: 1px solid var(--border-strong); background: var(--bg); color: var(--text); font-size: var(--fs-sm); }
 
+.bubbleUser {
+  align-self: flex-end;
+  max-width: 85%;
+  margin: 0;
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--r-lg);
+  background: var(--bubble-user, var(--accent-soft));
+  color: var(--text);
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+.bubbleAssistant {
+  align-self: flex-start;
+  max-width: 92%;
+  margin: 0;
+  color: var(--text);
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+.approval {
+  padding: var(--s-4);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-lg);
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+.approvalHead { display: flex; gap: var(--s-3); align-items: flex-start; }
+.approvalHead strong { display: block; font-size: var(--fs-md); font-weight: 650; }
+.approvalHead p { margin: 4px 0 0; font-size: var(--fs-sm); color: var(--text-2); display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.approvalIcon {
+  display: grid; place-items: center; width: 40px; height: 40px; flex-shrink: 0;
+  border-radius: var(--r-md); background: var(--accent-soft); color: var(--accent);
+}
+.shareGrid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-3); }
+.shareGrid h3 { margin: 0 0 6px; font-size: var(--fs-xs); font-weight: 650; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-3); }
+.shareGrid ul { margin: 0; padding-inline-start: 1.1em; font-size: var(--fs-sm); color: var(--text-2); line-height: 1.45; }
+.approvalActions { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+.approvalNote { margin: 0; font-size: var(--fs-xs); color: var(--text-3); line-height: 1.4; }
+.choices { display: flex; flex-direction: column; gap: var(--s-2); max-width: 420px; }
+.choice {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+  width: 100%; padding: var(--s-3) var(--s-4); text-align: start;
+  border: 1px solid var(--border-strong); border-radius: var(--r-lg); background: var(--bg);
+  transition: background 0.12s var(--ease);
+}
+.choice:hover { background: var(--hover); }
+.choice strong { font-size: var(--fs-md); font-weight: 650; }
+.choice span { font-size: var(--fs-sm); color: var(--text-2); }
+.tripCard {
+  padding: var(--s-4); border: 1px solid var(--border); border-radius: var(--r-lg);
+  background: var(--surface-2, var(--bg)); color: var(--text);
+  display: flex; flex-direction: column; gap: 6px; text-align: start; width: 100%;
+  font: inherit; cursor: default;
+}
+button.tripCard { cursor: pointer; }
+button.tripCard:hover { border-color: var(--accent); background: var(--hover); }
+.cardSelected { border-color: var(--accent); background: var(--accent-soft); }
+.tripCard p { margin: 0; line-height: 1.45; color: inherit; }
+.cardHit {
+  display: block; width: 100%; padding: 0; margin: 0 0 var(--s-2);
+  border: 0; background: transparent; text-align: start; font: inherit; color: inherit; cursor: pointer;
+}
+.cardHit:disabled { cursor: default; }
+.placeNameLine { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.liveTag {
+  padding: 2px 8px; border-radius: var(--r-pill); background: var(--accent-soft);
+  color: var(--accent-strong); font-size: var(--fs-xs); font-weight: 650;
+}
+.planList { margin: 0; padding-inline-start: 1.2em; font-size: var(--fs-sm); color: var(--text-2); line-height: 1.5; }
+.detailsPanel {
+  padding: var(--s-4);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--surface-2);
+}
+.detailsPanel h2 { margin: 0 0 var(--s-2); font-size: var(--fs-md); font-weight: 650; }
+.detailsPanel p { margin: 0 0 var(--s-2); font-size: var(--fs-sm); line-height: 1.45; }
+.muted { color: var(--text-2); }
+
+@container (max-width: 680px) {
+  .shareGrid { grid-template-columns: 1fr; }
+}
+
 .islandBtn, .pill { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; color: inherit; font-size: 12px; font-weight: 550; }
 .pill { height: 32px; margin: var(--s-2) auto 0; padding: 0 var(--s-3); border-radius: var(--r-pill); background: var(--surface-2); border: 1px solid var(--border); color: var(--text); }
 .islandDot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }

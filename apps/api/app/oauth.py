@@ -16,6 +16,8 @@ TOKEN_URL = "https://oauth2.googleapis.com/token"
 USERINFO_URL = "https://openidconnect.googleapis.com/v1/userinfo"
 REVOKE_URL = "https://oauth2.googleapis.com/revoke"
 SCOPES = ("openid", "email", "profile")
+GMAIL_READONLY = "https://www.googleapis.com/auth/gmail.readonly"
+ALLOWED_EXTRA = {GMAIL_READONLY}
 
 def token_expiry(token):
     lifetime = token.get("expires_in")
@@ -65,16 +67,23 @@ class GoogleOAuth:
     def client(self):
         return httpx.AsyncClient(timeout=15, transport=self.transport, follow_redirects=False)
 
-    def start(self, owner):
+    def start(self, owner, extra_scopes: tuple[str, ...] | list[str] | None = None):
         state, verifier = secrets.token_urlsafe(32), secrets.token_urlsafe(48)
         challenge = base64.urlsafe_b64encode(sha256(verifier.encode()).digest()).rstrip(b"=").decode()
-        payload = self.cipher.encrypt(json.dumps({"verifier": verifier, "client_id": self.client_id, "redirect_uri": self.redirect_uri}).encode())
+        extras = tuple(s for s in (extra_scopes or ()) if s in ALLOWED_EXTRA)
+        scopes = SCOPES + extras
+        payload = self.cipher.encrypt(json.dumps({
+            "verifier": verifier,
+            "client_id": self.client_id,
+            "redirect_uri": self.redirect_uri,
+            "scopes": list(scopes),
+        }).encode())
         with self.store.lock:
             self.store.db.execute("DELETE FROM oauth_attempts WHERE expires < ?", (time.time(),))
             self.store.db.execute("INSERT INTO oauth_attempts VALUES (?,?,?,?)", (sha256(state.encode()).hexdigest(), owner, time.time()+600, payload))
             self.store.db.commit()
         return AUTH_URL + "?" + urlencode({"client_id": self.client_id, "redirect_uri": self.redirect_uri, "response_type": "code",
-            "scope": " ".join(SCOPES), "state": state, "access_type": "offline", "prompt": "consent",
+            "scope": " ".join(scopes), "state": state, "access_type": "offline", "prompt": "consent",
             "code_challenge": challenge, "code_challenge_method": "S256"})
 
     async def callback(self, owner, state, code):
@@ -104,9 +113,12 @@ class GoogleOAuth:
         previous = self.grant(owner)
         if previous and previous.get("subject") != user["sub"]:
             previous = None  # a new account must not inherit another account's refresh grant
-        scopes = token.get("scope", " ".join(SCOPES)).split()
+        requested = tuple(attempt.get("scopes") or SCOPES)
+        scopes = token.get("scope", " ".join(requested)).split()
         if not set(SCOPES).issubset(scopes):
             raise HTTPException(502, "Google did not grant the requested identity scopes")
+        if not set(requested).issubset(scopes):
+            raise HTTPException(502, "Google did not grant the requested mail scopes")
         grant = {"access_token": token["access_token"], "refresh_token": token.get("refresh_token") or (previous or {}).get("refresh_token"),
             "expires": token_expiry(token), "scopes": scopes,
             "subject": user["sub"], "account_label": user.get("email") if user.get("email_verified") is True else "Google account",

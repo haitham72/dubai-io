@@ -2,6 +2,7 @@ import { Building2, LayoutGrid, MapPin, MessageCircle, Sparkles, UserRound, type
 
 export type ScreenId = "assistant" | "chats" | "services" | "maps" | "dashboard" | "me";
 
+/** Rail screens — all shipped in apps/site (2 Nov). `plan` is historical only. */
 export const RAIL: { id: ScreenId; label: string; icon: LucideIcon; plan: number }[] = [
   { id: "assistant", label: "Assistant", icon: Sparkles, plan: 1 },
   { id: "chats", label: "Chats", icon: MessageCircle, plan: 3 },

@@ -48,8 +48,30 @@ def test_bad_symbols_never_reach_the_provider():
 
 
 def test_product_search_returns_links_and_prices_only(monkeypatch):
-    monkeypatch.setattr(research, "amazon_search", lambda q: [{"title": "Shampoo 400 ml", "price": "AED 17.20", "rating": 4.6, "reviews": 221,
-                                                              "thumbnail": "https://m.media-amazon.com/i.jpg", "link": "https://www.amazon.ae/dp/X", "asin": "X"}])
+    monkeypatch.setattr(research, "shopping_search", lambda q, stores=5: [
+        {"title": "Green oxford XL", "price": "AED 95.00", "rating": 4.6, "reviews": 12,
+         "thumbnail": "https://encrypted-tbn0.gstatic.com/shopping?q=x", "link": "https://www.google.com/search?ibp=oshop&q=x",
+         "source": "Namshi", "provenance": "provider_confirmed"},
+        {"title": "Green linen XL", "price": "AED 109.00", "rating": 4.2, "reviews": 8,
+         "thumbnail": "https://encrypted-tbn0.gstatic.com/shopping?q=y", "link": "https://www.google.com/search?ibp=oshop&q=y",
+         "source": "noon.com", "provenance": "provider_confirmed"},
+    ])
+    out = research.research(
+        {"intent": "product_search", "query": "green shirt"},
+        "I need a green shirt",
+        fake_client("never used"),
+        told=[{"key": "clothing_size", "value": "XL"}, {"key": "area", "value": "Dubai Marina"}],
+    )
+    assert out["tool"] == "google_shopping" and len(out["products"]) == 2 and out["products"][0]["as_of"]
+    assert out["search_query"] == "green shirt XL Dubai Marina"
+    assert {b["key"] for b in out["because"]} == {"clothing_size", "area"}
+    assert out["sources"][0]["via"].startswith("SerpAPI")
+
+
+def test_product_search_falls_back_to_amazon(monkeypatch):
+    monkeypatch.setattr(research, "shopping_search", lambda q, stores=5: [])
+    monkeypatch.setattr(research, "amazon_search", lambda q, limit=5: [{"title": "Shampoo 400 ml", "price": "AED 17.20", "rating": 4.6, "reviews": 221,
+                                                              "thumbnail": "https://m.media-amazon.com/i.jpg", "link": "https://www.amazon.ae/dp/X",
+                                                              "source": "Amazon.ae", "asin": "X", "provenance": "provider_confirmed"}])
     out = research.research({"intent": "product_search", "query": "shampoo"}, "find me shampoo", fake_client("never used"))
-    assert out["tool"] == "amazon" and len(out["products"]) == 1 and out["products"][0]["as_of"]
-    assert out["sources"][0]["url"].startswith("https://www.amazon.ae/s?k=")
+    assert out["tool"] == "amazon" and len(out["products"]) == 1

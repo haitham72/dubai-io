@@ -1,19 +1,25 @@
-# Handoff - 29 Oct 2026 — START HERE
+# Handoff - 2 Nov 2026 — START HERE
 
-## Active (29 Oct)
+## Active (2 Nov) — founder review + OAuth for live mail
 
-- **Branch:** `main` only for product work. Website React = `apps/site` at `/` (same shell as `?desktop`). iOS / packaging after website is solid. **Light mode first** (default theme `light`).
-- **Domains (not bot channels):** sidebar groups by Household / Places & trips / Services / Work & admin / General; composer chip + Move to domain; home starter chips. Spec: `docs/plan/domains.md`. Plan: `docs/superpowers/plans/2026-10-29-domains-website-light.md`.
-- **Image refs used:** `design/references/chat/grok-bot.jpeg`, `01-home.png`, `chat/chat.jpg`. v3 `l01–l10` not in this checkout.
-- **Journeys (design):** `docs/plan/journeys.md` — not adapters yet.
-- **Next:** Plan 4 Services screen in `apps/site` (Feed-quality uplift), then Plan 2 website-relevant bits; connectors later.
+- **Review:** http://localhost:3000/ (API :8030). Grok-style **ResultTemplate** (places/shopping/mail), bigger Maps, temporal memory `/api/memory/*`, mail profiler. Session: `cursor-plan.md`.
+- **Try:** Marina → XL → **Green shirt** → Try it on · Maps · Me (timeline / Connect Google mail) · ask “missed job emails”.
+- **Live Gmail:** set `GOOGLE_OAUTH_CLIENT_ID/SECRET/REDIRECT_URI`, `OAUTH_TOKEN_KEY`, enable Gmail API, then Me → Connect with mail (`?caps=mail`). Or `DEMO_MAIL=1` for fixture “Needs a reply” card.
+- **Branch:** `main`. Do not touch frozen `apps/web`.
+- Old Plans 2–8 / companion Phases D–F still parked except memory C1–C3 started.
+
+## Parked (founder chooses later — not in-flight)
+
+- Old track: Plan 2 phone/`?devices`, Services Feed-quality uplift, desktop full load — still in `PLAN.md` / `docs/superpowers/plans/`.
+- Companion: full product memory engine, Builder MCP, UAE Pass appendix — `docs/superpowers/plans/2026-11-02-residence-companion-mcp.md`.
+- Broad design system polish beyond live result cards.
+- **Maps + Dashboard:** interactive Google Map + photos near device location; Dashboard near-you strip (2 Nov).
 
 ## Where we are (read in this order)
 
-1. **North star:** `docs/plan/unified-app-design.md` + `docs/plan/domains.md`.
-2. **Next plan to run:** website assistant polish on `apps/site`; Plan 2 device work is secondary until website domains/threads feel right. Roadmap table still in `docs/superpowers/plans/2026-10-23-device-switch-and-phone-core.md`.
-3. **Memory plan (later):** `docs/superpowers/plans/2026-10-23-temporal-memory.md` (Plan 6).
-4. Status: `docs/status.md`. Backlog: `docs/request-backlog.md` (top: Domains + website-first).
+1. **Session plan:** `cursor-plan.md` (contest spine DONE).
+2. **North star:** `docs/plan/unified-app-design.md` + `docs/plan/domains.md`.
+3. Status: `docs/status.md`. Backlog: `docs/request-backlog.md` (parked items only until review).
 
 ## Founder's non-negotiables
 

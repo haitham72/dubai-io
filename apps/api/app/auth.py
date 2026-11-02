@@ -12,7 +12,7 @@ from pydantic import BaseModel
 
 from .actions import COOKIE, engine
 from .config import settings
-from .oauth import GoogleOAuth, local_key, valid_redirect
+from .oauth import GMAIL_READONLY, GoogleOAuth, local_key, valid_redirect
 
 router = APIRouter(prefix="/api/auth", tags=["connections"])
 
@@ -65,7 +65,7 @@ def require_google(request):
 @router.get("/connections", response_model=ConnectionsOut)
 def connections(request: Request):
     provider = {"id": "google", "label": "Google", "status": "not_configured", "can_connect": False,
-                "scopes": ["openid", "email", "profile"], "account_label": None}
+                "scopes": ["openid", "email", "profile", GMAIL_READONLY], "account_label": None}
     if configured() and same_host(request):
         try:
             owner = engine().store.owner(request.cookies.get(COOKIE))
@@ -78,12 +78,13 @@ def connections(request: Request):
 
 
 @router.get("/{provider}/start")
-def start(provider: str, request: Request):
+def start(provider: str, request: Request, caps: str = ""):
     if provider != "google":
         raise HTTPException(404, "Unknown connection provider")
     connector = require_google(request)
     owner, token = engine().store.session(request.cookies.get(COOKIE))
-    response = RedirectResponse(connector.start(owner), status_code=302)
+    extras = (GMAIL_READONLY,) if "mail" in {c.strip() for c in caps.split(",") if c.strip()} else ()
+    response = RedirectResponse(connector.start(owner, extra_scopes=extras), status_code=302)
     if token:
         response.set_cookie(COOKIE, token, httponly=True, samesite="lax", secure=request.url.scheme == "https", max_age=30*86400)
     return response

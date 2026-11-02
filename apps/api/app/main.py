@@ -34,10 +34,17 @@ from .projects import resolve_context as resolve_project_context
 from .tasks import resolve_context as resolve_task_context
 from .luna import graph as luna
 from .luna.schema import FactKey, FocusContext, TaskFocusContext, ProjectFocusContext
+from .memory.api import router as memory_router
+from .mail_profile import router as mail_router
+from .memory.schema import ensure_memory_schema
 
 @asynccontextmanager
 async def lifespan(_app):
     merchant_pin()  # sandbox merchant PIN: MERCHANT_PIN, or generated into data/merchant.pin
+    try:
+        ensure_memory_schema(engine().store.db)
+    except Exception:
+        pass  # schema retries on first MemoryStore use
     if settings.widget_port:  # mini-apps on their own origin (rule 10)
         from .widgets import serve_in_background
         serve_in_background("0.0.0.0", settings.widget_port)
@@ -59,6 +66,8 @@ app.include_router(communities_router)
 app.include_router(ml_router)
 app.include_router(ops_router)
 app.include_router(prayer_router)
+app.include_router(memory_router)
+app.include_router(mail_router)
 
 
 @app.middleware("http")
@@ -83,6 +92,10 @@ class PlacesIn(BaseModel):
     query: str = Field(min_length=2, max_length=120)
     lat: float | None = None
     lng: float | None = None
+
+
+class ShoppingIn(BaseModel):
+    query: str = Field(min_length=2, max_length=120)
 
 
 class LatLng(BaseModel):
@@ -178,6 +191,81 @@ async def places(body: PlacesIn):
         return await google_maps.search_places(body.query, body.lat, body.lng)
     except httpx.HTTPStatusError as err:
         raise HTTPException(502, f"Places error {err.response.status_code}") from err
+
+
+@app.post("/api/shopping/search")
+def shopping(body: ShoppingIn, request: Request):
+    """Live Google Shopping AE — one card per store. Uses session memory for size/area."""
+    from .luna import research as luna_research
+    owner = engine().store.owner(request.cookies.get(COOKIE))
+    told = luna.facts.current(owner)
+    query, because = luna_research.enrich_product_query(body.query, told)
+    try:
+        products = luna_research.shopping_search(query, stores=5)
+        tool = "google_shopping"
+        if not products:
+            products = luna_research.amazon_search(query, limit=5)
+            tool = "amazon"
+    except httpx.HTTPError as err:
+        raise HTTPException(502, "Live shopping is unavailable") from err
+    at = luna_research.now()
+    return {
+        "products": [{**p, "as_of": at} for p in products],
+        "because": because,
+        "search_query": query,
+        "attribution": "Google Shopping" if tool == "google_shopping" else "Amazon.ae",
+        "tool": tool,
+        "as_of": at,
+        "provenance": "provider_confirmed",
+    }
+
+
+@app.get("/api/tryon/status")
+def tryon_status():
+    """Whether a still-photo try-on provider is ready (Vertex and/or OpenAI)."""
+    from . import tryon as tryon_mod
+    return tryon_mod.tryon_configured()
+
+
+@app.post("/api/tryon")
+async def tryon(request: Request):
+    """Still-photo outfit try-on. Requires explicit client approval before call.
+    Own photo + product image → AI preview. Never shared with shops. Live AR is LATER."""
+    from . import tryon as tryon_mod
+    form = await request.form()
+    person = form.get("person")
+    title = str(form.get("title") or "item")[:120]
+    product_url = str(form.get("product_image_url") or "").strip()
+    confirm = str(form.get("confirmed_adult") or "").lower()
+    if confirm not in {"1", "true", "yes"}:
+        raise HTTPException(400, "18+ confirmation required")
+    if person is None or not hasattr(person, "read"):
+        raise HTTPException(400, "person photo required")
+    person_bytes = await person.read()
+    if not person_bytes or len(person_bytes) > 7_000_000:
+        raise HTTPException(400, "bad person photo")
+    garment_upload = form.get("garment")
+    try:
+        if garment_upload is not None and hasattr(garment_upload, "read"):
+            garment_bytes = await garment_upload.read()
+        elif product_url:
+            garment_bytes = tryon_mod.fetch_product_image(product_url)
+        else:
+            raise HTTPException(400, "product image required")
+        result = tryon_mod.run_tryon(person_bytes, garment_bytes, title)
+    except ValueError as err:
+        raise HTTPException(400, str(err)) from err
+    except tryon_mod.TryOnUnavailable as err:
+        raise HTTPException(503, f"Try-on unavailable: {err}") from err
+    b64 = __import__("base64").b64encode(result["image"]).decode("ascii")
+    return {
+        "image_base64": b64,
+        "media_type": result["media_type"],
+        "provider": result["provider"],
+        "provenance": result["provenance"],
+        "caption": result["caption"],
+        "demo": result["provenance"] == "demo_fixture",
+    }
 
 
 @app.get("/api/places/photo")

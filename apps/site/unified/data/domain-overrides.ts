@@ -1,7 +1,9 @@
-import type { DomainId } from "./domains";
+import { DOMAIN_ORDER, type DomainId } from "./domains";
 import type { TaskThread } from "./tasks";
 
 export const DOMAIN_OVERRIDE_KEY = "dubaiio.domainOverrides";
+
+const ALLOWED = new Set<string>(DOMAIN_ORDER);
 
 export function readDomainOverrides(): Record<string, DomainId> {
   try {
@@ -9,11 +11,8 @@ export function readDomainOverrides(): Record<string, DomainId> {
     if (!raw || typeof raw !== "object") return {};
     const out: Record<string, DomainId> = {};
     for (const [id, domain] of Object.entries(raw as Record<string, unknown>)) {
-      if (
-        typeof id === "string" &&
-        (domain === "household" || domain === "places" || domain === "services" || domain === "work" || domain === "general")
-      ) {
-        out[id] = domain;
+      if (typeof id === "string" && typeof domain === "string" && ALLOWED.has(domain)) {
+        out[id] = domain as DomainId;
       }
     }
     return out;

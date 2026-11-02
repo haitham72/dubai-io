@@ -7,6 +7,7 @@ import { LANE_LABEL, relTime, type TaskThread } from "../data/tasks";
 import { useThreads } from "../data/threads";
 import { useApp } from "../state";
 import { Button, DemoPill } from "../ui";
+import { DemoBody } from "./demos";
 import s from "./tasks.module.css";
 
 interface TaskEvent {
@@ -86,7 +87,7 @@ function DemoThread({ thread }: { thread: TaskThread }) {
         onBack={() => openThread(null)}
       />
       <div className={s.entries}>
-        <p className={s.entry}>This is an example task so you can see how threads look. Nothing was sent or booked.</p>
+        <DemoBody id={thread.id} />
         <MoveDomain id={thread.id} current={thread.domain} />
         <div><Button onClick={() => { dismissDemo(thread.id); openThread(null); }}>Dismiss demo</Button></div>
       </div>

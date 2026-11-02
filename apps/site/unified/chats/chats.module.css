@@ -1,0 +1,78 @@
+.page { display: flex; flex-direction: column; height: 100%; min-height: 0; background: var(--bg); }
+.layout { flex: 1; min-height: 0; display: flex; border-top: 1px solid var(--border); }
+.listPane {
+  width: 380px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-right: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.threadPane { flex: 1; min-width: 0; display: flex; flex-direction: column; min-height: 0; background: var(--bg); }
+
+.listHead { padding: var(--s-5) var(--s-4) var(--s-3); flex-shrink: 0; }
+.listHead h1 { margin: 0 0 var(--s-3); font-size: var(--fs-title); font-weight: 650; letter-spacing: -0.02em; }
+.filters { display: flex; flex-wrap: wrap; gap: var(--s-2); padding: 0 var(--s-4) var(--s-3); }
+.filter {
+  height: 32px;
+  padding: 0 var(--s-3);
+  border-radius: var(--r-pill);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-2);
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+.filterActive { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+
+.list { flex: 1; min-height: 0; overflow-y: auto; padding: 0 var(--s-2) var(--s-2); }
+.rowTime { font-size: var(--fs-xs); color: var(--text-3); white-space: nowrap; }
+.unread {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: var(--r-pill);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  display: inline-grid;
+  place-items: center;
+}
+
+.threadHead {
+  padding: var(--s-4) var(--s-5);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.threadHead h2 { margin: 0; font-size: var(--fs-lg); font-weight: 650; }
+.threadHead p { margin: 4px 0 0; font-size: var(--fs-sm); color: var(--text-2); }
+
+.messages { flex: 1; min-height: 0; overflow-y: auto; padding: var(--s-4) var(--s-5); display: flex; flex-direction: column; gap: var(--s-3); }
+.bubble {
+  max-width: 72%;
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--r-lg);
+  font-size: var(--fs-md);
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+.bubbleMine { align-self: flex-end; background: var(--bubble-user); }
+.bubbleTheirs { align-self: flex-start; background: var(--surface-2); border: 1px solid var(--border); }
+.bubbleMeta { font-size: var(--fs-xs); color: var(--text-3); margin-bottom: 4px; display: flex; flex-wrap: wrap; gap: var(--s-2); align-items: center; }
+
+.emptyPane {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--s-8);
+  text-align: center;
+  color: var(--text-2);
+}
+.emptyPane strong { color: var(--text); font-size: var(--fs-lg); margin-bottom: var(--s-2); }
+
+.state { padding: var(--s-4); text-align: center; color: var(--text-2); font-size: var(--fs-sm); }
+.retry { color: var(--accent); font-weight: 600; margin-top: var(--s-2); }
