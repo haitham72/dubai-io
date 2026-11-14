@@ -15,7 +15,7 @@ Stop the dev server by its PID only.
 
 ## Map
 
-`main` wiring · `actions` engine/registry · `communities` + `social_generation` (persona replies) · `recommendations`/`discovery` (temporal ranker) · `tasks`/`projects`/`reading`/`proactive`/`merchant`/`profile`/`user_profile` · `luna/{graph,schema,research}` · `db` store · `config` settings · `auth`/`oauth` · `widgets`/`google_maps` · `migrate_sqlite`/`migrate_supabase`.
+`main` wiring · `actions` engine/registry · `connectors` universal connector framework (capability registry, sync, encrypted credentials) · `communities` + `social_generation` (persona replies) · `recommendations`/`discovery` (temporal ranker) · `tasks`/`projects`/`reading`/`proactive`/`merchant`/`profile`/`user_profile` · `luna/{graph,schema,research}` · `db` store · `config` settings · `auth`/`oauth` · `widgets`/`google_maps` · `migrate_sqlite`/`migrate_supabase`.
 
 ## Rules
 

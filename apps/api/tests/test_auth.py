@@ -13,7 +13,7 @@ def test_connections_are_truthfully_unconfigured():
     assert response.status_code == 200
     assert response.json() == {"providers": [{
         "id": "google", "label": "Google", "status": "not_configured",
-        "can_connect": False, "scopes": ["openid", "email", "profile"],
+        "can_connect": False, "scopes": ["openid", "email", "profile", "https://www.googleapis.com/auth/gmail.readonly"],
         "account_label": None,
     }]}
 

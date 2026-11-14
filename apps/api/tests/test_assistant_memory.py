@@ -116,7 +116,7 @@ def test_project_context_is_transient_and_project_facts_do_not_escape_to_global_
 
 def test_project_research_cannot_expand_public_query_from_private_notes(memory,monkeypatch):
     captured=[]
-    monkeypatch.setattr(luna,"run_research",lambda understanding,text,_client:captured.append(understanding) or {})
-    luna.research({"understanding":{"intent":"info_question","query":"Private workspace ABC 123"},"text":"Dubai opening hours"},
+    monkeypatch.setattr(luna,"run_research",lambda understanding,text,_client,**_extra:captured.append(understanding) or {})
+    luna.research({"user_id":"alice","understanding":{"intent":"info_question","query":"Private workspace ABC 123"},"text":"Dubai opening hours"},
         SimpleNamespace(context=luna.AssistantContext(project={"context":"Private workspace ABC 123"})))
     assert captured[0]["query"] == "Dubai opening hours"

@@ -1,6 +1,15 @@
-# Status — 2 Nov 2026
+# Status — 14 Nov 2026
 
 Single current-state file. Detail lives in `handoff.md`, `cursor-plan.md`, git history.
+
+## Connectors (14 Nov)
+
+Universal connector framework in `apps/api/app/connectors`. Records stay in `connector_records` (source id, source timestamp, provenance, dedupe key) and do not write profile memory. Sync is explicit. Outbound sends are denied until the owner approves the exact payload.
+
+- **Live, tested with mocks:** Gmail, Outlook mail, IMAP, Google Calendar, Outlook Calendar, Google Drive, OneDrive, Dropbox, local folder, GitHub, GitLab, Jira Cloud, Slack, Telegram bot, Discord bot (one channel), Notion, Todoist, Trello, Linear, Reddit saved posts, X own posts, YouTube uploads, Spotify saved tracks.
+- **File import only:** LinkedIn, Instagram, Amazon, Noon, eBay, purchase receipts, statements, browser history/bookmarks/saved pages, saved-media lists. Amounts stay `user_supplied`.
+- **Registered, not callable:** Signal, Android notifications, iOS data, contacts, and a financial-data provider (none is configured).
+- **WhatsApp:** Evolution API / Baileys, unofficial, off unless `WHATSAPP_EVOLUTION_ENABLED` plus the Evolution base URL and key. History is partial. Sends need approval. Docs: `docs/connectors/`.
 
 ## Open agent work
 

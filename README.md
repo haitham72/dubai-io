@@ -30,7 +30,7 @@ cd apps/api && docker compose -f docker-compose.infra.yml up -d redis   # ML cac
 ## Test
 
 ```sh
-cd apps/api && .venv/bin/python -m pytest -q tests        # 227 passed, 11 live skipped
+cd apps/api && .venv/bin/python -m pytest -q tests        # 323 passed, 11 live skipped (14 Nov 2026)
 for t in ../web/tests/*.test.mjs; do node "$t"; done     # 9 web suites
 cd ../site && npm run build                               # website build
 swift test --package-path apps/ios/Core                   # 15 iOS contract tests
@@ -38,7 +38,7 @@ swift test --package-path apps/ios/Core                   # 15 iOS contract test
 
 ## State
 
-Backend verified (227 tests); clients build. Website design was founder-rejected — see `docs/request-backlog.md` (redo brief, left for another LLM). Missing provider keys keep some paths honestly unavailable; device/PostgreSQL/hosted checks remain open.
+Backend verified (323 tests, 14 Nov 2026); clients build. Connector framework: `docs/connectors/`. Website design was founder-rejected — see `docs/request-backlog.md` (redo brief, left for another LLM). Missing provider keys keep some paths honestly unavailable; device/PostgreSQL/hosted checks remain open.
 
 ## Docs
 
