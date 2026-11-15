@@ -39,7 +39,7 @@ A personal assistant for everyday life and work in Dubai (not a visitor/tourist 
 | **Chats ⇄ Calls** | WhatsApp-style (built 23 Oct in `apps/web`): search/Ask bar, chips, Archived, swipe-archive, Calls with favorites carousel, Favorites panel. | Dubai-io + founder ref |
 | **Services** | Providers, fixed-price orders, approval card listing exact shared fields, sandbox merchant. 3.1 thumbnail rows. | Dubai-io |
 | **Maps** | Places, user-confirmed pins only, directions handoff (Google Places/static maps exist in backend). | Dubai-io |
-| **Me / memory** | "You told me" (editable/forgettable), "I noticed" (hypotheses with Confirm/Edit/Not true/Forget), "You, over time" timeline, Settings. | Dubai-io rule 9 + temporal_note |
+| **Me / memory** | "You told me" (editable/forgettable), "I noticed" (hypotheses with Confirm/Edit/Not true/Forget), "You, over time" timeline, Settings. | Dubai-io guardrail 6 + temporal_note |
 | **Onboarding** | Orb wakes up → setup is the chat (area, household, services, connectors). | new |
 | **Dashboard** | Tasks + connectors overview, with Mirsal-style workspace views: Weather (Open-Meteo, real), Prayer (Aladhan, real), News (Tavily, real if key), Mail/Calendar later. | Mirsal craft |
 
@@ -74,8 +74,8 @@ Founder: these three are "extremely close" to what Dubai-io should be. Reference
 The founder's `temporal_note` (`~/VsCode/Claude---Cowork/temporal_note`; Python, Postgres 16 + pgvector, BM25 + vector RRF hybrid search, 36 MCP tools, ~317 tests) becomes the model for Dubai-io's memory — **engine and schema, not the founder's personal data**:
 
 - Port into Dubai-io's Supabase Postgres (`dubaiio` schema): events (+ embedding), entities with `valid_from`/`valid_to`, relationships, threads, patterns, advice entries; memory ops extract / consolidate / conflicts / salience / context pack.
-- Feeds: short-term (conversation/task context) and long-term memory, recommendations ("advice due/stale" → Keeping track + briefing, fired by the scheduler — rule 8), profiler ("I noticed").
-- Rule 9 holds: everything visible and editable in Me; inferred items are hypotheses with Confirm/Forget; **never infer health, religion, ethnicity, nationality-as-trait, gender, sexuality, politics** (temporal_note's extractor needs this filter); unconfirmed hypotheses only re-rank, with a "Because…" chip.
+- Feeds: short-term (conversation/task context) and long-term memory, recommendations ("advice due/stale" → Keeping track + briefing, fired by the scheduler — guardrail 8), profiler ("I noticed").
+- guardrail 6 holds: everything visible and editable in Me; inferred items are hypotheses with Confirm/Forget; **sensitive categories (health, religion, ethnicity, sexuality, politics) only when the user states them or opts in** (temporal_note's extractor needs this filter); unconfirmed hypotheses only re-rank, with a "Because…" chip.
 - Existing Dubai-io pieces to connect: `user_profile.py`, `recommendations.py`, `profile.py` (episodes/overrides), session facts (`area`, `household`, `services`, …).
 - Separately: temporal_note can serve as an MCP for the agents building this repo; its plugin launcher is Windows-only (`run.ps1`) — point it at `mcp_server/run.sh` on the Mac.
 - **Founder permission (23 Oct): copy/learn freely from temporal_note.**

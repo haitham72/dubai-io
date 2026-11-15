@@ -64,7 +64,7 @@ Rules per entry (no exceptions):
 
 - Filed per category via `docs/services/intake.md`; default outcome is a registry row, not a bespoke mini-app.
 - Every entry carries provenance; info-only entries link "Open official portal".
-- Execution (top-up, filing, donation, booking) only via a real registered adapter with explicit per-action approval and verified provider evidence — rule 1 intact (no authoritative event, no success status).
+- Execution (top-up, filing, donation, booking) only via a real registered adapter with explicit per-action approval and verified provider evidence — guardrail 1 intact (no authoritative event, no success status).
 - Without an adapter the entry shows the blocker + portal link and keeps the draft; never a fake Send.
 - Donations: licensed charities only; license/provenance shown; same approval + evidence path as payments.
 - Grid density follows §2 (3.1 rows); categories group entries so the grid stays scannable as it grows past dozens of entries.

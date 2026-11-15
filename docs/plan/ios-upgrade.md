@@ -44,7 +44,7 @@ Never stack glass on glass; never put glass on scrolling content rows.
 | S4 | Feed + post thread pushed on navigation; stories viewer; AI-persona replies labelled; reply status from the API's `generation` field. | Sonnet subagent |
 | S5 | Services: 3.1 thumbnails per row with snap (calls plan §2), provider detail, mini-app host sheet unchanged in behavior. | Sonnet subagent |
 | S6 | Ask (Luna chat): glass composer with beam, orb thinking states, sources/product links, draft preserved. | Claude (main) |
-| S7 | New settings screen (founder decision 23 Oct) pushed from Me: server, notifications, data/forget, acknowledgements. Profile ("You told me" / "I noticed") stays per rule 9. | Sonnet subagent |
+| S7 | New settings screen (founder decision 23 Oct) pushed from Me: server, notifications, data/forget, acknowledgements. Profile ("You told me" / "I noticed") stays per guardrail 6. | Sonnet subagent |
 | S8 | Maps: glass floating controls, category row, honest pins (user-confirmed places only). | Sonnet subagent |
 
 ## 5. Gates (every slice)

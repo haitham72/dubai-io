@@ -58,14 +58,14 @@ This is a documentation/access assessment for the providers listed here, not con
 | Provider | Public API? | Status | Honest option |
 |---|---|---|---|
 | Amazon (consumer purchase) | No consumer "buy" API. Amazon Business Ordering API is B2B, onboarding + customer OAuth | **No API** (consumer) / **Partner** (B2B) | Affiliate discovery via Creators API (eligibility rules apply) + deep link; the user checks out on Amazon |
-| Third-party "buy on Amazon" services (e.g. Zinc) | Unofficial, logs in as the user | **NEVER** for now | Payments are LATER, and automating someone's account is outside rule 6/7 |
+| Third-party "buy on Amazon" services (e.g. Zinc) | Unofficial, logs in as the user | **NEVER** for now | Payments are LATER, and automating someone's account is outside guardrails 3/4 |
 | Noon | Noon Partners API is seller/integrator-side | **Partner** | Deep link for consumers; seller module only with a consenting seller |
 | Talabat / Deliveroo (food) | Talabat's reviewed docs are POS/restaurant-side; unrestricted consumer ordering access not established; Deliveroo access not reverified | **Partner / unverified** | Deep link handoff; current in-app orders only through onboarded partner mini-apps |
 | Careem (food/grocery/rides) | Agent MCP and new developer hub documented | **Reviewed access** | Local scenario sandbox available; production client ID manually reviewed. Actual domain/tool availability must be checked. No integration or access application completed. [Careem MCP](https://builders.careem.com/), [Developer Hub](https://engineering.careem.com/tech/developerhub) |
 | Uber (rides) | Published Ride Requests API; privileged production scope | **Approval required** | Existing app handoff remains; no broad production entitlement established |
 | Booking.com, Expedia Rapid, GetYourGuide, Viator | Affiliate/partner APIs | **Partner** | Discovery + affiliate handoff |
 | Payments (Stripe, Checkout.com, Telr) | Yes | **LATER** | `PLAN.md` §2 lists payments as LATER; never show `Paid` without a processor event |
-| RTA, DEWA, Salik, Dubai Police | — | **NEVER** (execution) | Display-only or "Open official portal" (CLAUDE.md rule 4) |
+| RTA, DEWA, Salik, Dubai Police | — | **NEVER** (execution) | Display-only or "Open official portal" (CLAUDE.md guardrail 3) |
 | WhatsApp Business Platform | Yes, templates + opt-in | **Partner** | Merchant notifications only, opted-in; no outbound campaigns (telemarketing hold) |
 
 ## Policy constraints (keep while building)

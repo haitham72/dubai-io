@@ -15,7 +15,7 @@ Status and parking for this plan: `PLAN.md` §5. Shell craft reference: `docs/pl
 ## Global Constraints
 
 - Truth rules (CLAUDE.md): no Confirmed/Booked/Paid/Filed without authoritative evidence; every number has provenance + as_of; demo/sandbox pills visible.
-- Memory rule 9: You told me / I noticed; Forget works; never infer health/religion/ethnicity/nationality-as-trait/gender/sexuality/politics.
+- Memory guardrail 6: You told me / I noticed; Forget works; sensitive categories (health, religion, ethnicity, sexuality, politics) only when the user states them or opts in.
 - Demos that are `{demo}` must be **fully planned** — never “what’s my gym?” / “what phone?” / “license plate first.”
 - UI bots are **app-owned** and compacted; ontology is fine-grained in memory only.
 - Taxi: “Let’s track your ride” → ride-share/card (Demo trip card + paste receipt) vs cash (where+when → RTA draft).

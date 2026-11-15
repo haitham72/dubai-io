@@ -14,7 +14,7 @@ Founder sends everything from their own identity and accounts. Agents never cont
 | Careem / Uber | Ride-hailing: MCP/affiliate or business access terms | Partnership / developer application | ☐ requested |
 | Talabat / Deliveroo | Food ordering: affiliate/API terms (fixed prices only) | Partnership inquiry | ☐ requested |
 | noon / Amazon | Product links: affiliate terms | Affiliate signup | ☐ requested |
-| RTA / DEWA / Salik / du | Display-only deep links + attribution rules | None needed (no execution, rule 4) | N/A |
+| RTA / DEWA / Salik / du | Display-only deep links + attribution rules | None needed (no execution, guardrail 3) | N/A |
 
 ## Rules
 

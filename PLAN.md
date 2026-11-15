@@ -28,6 +28,7 @@ Dubai-io is a Grok-style **residence companion** for everyday life and work in D
 - **Hosting (recommended 23 Oct):** Supabase (Postgres/Auth/Storage) + FastAPI container + Vercel for the site. Deployment is a later stage (15 Nov).
 - **Connectors (15 Nov):** testers + contest only (no App Review). Founder uploads own WhatsApp export; testers connect automatically via WhatsApp Coexistence. No DM auto-replies (separate app).
 - **Docs (15 Nov):** this file is the single plan; feature designs live in `docs/plan/` and `docs/services/`.
+- **Industry standard by default (15 Nov):** where the founder hasn't decided, use the industry-standard approach. Applied: CLAUDE.md guardrails rewritten to the standard set; one memory system (connector data → existing temporal tables); changes land via pull request.
 
 Earlier product rulings D01–D18 (19 Oct): [docs/archive/PLAN-2026-11-02.md §3](docs/archive/PLAN-2026-11-02.md).
 

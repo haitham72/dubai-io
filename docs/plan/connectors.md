@@ -49,7 +49,7 @@ Status: planning only, nothing built. Testers + contest only. Deployment is a la
 
 1. Sync sources into `source_items`.
 2. `FAST_MODEL` fan-out reads batches → JSON candidates `{claim, category, evidence_ids[], confidence}` (interests, routines, places, frequent contacts, work topics, posting habits, tone, …).
-3. Merge into the existing profile engine.
+3. Merge into the existing profile engine. **One memory system:** `source_items` is the raw layer; everything derived (facts, episodes, hypotheses) goes into the existing temporal tables (`profile_facts` with `valid_from/valid_to`, `episodes`), with `evidence` pointing back to `source_items`. No second memory store.
 4. Show in Me with links back to the source message/post.
 
 Instagram analytics numbers go to a Dashboard workspace.
