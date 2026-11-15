@@ -38,8 +38,8 @@ swift test --package-path apps/ios/Core                   # 15 iOS contract test
 
 ## State
 
-Backend verified (227 tests); clients build. Website design was founder-rejected — see `docs/request-backlog.md` (redo brief, left for another LLM). Missing provider keys keep some paths honestly unavailable; device/PostgreSQL/hosted checks remain open.
+Backend verified (227 tests); clients build. Website design was founder-rejected — see `PLAN.md` (redo brief, left for another LLM). Missing provider keys keep some paths honestly unavailable; device/PostgreSQL/hosted checks remain open.
 
 ## Docs
 
-`CLAUDE.md` (router) → `docs/status.md` (current state) → `PLAN.md` (scope) → `ARCHITECTURE.md` → `handoff.md` (run-book) · Backlog: `docs/request-backlog.md` · Client contracts: `docs/references/ios-swift-plan.md` · External review prompt: `docs/references/external-review-prompt.md`
+`CLAUDE.md` (router) → `PLAN.md` (direction, scope, current state, next, run-book) → `ARCHITECTURE.md` · Feature plans: `docs/plan/` · Agents: `docs/services/agents/` · Superseded docs: `docs/archive/`

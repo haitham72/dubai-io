@@ -2,7 +2,7 @@
 
 **Target (founder, 23 Oct 2026, final): the mobile app is the PWA in `apps/web`** (Swift is stopped; the sandbox is no longer being retired). The `apps/web` touch points below are the build targets. Website (`apps/site`) parity lands later via `docs/plan/website-rebuild.md`; iOS notes below are historical.
 
-Status: plan only. Covers the founder's WhatsApp-style calls feedback, services 3.1 thumbnails, panels-not-popups, and services directory expansion. Do not implement until signed off. Source log: `docs/request-backlog.md` ("Calls WhatsApp-style + services 3.1 thumbnails").
+Status: plan only. Covers the founder's WhatsApp-style calls feedback, services 3.1 thumbnails, panels-not-popups, and services directory expansion. Do not implement until signed off. Source log: `PLAN.md` ("Calls WhatsApp-style + services 3.1 thumbnails").
 
 ## 1. Calls screen — WhatsApp style
 
@@ -64,7 +64,7 @@ Rules per entry (no exceptions):
 
 - Filed per category via `docs/services/intake.md`; default outcome is a registry row, not a bespoke mini-app.
 - Every entry carries provenance; info-only entries link "Open official portal".
-- Execution (top-up, filing, donation, booking) only via a real registered adapter with explicit per-action approval and verified provider evidence — rule 1 intact (no authoritative event, no success status).
+- Execution (top-up, filing, donation, booking) only via a real registered adapter with explicit per-action approval and verified provider evidence — guardrail 1 intact (no authoritative event, no success status).
 - Without an adapter the entry shows the blocker + portal link and keeps the draft; never a fake Send.
 - Donations: licensed charities only; license/provenance shown; same approval + evidence path as payments.
 - Grid density follows §2 (3.1 rows); categories group entries so the grid stays scannable as it grows past dozens of entries.

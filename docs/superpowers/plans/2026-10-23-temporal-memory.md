@@ -12,10 +12,10 @@
 
 ## Global Constraints
 
-- Rule 9 (root `CLAUDE.md`): every stored item is visible and editable in Me; stated facts = `user_supplied` ("You told me"); inferred = hypotheses with `provenance: inferred`, confidence, evidence, valid time, Confirm / Edit / Not true / Forget.
-- **Never infer** health, religion, ethnicity, nationality-as-trait, gender, sexuality, politics — extraction drops these categories before storage (deny-list + classifier check), with tests.
+- guardrail 6 (root `CLAUDE.md`): every stored item is visible and editable in Me; stated facts = `user_supplied` ("You told me"); inferred = hypotheses with `provenance: inferred`, confidence, evidence, valid time, Confirm / Edit / Not true / Forget.
+- **Sensitive categories** (health, religion, ethnicity, sexuality, politics) only when the user states them or opts in — extraction drops them otherwise, before storage (deny-list + classifier check), with tests.
 - Unconfirmed hypotheses only re-rank, with a visible "Because…" chip; never pre-fill, never on approval cards, never trigger proactive messages, never set status.
-- Proactive advice fires only from the scheduler/outbox (rule 8), deduped, consented, quiet hours respected.
+- Proactive advice fires only from the scheduler/outbox (guardrail 8), deduped, consented, quiet hours respected.
 - Owner-scoped everywhere; forgetting deletes the row and its derived embeddings/links.
 - Founder's personal temporal_note data is never imported.
 

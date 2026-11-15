@@ -5,7 +5,7 @@ Status: **planning draft** (2 Nov 2026). This is the **huge fine-grained tree** 
 - **User sees** (UI bots, short): Lifestyle · Career · Social · Household · Money · Travel · (Me = profile, not a task bot). Exact short list still founder-owned.
 - **Engine holds** this tree; a **subagent** restructures it into temporal_note kinds/edges/`valid_from`–`valid_to`.
 - Paths are stable IDs (`lifestyle/sports/gym`). Labels can localize later.
-- **Never infer** (rule 9): health conditions, religion, ethnicity, nationality-as-trait, gender, sexuality, politics. Leaves marked `⚠ user-stated only` must not be hypothesized.
+- **Sensitive** (guardrail 6): health conditions, religion, ethnicity, sexuality, politics. Leaves marked `⚠ user-stated only` are stored only when the user states them or opts in.
 - **Civic execution** leaves: draft + portal / sandbox only until a real adapter + approval + evidence.
 
 Rollup legend: each top ontology root maps to one UI bot in `[brackets]`.

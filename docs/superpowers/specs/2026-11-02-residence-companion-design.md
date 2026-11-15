@@ -1,6 +1,6 @@
 # Dubai-io residence companion — core design (2 Nov 2026)
 
-Status: **active brief (2 Nov)** — folded into `PLAN.md` / `handoff.md` and execution plan `docs/superpowers/plans/2026-11-02-residence-companion-mcp.md`. Does not replace `docs/plan/unified-app-design.md` for shell/craft — this file is the **product brief + dogfood bar**.
+Status: **active brief (2 Nov)** — folded into `PLAN.md` and execution plan `docs/superpowers/plans/2026-11-02-residence-companion-mcp.md`. Does not replace `docs/plan/unified-app-design.md` for shell/craft — this file is the **product brief + dogfood bar**.
 
 ## 1. One-line product
 
@@ -132,7 +132,7 @@ Rules:
 - Plate / roof colour are **optional later chips** (“anything else you remember?”), never the first gate.
 - Cash path is **location + time → contact RTA** (handoff + draft), not pretend GPS of the car.
 - Ride-share path = **B+A**: show a labelled **Demo** fixture trip card (Careem/Uber/Hala-style: route, time, last-4 of card or “Paid in app”) **and** offer “Paste trip link / receipt” as fallback. No live connector required for dogfood.
-- Staged demo replies labelled **Demo**; RTA send only with real adapter + approval + evidence (rule 1/4).
+- Staged demo replies labelled **Demo**; RTA send only with real adapter + approval + evidence (guardrails 1/3).
 
 Dogfood pass for #16: ask “I left my bag in a taxi last night” → “Let’s track your ride” + payment cards → ride-share shows Demo trip card (+ paste option) **or** cash asks where/when → RTA draft — **zero** plate required.
 
@@ -164,7 +164,7 @@ Same bar for tech (phone/plan), cars (the registered car), household providers a
 
 - Port **engine ideas** from founder `temporal_note` (events, entities with validity, hypotheses, context pack, due advice) — **not** personal vault data, not 36 MCP tools as UX, not local disk indexing for cloud users.
 - Session facts today → evolve toward Plan 6 (`docs/superpowers/plans/2026-10-23-temporal-memory.md`).
-- Rule 9 intact: visible, editable, forgettable; never infer health/religion/ethnicity/nationality-as-trait/gender/sexuality/politics.
+- guardrail 6 intact: visible, editable, forgettable; sensitive categories (health, religion, ethnicity, sexuality, politics) only when the user states them or opts in.
 
 ## 6. Architecture slices (build order)
 

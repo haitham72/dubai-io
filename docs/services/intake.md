@@ -15,6 +15,7 @@
 - **Group:**
   - `shops/` = the user buys an item (cloth, coffee, groceries, restaurants).
   - `service/` = someone does something for the user (maid, barber, laundry, pets, fix-it, runner).
+  - `agents/` = an agent works over the user's own data (emails, chats, lost item in transport). One design doc per agent; index in [`agents/README.md`](agents/README.md).
   - Neither → propose a new group and **ask** (`companion/` and `platform/` are proposed, not yet confirmed).
 - **Category:** one folder per category (`service/pets/`). Create it only when the case is picked.
 - **Existing case?** Extend it (new step, new variant) rather than duplicate it.

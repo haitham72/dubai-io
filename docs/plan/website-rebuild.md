@@ -1,6 +1,6 @@
 # Website rebuild brief — DRAFT, for the other LLM after founder sign-off (23 Oct 2026)
 
-Status: plan only. This brief is handed to a separate LLM after the founder signs it off. That LLM works only in `apps/site/**`; it does not touch `apps/api`, `apps/web`, `apps/ios`, or `supabase`. Source log: `docs/request-backlog.md` ("Website redo").
+Status: plan only. This brief is handed to a separate LLM after the founder signs it off. That LLM works only in `apps/site/**`; it does not touch `apps/api`, `apps/web`, `apps/ios`, or `supabase`. Source log: `PLAN.md` ("Website redo").
 
 ## 1. Verdict and bar
 
@@ -44,7 +44,7 @@ Requirements:
 
 ## 5. Contracts (hard rules for the other LLM)
 
-- The FastAPI backend is the ONLY backend. Every dynamic datum comes from a real endpoint with exact shapes (revisions, idempotency keys, provenance); client contract details live in `docs/references/ios-swift-plan.md` ("Web contracts").
+- The FastAPI backend is the ONLY backend. Every dynamic datum comes from a real endpoint with exact shapes (revisions, idempotency keys, provenance); client contract details live in `docs/archive/ios-swift-plan.md` ("Web contracts").
 - Never invent backend behavior, mock a success status, or present fixture/demo data without the Demo label.
 - Status words (`Confirmed`, `Booked`, `Paid`, etc.) only from authoritative provider evidence, via the backend.
 - Keys server-side only; nothing secret in client code or `.env` committed files.

@@ -2,7 +2,7 @@
 
 **STOPPED 23 Oct (founder): no further Swift development. Focus is the `apps/web` PWA and the website.** Done before parking: S0 (screenshot harness + Me/Maps crash fix) and part of S1 (`DesignSystem.swift` with light/dark-adaptive colors fixing the unreadable dark-mode chips/pills/avatars; native iOS 26 `TabView` with Ask as the search tab; intro rebuilt on the mesh with everyday-life copy). Not done in S1: ShipSwift (it is an Xcode demo app, not a Swift package, so effects must be copied with the MIT notice; the orb needs `.metal` support in `tools/generate_project.py`). Home still says "Hello, visitor." (S2). Resume from here.
 
-Status: founder un-parked native work on 23 Oct ("built by a low-quality LLM, needs substantial upgrade… should be Liquid Glass"). This plan replaces the look and structure of `apps/ios/DubaiIO/` (about 2,900 lines across 13 views). `apps/ios/Core` (typed API client, models, contract tests) stays and only grows. Backend contracts are unchanged; anything new goes through `docs/request-backlog.md`.
+Status: founder un-parked native work on 23 Oct ("built by a low-quality LLM, needs substantial upgrade… should be Liquid Glass"). This plan replaces the look and structure of `apps/ios/DubaiIO/` (about 2,900 lines across 13 views). `apps/ios/Core` (typed API client, models, contract tests) stays and only grows. Backend contracts are unchanged; anything new goes through `PLAN.md`.
 
 ## 1. Quality bar
 
@@ -44,7 +44,7 @@ Never stack glass on glass; never put glass on scrolling content rows.
 | S4 | Feed + post thread pushed on navigation; stories viewer; AI-persona replies labelled; reply status from the API's `generation` field. | Sonnet subagent |
 | S5 | Services: 3.1 thumbnails per row with snap (calls plan §2), provider detail, mini-app host sheet unchanged in behavior. | Sonnet subagent |
 | S6 | Ask (Luna chat): glass composer with beam, orb thinking states, sources/product links, draft preserved. | Claude (main) |
-| S7 | New settings screen (founder decision 23 Oct) pushed from Me: server, notifications, data/forget, acknowledgements. Profile ("You told me" / "I noticed") stays per rule 9. | Sonnet subagent |
+| S7 | New settings screen (founder decision 23 Oct) pushed from Me: server, notifications, data/forget, acknowledgements. Profile ("You told me" / "I noticed") stays per guardrail 6. | Sonnet subagent |
 | S8 | Maps: glass floating controls, category row, honest pins (user-confirmed places only). | Sonnet subagent |
 
 ## 5. Gates (every slice)
