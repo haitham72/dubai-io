@@ -38,7 +38,7 @@ npm run dev     # http://localhost:3000
 ```
 
 Point at a backend with `NEXT_PUBLIC_API_BASE` (default
-`http://localhost:8000`). Start the API from `apps/api` (see root `handoff.md`).
+`http://localhost:8000`). Start the API from `apps/api` (see root `PLAN.md`).
 
 ## Photos
 

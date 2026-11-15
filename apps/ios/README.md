@@ -34,6 +34,6 @@ apps/ios/tools/screens.sh            # every screen, both phone sizes, light + d
 
 `ARCHS=arm64` is required: the x86_64 simulator slice fails to resolve the local `DubaiIOCore` package.
 
-The macOS CI workflow runs these checks. A successful compile does not establish iPhone appearance/performance or a completed app conversion. See [native plan](../../docs/references/ios-swift-plan.md) and [handoff](../../handoff.md) for actual status.
+The macOS CI workflow runs these checks. A successful compile does not establish iPhone appearance/performance or a completed app conversion. See [native plan](../../docs/archive/ios-swift-plan.md) and [plan](../../PLAN.md) for actual status.
 
 `tools/generate_project.py` reproduces the checked-in project after adding/removing source files; this is a maintainer helper, not a build prerequisite.

@@ -6,18 +6,17 @@ Personal assistant for everyday life and work in Dubai. Contest entry (Best Pers
 
 | Task | Read |
 |---|---|
-| **Start of any session (23 Oct onward)** | `handoff.md` top section, then `docs/plan/unified-app-design.md` |
-| Current plans (unified app) | `docs/superpowers/plans/` (Plan 2 next; roadmap table at its bottom) |
-| Current branches, state, next work | `docs/status.md` |
+| **Start of any session** | `PLAN.md` — direction, decisions, current state, next, parked, scope, run-book |
+| Feature plans | `docs/plan/` (connectors, domains, journeys, unified app design, …) |
+| Agents (emails, lost item, candidates, orchestrator) | `docs/services/agents/` |
+| Parked execution plans | `docs/superpowers/plans/`, `docs/superpowers/specs/` |
 | Backend/API work | `apps/api/CLAUDE.md` |
 | Unified app (website + desktop + mobile, React) | `apps/site` + `docs/plan/unified-app-design.md` |
 | Original mobile app (FROZEN, the reference) | `apps/web/CLAUDE.md` — read-only, tag `mobile-pwa-baseline-2026-10-23` |
 | DB/migrations | `supabase/CLAUDE.md` |
-| Scope locks (IN / LATER / NEVER), demo arc | `PLAN.md` |
 | Architecture, contracts, state machine | `ARCHITECTURE.md` |
-| Run-book, runtime notes | `handoff.md` |
-| Ordered requests, backlog | `docs/request-backlog.md` |
 | Design frames | `design/CLAUDE.md` first |
+| Superseded docs (history only) | `docs/archive/` |
 
 Do not read every doc up front. Nested `CLAUDE.md` files govern their folder; the rules below always apply. Done work lives in git history; this file stays a router.
 
@@ -64,7 +63,7 @@ design/     Screen references
 
 ## Working conventions
 
-- Keep founder requests and execution order in `docs/request-backlog.md`. Finish the active item before moving on; new messages refine or queue, they don't auto-replace the task. Log any reordering in-session.
+- **One plan file.** Founder requests, decisions, state and next work go in `PLAN.md` — edit the relevant section in place (replace outdated text, don't stack "supersedes…" notes). Don't create handoff, status, backlog or session-plan files. Feature designs go in `docs/plan/<feature>.md` or `docs/services/…`; finished or superseded docs move to `docs/archive/` with a line in its README. Finish the active item before moving on; new messages refine or queue, they don't auto-replace the task.
 - Every workflow ships with fixtures plus a happy-path and a failure-path test.
 - Verify before claiming: run the touched area's tests (see folder guides). A partial slice is never "done".
 - Validate generated content by assertion (counts, schema, loader, tests) — never re-read bulk output back into context.

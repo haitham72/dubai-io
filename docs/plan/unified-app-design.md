@@ -49,7 +49,7 @@ A personal assistant for everyday life and work in Dubai (not a visitor/tourist 
 
 ## 2. Assistant behaviour (Grok Bot + ChatGPT Dots + Claude Duet)
 
-Founder: these three are "extremely close" to what Dubai-io should be. Reference summary in `docs/references/personal-assistant-direction.md`.
+Founder: these three are "extremely close" to what Dubai-io should be. Reference summary in `docs/archive/personal-assistant-direction.md`.
 
 - **Grok Bot → delegation + task threads + routines.** A request becomes a task thread in the sidebar (icon, title, live one-line status, blue unread dot). Inside: acknowledgement → what it's doing and how long → structured result with source chips → approval card when anything would be shared/sent. Routines = an approved process the user can rerun.
 - **ChatGPT Dots → ongoing responsibilities.** "Keeping track" items persist between conversations (bill due, renewal, follow-up) and report progress; activity is reviewable.

@@ -2,7 +2,7 @@
 
 **Target (founder, 23 Oct 2026, final): the mobile app is the PWA in `apps/web`** (Swift is stopped; the sandbox is no longer being retired). The `apps/web` touch points below are the build targets. Website (`apps/site`) parity lands later via `docs/plan/website-rebuild.md`; iOS notes below are historical.
 
-Status: plan only. Covers the founder's WhatsApp-style calls feedback, services 3.1 thumbnails, panels-not-popups, and services directory expansion. Do not implement until signed off. Source log: `docs/request-backlog.md` ("Calls WhatsApp-style + services 3.1 thumbnails").
+Status: plan only. Covers the founder's WhatsApp-style calls feedback, services 3.1 thumbnails, panels-not-popups, and services directory expansion. Do not implement until signed off. Source log: `PLAN.md` ("Calls WhatsApp-style + services 3.1 thumbnails").
 
 ## 1. Calls screen — WhatsApp style
 

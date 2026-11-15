@@ -3,7 +3,7 @@
 **Updated:** 29 Oct 2026 (moved to docs/plan; website-first on main)
 
 **Branch:** main
-**Status:** Product design and researched source opportunities. This document does not claim these journeys are implemented. Runtime status remains in `handoff.md`; implementation scope remains in `PLAN.md`.
+**Status:** Product design and researched source opportunities. This document does not claim these journeys are implemented. Status and scope: `PLAN.md`.
 
 ## 1. Founder direction
 

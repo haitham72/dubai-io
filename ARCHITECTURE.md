@@ -1,11 +1,11 @@
 # Dubai-io — Architecture
 
-**Updated:** 22 Oct 2026 · Scope: `PLAN.md` · Status: `handoff.md`
+**Updated:** 22 Oct 2026 · Plan, scope and status: `PLAN.md`
 **Lock:** no bidding/quote. `quote.request`, `QUOTED`, `QUOTE_ACCEPTED` do not exist.
 
 **Core rule:** the LLM reads and proposes; it never mutates. Every side effect goes through the deterministic action engine after a user tap (approval) or a merchant tap (inbox). Truth in status holds by construction.
 
-**22 Oct product direction:** everyday life/work in Dubai supersedes the visitor-first persona. Persistent responsibilities, Today/decisions, routines and connected communications are proposed in `docs/references/personal-assistant-direction.md`; they are not implemented architecture. The existing components below remain foundations. No runtime or native migration was performed for the product-research task.
+**22 Oct product direction:** everyday life/work in Dubai supersedes the visitor-first persona. Persistent responsibilities, Today/decisions, routines and connected communications are proposed in `docs/archive/personal-assistant-direction.md`; they are not implemented architecture. The existing components below remain foundations. No runtime or native migration was performed for the product-research task.
 
 ## 1. Shape
 
@@ -111,7 +111,7 @@ Background geofencing, indoor maps, ticket wallet, community, merchant-authored 
 
 `apps/ios` is a SwiftUI client, not a web-app wrapper. Initial native discovery/chat uses the existing cookie session over URLSession; production Supabase Auth/roles and anonymous-owner migration are a separate gate. Models and transport live in a small Swift package; UI state is owned by focused main-actor observable models. Backend LLM/provider keys remain server-side.
 
-Third-party browsing uses a Safari sheet and preserves chat/focus on return. Authentication requires a dedicated authentication session and compatible backend callbacks. General websites never receive the mini-app action bridge. Native Google Places results remain on a Google-provided map; a separate illustrative MapKit 3D preview contains no Google Places pins. Native approvals/status updates must use the existing server engine when that slice is implemented. See `docs/references/ios-swift-plan.md`.
+Third-party browsing uses a Safari sheet and preserves chat/focus on return. Authentication requires a dedicated authentication session and compatible backend callbacks. General websites never receive the mini-app action bridge. Native Google Places results remain on a Google-provided map; a separate illustrative MapKit 3D preview contains no Google Places pins. Native approvals/status updates must use the existing server engine when that slice is implemented. See `docs/archive/ios-swift-plan.md`.
 
 ## 13. Implemented temporal recommender and context checkpoint
 
@@ -119,7 +119,7 @@ recommendations.py owns reviewed topics, server-weighted organic-only events, ow
 
 FocusContext is bounded transient selected UI reference data, passed through LangGraph runtime context rather than storing the focus object. Whole-place chat selection is implemented; fragments, server-validated entity/plan ownership and revisioned itineraries remain planned. Recent checkpointed history is bounded to 24 messages, with 12 used by understanding. Forget deletes all checkpoint versions for the owner under a single-process turn/forget lock; production coordination remains outstanding.
 
-Authoritative execution order, gaps and acceptance gates are in PLAN.md and docs/implementation-plan.md. Google OAuth is explicitly last for the single tester. Supabase Auth/Storage/Edge services being available locally does not mean app identity, file upload or webhook integrations exist.
+Authoritative execution order, gaps and acceptance gates are in PLAN.md and docs/archive/implementation-plan.md. Google OAuth is explicitly last for the single tester. Supabase Auth/Storage/Edge services being available locally does not mean app identity, file upload or webhook integrations exist.
 
 REC-02 adds explicit reviewed-topic Edit, atomic canonical-fact/control updates, capped deterministic event replay and owner-serialized ranking snapshots. Interest reads expose bounded recent evidence and separate session/long-term expiry without retaining listing snapshots. Browser mutation pauses invalidate applied/cached/in-flight reasons; stale responses cannot restore a corrected interest. Existing local projections were reconciled to temporal-v2. Next task is REC-03; complete eligibility across provider surfaces is still pending.
 

@@ -1,6 +1,6 @@
 # Dubai-io residence companion — core design (2 Nov 2026)
 
-Status: **active brief (2 Nov)** — folded into `PLAN.md` / `handoff.md` and execution plan `docs/superpowers/plans/2026-11-02-residence-companion-mcp.md`. Does not replace `docs/plan/unified-app-design.md` for shell/craft — this file is the **product brief + dogfood bar**.
+Status: **active brief (2 Nov)** — folded into `PLAN.md` and execution plan `docs/superpowers/plans/2026-11-02-residence-companion-mcp.md`. Does not replace `docs/plan/unified-app-design.md` for shell/craft — this file is the **product brief + dogfood bar**.
 
 ## 1. One-line product
 

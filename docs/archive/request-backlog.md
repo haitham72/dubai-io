@@ -6,6 +6,10 @@ Current state: [status.md](status.md). Session spine: [../cursor-plan.md](../cur
 
 **None (2 Nov).** Founder reviews live Places + Shopping try-on grid + interactive Maps/Dashboard on `apps/site`, then reopens items below.
 
+## Connectors + "know me" profile (15 Nov, PLANNING)
+
+Founder: testers connect Instagram, WhatsApp, Slack (+ Gmail/Outlook) and Dubai-io builds a Quest-style profile of the user from them. Founder uploads own WhatsApp export; testers automatic via Cloud API Coexistence. No DM auto-replies (separate app). Testers/contest only, deployment later. Plan: [plan/connectors.md](plan/connectors.md). Agent designs: [services/agents/](services/agents/README.md) (emails / job applications first; lost item in transport later).
+
 ## Domains + website-first (29 Oct, PARKED)
 
 Founder: use **product domains** (Household / Places & trips / Services / Work & admin / General) instead of Grok predetermined bot channels; 5–15 service categories under Services. Integrate on **`main`**; website React (`apps/site` `/`) is the focus (same shell as desktop); iOS after website/desktop. Spec: [plan/domains.md](plan/domains.md). Sidebar grouping shipped in `apps/site` threads.

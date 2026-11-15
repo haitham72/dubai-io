@@ -9,8 +9,8 @@
 **Tech Stack:** FastAPI, existing `apps/api` store (SQLite FTS5 / Postgres pgvector), Next.js `apps/site`, Pydantic v2, optional MCP SDK for builder shim; learn/copy from `temporal_note` (engine only; never import personal data). Path note: founder copy may live under `Documents/Claude/Projects/temporal_note` or Cowork tree — use whichever is present; do not commit personal vault files.
 
 **Specs:** `docs/superpowers/specs/2026-11-02-residence-companion-design.md`, `docs/superpowers/specs/2026-11-02-residence-ontology-tree.md`.  
-**Session front door:** repo-root `cursor-plan.md` (this file = detailed tasks).  
-**Separate from** `handoff.md` / `PLAN.md` (old track — do not rewrite those for this work). Shell craft reference: `docs/plan/unified-app-design.md`. Plan 6 schema work can be reused inside Phase C without deleting Plan 6.
+**Session front door:** repo-root `PLAN.md` (this file = detailed tasks).  
+Status and parking for this plan: `PLAN.md` §5. Shell craft reference: `docs/plan/unified-app-design.md`. Plan 6 schema work can be reused inside Phase C without deleting Plan 6.
 
 ## Global Constraints
 
@@ -257,9 +257,9 @@ Replace/remove plate-first `demo-taxi` and empty `demo-gym` stubs as part of E4 
 
 ---
 
-## Relation to old handoff / PLAN
+## Relation to PLAN.md
 
-`handoff.md` and `PLAN.md` are a **separate track**. This companion-MCP plan does not own, close, or reorder that queue. Overlap (e.g. memory, taxi, Services) may be coordinated later by the founder; until then treat both tracks as independent.
+Since 15 Nov, `PLAN.md` is the single plan and lists this plan under Parked. Overlap (e.g. memory, taxi, Services) is coordinated by the founder.
 
 ## Verification (founder PC)
 
