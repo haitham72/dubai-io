@@ -29,5 +29,9 @@ apps/ios/Local.xcconfig
 .superpowers/
 .claude/worktrees/
 
+# Real founder data (chat exports etc.) never goes into git — lab guide: real data stays out of the repo
+/data/
+/docs/references/quest - info/
+
 # Founder private context (never commit)
 docs/Researches/quest - info/

@@ -1,6 +1,6 @@
 # Dubai-io — Plan
 
-**Updated:** 9 Nov 2026 · **Owner:** Haitham · State: [docs/status.md](docs/status.md) · Open requests: [docs/request-backlog.md](docs/request-backlog.md) · Active build: `apps/api/app/lab/CLAUDE.md`
+**Updated:** 16 Nov 2026 · **Owner:** Haitham · State: [docs/status.md](docs/status.md) · Open requests: [docs/request-backlog.md](docs/request-backlog.md) · Active build: `apps/api/app/lab/CLAUDE.md`
 
 The single plan: identity, founder decisions, scope locks, live rulings, contest facts, demo arc, pitch guardrails. Done work lives in git history; the previous version of this file is `git show main:PLAN.md`.
 
@@ -17,6 +17,24 @@ The single plan: identity, founder decisions, scope locks, live rulings, contest
 ## 2. Founder decisions log (newest first)
 
 Only decisions still in force. Superseded ones stay in git history.
+
+**16 Nov 2026 — memory design** (research, schema and numbers: `docs/Researches/memory-research-2026-11.md`)
+
+Decided (founder, 16 Nov):
+- **One memory service on Postgres (Supabase), every table keyed by `user_id`**, merging Mem0 (links between memories), Graphiti (a dated end for a fact), Hindsight (a verdict per new fact against the closest memories), the Quest tree (sections, topic and person files, profile) and the temporal_note engine. **The md tree is an export, not the store.** This settles the open Stage-2 engine pick of 8–9 Nov: no single engine is adopted.
+- **About ten tables:** `sources, source_records, chunks, topics, memories, entities, links, followups, profile, alias_suggestions`. The main ones are `memories` (the full temporal capture) and `profile` (personality rows).
+- **Topics:** a fixed list of main sections (10–15) with dynamic subtopics that agents can split, merge, add or remove; the seven life themes of 9 Nov stay the user-visible folders.
+- **A correction never overwrites:** the old memory gets an end date and a pointer to the new one. Every memory keeps the message range it came from, so "forget everything from this chat" removes everything built from it.
+- **End goals added:** (1) profile screens modelled on Quest's "What I noticed about you", "signature moves" and "Your People", with Confirm / Edit / Not true / Forget on every item; (2) a daily recommender under Notice: shared searches per topic, matched to each user's confirmed topics, pushed with a "Because…" reason, response feedback updates the weights. Cross-user signals stay aggregate-only with a visible opt-out (8–9 Nov); no user's memory is ever shown to or searched by another.
+- **Queries the product needs:** by subject across years ("select flights"), by topic or person with counts, by date; the agent answers from these and may correct memory through the same write path.
+
+Proposed, not yet approved:
+- **Extraction:** chunks sized to the model and cut where the conversation changes (a day or a pause is not a boundary); one memory per fact with its time; the sensitive check runs on messages before extraction, not as one flag per chunk; follow-up questions resolved later by a second pass that may answer only from cited memories.
+- **GraphRAG and a graph database: parked.** The `links` table keeps the door open; start only when a set of real questions fails on hybrid search plus links.
+- **Sources:** YouTube history and Instagram analytics were requested; neither is in the IN list (activity data would be counted, not narrated). Gmail + Calendar and exported chats remain the IN sources.
+- **Order of work** (one active item, no re-ranking until #1 is done): 1 a thin end-to-end slice on real data in Postgres · 2 the verdict step with end dates · 3 a minimal UI (progress bar, tree, ask box, Confirm / Forget) · 4 email · 5 one daily push for the real user from confirmed topics · 6 forget by source, demo data, pitch. The internal target stays Fri 18 Dec (§5).
+
+**Open — positioning wording.** On 16 Nov the founder described the app as an "AI companion for Dubai visitors". §1 and the 22 Oct ruling say it is **not** a visitor or tourist app. Neither is edited here; settle it by editing §1.
 
 **9 Nov 2026**
 - Identity and pillars as §1.
