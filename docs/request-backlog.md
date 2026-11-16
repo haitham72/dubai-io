@@ -51,3 +51,12 @@ Grouped Know → Notice → Do → platform. Dates are when the request was logg
 Contracts for the pending IDs above: `docs/archive/implementation-plan.md`.
 
 Idea only, no code or commitment (23 Oct): license the approvals engine (prepare → approve exact side effect → adapter → provider evidence) as SaaS. Revisit after the engine is proven.
+
+## Feature decisions
+
+Written by the `feature-ledger` skill (`.claude/skills/feature-ledger/SKILL.md`). Newest first. A changed mind adds a row and marks the old one `superseded`; rows are never deleted.
+
+| date | feature | decision | note | status |
+|---|---|---|---|---|
+| 16 Nov | WhatsApp live link (Evolution/Baileys plugin, merged from `cursor/universal-connectors-395e`) | open | Code merged but off. Conflicts with ARCHITECTURE §14 "manual export only". Awaiting founder: implement / later / other | pending |
+| 16 Nov | Non-Gmail/Calendar connector sources (Slack, Telegram, Notion, etc.) | open | Registered capabilities only; build order stays Gmail + Calendar first | pending |
