@@ -28,3 +28,6 @@ xcuserdata/
 apps/ios/Local.xcconfig
 .superpowers/
 .claude/worktrees/
+
+# Founder private context (never commit)
+docs/Researches/quest - info/

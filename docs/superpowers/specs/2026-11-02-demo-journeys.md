@@ -1,9 +1,11 @@
 # Demo journey scripts — best 5 + appendix (2 Nov 2026)
 
+**Status (9 Nov 2026):** Task-thread (Do) spec. Identity now in `PLAN.md` §1 (9 Nov); shell/UI and memory-UX sections are superseded by the Know/Notice/Do direction; the grammar, context-reuse rules and dogfood matrix remain the Do-pillar eval.
+
 Status: **ready for founder review** (Phase A2). Card-by-card; fixtures from `2026-11-02-demo-resident.md`.  
 Honest statuses only. **Demo data** / **Sandbox** pills where fixtures/sandbox apply.
 
-Shared grammar: ack → cards → detail/plan → Approve or Yes-to-all → evidence or Blocked/portal.
+Shared grammar: ack → cards → detail/plan → Approve (one explicit tap per side effect; no Yes-to-all, founder 9 Nov) → evidence or Blocked/portal.
 
 ---
 
@@ -56,7 +58,7 @@ Shared grammar: ack → cards → detail/plan → Approve or Yes-to-all → evid
 | **UI bot** | Lifestyle |
 | **Ontology** | `fun_out/beach_parks/*`, parking-as-step, food delivery |
 
-**Plan card (Yes / step / Yes-to-all)**
+**Plan card (Yes / No per step; one tap per side effect)**
 
 | Step | Content |
 |---|---|
@@ -65,7 +67,7 @@ Shared grammar: ack → cards → detail/plan → Approve or Yes-to-all → evid
 | Parking/entry | Parkin-style step — issued pass only if fixture says so |
 | Return meal | Hot meal timed to return |
 
-**Disruption chip:** “Stay another hour” → recalculate meal + parking; ask only if outside approved limits.  
+**Disruption chip:** “Stay another hour” → recalculate meal + parking; each resulting change to an order or parking is a new side effect and gets its own tap.  
 **Terminal:** each step Demo / Confirmed only with staged provider events labelled Demo.
 
 ---
@@ -99,7 +101,7 @@ Shared grammar: ack → cards → detail/plan → Approve or Yes-to-all → evid
 | **UI bot** | Household |
 | **Ontology** | `household/guests_ready`, cleaning, food |
 
-**Plan (Yes-to-all)**
+**Plan (one tap per side-effect step)**
 
 | Step | Provider pattern |
 |---|---|

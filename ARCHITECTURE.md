@@ -1,31 +1,50 @@
 # Dubai-io — Architecture
 
-**Updated:** 22 Oct 2026 · Scope: `PLAN.md` · Status: `handoff.md`
+**Updated:** 9 Nov 2026 · Scope: `PLAN.md` · State: `docs/status.md` · Root `CLAUDE.md` rules 1–10 win over this file.
 **Lock:** no bidding/quote. `quote.request`, `QUOTED`, `QUOTE_ACCEPTED` do not exist.
 
 **Core rule:** the LLM reads and proposes; it never mutates. Every side effect goes through the deterministic action engine after a user tap (approval) or a merchant tap (inbox). Truth in status holds by construction.
 
-**22 Oct product direction:** everyday life/work in Dubai supersedes the visitor-first persona. Persistent responsibilities, Today/decisions, routines and connected communications are proposed in `docs/references/personal-assistant-direction.md`; they are not implemented architecture. The existing components below remain foundations. No runtime or native migration was performed for the product-research task.
+**Identity (approved 9 Nov 2026; full text in `PLAN.md`):** a personal AI agent for people who live and work in Dubai. Pillars and their sections: **Know** (§7 memory, §14 connectors) · **Notice** (§6 proactive, §15 recommendations) · **Do** (§3 orders, §11 task engine, §12 decisions). UI work is paused while the headless pipeline is built in `apps/api/app/lab/`.
 
 ## 1. Shape
 
 ```
-apps/web (HTML/CSS/ES modules, served by apps/api at :8000)
-  /               chat · cards · Services · Maps · Me · guide · recovery
-  /merchant.html  sandbox merchant inbox + operator Demo triggers
-        │ REST commands                      ▲ SSE (order, messages, merchant inbox)
-apps/api (FastAPI, Python 3.13)
-  luna/       LangGraph: normalize → understand → validate → [research] → remember
-  actions     capabilities, approvals, idempotency, evidence gate, state machine
-  merchant    merchant role, inbox commands (through actions)
-  proactive   outbox: dedupe_key, consent, quiet hours, reminders, Demo triggers
-  profile / user_profile   episodes + hypotheses overrides · profile document + bi-temporal facts
-  catalog     host-owned fixed prices for partner mini-apps
-  google_maps Places (discovery) · Routes (estimates)
-  widgets     separate origin :8001 for mini-apps (CSP connect-src 'none')
-        ▼
-Supabase PostgreSQL 17 + pgvector (DATABASE_URL, DATABASE_SCHEMA=dubaiio; dedicated local stack) — SQLite fallback for tests/offline (app/db.py)
+apps/site  THE app: one React codebase (Next.js) → website now; desktop (Tauri/Electron) and
+           iOS/Android (Capacitor) packaging parked. UI work paused 9 Nov.
+apps/web   original mobile PWA, FROZEN reference (tag mobile-pwa-baseline-2026-10-23);
+           served by apps/api at / (and at /lab, a static alias, unrelated to app/lab/)
+apps/dash  founder ops page, static at /dash, reads /api/ops/*
+apps/ios   history only
+      │ REST commands                       ▲ SSE (actions, messages, merchant inbox)
+apps/api (FastAPI, Python 3.13, :8000)
+  luna/                LangGraph: normalize → understand → validate → [research] → remember
+  actions              capabilities, approvals, idempotency, evidence gate, order state machine
+  merchant             merchant role, inbox commands (through actions)
+  tasks / projects     task threads: revisioned commands, Today lanes, check-backs · workspaces
+  proactive            outbox: dedupe_key, consent, quiet hours; reminders, morning brief,
+                       assist mode, Demo triggers
+  memory/              temporal_note-slim: mem_* tables; timeline, search, hypotheses, forget
+  profile/user_profile episodes + hypotheses · profile document + bi-temporal facts
+  recommendations/discovery   temporal ranker · owner-bound live place discovery
+  mail_profile, oauth, auth   Gmail read-only "needs a reply" · Google grants · connections
+  reading              pull-only headline metadata
+  catalog              host-owned fixed prices (fictional sandbox merchants, demo_fixture)
+  google_maps          Places (discovery) · Routes (estimates) · static map · photos
+  main: shopping, tryon   Google Shopping AE via SerpAPI · still-photo try-on (tryon.py)
+  prayer               Aladhan prayer times
+  communities, social_generation   communities/chats/feed + persona replies: PARKED 9 Nov
+  ml_api/ml_models/ml_rag/ml_tasks comment sentiment, embeddings, hybrid search (Celery)
+  ops                  founder ops /api/ops/* (X-Ops-Token; unset token = 404)
+  widgets              separate origin :8001 for mini-apps (CSP connect-src 'none')
+  lab/                 headless Know/Notice/Do pipeline, being built (9 Nov)
+      ▼
+Supabase PostgreSQL 17 + pgvector (DATABASE_URL, DATABASE_SCHEMA=dubaiio) — SQLite fallback
+(app/db.py). The 2 Nov local run uses SQLite (DATABASE_URL blank); see docs/status.md.
+RabbitMQ (broker) + Redis (results) serve only the ML worker; dev runs CELERY_EAGER=1.
 ```
+
+Native iOS stopped 23 Oct 2026; history in git.
 
 ## 2. Contracts
 
@@ -36,7 +55,7 @@ Money.kind: Literal["fixed", "from_estimate", "fixture"]   # never "quote"
 CardAction: id (registered capability or ui.* only), label, requires_approval, shares[]   # no free-form payload
 ```
 
-- **Luna output** (`apps/api/app/luna/schema.py`): `intent` ∈ lost_item · airport_guide · service_offers · places_near · order_status · info_question · market_quote · greeting · smalltalk · unclear; typed slots; `stated_facts` (allowlisted keys); a short `reply` with no URLs, prices or status words (enforced in `validate`). Research intents add `answer` + `sources[]`.
+- **Luna output** (`apps/api/app/luna/schema.py`): `intent` ∈ lost_item · airport_guide · service_offers · places_near · order_status · task_help · info_question · market_quote · product_search · greeting · smalltalk · unclear; typed slots; `stated_facts` (allowlisted keys); a short `reply` with no URLs, prices or status words (enforced in `validate`). Research intents add `answer` + `sources[]`.
 - **Bridge:** mini-apps may send `order.request` only (`app.ready`, `host.context`, `host.error` are control messages). The host rebuilds items and total from `catalog.py`; widget prices are ignored.
 
 ## 3. Order state machine
@@ -53,9 +72,21 @@ ambiguous adapter outcome / interrupted dispatch ─► UNKNOWN_STATUS (no autom
 - Approval binds snapshot hash + revision + recipient/effect/total; drift → 409. Approval and merchant commands take an `Idempotency-Key`.
 - Capabilities without an adapter save drafts as `BLOCKED` with the blocker shown; no fake Send.
 
-## 4. Data (Postgres)
+## 4. Data
 
-`actions` (JSON record + provider), `sessions`, `preparations`, `approvals`, `merchant_sessions`, `merchant_commands`, `consent`, `outbox` (unique owner+dedupe_key), `episodes`, `profile_overrides`, `user_profile` (typed core + `attributes` JSONB), `profile_facts` (JSONB value/evidence, validity window, `embedding vector(1536)` reserved), OAuth grant tables, recommendation_events, profile_interests, recommendation_runs and LangGraph checkpoints. Supabase backend tables/checkpoints are in private schema dubaiio; browser roles have no access. SQL is written once (`?` placeholders); `app/db.py` translates for Postgres. Tests run on both (`TEST_DATABASE_URL`).
+| Area | Tables |
+|---|---|
+| Actions | `actions` (JSON record + provider), `sessions`, `preparations`, `approvals`, `merchant_sessions`, `merchant_commands` |
+| Proactive | `consent`, `outbox` (unique owner + `dedupe_key`), `assist`, `routines` |
+| Tasks | `tasks`, `task_events`, `projects`, `project_tasks`, `project_chats`, `project_commands` |
+| Profile | `episodes`, `profile_overrides`, `user_profile` (typed core + `attributes` JSONB), `profile_facts` (JSONB value/evidence, validity window, `embedding vector(1536)` reserved) |
+| Memory (`memory/schema.py`) | `mem_events`, `mem_entities`, `mem_entity_aliases`, `mem_relationships`, `mem_event_entities`, `mem_patterns`, `mem_advice`, `mem_ontology_paths`. Created at runtime; no versioned Supabase migration or RLS yet (memory-engine checklist C6) |
+| Recommender | `recommendation_events`, `profile_interests`, `recommendation_runs` |
+| Connectors | OAuth grant tables (encrypted credential custody) |
+| Community (parked) | `personas`, `communities`, `community_members`, `posts`, `comments`, `hidden_posts`, `votes`, `chat_threads`, `chat_messages`, `chat_reads`, `chat_archived`, `contacts`, `call_log`, `social_generations`, `comment_labels`, `comment_embeddings` |
+| Conversation | LangGraph checkpoints |
+
+Backend tables and checkpoints live in the private schema `dubaiio`; browser roles have no access. SQL is written once (`?` placeholders); `app/db.py` translates for Postgres. Tests run on both (`TEST_DATABASE_URL`).
 
 ## 5. Widget host
 
@@ -66,7 +97,12 @@ ambiguous adapter outcome / interrupted dispatch ─► UNKNOWN_STATUS (no autom
 
 ## 6. Proactive pipeline
 
-Sources: (a) a reminder the user asked for, (b) order state changes (live over SSE), (c) operator Demo triggers (labelled). Each message: `dedupe_key` (once per user), consent, quiet hours 23:00–07:00 Dubai (deferred, not dropped), template wording, stored as a normal chat message. No LLM decides when to send. No background geofencing in the PWA.
+Sources: (a) a reminder the user asked for, (b) order state changes (live over SSE), (c) a check-back the user set on a task (Gate B), (d) the opt-in morning brief routine (Gate F), (e) operator Demo triggers (labelled). Next: daily matched cards (§15). Each message: `dedupe_key` (once per user), consent, quiet hours 23:00–07:00 Dubai (deferred, not dropped), template wording, stored as a normal chat message. No LLM decides when to send. No background geofencing in the PWA.
+
+- **Scheduler/outbox jobs are allowed** (rule 8). Older "worker/cron stays out" wording means no LLM polling or unconsented jobs (rule 8 wins).
+- **Check-back:** one outbox row written in the task's transaction, key `checkback:{task}:{at}`; setting it is the consent; reschedule, pause, cancel or complete withdraws the undelivered row.
+- **Morning brief:** opt-in, 07:00–22:59 Dubai, expires after 30 days unless renewed.
+- **Assist mode** (`/api/assist`: ask · auto · learn) only changes whether consented check-backs and reminders are re-confirmed. No mode sends, shares or pays (§12).
 
 ## 7. Profile and memory
 
@@ -75,90 +111,234 @@ Sources: (a) a reminder the user asked for, (b) order state changes (live over S
 | Re-rank options | ✓ | ✓ with a visible "Because…" chip |
 | Pre-fill a field | ✓ | ✗ |
 | Approval card / shared with a merchant | ✓ via the approval card | ✗ |
-| Proactive message | ✓ with consent | ✗ |
+| Proactive message or daily card | ✓ with consent | ✗ |
 | Set any status | ✗ | ✗ |
 
 - **Profile document** (`user_profile.py`): `user_profile` is a projection of current `profile_facts` (facets identity · context · situation · preference · like · dislike · routine). A newer statement closes the old fact (`valid_to`, `superseded_by`); Forget deletes the key's history. Only told or confirmed facts are stored here.
 - **Hypotheses** (`profile.py` + `apps/web/profile.js`): real choices become episodes with allowlisted hypotheses and fixed weights (view 0.5 · dismissal 1 · choice 2); beliefs are Beta(α, β) with half-life decay; surfaced at ≥ 0.7 with ≥ 2 signals; Confirm writes a preference fact, Not true / Forget remove it and unlink evidence.
-- **Never inferred:** health, religion, ethnicity, nationality-as-trait, gender, sexuality, politics (the hypothesis allowlist cannot express them).
-- **Conversation memory:** LangGraph checkpoints in Postgres, scoped to the session owner and thread.
-
-- **Temporal recommendation boundaries (22 Oct):** `recommendations.py` projects app-owned organic events with strongest-signal caps per option/visit. `temporal-v3` requires two distinct options and visits separated by six hours before inferred long-term influence; session/long-term signals decay independently. Category taps are weak signals, not distinct-option evidence. Confirmed preferences and paused controls remain separate; negative feedback reduces inferred influence.
-- **Trusted discovery:** cookie-owned `POST /api/discovery/places` accepts reviewed category/subcategory, coordinates, radius, open-now and sort. It fetches one provider batch, checks supported constraints and ranks transient candidates. Provider listing payloads are not saved in recommendation runs. Unsupported budget/date/stock constraints are not verified by this contract; the generic rank endpoint cannot authorize provider facts or actions.
-- **Display stability:** result snapshots change on explicit refresh/filter/navigation rather than each click; profile corrections/visit rotation invalidate saved and in-flight explanations. Single-item dismissal is owner-scoped for seven days and does not create a topic dislike. Current Supabase adoption/verification gate is in the detailed implementation plan.
+- **Product memory** (`memory/`, temporal_note-slim): owner-scoped `mem_*` events, entities, aliases, relationships, patterns and advice; `/api/memory/*` serves timeline, search, hypotheses, context and forget (Forget removes search/timeline visibility at once). The people map is a view over `mem_relationships`. Personal vault data is never imported.
+- **Life-theme folders (founder 9 Nov):** the user sees memory as seven folders: Career, Learning, Projects, People & family, Events, Home & money, Travel. The residence ontology (`docs/superpowers/specs/2026-11-02-residence-ontology-tree.md`, `mem_ontology_paths`) stays the fine tree underneath. Supersedes "the user never browses folders" (2 Nov).
+- **Every fact keeps its source** (email, chat export, chat turn) plus provenance, so "forget everything from this source" works. Each source shows an evidence-limits line (e.g. "voice notes not read; history before <date> not seen"). (from `docs/Researches/CLAUDE.md` Quest §)
+- **Never inferred:** health, religion, ethnicity, nationality-as-trait, gender, sexuality, politics (the hypothesis allowlist cannot express them). Third parties' private lives are not inferred either.
+- **Decay follows §R-ND (founder 9 Nov):** nothing is deleted or hidden for being old. An unrefreshed weighted item loses 20–50% of its weight per refresh window; a mention, interaction, Confirm/Edit or provider re-verification resets the clock. Weight floors above zero: the item stays searchable and visible as "faded". Only the user's Forget removes it. Confirmed `user_supplied` facts never decay (a check-in prompt at most). Each decay step stores weight, last_refresh, decayed_at, delta. The recommender's 90-day expiry and temporal_note's linear decay to 0 conflict: §R-ND wins; conversion is open (C3, P4). Source: `%USERPROFILE%\Documents\Claude\Projects\proposals\memory-engine\CONSOLIDATED-PLAN.md` §R-ND.
+- **Engine is staged:** the deterministic temporal_note port (`memory/`) first; Mem0 or Graphiti per user later (pick and trigger pending, `DECISION-BRIEF.md` in the same package). No new database without a measured need.
+- **Conversation memory:** LangGraph checkpoints in Postgres, scoped to the session owner and thread. Checkpoints are never the durable record of a task (§11).
 
 ## 8. Luna (LangGraph)
 
-`normalize` → `understand` (OpenAI structured output; profile digest in context) → `validate` (allowlists, confidence gate, URL/phone/claim stripping) → conditional: `research` for `info_question` (Tavily, SerpAPI fallback; answer only from cited sources; civic questions refused) or `market_quote` (Finnhub, fixed template) → `remember` (stated facts; requests/incidents are not facts). Tool output is untrusted data. Order status is answered from the order record, never model text.
+`normalize` → `understand` (OpenAI structured output; profile digest in context) → `validate` (allowlists, confidence gate, URL/phone/claim stripping) → conditional: `research` for `info_question` (Tavily, SerpAPI fallback; answer only from cited sources; civic questions refused) or `market_quote` (Finnhub, fixed template) → `remember` (stated facts; requests/incidents are not facts; skipped for task- or project-scoped turns). Tool output is untrusted data. Order status is answered from the order record, never model text. Research queries never copy private project notes.
 
 ## 9. Security and privacy
 
-Anonymous cookie sessions own their actions, profile and threads; merchants see only their provider's orders and the approved fields; operator triggers need a merchant session. Keys stay server-side. Snapshots in the browser hold plain text and structured data, never raw HTML or OAuth tokens. Google OAuth connector is implemented but unconfigured.
+Anonymous cookie sessions own their actions, profile and threads; merchants see only their provider's orders and the approved fields; operator triggers need a merchant session. Keys stay server-side. Snapshots in the browser hold plain text and structured data, never raw HTML or OAuth tokens. Google OAuth grants (identity scopes plus optional `gmail.readonly`) are encrypted server-side; live use needs the founder's OAuth setup (§14). `/api/ops/*` needs `X-Ops-Token`; the token is never logged.
+
+### 9.1 Threat model
+
+| Threat | Mitigation | State |
+|---|---|---|
+| Prompt injection via hidden text in a page, email, export or notification | Imported content is untrusted quoted data; templated extraction, not raw page text in prompts; `validate` strips URLs/phones/claims; only registered IDs execute (rule 7) | built |
+| The agent is a delegated identity | Three modes per domain: **read** (fetch), **recommend** (propose cards, drafts, decisions), **act** (only via a registered adapter after a tap on the exact effect, rules 4, 6) | built (action engine) |
+| Credential theft | OAuth2 only; refresh tokens encrypted at rest, never in chat, model input or provider pages; no passwords; no browser/password automation | built |
+| Code or OS compromise | Provider HTML only on the sandboxed widget origin (§5); any future agent browsing in an isolated, domain-limited session | widgets built |
+| Runaway or abused agent | Throttles and quotas (REV-01); a **kill switch** that stops all agent work at once | kill switch pending |
+| No accountability | User-readable **audit log** of every agent action with timestamps; today `task_events`, approvals, `merchant_commands`, outbox | unified log pending |
+
+(from `docs/archive/Researches/Dubai-io_product evolution.md` "Security & Privacy"; only its threat model is adopted, not its desktop/AI-browser product shape)
+
+### 9.2 Data preservation and abuse limits
+
+- **DB-02:** never reset or delete the original (unhealthy) Postgres volume; no destructive repair. Supabase is a new target, not its recovery. Before any import: consistent export, owner/action/fact/outbox/checkpoint inventory, source-vs-target counts and a conflict report. Never overwrite new records or merge owners by display name. Old SQLite checkpoints were archived, not imported. If the old source is unreadable, document the limit.
+- **No public `tester` owner override.** Server-owned cookie sessions stay the identity until real auth exists.
+- **REV-01:** before public exposure, paid Places/Routes/static-map/photo proxies need owner checks, quotas, bounded validation and honest upstream timeouts (a working key settles nothing), and the sandbox merchant PIN needs attempt throttling. Production merchant/operator roles are separate work; never weaken ownership checks because there is one tester. Fix connection lifecycle and multi-worker turn/forget coordination before claiming production readiness.
+
+(from `docs/archive/implementation-plan.md` §0.4, DB-02, REV-01; `docs/archive/references/assistant-review-decisions.md`)
 
 ## 10. Deliberately not built
 
-Background geofencing, indoor maps, ticket wallet, community, merchant-authored widgets, merchant webhooks, Redis, PostGIS, microservices. (Left this list by founder direction: community as the 23 Oct redesign; Redis/RabbitMQ/Celery for the ML pipeline; government write actions, payments/escrow and third-party purchasing in the 23 Oct services unlock — real adapters + verified evidence required. The rest stands.)
+Background geofencing, indoor maps, ticket wallet, merchant-authored widgets, merchant webhooks, PostGIS, microservices, a new database without a measured need, general browser/password automation, and unofficial messaging integrations (WhatsApp linked device, Baileys, Evolution API, session replay). Community was built 23 Oct and **parked 9 Nov** (code stays; personalised feeds stay under Notice). Redis/RabbitMQ/Celery serve the ML pipeline only. Government writes, payments and purchasing run only through real adapters with per-action approval and evidence (rule 4).
 
-## 11. Remaining architecture gaps
+## 11. Task engine (Do)
 
-- Production auth and roles (token auth for native, operator role separate from merchant), cross-device accounts.
+A task thread is the durable record of handed-over work. LangGraph checkpoints hold conversation only.
+
+### 11.1 State machine (target)
+
+States: `DRAFT → WORKING → {WAITING_USER, WAITING_EXTERNAL, BLOCKED} → COMPLETED`; `PAUSED` and `CANCELLED` reachable from any non-terminal state.
+
+| From | Event | To | Guard |
+|---|---|---|---|
+| DRAFT | accept | WORKING | outcome non-empty; owner matches; idempotency key unused |
+| WORKING | need user input | WAITING_USER | the question matters to the next step |
+| WORKING | external wait | WAITING_EXTERNAL | an external dependency is open; no local work remains |
+| WORKING | source failure | BLOCKED | terminal for this attempt; reason stored |
+| WAITING_* | user answers | WORKING | `revision` matches; answer applied atomically |
+| WAITING_* | external event | WORKING / COMPLETED | the event is provider evidence, not model text |
+| any | pause | PAUSED | no in-flight write may land after the pause revision |
+| any | cancel | CANCELLED | `cancelled_at` set; in-flight writes rejected by the guard |
+| any | completion | COMPLETED | the outcome is satisfied with evidence for its type |
+
+`COMPLETED` is per outcome, never per model sentence: a draft completes with a draft; a send with provider evidence; a reservation with the provider's evidence (rule 1). **Code today** implements the manual subset: `WAITING_USER ↔ PAUSED → COMPLETED | CANCELLED`; user-reported completion is `user_supplied`, never provider evidence. DRAFT, WORKING, WAITING_EXTERNAL and BLOCKED are not implemented yet.
+
+### 11.2 Revision write guard
+
+```sql
+-- every state-changing write:
+UPDATE task SET status = :new, revision = revision + 1, updated_at = now()
+ WHERE id = :task AND owner = :owner
+   AND revision = :expected AND cancelled_at IS NULL;
+-- zero rows => rejected (stale worker, cancelled task or concurrent change)
+```
+
+1. No transaction spans a provider or LLM call: commit intent, call, commit outcome.
+2. After any network wait, re-read and re-assert the revision. A late worker that fails the guard is recorded as a `stale_worker` event, not silently dropped.
+3. A cancel after dispatch keeps status CANCELLED but is shown as "cancelled after dispatch: the request may still have reached the provider". The provider's event, if any, still lands in the action engine.
+4. Approvals bind to `base_revision` + the exact action snapshot; a changed recipient, price, field set or date invalidates the approval.
+5. Every notification is an outbox row whose `dedupe_key` derives from `(task_id, event_seq, kind)`. Outbox dedupe prevents duplicate messages, not duplicate provider calls.
+
+Code today: `tasks.py` adds `AND status IN ('WAITING_USER','PAUSED')`; the `stale_worker` event is not implemented yet.
+
+### 11.3 Race and staleness matrix (each row is a test)
+
+| # | Interleaving | Required behaviour |
+|---|---|---|
+| 1 | Cancel lands while a provider call is in flight | Guard rejects → `stale_worker` event → task stays CANCELLED with the "may still have reached the provider" note |
+| 2 | Two scheduler sweeps fire the same check | `dedupe_key` + `next_check_at` advanced in the same transaction as the claim: one message, one call |
+| 3 | User edits a constraint mid-check | Stale result discarded and re-derived; user sees "updated", not "done" |
+| 4 | Worker restarts mid-check | `next_check_at` persisted before the work; resume or idempotent re-run; one effect |
+| 5 | Quiet hours | The check runs; delivery waits until 07:00 |
+| 6 | Ambiguous provider outcome (timeout after send) | `UNKNOWN_STATUS`, reconciled by reading the provider; never a blind retry |
+| 7 | Stale worker writes after a revision bump | Guard rejects; `stale_worker`; Today recomputed from current state |
+| 8 | Two owners reference the same merchant action | Owner-scoped rows at every read and write |
+| 9 | Briefing item read after its source changed | `checked_at` + `max_age` visible; past `max_age` the item is hidden |
+| 10 | User edits memory while a task runs | Context is captured per revision; the change applies to the next check and the task shows what changed |
+
+### 11.4 Context and recovery rules
+
+- **Task context is captured per revision, not inherited.** A later memory correction applies to the next step, with a visible "constraints updated" line. Memory edits never silently change approved dates, recipients or shared fields, and stale workers or caches never undo a Forget.
+- **References expire.** Focus expires after 30 minutes; a source reference older than its `max_age` is dead, and asking about it says so rather than silently re-fetching.
+- **Checkpoints are never the durable record.** Task progress lives in `tasks`/`task_events`; make this a migration-level invariant.
+- **Late responses cannot restore old state.** A correction that lands while a Today projection is in flight invalidates it.
+- **A late worker never revives a cancelled task.** Revision predicates fence local writes, not external calls already dispatched; late provider evidence stays in the action engine.
+- **RUN-01:** persist each transition before saying work is underway; bounded leases, duplicate-event keys, retries only for reads. Recheck revision, cancellation and permissions after network waits. Never hold a database transaction across a provider or LLM call. An ambiguous side effect keeps `UNKNOWN_STATUS` and is reconciled, never auto-repeated. Routines are approved structured steps, never model-written code, with per-run budgets and backoff. A stopped host means no background work; never promise always-on.
+
+(from `docs/archive/references/assistant-experience-review.md` §9.2–9.5; `docs/archive/references/assistant-experience-plan.md` RUN-01; `docs/archive/references/assistant-review-decisions.md` "Engineering qualifications")
+
+### 11.5 Implemented task contracts (`tasks.py`, `projects.py`)
+
+- **Routes:** owner from the cookie session; callers cannot set owner, status or provenance; no model, connector or worker on task reads or commands; terminal tasks cannot be edited or reopened.
+- **Idempotency:** create/command keys dedupe retries and reject changed payloads; replay returns current state. Task updates and events commit together under SQLite writer locks or PG owner advisory locks, with the revision predicate as final guard. `ActionStore` owner transactions also fence action claim/result writes, task commands and merchant receipts; adapter calls stay outside the claim transaction.
+- **Source links:** `from-action` validates action ownership and creates or reopens one task per source; `from-report` prepares the fixed unconnected recovery capability and tracks it. Neither approves or dispatches. `task.source` is an immutable action ID; tracking changes never touch the source action.
+- **Task focus in chat:** the client sends only task ID, revision and selection time; the server resolves ownership, rejects stale revisions, expires it after 30 minutes and passes task data via `AssistantContext`, outside checkpoints, with no authority.
+- **Reviewed edits:** `task_help.task_edits` (bounded, allowlisted) → read-only `prepare-change` returns normalized before/after and rejects stale, terminal or ambiguous changes → Apply posts that exact change with revision + command key; Not now applies nothing; one attempt key survives an ambiguous response. Task dates stay in the task, never in global profile facts.
+- **Projects:** `projects`, `project_tasks`, `project_chats`, `project_commands` share the owner transaction with creation keys, revision predicates and command hashes. Transcripts stay on the device. Only project ID/revision/time leave the client; the server resolves notes plus ≤ 20 task summaries; a late reply is suppressed if the revision changed. No project command executes actions.
+- Verified on SQLite; PostgreSQL and device acceptance pending. Frozen `apps/web` client behaviour (Home feed, Today sheet, gestures) is documented by its code at the baseline tag.
+
+## 12. Decisions and attention
+
+- **Decision-card rule:** a Needs-you item shows what changed, the evidence with source and time, the consequence and the next action. If it cannot fill all four, it is not Needs-you. Unknown evidence cannot manufacture urgency. Needs you holds only crucial stops on tracked sources: approve a send, an unknown send outcome, a missed deadline. Ordinary tasks stay On your list.
+- **Show exactly what is approved:** changed times/plan, account, recipient, content, attachments, shared fields or the host-owned fixed price.
+- **Approvals bind to revisions:** to the task and action revisions plus the exact snapshot. A changed recipient, price, field set or date invalidates the old approval (409 → reload).
+- **A local plan change is not an external send.** Accepting a plan edit never shares, buys, books or confirms anything externally.
+- **One tap per side effect (rule 6 strict, founder 9 Nov):** no "Yes to all" or batch approval. Learn mode may offer a standing rule that the user confirms; it may re-rank or pre-select confirmed choices only, and never replaces the tap.
+- **Required states:** edit, defer, approve, stale revision, permission revoked, failed read, unknown send outcome, superseded result, source unavailable.
+
+### 12.1 FIN-08 contracts (implemented; every client reuses them)
+
+| Surface | Endpoint(s) | Contract |
+|---|---|---|
+| Today / Needs you | `GET /api/today` | `needs_you.tasks[].decision` = `{kind: approve\|check\|deadline, title, detail, action_id, revision, snapshot_hash?, amount_aed?, earlier_target?}`. One lane per task (needs_you, running, scheduled, on_list, paused, completed); `counts` = needs_you, running, on_list, paused; `scheduled.tasks` carry `check_back_at`. Running work joins tracked tasks to canonical actions without dispatching; source status shows apart from task status |
+| Decision card | `GET /api/actions/{id}`, `POST /api/actions/{id}/approve` (Idempotency-Key, `snapshot_hash`, `revision`), `POST /api/actions/{id}/cancel`, `POST /api/tasks/from-action` (Not now) | Context chip, amount, title, Will be shared / Never shared, note, Approve, Not now (keeps it), Discard. Approve sends the exact revision on screen; 409 means reload |
+| Result card | client | Context, title, verdict first, `Updated hh:mm`, Keep on Today (`from-action` / `from-report`), Open. Pinning is device-local and never changes the source |
+| Brief | `GET /api/today`, `GET/PUT /api/routines/brief` | "N moving · N need you", one line per item led by a chip. Deterministic, never model text |
+| Task commands | `POST /api/tasks/{id}/commands` | edit, pause, resume, cancel, complete, `check_back` (`at` or null), `staged_next`, `collect`; always `expected_revision` + `command_key` |
+| Messages | `GET /api/messages`, `/api/messages/stream` | Outbox only (consented, deduped, quiet hours). `task_checkback` carries `task_id`. No LLM decides timing |
+| Follow-up mode | `GET/PUT /api/assist` | `ask \| auto \| learn`; `offer_auto` drives Learn's one-time offer. No mode sends, shares or pays |
+| Lost item (TAXI-02) | task commands | Receipt-first quick replies; trip confirmed before the report; staged replies labelled at every step; collection only, delivery shown unavailable |
+
+(from `docs/archive/references/ios-swift-plan.md` "Web contracts…(FIN-08)"; `docs/archive/implementation-plan.md` FIN-01..07)
+
+### 12.2 Attention (ATTN-01)
+
+- Reuse outbox consent, dedupe and Dubai quiet hours. A source watcher runs only inside an explicit responsibility or routine with cadence, scope, expiry and revocation.
+- Model-generated candidate insights may be reviewed, but deterministic policy decides delivery. Inferred interests alone never start a proactive notification.
+- **Bundle routine progress** into the task or an optional digest; **interrupt only for a permitted actionable change.** Define deferral, dismissal and expiry; suppress repeated unchanged updates.
+- Reading is in-app by default; news push needs separately chosen topics and rules. Sponsorship stays apart from Today urgency, regulation updates and approval cards. A briefing item never takes a Needs-you slot or counts in "N things to do".
+- **A quiet day is valid.** A briefing may be short or empty; no endless scroll or unread pressure. Measure false urgency and repeated interruptions.
+
+(from `docs/archive/references/assistant-experience-plan.md` UX-01, UX-03, BRF-01, ATTN-01; `docs/archive/references/assistant-experience-review.md` RV-03; `docs/archive/references/personal-assistant-direction.md` §7; `docs/archive/references/assistant-review-decisions.md`)
+
+## 13. Turn context and signals
+
+Only the relevant subset of this bounded context enters a turn:
+
+| Context | Contents |
+|---|---|
+| Current focus | Surface, resolved entity ID, selected card ID and selected fragment; the user can clear or change it |
+| Active activity | Request, order, task or plan ID and revision; draft vs confirmed items |
+| User situation | Confirmed preferences, party size, relevant dates, stated deadlines, accessibility needs, only when supplied |
+| Temporal context | Dubai time, intended date, available time, duration assumptions, travel estimates with sources |
+| Evidence | Provider/search responses with source, fetched time, validity and availability status |
+| Available actions | Registered capabilities and their blockers |
+
+- **Context never grants permission to execute.** Resolve IDs against server/provider data; check freshness and revision before applying any proposed change.
+- **Selected text is untrusted quoted context:** selected fragments, snippets, articles, emails and pages are never instructions and never newly confirmed facts.
+- **A browsing focus is never persisted** as a durable preference without user confirmation.
+- **A click is a weak, temporary signal; a statement is a visible fact.** A statement or confirmation can become a "You told me" fact at once. Repeated choices may support an editable hypothesis with timestamps, confidence, evidence and expiry, never unlimited transcript accumulation.
+- **Implemented:** `luna/schema.py:FocusContext` is bounded transient reference data in LangGraph runtime context, never stored. Whole-place selection works; fragments and server-validated entity/plan ownership are CTX-02. History: 24 checkpointed messages, 12 used by understanding. Forget deletes every checkpoint version for the owner. Chat history is device-local; restored history keeps typed metadata, never executable HTML.
+
+(from `docs/archive/references/assistant-context.md`; `docs/archive/implementation-plan.md` CTX-01)
+
+## 14. Connectors (Know)
+
+- **Every connector declares its real capabilities.** Never promise one with no authorized, supported method.
+- **Order (founder 9 Nov):** Gmail + Calendar first, with the founder as Google test user. This reverses "Google OAuth last" (`implementation-plan.md` §0.4) and "manual-first, OAuth-last" (review decision #8).
+- **PC-01 manual input first:** a selected message, forwarded text or user-provided appointment becomes a task before any inbox access. The manual path keeps working without OAuth.
+- **Gmail contract:** read-only (`gmail.readonly`), explicit scopes and consent, bounded mailbox selection, sender/thread/reference validation, bodies treated as untrusted data, dedupe of repeated events, and honest revoked/stale/unknown handling. **An email is not proof:** a received email is not authoritative evidence of ownership, collection or any status. Outbound contact is a separate approved capability.
+- **Calendar:** not built yet. Calendar entries, like emails, are information, not commands granting authority.
+- **WhatsApp = manual export only.** The user exports chats with WhatsApp's own Export chat; Dubai-io reads the files (text only; media memory is LATER). No linked device, Baileys, Evolution API or automation of a personal account. Exports carry contact names, not numbers, so merging one person across accounts is an "I noticed: same person?" confirmation.
+- **Google Workspace data never feeds advertising.** Gmail/Calendar context used for planning is never eligible for sponsored targeting, and is never mixed into an ad profile to be filtered later.
+- **Identity scopes are not an interest profile.** Google sign-in (`openid email profile`) grants neither Gmail/Calendar access nor Google's private ad-interest labels.
+- **Outbound (later):** show destination, sender account, exact body and attachments; record provider evidence; a timeout is unresolved, never auto-resent. Contacting someone again is a separate approved effect; no autonomous outreach loops. A Gmail notification is a source event, not permission to act. Other channels (Slack etc.) map external IDs to a proven account and reuse the same task IDs and approvals.
+- **Code today:** `oauth.py` grants (identity + optional `gmail.readonly`); `mail_profile.py` `/api/mail/status`, `/api/mail/needs-reply` give an honest blocker without OAuth, or `DEMO_MAIL=1` cards labelled `demo_fixture`, and write memory events. Missing: Calendar connector, WhatsApp export importer.
+
+(from `docs/archive/references/assistant-review-decisions.md` TAXI-02, #8; `docs/archive/references/assistant-context.md`; `docs/archive/references/personal-assistant-direction.md` PC-01, PC-04; `docs/references/recommender-plan.md`; `docs/Researches/CLAUDE.md` rules 5–6 and Quest §)
+
+## 15. Recommendation and suggestion contracts (Notice)
+
+Detail and scoring rationale: `docs/references/recommender-plan.md`.
+
+- **Temporal recommender (REC-01..03B, `recommendations.py`, built):** reviewed app-owned topics; server-weighted, organic-only events; owner dedupe; one option/topic/visit contributes at most its strongest positive signal (save = 1.5) plus a bounded negative. **Session:** 30-min half-life, 24-h expiry. **Long-term:** 30-day half-life, 90-day inferred expiry (a floor under §R-ND, §7). **Two-visit qualification (`temporal-v3`):** inferred long-term influence needs ≥ 2 distinct options and visits ≥ 6 h apart; tabs opened together don't count; category taps are weak signals. Visits rotate after 30 min idle or 24 h. Explicit intent wins at once; negative feedback reduces influence; dismissal hides one item for seven days without a topic dislike. Only confirmation writes a `user_supplied` preference. Behavioural evidence never authorizes sharing, prefill, proactivity or status; fixture episodes never train. Corrections invalidate cached and in-flight reasons. Replay: `python -m app.recommendations`.
+- **Trusted discovery (REC-03B):** `POST /api/discovery/places` takes reviewed category/subcategory, coordinates, radius, open-now and sort; fetches one provider batch; filters radius/open-now before ranking (unknown hours fail open-now). Listings are never saved. Budget, date and stock claims are unsupported; the generic rank endpoint authorizes no provider fact or action. Snapshots change only on explicit refresh, filter or navigation.
+- **Pending:** REC-03C (host/provider-verified services and products; sandbox completions never train taste; pharmacy/medical activity never trains a health profile); REC-04 (measure p50/p95; scheduled cleanup, reconciled with §R-ND).
+- **SUG-01 occasions:** only from user-given facts (birthday, school start, family visit, conference, departure, a saved date), stored with date, recurrence, time zone, provenance and consent, apart from inferred interests. Never infer a milestone or presume children. **Recipient taste stays separate:** a cake for a friend is not the user's preference and trains no recipient traits. Expired occasions stop surfacing. In-app suggestion and proactive notification are different permissions.
+- **EVT-01 freshness before personalization:** query the explicit Dubai date window, verify identity, venue and date with the organizer, and drop past, cancelled or out-of-area events before scoring; a favourite artist never revives an expired event. News is not ticket inventory; no source means an honest empty state.
+- **ADS-01 sponsorship:** labelled only: sponsor named, `Sponsored` label, "Why this ad", dismiss, organic choices still visible, never mixed into organic scores; no inventory means no ad; never Workspace data, sensitive traits or transcripts. **Today all signals are organic-only;** ad-eligible evidence needs separate consent.
+- **CTX-02 ticket-availability guard:** comments, news and snippets are not live inventory. Without an inventory adapter, say availability is unverified and offer a sourced booking-page handoff.
+- **Reading (Gate D, `reading.py`):** pull-only metadata. Only public topic labels go upstream; publisher/date/URL filters before display; bounded timeouts, 15-minute cache, per-owner rate bound. No polling, article bodies, generated articles or stored photos. Politics is opt-in. Rights: `docs/references/reading-source-register.md`.
+- **Daily matched cards (lab, next):** confirmed interests + recent memory → candidates (news/RSS, GitHub, YouTube) → the ranker → a morning outbox slot → a card with a "Because…" chip and Save / Less like this. Confirming an item in the reveal is what unlocks its cards; an unconfirmed hypothesis never triggers one.
+
+(from `docs/archive/implementation-plan.md` REC-01..04, CTX-02, SUG-01/01A, EVT-01/01A, ADS-01; `docs/archive/references/assistant-context.md`; `docs/Researches/CLAUDE.md` Quest § step 5)
+
+## 16. Gates A–F (acceptance)
+
+| Gate | Acceptance (condensed) | Code today |
+|---|---|---|
+| **A** Manual tasks + Today | Owner-scoped CRUD/pause/resume/cancel; idempotent writes; bounded events; zero LLM calls on task routes. Tasks start "Waiting for your update"; saving never starts monitoring or sends; completion is user-reported with provenance. Preview caps never hide overflow. Tests: owner isolation, stale edits, restart, duplicates, terminal states, rollback | Built; SQLite only |
+| **B** Delayed check-back | Scheduler/outbox job (rule 8). Explicit time, Dubai zone, consent; persisted claims/expiry, retry limits, restart recovery, fencing; no LLM polling. Without a permitted fresh source it is a manual update request. Cancel/reschedule suppresses obsolete messages. Tests: double sweep, crash, in-flight cancel, quiet hours, owners. Hosting and budget before any always-on promise | FIN-05; live delivery unverified |
+| **C** One service vertical | Existing action engine only; decision binds the exact snapshot and revision; evidence survives task cancellation; fixed price; honest sandbox; provider-only completion. Tests: ambiguous send, timeout, late evidence, duplicate dispatch | FIN-01; sandbox only |
+| **D** Optional briefing | Not a dependency of A–C. Source register, rights, freshness, taxonomy and sensitive-content rules before adapters; pull-only cards with controls and links; honest outages; no news push, private email ingestion or sponsored urgency | `reading.py`; acceptance pending |
+| **E** One connector = **Gmail** (+ Calendar) | **First, not last (founder 9 Nov).** Scope, revoke and isolation tests before use (§14). Tests: manual-input path, wrong recipient/account, ambiguous date, revoked permission, duplicate event, unknown send outcome. No pretending a mailbox is connected; no outbound messages from tests | `gmail.readonly` needs-reply; OAuth unconfigured; no Calendar |
+| **F** One reviewed routine | Scheduler/outbox job (rule 8). Needs Gate B durability, explicit activation and expiry, bounded cost, cancellation; useful over repeated cycles; no silent activation or post-cancel action. Channels and browser automation stay later | FIN-07 morning brief |
+
+(from `docs/archive/references/assistant-review-decisions.md` "Delivery gates"; `docs/archive/implementation-plan.md` "Next gates", FIN table; `docs/archive/references/assistant-experience-plan.md` §6; Gate E reordered by the founder 9 Nov)
+
+## 17. Remaining architecture gaps
+
+- Production auth and roles: Supabase Auth, FastAPI bearer verification, proof-based anonymous-owner transfer, separate merchant/operator roles, cross-device accounts. Local Supabase Auth/Storage/Edge does not mean identity, uploads or webhooks exist.
 - Real provider adapters beyond the sandbox inbox; provider cancellation.
+- Durable task worker: the DRAFT/WORKING/WAITING_EXTERNAL/BLOCKED states, leases and the `stale_worker` event (§11).
+- Memory: `mem_*` migration/RLS parity (C6), the §R-ND sweep (C3), Calendar connector, WhatsApp export importer, the Stage-2 engine pick.
 - Semantic recall over `profile_facts.embedding` (column reserved, nothing writes it).
+- Kill switch and a unified user-visible activity log (§9.1).
 - Production multi-worker coordination for turn/forget and scheduled retention cleanup; single-tester checkpoint forgetting is implemented and tested.
-- Contract codegen (`packages/contracts` → TS/Swift) when a second client starts.
-
-## 12. Native client boundary (21 Oct)
-
-`apps/ios` is a SwiftUI client, not a web-app wrapper. Initial native discovery/chat uses the existing cookie session over URLSession; production Supabase Auth/roles and anonymous-owner migration are a separate gate. Models and transport live in a small Swift package; UI state is owned by focused main-actor observable models. Backend LLM/provider keys remain server-side.
-
-Third-party browsing uses a Safari sheet and preserves chat/focus on return. Authentication requires a dedicated authentication session and compatible backend callbacks. General websites never receive the mini-app action bridge. Native Google Places results remain on a Google-provided map; a separate illustrative MapKit 3D preview contains no Google Places pins. Native approvals/status updates must use the existing server engine when that slice is implemented. See `docs/references/ios-swift-plan.md`.
-
-## 13. Implemented temporal recommender and context checkpoint
-
-recommendations.py owns reviewed topics, server-weighted organic-only events, owner dedupe and aggregate per-option/visit strongest-signal caps, session (30-minute half-life / 24-hour expiry) and long-term (30-day half-life / 90-day expiry) projections, stable ranking runs and visible controls. Current candidate ranking accepts bounded caller IDs/topics: trusted provider eligibility, wider surfaces and variety remain REC-03. Behavioral evidence never authorizes sharing, prefill, proactivity or status. Confirmation alone writes a canonical user_supplied preference. Legacy six hypotheses coexist; fixture episodes are never training data.
-
-FocusContext is bounded transient selected UI reference data, passed through LangGraph runtime context rather than storing the focus object. Whole-place chat selection is implemented; fragments, server-validated entity/plan ownership and revisioned itineraries remain planned. Recent checkpointed history is bounded to 24 messages, with 12 used by understanding. Forget deletes all checkpoint versions for the owner under a single-process turn/forget lock; production coordination remains outstanding.
-
-Authoritative execution order, gaps and acceptance gates are in PLAN.md and docs/implementation-plan.md. Google OAuth is explicitly last for the single tester. Supabase Auth/Storage/Edge services being available locally does not mean app identity, file upload or webhook integrations exist.
-
-REC-02 adds explicit reviewed-topic Edit, atomic canonical-fact/control updates, capped deterministic event replay and owner-serialized ranking snapshots. Interest reads expose bounded recent evidence and separate session/long-term expiry without retaining listing snapshots. Browser mutation pauses invalidate applied/cached/in-flight reasons; stale responses cannot restore a corrected interest. Existing local projections were reconciled to temporal-v2. Next task is REC-03; complete eligibility across provider surfaces is still pending.
-
-## 11. Gate A manual tasks ? 22 Oct source addition
-
-`tasks.py`: backend-owned `tasks` and `task_events`; no unused Decision/Job/Artifact tables. `POST/GET /api/tasks`, `GET /api/tasks/{id}`, revision-bound `POST /api/tasks/{id}/commands`, bounded activity pagination and `GET /api/today`. Cookie owner comes from the existing store; callers cannot set owner/status/provenance. Manual state: WAITING_USER ? PAUSED; either may be explicitly CANCELLED or COMPLETED with a user-supplied result. Terminal tasks cannot be edited/reopened. No model, connector or worker participates; user-reported completion is not provider evidence.
-
-Create and command keys dedupe retries and reject changed payloads. Replay returns current state rather than restoring an older response. Task updates/events commit together; SQLite writer locks or PG owner advisory locks protect competing handles, with a revision predicate as final guard. Reads are bounded; event history pages are owner scoped. These local guards do not establish scheduling or external dispatch safety; Gates B/C still need durable claims/recovery and action snapshot binding.
-
-`tasks.js`/`tasks.css`: Today is a page-host sheet above preserved visual Home/onboarding, with a handle-only gesture plus tap/keyboard alternatives. `/api/today` returns owner-scoped uncapped totals, due-ordered manual preview, dynamic urgency flags and paused/completed projections. No real Decision/worker is present, so Needs you/Running stay empty/hidden. Task detail uses a mounted polite announcement region and focused state chip after commands; refresh retains cached Today. Versioned migration `20261022000100_tasks.sql` enables RLS/revokes browser-role access in the private schema; live Supabase application/access tests are pending. Full SQLite: 145 passed, 11 skipped (17 task checks). Browser checks cover both requested phone sizes, normal/reduced motion, keyboard and computed no-shadow behavior; physical iPhone/screen-reader and PG remain unverified. `status-labels.js` maps component codes to plain text while `data-status` retains codes. Keep-track bridge, taxi replies, Reading, workers and Gmail are outside this correction; see PLAN.md.
-
-### 11.1 Additive source links and task discussion
-
-The subsequent finish-the-app authorization lifts the bounded correction's feature holds without a redesign. `POST /api/tasks/from-action` validates canonical action ownership and creates/reopens one task per source using a reserved creation key under the owner write transaction. `POST /api/tasks/from-report` idempotently prepares the fixed unconnected recovery capability and tracks it; neither route approves or dispatches. `task.source` is an immutable action ID reference inside existing task JSON, so no new schema is required. Detail resolves current source data; missing sources leave task/history accessible. Tracking cancellation/completion does not mutate the source action.
-
-Client `task_focus` contains only task ID/revision/selection time. The API resolves ownership, rejects stale revisions and expires references after 30 minutes. Canonical task/source reference data is supplied through `AssistantContext`, outside checkpoint state; normal user/assistant conversation text remains ordinary conversation history. It is never authority to change a task, execute an action, or create a confirmed profile fact. `task_help` extends the existing intent allowlist; all previous intents/handlers remain. Chat renders task status from the canonical route and preserves a task link across reload. Reviewed chat edit proposals and actual Decisions are still the next steps. Full SQLite suite at this checkpoint: 150 passed/11 skipped; PG and physical-device acceptance remain separate.
-
-### 11.2 Reviewed task edits from chat
-
-`task_help.task_edits` is a bounded allowlisted suggestion list, never executable instructions. The app posts a suggested `TaskChanges` plus expected revision to `POST /api/tasks/{id}/prepare-change`. The owner-scoped read-only route rejects stale/terminal tasks and unsupported/ambiguous fields, returning normalized before/after values. Apply posts that exact normalized change through the existing revision/idempotency command contract; Not now applies nothing. The review retains one attempt key after an ambiguous response; it never guesses whether to repeat a different operation. Task editing never alters linked Action data. No new table is needed for this local-task review contract.
-
-Task-focused conversation does not automatically add global profile facts: task constraints/dates belong to the task revision. Runtime context stays outside checkpoint state; ordinary conversation text persists as before. Current verification: 154 SQLite passed/11 skipped, four phone-size/motion browser variants, one deliberately lost-response retry, and two synthetic live model checks (task proposal/original lost-item routing). Actual Decisions remain next; PG/device/hosting and full live golden coverage remain separate.
-
-
-## 12. Home task feed, chat history and pull-only News (22 Oct)
-
-The web client remains plain ES modules. `homeFeed` owns normal vertical scrolling: the preserved `homeHero` card area, inline owner-scoped Today/task history, then Reading after pagination is exhausted. A task-detail/review sheet remains distinct from this feed. Vertical touch is native browser panning; card dragging claims only horizontal gestures. Hidden Home has parent opacity zero as well as inertness so inline-visible WebGL card elements cannot show through chat or Services.
-
-`/api/today.current_work` joins tracked, active owner tasks to canonical Actions without reconciliation/dispatch. Current source-backed work takes deck priority; otherwise up to five existing qualified recommendation starters are used. Current-source subscriptions reuse the Action status stream, bounded by the five cards, and debounce summary refresh. Source status is shown separately from the manual task status; provider completion never reports that the user completed a manual note.
-
-Device-local chat storage keeps the existing session format and lazily adds archived conversations. New chat changes only thread identity; saved facts and drafts remain. History restoration retains typed source/task/proposal metadata, never saved executable HTML. Switching aborts in-flight model turns and detaches old source watchers. UI uses a standard native-dialog history sidebar and the existing user menu. This is not cloud-synced conversation storage. Project workspaces are implemented as described below.
-
-Reading is a pull-only metadata adapter. Owner-scoped inspected interests select allowlisted public topics; only public query labels go upstream. HTTPS/publisher/date/URL/title filters precede display; publication dates are explicitly provider-reported. An eight-second provider timeout, 15-minute public-metadata process cache and per-owner rate bound prevent repeated scroll loads. Preferences are checked again after retrieval; client correction generations drop older results. Hide/Show and topic choice remain controls. Headline context in Ask is transient metadata, not a claim of full-article access or new confirmed memory. No polling, article generation, article bodies or publisher photos. Source/reuse and production gates: `docs/references/reading-source-register.md`.
-
-ActionStore owner transactions now coordinate Action claim/result writes, task command fences and merchant receipts. Optional guard callbacks run within the claim transaction; adapter calls remain outside it. Receipts and source changes commit/roll back together. These guards are prerequisites for real Decisions/check-backs, which remain pending.
-
-
-## 13. Project workspaces (22 Oct)
-
-`projects`, `project_tasks`, `project_chats` and `project_commands` use the shared owner transaction boundary. Creation keys, revision predicates and command hashes make create/edit/link/archive commands replay-safe. Task membership validates canonical ownership; a chat reference is owner-scoped and cannot read another owner's transcript. Transcripts remain on the device. Unlink and archive preserve task/chat records. Commands retain metadata/hashes instead of old shared-note text. Runtime PostgreSQL RLS plus the versioned private-schema migration are source-delivered, with deployment tests still gated.
-
-The standard sidebar opens Projects and its linked records. Empty project chats remain locally restorable. The selected workspace is visible in chat; known project turns wait for its ownership lookup; unscoped chat keeps its existing fallback. Only project ID/revision/time leave the client for the model endpoint. The server validates chat membership and resolves the current shared notes plus at most 20 task summaries. Stale references return a clarification without routing a new service intent; late replies are suppressed if the workspace revision changes during a model call. Model runtime data is transient; `remember` suppresses global profile writes for project/task-scoped turns. Research query expansion cannot copy private project notes. Ordinary chat messages can contain quoted notes, so edits affect future context and do not claim to erase existing conversations. These semantics were covered by owner/concurrency/rollback/replay/context tests, four browser variants and one synthetic live model check. No project command executes Actions.
+- Contract codegen (`packages/contracts` → TypeScript for `apps/site`) once the site consumes the API.

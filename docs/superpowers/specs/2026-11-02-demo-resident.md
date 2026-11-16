@@ -1,6 +1,6 @@
 # Demo resident pack — “Sam Resident” (2 Nov 2026)
 
-Status: **ready for founder review** (Phase A1). Fixture identities only — `demo_fixture` / `user_supplied`. Never present as a real person.
+Status: **ready for founder review** (Phase A1). Fixture identities only — every seeded fact carries `provenance: demo_fixture` and renders a **Demo data** pill, never "You told me" (that label is only for what a real user stated, `user_supplied`; rules 2 and 9). Never present as a real person.
 
 **Used by:** best-5 journeys in `2026-11-02-demo-journeys.md` + memory seed (companion-MCP Phase C4).  
 **UI bots:** threads roll up per `2026-11-02-residence-ontology-tree.md` cheat sheet.
@@ -10,10 +10,10 @@ Status: **ready for founder review** (Phase A1). Fixture identities only — `de
 | Field | Value | Provenance |
 |---|---|---|
 | Display name | Sam Resident | demo_fixture |
-| Area | JLT (Jumeirah Lakes Towers) | user_supplied |
-| Household | Partner + 2 kids (Year 5, Year 3) | user_supplied |
-| Usual t-shirt size | XL | user_supplied |
-| Quiet hours | 22:00–07:00 Dubai | user_supplied |
+| Area | JLT (Jumeirah Lakes Towers) | demo_fixture |
+| Household | Partner + 2 kids (Year 5, Year 3) | demo_fixture |
+| Usual t-shirt size | XL | demo_fixture |
+| Quiet hours | 22:00–07:00 Dubai | demo_fixture |
 
 ## Entities (seed table)
 
@@ -35,6 +35,6 @@ Status: **ready for founder review** (Phase A1). Fixture identities only — `de
 
 ## Rules
 
-- Every seeded fact shows **Demo data** (or Sandbox) in UI when used.
+- Every seeded fact is stored as `provenance: demo_fixture` and shows **Demo data** (or Sandbox) in UI when used; never "You told me".
 - Journeys **must not** ask for gym name, phone model, plate, insurance tier, or school years already in this pack.
 - Founder may rename entities; keep `id`s stable for seed JSON.

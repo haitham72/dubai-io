@@ -1,5 +1,7 @@
 # Dubai-io website (`apps/site`)
 
+> **Stale: describes the pre-unified marketing site. `apps/site` is THE app (one React codebase; see `unified/`). UI work paused 9 Nov 2026 while the headless pipeline is built.**
+
 Next.js App Router + TypeScript marketing site and signed-in web view.
 Plain CSS only — no UI kit, no Tailwind, no shadows. Cyan accent, generous
 space, light/dark via `prefers-color-scheme`, `prefers-reduced-motion`
@@ -38,7 +40,7 @@ npm run dev     # http://localhost:3000
 ```
 
 Point at a backend with `NEXT_PUBLIC_API_BASE` (default
-`http://localhost:8000`). Start the API from `apps/api` (see root `handoff.md`).
+`http://localhost:8000`). Start the API from `apps/api` (see `docs/status.md`).
 
 ## Photos
 

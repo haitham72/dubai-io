@@ -1,9 +1,11 @@
 # DubaiIO: Useful Journeys and Demo Design
 
+**Status (9 Nov 2026):** Do-pillar journey research; identity in `PLAN.md` §1.
+
 **Updated:** 29 Oct 2026 (moved to docs/plan; website-first on main)
 
 **Branch:** main
-**Status:** Product design and researched source opportunities. This document does not claim these journeys are implemented. Runtime status remains in `handoff.md`; implementation scope remains in `PLAN.md`.
+**Status:** Product design and researched source opportunities. This document does not claim these journeys are implemented. Runtime status remains in `docs/status.md`; implementation scope remains in `PLAN.md`.
 
 ## 1. Founder direction
 
@@ -25,6 +27,8 @@ Founder statements, 26 Oct:
 
 > all of this with user pressing y/n on steps or y to all
 
+*(Superseded 9 Nov by the founder: no "y to all". Rule 6 strict: one explicit tap per side effect.)*
+
 > i am discussing the app design not necessarily the api endpoint
 
 > even if an api doesnt exist there is an option that i invest to create it with a service if it is needed down the line
@@ -39,7 +43,7 @@ KHDA is promoted to a leading demo candidate. Insurance navigation is a second l
 
 1. **Understand the outcome.** Ask for the few constraints that change the plan. Reuse relevant facts the user has explicitly saved.
 2. **Prepare together.** Assemble options, costs, dependencies and timing into one understandable plan. Work on independent steps in parallel.
-3. **Approve simply.** Offer Yes / No / Change on a step and Yes to all for the displayed plan. A declined step should revise the plan without discarding the whole task.
+3. **Approve simply.** Offer Yes / No / Change on each step of the displayed plan; every side effect gets its own explicit tap (rule 6 strict, founder 9 Nov; no Yes to all). A declined step should revise the plan without discarding the whole task.
 4. **Carry it forward.** Keep bookings, route, documents, tickets, receipts and unresolved decisions together in the task and its chat.
 5. **Adapt when something changes.** Recalculate downstream timing and surface the decision that needs the user. Preserve already confirmed arrangements.
 6. **Finish the outcome.** Follow through to the meal arriving, reimbursement pack being ready, or the moving checklist being completed; retain the evidence and useful context.
@@ -82,13 +86,13 @@ The user experiences one continuing task. The app keeps execution records and co
 - Include a disruption: unavailable item, delayed provider, rejected slot or changed departure. Evaluate how much work the user must do to recover.
 - Keep visible source and provider evidence so the result is assessable. No invented savings, success rates or competitor limitations.
 
-### Yes to all
+### One tap per side effect
 
-The user approves a clear plan with its actions, prices or agreed spending limits, timing, necessary information sharing and permitted alternatives. The assistant then performs the approved steps as their dependencies become ready. It asks again when a material change falls outside that approval, such as a higher total, different recipient or unavailable preferred option.
+The user sees a clear plan with its actions, prices, timing, necessary information sharing and permitted alternatives. Each step with a side effect (a share, send, order or booking) is approved with its own explicit tap on an approval card listing exactly the fields and amount. The assistant then performs each approved step as its dependencies become ready. It asks again, with a new tap, when a material change falls outside that approval, such as a higher total, different recipient or unavailable preferred option.
 
 Optional steps remain independently selectable. An unchanged step should not repeatedly demand approval. Any real booking or completion shown in the app must have provider evidence. A demo can use labelled staged provider events while presenting the intended complete experience.
 
-This is a proposed batch-approval experience following the founder's instruction. Implementation must reconcile it with the current per-action approval engine; this document does not silently change that engine or authorize real purchases or external messages now.
+Founder decision, 9 Nov: rule 6 strict. There is no "Yes to all" or batch approval; this matches the current per-action approval engine. This document does not authorize real purchases or external messages now.
 
 ## 3. Leading journey: choose schools and a home together
 
@@ -141,7 +145,7 @@ This is a proposed batch-approval experience following the founder's instruction
 | Stage | Assistant coordinates | What the user sees or decides |
 |---|---|---|
 | Prepare | Check the user's party, timing, budget, beach essentials already owned and meal preferences. Assemble the missing items and a delivery slot using a suitable merchant such as Noon Now. | Review basket, published prices and provider delivery estimate. The founder's 15-minute delivery is a scenario target that needs the merchant's current confirmation. |
-| Plan | Choose the destination/entrance and route; align departure with supplies arriving. Include travel, parking and entry arrangements appropriate to the selected beach area. | One trip plan with costs and timing; approve steps individually or together. |
+| Plan | Choose the destination/entrance and route; align departure with supplies arriving. Include travel, parking and entry arrangements appropriate to the selected beach area. | One trip plan with costs and timing; approve each step with its own tap. |
 | Arrange | Obtain approved supplies and available parking/entry products through the appropriate providers. | Confirmations and receipts appear within the same outing. |
 | Leave | Present the route and what is ready; flag a supply delay or changed travel time that affects departure. | Leave now / Change departure / Skip the delayed item. |
 | Arrive | Bring forward the parking details and provider-issued entry pass or QR code when that entrance requires one. | The useful ticket or pass is immediately accessible. |
@@ -179,9 +183,9 @@ The common benefit is converting documents, conditions and scattered services in
 
 **Coordination demonstration:** the Mamzar outing. Show supplies, travel, parking/entry and dinner changing together after one request such as "we will stay an extra hour."
 
-**Agentic moment:** the user changes a constraint after approving a plan. The assistant preserves completed steps, identifies dependent work, revises the plan and requests only the necessary new decision. Avoid a sequence of unrelated search screens.
+**Agentic moment:** the user changes a constraint after approving a plan's steps. The assistant preserves completed steps, identifies dependent work, revises the plan and requests only the necessary new decision. Avoid a sequence of unrelated search screens.
 
-**Approval moment:** show both stepwise Yes/No and a single Yes to all for the concrete displayed plan. Track approved, waiting, confirmed and completed states using actual or clearly staged evidence.
+**Approval moment:** show stepwise Yes/No for the concrete displayed plan, one explicit tap per side effect (no Yes to all; founder 9 Nov). Track approved, waiting, confirmed and completed states using actual or clearly staged evidence.
 
 **UAE PASS:** an optional identity demonstration if it serves a selected journey. It is not a prerequisite for showing value in KHDA comparison or a user-supplied insurance document workflow.
 
@@ -228,10 +232,10 @@ The earlier thirteen ideas remain available as inputs. Their fabricated sample a
 
 1. Refine the KHDA, insurance and Mamzar stories as complete conversations and task timelines, ending in the selected concrete execution target above.
 2. Choose one pilot with a limited provider set, a named delivery owner and a measurable completion result. Identify which provider-confirmed events are real and which events must be labelled staged in a demo.
-3. Design the shared plan card, Yes/No/Change controls, Yes to all, documents/map/ticket presentation and response to changed timing.
+3. Design the shared plan card, Yes/No/Change controls, one approval tap per side effect, documents/map/ticket presentation and response to changed timing.
 4. Validate the smallest useful evidence package for the selected pilot: a few school pages/fee sheets or one consented insurance network list and benefit document.
 5. Deliver the selected read/compare/plan slice within the approved app surfaces, then add the chosen connections in dependency order.
-6. Reconcile new execution/batch-approval requirements explicitly before implementation. Government execution, real external sends and purchases are not authorized merely by discussing this design.
+6. Reconcile new execution requirements explicitly before implementation; batch approval is out (founder 9 Nov, one tap per side effect). Government execution, real external sends and purchases are not authorized merely by discussing this design; they run only through a real registered adapter with explicit per-action approval and verified provider evidence (rule 4).
 7. Test the pilot against the user's current process and ChatGPT plus ordinary apps. Prioritise successful follow-through and recovery before expanding the service catalogue.
 
 ## References

@@ -1,23 +1,14 @@
 # CLAUDE.md — Dubai-io (contest build)
 
-Personal assistant for everyday life and work in Dubai. Contest entry (Best Personal AI Agent). Repo: `github.com/haitham72/dubai-io` (private).
+A personal AI agent for people who live and work in Dubai (identity: `PLAN.md` §1). Contest entry (Best Personal AI Agent). Repo: `github.com/haitham72/dubai-io` (private).
 
 ## Orient — read only what your task needs
 
-| Task | Read |
-|---|---|
-| **Start of any session (23 Oct onward)** | `handoff.md` top section, then `docs/plan/unified-app-design.md` |
-| Current plans (unified app) | `docs/superpowers/plans/` (Plan 2 next; roadmap table at its bottom) |
-| Current branches, state, next work | `docs/status.md` |
-| Backend/API work | `apps/api/CLAUDE.md` |
-| Unified app (website + desktop + mobile, React) | `apps/site` + `docs/plan/unified-app-design.md` |
-| Original mobile app (FROZEN, the reference) | `apps/web/CLAUDE.md` — read-only, tag `mobile-pwa-baseline-2026-10-23` |
-| DB/migrations | `supabase/CLAUDE.md` |
-| Scope locks (IN / LATER / NEVER), demo arc | `PLAN.md` |
-| Architecture, contracts, state machine | `ARCHITECTURE.md` |
-| Run-book, runtime notes | `handoff.md` |
-| Ordered requests, backlog | `docs/request-backlog.md` |
-| Design frames | `design/CLAUDE.md` first |
+- **Canon, in order:** this file → `PLAN.md` (identity, founder decisions, IN / LATER / NEVER, contest facts, demo arc) → `ARCHITECTURE.md` (contracts, state machine, memory §7) → `docs/status.md` (current state, run commands, keys). Open founder requests: `docs/request-backlog.md`.
+- **Active build (9 Nov):** the headless Know / Notice / Do pipeline — guide `apps/api/app/lab/CLAUDE.md`.
+- **Specs on demand:** `docs/docs-map.md` §4–5 says which spec to read for which piece.
+- **Nested folder guides:** `apps/api/CLAUDE.md`, `apps/site/AGENTS.md`, `apps/web/CLAUDE.md` (frozen tree), `supabase/CLAUDE.md`, `design/CLAUDE.md` (read before any design frame), `docs/services/intake.md`.
+- **`docs/archive/` is historical** — don't read it unless the founder asks. Old versions of rewritten docs: `git show main:<path>`.
 
 Do not read every doc up front. Nested `CLAUDE.md` files govern their folder; the rules below always apply. Done work lives in git history; this file stays a router.
 
@@ -36,30 +27,33 @@ Do not read every doc up front. Nested `CLAUDE.md` files govern their folder; th
 
 **Service execution:** prepare from confirmed facts → approval of the exact side effect → a registered adapter → provider evidence. When no adapter exists, show the blocker and keep the draft; never a fake Send. **UI:** no shadows; plain AI text, tinted user box, white rounded action boxes.
 
-## Original mobile app is the reference (founder, 23 Oct)
+## Original mobile app and the UI (founder, 23 Oct; paused 9 Nov)
 
-**Founder priorities (23 Oct, final word for this stage):** no rush to ship — polished, refined, high quality, working, and **easy to change all the time**: a design change must be **one edit that echoes everywhere** (website, desktop, iOS/Android). So: **one React codebase** (`apps/site`), one central design system (tokens + shared components; no per-screen styling forks), and every screen ported from the **original mobile app** looking **as close as possible to it**. **Light mode first**; dark (Graphite) comes after light is polished. Option 'wrap the original as the phone app' was considered and declined.
+**Founder priorities (23 Oct):** one React codebase (`apps/site`) with one central design system, so a design change is **one edit that echoes everywhere** (website, desktop, iOS/Android); every screen is ported from the original mobile app, as close as possible to it.
+**Light mode first**; dark (Graphite) comes after light is polished.
 
-**The original mobile app (`apps/web`) is the reference, not a 'classic' or old version (founder, 23 Oct).** The new app's phone experience mirrors it with minimal changes — same flows, structure and copy unless the founder asks otherwise. Never label it classic, old, legacy or stale.
+`apps/web` is the original mobile app — the reference, never labelled classic, old, legacy or stale. It must not be modified, diluted or retired without explicit founder approval. Check before every merge: `git diff --quiet mobile-pwa-baseline-2026-10-23 HEAD -- apps/web`. Subagent briefs must forbid touching it.
 
-`apps/web` must not be modified, diluted or retired without explicit founder approval. Check before every merge: `git diff --quiet mobile-pwa-baseline-2026-10-23 HEAD -- apps/web`. Subagent briefs must forbid touching it.
+**UI work paused 9 Nov** while the headless pipeline is built in `apps/api/app/lab/`.
 
 ## Gates
 
 - If a request needs something `PLAN.md` lists as **LATER** or **NEVER**, stop and ask. Don't build a "small version" of it.
 - New service idea, shop or reference image: follow `docs/services/intake.md`; file under `docs/services/<shops|service>/<category>/`; never write a case into `PLAN.md`; stop if it touches a NEVER item.
-- Never add top-level `*.md` beyond the four canon files. Add agent guidance as nested `<dir>/CLAUDE.md` instead.
+- Never add top-level `*.md` beyond the four canon files: `CLAUDE.md`, `PLAN.md`, `ARCHITECTURE.md`, `README.md`. Add agent guidance as nested `<dir>/CLAUDE.md` instead.
 
 ## Repo layout
 
 ```
-apps/api/   FastAPI + LangGraph backend, tests/
-apps/site/  THE app: one React codebase → website, desktop app (Tauri/Electron), iOS/Android (Capacitor)
-apps/web/   Original mobile app PWA — FROZEN, the reference (tag mobile-pwa-baseline-2026-10-23), embedded at /?devices
-apps/ios/   Native SwiftUI client — STOPPED 23 Oct (history only)
-supabase/   Migrations, local project config
-docs/       Backlog, plans, references, services/
-design/     Screen references
+apps/api/          FastAPI + LangGraph backend, tests/
+apps/api/app/lab/  Headless Know / Notice / Do pipeline — active 9 Nov (guide: CLAUDE.md there)
+apps/site/         THE app: one React codebase → website, desktop app (Tauri/Electron), iOS/Android (Capacitor); UI paused 9 Nov
+apps/web/          Original mobile app PWA — FROZEN, the reference (tag mobile-pwa-baseline-2026-10-23), embedded at /?devices
+apps/ios/          Native SwiftUI client — STOPPED 23 Oct (history only)
+supabase/          Migrations, local project config
+docs/              Status, backlog, specs, services/
+docs/archive/      Historical docs — not authoritative
+design/            Screen references (founder files)
 ```
 
 ## Working conventions

@@ -1,5 +1,27 @@
 # Residence ontology tree (temporal_note layer)
 
+**Status (9 Nov 2026):** the user-visible memory folders are now the seven **life themes** (founder, 9 Nov): Career, Learning, Projects, People & family, Events, Home & money, Travel. Folders are visible to the user. This tree stays the fine layer underneath. The `[UI bot]` brackets and the "UI rollup cheat sheet" below are the 2 Nov rollup, superseded by the table here.
+
+**Proposed rollup — proposed, confirm in lab step 3** (`apps/api/app/lab/CLAUDE.md`, Consolidate):
+
+| Ontology root | Life theme (proposed) | Note |
+|---|---|---|
+| `identity/` | People & family | You, at the centre of the people map |
+| `lifestyle/` | Home & money | Daily living; `hobbies/reading_learning/` → Learning, `sports/sports_events/` → Events |
+| `household/` | Home & money | |
+| `kids_family/` | People & family | |
+| `career/` | Career | `skills_learning/` → Learning |
+| `money/` | Home & money | |
+| `health/` | Home & money | Access and insurance admin only; user-stated, never inferred |
+| `cars/` | Travel | |
+| `travel/` | Travel | |
+| `fun_out/` | Events | |
+| `tech/` | Home & money | |
+| `social/` | People & family | `community_feed/` is parked (founder, 9 Nov) |
+| `civic_gov/` | Home & money | RTA/transport leaves may roll up to Travel |
+| `projects/` | Projects | |
+| `meta/` | — | Engine only, never a folder |
+
 Status: **planning draft** (2 Nov 2026). This is the **huge fine-grained tree** for memory / classifier / demo packs — **not** the user sidebar.
 
 - **User sees** (UI bots, short): Lifestyle · Career · Social · Household · Money · Travel · (Me = profile, not a task bot). Exact short list still founder-owned.

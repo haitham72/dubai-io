@@ -1,9 +1,11 @@
 # Moderate recommender and memory plan — 22 Oct 2026
 
-**Implementation checkpoint:** REC-01/02 are implemented. REC-03A/B temporal qualification and trusted live places are implemented and verified on SQLite/in controlled browser checks (128 backend tests, seven browser scenarios); PostgreSQL write health/verification/reconciliation remains a deployment gate. Next: REC-03C service/product eligibility and verified completions, then REC-04 measurements. The full proposal below is not all implemented. See ../implementation-plan.md for exact scope and gates. Current retention is 24 hours for ranking runs and 90 days for events, with cleanup on activity; all client observations are organic-only. Google OAuth is last.
+**Status (9 Nov 2026):** base for the Notice pillar (daily matched cards). Its 90-day expiry of long-term signals conflicts with the never-drop rule §R-ND (decay with a floor, no age-based deletion); open item P4 in the memory-engine package. "Google OAuth is last" below is reversed: Gmail + Calendar come first (founder, 9 Nov).
+
+**Implementation checkpoint:** REC-01/02 are implemented. REC-03A/B temporal qualification and trusted live places are implemented and verified on SQLite/in controlled browser checks (128 backend tests, seven browser scenarios); PostgreSQL write health/verification/reconciliation remains a deployment gate. Next: REC-03C service/product eligibility and verified completions, then REC-04 measurements. The full proposal below is not all implemented. See ../archive/implementation-plan.md for exact scope and gates. Current retention is 24 hours for ranking runs and 90 days for events, with cleanup on activity; all client observations are organic-only. Google OAuth is last.
 
 
-**Design and behavior contract, updated 22 Oct 2026.** Parts are implemented as recorded above; remaining slices are tracked explicitly in [the detailed plan](../implementation-plan.md). Target: Supabase Postgres/Auth, with the existing FastAPI/LangGraph service. Execution order and outstanding requests: [request backlog](../request-backlog.md). Existing contest scope remains in `PLAN.md`.
+**Design and behavior contract, updated 22 Oct 2026.** Parts are implemented as recorded above; remaining slices are tracked explicitly in [the detailed plan](../archive/implementation-plan.md). Target: Supabase Postgres/Auth, with the existing FastAPI/LangGraph service. Execution order and outstanding requests: [request backlog](../request-backlog.md). Existing contest scope remains in `PLAN.md`.
 
 ## Intended behavior
 

@@ -1,5 +1,7 @@
 # Services list (cases)
 
+Cases stay frozen until the January 2027 submission; they are capabilities of the Do pillar.
+
 Menu for picking the next case **after the January submission** (cases are frozen until then, `PLAN.md`). New ideas: follow [`intake.md`](intake.md). Cases are ~1% of the app; the generic engine (category registry, Services surface, profile) covers the rest. A case earns an entry only for a new pattern, rule, data source or demo moment.
 
 **Status flow:** `idea → picked → built → in review → accepted`
@@ -74,7 +76,7 @@ Lanes Maid · Office · Visa fan out (ThinkingOrb, BorderBeam, pipeline sheet). 
 | 3 | Visa offices: Quick Visa Hub 3,600 · 3 d · Palm Typing 3,150 · 5 d · **Marina Typing 2,890 · 6 d** (Foil "best price") | 9,633 | 28 Oct ✓ |
 | 4… | Insurance (Shield Motor / Gulf Assure / Palm Cover, demo), medical slot, start date → per-provider approval → events → calendar | | |
 
-- Status only from events ("Office accepted", "Entry permit issued"). Dubai-io never submits to GDRFA/MOHRE; the official portal is a handoff link.
+- Status only from events ("Office accepted", "Entry permit issued"). Dubai-io submits to GDRFA/MOHRE only through a real registered adapter with explicit per-action approval and verified provider evidence (`CLAUDE.md` rule 4). With no adapter, it shows the blocker, keeps the draft and offers the official portal as a handoff link; never a fake send.
 - Salary: "set by contract, not in this total".
 - Candidate portraits: stock, labelled "Demo profile · stock photo". These are the first slots to swap for WaveSpeed-generated fictional faces.
 - **Profile:** reads household, area, budget band. Teaches the hypothesis "minimise price subject to deadline" (steps 2–3), raised as an "I noticed" chip after step 3.
@@ -113,10 +115,12 @@ status: idea · refs `service/barber/` · scene `?scene=C3`
 - **Checks:** total 70 → +40 → bundle 90; Booked only after the event; rating prompt fires once.
 
 ## C7 · Car licence renewal
-status: idea · spec `../redesign.md` R2–R5
+status: idea · spec `../archive/references/redesign.md` R2–R5
+
+- Government steps (RTA, Tasjeel) follow rule 4: execution only through a real registered adapter with explicit per-action approval and verified provider evidence; with no adapter, show the blocker and keep the draft, never a fake send. This replaces the spec's "Dubai-io never submits anything to RTA or Tasjeel" footers.
 
 ## C8 · Fix it / AC / renovation
-status: idea · spec `../redesign.md` R6
+status: idea · spec `../archive/references/redesign.md` R6
 
 ## C11 · Share a video → map
 status: idea · refs `shops/coffee/` (`coffee.jpg`) + `Pulled data services for agents - app.jpg` (logic only; its colour scheme is rejected) · scene `?scene=C11`
@@ -205,7 +209,7 @@ Founder request, verbatim:
 - **Media:** reuse existing food, book/product and service imagery where relevant; event/occasion art is illustrative, never proof of availability.
 - **Sharing/status:** no milestone/profile shared with a shop during discovery; only explicit order fields after approval. Provider confirms stock/slot/order. No fake reservation or purchase.
 - **Checks:** incorrect date can be edited; no sensitive inference; local Dubai dates; lead times respected; duplicates suppressed; paid options labelled; reminders withdrawn when consent is revoked.
-- **Assumptions:** discovery and draft planning first; payments/ticket purchases remain deferred. Calendar OAuth, structured plan state, sponsorship inventory and temporal suggestion rules are new work, not completed features. Technical context requirements: `../references/assistant-context.md`.
+- **Assumptions:** discovery and draft planning first; payments/ticket purchases remain deferred. Calendar OAuth, structured plan state, sponsorship inventory and temporal suggestion rules are new work, not completed features. Technical context requirements: `../archive/references/assistant-context.md`.
 
 | Review date | Entry | Outcome |
 |---|---|---|

@@ -1,5 +1,11 @@
 # Temporal Memory (Plan 6 of 8) Implementation Plan
 
+> **Status (9 Nov 2026) — read before building.**
+> - **Exists** (`apps/api/app/memory/`): `schema.py` (7 owner-scoped `mem_*` SQLite tables plus a global `mem_ontology_paths` with 6 seeded paths mapped to the old `ui_bot` names; idempotent `ensure_memory_schema`; no embedding column), `store.py` (`add_event` with content-hash dedupe, `upsert_entity`, `add_pattern`, `timeline`, keyword-only `search` via `LIKE`, `hypotheses` / `set_hypothesis`, `forget`, `context_pack`), `api.py` (`/api/memory/timeline`, `/search`, `/hypotheses`, `PUT /hypotheses/{id}`, `DELETE /items/{id}`, `/context`). Tests: `apps/api/tests/test_memory_schema.py` (idempotent schema, forget removes from search, owner isolation). The only product writer is the Gmail profiler (`apps/api/app/mail_profile.py`).
+> - **Missing** (per memory-engine `STATE-AND-GAPS.md`, verified 9 Nov): `search.py` (hybrid BM25 + vector, RRF), `ops.py` (extract / consolidate / salience), `sensitive.py` (`filter_sensitive`), `advice.py`; Task 5 feeds (task write-ups, session facts → `user_supplied` events); a Postgres migration + RLS for `mem_*`; contradiction handling that closes `valid_to`; Confirm writing a canonical `user_supplied` fact; `context_pack` silently drops `inferred` rows instead of labelling them; no eval set.
+> - **Mandates that apply:** the staged-engine mandate (a fast temporal-note layer first, Mem0/Graphiti later behind the frozen store interface; memory-engine `DECISION-BRIEF.md` §5) and the never-drop rule §R-ND (`CONSOLIDATED-PLAN.md`: no age-based deletion, 20–50% decay per refresh window, floors not tombstones). The engine choice below ("modelled on temporal_note") is not a final verdict.
+> - **Unresolved:** migration-name conflict. Task 1 here names `supabase/migrations/20261024000100_memory.sql`; Task C1 of the residence plan (`docs/archive/superpowers/plans/2026-11-02-residence-companion-mcp.md` after the cleanup) names `20261102000100_memory.sql`. Neither file exists.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Give Dubai-io a long-term, time-aware memory modelled on the founder's temporal_note — events, entities with validity windows, hybrid search, memory ops and due advice — feeding the assistant's context, the Me timeline, "I noticed", and Keeping-track recommendations.
@@ -8,7 +14,7 @@
 
 **Tech Stack:** Python 3.13, FastAPI, Pydantic v2, existing `db` store, pgvector (Supabase), existing embedding model `sentence-transformers/all-MiniLM-L6-v2` (lazy, ML extras), `FAST_MODEL` for extraction.
 
-**Spec:** `docs/plan/unified-app-design.md` §3. Source to learn/copy from (founder permission, 23 Oct): `~/VsCode/Claude---Cowork/temporal_note` — `schema_v1.sql` + migrations v2–v9, `mcp_server/transport.py` (36 tools), `bm25_index.py`, memory ops `memory_extract/consolidate/conflicts/salience/context`, `rrf_search`.
+**Spec:** `docs/archive/plan/unified-app-design.md` §3. Source to learn/copy from (founder permission, 23 Oct): `~/VsCode/Claude---Cowork/temporal_note` — `schema_v1.sql` + migrations v2–v9, `mcp_server/transport.py` (36 tools), `bm25_index.py`, memory ops `memory_extract/consolidate/conflicts/salience/context`, `rrf_search`.
 
 ## Global Constraints
 

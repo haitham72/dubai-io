@@ -1,5 +1,7 @@
 # Dubai-io Supabase
 
+**Current runtime (9 Nov):** the API runs on the SQLite fallback when `DATABASE_URL` is blank (as in the `docs/status.md` run command, port 8030). Local Supabase is optional; the checkpoints below are history, not the current runtime.
+
 Dedicated local project `dubai-io`, CLI **2.121.0**, PostgreSQL 17. It does not reuse or reset `dubaiio-db` or other projects. Docker is required. Ports: API 15421, Postgres 15422, Studio 15423, test mail 15424, Edge inspector 15428. Analytics is disabled for this development stack.
 
 From the repository root:

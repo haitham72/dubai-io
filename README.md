@@ -1,45 +1,39 @@
 # Dubai-io
 
-Personal assistant for everyday life and work in Dubai. Contest entry (Best Personal AI Agent). Monorepo: one FastAPI backend serves the PWA prototype, the Next.js website, and the native iOS app.
+Dubai-io is a personal AI agent for people who live and work in Dubai.
+
+Contest entry: Create AI Agents Championship (Dubai Chambers), Best Personal AI Agent. Identity, scope and dates: `PLAN.md`.
 
 ```
-apps/api/   Backend: FastAPI + LangGraph, community/ML/Reddit APIs, tests/
-apps/web/   PWA prototype + reference client (vanilla HTML/CSS/ES modules)
-apps/site/  Next.js website — DESIGN REJECTED, full redo queued for another LLM
-apps/ios/   SwiftUI client (needs device/Simulator-UI passes)
-supabase/   Migrations, local project config
-docs/       Status, backlog, plans, references, services/
+apps/api/          FastAPI + LangGraph backend, tests/
+apps/api/app/lab/  Headless Know / Notice / Do pipeline (active, 9 Nov)
+apps/site/         THE app: one React codebase (Next.js) → website, desktop, iOS/Android; UI paused 9 Nov
+apps/web/          Original mobile app PWA — FROZEN reference (tag mobile-pwa-baseline-2026-10-23)
+apps/ios/          Native SwiftUI client — STOPPED 23 Oct (history only)
+supabase/          Migrations, local project config
+docs/              Status, backlog, specs, services/ (docs/archive/ is history)
+design/            Screen references
 ```
 
-## Run (this Mac; ports 8000/8010/8020 belong to other apps)
+## Run (this Windows machine, PowerShell)
 
-```sh
-cd apps/api && .venv/bin/python -m uvicorn app.main:app --host 0.0.0.0 --port 8002
-# Prototype + API:      http://localhost:8002
-# Merchant sandbox:     http://localhost:8002/merchant.html
+```powershell
+cd apps/api; $env:DATABASE_URL=' '; .\.venv\Scripts\python.exe -m uvicorn app.main:app --port 8030
+# API + original mobile app: http://localhost:8030/index.html · merchant sandbox: /merchant.html
 
-cd apps/site && NEXT_PUBLIC_API_BASE=http://localhost:8002 npm run dev -- --port 3000
-# Website:              http://localhost:3000
-
-# iOS: open apps/ios/DubaiIO.xcodeproj in Xcode, pick a Simulator, Run.
-# API base in-app: http://<mac-ip>:8002 (localhost on-device means the phone)
-
-cd apps/api && docker compose -f docker-compose.infra.yml up -d redis   # ML cache (6380; 6379 is the Mac's system redis)
+cd apps/site; npm run dev
+# THE app: http://localhost:3000/ — proxies the API at DUBAIIO_API_ORIGIN (default http://127.0.0.1:8030)
 ```
+
+`DATABASE_URL` set to a single space selects SQLite; a real value uses Supabase Postgres (`supabase/CLAUDE.md`). Keys live in `apps/api/.env`, never committed; key names are in `docs/status.md`.
 
 ## Test
 
-```sh
-cd apps/api && .venv/bin/python -m pytest -q tests        # 227 passed, 11 live skipped
-for t in ../web/tests/*.test.mjs; do node "$t"; done     # 9 web suites
-cd ../site && npm run build                               # website build
-swift test --package-path apps/ios/Core                   # 15 iOS contract tests
+```powershell
+cd apps/api; .\.venv\Scripts\python.exe -m pytest -q tests   # $env:RUN_LIVE='1' adds the live Luna cases
+cd apps/site; npm test                                       # Vitest; npm run e2e = Playwright (builds and serves on :3041)
 ```
-
-## State
-
-Backend verified (227 tests); clients build. Website design was founder-rejected — see `docs/request-backlog.md` (redo brief, left for another LLM). Missing provider keys keep some paths honestly unavailable; device/PostgreSQL/hosted checks remain open.
 
 ## Docs
 
-`CLAUDE.md` (router) → `docs/status.md` (current state) → `PLAN.md` (scope) → `ARCHITECTURE.md` → `handoff.md` (run-book) · Backlog: `docs/request-backlog.md` · Client contracts: `docs/references/ios-swift-plan.md` · External review prompt: `docs/references/external-review-prompt.md`
+Read in order: `CLAUDE.md` (rules, router) → `PLAN.md` (identity, decisions, scope) → `ARCHITECTURE.md` (contracts) → `docs/status.md` (current state) → `apps/api/app/lab/CLAUDE.md` (headless build). Open requests: `docs/request-backlog.md`. History: `docs/archive/` and git.

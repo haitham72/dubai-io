@@ -1,6 +1,8 @@
 # Dubai-io residence companion — core design (2 Nov 2026)
 
-Status: **active brief (2 Nov)** — folded into `PLAN.md` / `handoff.md` and execution plan `docs/superpowers/plans/2026-11-02-residence-companion-mcp.md`. Does not replace `docs/plan/unified-app-design.md` for shell/craft — this file is the **product brief + dogfood bar**.
+**Status (9 Nov 2026):** Task-thread (Do) spec. Identity now in `PLAN.md` §1 (9 Nov); shell/UI and memory-UX sections are superseded by the Know/Notice/Do direction; the grammar, context-reuse rules and dogfood matrix remain the Do-pillar eval.
+
+Status: **active brief (2 Nov)** — folded into `PLAN.md` / `docs/archive/root/handoff.md` (now `docs/archive/root/handoff.md`) and execution plan `docs/archive/superpowers/plans/2026-11-02-residence-companion-mcp.md`. Does not replace `docs/archive/plan/unified-app-design.md` for shell/craft — this file is the **product brief + dogfood bar**.
 
 ## 1. One-line product
 
@@ -15,7 +17,7 @@ Borrowed from Grok Bot / ChatGPT Dots / Claude Duet — **interaction pattern**,
 1. User asks in Assistant → **task thread** in the matching life domain.
 2. Short ack + **option/result cards** + refine chips.
 3. Tap → **designed detail / plan screen** (simple, elegant, light-first).
-4. **Approve** (or Yes-to-all on a multi-step plan) listing exact fields/amounts shared.
+4. **Approve** listing exact fields/amounts shared: one explicit tap per side effect, also on a multi-step plan (no Yes-to-all; rule 6 strict, founder 9 Nov).
 5. Execution only via **registered adapter** + verified evidence; else draft + blocker / Open official portal. Never invent Paid / Booked / Confirmed / Filed.
 6. Optional browser-agent **screenshot** as proof (merchant or portal ready-state) — later slice; not required for first dogfood bar.
 7. Memory style **B**: Me page (“You told me” / “I noticed”) + rare in-thread chips (“Because…”, “I saved…”).
@@ -75,7 +77,7 @@ For **each domain**, at least one ask that:
 
 1. Creates/updates a task thread in that domain.
 2. Shows cards or a multi-step plan.
-3. Supports Approve or Yes-to-all with honest status afterward.
+3. Supports Approve (one tap per side effect) with honest status afterward.
 4. Can store/reuse a relevant Me fact when the user states one.
 
 Fixtures and sandbox are allowed. Live government payment and live email send are **not** required for this bar.
@@ -89,7 +91,7 @@ Fixtures and sandbox are allowed. Live government payment and live email send ar
 | 3 | Money | Pay this month’s bills (UAE Pass sandbox demo) |
 | 4 | Kids | School tours / KHDA shortlist + approve enquiry draft |
 | 5 | Household | AC before Friday |
-| 6 | Household | Guests at 8 — clean + food (Yes-to-all) |
+| 6 | Household | Guests at 8 — clean + food (one tap per side effect) |
 | 7 | Career | Chase application / email thread (demo evidence ok) |
 | 8 | Career | Reimbursement pack from receipts |
 | 9 | Fun | Mamzar Saturday (prep → maps → parking step → meal) |
@@ -169,7 +171,7 @@ Same bar for tech (phone/plan), cars (the registered car), household providers a
 ## 6. Architecture slices (build order)
 
 1. **Wire `apps/site` → live API** — composer creates real tasks; approval calls registered actions; stop demo-only dead ends where a live path exists on frozen `apps/web`.
-2. **Multi-step plan + Yes-to-all** — shared plan card; per-step still needs approval semantics / evidence.
+2. **Multi-step plan** — shared plan card; each side-effect step needs its own approval tap and evidence (no Yes-to-all, founder 9 Nov).
 3. **Fixture journey per domain** — one scripted happy path + failure/blocker path each.
 4. **Me recall / forget + context pack** — answers “what do you know?” without inventing.
 5. **Money demo** — bills-due fixtures + UAE Pass sandbox stub (connect + draft only).

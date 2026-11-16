@@ -34,7 +34,7 @@ If all are known or have an obvious default, file it and list the assumptions in
 
 Stop and tell the user if the idea needs any of:
 - a quote, bid or price negotiation
-- a government submission or payment
+- a government submission, payment or purchase without a real registered adapter. These may execute only through such an adapter with explicit per-action approval and verified provider evidence (`CLAUDE.md` rule 4, unlocked 23 Oct). With no adapter, the case shows the blocker and keeps the draft; never a fake send
 - a status shown without a provider event (including "Verified")
 - government or official branding (impersonation), or a real person's face on a made-up character
 - AI advice in a safety-critical domain (medical, legal), which stays display + handoff only
@@ -49,7 +49,19 @@ Otherwise note which rules the case touches.
 
 ## 5b. Registry row
 
-If the idea is a new category or subcategory, add a row to `CATEGORIES` in `apps/web/data.js` (current registry), including `keywords`/`subKeys` for the router. Competing service/provider data lives in `SERVICE_GROUPS` in `apps/web/offers.js` (orderable items and prices: `apps/api/app/catalog.py`); use an existing mini-app/action pattern. `fixtures/categories.json` does not exist. Later these become the `registry` module. A data row extends existing patterns; a new answer type, action or data source still needs a case/plan change.
+`apps/web` is frozen (the original mobile app, the reference): never edit it. Its `CATEGORIES` (`data.js`) and `SERVICE_GROUPS` (`offers.js`) are read-only reference. Add rows to the current backend catalog instead: orderable items, fixed prices and slots go in `PROVIDERS` in `apps/api/app/catalog.py` (`demo_fixture` sandbox merchants); service categories map to the registered capabilities (`SERVICES` / `CAPABILITIES`) in `apps/api/app/actions.py`. Use an existing mini-app/action pattern. `fixtures/categories.json` does not exist. A data row extends existing patterns; a new answer type, action, capability or data source still needs a case/plan change.
+
+## 5c. Services-expansion rules
+
+From `docs/archive/plan/calls-services-panels.md` §4 (23 Oct; archived to `docs/archive/plan/calls-services-panels.md`). Goal: broad coverage as browsable entries in our own design, never the DubaiNow look, never invented availability. Coverage areas (non-exhaustive; intake decides order): police info/contacts + reporting where a real channel exists; DEWA and other utilities; Salik/parking/RTA; licensed-charity directory + donations; visa/health/government info + booking links. Rules per entry, no exceptions:
+
+- Filed per category through this guide; the default outcome is a registry row, not a bespoke mini-app.
+- Every entry carries provenance; info-only entries link "Open official portal".
+- Execution (top-up, filing, donation, booking) only through a real registered adapter with explicit per-action approval and verified provider evidence. Rule 1 stays intact: no authoritative event, no success status.
+- Without an adapter, the entry shows the blocker + portal link and keeps the draft; never a fake Send.
+- Donations: licensed charities only; licence/provenance shown; same approval + evidence path as payments.
+
+Acceptance: each entry names its adapter or shows its blocker; a blocked entry keeps its draft and links the portal; no entry shows a success status without provider evidence.
 
 ## 6. Write the entry
 
