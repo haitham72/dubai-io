@@ -33,6 +33,7 @@ Stop the dev server by its PID only.
 - `communities`, `social_generation`: PARKED 9 Nov (code stays, not in the contest build)
 - `ml_api`, `ml_models`, `ml_rag`, `ml_tasks`: ML pipeline (below) · `ops`: `/api/ops/*`, `X-Ops-Token` = `OPS_TOKEN` (unset → 404)
 - `db` (`?` SQL, Postgres translation) · `config` · `migrate_sqlite` / `migrate_supabase`
+- `connectors/`: universal connector framework (capability registry, explicit sync, encrypted per-owner credentials, default-deny outbound); docs `docs/connectors/`; WhatsApp Evolution plugin off and not approved (`ARCHITECTURE.md` §14)
 - `lab/`: headless Know/Notice/Do pipeline; see `app/lab/CLAUDE.md` (being built 9 Nov)
 
 ## Endpoints (from route decorators, 9 Nov)

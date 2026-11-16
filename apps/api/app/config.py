@@ -54,6 +54,12 @@ class Settings:
     google_oauth_client_secret = os.getenv("GOOGLE_OAUTH_CLIENT_SECRET", "")
     google_oauth_redirect_uri = os.getenv("GOOGLE_OAUTH_REDIRECT_URI", "")
     oauth_token_key = os.getenv("OAUTH_TOKEN_KEY", "")
+    # Separate from the Google grant key when set. Empty falls back to OAUTH_TOKEN_KEY, then a local file.
+    connector_token_key = os.getenv("CONNECTOR_TOKEN_KEY", "")
+    # Unofficial WhatsApp (Evolution API / Baileys). Off unless all three are set.
+    whatsapp_evolution_enabled = os.getenv("WHATSAPP_EVOLUTION_ENABLED", "").strip().lower() in {"1", "true", "yes"}
+    evolution_api_base_url = os.getenv("EVOLUTION_API_BASE_URL", "").strip()
+    evolution_api_key = os.getenv("EVOLUTION_API_KEY", "").strip()
     database_url = os.getenv("DATABASE_URL", "").strip()  # whitespace explicitly selects SQLite on Windows
     database_schema = os.getenv("DATABASE_SCHEMA", "").strip()  # Supabase backend-only schema; empty preserves existing deployments
     widget_port = int(os.getenv("WIDGET_PORT", "8001"))  # separate mini-app origin; 0 disables

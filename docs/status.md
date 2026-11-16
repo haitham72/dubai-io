@@ -6,6 +6,10 @@ Single current-state file. Scope: `PLAN.md`. Open requests: [request-backlog.md]
 
 UI paused. The Know / Notice / Do pipeline is built headless in `apps/api/app/lab/` (steps: `apps/api/app/lab/CLAUDE.md`). Order (from docs/Researches/CLAUDE.md, 9 Nov): import (Gmail + Calendar; exported WhatsApp chats) → consolidate into `mem_*` and the life themes → reveal → people map → daily matched cards via the outbox; plus one task thread to an honest terminal state.
 
+## Connectors (merged 16 Nov from `cursor/universal-connectors-395e`)
+
+Framework in `apps/api/app/connectors`; docs in `docs/connectors/`. Records stay in `connector_records` and never write profile memory. Sync is explicit; outbound is denied until the owner approves the exact payload. Tested with mocks only, no live provider run. Build order is unchanged: Gmail + Calendar first. **WhatsApp Evolution (unofficial) is off and not approved**; it conflicts with the manual-export rule in `ARCHITECTURE.md` §14, so it needs a founder decision. Other sources (Slack, Telegram, Notion, etc.) are registered capabilities, not product claims.
+
 ## Shipped contest spine (2 Nov, `apps/site` + `apps/api`)
 
 - Live **Google Places** in website chat (device location, Marina fallback); starter **Gyms near Marina**.

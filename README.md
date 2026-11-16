@@ -36,4 +36,4 @@ cd apps/site; npm test                                       # Vitest; npm run e
 
 ## Docs
 
-Read in order: `CLAUDE.md` (rules, router) → `PLAN.md` (identity, decisions, scope) → `ARCHITECTURE.md` (contracts) → `docs/status.md` (current state) → `apps/api/app/lab/CLAUDE.md` (headless build). Open requests: `docs/request-backlog.md`. History: `docs/archive/` and git.
+Read in order: `CLAUDE.md` (rules, router) → `PLAN.md` (identity, decisions, scope) → `ARCHITECTURE.md` (contracts) → `docs/status.md` (current state) → `apps/api/app/lab/CLAUDE.md` (headless build). Connector framework (not live-enabled): `docs/connectors/`. Open requests: `docs/request-backlog.md`. History: `docs/archive/` and git.

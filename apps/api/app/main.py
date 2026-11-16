@@ -37,14 +37,17 @@ from .luna.schema import FactKey, FocusContext, TaskFocusContext, ProjectFocusCo
 from .memory.api import router as memory_router
 from .mail_profile import router as mail_router
 from .memory.schema import ensure_memory_schema
+from .connectors.api import router as connector_router
+from .connectors.schema import ensure_connector_schema
 
 @asynccontextmanager
 async def lifespan(_app):
     merchant_pin()  # sandbox merchant PIN: MERCHANT_PIN, or generated into data/merchant.pin
     try:
         ensure_memory_schema(engine().store.db)
+        ensure_connector_schema(engine().store.db)
     except Exception:
-        pass  # schema retries on first MemoryStore use
+        pass  # schema retries on first MemoryStore / connector use
     if settings.widget_port:  # mini-apps on their own origin (rule 10)
         from .widgets import serve_in_background
         serve_in_background("0.0.0.0", settings.widget_port)
@@ -68,6 +71,7 @@ app.include_router(ops_router)
 app.include_router(prayer_router)
 app.include_router(memory_router)
 app.include_router(mail_router)
+app.include_router(connector_router)
 
 
 @app.middleware("http")
