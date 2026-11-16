@@ -1,0 +1,89 @@
+From rana@bizfylabs.example Tue Oct 20 09:00:00 2026
+Message-ID: <m1@bizfylabs.example>
+From: Rana Hadi <rana@bizfylabs.example>
+To: Sam <sam@example.com>
+Subject: Video editor role - next steps
+Date: Tue, 20 Oct 2026 09:00:00 +0400
+Content-Type: text/plain; charset=utf-8
+
+Hi Sam,
+
+Thanks for the discovery call. Please send your updated CV and showreel by 30 October 2026.
+The role pays AED 12,000 per month.
+
+Regards,
+Rana
+
+From sam@example.com Wed Oct 21 10:00:00 2026
+Message-ID: <m2@example.com>
+In-Reply-To: <m1@bizfylabs.example>
+References: <m1@bizfylabs.example>
+From: Sam <sam@example.com>
+To: Rana Hadi <rana@bizfylabs.example>
+Subject: Re: Video editor role - next steps
+Date: Wed, 21 Oct 2026 10:00:00 +0400
+Content-Type: text/plain; charset=utf-8
+
+Thanks Rana, I will send the CV and showreel this week.
+
+On Tue, 20 Oct 2026 at 09:00, Rana Hadi <rana@bizfylabs.example> wrote:
+> Hi Sam,
+> Please send your updated CV and showreel by 30 October 2026.
+
+--
+Sam
+
+From no-reply@shop.example Thu Oct 22 12:00:00 2026
+Message-ID: <m3@shop.example>
+From: Shop <no-reply@shop.example>
+To: Sam <sam@example.com>
+Subject: Your order #A-77231 has shipped
+Date: Thu, 22 Oct 2026 12:00:00 +0400
+List-Unsubscribe: <mailto:unsubscribe@shop.example>
+Content-Type: text/plain; charset=utf-8
+
+Your order #A-77231 has shipped. Total AED 249.00.
+You are receiving this because you bought something. Unsubscribe here.
+
+From news@weekly.example Fri Oct 23 07:00:00 2026
+Message-ID: <m4@weekly.example>
+From: Weekly News <news@weekly.example>
+To: Sam <sam@example.com>
+Subject: This week in video tools
+Date: Fri, 23 Oct 2026 07:00:00 +0400
+List-Unsubscribe: <mailto:unsubscribe@weekly.example>
+Content-Type: text/plain; charset=utf-8
+
+Five new editing tools launched this week. Read more online.
+
+From karim@example.org Mon Nov  2 18:30:00 2026
+Message-ID: <m5@example.org>
+From: Karim <karim@example.org>
+To: Sam <sam@example.com>
+Subject: check this
+Date: Mon, 02 Nov 2026 18:30:00 +0400
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="BOUNDARY"
+
+--BOUNDARY
+Content-Type: text/plain; charset=utf-8
+
+Look at this and tell me what you think. We can talk about it on Friday.
+--BOUNDARY
+Content-Type: application/pdf; name="plan.pdf"
+Content-Disposition: attachment; filename="plan.pdf"
+Content-Transfer-Encoding: base64
+
+JVBERi0xLjQKJSBzYW1wbGUK
+--BOUNDARY--
+
+From clinic@health.example Tue Nov  3 08:00:00 2026
+Message-ID: <m6@health.example>
+From: City Clinic <clinic@health.example>
+To: Sam <sam@example.com>
+Subject: Blood test results ready
+Date: Tue, 03 Nov 2026 08:00:00 +0400
+Content-Type: text/plain; charset=utf-8
+
+Your blood test results are ready for collection.
+

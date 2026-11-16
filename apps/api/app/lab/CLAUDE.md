@@ -1,6 +1,6 @@
 # apps/api/app/lab/ — the headless Know / Notice / Do pipeline
 
-Status 9 Nov 2026: **guide written, no code yet.** UI is paused (founder, 9 Nov); this folder is where the product is proven first. Identity and scope: `PLAN.md` §1–§3. Rules: root `CLAUDE.md` (1–10 always apply). Contracts: `ARCHITECTURE.md`.
+Status 23 Nov 2026: **steps 1-2 + query layer built; extraction is skill-based.** `skills/chat.py` (whatsapp, telegram, messenger, instagram, imessage, sms, signal: rows of 5-10 messages) and `skills/email.py` (gmail, imap, outlook, email: rows per thread) each own a system prompt, schema, segmentation and row format; `engine.py` is generic. Sentiment + emotion come from the two local classifiers (`scoring.py`: cardiffnlp xlm-roberta sentiment, multilingual go_emotions >= 0.45, run in a worker under the base interpreter) - the LLM is never asked for a feeling. Memory text is embedded on store; a follow-up agent (own model via `LAB_FOLLOWUP_MODEL`) queries it. Run: `parse` -> `rows --me <Name>` -> `audit` -> `index` -> `followups` -> `tree`. The older window-based `extract` step is kept for the topic tree. Tests `tests/test_lab_*.py`. Steps 3-7 not started. Identity and scope: `PLAN.md` §1–§3. Rules: root `CLAUDE.md` (1–10 always apply). Contracts: `ARCHITECTURE.md`.
 
 ## Shape
 

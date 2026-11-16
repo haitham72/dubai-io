@@ -58,5 +58,8 @@ Written by the `feature-ledger` skill (`.claude/skills/feature-ledger/SKILL.md`)
 
 | date | feature | decision | note | status |
 |---|---|---|---|---|
+| 16 Nov | **Headless personal demo (no heavy UI):** paste full chat logs (founder + mother) + connect Gmail -> "what can you say about me" (reveal) -> daily morning brief | implement (now) | Founder 16 Nov, own message. Maps to lab steps 1-6 in `apps/api/app/lab/CLAUDE.md`. Pasted logs = manual export, so consistent with PLAN §2 WhatsApp rule. Real data stays outside the repo. Blocker: no Google OAuth credentials set | active |
+| 16 Nov | Morning brief (news section, on-demand search) | implement (via the demo above, brief first, news after reveal scores well) | Design: `docs/plan/morning-brief.md` | queued under demo |
+| 16 Nov | Personalized morning brief with news section + on-demand search (`docs/plan/morning-brief.md`) | open | Extends the Notice pillar. Adds news providers and a public article cache; reuses routines, outbox, confirmed profile facts. Awaiting founder: implement / later / other | superseded 16 Nov (see morning brief + demo rows above) |
 | 16 Nov | WhatsApp live link (Evolution/Baileys plugin, merged from `cursor/universal-connectors-395e`) | open | Code merged but off. Conflicts with ARCHITECTURE §14 "manual export only". Awaiting founder: implement / later / other | pending |
 | 16 Nov | Non-Gmail/Calendar connector sources (Slack, Telegram, Notion, etc.) | open | Registered capabilities only; build order stays Gmail + Calendar first | pending |

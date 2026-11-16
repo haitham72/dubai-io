@@ -38,3 +38,17 @@ def no_live_social_providers(monkeypatch):
     monkeypatch.setattr(settings, "social_fallback", "none")
     monkeypatch.setattr(settings, "feed_main", "none")
     monkeypatch.setattr(settings, "feed_fallback", "none")
+
+
+@pytest.fixture(autouse=True)
+def lab_small_rows(request, monkeypatch):
+    """Older lab tests were written for 5-10 message rows; pin that, except in the module that tests the real defaults."""
+    if request.module.__name__.endswith("test_lab_compact"):
+        yield
+        return
+    from app.lab.skills import chat
+
+    monkeypatch.setattr(chat, "ROW_MAX", 10)
+    monkeypatch.setattr(chat, "ROW_MIN", 5)
+    monkeypatch.setattr(chat, "SESSION_GAP_MIN", 45)
+    yield

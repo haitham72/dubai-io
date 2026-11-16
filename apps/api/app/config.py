@@ -45,7 +45,25 @@ class Settings:
     ml_eager = os.getenv("CELERY_EAGER", "1") == "1"
     sentiment_model = os.getenv("SENTIMENT_MODEL", "cardiffnlp/twitter-xlm-roberta-base-sentiment-multilingual")
     embedding_model = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
-    harsh_neg_threshold = float(os.getenv("HARSH_NEG_THRESHOLD", "0.8"))
+    # Lab pipeline (app/lab): local LM Studio only, no cloud call on real chats.
+    lab_base_url = os.getenv("LAB_BASE_URL", "http://localhost:1234").rstrip("/")
+    lab_model = os.getenv("LAB_MODEL", "qwen/qwen3.5-9b")
+    lab_embed_model = os.getenv("LAB_EMBED_MODEL", "text-embedding-nomic-embed-text-v1.5")
+    lab_context_override = int(os.getenv("LAB_CONTEXT", "0"))  # 0 = ask LM Studio for the loaded context length
+    # Two local classifiers score sentiment and emotion for every row (they run in a worker under LAB_SCORER_PYTHON,
+    # default: the base interpreter, which has torch). LAB_SCORERS=off disables them (scores stay null, said so).
+    lab_emotion_model = os.getenv("LAB_EMOTION_MODEL", "AnasAlokla/multilingual_go_emotions")
+    lab_emotion_threshold = float(os.getenv("LAB_EMOTION_THRESHOLD", "0.45"))
+    lab_scorers = os.getenv("LAB_SCORERS", "auto").strip().lower()
+    lab_scorer_python = os.getenv("LAB_SCORER_PYTHON", "").strip()
+    # The follow-up agent may use a different model from the extractor (default: the same local model).
+    lab_followup_model = os.getenv("LAB_FOLLOWUP_MODEL", "").strip()
+    # Prompt experiments for the lab skills: full | lean | lean_safe  (see skills/chat.py); 0 = the skill's default pack size.
+    lab_prompt_variant = os.getenv("LAB_PROMPT_VARIANT", "compact").strip().lower()
+    lab_pack_items = int(os.getenv("LAB_PACK_ITEMS", "0"))
+    lab_row_max = int(os.getenv("LAB_ROW_MAX", "50"))  # chat rows: max text messages per row
+    lab_session_gap_min = int(os.getenv("LAB_SESSION_GAP_MIN", "90"))  # chat rows: pause (minutes) that ends a session
+    harsh_neg_threshold =float(os.getenv("HARSH_NEG_THRESHOLD", "0.8"))
     google_key = os.getenv("GOOGLE_PLACES_KEY", "")
     # Maps JavaScript keys are visible in the browser by design: use a separate key
     # restricted to your site (HTTP referrer) and to the Maps JavaScript API.
