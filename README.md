@@ -31,9 +31,10 @@ cd apps/site; npm run dev
 
 ```powershell
 cd apps/api; .\.venv\Scripts\python.exe -m pytest -q tests   # $env:RUN_LIVE='1' adds the live Luna cases
+cd apps/api; .\.venv\Scripts\python.exe -m app.lab <step> --data <dir>   # headless Know/Notice/Do lab CLI
 cd apps/site; npm test                                       # Vitest; npm run e2e = Playwright (builds and serves on :3041)
 ```
 
 ## Docs
 
-Read in order: `CLAUDE.md` (rules, router) → `PLAN.md` (identity, decisions, scope) → `ARCHITECTURE.md` (contracts) → `docs/status.md` (current state) → `apps/api/app/lab/CLAUDE.md` (headless build). Connector framework (not live-enabled): `docs/connectors/`. Open requests: `docs/request-backlog.md`. History: `docs/archive/` and git.
+Read in order: `CLAUDE.md` (rules, router) → `PLAN.md` (identity, decisions, scope) → `ARCHITECTURE.md` (contracts) → `docs/status.md` (current state) → `apps/api/app/lab/CLAUDE.md` (headless build). Connector framework (not live-enabled): `docs/connectors/README.md`. Open requests: `docs/request-backlog.md`. History: `docs/archive/` and git.

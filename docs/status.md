@@ -1,14 +1,26 @@
-# Status — 9 Nov 2026
+# Status — 17 Nov 2026
 
 Single current-state file. Scope: `PLAN.md`. Open requests: [request-backlog.md](request-backlog.md).
 
 ## Direction
 
-UI paused. The Know / Notice / Do pipeline is built headless in `apps/api/app/lab/` (steps: `apps/api/app/lab/CLAUDE.md`). Order (from docs/Researches/CLAUDE.md, 9 Nov): import (Gmail + Calendar; exported WhatsApp chats) → consolidate into `mem_*` and the life themes → reveal → people map → daily matched cards via the outbox; plus one task thread to an honest terminal state.
+UI paused. Active work is closing **AC-1 through AC-3** (`apps/api/tests/test_live_hindsight_llm.py`) before any new feature work, alongside the Know / Notice / Do pipeline (`apps/api/app/lab/CLAUDE.md`) and the swappable memory backend decision (`PLAN.md` §2, `docs/Researches/memory-research-2026-11.md`).
+
+## MEM-01 & Acceptance Gates Status (17 Nov 2026)
+
+- **MEM-01 status:** **Unproven at the Hindsight LLM-extraction layer** (gated on **SRE AC-1** `apps/api/tests/test_live_hindsight_llm.py::test_ac1_live_hindsight_llm_extraction` with `HINDSIGHT_URL` + `HINDSIGHT_LLM_ENABLED=1`).
+  - **Architectural decision (`PLAN.md` §2, AC-5):** Hindsight swappable backend retained; fix Dubai-io rule violations only (`§R-ND` decay-with-floor, Amazon.ae/AED, `"I noticed"` phrasing with two-visit qualification, sensitive-category confirmation gate); full Postgres/markdown-tree re-fit deferred until card contract and AC-1 pass.
+  - **Lab evidence — `mamty-hindsight` prompt-level retain lab run (`G:\Haitham\lab-data\mamty-hindsight\`, AC-L1 / AC-L5):** Offline multi-agent retain simulation using Hindsight prompts (`~57` ISO weeks done, `~444` lasting facts extracted; playbook in `apps/api/app/lab/CLAUDE.md`). Proves prompt + parallel claim-board process on real Egyptian Arabic / Arabizi WhatsApp, **not** the live Hindsight server (`no hindsight-api`, no embeddings bank, no `reflect`, no cross-week consolidate). Does **not** close SRE AC-1 (`MEM-01` remains **unproven**), and raw week JSON is **blocked from promotion into `mem_*`** until schema validation (`AC-L3`), `circle.json` alias normalization (`AC-L3`), `sensitive.py` filtering (`AC-L4`), and user confirmation are wired.
+  - **Verified offline in CI (`154 passed` across lab/memory/connector/AC-1–5/AC-L1–5 suites):** `pytest -q tests/test_live_hindsight_llm.py tests/test_lab_*.py tests/test_memory_schema.py tests/test_connectors.py tests/test_connectors_api.py`.
+
+## Headless Lab Pipeline (built 16 Nov, `apps/api/app/lab/`)
+
+- **Built & tested (`apps/api/tests/test_lab_parse.py`, `test_lab_rows.py`, `test_lab_skills.py`, `test_lab_chunking.py`, `test_lab_compact.py`, `test_lab_pipeline.py`, `test_lab_eval.py`):** WhatsApp `.txt` parser (`parse.py`: iOS, Android, copy-paste) and email `.mbox`/`.eml` parser (`parse_email.py`); generic skill-based extraction (`engine.py`, `skills/chat.py`, `skills/email.py`) with user-supplied `circle.json` relations/nicknames and Arabic/Latin typo-alias detection (`circle.py`); two-layer fail-closed sensitive filter (`sensitive.py` + `audit`); local sentiment & emotion classifier worker (`scoring.py` / `scorer_worker.py`); multi-space embeddings + hybrid BM25/dense/RRF search with Arabic-to-English query translation (`index.py`, `searchlib.py`); cited-evidence follow-up resolver (`followups.py`); two-step life-theme assignment + Mermaid mindmap & co-occurrence graph (`tree.py`, `tree_assign.py`); and S0–S5 evaluation harness (`evaluate.py`).
+- **Execution queue (`PLAN.md` §2, 17 Nov — do not reorder 1–3):** (1) **AC-1:** Live Hindsight LLM-provider extraction test (`tests/test_live_hindsight_llm.py`) · (2) **AC-2:** Card lifecycle (`new → seen → actioned → dismissed → resolved` + `reminder saved — delivery not yet enabled` label, `docs/plan/morning-brief.md` §8.3) · (3) **AC-3:** Orchestrator query rewriter (`docs/plan/morning-brief.md` §8.1.1) · (4) **AC-4:** Sensitive rule in canon (`CLAUDE.md`, `ARCHITECTURE.md` §7) · (5) **AC-5:** `MEM-01` decision text (`PLAN.md` §2) · (6) Backfill agent spec (`docs/plan/backfill-agent.md`) · (7) Reading list appendix (`docs/Researches/memory-research-2026-11.md` §8) · (8) Local Qwen 1.5B–3B classifier integration (only after AC-1–AC-3 are green).
 
 ## Connectors (merged 16 Nov from `cursor/universal-connectors-395e`)
 
-Framework in `apps/api/app/connectors`; docs in `docs/connectors/`. Records stay in `connector_records` and never write profile memory. Sync is explicit; outbound is denied until the owner approves the exact payload. Tested with mocks only, no live provider run. Build order is unchanged: Gmail + Calendar first. **WhatsApp Evolution (unofficial) is off and not approved**; it conflicts with the manual-export rule in `ARCHITECTURE.md` §14, so it needs a founder decision. Other sources (Slack, Telegram, Notion, etc.) are registered capabilities, not product claims. Per-provider live / file-import / not-callable breakdown: `docs/connectors/capability-matrix.md`.
+Framework in `apps/api/app/connectors`; consolidated docs in `docs/connectors/README.md`. Records stay in `connector_records` and never write profile memory. Sync is explicit; outbound is denied until the owner approves the exact payload. Tested with mocks only, no live provider run. Build order is unchanged: Gmail + Calendar first. **WhatsApp Evolution (unofficial) is off and not approved**; it conflicts with the manual-export rule in `ARCHITECTURE.md` §14, so it needs a founder decision. Other sources (Slack, Telegram, Notion, etc.) are registered capabilities, not product claims. Per-provider live / file-import / not-callable breakdown and priority scores: `docs/connectors/README.md`.
 
 ## Shipped contest spine (2 Nov, `apps/site` + `apps/api`)
 

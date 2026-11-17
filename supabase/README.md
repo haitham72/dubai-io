@@ -1,6 +1,23 @@
 # Dubai-io Supabase
 
-**Current runtime (9 Nov):** the API runs on the SQLite fallback when `DATABASE_URL` is blank (as in the `docs/status.md` run command, port 8030). Local Supabase is optional; the checkpoints below are history, not the current runtime.
+**Current runtime (17 Nov):** the API runs on the SQLite fallback when `DATABASE_URL` is blank (as in the `docs/status.md` run command, port 8030). Local Supabase is optional; the checkpoints below are history, not the current runtime.
+
+## Migrations (`supabase/migrations/`)
+
+11 versioned migrations are checked in:
+1. `20261021000100_backend.sql`
+2. `20261021000200_recommender.sql`
+3. `20261022000100_tasks.sql`
+4. `20261022000200_projects.sql`
+5. `20261023000100_assist.sql`
+6. `20261023000200_communities.sql`
+7. `20261023000300_social_personas.sql`
+8. `20261023000400_ml.sql`
+9. `20261023000500_votes.sql`
+10. `20261023000600_chat_archive.sql`
+11. `20261114000100_connectors.sql`
+
+Next to be added as a migration: the 16 Nov 10-table memory schema (`PLAN.md` §2; DDL in `docs/Researches/memory-research-2026-11.md`).
 
 Dedicated local project `dubai-io`, CLI **2.121.0**, PostgreSQL 17. It does not reuse or reset `dubaiio-db` or other projects. Docker is required. Ports: API 15421, Postgres 15422, Studio 15423, test mail 15424, Edge inspector 15428. Analytics is disabled for this development stack.
 

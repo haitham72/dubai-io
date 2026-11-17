@@ -613,10 +613,11 @@ def test_sync_does_not_write_profile_memory(tmp_path):
 
 def test_docs_match_the_registry():
     root = Path(__file__).resolve().parents[3] / "docs" / "connectors"
-    matrix = (root / "capability-matrix.md").read_text()
-    priority = (root / "prioritization.md").read_text()
-    architecture = (root / "architecture.md").read_text()
-    whatsapp = (root / "whatsapp-evolution.md").read_text()
+    readme = (root / "README.md").read_text(encoding="utf-8")
+    matrix = readme
+    priority = readme
+    architecture = readme
+    whatsapp = readme
     for spec in catalog():
         assert f"`{spec.id}`" in matrix
         row = next(line for line in priority.splitlines() if line.startswith(f"| {spec.id} |"))

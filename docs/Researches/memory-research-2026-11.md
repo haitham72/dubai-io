@@ -216,3 +216,32 @@ What I would cut: live WhatsApp linking (the project docs say manual export only
 | Instagram analytics export | one row per post or insight record (format varies; check the real file) | counted per period and type | memories about activity and reach, computed numbers |
 
 Checks for every input: the same file imported twice adds nothing (idempotent), a sensitive chunk is flagged and stores no text, every memory cites its source rows, and "forget this source" removes its records, chunks and memories.
+
+### 7. Hindsight 1.2.1 Infrastructure Notes & Unproven LLM-Extraction Gate (17 Nov 2026)
+
+> **Verification status (P0-1 & P0-2):** The 5 lessons below come from running `hindsight-api-slim[embedded-db,local-onnx]==1.2.1` + `hindsight-client==1.2.1` with **`provider=none` (chunks-only, no LLM extraction)**. The status table claims in the retired `BUILD_REPORT.md` (`"11/11 offline, 6/6 live pass"`) were never independently verified in this repository and are treated as spec/aspirational until backed by a runnable `pytest` run. **Hindsight with its LLM provider enabled (`retain` emitting absolute-dated facts, extracted entities, and supersession notes) is UNPROVEN** until **AC-1 (`apps/api/tests/test_live_hindsight_llm.py`)** passes.
+
+Infrastructure-level notes (`provider=none` chunks-only):
+1. **`temporal_window` ranks rather than hard-filtering:** Passing an out-of-range year (e.g. 2030) to Hindsight's `temporal_window` still returns 2025 items. Hard time-window filtering requires attaching `ym:YYYY-MM` month tags at ingestion (`±1 day` margin for timezone boundaries, falling back to `year:YYYY` tags for windows >120 months) plus exact timestamp verification in code.
+2. **Batch OR'd tag groups for 1-hop expansion:** Expanding a scoped query across related categories should send a single recall request with OR'd `tag_groups` (`[cat:family + person:mom, cat:friends + person:mom]`) rather than sequential server calls.
+3. **Async `retain_batch` requires idle barriers:** `retain_batch` indexes asynchronously; any immediate orchestrator or evaluation run must poll `GET /v1/default/banks/{bank}/stats` until `pending_operations == 0` (and check `failed_operations == 0`).
+4. **Localhost proxy bypass (`aiohttp`):** `hindsight-client` uses `aiohttp` with `trust_env=True`, which routes `localhost` / `127.0.0.1` calls through corporate/sandbox HTTP proxies unless `NO_PROXY=localhost,127.0.0.1` is set.
+5. **Deletion latency (~60s on 340 items):** Waiting for server idle after `DELETE /v1/default/banks/{bank}/documents/{id}` took ~60s on a 340-item bank, so large forgets must run as background jobs (`docs/plan/backfill-agent.md`).
+
+**`mamty-hindsight` Prompt-Level Retain Lab Run (`G:\Haitham\lab-data\mamty-hindsight\`, 17 Nov 2026 — AC-L1 / AC-L5):**
+- **What it is:** An **offline multi-agent prompt-level retain lab run** (`IDE agents + RUN.md → weeks/*.json`, ~57 ISO weeks completed, ~444 lasting facts). It did **not** invoke `hindsight-api`, an embeddings bank, `reflect`, or cross-week consolidation, and **must never be cited as Hindsight live server verification** (`MEM-01` / SRE AC-1 remains **unproven**).
+- **What it proved & exposed:** Proved that ISO-week (`Mon–Sun`, recent→older) claims (`weeks.json` + `claims.md` + isolated `AGENT_PROMPT*.md`) and ~40–80 message day packets scale across real Egyptian Arabic / Arabizi chat. Exposed four P1 issues that block direct promotion to `mem_*`: (1) entity drift (`Hadil`/`هديل`, `Asr`/`Aser`, `mamty (user's mother)`), (2) schema drift (bare `list` root on `2026-04-27_...`), (3) overwrite races when workers rewrote `status=done` weeks, and (4) dense health/family mentions requiring mandatory `sensitive.py` filtering + `"I noticed"` confirmation gating (`apps/api/app/lab/CLAUDE.md`, `docs/plan/backfill-agent.md` §6).
+
+### 8. Reading & Video Triage Appendix (17 Nov 2026)
+
+Recorded so subsequent agents do not re-litigate external memory/agent video references:
+
+| Priority | Title | Action & Takeaway |
+| :---: | :--- | :--- |
+| **1** | *Improved AI Memory? (Mnemosyne & Hindsight)* — Wanderloots | **Full watch.** Primary mental model + Hindsight bank/dashboard reference. |
+| **2** | *Agent Memory EXPLAINED* — Hugging Face | **Full watch.** Use as the extraction and retrieval audit checklist (alongside Mem0 audit items). |
+| **3** | *Multi-Agent Memory? (Hermes + Codex)* — Wanderloots | **Config segment only.** Reference for Hindsight bank configuration knobs. |
+| **4** | *Hermes Architecture EXPLAINED* — Hugging Face | **Skim `0:00–13:30` and `28:00–34:30`.** Three-tier memory model reference. |
+| **5** | *Subagents vs Agent Teams* — Wanderloots | **Skim.** Backfill agent design patterns (one accountable lead + bounded delegation in `docs/plan/backfill-agent.md`). |
+| **6** | *Everything About Agentic Context* — Wanderloots | **Skip.** Wrong layer for our current pipeline. |
+| **7** | *AI Agent Memory Layers* — Sean's AI Stories | **Hard pass.** Auto-translated; taxonomy is already implemented in our stack. |

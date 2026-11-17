@@ -33,8 +33,8 @@ Stop the dev server by its PID only.
 - `communities`, `social_generation`: PARKED 9 Nov (code stays, not in the contest build)
 - `ml_api`, `ml_models`, `ml_rag`, `ml_tasks`: ML pipeline (below) · `ops`: `/api/ops/*`, `X-Ops-Token` = `OPS_TOKEN` (unset → 404)
 - `db` (`?` SQL, Postgres translation) · `config` · `migrate_sqlite` / `migrate_supabase`
-- `connectors/`: universal connector framework (capability registry, explicit sync, encrypted per-owner credentials, default-deny outbound); docs `docs/connectors/`; WhatsApp Evolution plugin off and not approved (`ARCHITECTURE.md` §14)
-- `lab/`: headless Know/Notice/Do pipeline; see `app/lab/CLAUDE.md` (being built 9 Nov)
+- `connectors/`: universal connector framework (capability registry, explicit sync, encrypted per-owner credentials, default-deny outbound); docs `docs/connectors/README.md`; WhatsApp Evolution plugin off and not approved (`ARCHITECTURE.md` §14)
+- `lab/`: headless Know/Notice/Do pipeline (`skills/{chat,email}`, `scoring`, `followups`, `tree`, `searchlib`, `evaluate`); see `app/lab/CLAUDE.md` (16 Nov)
 
 ## Endpoints (from route decorators, 9 Nov)
 
@@ -46,7 +46,8 @@ Stop the dev server by its PID only.
 - **proactive:** `POST /api/reminders`, `/api/proactive/consent` · `GET|PUT /api/routines/brief`, `/api/assist` · `GET /api/messages`, `/api/messages/stream` (SSE) · `GET|POST /api/demo/triggers`
 - **profile / recommender:** `GET /api/profile`, `/api/profile/me`, `/api/profile/interests` · `POST /api/profile/episodes`, `/api/recommendation-events`, `/api/recommendations`, `/api/discovery/places` · `PUT|DELETE /api/profile/overrides/{hypothesis}` · `PUT /api/profile/interests/{topic}`
 - **memory** (`/api/memory`): `GET /timeline`, `/search`, `/hypotheses`, `/context` · `PUT /hypotheses/{id}` · `DELETE /items/{id}`. The router is included before main's `/api/memory/{user_id}`; keep that order.
-- **connectors:** `GET /api/auth/connections`, `/api/auth/{provider}/start`, `/api/auth/google/callback` · `POST /api/auth/{provider}/disconnect` · `GET /api/mail/status`, `/api/mail/needs-reply`
+- **google auth / mail pilot:** `GET /api/auth/connections`, `/api/auth/{provider}/start`, `/api/auth/google/callback` · `POST /api/auth/{provider}/disconnect` · `GET /api/mail/status`, `/api/mail/needs-reply`
+- **connectors (`/api/connectors`):** `GET /api/connectors`, `/{id}`, `/{id}/health`, `/{id}/records` · `POST /api/connectors/{id}/connect|sync|import|disconnect|revoke|reconnect|outbound`, `/{id}/outbound/{grant_id}`, `/grants/{grant_id}`, `/hooks/{id}/{hook_id}` · `DELETE /api/connectors/{id}/data`
 - **other:** `GET /api/reading`, `/api/reading/thumbnails/{id}`, `/api/prayer-times`, `/api/ops/health`, `/api/ops/ml`, `/api/ml/status`, `/api/community/search`
 - **community (parked):** `/api/communities` (+`/{id}/join|leave|stories|posts`), `/api/feed`, `/api/posts/{id}` (+`/comments`, `/hide`), `/api/votes`, `/api/me/posts`, `/api/chats` (+`/{id}/messages|read|archive`), `/api/contacts`, `/api/calls`
 
@@ -69,7 +70,7 @@ Full table: `ARCHITECTURE.md` §12.1. Essentials: approve sends `Idempotency-Key
 ## Rules
 
 - Luna contract changes start in `app/luna/schema.py`.
-- Model IDs live only in `app/config.py` (`LUNA_MODEL`, `SOCIAL_MODEL`, …); never hard-code elsewhere. Keys stay server-side, from env.
+- Model IDs live only in `app/config.py` (`LUNA_MODEL`, `SOCIAL_MODEL`, …); never hard-code elsewhere. `app/config.py` also holds `LAB_*` (local LM Studio model/embedder/scorers), `CONNECTOR_TOKEN_KEY`, and `WHATSAPP_EVOLUTION_*` settings. Keys stay server-side, from env.
 - DB: Supabase PostgreSQL 17 + pgvector via `DATABASE_URL` (verified: `supabase/config.toml` `major_version = 17`; the `app/db.py` docstring's "16" is stale), backend-only `DATABASE_SCHEMA=dubaiio`. SQLite is the test/offline fallback. No PostGIS/microservices. Redis (Celery results/cache) + RabbitMQ (broker) adopted 23 Oct for the ML pipeline only. See `supabase/CLAUDE.md`.
 - Only registered action IDs execute; the agent fills data, never code/SQL/URLs.
 - Owner always comes from the server session; callers never set owner, status or provenance; no public `tester` override.

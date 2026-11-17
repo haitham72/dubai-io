@@ -5,14 +5,16 @@ A personal AI agent for people who live and work in Dubai (identity: `PLAN.md` �
 ## Orient — read only what your task needs
 
 - **Canon, in order:** this file → `PLAN.md` (identity, founder decisions, IN / LATER / NEVER, contest facts, demo arc) → `ARCHITECTURE.md` (contracts, state machine, memory §7) → `docs/status.md` (current state, run commands, keys). Open founder requests: `docs/request-backlog.md`.
-- **Active build (9 Nov):** the headless Know / Notice / Do pipeline — guide `apps/api/app/lab/CLAUDE.md`.
+- **Active build (17 Nov):** the headless Know / Notice / Do pipeline — guide `apps/api/app/lab/CLAUDE.md`.
 - **Specs on demand:** `docs/docs-map.md` §4–5 says which spec to read for which piece.
-- **Nested folder guides:** `apps/api/CLAUDE.md`, `apps/site/AGENTS.md`, `apps/web/CLAUDE.md` (frozen tree), `supabase/CLAUDE.md`, `design/CLAUDE.md` (read before any design frame), `docs/services/intake.md`.
+- **Nested folder guides:** `apps/api/CLAUDE.md`, `apps/site/AGENTS.md`, `apps/web/CLAUDE.md` (frozen tree), `supabase/CLAUDE.md`, `design/CLAUDE.md` (read before any design frame), `docs/CLAUDE.md`, `docs/connectors/README.md`, `docs/services/intake.md`.
 - **`docs/archive/` is historical** — don't read it unless the founder asks. Old versions of rewritten docs: `git show main:<path>`.
 
 Do not read every doc up front. Nested `CLAUDE.md` files govern their folder; the rules below always apply. Done work lives in git history; this file stays a router.
 
 ## Non-negotiable rules
+
+Founder instructions override anything below; sensitive categories (rule 9) are never inferred from third-party/ambient text and are stored only when the user explicitly states them or opts in.
 
 1. **Truth in status.** Never show `Confirmed`, `Booked`, `Paid`, `Filed`, `Verified` or `Delivered` without an authoritative event: a merchant action in the inbox or a verified adapter response. LLM text never changes status. Use `UNKNOWN_STATUS` before you would invent a success.
 2. **Every number has provenance.** Prices, balances, ratings, dates and counts carry `provenance` (`official | provider_confirmed | merchant_submitted | user_supplied | inferred | estimate | demo_fixture`) and `as_of`. Fixture data renders a visible `Demo data` pill.
@@ -22,7 +24,7 @@ Do not read every doc up front. Nested `CLAUDE.md` files govern their folder; th
 6. **Approval before side effects.** Sharing data with a merchant and sending a fixed-price order each need an explicit user tap on an approval card that lists exactly which fields get shared. Single approval only — there is no second quote approval because quotes do not exist.
 7. **Only registered actions execute.** A card action's `id` must match a capability ID in the registry. The agent fills in *data*. It never writes executable payloads, HTML, SQL or URLs to call.
 8. **Proactive = deterministic.** Reminders and triggers come from the scheduler/outbox, not from LLM polling. Every one is deduplicated (`dedupe_key`), consented, respects quiet hours, and is stored as a normal chat message. A trigger the user did not cause is labelled `Demo trigger` on stage. The PWA does **not** do background geofencing.
-9. **Memory is user-given or visibly inferred.** Facts the user states are `user_supplied` and shown as "You told me". Inferences are only **hypotheses** (`provenance: inferred`, confidence, evidence, valid time), each listed under "I noticed" with Confirm / Edit / Not true / Forget. An unconfirmed hypothesis may re-rank options only, with a visible "Because…" chip. It never pre-fills a field, appears on an approval card, triggers a proactive message or sets a status. Nothing about the user is stored where they can't see it. Health, religion, ethnicity, nationality-as-trait, gender, sexuality and politics are never inferred. See `ARCHITECTURE.md` §7.
+9. **Memory is user-given or visibly inferred.** Facts the user states are `user_supplied` and shown as "You told me". Inferences are only **hypotheses** (`provenance: inferred`, confidence, evidence, valid time), each listed under **"I noticed"** with Confirm / Edit / Not true / Forget, and require **two-visit qualification** (observed across at least two separated sessions/visits) before they personalise or re-rank anything. An unconfirmed hypothesis may re-rank options only, with a visible "Because…" chip. It never pre-fills a field, appears on an approval card, triggers a proactive message or sets a status. Nothing about the user is stored where they can't see it. **Family, faith/religion, and health** (along with ethnicity, nationality-as-trait, gender, sexuality, politics, and third parties' private matters) are **never displayed as plain facts** and **never inferred** (`apps/api/app/lab/sensitive.py` two-layer fail-closed filter) — they require explicit user confirmation before any card or profile surface may use them. See `ARCHITECTURE.md` §7.
 10. **Widget sandbox:** provider HTML runs only from the separate widget origin, inside `<iframe sandbox="allow-scripts">`, with `connect-src 'none'`. It reaches the host only through the allowlisted `postMessage` bridge. See `ARCHITECTURE.md` §5.
 
 **Service execution:** prepare from confirmed facts → approval of the exact side effect → a registered adapter → provider evidence. When no adapter exists, show the blocker and keep the draft; never a fake Send. **UI:** no shadows; plain AI text, tinted user box, white rounded action boxes.

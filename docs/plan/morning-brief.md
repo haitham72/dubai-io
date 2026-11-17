@@ -151,6 +151,70 @@ Each item has an evidence-derived headline, a short summary where permitted, why
 3. **Scheduled rollout:** After Gate D rights/freshness review and Gate F durability checks, add explicit news opt-in to the existing routine. Exercise duplicate sweeps, lost leases, worker restarts, mid-run revoke/Forget, expiry, quiet hours, and manual reads during a scheduled run. Verify one outbox item per owner/date, no post-cancel message, no cross-owner leakage, and unchanged FIN-08 behavior. Use fixtures for SQLite and exercise hybrid search and concurrency against PostgreSQL.
 4. **Quality checks:** Replay cache miss/hit, provider outage, unverified publication dates, changed timestamps without new facts, real story updates, sparse profiles, injection in snippets, and cold-start general news. Verify every story has a publisher link and each generated factual summary has permitted supporting evidence. Capture recommendation quality and cost against the fresh-first baseline.
 
+## 8. Proactive Memory Card Orchestrator & Scoped Retrieval Contract
+
+**Visual references (`design/17-11-2026/`, founder-supplied 17 Nov 2026):**
+- **Desktop 3-column layout:** `design/17-11-2026/Dubai‑io Morning Brief Dashboard.png` — Left rail (`Home`, `Chat`, `Do`, `Memory`, `Notifications`, `Quick Actions`); center hero (`"Good morning, Haitham"`) + category filter pills (`All`, `Career`, `Family`, `Gadgets`, `Health`, `Finance`) + 2-column `"Your morning brief — 6 things I noticed for you"` card grid; right inspector drawer showing the selected card's `"I noticed..."` explanation, `"Because..."` source rows (`Calendar`, `WhatsApp`, `Note`), AED gift carousel (`AED 420`, `AED 1,950`, `AED 180`), and 4-button action bar (`Remind me`, `Shop gifts`, `Not true`, `Forget`).
+- **Mobile 3-screen flow:** `design/17-11-2026/Quest_ Thoughtful Memory Management.png` — (1) Category card feed with confidence pill, AED product suggestions, and `"Why am I seeing this?"` link; (2) `"Why am I seeing this?"` sheet displaying `Evidence` rows, `How I found it` (`ScopeGuard` scope chips: `family`, `person: Mom`, `window: Dec 2025`, `gifts`), `Signals` (`"I noticed she mentioned oud twice. Confirm?"` `Yes / Not really` two-visit confirmation prompt), and `Fact history`; (3) `Memory` controls screen with `Sources` toggles, `Keep memories` (`Career: Always`, `Family: Always`, `Health: Ask first` sensitive gate, `Finance: 2 years, then fade` per `§R-ND`), and `Never remember` (`forget_rules` chips for `Person`, `Chat`, `Phrase` + `Forget something...`).
+
+Alongside public news/reading items, the nightly Notice orchestrator generates personal memory cards from the owner's audited memory store (`lab.sqlite` / Postgres 10-table memory schema). All proactive memory cards follow a strict **metadata-first, scoped-semantic-second** contract:
+
+### 8.1 `ScopeGuard` & Query Audit Trail
+- **No unscoped corpus scans:** Every semantic/hybrid retrieval call from a card generator passes through `ScopeGuard`, which validates that the query specifies at least one metadata pre-filter (`categories`, `entities`, or `people`) before vector ranking runs inside that subset.
+- **Bounded 1-hop category expansion (`RELATED_CATEGORIES`):** When a primary category slice yields no hits, a generator may widen at most one hop to declared neighbour categories (e.g., `family -> [friends, finance]`, `career -> [finance]`, `gadgets -> [finance]`, `home -> [finance]`) while keeping the `person` or `entity` filter locked and recording `expanded_from` in the audit entry.
+- **Per-run budget & provenance:** `ScopeGuard` caps semantic calls per orchestrator run (`max_queries_per_run = 60`) and appends `{text, categories, entities, people, statuses, start, end, expanded_from, hits}` to `card.queries` so the `/unified` *"Why am I seeing this?"* drawer renders both the cited source snippets (`card.evidence`) and the exact scoped queries that produced the card.
+- **Evidence or nothing:** After applying `forget_rules` and source controls, any card with zero surviving non-forgotten evidence rows is dropped before ranking.
+
+#### 8.1.1 Orchestrator Query Rewriter (AC-3)
+Vague or conversational user questions (e.g., *"why am I not getting accepted"*) must neither fail `ScopeGuard` with `UnscopedQueryError` nor bypass `ScopeGuard` into a full-corpus scan:
+- **Harness-side rewriter (orchestrator only):** Before hitting `ScopeGuard`, an orchestrator step invokes a cheap planner model (never the 1.5B local classifier) to rewrite the unscoped user question into a validated `ScopedQuery(text, categories, entities, people, start, end)`.
+- **Acceptance contract (AC-3):** `"why am I not getting accepted"` maps deterministically to `category: career` / `job_search` (plus relevant entities such as `['linkedin', 'cv', 'application']` and a bounded lookback window); `ScopeGuard.recall()` executes strictly inside that scope and returns $\ge N$ relevant items without triggering a full-corpus scan.
+
+### 8.2 Metadata-First Card Generators (`def generator(ctx) -> list[Card]`)
+Each generator starts from deterministic SQL/catalog counts and selections (`category`, `status`, `person`, `entity`, `direction`, `since`/`until`, `fact_key`), and only calls `ScopeGuard.recall(ScopedQuery(...))` inside that narrow slice. All cards obey Dubai-io guardrails (`"I noticed..."` phrasing for inferences, AED currency, Amazon.ae / UAE portals, `§R-ND` never-drop decay floor instead of age deletion, and explicit confirmation gates on sensitive categories):
+
+| Card Type | Metadata Pre-Filter | Scoped Semantic Step & Card Logic |
+| :--- | :--- | :--- |
+| `career.funnel` | Outgoing career emails/applications (`direction='outgoing'`), rejections (`status='rejection'`), and interviews (`status='interview'`) over the last `120` days (minimum 10 outgoing). | Computes interview conversion `rate = len(interviews) / len(sent)`. If `rate < 0.08`, runs a scoped query (`categories=['career']`, `entities=['linkedin', 'cv']`, window `360d`) to check whether recent threads mention an outdated profile/CV gap. Dedupe key: `career.funnel\|{YYYY-WW}`. |
+| `family.birthday` | Confirmed/extracted birthday facts (`status='birthday'`, `fact_key='{person}\|birthday'`) occurring within the next `21` days (`birthday_horizon_days`). | Checks outgoing messages to `person` in `[last_year_bday, +2d]` to detect whether last year's birthday was missed (and incoming messages in `[+7d]` for fallout). Runs a scoped query (`categories=['family']`, `people=[person]`, window `730d`, with 1-hop fallback) on incoming messages to extract gift interests, linking to Amazon.ae search in AED under the configured gift budget. Dedupe key: `family.birthday\|{person}\|{year}`. |
+| `gadgets.program` | Owned devices extracted from purchase receipts (`category='gadgets'`, `status='purchase'`) matched against service/recall/replacement programs announced in the last `45` days (`status='program'`). | Runs a scoped query (`categories=['gadgets']`, `entities=[device]`, window `730d`) to check if the owner previously mentioned a problem (screen, battery, flicker) with that device; boosts confidence (`0.92` vs `0.75`) and urgency (`0.9` vs `0.6`) when prior issue evidence exists. Dedupe key: `gadgets.program\|{program_id}`. |
+| `gadgets.price_drop` | Implied wishlist items (`category='gadgets'`, `status='wishlist'`, last `365` days) cross-referenced against `fact_history('{entity}\|price')`. | Triggers when at least 2 price facts exist, `new_price < old_price`, and the newer price was observed within the last `14` days. Cites `[new_price_id, old_price_id, wishlist_id]` in AED. Dedupe key: `gadgets.price_drop\|{entity}\|{new_id}`. |
+| `health.overdue` | **Opt-in / confirmed health routines only** (rule 9 sensitive-category gate; e.g., `dentist: 180d`, `checkup: 365d`). | Queries confirmed calendar/memory items in `categories=['health']` over `3 * every_days`; surfaces an overdue notice when `(now - last_visit).days > every_days`. Never inferred without user confirmation. Dedupe key: `health.overdue\|{label}\|{YYYY-MM}`. |
+| `{domain}.change` | Recent `superseded_by` chains across `finance`, `home`, `career`, and `travel` in the last `30` days (`fact_key='{subject}\|{attr}'`). | Surfaces material contradictions/changes (e.g., DEWA/Etisalat/Netflix subscription price changes, lease or employer updates) as `{subject} {attr} changed: {old_val} -> {new_val}`, keeping the older value as auditable history. Dedupe key: `change\|{fact_key}\|{new_id}`. |
+
+### 8.3 Card Lifecycle State Machine & Honest Reminder State (AC-2)
+- **App owns UI; backend owns lifecycle state:** Every `Card` carries an explicit `lifecycle_state` with deterministic transitions:
+  $$\texttt{new} \longrightarrow \texttt{seen} \longrightarrow \texttt{actioned} \longrightarrow \texttt{dismissed} \longrightarrow \texttt{resolved}$$
+  (with `wrong` and `forgotten` as terminal suppression states recorded via feedback/forget endpoints).
+  - `new`: Generated by the orchestrator and not yet rendered in the owner's viewport.
+  - `seen`: Rendered in the swipe feed or Morning Brief view.
+  - `actioned`: Owner tapped a primary card action (e.g., opened source, launched task thread, saved reminder).
+  - `dismissed`: Owner explicitly dismissed the card for the current cycle (`dedupe_key` prevents re-surfacing as `new`).
+  - `resolved`: Underlying open loop or condition is closed by new evidence or explicit user completion.
+- **Honest reminder label (Rule 1 & AC-2):** Until push notification delivery is built and verified, no card or action response may display `"reminder set"` or imply background push delivery. Saving a reminder must return and render the exact status label:
+  **`reminder saved — delivery not yet enabled`** (stored in SQLite so the card resurfaces in-app when due, without claiming external delivery).
+
+### 8.4 Ranking Formula, Dedupe Persistence & Bayesian Feedback Smoothing
+- **Deterministic card ID:** `card.id = sha1(card.dedupe_key).hexdigest()[:12]`. Re-running the orchestrator updates the card payload in place while preserving `lifecycle_state` (`new | seen | actioned | dismissed | resolved | wrong | forgotten`) and `snooze_until` across runs.
+- **Score formula:**
+  $$\text{score} = \text{urgency} \times \text{confidence} \times \text{ev\_strength} \times \text{feedback\_weight} \times \text{fresh\_penalty}$$
+  where:
+  - $\text{ev\_strength} = \min(1.0,\; 0.4 + 0.2 \times |\text{evidence}|)$
+  - $\text{fresh\_penalty} = 0.85$ if any cited evidence row is marked `superseded` (except for `*.change` and `*.price_drop` cards, where $\text{fresh\_penalty} = 1.0$)
+  - $\text{feedback\_weight}(\text{card\_type}) = \frac{N_{\text{useful}} + 2}{N_{\text{not\_useful}} + 2 \cdot N_{\text{wrong}} + 2}$ (Bayesian-smoothed per card type: `1.0` neutral at cold start, `< 1.0` demotes noisy generators, `> 1.0` promotes valued generators).
+- **Per-category cap & actions:** Keep top `per_category = 3` cards per category sorted by descending `score`. Feedback verdicts `wrong` and `not_useful` immediately hide the card; `forget` purges the underlying evidence and writes a persistent `forget_rules` blocklist entry so the topic/person/phrase is blocked at future ingestion.
+
+### 8.5 Four-Tier Ingestion & Local Classification Pipeline (Gated Behind AC-1–AC-3)
+
+| Tier | Component | Contract |
+| :--- | :--- | :--- |
+| **1. Rules** | Deterministic matcher | Known senders, receipts, unsubscribe headers → instant, free pre-tagging. |
+| **2. Local Qwen (1.5B–3B fine-tune)** | Closed-set classification | Input: email/chat batch. Output: `{category, status, sender_cluster}` only (~0.07s/email vs 0.34s remote; ~93% accuracy on closed-set email triage). **No planning, no task creation, no query rewriting.** |
+| **3. Hindsight (swappable backend)** | Temporal reasoning | `retain` absolute-dated facts & entities, `reflect` contradictions, supersession chains. |
+| **4. Orchestrator** | Planning & routing | Task creation, query rewriting (§8.1.1), `ScopeGuard` enforcement, card generation & ranking. |
+
+- **Constraints:** Fine-tuning requires a seed dataset (150+ real examples expanded synthetically). Borderline classification cases (target `<10%`) route to the durable human review queue (`blocked` state in `docs/plan/backfill-agent.md`). Raw email/chat classification stays local with zero per-email cloud calls.
+
 ## References
 
 - Supplied `ARCHITECTURE.md`, especially §§4, 6–9, 11–16.

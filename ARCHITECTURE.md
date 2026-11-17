@@ -1,6 +1,6 @@
 # Dubai-io — Architecture
 
-**Updated:** 9 Nov 2026 · Scope: `PLAN.md` · State: `docs/status.md` · Root `CLAUDE.md` rules 1–10 win over this file.
+**Updated:** 17 Nov 2026 · Scope: `PLAN.md` · State: `docs/status.md` · Root `CLAUDE.md` rules 1–10 win over this file.
 **Lock:** no bidding/quote. `quote.request`, `QUOTED`, `QUOTE_ACCEPTED` do not exist.
 
 **Core rule:** the LLM reads and proposes; it never mutates. Every side effect goes through the deterministic action engine after a user tap (approval) or a merchant tap (inbox). Truth in status holds by construction.
@@ -28,6 +28,7 @@ apps/api (FastAPI, Python 3.13, :8000)
   profile/user_profile episodes + hypotheses · profile document + bi-temporal facts
   recommendations/discovery   temporal ranker · owner-bound live place discovery
   mail_profile, oauth, auth   Gmail read-only "needs a reply" · Google grants · connections
+  connectors/          universal connector framework (40 catalog specs, 10 plugin modules, encrypted credentials, default-deny outbound)
   reading              pull-only headline metadata
   catalog              host-owned fixed prices (fictional sandbox merchants, demo_fixture)
   google_maps          Places (discovery) · Routes (estimates) · static map · photos
@@ -37,7 +38,7 @@ apps/api (FastAPI, Python 3.13, :8000)
   ml_api/ml_models/ml_rag/ml_tasks comment sentiment, embeddings, hybrid search (Celery)
   ops                  founder ops /api/ops/* (X-Ops-Token; unset token = 404)
   widgets              separate origin :8001 for mini-apps (CSP connect-src 'none')
-  lab/                 headless Know/Notice/Do pipeline, being built (9 Nov)
+  lab/                 headless Know/Notice/Do pipeline — steps 1–2 + skills (chat, email), local sentiment/emotion worker, hybrid search, follow-ups, Mermaid topic tree/graph, and S0–S5 eval harness built (16 Nov)
       ▼
 Supabase PostgreSQL 17 + pgvector (DATABASE_URL, DATABASE_SCHEMA=dubaiio) — SQLite fallback
 (app/db.py). The 2 Nov local run uses SQLite (DATABASE_URL blank); see docs/status.md.
@@ -82,7 +83,9 @@ ambiguous adapter outcome / interrupted dispatch ─► UNKNOWN_STATUS (no autom
 | Profile | `episodes`, `profile_overrides`, `user_profile` (typed core + `attributes` JSONB), `profile_facts` (JSONB value/evidence, validity window, `embedding vector(1536)` reserved) |
 | Memory (`memory/schema.py`) | `mem_events`, `mem_entities`, `mem_entity_aliases`, `mem_relationships`, `mem_event_entities`, `mem_patterns`, `mem_advice`, `mem_ontology_paths`. Created at runtime; no versioned Supabase migration or RLS yet (memory-engine checklist C6) |
 | Recommender | `recommendation_events`, `profile_interests`, `recommendation_runs` |
-| Connectors | OAuth grant tables (encrypted credential custody) |
+| Connectors (`20261114000100_connectors.sql`) | `connector_credentials`, `connector_connections`, `connector_records`, `connector_sync_log`, `connector_outbound_grants` (Google sign-in grants live in `oauth_attempts`, `oauth_grants`) |
+| Lab (`app/lab/store.py`, `<data>/lab.sqlite`) | `lab_windows`, `lab_annotations`, `lab_vectors`, `lab_rows`, `lab_followups`, `lab_alias_suggestions` (plus `connector_records` and `mem_*`) |
+| Memory Service Target (decided 16 Nov, `PLAN.md` §2) | 10 Postgres tables keyed by `user_id` (`sources, source_records, chunks, topics, memories, entities, links, followups, profile, alias_suggestions`, `vector(768)` + `tsvector`; DDL in `docs/Researches/memory-research-2026-11.md`) |
 | Community (parked) | `personas`, `communities`, `community_members`, `posts`, `comments`, `hidden_posts`, `votes`, `chat_threads`, `chat_messages`, `chat_reads`, `chat_archived`, `contacts`, `call_log`, `social_generations`, `comment_labels`, `comment_embeddings` |
 | Conversation | LangGraph checkpoints |
 
@@ -114,14 +117,17 @@ Sources: (a) a reminder the user asked for, (b) order state changes (live over S
 | Proactive message or daily card | ✓ with consent | ✗ |
 | Set any status | ✗ | ✗ |
 
+- **Memory Architecture & MEM-01 Decision (16–17 Nov, `PLAN.md` §2, `docs/Researches/memory-research-2026-11.md`):**
+  - **Swappable Hindsight backend retained (`MEM-01`):** Keep Hindsight behind the swappable `MemoryBackend` + `ScopeGuard` contract (raw → time-anchored facts → embeddings → multi-strategy recall → graph in one container) and fix the 6 Dubai-io rule violations only (`§R-ND` decay-with-floor instead of retention delete, Amazon.ae/AED, `"I noticed"` phrasing with two-visit qualification, sensitive-category confirmation gate, Gmail/Calendar first); defer full Postgres/markdown-tree re-fit until the card contract and AC-1 (`tests/test_live_hindsight_llm.py` with LLM provider enabled) are proven. Mem0 is rejected as a backend and retained only as an extraction/retrieval audit checklist; Graphiti is deferred unless edge-level `valid_at`/`invalid_at` becomes a hard requirement.
+  - **10-table Postgres target & `lab.sqlite` (`apps/api/app/lab/`):** `sources, source_records, chunks, topics, memories, entities, links, followups, profile, alias_suggestions` remains the target schema when the full Postgres/markdown-tree re-fit runs.
 - **Profile document** (`user_profile.py`): `user_profile` is a projection of current `profile_facts` (facets identity · context · situation · preference · like · dislike · routine). A newer statement closes the old fact (`valid_to`, `superseded_by`); Forget deletes the key's history. Only told or confirmed facts are stored here.
-- **Hypotheses** (`profile.py` + `apps/web/profile.js`): real choices become episodes with allowlisted hypotheses and fixed weights (view 0.5 · dismissal 1 · choice 2); beliefs are Beta(α, β) with half-life decay; surfaced at ≥ 0.7 with ≥ 2 signals; Confirm writes a preference fact, Not true / Forget remove it and unlink evidence.
+- **Hypotheses & Two-Visit Qualification** (`profile.py`, `recommendations.py`, `apps/web/profile.js`): real choices become episodes with allowlisted hypotheses and fixed weights (view 0.5 · dismissal 1 · choice 2); beliefs are Beta(α, β) with half-life decay; surfaced at ≥ 0.7 with ≥ 2 signals across separated visits (**two-visit qualification**, `tests/test_recommendations.py`). Inferred signals are never shown as plain facts — they are phrased as **"I noticed"** with Confirm / Edit / Not true / Forget. Confirm writes a preference fact; Not true / Forget remove it and unlink evidence.
 - **Product memory** (`memory/`, temporal_note-slim): owner-scoped `mem_*` events, entities, aliases, relationships, patterns and advice; `/api/memory/*` serves timeline, search, hypotheses, context and forget (Forget removes search/timeline visibility at once). The people map is a view over `mem_relationships`. Personal vault data is never imported.
-- **Life-theme folders (founder 9 Nov):** the user sees memory as seven folders: Career, Learning, Projects, People & family, Events, Home & money, Travel. The residence ontology (`docs/superpowers/specs/2026-11-02-residence-ontology-tree.md`, `mem_ontology_paths`) stays the fine tree underneath. Supersedes "the user never browses folders" (2 Nov).
+- **Life-theme folders (founder 9 Nov):** the user sees memory as seven folders: Career, Learning, Projects, People & family, Events, Home & money, Travel. The residence ontology (`docs/references/residence-ontology-tree.md`, `mem_ontology_paths`) stays the fine tree underneath. Supersedes "the user never browses folders" (2 Nov).
 - **Every fact keeps its source** (email, chat export, chat turn) plus provenance, so "forget everything from this source" works. Each source shows an evidence-limits line (e.g. "voice notes not read; history before <date> not seen"). (from `docs/Researches/CLAUDE.md` Quest §)
-- **Never inferred:** health, religion, ethnicity, nationality-as-trait, gender, sexuality, politics (the hypothesis allowlist cannot express them). Third parties' private lives are not inferred either.
+- **Sensitive-category gate (Canon Rule 9 / AC-4, `apps/api/app/lab/sensitive.py`):** **Family, faith/religion, and health** (along with ethnicity, nationality-as-trait, gender, sexuality, politics, credentials, and third parties' private lives) are **never displayed as plain facts** and **never inferred**. `sensitive.py` enforces a two-layer fail-closed filter (deterministic English/Arabic/Arabizi regex + LLM semantic screen `screen()`, tested in `tests/test_lab_rows.py`). Any surface touching family, faith, or health requires explicit user confirmation, phrases inferred candidates as **"I noticed"**, and requires two-visit qualification.
 - **Decay follows §R-ND (founder 9 Nov):** nothing is deleted or hidden for being old. An unrefreshed weighted item loses 20–50% of its weight per refresh window; a mention, interaction, Confirm/Edit or provider re-verification resets the clock. Weight floors above zero: the item stays searchable and visible as "faded". Only the user's Forget removes it. Confirmed `user_supplied` facts never decay (a check-in prompt at most). Each decay step stores weight, last_refresh, decayed_at, delta. The recommender's 90-day expiry and temporal_note's linear decay to 0 conflict: §R-ND wins; conversion is open (C3, P4). Source: `%USERPROFILE%\Documents\Claude\Projects\proposals\memory-engine\CONSOLIDATED-PLAN.md` §R-ND.
-- **Engine is staged:** the deterministic temporal_note port (`memory/`) first; Mem0 or Graphiti per user later (pick and trigger pending, `DECISION-BRIEF.md` in the same package). No new database without a measured need.
+- **Engine stage (settled 16 Nov):** the deterministic `temporal_note` port (`memory/`) and `apps/api/app/lab/` SQLite pipeline run today; the open 8–9 Nov Stage-2 engine pick was settled on 16 Nov (`PLAN.md` §2) in favor of the merged 10-table Postgres memory service rather than adopting Mem0 or Graphiti separately. No new database without a measured need.
 - **Conversation memory:** LangGraph checkpoints in Postgres, scoped to the session owner and thread. Checkpoints are never the durable record of a task (§11).
 
 ## 8. Luna (LangGraph)
@@ -299,8 +305,8 @@ Only the relevant subset of this bounded context enters a turn:
 - **Google Workspace data never feeds advertising.** Gmail/Calendar context used for planning is never eligible for sponsored targeting, and is never mixed into an ad profile to be filtered later.
 - **Identity scopes are not an interest profile.** Google sign-in (`openid email profile`) grants neither Gmail/Calendar access nor Google's private ad-interest labels.
 - **Outbound (later):** show destination, sender account, exact body and attachments; record provider evidence; a timeout is unresolved, never auto-resent. Contacting someone again is a separate approved effect; no autonomous outreach loops. A Gmail notification is a source event, not permission to act. Other channels (Slack etc.) map external IDs to a proven account and reuse the same task IDs and approvals.
-- **Code today:** `oauth.py` grants (identity + optional `gmail.readonly`); `mail_profile.py` `/api/mail/status`, `/api/mail/needs-reply` give an honest blocker without OAuth, or `DEMO_MAIL=1` cards labelled `demo_fixture`, and write memory events. Missing: WhatsApp export importer. A Calendar connector exists in `app/connectors` (mock-tested only, never run against Google).
-- **Universal connector framework (14 Nov, `app/connectors`, merged from `cursor/universal-connectors-395e`):** ingests authorized sources into `connector_records` (source id, provider timestamp, `provenance`, `as_of`, metadata). It never writes `mem_events` / `profile_facts`; sync is an explicit request, no new cron worker. Credentials are Fernet-encrypted per owner and connector; outbound sends default to deny until the owner approves the exact payload. Sources without an authorized API register as unavailable or file-import. Detail: `docs/connectors/architecture.md`, `docs/connectors/capability-matrix.md`.
+- **Code today:** `/api/auth/google` + `/api/mail/needs-reply` (`oauth.py` grants identity + optional `gmail.readonly`, `mail_profile.py` `/api/mail/status` and `/api/mail/needs-reply` giving an honest blocker without OAuth or `DEMO_MAIL=1` `demo_fixture` cards) is the legacy Google identity/needs-reply pilot. Meanwhile `app/lab/parse.py` (WhatsApp `.txt`) and `app/lab/parse_email.py` (`.mbox`/`.eml`) are now built in `app/lab/` for local export ingestion. A Calendar connector exists in `app/connectors` (mock-tested only, never run against Google).
+- **Universal connector framework (14 Nov, `app/connectors` via `/api/connectors/*`):** the universal source-record ingestion framework. It ingests authorized sources into `connector_records` (source id, provider timestamp, `provenance`, `as_of`, metadata). It never writes `mem_events` / `profile_facts`; sync is an explicit request, no new cron worker. Credentials are Fernet-encrypted per owner and connector; outbound sends default to deny until the owner approves the exact payload. Sources without an authorized API register as unavailable or file-import. Detail: `docs/connectors/README.md`.
 - **Founder decision pending (WhatsApp Evolution plugin):** the framework includes `plugins/whatsapp_evolution.py` (unofficial Baileys via Evolution API). It is **off** unless `WHATSAPP_EVOLUTION_ENABLED` is set and it contradicts the manual-export-only rule above and §10, which lists Evolution API / Baileys as deliberately not built. Treat it as **not approved**: do not enable it, demo it or mention it as a feature until the founder lifts this line. Likewise the non-Gmail/Calendar sources (Slack, Telegram, Discord, Notion, etc.) are registered capabilities only; the 9 Nov build order stays Gmail + Calendar first.
 
 (from `docs/archive/references/assistant-review-decisions.md` TAXI-02, #8; `docs/archive/references/assistant-context.md`; `docs/archive/references/personal-assistant-direction.md` PC-01, PC-04; `docs/references/recommender-plan.md`; `docs/Researches/CLAUDE.md` rules 5–6 and Quest §)
@@ -317,7 +323,7 @@ Detail and scoring rationale: `docs/references/recommender-plan.md`.
 - **ADS-01 sponsorship:** labelled only: sponsor named, `Sponsored` label, "Why this ad", dismiss, organic choices still visible, never mixed into organic scores; no inventory means no ad; never Workspace data, sensitive traits or transcripts. **Today all signals are organic-only;** ad-eligible evidence needs separate consent.
 - **CTX-02 ticket-availability guard:** comments, news and snippets are not live inventory. Without an inventory adapter, say availability is unverified and offer a sourced booking-page handoff.
 - **Reading (Gate D, `reading.py`):** pull-only metadata. Only public topic labels go upstream; publisher/date/URL filters before display; bounded timeouts, 15-minute cache, per-owner rate bound. No polling, article bodies, generated articles or stored photos. Politics is opt-in. Rights: `docs/references/reading-source-register.md`.
-- **Daily matched cards (lab, next):** confirmed interests + recent memory → candidates (news/RSS, GitHub, YouTube) → the ranker → a morning outbox slot → a card with a "Because…" chip and Save / Less like this. Confirming an item in the reveal is what unlocks its cards; an unconfirmed hypothesis never triggers one.
+- **Daily matched cards (lab, next):** confirmed interests + recent memory → candidates (news/RSS, GitHub, YouTube) → the ranker → a morning outbox slot → a card with a "Because…" chip and Save / Less like this. Confirming an item in the reveal is what unlocks its cards; an unconfirmed hypothesis never triggers one. See `docs/plan/morning-brief.md` (16 Nov design for the personalized Morning Brief news section, shared public `news_articles` / `news_query_cache` tables, and RRF + content-based reranking).
 
 (from `docs/archive/implementation-plan.md` REC-01..04, CTX-02, SUG-01/01A, EVT-01/01A, ADS-01; `docs/archive/references/assistant-context.md`; `docs/Researches/CLAUDE.md` Quest § step 5)
 
@@ -339,7 +345,7 @@ Detail and scoring rationale: `docs/references/recommender-plan.md`.
 - Production auth and roles: Supabase Auth, FastAPI bearer verification, proof-based anonymous-owner transfer, separate merchant/operator roles, cross-device accounts. Local Supabase Auth/Storage/Edge does not mean identity, uploads or webhooks exist.
 - Real provider adapters beyond the sandbox inbox; provider cancellation.
 - Durable task worker: the DRAFT/WORKING/WAITING_EXTERNAL/BLOCKED states, leases and the `stale_worker` event (§11).
-- Memory: `mem_*` migration/RLS parity (C6), the §R-ND sweep (C3), Calendar connector live-run (framework exists, mock-tested), WhatsApp export importer, the Stage-2 engine pick.
+- Memory: WhatsApp export + `.mbox`/`.eml` parsers and skill-based extraction/search/tree/eval are built in `app/lab/`; the remaining memory gap is migrating the 16 Nov 10-table Postgres schema (`PLAN.md` §2) + verdict step to Supabase Postgres (alongside `mem_*` migration/RLS parity C6, the §R-ND sweep C3, and Calendar connector live-run).
 - Semantic recall over `profile_facts.embedding` (column reserved, nothing writes it).
 - Kill switch and a unified user-visible activity log (§9.1).
 - Production multi-worker coordination for turn/forget and scheduled retention cleanup; single-tester checkpoint forgetting is implemented and tested.

@@ -238,6 +238,278 @@ The earlier thirteen ideas remain available as inputs. Their fabricated sample a
 6. Reconcile new execution requirements explicitly before implementation; batch approval is out (founder 9 Nov, one tap per side effect). Government execution, real external sends and purchases are not authorized merely by discussing this design; they run only through a real registered adapter with explicit per-action approval and verified provider evidence (rule 4).
 7. Test the pilot against the user's current process and ChatGPT plus ordinary apps. Prioritise successful follow-through and recovery before expanding the service catalogue.
 
+## 11. Behaviour Grammar, PC Dogfood Matrix (17 Asks) & Taxi Recovery Redesign
+
+*Rescued from `docs/archive/superpowers/specs/2026-11-02-residence-companion-design.md` (Do-pillar eval).*
+
+### 11.1 Behaviour grammar (every domain)
+
+Borrowed from Grok Bot / ChatGPT Dots / Claude Duet — **interaction pattern**, not shopping:
+
+1. User asks in Assistant → **task thread** in the matching life domain.
+2. Short ack + **option/result cards** + refine chips.
+3. Tap → **designed detail / plan screen** (simple, elegant, light-first).
+4. **Approve** listing exact fields/amounts shared: one explicit tap per side effect, also on a multi-step plan (no Yes-to-all; rule 6 strict, founder 9 Nov).
+5. Execution only via **registered adapter** + verified evidence; else draft + blocker / Open official portal. Never invent Paid / Booked / Confirmed / Filed.
+6. Optional browser-agent **screenshot** as proof (merchant or portal ready-state) — later slice; not required for first dogfood bar.
+7. Memory style **B**: Me page (“You told me” / “I noticed”) + rare in-thread chips (“Because…”, “I saved…”).
+
+Demo / sandbox / fixtures always show a visible **Demo data** or **Sandbox** pill.
+
+### 11.2 “Able to do all of this” bar (PC dogfood matrix — 17 asks)
+
+On founder PC: API `:8030` + site `http://localhost:3000/` (and/or `?desktop`).
+
+For **each domain**, at least one ask that:
+
+1. Creates/updates a task thread in that domain.
+2. Shows cards or a multi-step plan.
+3. Supports Approve (one tap per side effect) with honest status afterward.
+4. Can store/reuse a relevant Me fact when the user states one.
+
+Fixtures and sandbox are allowed. Live government payment and live email send are **not** required for this bar.
+
+| # | Domain | Ask |
+|---|---|---|
+| 1 | Me | Save household facts; “What do you know about me?” + Forget |
+| 2 | Money | Bills due + Salik/DEWA reminders |
+| 3 | Money | Pay this month’s bills (UAE Pass sandbox demo) |
+| 4 | Kids | School tours / KHDA shortlist + approve enquiry draft |
+| 5 | Household | AC before Friday |
+| 6 | Household | Guests at 8 — clean + food (one tap per side effect) |
+| 7 | Career | Chase application / email thread (demo evidence ok) |
+| 8 | Career | Reimbursement pack from receipts |
+| 9 | Fun | Mamzar Saturday (prep → maps → parking step → meal) |
+| 10 | Cloth | One shirt find + size memory (single cloth case) |
+| 11 | Tech | Home internet slow — plan/options |
+| 12 | Cars | Book service or wash |
+| 13 | Cars | Used/new car shortlist research |
+| 14 | Projects | Move in 3 weeks — checklist |
+| 15 | Health | Insurance-eligible clinic near me |
+| 16 | Travel | DXB late arrival **or** taxi lost-bag (see §11.3 — **not** plate-first) |
+| 17 | Community | Feed + one chat reply |
+
+AR via [RTV](https://github.com/ZaiqiangWu/RTV): **out of v1 dogfood** unless founder unlocks (PLAN.md still LATER; needs GPU + per-garment ckpt; non-commercial license).
+
+### 11.3 Journey redesign — lost item in taxi (founder, 2 Nov)
+
+**Reject:** opening with “write the car license plate.” Nobody remembers that. Current site stub (`demo-taxi` in `ThreadView`) is **awful** and must be replaced.
+
+**Framing line:** “Let’s track your ride.”
+
+```
+Lost bag in taxi
+        │
+        ▼
+ Card: How did you pay / book?
+   ├─ Ride-share app or card payment
+   │     → pull trip from Careem/Uber/Hala (connector or paste trip link/receipt)
+   │     → confirm pickup/dropoff/time from that evidence
+   │     → contact driver / in-app lost item  OR  draft RTA if needed
+   │
+   └─ Cash (street / rank taxi)
+         → Cards: roughly where + when (area chips, time window — not plate)
+         → optional: roof colour / company only if user offers it
+         → prepare RTA lost-and-found draft + Open official portal
+         → status stays draft / Waiting / Blocked — never fake Filed
+```
+
+Rules:
+
+- Plate / roof colour are **optional later chips** (“anything else you remember?”), never the first gate.
+- Cash path is **location + time → contact RTA** (handoff + draft), not pretend GPS of the car.
+- Ride-share path = **B+A**: show a labelled **Demo** fixture trip card (Careem/Uber/Hala-style: route, time, last-4 of card or “Paid in app”) **and** offer “Paste trip link / receipt” as fallback. No live connector required for dogfood.
+- Staged demo replies labelled **Demo**; RTA send only with real adapter + approval + evidence (rule 1/4).
+
+Dogfood pass for #16: ask “I left my bag in a taxi last night” → “Let’s track your ride” + payment cards → ride-share shows Demo trip card (+ paste option) **or** cash asks where/when → RTA draft — **zero** plate required.
+
+### 11.4 Demo completeness + “don’t ask stupid” (founder, 2 Nov)
+
+**If a thread is `{demo}` / Demo data, it must be fully planned end-to-end** — scripted context, cards, and next steps. A demo that opens with a blank interrogative (“What’s the name of my gym?”, “What phone do you have?”) is **failed product**, not a clever clarifier.
+
+**Context rule (all asks, demo or live):**
+
+| Situation | Behaviour |
+|---|---|
+| Entity already in Me / prior booking / domain tree (e.g. `lifestyle > sports > gym` → “Fitness First Marina”) | Use it. Chip: “Because you train at Fitness First Marina…” |
+| User said it earlier in this or a saved session | Reuse. Never re-ask. |
+| Unknown and **not** a demo | Ask **one** high-value question with cards (not an open text quiz). |
+| Unknown and **is** a demo | **Invent nothing as live truth** — ship fixture facts in the demo pack so the flow never needs the awful question. |
+
+**Banned openers (examples of awful):**
+
+- “Update my gym membership” → “What’s the name of my gym?”
+- “Change my phone” → “What kind of phone do you have?”
+- “Lost bag in taxi” → “Write the license plate”
+
+**Gym dogfood (replace current `demo-gym` stub):**  
+Ask “Update my gym membership” → thread already knows gym from fixture under lifestyle/sports/gym (or prior book) → cards: renew / freeze / change plan / cancel → detail → approve. Never ask the gym’s name in that demo.
+
+Same bar for tech (phone/plan), cars (the registered car), household providers already used, etc.
+
+## Appendix A: Demo Resident Pack — "Sam Resident" (demo_fixture)
+
+*Rescued from `docs/archive/superpowers/specs/2026-11-02-demo-resident.md`.*
+
+Fixture identities only — every seeded fact carries `provenance: demo_fixture` and renders a **Demo data** pill, never "You told me" (that label is only for what a real user stated, `user_supplied`; rules 2 and 9). Never present as a real person.
+
+**Used by:** Appendix B demo journey scripts + memory seed (companion-MCP Phase C4).  
+**UI bots:** threads roll up per `docs/references/residence-ontology-tree.md` cheat sheet.
+
+### Profile
+
+| Field | Value | Provenance |
+|---|---|---|
+| Display name | Sam Resident | demo_fixture |
+| Area | JLT (Jumeirah Lakes Towers) | demo_fixture |
+| Household | Partner + 2 kids (Year 5, Year 3) | demo_fixture |
+| Usual t-shirt size | XL | demo_fixture |
+| Quiet hours | 22:00–07:00 Dubai | demo_fixture |
+
+### Entities (seed table)
+
+| id | Ontology path | Display | Notes | Demos |
+|---|---|---|---|---|
+| `gym.ff_marina` | `lifestyle/sports/gym` | Fitness First Marina | Membership active; renewal due | (gym micro); Lifestyle context |
+| `school.gems_y5` | `kids_family/school_khda` | GEMS candidate A (Year 5) | Shortlist fixture | 1 KHDA |
+| `school.nord_y5` | `kids_family/school_khda` | Nord Anglia candidate B (Year 5) | Shortlist fixture | 1 KHDA |
+| `home.jlt_apt` | `household/home_profile` | JLT 2BR apartment | Building amenities known | 1, 5 |
+| `ins.network_bp` | `health/insurance_network` | Network category **B+** (source label) | From “emailed list” fixture dated 2026-09 | 2 |
+| `clinic.medcare_jlt` | `health/clinics_near` | Medcare JLT branch | Matches B+ in fixture list | 2 |
+| `clinic.aster_marina` | `health/clinics_near` | Aster Marina | Matches B+ | 2 |
+| `outing.mamzar` | `fun_out/beach_parks` | Al Mamzar Beach Park | Family Saturday | 3 |
+| `trip.careem_marina_dxb` | `travel/taxi_recovery/rideshare_path` | Careem Marina → DXB | Last night 22:40; paid in app; Demo trip card | 4 |
+| `car.sam_suv` | `cars/vehicle_profile` | Family SUV | Service context only | — |
+| `dewa.account` | `money/bills_utilities/dewa` | DEWA account ···4821 | Reminder / pay-bills appendix | F |
+| `salik.tag` | `money/salik` | Salik tag | Low-balance reminder fixture | F |
+| `internet.du_home` | `tech/home_internet` | du Home Fibre | Plan options context | — |
+
+### Rules
+
+- Every seeded fact is stored as `provenance: demo_fixture` and shows **Demo data** (or Sandbox) in UI when used; never "You told me".
+- Journeys **must not** ask for gym name, phone model, plate, insurance tier, or school years already in this pack.
+- Founder may rename entities; keep `id`s stable for seed JSON.
+
+## Appendix B: Card-by-Card Demo Journey Scripts (Best 5 + UAE Pass + Gym Micro)
+
+*Rescued from `docs/archive/superpowers/specs/2026-11-02-demo-journeys.md`.*
+
+Card-by-card; fixtures from Appendix A ("Sam Resident"). Honest statuses only. **Demo data** / **Sandbox** pills where fixtures/sandbox apply.
+
+Shared grammar: ack → cards → detail/plan → Approve (one explicit tap per side effect; no Yes-to-all, founder 9 Nov) → evidence or Blocked/portal.
+
+### Demo 1 — School + home (KHDA)
+
+| | |
+|---|---|
+| **Utterance** | “We need Year 5 British curriculum — shortlist schools we can afford and a home with a sane school run.” |
+| **UI bot** | Household |
+| **Ontology** | `kids_family/school_khda/*`, `household/property_search/*`, `home.jlt_apt` |
+
+**Cards**
+
+1. Constraints confirm (from pack): Year 5 · British · area JLT/work Marina · budget chips — **Edit** / **Looks right**  
+2. School shortlist: GEMS candidate A · Nord Anglia candidate B (fees + KHDA-year labels, `as_of`, Demo)  
+3. Trade-off: shorter run vs lower fees vs inspection year  
+4. Area/rent compare (registered-rent style fixture — historical, not “available flat”)  
+5. Plan: request tours for selected schools  
+
+**Approve:** “Send tour enquiries for {schools}” — fields listed.  
+**Terminal:** `WAITING_PROVIDER` / Blocked + “Open school portal” if no adapter. Never “seat confirmed.”
+
+### Demo 2 — Insurance clinic near me
+
+| | |
+|---|---|
+| **Utterance** | “Ear pain — which nearby clinic does my insurance cover?” |
+| **UI bot** | Money (insurance admin) |
+| **Ontology** | `health/insurance_network/*`, `ins.network_bp`, clinics |
+
+**Cards**
+
+1. “Using your **B+** network list (Demo · as_of Sep 2026)” — **Not my list** / **Continue**  
+2. Matched branches: Medcare JLT · Aster Marina (why matched + distance estimate)  
+3. Detail: outpatient note — network ≠ treatment guarantee  
+4. Next: Book / Call / Directions handoff  
+
+**Approve:** share name + member id (fixture) with clinic booking channel if any.  
+**Terminal:** appointment `WAITING` or handoff; never invent coverage approval.
+
+### Demo 3 — Mamzar day
+
+| | |
+|---|---|
+| **Utterance** | “Saturday Mamzar with the kids — toys + hot meal when we get back.” |
+| **UI bot** | Lifestyle |
+| **Ontology** | `fun_out/beach_parks/*`, parking-as-step, food delivery |
+
+**Plan card (Yes / No per step; one tap per side effect)**
+
+| Step | Content |
+|---|---|
+| Prepare | Beach toys basket (Noon Now–class fixture prices) |
+| Travel | Route + departure aligned with delivery ETA |
+| Parking/entry | Parkin-style step — issued pass only if fixture says so |
+| Return meal | Hot meal timed to return |
+
+**Disruption chip:** “Stay another hour” → recalculate meal + parking; each resulting change to an order or parking is a new side effect and gets its own tap.  
+**Terminal:** each step Demo / Confirmed only with staged provider events labelled Demo.
+
+### Demo 4 — Lost bag — track your ride
+
+| | |
+|---|---|
+| **Utterance** | “I left my bag in a taxi last night.” |
+| **UI bot** | Travel |
+| **Ontology** | `travel/taxi_recovery/*`, `trip.careem_marina_dxb` |
+
+**Flow**
+
+1. Ack: **“Let’s track your ride.”**  
+2. Cards: **Ride-share / card** · **Cash**  
+3a. **Ride-share (B+A):** Demo trip card (Marina → DXB, 22:40, Paid in app) + **Paste receipt/link**  
+3b. **Cash:** area chips + time window (evening / after 10) — **no plate**  
+4. Next: contact driver / in-app lost item **or** RTA draft + Open official portal  
+5. Optional later: “Anything else you remember?” (roof/company) — never required  
+
+**Terminal:** draft / Waiting / Blocked. Never Filed/Paid/Recovered without evidence. Staged replies = Demo.
+
+### Demo 5 — Guests tonight
+
+| | |
+|---|---|
+| **Utterance** | “Guests at 8 — flat ready and light dinner.” |
+| **UI bot** | Household |
+| **Ontology** | `household/guests_ready`, cleaning, food |
+
+**Plan (one tap per side-effect step)**
+
+| Step | Provider pattern |
+|---|---|
+| Clean 2BR | Fixed-price sandbox / Demo |
+| Light dinner | Delivery or cook options |
+| Access | Building known from `home.jlt_apt` |
+
+**Terminal:** Running / Needs you / Blocked per step; no fake “chef confirmed” without evidence.
+
+### Appendix F — Pay bills + UAE Pass (not blocking E)
+
+| | |
+|---|---|
+| **Utterance** | “Pay this month’s bills.” |
+| **UI bot** | Money |
+| **Ontology** | `money/pay_all_bills`, `uae_pass/sandbox_demo`, DEWA/Salik fixtures |
+
+1. UAE Pass **Sandbox** connect → Connected (sandbox) or Blocked  
+2. Bill list Demo: DEWA · Salik (amounts + as_of)  
+3. Approve exact totals + fields shared  
+4. Lines stay **Waiting / Blocked** — never Paid without provider evidence  
+
+### Micro (not top-5): Gym renew
+
+Utterance: “Update my gym membership.”  
+Uses `gym.ff_marina` — cards renew / freeze / change / cancel. **Never ask gym name.**
+
 ## References
 
 - [KHDA school directory](https://web.khda.gov.ae/en/Education-Directory/schools)

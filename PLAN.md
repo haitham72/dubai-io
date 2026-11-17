@@ -1,6 +1,6 @@
 # Dubai-io — Plan
 
-**Updated:** 16 Nov 2026 · **Owner:** Haitham · State: [docs/status.md](docs/status.md) · Open requests: [docs/request-backlog.md](docs/request-backlog.md) · Active build: `apps/api/app/lab/CLAUDE.md`
+**Updated:** 17 Nov 2026 · **Owner:** Haitham · State: [docs/status.md](docs/status.md) · Open requests: [docs/request-backlog.md](docs/request-backlog.md) · Active build: `apps/api/app/lab/CLAUDE.md`
 
 The single plan: identity, founder decisions, scope locks, live rulings, contest facts, demo arc, pitch guardrails. Done work lives in git history; the previous version of this file is `git show main:PLAN.md`.
 
@@ -18,6 +18,24 @@ The single plan: identity, founder decisions, scope locks, live rulings, contest
 
 Only decisions still in force. Superseded ones stay in git history.
 
+**17 Nov 2026 — SRE Supervisor rulings & MEM-01 decision (AC-5)**
+
+Locked architectural decisions (do not relitigate without a written counter-evidence section here):
+
+| Decision | Ruling | Rationale |
+|---|---|---|
+| **Memory backend (`MEM-01`)** | **Hindsight swappable backend retained; rule violations fixed; full re-fit deferred** | Raw → time-anchored facts → embeddings → multi-strategy recall → graph in one container behind `MemoryBackend` + `ScopeGuard`. Fix the Dubai-io rule violations only (`§R-ND` decay-with-floor instead of retention delete, Amazon.ae in AED, `"I noticed"` phrasing with two-visit qualification, sensitive-category confirmation gate). Full Postgres/markdown-tree re-fit is deferred until the card contract and AC-1 (`tests/test_live_hindsight_llm.py` with LLM provider enabled) are proven. |
+| **Mem0** | **Rejected as backend**; retained as **audit checklist** | Weak temporal handling; hash-only dedupe; ADD-only. |
+| **Graphiti** | **Deferred** | Requires external graph DB; anecdotal latency/quality loss at small corpus. Revisit only if edge-level `valid_at`/`invalid_at` becomes a hard requirement. |
+| **n8n** | **Rejected for core**; optional ingestion edge only | Core is verification-bound, not glue-bound. Auth plumbing may use n8n only if it exceeds 3 days; must POST to existing `/api/ingest`. |
+| **Local Qwen (1.5B–3B Jev-style fine-tune)** | **Adopt as classification tier** (after AC-1–AC-3 green) | ~93% on closed-set email triage at ~0.07s/email vs 0.34s remote. Pipeline: `Rules → Qwen → Hindsight → Orchestrator` (`docs/plan/morning-brief.md` §8.5). |
+| **Task creation / query rewriting** | **Orchestrator only** | Local classifier returns `{category, status, sender_cluster}` labels only; planner decides tasks and rewrites unscoped queries into `ScopedQuery` (`docs/plan/morning-brief.md` §8.1.1). Never let a 1.5B model route. |
+| **Card UI ownership** | **App owns UI**; memory repos do not generate cards | Backend feeds the swipe UI (`new → seen → actioned → dismissed → resolved`); it does not render it. |
+| **Backfill agent architecture** | **One accountable lead + bounded delegation + durable SQLite queue** | Goal loop = testable `"done"` contract; `blocked` state routes borderline (<10%) cases to human review; frontier plans / cheap executes (`docs/plan/backfill-agent.md`). |
+| **`mamty-hindsight` weekly extract (`G:\Haitham\lab-data\mamty-hindsight\`)** | **Prompt-level retain lab run only; blocked from `mem_*` until AC-1 + L3/L4** | ISO week (`Mon–Sun`, recent→older) + ~40–80 msg day packets + Egyptian Arabic/Arabizi kept + never overwrite `status=done` weeks. Raw week JSON requires object schema check (reject `list_root`), `circle.json` alias normalization, `sensitive.py` gate, and user confirmation before touching `mem_*` (`apps/api/app/lab/CLAUDE.md`). |
+
+**Gate before new features:** Do not proceed to new feature work until **AC-1** (Hindsight LLM-provider extraction verified in `tests/test_live_hindsight_llm.py`), **AC-2** (Card lifecycle `new → seen → actioned → dismissed → resolved` + honest `reminder saved — delivery not yet enabled` label), and **AC-3** (Orchestrator query rewriter) are green. Until AC-1 runs live with an LLM provider enabled, `MEM-01` is tracked as **unproven at the LLM fact-extraction layer** in `docs/status.md`.
+
 **16 Nov 2026 — memory design** (research, schema and numbers: `docs/Researches/memory-research-2026-11.md`)
 
 Decided (founder, 16 Nov):
@@ -27,6 +45,7 @@ Decided (founder, 16 Nov):
 - **A correction never overwrites:** the old memory gets an end date and a pointer to the new one. Every memory keeps the message range it came from, so "forget everything from this chat" removes everything built from it.
 - **End goals added:** (1) profile screens modelled on Quest's "What I noticed about you", "signature moves" and "Your People", with Confirm / Edit / Not true / Forget on every item; (2) a daily recommender under Notice: shared searches per topic, matched to each user's confirmed topics, pushed with a "Because…" reason, response feedback updates the weights. Cross-user signals stay aggregate-only with a visible opt-out (8–9 Nov); no user's memory is ever shown to or searched by another.
 - **Queries the product needs:** by subject across years ("select flights"), by topic or person with counts, by date; the agent answers from these and may correct memory through the same write path.
+- **Lab implementation (16 Nov, `ed15f47`):** skill-based extraction (`skills/chat.py`, `skills/email.py`), local sentiment/emotion scorers (`scoring.py`, `scorer_worker.py`), hybrid dense + BM25 + RRF search (`searchlib.py`), recurring topic & resolution follow-ups (`followups.py`), Mermaid topic tree/graph (`tree.py`, `tree_assign.py`), and S0–S5 evaluation harness (`evaluate.py`) were implemented in `apps/api/app/lab/`.
 
 Proposed, not yet approved:
 - **Extraction:** chunks sized to the model and cut where the conversation changes (a day or a pause is not a boundary); one memory per fact with its time; the sensitive check runs on messages before extraction, not as one flag per chunk; follow-up questions resolved later by a second pass that may answer only from cited memories.
@@ -40,13 +59,13 @@ Proposed, not yet approved:
 - Identity and pillars as §1.
 - **Gmail + Calendar connectors first**, with the founder as a Google test user. Reverses "Google OAuth last" (21 Oct).
 - **Rule 6 strict:** one explicit tap per side effect; no "Yes to all" batch approval. Auto / Ask / Learn modes stay rule-compliant: sends and shares always need a tap.
-- **Memory folders are user-visible life themes:** Career · Learning · Projects · People & family · Events · Home & money · Travel. The residence ontology stays the fine tree underneath (`docs/superpowers/specs/2026-11-02-residence-ontology-tree.md`). Supersedes the 2 Nov UI-bot list and "user never browses folders".
+- **Memory folders are user-visible life themes:** Career · Learning · Projects · People & family · Events · Home & money · Travel. The residence ontology stays the fine tree underneath (`docs/references/residence-ontology-tree.md`). Supersedes the 2 Nov UI-bot list and "user never browses folders".
 - **WhatsApp only from manually exported chats** (WhatsApp's own Export chat). No linked device, Baileys or Evolution API, no automation of a personal account.
 - **Community/social track parked:** code stays, not in the contest build. Personalised feeds stay under Notice.
 - **UI work paused** while a headless pipeline is built in `apps/api/app/lab/` (guide: `apps/api/app/lab/CLAUDE.md`).
 - **Persocial** is a separate, deprioritised project with its own repo. Never build its features into Dubai-io, or the reverse.
 
-**8–9 Nov 2026 — memory engine** (package outside the repo: `%USERPROFILE%\Documents\Claude\Projects\proposals\memory-engine\`)
+**8–9 Nov 2026 — memory engine** (package outside the repo: `%USERPROFILE%\Documents\Claude\Projects\proposals\memory-engine\`) [Settled 16 Nov above: merged 10-table Postgres service adopted; §R-ND and aggregate-only cross-user rules remain in force]
 - **Staged engine:** the deterministic temporal_note port is the early layer; Mem0 or Graphiti takes over per user once there is enough captured history. The Stage-2 pick and its trigger are open.
 - **Never-drop rule (§R-ND):** no idea is deleted by age; unrefreshed items lose 20–50% of their weight; a refresh resets the clock. App-layer, applies to every engine.
 - **Cross-user learning:** aggregate-only, with a visible opt-out; per-user stores stay isolated; no cross-user retrieval.

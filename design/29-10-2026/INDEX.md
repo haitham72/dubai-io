@@ -37,7 +37,9 @@ Stable copies with readable names: [`../references/v3-higgsfield/`](../reference
 5. **`l06`** — Me / memory  
 6. Community (`l01`, `l05`, `l08`, `l09`) — Plan 3  
 
-Phone set mirrors the same flows for `?device` later.
+Phone set mirrors the same flows for `?device` later (`phone/m01–m10` in `../references/v3-higgsfield/`).
+
+Under `../references/v3-higgsfield/` (folded from archived `v3-higgsfield/README.md`), primary `.png` picks are `desktop/l02-assistant-home.png`, `desktop/l03-services.png`, `desktop/l04-assistant-thread-approval.png`, `desktop/l10-taxi-recovery.png`, `desktop/l06-me-profile.png`, and `desktop/l08-community-feed-foryou.png` (phone mirrors under `phone/m01–m10`).
 
 ## Notes
 
