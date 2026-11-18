@@ -7,10 +7,11 @@ Canon lives at the repo root (`CLAUDE.md`, `PLAN.md`, `ARCHITECTURE.md`, `README
 | Current state, shipped spine, headless lab state, runtime, keys | `status.md` | Single state file. Keep short. |
 | Active task, open items, `## Feature decisions` ledger | `request-backlog.md` | The `## Feature decisions` table is written by the `feature-ledger` skill. |
 | Active feature designs (Know / Notice / Do) | `plan/<feature>.md` | `morning-brief.md`, `journeys.md`, `backfill-agent.md`, plus proposed `desktop-sessions.md`, `domain-agents.md`. Header: status, date, proposed or approved. Cite `ARCHITECTURE.md` sections, don't copy them. |
+| **Memory plan (single)** | `plan/Memory/memory.md` | Consolidated 18 Nov. Folder guide: `plan/Memory/CLAUDE.md`. Historical research only in `plan/Memory/_archive/`. |
 | Service intake & cases menu | `services/` | `intake.md`, `cases.md` (plus `services/<shops|service>/<category>/`). Follow `services/intake.md`. Never write a case into `PLAN.md`. |
 | Consolidated connector architecture, 40-source capability matrix, priority scores, and WhatsApp evaluation | `connectors/README.md` | Single consolidated reference; split files archived in `archive/connectors/`. |
 | API catalogs, source registers, ranking plans, fine ontology | `references/` | `api-catalog.md`, `reading-source-register.md`, `recommender-plan.md`, `residence-ontology-tree.md`. Lookup material, not decisions. |
-| Research inputs | `Researches/` | `CLAUDE.md`, `contest.md`, `memory-research-2026-11.md`, `quest-tree-mechanics.md`. Input only. Not canon until promoted into `PLAN.md` by the founder. |
+| Research inputs | `Researches/` | `CLAUDE.md`, `contest.md`. Memory research moved → `plan/Memory/` (see stub `memory-research-MOVED.md`). Input only; not canon until in `PLAN.md`. |
 | Superseded or historical anything | `archive/` | Don't read unless asked. Scheme in `archive/CLAUDE.md`. (`superpowers/` retired 17 Nov: `residence-ontology-tree.md` moved to `references/`, remainder in `archive/superpowers/`.) |
 
 **Which doc for which job** (full map, with conflicts resolved): `docs-map.md`.

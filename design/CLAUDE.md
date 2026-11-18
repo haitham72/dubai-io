@@ -30,4 +30,4 @@ Visual references only. Nothing in this folder is shipped code, and no image her
 - Service-ref filing: `docs/services/intake.md`, `docs/services/cases.md`
 - Frame review guide: `references/claude duet/README.md`
 - Higgsfield v3 light-mode catalog & website priority: `29-10-2026/INDEX.md` (covers `29-10-2026/` and `references/v3-higgsfield/`)
-- Morning Brief desktop dashboard & mobile Memory/Evidence sheets (17 Nov): `17-11-2026/` → spec in `docs/plan/morning-brief.md` §8
+- Morning Brief desktop dashboard & mobile Memory/Evidence sheets (17 Nov): `17-11-2026/` → spec in `docs/plan/morning-brief.md` §8 · realistic lab-fuel verdict vs these cards: `docs/plan/Memory/memory.md` §8

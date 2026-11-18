@@ -16,4 +16,6 @@
 
 Earlier versions of docs rewritten in place (`CLAUDE.md`, `PLAN.md`, `ARCHITECTURE.md`, `README.md`, `docs/status.md`, `docs/request-backlog.md`): `git show main:<path>`.
 
+- **Round 3 (18 Nov 2026):** Memory docs consolidated into `docs/plan/Memory/memory.md`. Research inputs moved to `docs/plan/Memory/_archive/`. Personal Quest export + WhatsApp copies removed from the plan tree to `G:\Haitham\lab-data\`. Non-memory refs restored under `docs/references/`.
+
 Never cite an archived doc as current. Never move a doc back without the founder's approval.

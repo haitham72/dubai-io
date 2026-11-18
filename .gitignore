@@ -32,6 +32,9 @@ apps/ios/Local.xcconfig
 # Real founder data (chat exports etc.) never goes into git — lab guide: real data stays out of the repo
 /data/
 /docs/references/quest - info/
+/docs/plan/Memory/data/
+/docs/plan/Memory/references/quest - info/
+/docs/plan/Memory/references/Hindsight - info/
 
 # Founder private context (never commit)
 docs/Researches/quest - info/

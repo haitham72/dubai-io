@@ -36,7 +36,7 @@ Locked architectural decisions (do not relitigate without a written counter-evid
 
 **Gate before new features:** Do not proceed to new feature work until **AC-1** (Hindsight LLM-provider extraction verified in `tests/test_live_hindsight_llm.py`), **AC-2** (Card lifecycle `new → seen → actioned → dismissed → resolved` + honest `reminder saved — delivery not yet enabled` label), and **AC-3** (Orchestrator query rewriter) are green. Until AC-1 runs live with an LLM provider enabled, `MEM-01` is tracked as **unproven at the LLM fact-extraction layer** in `docs/status.md`.
 
-**16 Nov 2026 — memory design** (research, schema and numbers: `docs/Researches/memory-research-2026-11.md`)
+**16 Nov 2026 — memory design** (single plan: `docs/plan/Memory/memory.md`; historical research: `docs/plan/Memory/_archive/memory-research-2026-11.md`)
 
 Decided (founder, 16 Nov):
 - **One memory service on Postgres (Supabase), every table keyed by `user_id`**, merging Mem0 (links between memories), Graphiti (a dated end for a fact), Hindsight (a verdict per new fact against the closest memories), the Quest tree (sections, topic and person files, profile) and the temporal_note engine. **The md tree is an export, not the store.** This settles the open Stage-2 engine pick of 8–9 Nov: no single engine is adopted.
