@@ -173,7 +173,10 @@ def test_ac1_status_doc_marks_mem01_unproven_until_live_llm_passes():
     """P0-1 / P0-2 / AC-1: Until live Hindsight LLM extraction passes, MEM-01 must be marked unproven."""
     status_md = (REPO_ROOT / "docs" / "status.md").read_text(encoding="utf-8")
     backlog_md = (REPO_ROOT / "docs" / "request-backlog.md").read_text(encoding="utf-8")
-    research_md = (REPO_ROOT / "docs" / "Researches" / "memory-research-2026-11.md").read_text(encoding="utf-8")
+    research_path = REPO_ROOT / "docs" / "plan" / "Memory" / "_archive" / "memory-research-2026-11.md"
+    if not research_path.exists():
+        research_path = REPO_ROOT / "docs" / "Researches" / "memory-research-2026-11.md"
+    research_md = research_path.read_text(encoding="utf-8")
 
     assert "unproven" in status_md.lower() and "test_live_hindsight_llm.py" in status_md
     assert "unproven" in backlog_md.lower() and "test_live_hindsight_llm.py" in backlog_md
@@ -308,7 +311,10 @@ def test_ac5_mem01_decision_and_strategic_records_present():
     backfill_text = backfill_doc.read_text(encoding="utf-8")
     assert "backfill_jobs" in backfill_text and "blocked" in backfill_text
 
-    research_doc = (REPO_ROOT / "docs" / "Researches" / "memory-research-2026-11.md").read_text(encoding="utf-8")
+    research_path = REPO_ROOT / "docs" / "plan" / "Memory" / "_archive" / "memory-research-2026-11.md"
+    if not research_path.exists():
+        research_path = REPO_ROOT / "docs" / "Researches" / "memory-research-2026-11.md"
+    research_doc = research_path.read_text(encoding="utf-8")
     assert "Wanderloots" in research_doc and "Sean's AI Stories" in research_doc
 
 
@@ -409,7 +415,10 @@ def stage_week_for_memory_promotion(
 def test_acl1_acl2_acl5_honest_labeling_playbook_and_mem01_separation():
     status_md = (REPO_ROOT / "docs" / "status.md").read_text(encoding="utf-8")
     lab_claude = (REPO_ROOT / "apps" / "api" / "app" / "lab" / "CLAUDE.md").read_text(encoding="utf-8")
-    research_md = (REPO_ROOT / "docs" / "Researches" / "memory-research-2026-11.md").read_text(encoding="utf-8")
+    research_path = REPO_ROOT / "docs" / "plan" / "Memory" / "_archive" / "memory-research-2026-11.md"
+    if not research_path.exists():
+        research_path = REPO_ROOT / "docs" / "Researches" / "memory-research-2026-11.md"
+    research_md = research_path.read_text(encoding="utf-8")
     backfill_md = (REPO_ROOT / "docs" / "plan" / "backfill-agent.md").read_text(encoding="utf-8")
 
     # AC-L1 & AC-L5: Honest labeling + MEM-01 stays unproven
