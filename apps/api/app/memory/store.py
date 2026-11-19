@@ -169,6 +169,50 @@ class MemoryStore:
         # sqlite Cursor.rowcount works; postgres too after execute
         return True
 
+    def add_chat_turn(
+        self,
+        owner: str,
+        *,
+        human_message: str,
+        ai_message: str,
+        source: str = "quest_chat",
+        proactive: bool = False,
+        ping_type: str | None = None,
+        extracted_facts: list[dict] | None = None,
+    ) -> dict[str, Any]:
+        """Saves a paired human|ai_message turn and exports structured facts to temporal memory."""
+        turn_id = str(uuid.uuid4())
+        text = f"Human: {human_message}\nAI: {ai_message}"
+        event_res = self.add_event(
+            owner,
+            kind="chat_turn",
+            text=text,
+            source=source,
+            provenance="user_supplied" if not proactive else "agent_proactive",
+            confidence=1.0,
+            at=_now(),
+        )
+        exported_patterns = []
+        if extracted_facts:
+            for fact in extracted_facts:
+                pid = self.add_pattern(
+                    owner,
+                    statement=fact.get("statement", ""),
+                    confidence=fact.get("confidence", 0.9),
+                    evidence=[{"turn_id": turn_id, "text": text[:200], "ping_type": ping_type}],
+                    status=fact.get("status", "hypothesis"),
+                )
+                exported_patterns.append(pid)
+        return {
+            "turn_id": turn_id,
+            "event_id": event_res["id"],
+            "deduped": event_res.get("deduped", False),
+            "proactive": proactive,
+            "ping_type": ping_type,
+            "exported_patterns_count": len(exported_patterns),
+            "patterns": exported_patterns,
+        }
+
     def context_pack(self, owner: str, query: str = "", budget_chars: int = 2000) -> str:
         lines: list[str] = []
         ents = self.db.execute(

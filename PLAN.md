@@ -18,13 +18,37 @@ The single plan: identity, founder decisions, scope locks, live rulings, contest
 
 Only decisions still in force. Superseded ones stay in git history.
 
+**19 Nov 2026 (Evening) — Dual Contest Entry Strategy, Mirsal Studio Business Entry & IDE-Companio Skill Integration**
+- **Dual Contest Strategy (Dubai Chambers Championship $150k Tracks):**
+  1. **Entry 1: Best Personal AI Agent ("AI-Companion: Quest / Dubai IO"):** Flagship personal companion with consented memory management, multi-source temporal ingestion (YouTube 500 titles, Gmail 250 threads, Chrome 23.9k URLs), ScopeGuard privacy shield, and Two-Tower feed spanning 6 life clusters (Gaming, Deals/Hardware, Academics, AI Systems, Design, Career). Presentation elevated to an Executive Showcase Suite.
+  2. **Entry 2: Best Business AI Agent ("Mirsal Studio" — working title, renaming pending):** The product is functionally completed at `G:\Haitham\VsCode\emoji-creator\mirsal-builder-io` (FastAPI backend, PostgreSQL with 36 migrations, 1,898-row cultural emoji bank, Kling 4.0/GPT Image 2.5 generative engine, 44-check deterministic verifier, and Arabic design canvas). Next steps: Focus on founder story, presentation deck, running primarily on local models + cloud fallback, subscription-based pricing for users, and direct export to Telegram / messaging.
+- **IDE-Companio Ingestion Skill (`app.lab.skills.ide_session`):**
+  - Formally integrated into the Personal Assistant extraction pipeline.
+  - Scans local developer transcripts (`~/.claude/projects/`, Codex, Git commits) with secret scrubbing and logs them temporally to the memory engine.
+  - **Minimal Developer Presentation:** User-facing representation under the 'Developer' category/filter is strictly minimal (one clean card: project name, 1-sentence accomplishment narrative, commit/token stats; zero raw log or prompt dumps).
+
+**19 Nov 2026 — AI-Companion (Quest) Single Active Focus & Multi-Modal Data Pipeline**
+- **Single Active Focus:** We are exclusively building and demonstrating **Entry 1: Best Personal AI Agent ("AI-Companion: Quest")**. The immediate milestone is pulling real personal context data and rendering a high-fidelity, interactive **Figma-style mockup** (`design/17-11-2026/Quest_ Thoughtful Memory Management.png`) to review the complete experience.
+- **Next Phases (Deferred & Modular):**
+  - *Social (Reddit style with DMs):* Deferred to Phase 5.
+  - *Business (`mirsal-builder-io` / `ide-companio`):* Deferred to Phase 5. Both candidate platforms remain intact.
+- **The TreeSetter Engine (`docs/plan/Memory/memory.md` §6):**
+  - **Pre-LLM (Tree-sitter AST):** Zero-token deterministic grammar/regex parser extracts device models (`tech/devices/phone`), prices in AED, order numbers, and event dates before LLM invocation.
+  - **Post-LLM (Balancer & Router):** Places facts into the 7 life themes, splits branches crossing $\ge 12$ facts or $\ge 3$ sub-clusters into `_staging/proposed-tree-splits.md`, and auto-merges alias near-dupes.
+- **Multi-Modal Local Ingestion Pipelines (`docs/plan/data-ingestion-runbook.md`):**
+  - **Gmail Live Sync (`scripts/sync_google.py`):** Capped at 50,000 tokens per batch, temporal slicing (`newer_than:30d`), and `category:primary` noise filtering. Verified on 250 emails (~34k tokens) in `data/sync/gmail_latest.json`.
+  - **YouTube 4-Feed Signal Engine:** Watch history (automated 0.3s local browser SQLite parser + Takeout fallback in `scripts/extract_youtube_history.py`), Liked videos, Playlists/Watch Later, and Uploads feeding the User Tower of the Dubai-io recommender.
+  - **Developer Sessions Extractor (`scripts/extract_dev_sessions.py`):** Scans Claude Code transcripts (`~/.claude/projects/`), Codex, and Git commits with secret-redaction.
+- **Context Budget & Cost Taxonomy:** 3-tier cost hierarchy: Always-on ($<3.5$k tokens: rules/identity), Runtime ($\le 50$k tokens: memory/thread), On-demand (never auto-loaded: full KB tree).
+- **Security & Sanctions:** Zero Gemini API calls; all real data stays in gitignored `data/sync/` or `G:\Haitham\lab-data\`.
+
 **18 Nov 2026 — Hindsight Go-To Engine, Adaptive KB Export Tree & Permanent Quest Files Lock**
 - **Hindsight is the go-to memory engine (`MEM-01`):** Hindsight owns the 3-tier memory lifecycle: Tier 1 Raw Facts (`retain`), Tier 2 Consolidated Beliefs (`observations`), and Tier 3 Living Knowledge Pages (`Mental Models` via `create_mental_model` + background `reflect`). Product retrieval stays FTS/BM25-first (`ScopeGuard` scoped by category/entity/person), with semantic/RRF ranking inside that scoped slice (`docs/plan/Memory/memory.md`).
 - **Adaptive Knowledge Base Export Tree (`docs/plan/Memory/memory.md` §12, benchmarked at `docs/plan/Memory/_archive/hindsight-kb-export/`):** Materializes Hindsight Mental Models & consolidated facts into an upgraded markdown vault:
   - **4 Root Control Files:** `USER.md` (7-section profile with leaf citations), `NOW.md` (active open loops, next-30d occasions, rising 21d topics, pending confirmations), `MEMORIES.md` (complete router index with non-empty descriptions and fact counts), and `SOURCES.md` (watermarks, evidence limits, `Never Remember` blocklist).
   - **7 Fixed Life-Theme Spines + Adaptive LLM-Proposed Sub-Branches:** Top-level folders (`01-people/` through `07-travel-and-places/`) remain fixed for UI/generator stability, while the LLM dynamically branches sub-folders by the user's actual craft and life density (`01-people/{inner-circle,friends-and-peers,professional-network}`, `02-career-and-craft/{ai-engineering-2026,motion-3d-and-video}`, `03-projects/{ai-agents-and-memory/dubai-io,applied-ml-and-rag,culture-and-faith-apps}`) once a leaf crosses ≥8 facts or ≥3 sub-threads.
   - **4-Block Leaf File Format & `_staging/` Gate:** Every leaf file separates `Current Snapshot`, `Open Loops & Active Signals`, `Timeline & Fact History` (with supersession notes), and `Evidence Limits`. Unconfirmed inferences and sensitive categories (`family`, `health`, `faith`, `wellbeing`) stay quarantined in `_staging/hypotheses-to-confirm.md` phrased as `"I noticed..."` until user-confirmed.
-- **Permanent Quest Reference Lock:** **NEVER remove, move, or delete `docs/plan/Memory/_archive/quest-memory-export/`, `quest-memory-export.zip`, `quest-tree-mechanics.md`, or `hindsight-kb-export/` ever.** They are gitignored on disk so they remain permanently in `docs/plan/Memory/_archive/` as the side-by-side benchmark without being pushed to GitHub.
+- **Permanent Quest Reference Lock:** **NEVER remove, move, or delete `docs/plan/Memory/_archive/quest-memory-export/`, `quest-memory-export.zip`, `quest-tree-mechanics.md`, `hindsight-kb-export/`, or `design/references/quest/` (`cards.jpeg`, `connectors.jpeg`, `full memory md files.jpeg`, `people.jpeg`, `user summary.jpeg`) ever.** They remain permanently on disk as our visual and structural benchmarks and must never be cleaned up by any agent.
 
 **17 Nov 2026 — SRE Supervisor rulings & MEM-01 decision (AC-5)**
 

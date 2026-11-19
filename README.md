@@ -2,7 +2,12 @@
 
 Dubai-io is a personal AI agent for people who live and work in Dubai.
 
-Contest entry: Create AI Agents Championship (Dubai Chambers), Best Personal AI Agent. Identity, scope and dates: `PLAN.md`.
+Contest entries: Create AI Agents Championship (Dubai Chambers) — 3 award tracks ($150k grant each):
+1. **Best Personal AI Agent:** Memory-driven Notice Cards (Quest-style) + Resident/Visitor Cold-Start Onboarding.
+2. **Best Societal AI Agent:** Dubai Civic Social & Community Mesh (`apps/api/app/communities.py`).
+3. **Best Business AI Agent:** Enterprise Workspace Agent Evaluator & Analytics (`ide-companio` / Claude Report).
+
+Identity, scope and dates: `PLAN.md`.
 
 ```
 apps/api/          FastAPI + LangGraph backend, tests/
@@ -10,6 +15,7 @@ apps/api/app/lab/  Headless Know / Notice / Do pipeline (active, 9 Nov)
 apps/site/         THE app: one React codebase (Next.js) → website, desktop, iOS/Android; UI paused 9 Nov
 apps/web/          Original mobile app PWA — FROZEN reference (tag mobile-pwa-baseline-2026-10-23)
 apps/ios/          Native SwiftUI client — STOPPED 23 Oct (history only)
+scripts/           Local ingestion pipelines (Gmail 50k tokens cap, YouTube 4-feed, local browser history, dev sessions)
 supabase/          Migrations, local project config
 docs/              Status, backlog, specs, services/ (docs/archive/ is history)
 design/            Screen references

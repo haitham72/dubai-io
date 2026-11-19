@@ -1,6 +1,6 @@
 # CLAUDE.md — Dubai-io (contest build)
 
-A personal AI agent for people who live and work in Dubai (identity: `PLAN.md` §1). Contest entry (Best Personal AI Agent). Repo: `github.com/haitham72/dubai-io` (private).
+A personal AI agent for people who live and work in Dubai (identity: `PLAN.md` §1). Contest entry strategy across 3 Dubai Chambers award tracks: Best Personal AI Agent, Best Societal AI Agent, and Best Business AI Agent (`PLAN.md` §2). Repo: `github.com/haitham72/dubai-io` (private).
 
 ## Orient — read only what your task needs
 
@@ -40,7 +40,7 @@ Founder instructions override anything below; sensitive categories (rule 9) are 
 
 ## Gates
 
-- **NEVER remove, move, or delete Quest reference files:** `docs/plan/Memory/_archive/quest-memory-export/`, `docs/plan/Memory/_archive/quest-memory-export.zip`, `docs/plan/Memory/_archive/quest-tree-mechanics.md`, and `docs/plan/Memory/_archive/hindsight-kb-export/` (gitignored on disk) are permanent founder benchmarks and must **never** be deleted, moved out, or cleaned up by any agent.
+- **NEVER remove, move, or delete Quest reference files:** `docs/plan/Memory/_archive/quest-memory-export/`, `docs/plan/Memory/_archive/quest-memory-export.zip`, `docs/plan/Memory/_archive/quest-tree-mechanics.md`, `docs/plan/Memory/_archive/hindsight-kb-export/`, and **`design/references/quest/`** (`cards.jpeg`, `connectors.jpeg`, `full memory md files.jpeg`, `people.jpeg`, `user summary.jpeg`) are permanent founder benchmarks and must **never** be deleted, moved out, or cleaned up by any agent.
 - If a request needs something `PLAN.md` lists as **LATER** or **NEVER**, stop and ask. Don't build a "small version" of it.
 - New service idea, shop or reference image: follow `docs/services/intake.md`; file under `docs/services/<shops|service>/<category>/`; never write a case into `PLAN.md`; stop if it touches a NEVER item.
 - Never add top-level `*.md` beyond the four canon files: `CLAUDE.md`, `PLAN.md`, `ARCHITECTURE.md`, `README.md`. Add agent guidance as nested `<dir>/CLAUDE.md` instead.
@@ -49,14 +49,15 @@ Founder instructions override anything below; sensitive categories (rule 9) are 
 
 ```
 apps/api/          FastAPI + LangGraph backend, tests/
-apps/api/app/lab/  Headless Know / Notice / Do pipeline — active 9 Nov (guide: CLAUDE.md there)
+apps/api/app/lab/  Headless Know / Notice / Do pipeline (extraction skills: chat, email, ide_session)
 apps/site/         THE app: one React codebase → website, desktop app (Tauri/Electron), iOS/Android (Capacitor); UI paused 9 Nov
 apps/web/          Original mobile app PWA — FROZEN, the reference (tag mobile-pwa-baseline-2026-10-23), embedded at /?devices
 apps/ios/          Native SwiftUI client — STOPPED 23 Oct (history only)
+scripts/           Local ingestion pipelines (Gmail 50k tokens, YouTube 4-feed, local browser history, dev sessions, two-tower)
 supabase/          Migrations, local project config
 docs/              Status, backlog, specs, services/
 docs/archive/      Historical docs — not authoritative
-design/            Screen references (founder files)
+design/            Screen references (founder files), locked Quest references (`design/references/quest/`), interactive demo mockups (`design/demo/`)
 ```
 
 ## Working conventions

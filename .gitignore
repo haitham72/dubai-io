@@ -1,5 +1,11 @@
 .playwright-mcp/
 .env
+.env.*
+*.env
+client_secret*.json
+*googleusercontent.com.json
+*token*.json
+tokens.json
 node_modules/
 __pycache__/
 opencode.json

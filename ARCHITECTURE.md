@@ -16,6 +16,7 @@ apps/web   original mobile PWA, FROZEN reference (tag mobile-pwa-baseline-2026-1
            served by apps/api at / (and at /lab, a static alias, unrelated to app/lab/)
 apps/dash  founder ops page, static at /dash, reads /api/ops/*
 apps/ios   history only
+scripts/   local data ingestion pipelines (Gmail 50k tokens cap, YouTube 4-feed signals, local browser history, dev sessions)
       │ REST commands                       ▲ SSE (actions, messages, merchant inbox)
 apps/api (FastAPI, Python 3.13, :8000)
   luna/                LangGraph: normalize → understand → validate → [research] → remember
@@ -38,7 +39,7 @@ apps/api (FastAPI, Python 3.13, :8000)
   ml_api/ml_models/ml_rag/ml_tasks comment sentiment, embeddings, hybrid search (Celery)
   ops                  founder ops /api/ops/* (X-Ops-Token; unset token = 404)
   widgets              separate origin :8001 for mini-apps (CSP connect-src 'none')
-  lab/                 headless Know/Notice/Do pipeline — steps 1–2 + skills (chat, email), local sentiment/emotion worker, hybrid search, follow-ups, Mermaid topic tree/graph, and S0–S5 eval harness built (16 Nov)
+  lab/                 headless Know/Notice/Do pipeline — steps 1–2 + skills (chat, email, ide_session), local sentiment/emotion worker, hybrid search, follow-ups, Mermaid topic tree/graph, and S0–S5 eval harness built (16 Nov)
       ▼
 Supabase PostgreSQL 17 + pgvector (DATABASE_URL, DATABASE_SCHEMA=dubaiio) — SQLite fallback
 (app/db.py). The 2 Nov local run uses SQLite (DATABASE_URL blank); see docs/status.md.

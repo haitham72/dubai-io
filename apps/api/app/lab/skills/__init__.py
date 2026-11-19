@@ -96,4 +96,4 @@ def format_row(row: dict) -> str:
     raise UnknownSource(row.get("kind"))
 
 
-from . import chat, email  # noqa: E402,F401  (registers the built-in skills)
+from . import chat, email, ide_session  # noqa: E402,F401  (registers the built-in skills)

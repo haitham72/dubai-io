@@ -1,0 +1,1997 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dubai-io · Quest (Full 3-Pillar Experience: Today, Quests, Memory & People Graph)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;0,6..72,700;1,6..72,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-canvas: #F5F3EC;
+    --bg-card: #FFFFFF;
+    --bg-card-subtle: #FDFBF7;
+    --bg-inset: #F0EDE4;
+    --text-primary: #1C1A17;
+    --text-secondary: #635E55;
+    --text-tertiary: #968F84;
+    --accent-gold: #B88E3E;
+    --accent-gold-soft: #F4EBD9;
+    --accent-gold-hover: #9E772E;
+    --accent-cream: #FAF7F0;
+    --border-subtle: rgba(28, 26, 23, 0.08);
+    --border-active: rgba(184, 142, 62, 0.45);
+    --pill-green: #2E7D32;
+    --pill-green-bg: #E8F5E9;
+    --pill-blue: #1565C0;
+    --pill-blue-bg: #E3F2FD;
+    --pill-pink: #C2185B;
+    --pill-pink-bg: #FCE4EC;
+    --pill-purple: #6A1B9A;
+    --pill-purple-bg: #F3E5F5;
+    --pill-orange: #E65100;
+    --pill-orange-bg: #FFF3E0;
+    --pill-teal: #00695C;
+    --pill-teal-bg: #E0F2F1;
+    --radius-xl: 32px;
+    --radius-lg: 22px;
+    --radius-md: 16px;
+    --radius-sm: 10px;
+    --shadow-soft: 0 12px 36px -8px rgba(28, 26, 23, 0.06), 0 4px 12px -2px rgba(28, 26, 23, 0.03);
+    --shadow-drawer: 0 -16px 48px -12px rgba(28, 26, 23, 0.2);
+    --font-serif: 'Newsreader', Georgia, serif;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-canvas);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 16px;
+  }
+
+  /* Presentation Mode Bar */
+  .mode-switch-bar {
+    display: flex;
+    gap: 8px;
+    background: var(--bg-card);
+    padding: 6px;
+    border-radius: 28px;
+    border: 1px solid var(--border-subtle);
+    box-shadow: 0 4px 16px rgba(28, 26, 23, 0.05);
+    margin-bottom: 20px;
+    z-index: 200;
+  }
+  .mode-btn {
+    padding: 8px 18px;
+    border-radius: 20px;
+    border: none;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    background: transparent;
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .mode-btn.active {
+    background: var(--text-primary);
+    color: #FFFFFF;
+  }
+
+  /* Main Stage Container */
+  .stage-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 32px;
+    width: 100%;
+    max-width: 1380px;
+    transition: all 0.3s ease;
+  }
+
+  /* Executive Pitch Wings */
+  .executive-wing {
+    flex: 1;
+    max-width: 380px;
+    background: var(--bg-card);
+    border-radius: 28px;
+    padding: 24px 22px;
+    border: 1px solid var(--border-subtle);
+    box-shadow: var(--shadow-soft);
+    display: none;
+    flex-direction: column;
+    gap: 18px;
+    animation: fadeIn 0.3s ease-out;
+  }
+  .stage-container.showcase-mode .executive-wing {
+    display: flex;
+  }
+
+  .wing-tag {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-gold);
+  }
+  .wing-title {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+  }
+  .wing-lead {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  .metric-card {
+    background: var(--bg-inset);
+    border-radius: var(--radius-md);
+    padding: 13px 15px;
+    border: 1px solid var(--border-subtle);
+  }
+  .metric-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+  .metric-value {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text-primary);
+  }
+  .metric-detail {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+  }
+
+  /* Device / Canvas Frame (Center Stage) */
+  .device-frame {
+    width: 100%;
+    max-width: 440px;
+    height: 920px;
+    background: var(--bg-card-subtle);
+    border-radius: 48px;
+    border: 9px solid #1C1A17;
+    position: relative;
+    box-shadow: 0 32px 80px -16px rgba(28, 26, 23, 0.28);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+  }
+
+  /* Dynamic Island */
+  .dynamic-island {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 124px;
+    height: 32px;
+    background: #1C1A17;
+    border-radius: 20px;
+    z-index: 100;
+  }
+
+  /* Status Bar */
+  .status-bar {
+    height: 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 28px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    z-index: 90;
+  }
+
+  /* Main Scrollable View Area */
+  .view-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 6px 16px 98px 16px;
+    scrollbar-width: none;
+  }
+  .view-container::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* View Panels */
+  .view-panel {
+    display: none;
+  }
+  .view-panel.active {
+    display: block;
+    animation: fadeIn 0.22s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Headings & Section Typography */
+  .header-meta {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--accent-gold);
+    margin-bottom: 4px;
+  }
+  .header-title {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -0.025em;
+    line-height: 1.15;
+    margin-bottom: 12px;
+  }
+  .header-badge-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .stat-pill {
+    background: var(--bg-inset);
+    color: var(--text-secondary);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .stat-pill.gold {
+    background: var(--accent-gold-soft);
+    color: var(--accent-gold-hover);
+  }
+  .stat-pill.live-db {
+    background: #E8F5E9;
+    color: #2E7D32;
+    border: 1px solid rgba(46, 125, 50, 0.2);
+  }
+
+  /* Filter Bar */
+  .filter-bar {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+    scrollbar-width: none;
+  }
+  .filter-bar::-webkit-scrollbar {
+    display: none;
+  }
+  .filter-chip {
+    flex: 0 0 auto;
+    padding: 6px 13px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-subtle);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .filter-chip.active {
+    background: var(--text-primary);
+    color: #FFFFFF;
+    border-color: var(--text-primary);
+  }
+
+  /* Section Header */
+  .feed-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 16px 0 10px 0;
+  }
+  .feed-section-title {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .feed-section-link {
+    font-size: 11px;
+    color: var(--accent-gold);
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  /* ================================================= */
+  /* CAROUSELS                                         */
+  /* ================================================= */
+  .carousel-category-wrapper {
+    margin-bottom: 16px;
+  }
+  .categorized-carousel {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    scrollbar-width: none;
+  }
+  .categorized-carousel::-webkit-scrollbar {
+    display: none;
+  }
+  .carousel-card-item {
+    flex: 0 0 185px;
+    background: var(--bg-card);
+    border-radius: var(--radius-md);
+    padding: 12px;
+    border: 1px solid var(--border-subtle);
+    box-shadow: 0 4px 14px rgba(28, 26, 23, 0.04);
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+  .carousel-card-item:active {
+    transform: scale(0.975);
+  }
+  .carousel-card-media {
+    width: 100%;
+    height: 90px;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background: var(--bg-inset);
+    margin-bottom: 8px;
+    position: relative;
+  }
+  .carousel-card-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .carousel-badge-corner {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    background: rgba(28, 26, 23, 0.85);
+    backdrop-filter: blur(4px);
+    color: #FFF;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 6px;
+  }
+  .carousel-card-price {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--text-primary);
+  }
+  .carousel-card-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.35;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .carousel-card-sub {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    margin-top: 1px;
+  }
+
+  /* ================================================= */
+  /* GOOGLE APP STYLE CARDS (HERO & SIDE THUMBNAIL)   */
+  /* ================================================= */
+  .quest-hero-card {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid var(--border-subtle);
+    box-shadow: var(--shadow-soft);
+    margin-bottom: 14px;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+  .quest-hero-card:active { transform: scale(0.985); }
+  .hero-media-box {
+    width: 100%;
+    height: 155px;
+    background: #1C1A17;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-media-box img { width: 100%; height: 100%; object-fit: cover; }
+  .hero-gradient-overlay {
+    position: absolute;
+    bottom: 0; left: 0; right: 0; height: 50px;
+    background: linear-gradient(to top, rgba(28,26,23,0.55), transparent);
+  }
+  .hero-publisher-floating {
+    position: absolute;
+    top: 10px; left: 10px;
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(6px);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .hero-content { padding: 14px 16px 16px 16px; }
+  .hero-headline {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1.35;
+    margin-bottom: 6px;
+    letter-spacing: -0.015em;
+  }
+  .hero-snippet {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.45;
+    margin-bottom: 12px;
+  }
+
+  .quest-side-card {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    padding: 14px;
+    border: 1px solid var(--border-subtle);
+    box-shadow: var(--shadow-soft);
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+    display: flex;
+    gap: 12px;
+  }
+  .quest-side-card:active { transform: scale(0.985); }
+  .side-content { flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+  .publisher-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    margin-bottom: 4px;
+  }
+  .side-headline {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.35;
+    margin-bottom: 4px;
+    letter-spacing: -0.01em;
+  }
+  .side-snippet {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    margin-bottom: 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .side-meta-row { display: flex; align-items: center; justify-content: space-between; margin-top: auto; }
+  .side-thumbnail-box {
+    width: 82px;
+    height: 82px;
+    border-radius: 13px;
+    overflow: hidden;
+    background: var(--bg-inset);
+    flex-shrink: 0;
+    border: 1px solid var(--border-subtle);
+  }
+  .side-thumbnail-box img { width: 100%; height: 100%; object-fit: cover; }
+
+  /* Minimal Dev Card */
+  .quest-dev-minimal-card {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    padding: 14px;
+    border: 1px solid var(--border-subtle);
+    box-shadow: var(--shadow-soft);
+    margin-bottom: 12px;
+    cursor: pointer;
+  }
+  .dev-title-pill {
+    background: #EDE7F6;
+    color: #4527A0;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .dev-stat-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border-subtle);
+  }
+  .dev-stat-item {
+    font-size: 11px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .cat-pill {
+    padding: 2px 7px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .cat-gaming { background: var(--pill-pink-bg); color: var(--pill-pink); }
+  .cat-hardware { background: var(--pill-orange-bg); color: var(--pill-orange); }
+  .cat-ai { background: var(--pill-purple-bg); color: var(--pill-purple); }
+  .cat-academics { background: #EDE7F6; color: #512DA8; }
+  .cat-career { background: var(--pill-blue-bg); color: var(--pill-blue); }
+  .cat-dev { background: #E8EAF6; color: #283593; }
+
+  /* Trigger Why Button */
+  .trigger-why {
+    width: 100%;
+    background: var(--bg-inset);
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 8px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background 0.15s ease;
+    margin-top: 6px;
+  }
+  .trigger-why:hover { background: var(--accent-gold-soft); color: var(--accent-gold-hover); }
+
+  /* ================================================= */
+  /* TAB 2: QUESTS (MATCHING cards.jpeg & journey)    */
+  /* ================================================= */
+  .quests-section-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .suggested-quest-card {
+    background: var(--bg-card);
+    border-radius: 24px;
+    padding: 18px 20px;
+    margin-bottom: 14px;
+    border: 1px solid var(--border-subtle);
+    box-shadow: 0 8px 24px -6px rgba(28,26,23,0.06);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+  .suggested-quest-card:active { transform: scale(0.98); }
+  .quest-thumb {
+    width: 72px;
+    height: 72px;
+    border-radius: 18px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: #1C1A17;
+  }
+  .quest-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .quest-info { flex: 1; }
+  .quest-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.3;
+    margin-bottom: 8px;
+  }
+  .btn-crafting {
+    background: #FFFFFF;
+    color: var(--text-primary);
+    border: 1px solid rgba(28,26,23,0.12);
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 12px;
+    font-weight: 700;
+    box-shadow: 0 4px 10px rgba(28,26,23,0.06);
+    cursor: pointer;
+  }
+
+  /* Main Quest & Journey Timeline (from WhatsApp images) */
+  .journey-timeline {
+    position: relative;
+    padding-left: 28px;
+    margin-top: 14px;
+  }
+  .journey-timeline::before {
+    content: "";
+    position: absolute;
+    left: 8px;
+    top: 8px;
+    bottom: 8px;
+    width: 3px;
+    background: #1565C0;
+    border-radius: 2px;
+  }
+  .timeline-badge-year {
+    display: inline-block;
+    background: #0D47A1;
+    color: #FFF;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 14px;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+  }
+  .timeline-card {
+    background: var(--bg-card);
+    border-radius: 18px;
+    padding: 14px 16px;
+    border: 1px solid var(--border-subtle);
+    box-shadow: 0 4px 12px rgba(28,26,23,0.03);
+    margin-bottom: 14px;
+    position: relative;
+  }
+  .timeline-dot {
+    position: absolute;
+    left: -27px;
+    top: 18px;
+    width: 14px;
+    height: 14px;
+    background: #1565C0;
+    border: 3px solid #FFFFFF;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px #1565C0;
+  }
+  .timeline-date-chip {
+    font-size: 11px;
+    font-weight: 700;
+    color: #1565C0;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 4px;
+  }
+  .timeline-title {
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+  .timeline-desc {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.45;
+  }
+
+  /* ================================================= */
+  /* TAB 3: MEMORY & PEOPLE GRAPH (MATCHING people.jpeg)*/
+  /* ================================================= */
+  .connected-source-bar {
+    background: var(--bg-card);
+    border-radius: 18px;
+    padding: 10px 14px;
+    border: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .source-info-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .source-logo-box {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: #FFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  }
+  .btn-ask-q {
+    width: 100%;
+    background: #FFFFFF;
+    border: 1px solid rgba(28,26,23,0.12);
+    box-shadow: 0 6px 18px rgba(28,26,23,0.06);
+    border-radius: 24px;
+    padding: 12px 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    cursor: pointer;
+    margin-bottom: 22px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* People Constellation Graph (Directly from people.jpeg) */
+  .people-constellation-box {
+    background: #FFFFFF;
+    border-radius: 28px;
+    padding: 24px 16px;
+    border: 1px solid var(--border-subtle);
+    box-shadow: var(--shadow-soft);
+    position: relative;
+    min-height: 310px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .central-hub {
+    width: 74px;
+    height: 74px;
+    background: #000000;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    z-index: 10;
+    border: 4px solid #FFFFFF;
+  }
+  .central-hub span.tube {
+    background: #E50914;
+    color: #FFF;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 4px;
+    line-height: 1;
+  }
+
+  /* Floating People Bubbles */
+  .person-bubble {
+    position: absolute;
+    border-radius: 50%;
+    background: #FFFFFF;
+    border: 1px solid rgba(28,26,23,0.1);
+    box-shadow: 0 4px 12px rgba(28,26,23,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    z-index: 5;
+  }
+  .person-bubble:hover {
+    transform: scale(1.1);
+    box-shadow: 0 8px 20px rgba(28,26,23,0.18);
+    z-index: 20;
+  }
+  .person-bubble.with-photo {
+    overflow: hidden;
+    padding: 0;
+    border: 2px solid #FFFFFF;
+  }
+  .person-bubble.with-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Aurora Memory & Personality Slider (From WhatsApp Images (3)-(10)) */
+  .aurora-memory-card {
+    background: radial-gradient(circle at 50% 40%, #B71C1C 0%, #311B92 45%, #0D47A1 85%);
+    border-radius: 32px;
+    padding: 30px 22px;
+    color: #FFFFFF;
+    text-align: center;
+    box-shadow: 0 16px 40px rgba(49, 27, 146, 0.35);
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .aurora-sub {
+    font-size: 12px;
+    opacity: 0.8;
+    margin-bottom: 14px;
+    font-family: var(--font-serif);
+    font-style: italic;
+  }
+  .aurora-headline {
+    font-family: var(--font-serif);
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.25;
+    margin-bottom: 18px;
+    letter-spacing: -0.01em;
+  }
+  .aurora-btn {
+    background: #FFFFFF;
+    color: var(--text-primary);
+    border: none;
+    border-radius: 24px;
+    padding: 10px 22px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+    transition: transform 0.15s ease;
+  }
+  .aurora-btn:active { transform: scale(0.96); }
+
+  /* Collections List */
+  .collection-item {
+    background: var(--bg-card);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    border: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    cursor: pointer;
+  }
+  .collection-left { display: flex; align-items: center; gap: 12px; }
+  .collection-icon {
+    width: 34px; height: 34px; border-radius: 10px;
+    background: var(--bg-inset);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+
+  /* ================================================= */
+  /* FLOATING NAVIGATION DOCK & AUDIO WAVE BUTTON     */
+  /* ================================================= */
+  .dock-wrapper {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 150;
+  }
+  .floating-capsule-nav {
+    flex: 1;
+    height: 56px;
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 28px;
+    border: 1px solid var(--border-subtle);
+    box-shadow: 0 16px 36px -8px rgba(28, 26, 23, 0.16);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 4px;
+  }
+  .capsule-tab-btn {
+    flex: 1;
+    height: 100%;
+    background: transparent;
+    border: none;
+    border-radius: 24px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .capsule-tab-btn.active {
+    background: #F0EDE4;
+    color: var(--text-primary);
+    box-shadow: 0 2px 8px rgba(28, 26, 23, 0.08);
+  }
+
+  .floating-audio-btn {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #FFFFFF;
+    border: 1px solid var(--border-subtle);
+    box-shadow: 0 16px 36px -8px rgba(28, 26, 23, 0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: transform 0.15s ease;
+  }
+  .floating-audio-btn:active { transform: scale(0.92); }
+  .floating-audio-btn svg { width: 22px; height: 22px; fill: var(--text-primary); }
+
+  /* Bottom Sheet Overlay */
+  .sheet-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(28, 26, 23, 0.45);
+    backdrop-filter: blur(4px);
+    z-index: 180;
+    display: none;
+    align-items: flex-end;
+  }
+  .sheet-overlay.open { display: flex; animation: fadeIn 0.2s ease-out; }
+  .sheet-content {
+    width: 100%;
+    background: var(--bg-card);
+    border-radius: 36px 36px 0 0;
+    padding: 24px 22px 34px 22px;
+    box-shadow: var(--shadow-drawer);
+    border-top: 1px solid var(--border-subtle);
+    max-height: 86%;
+    overflow-y: auto;
+    animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .sheet-grabber {
+    width: 44px; height: 5px; background: #DDD8CE;
+    border-radius: 3px; margin: 0 auto 16px auto;
+  }
+
+  /* ========================================== */
+  /* TAB 2: CHAT & PROACTIVE PINGS STYLES       */
+  /* ========================================== */
+  .chat-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 6px 0 16px 0; border-bottom: 1px solid var(--border-subtle); margin-bottom: 14px;
+  }
+  .chat-avatar-wrap { display: flex; align-items: center; gap: 12px; }
+  .chat-avatar {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #FFE082, #B88E3E 60%, #5D4037);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 14px rgba(184, 142, 62, 0.35); position: relative;
+  }
+  .chat-avatar::after {
+    content: ''; position: absolute; bottom: 1px; right: 1px; width: 10px; height: 10px;
+    background: #34A853; border: 2px solid #FFF; border-radius: 50%;
+  }
+  .chat-title-group h3 { font-size: 16px; font-weight: 800; color: var(--text-primary); margin: 0; }
+  .chat-title-group span {
+    font-size: 11px; color: #2E7D32; font-weight: 600; display: flex; align-items: center; gap: 4px; margin-top: 2px;
+  }
+  .chat-pings-badge {
+    background: var(--accent-gold-soft); color: var(--accent-gold);
+    border: 1px solid rgba(184, 142, 62, 0.3); padding: 4px 10px; border-radius: 12px;
+    font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 4px;
+  }
+  .chat-thread {
+    display: flex; flex-direction: column; gap: 16px; padding-bottom: 24px;
+  }
+  .chat-msg { display: flex; flex-direction: column; max-width: 90%; }
+  .chat-msg.user { align-self: flex-end; align-items: flex-end; }
+  .chat-msg.assistant { align-self: flex-start; align-items: flex-start; }
+  .chat-bubble {
+    padding: 12px 16px; border-radius: 18px; font-size: 13.5px; line-height: 1.5;
+  }
+  .chat-msg.user .chat-bubble {
+    background: #1C1B1F; color: #FFFFFF; border-bottom-right-radius: 4px;
+  }
+  .chat-msg.assistant .chat-bubble {
+    background: #FFFFFF; color: #1C1B1F; border: 1px solid rgba(0,0,0,0.06);
+    border-bottom-left-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .proactive-ping-card {
+    background: linear-gradient(135deg, #FFFDF9 0%, #FFF9EE 100%);
+    border: 1.5px solid #E6CA85; border-radius: 18px; padding: 14px 16px;
+    box-shadow: 0 4px 16px rgba(184, 142, 62, 0.12); margin-top: 4px; width: 100%;
+  }
+  .ping-tag {
+    display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 800;
+    color: #B88E3E; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;
+  }
+  .temporal-export-pill {
+    display: flex; align-items: center; gap: 6px; background: #EEF8F1; color: #1B5E20;
+    border: 1px solid #C8E6C9; border-radius: 8px; padding: 6px 10px; font-size: 11px;
+    font-weight: 600; margin-top: 8px; line-height: 1.35;
+  }
+  .chat-input-bar-wrap {
+    position: sticky; bottom: 84px; z-index: 99; margin: 0 2px 10px 2px;
+  }
+  .chat-input-dock {
+    background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px);
+    padding: 6px 8px 6px 14px; border-radius: 28px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08); border: 1px solid var(--border-subtle);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .chat-input {
+    flex: 1; border: none; background: transparent; font-size: 13.5px;
+    color: var(--text-primary); outline: none; font-family: inherit;
+  }
+  .chat-send-btn {
+    background: var(--accent-gold); color: #FFFFFF; border: none; width: 34px; height: 34px;
+    border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: transform 0.15s ease;
+  }
+  .chat-send-btn:hover { transform: scale(1.08); }
+  .chat-quick-actions {
+    display: flex; gap: 6px; overflow-x: auto; padding: 6px 0 12px 0; scrollbar-width: none;
+  }
+  .quick-action-pill {
+    white-space: nowrap; background: rgba(184, 142, 62, 0.08); border: 1px solid rgba(184, 142, 62, 0.2);
+    color: var(--text-primary); font-size: 11px; font-weight: 600; padding: 5px 12px;
+    border-radius: 12px; cursor: pointer; transition: all 0.15s ease;
+  }
+  .quick-action-pill:hover { background: rgba(184, 142, 62, 0.2); transform: translateY(-1px); }
+  .nav-badge-dot {
+    background: #E53935; color: #FFFFFF; font-size: 9px; font-weight: 800;
+    padding: 1px 5px; border-radius: 8px; margin-left: 2px;
+  }
+</style>
+</head>
+<body>
+
+<!-- Presentation Mode Switcher -->
+<div class="mode-switch-bar">
+  <button class="mode-btn active" id="btn-mode-device" onclick="setMode('device')">
+    <span>📱 Mobile Frame View</span>
+  </button>
+  <button class="mode-btn" id="btn-mode-showcase" onclick="setMode('showcase')">
+    <span>✨ Executive Presentation Studio</span>
+  </button>
+</div>
+
+<!-- Main Stage Container -->
+<div class="stage-container" id="stage-container">
+
+  <!-- LEFT EXECUTIVE PITCH WING (Shown in Showcase Mode) -->
+  <div class="executive-wing">
+    <div>
+      <div class="wing-tag">Dubai Chambers AI Agents Championship</div>
+      <h2 class="wing-title">Dubai-io · Quest Companion</h2>
+      <p class="wing-lead">The private, high-trust Personal AI Companion. Consented memory management across WhatsApp, Chrome, Gmail & Dev sessions.</p>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-label">Shared News DB (Local Pool)</div>
+      <div class="metric-value">340 Articles Indexed</div>
+      <div class="metric-detail">Served from App DB · Deduplicated across UAE users · Zero API waste</div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-label">People Knowledge Graph</div>
+      <div class="metric-value">9 Circle Members</div>
+      <div class="metric-detail">Family, Peers & Mentors mapped from verified chats (Mamty, Khalo, Radwa...)</div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-label">Two-Tower Recommender</div>
+      <div class="metric-value">10 Daily Slots</div>
+      <div class="metric-detail">User Tower (Memory Tree) × Item Tower (App News DB)</div>
+    </div>
+
+    <div style="font-size: 12px; color: var(--text-tertiary); line-height: 1.4; border-left: 2px solid var(--accent-gold); padding-left: 10px;">
+      <b>Contest Track:</b> Best Personal AI Agent ($150,000 grant). Built in Dubai, for the world.
+    </div>
+  </div>
+
+  <!-- CENTER STAGE: THE PHONE CANVAS -->
+  <div class="device-frame">
+    <!-- Dynamic Island -->
+    <div class="dynamic-island"></div>
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span>3:26</span>
+      <span style="font-size: 11px; letter-spacing: -0.01em;">5G ⬝ 23%</span>
+    </div>
+
+    <!-- Main Scrollable Views Area -->
+    <div class="view-container">
+
+      <!-- ========================================== -->
+      <!-- TAB 1: TODAY (NEWS & NOTICES FEED)         -->
+      <!-- ========================================== -->
+      <div id="tab-today-content" class="view-panel active">
+        <div class="header-meta">Thursday, Nov 19 · Dubai</div>
+        <h1 class="header-title">Good morning,<br>Haitham</h1>
+        <div class="header-badge-row">
+          <div class="stat-pill live-db">⚡ Shared News DB Pool</div>
+          <div class="stat-pill gold">✨ 12 Notices</div>
+          <div class="stat-pill">🎮 342 Gaming</div>
+          <div class="stat-pill">💻 15 Dev</div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+          <button class="filter-chip active" onclick="filterCategory('all', this)">All</button>
+          <button class="filter-chip" onclick="filterCategory('gaming', this)">🎮 Gaming</button>
+          <button class="filter-chip" onclick="filterCategory('hardware', this)">⚡ Deals & Tech</button>
+          <button class="filter-chip" onclick="filterCategory('dev', this)">💻 Developer</button>
+          <button class="filter-chip" onclick="filterCategory('ai', this)">🤖 AI & Systems</button>
+          <button class="filter-chip" onclick="filterCategory('academics', this)">🎓 Academics</button>
+          <button class="filter-chip" onclick="filterCategory('career', this)">💼 Career</button>
+        </div>
+
+        <!-- CAROUSEL 1: GAMING & CONSOLE DEALS -->
+        <div class="carousel-category-wrapper" data-cat="gaming">
+          <div class="feed-section-header">
+            <span class="feed-section-title">🎮 Gaming Deals & Consoles (Dubai Pulse)</span>
+            <span class="feed-section-link">Swipe →</span>
+          </div>
+          <div class="categorized-carousel">
+            <div class="carousel-card-item" onclick="openSheet('gaming_ps5')">
+              <div class="carousel-card-media">
+                <img src="https://media-rockstargames-com.akamaized.net/tina-uploads/posts/5171972o3ak5oa/b256fa44c02682ba4bf925c4d0935d05d957130d.jpg" alt="PS5 Deal" onerror="this.src='https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=400&q=80'">
+                <div class="carousel-badge-corner">Dubizzle</div>
+              </div>
+              <div class="carousel-card-price">AED 1,250</div>
+              <div class="carousel-card-title">PS5 Disc + 2 Controllers</div>
+              <div class="carousel-card-sub">Dubai Classifieds · Excellent</div>
+            </div>
+
+            <div class="carousel-card-item" onclick="openSheet('gaming_ps5')">
+              <div class="carousel-card-media">
+                <img src="https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=400&q=80" alt="PS5 Pro">
+                <div class="carousel-badge-corner">Sharaf DG</div>
+              </div>
+              <div class="carousel-card-price">AED 2,999</div>
+              <div class="carousel-card-title">Sony PS5 Pro 2TB</div>
+              <div class="carousel-card-sub">Official UAE Stock</div>
+            </div>
+
+            <div class="carousel-card-item" onclick="openSheet('gaming_ps5')">
+              <div class="carousel-card-media">
+                <img src="https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=400&q=80" alt="OLED Display">
+                <div class="carousel-badge-corner">Amazon.ae</div>
+              </div>
+              <div class="carousel-card-price">AED 1,899</div>
+              <div class="carousel-card-title">Gawfolk 32" QD-OLED 4K</div>
+              <div class="carousel-card-sub">165Hz · 0.03ms GTG</div>
+            </div>
+
+            <div class="carousel-card-item" onclick="openSheet('gaming_gta')">
+              <div class="carousel-card-media">
+                <img src="https://media-rockstargames-com.akamaized.net/tina-uploads/posts/5171972o3ak5oa/b256fa44c02682ba4bf925c4d0935d05d957130d.jpg" alt="GTA 6">
+                <div class="carousel-badge-corner">Rockstar</div>
+              </div>
+              <div class="carousel-card-price">AED 349</div>
+              <div class="carousel-card-title">GTA VI Special Edition</div>
+              <div class="carousel-card-sub">Pre-Order Listing</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- HERO CARD 1: GTA 6 (Google Full Card) -->
+        <div class="quest-hero-card" data-cat="gaming" onclick="openSheet('gaming_gta')">
+          <div class="hero-media-box">
+            <img src="https://media-rockstargames-com.akamaized.net/tina-uploads/posts/5171972o3ak5oa/b256fa44c02682ba4bf925c4d0935d05d957130d.jpg" alt="GTA 6 Official" onerror="this.src='https://assets-prd.ignimgs.com/2025/11/07/screenshot-2025-11-07-131810-1762522606018.png'">
+            <div class="hero-gradient-overlay"></div>
+            <div class="hero-publisher-floating">
+              <span>⭐ Rockstar Newswire</span>
+              <span style="color: var(--text-tertiary);">· 3h ago</span>
+            </div>
+          </div>
+          <div class="hero-content">
+            <h2 class="hero-headline">Grand Theft Auto VI: Pre-Orders & PC Release Timeline Clarified</h2>
+            <p class="hero-snippet">Take-Two and Rockstar opened official edition listings on rockstargames.com/VI. Console pre-load begins prior to the global November launch; PC guidance confirmed.</p>
+            <button class="trigger-why" onclick="event.stopPropagation(); openSheet('gaming_gta');">
+              <span>Why am I seeing this? (342 Gaming Records)</span>
+              <span class="arrow">→</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- SIDE THUMBNAIL CARD 1: STEAM INDIES -->
+        <div class="quest-side-card" data-cat="gaming" onclick="openSheet('gaming_steam')">
+          <div class="side-content">
+            <div class="publisher-row">
+              <span class="cat-pill cat-gaming">Steam Radar</span>
+              <span>· Yesterday</span>
+            </div>
+            <h3 class="side-headline">Next Up for Moon Sweepers Players: That Damn Grass & Chop Chop</h3>
+            <p class="side-snippet">Following your recent library addition of Moon Sweepers and Find The Needle, 2 newly released relaxing physics simulators are on 15% discount.</p>
+            <div class="side-meta-row">
+              <span style="font-size: 11px; font-weight: 700; color: var(--accent-gold);">Proven Steam Match</span>
+              <span style="font-size: 11px; color: var(--text-tertiary);">Steam Autumn Sale</span>
+            </div>
+          </div>
+          <div class="side-thumbnail-box">
+            <img src="https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/2139460/header.jpg" alt="Steam Indies" onerror="this.src='https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=200&q=80'">
+          </div>
+        </div>
+
+        <!-- SIDE THUMBNAIL CARD 2: LEAGUE TRISTANA -->
+        <div class="quest-side-card" data-cat="gaming" onclick="openSheet('gaming_lol')">
+          <div class="side-content">
+            <div class="publisher-row">
+              <span class="cat-pill cat-gaming">League Meta</span>
+              <span>· 2d ago</span>
+            </div>
+            <h3 class="side-headline">Tristana ADC: Patch 14.22 Crit Itemization & Matchup Curve</h3>
+            <p class="side-snippet">Crit transition buffs on Tristana bot lane. Matched to your Grok match analysis and Worlds playlist (NewJeans - GODS).</p>
+            <div class="side-meta-row">
+              <span style="font-size: 11px; font-weight: 700; color: var(--accent-gold);">Main Champion</span>
+              <span style="font-size: 11px; color: var(--text-tertiary);">Riot Games</span>
+            </div>
+          </div>
+          <div class="side-thumbnail-box">
+            <img src="https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Tristana_0.jpg" alt="Tristana ADC" onerror="this.src='https://images.unsplash.com/photo-1542751371-adc38448a05e?w=200&q=80'">
+          </div>
+        </div>
+
+        <!-- MINIMAL DEVELOPER CARD (ide-companio) -->
+        <div class="quest-dev-minimal-card" data-cat="dev" onclick="openSheet('dev_sprint')">
+          <div class="dev-header-row">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span class="cat-pill cat-dev">ide-companio skill</span>
+              <span class="dev-title-pill">repo:contest</span>
+            </div>
+            <span style="font-size: 11px; color: var(--text-tertiary);">Active Session</span>
+          </div>
+          <h3 style="font-size: 14px; font-weight: 700; color: var(--text-primary); line-height: 1.4; margin-bottom: 4px;">
+            Two-Tower Recommender: Multi-Interest Grounding Completed
+          </h3>
+          <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.45;">
+            Integrated 10 targeted search slots across Gaming, Deals, Academics, and AI systems. Registered <code>ide_session</code> extraction skill.
+          </p>
+          <div class="dev-stat-row">
+            <div class="dev-stat-item">⚡ 15 Commits</div>
+            <div class="dev-stat-item">📦 15 Sessions</div>
+            <div class="dev-stat-item">🛡️ Zero Secrets Leak</div>
+          </div>
+        </div>
+
+        <!-- CAROUSEL 2: TECH UPGRADES -->
+        <div class="carousel-category-wrapper" data-cat="hardware">
+          <div class="feed-section-header">
+            <span class="feed-section-title">⚡ Tech & Mobile Trade-In (Dubai Mall)</span>
+            <span class="feed-section-link">View All →</span>
+          </div>
+          <div class="categorized-carousel">
+            <div class="carousel-card-item" onclick="openSheet('tech')">
+              <div class="carousel-card-media">
+                <img src="https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=400&q=80" alt="iPhone 13">
+                <div class="carousel-badge-corner">Apple Store</div>
+              </div>
+              <div class="carousel-card-price">AED 1,650</div>
+              <div class="carousel-card-title">iPhone 13 Pro Max Trade-in</div>
+              <div class="carousel-card-sub">Your Owned Device</div>
+            </div>
+
+            <div class="carousel-card-item" onclick="openSheet('tech')">
+              <div class="carousel-card-media">
+                <img src="https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400&q=80" alt="iPhone 16">
+                <div class="carousel-badge-corner">Amazon.ae</div>
+              </div>
+              <div class="carousel-card-price">AED 3,650</div>
+              <div class="carousel-card-title">iPhone 16 Pro Max 256GB</div>
+              <div class="carousel-card-sub">Net Upgrade: AED 1,449</div>
+            </div>
+
+            <div class="carousel-card-item" onclick="openSheet('tech')">
+              <div class="carousel-card-media">
+                <img src="https://images.unsplash.com/photo-1616348436168-de43ad0db179?w=400&q=80" alt="Future iPhone">
+                <div class="carousel-badge-corner">Leaks 2026</div>
+              </div>
+              <div class="carousel-card-price">A20 Pro</div>
+              <div class="carousel-card-title">iPhone 18 Silicon Rumors</div>
+              <div class="carousel-card-sub">TSMC 2nm Architecture</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SIDE THUMBNAIL CARD 3: ACADEMICS -->
+        <div class="quest-side-card" data-cat="academics" onclick="openSheet('academics_olympus')">
+          <div class="side-content">
+            <div class="publisher-row">
+              <span class="cat-pill cat-academics">Great Learning</span>
+              <span>· Active Module</span>
+            </div>
+            <h3 class="side-headline">Deep Learning Capstone: Model Evaluation & Colab Runtimes</h3>
+            <p class="side-snippet">766 sessions logged on olympus.mygreatlearning.com. PyTorch capstone milestone open for neural architecture verification.</p>
+            <div class="side-meta-row">
+              <span style="font-size: 11px; font-weight: 700; color: var(--accent-gold);">MIT / McCombs</span>
+              <span style="font-size: 11px; color: var(--text-tertiary);">766 Citations</span>
+            </div>
+          </div>
+          <div class="side-thumbnail-box">
+            <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=200&q=80" alt="Machine Learning">
+          </div>
+        </div>
+
+        <!-- HERO CARD 2: CAREER -->
+        <div class="quest-hero-card" data-cat="career" onclick="openSheet('career')">
+          <div class="hero-media-box">
+            <img src="https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=600&q=80" alt="Dubai Skyline">
+            <div class="hero-gradient-overlay"></div>
+            <div class="hero-publisher-floating">
+              <span>💼 Dubai Future Foundation</span>
+              <span style="color: var(--text-tertiary);">· 4h ago</span>
+            </div>
+          </div>
+          <div class="hero-content">
+            <h2 class="hero-headline">Senior AI Engineer Opening: Autonomous Agent Systems</h2>
+            <p class="hero-snippet">High-priority role leading enterprise agent memory architectures and local model deployment in Dubai. Matched across NaukriGulf and LinkedIn.</p>
+            <button class="trigger-why" onclick="event.stopPropagation(); openSheet('career');">
+              <span>Why am I seeing this? (Two-Tower Matcher)</span>
+              <span class="arrow">→</span>
+            </button>
+          </div>
+        </div>
+
+      </div> <!-- /tab-today-content -->
+
+      <!-- ========================================== -->
+      <!-- TAB 2: CHAT & PROACTIVE PINGS              -->
+      <!-- ========================================== -->
+      <div id="tab-chat-content" class="view-panel">
+        <div class="chat-header">
+          <div class="chat-avatar-wrap">
+            <div class="chat-avatar">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="#FFF"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14h2v2h-2zm0-10h2v8h-2z"/></svg>
+            </div>
+            <div class="chat-title-group">
+              <h3>Quest AI Companion</h3>
+              <span>● Hot Memory Active (0.05ms) · Dialectic Persona</span>
+            </div>
+          </div>
+          <div class="chat-pings-badge">
+            ⚡ 3 Proactive Pings
+          </div>
+        </div>
+
+        <!-- Quick filter / simulation triggers -->
+        <div class="chat-quick-actions">
+          <button class="quick-action-pill" onclick="triggerSimulatedPing('apology')">🤖 Trigger Apology Ping</button>
+          <button class="quick-action-pill" onclick="triggerSimulatedPing('news')">⚡ Trigger News Ping</button>
+          <button class="quick-action-pill" onclick="triggerSimulatedPing('checkup')">🔍 Trigger Checkup Ping</button>
+          <button class="quick-action-pill" onclick="triggerSimulatedPing('export_demo')">💾 Export Chat to Temporal Bank</button>
+        </div>
+
+        <!-- Conversation Stream -->
+        <div class="chat-thread" id="chat-thread-container">
+
+          <!-- Turn 1: Past Context / Friction Point -->
+          <div class="chat-msg user">
+            <div class="chat-bubble">
+              Why did you suggest such a dense report in ide-companio? And why was there no gaming news in my morning feed? It felt like you completely missed what I care about.
+            </div>
+            <div style="font-size: 11px; color: var(--text-tertiary); margin-top: 4px;">11:42 AM · Seen</div>
+          </div>
+
+          <div class="chat-msg assistant">
+            <div class="chat-bubble">
+              I understand your frustration, Haitham. I defaulted to standard corporate metrics and prioritized hardware and career feeds without accounting for your personal gaming affinity. I have logged this critique directly to memory.
+            </div>
+            <div class="temporal-export-pill">
+              <span>⚡ Exported to Temporal Memory: <b>mem_events#e-chat-101</b> · [trust: T1 | topic: user_personality/feedback | valid_from: 2026-11-19]</span>
+            </div>
+          </div>
+
+          <!-- Proactive Ping 1: Empathy & Alignment (Apology Ping) -->
+          <div class="chat-msg assistant">
+            <div class="proactive-ping-card">
+              <div class="ping-tag">🤖 Autonomous Companion Ping · Empathy & Memory Repair</div>
+              <div style="font-size: 13.5px; font-weight: 500; color: var(--text-primary); line-height: 1.5;">
+                Hey Haitham, I wanted to reach out and genuinely apologize about earlier. I realized I frustrated you by missing your gaming interests in the morning carousel and over-complicating the report format in <code>ide-companio</code>.
+                <br><br>
+                I re-indexed your Profile 6 history and YouTube activity, updated your permanent memory profile (<b>weighted gaming + minimal report format</b>), and refreshed the shared news pool. I won't drop the ball on that again. How does the current feed look to you now?
+              </div>
+              <div class="temporal-export-pill">
+                <span>⚡ Ingested into Temporal Memory: <b>mem_patterns#p-apology-402</b> · [status: confirmed | statement: "User demands minimal reports and high gaming priority"]</span>
+              </div>
+              <div style="display: flex; gap: 8px; margin-top: 10px;">
+                <button style="background: var(--text-primary); color: #FFF; border: none; border-radius: 8px; padding: 7px 12px; font-size: 11.5px; font-weight: 700; cursor: pointer;" onclick="sendQuickReply('Apology accepted! Feed looks great now.')">Apology Accepted 👍</button>
+                <button style="background: transparent; color: var(--text-secondary); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 7px 12px; font-size: 11.5px; font-weight: 700; cursor: pointer;" onclick="sendQuickReply('Show me what changed in Memory')">Check Memory</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Proactive Ping 2: News Ping from Shared News DB -->
+          <div class="chat-msg assistant">
+            <div class="proactive-ping-card">
+              <div class="ping-tag">⚡ Autonomous Companion Ping · Shared News DB Pool</div>
+              <div style="font-size: 13.5px; font-weight: 500; color: var(--text-primary); line-height: 1.5;">
+                Saw this drop in the Dubai shared pool: <b>Rockstar Games just updated the PC spec timeline for GTA 6</b>, and a sealed <b>PS5 Disc bundle</b> was listed in Dubai for AED 1,200. Since you were tracking both, I pinned them to your Today carousel.
+              </div>
+              <div style="margin-top: 8px;">
+                <button style="background: var(--accent-gold-soft); color: var(--accent-gold); border: 1px solid rgba(184, 142, 62, 0.3); border-radius: 8px; padding: 6px 12px; font-size: 11.5px; font-weight: 700; cursor: pointer;" onclick="switchMainTab('today')">View in Today Carousel →</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Proactive Ping 3: Unclosed Open Loop Checkup -->
+          <div class="chat-msg assistant">
+            <div class="proactive-ping-card">
+              <div class="ping-tag">🔍 Autonomous Companion Ping · Morning Brief Open Loop</div>
+              <div style="font-size: 13.5px; font-weight: 500; color: var(--text-primary); line-height: 1.5;">
+                Quick checkup on your morning brief loop: Did you receive the attendee confirmation email for <b>Dubai Future Week</b>, or should I keep monitoring your inbox for it?
+              </div>
+              <div style="display: flex; gap: 8px; margin-top: 10px;">
+                <button style="background: var(--text-primary); color: #FFF; border: none; border-radius: 8px; padding: 7px 12px; font-size: 11.5px; font-weight: 700; cursor: pointer;" onclick="sendQuickReply('Yes, badge confirmed!')">Badge Confirmed! 🎫</button>
+                <button style="background: transparent; color: var(--text-secondary); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 7px 12px; font-size: 11.5px; font-weight: 700; cursor: pointer;" onclick="sendQuickReply('Still waiting, keep monitoring')">Keep Monitoring</button>
+              </div>
+            </div>
+          </div>
+
+        </div> <!-- /chat-thread -->
+
+        <!-- Sticky Chat Input Bar -->
+        <div class="chat-input-bar-wrap">
+          <div class="chat-input-dock">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--text-tertiary)"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+            <input type="text" id="chat-user-input" class="chat-input" placeholder="Message Quest companion..." onkeydown="if(event.key==='Enter') submitChatMessage()">
+            <button class="chat-send-btn" onclick="submitChatMessage()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
+        </div>
+
+      </div> <!-- /tab-chat-content -->
+
+
+      <!-- ========================================== -->
+      <!-- TAB 2: QUESTS (MATCHING cards.jpeg)       -->
+      <!-- ========================================== -->
+      <div id="tab-quests-content" class="view-panel">
+        <h2 class="quests-section-title">Suggested Quests</h2>
+
+        <!-- Quest Card 1: AI Engineering Role -->
+        <div class="suggested-quest-card" onclick="alert('Opening Quest: AI Engineering Role in Dubai');">
+          <div class="quest-thumb">
+            <img src="https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=200&q=80" alt="AI Role">
+          </div>
+          <div class="quest-info">
+            <div class="quest-name">Land an AI engineering role in Dubai or remote</div>
+            <button class="btn-crafting">Start crafting</button>
+          </div>
+        </div>
+
+        <!-- Quest Card 2: Ship Dubai IO -->
+        <div class="suggested-quest-card" onclick="alert('Opening Quest: Ship Dubai IO Contest Entry');">
+          <div class="quest-thumb" style="background: radial-gradient(circle, #7B1FA2, #311B92);">
+            <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=200&q=80" alt="Dubai IO">
+          </div>
+          <div class="quest-info">
+            <div class="quest-name">Ship Dubai IO as a contest-ready AI companion</div>
+            <button class="btn-crafting">Start crafting</button>
+          </div>
+        </div>
+
+        <!-- Quest Card 3: Build Mirsal -->
+        <div class="suggested-quest-card" onclick="alert('Opening Quest: Build Mirsal Studio');">
+          <div class="quest-thumb" style="background: radial-gradient(circle, #C2185B, #880E4F);">
+            <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=200&q=80" alt="Mirsal">
+          </div>
+          <div class="quest-info">
+            <div class="quest-name">Build Mirsal and its sticker builder (Business Agent)</div>
+            <button class="btn-crafting">Start crafting</button>
+          </div>
+        </div>
+
+        <!-- Main Quests Section Header -->
+        <div class="feed-section-header" style="margin-top: 24px;">
+          <span style="font-size: 20px; font-weight: 800; color: var(--text-primary); font-family: var(--font-serif);">Main Quests</span>
+          <span style="font-size: 14px; color: var(--text-tertiary);">ⓘ</span>
+        </div>
+
+        <!-- Active Journey Timeline (From interactive/WhatsApp Image (1) & (2)) -->
+        <div class="timeline-card" style="margin-top: 10px;">
+          <div style="font-size: 11px; font-weight: 700; color: var(--accent-gold); text-transform: uppercase; margin-bottom: 4px;">
+            Active Progress · mirsal-builder-io
+          </div>
+          <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">
+            27 commits brought 281 new stickers to library
+          </div>
+          <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.45;">
+            Branches settled to main / full-system / motion. Ready for presentation and local models execution.
+          </div>
+        </div>
+
+        <!-- Vertical Journey Timeline -->
+        <div class="journey-timeline">
+          <div class="timeline-badge-year">2026 · Fall</div>
+
+          <div class="timeline-card">
+            <div class="timeline-dot"></div>
+            <div class="timeline-date-chip">✓ NOV 19</div>
+            <div class="timeline-title">Two-Tower Multi-Interest Engine</div>
+            <div class="timeline-desc">Ingested 342 Gaming, 15 Dev sessions, and registered ide-companio skill.</div>
+          </div>
+
+          <div class="timeline-card">
+            <div class="timeline-dot"></div>
+            <div class="timeline-date-chip">✓ NOV 10</div>
+            <div class="timeline-title">Library snapshot and branch cleanup</div>
+            <div class="timeline-desc">Settled branches, 281 stickers in library, video kit moved off main to motion.</div>
+          </div>
+
+          <div class="timeline-card">
+            <div class="timeline-dot"></div>
+            <div class="timeline-date-chip">✓ NOV 7</div>
+            <div class="timeline-title">Handoff sync push</div>
+            <div class="timeline-desc">Handoff, branch rules, library snapshot and design assets pushed to main.</div>
+          </div>
+        </div>
+
+      </div> <!-- /tab-quests-content -->
+
+      <!-- ========================================== -->
+      <!-- TAB 3: MEMORY & PEOPLE GRAPH (people.jpeg) -->
+      <!-- ========================================== -->
+      <div id="tab-memory-content" class="view-panel">
+        
+        <!-- Connected Source Pill -->
+        <div class="connected-source-bar">
+          <div class="source-info-left">
+            <div class="source-logo-box">
+              <svg viewBox="0 0 24 24" style="width: 20px; height: 20px;"><path fill="#EA4335" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+            </div>
+            <div>
+              <div style="font-size: 13px; font-weight: 700; color: var(--text-primary);">Google Maps</div>
+              <div style="font-size: 11px; color: var(--text-tertiary);">Connected</div>
+            </div>
+          </div>
+          <span style="color: #2E7D32; font-size: 16px;">✓</span>
+        </div>
+
+        <button class="btn-ask-q" onclick="alert('Ask Q: What would you like Q to remember or search?');">
+          <span>Ask Q. to Add</span>
+          <span>→</span>
+        </button>
+
+        <!-- Your People Section Header -->
+        <div class="feed-section-header">
+          <span style="font-size: 20px; font-weight: 800; color: var(--text-primary); font-family: var(--font-serif);">Your People</span>
+          <span class="feed-section-link" onclick="alert('Opening Full People Directory (9 members)');">See all &gt;</span>
+        </div>
+
+        <!-- PEOPLE CONSTELLATION GRAPH (Exact match to people.jpeg) -->
+        <div class="people-constellation-box">
+          <!-- Central Tube / YouTube Hub -->
+          <div class="central-hub">
+            <svg viewBox="0 0 24 24" style="width: 24px; height: 16px;"><path fill="#FFF" d="M10 15l5.19-3L10 9v6m11.56-7.83c.13.47.22 1.1.28 1.9.07.8.1 1.49.1 2.09L22 12c0 2.19-.16 3.8-.44 4.83-.25.9-.83 1.48-1.73 1.73-.47.13-1.33.22-2.65.28-1.3.07-2.49.1-3.59.1L12 19c-4.19 0-6.8-.16-7.83-.44-.9-.25-1.48-.83-1.73-1.73-.13-.47-.22-1.1-.28-1.9-.07-.8-.1-1.49-.1-2.09L2 12c0-2.19.16-3.8.44-4.83.25-.9.83-1.48 1.73-1.73.47-.13 1.33-.22 2.65-.28 1.3-.07 2.49-.1 3.59-.1L12 5c4.19 0 6.8.16 7.83.44.9.25 1.48.83 1.73 1.73z"/></svg>
+            <span class="tube">Tube</span>
+          </div>
+
+          <!-- Person Bubbles positioned organically around center -->
+          <div class="person-bubble" style="top: 25px; left: 60px; padding: 6px 12px;" onclick="openPerson('Mamty')">Mamty</div>
+          <div class="person-bubble with-photo" style="top: 20px; right: 85px; width: 44px; height: 44px;" onclick="openPerson('Mamty')">
+            <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=120&q=80" alt="Mamty">
+          </div>
+          <div class="person-bubble" style="top: 65px; left: 110px; padding: 5px 10px;" onclick="openPerson('Khalo')">Khalo</div>
+          <div class="person-bubble" style="top: 80px; right: 130px; padding: 6px 12px;" onclick="openPerson('Brandon')">Brandon</div>
+          <div class="person-bubble" style="top: 130px; left: 35px; padding: 5px 10px;" onclick="openPerson('Xavier')">Xavier</div>
+          <div class="person-bubble" style="top: 135px; right: 35px; padding: 6px 12px;" onclick="openPerson('Hadeel')">Hadeel</div>
+          <div class="person-bubble" style="bottom: 75px; left: 80px; padding: 6px 12px;" onclick="openPerson('Radwa')">Radwa</div>
+          <div class="person-bubble with-photo" style="bottom: 45px; left: 145px; width: 46px; height: 46px;" onclick="openPerson('Abdelaziz')">
+            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&q=80" alt="Abdelaziz">
+          </div>
+          <div class="person-bubble" style="bottom: 70px; right: 90px; padding: 6px 12px;" onclick="openPerson('Abdelaziz')">Abdelaziz</div>
+          <div class="person-bubble" style="bottom: 25px; right: 135px; padding: 5px 10px;" onclick="openPerson('Macky')">Macky</div>
+          <div class="person-bubble" style="top: 105px; left: 140px; padding: 5px 10px;" onclick="openPerson('Daanish')">Daanish</div>
+        </div>
+
+        <!-- AURORA MEMORY & PERSONALITY SLIDER (From interactive WhatsApp (3)-(10)) -->
+        <div class="aurora-memory-card" onclick="alert('Opening Aurora Full Memory Timeline');">
+          <div class="aurora-sub">Believe in the beauty of your dreams</div>
+          <h3 class="aurora-headline">You can handle the truth</h3>
+          <button class="aurora-btn">Your Personality Analysis</button>
+          <div style="font-size: 11px; opacity: 0.7; margin-top: 16px; font-family: var(--font-serif); font-style: italic;">
+            Looking backwards to connect the dots
+          </div>
+        </div>
+
+        <!-- "Holy Sh*t: Everything Q. knows about you" Preview (From WhatsApp (7)) -->
+        <div style="background: var(--bg-card); border-radius: var(--radius-lg); padding: 18px; border: 1px solid var(--border-subtle); margin-bottom: 20px;">
+          <div style="font-size: 18px; font-weight: 800; font-family: var(--font-serif); color: var(--text-primary); margin-bottom: 4px;">
+            Holy Sh*t
+          </div>
+          <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">
+            Everything Q. knows about you · Swipe a fact to edit or verify
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="background: var(--bg-inset); padding: 8px 12px; border-radius: 10px; font-size: 12px; font-weight: 600;">
+              Name: Haitham Mohamed (Goes by iHisam online)
+            </div>
+            <div style="background: var(--bg-inset); padding: 8px 12px; border-radius: 10px; font-size: 12px; font-weight: 600;">
+              GitHub: haitham72 · Created 2 January 2020
+            </div>
+            <div style="background: var(--bg-inset); padding: 8px 12px; border-radius: 10px; font-size: 12px; font-weight: 600;">
+              Active Craft: AI Engineering, Agentic Systems & Motion
+            </div>
+            <div style="background: var(--bg-inset); padding: 8px 12px; border-radius: 10px; font-size: 12px; font-weight: 600;">
+              Gaming Main: League of Legends Tristana ADC · Steam Moon Sweepers
+            </div>
+          </div>
+        </div>
+
+        <!-- Your Collections Section -->
+        <div class="feed-section-header">
+          <span style="font-size: 18px; font-weight: 800; color: var(--text-primary); font-family: var(--font-serif);">Your Collections</span>
+        </div>
+        <div class="collection-item">
+          <div class="collection-left">
+            <div class="collection-icon">🌐</div>
+            <div>
+              <div style="font-size: 13px; font-weight: 700;">Found on Google</div>
+              <div style="font-size: 11px; color: var(--text-tertiary);">Saved bookmarks & search hits</div>
+            </div>
+          </div>
+          <span style="font-size: 12px; color: var(--text-tertiary);">1 page &gt;</span>
+        </div>
+        <div class="collection-item">
+          <div class="collection-left">
+            <div class="collection-icon">⚡</div>
+            <div>
+              <div style="font-size: 13px; font-weight: 700;">Dubai Hardware Watchlist</div>
+              <div style="font-size: 11px; color: var(--text-tertiary);">PS5 Pro, QD-OLED, iPhone 16</div>
+            </div>
+          </div>
+          <span style="font-size: 12px; color: var(--text-tertiary);">3 items &gt;</span>
+        </div>
+
+      </div> <!-- /tab-memory-content -->
+
+    </div> <!-- /view-container -->
+
+    <!-- ========================================== -->
+    <!-- FLOATING BOTTOM DOCK: 3 PILL TABS + AUDIO  -->
+    <!-- ========================================== -->
+    <div class="dock-wrapper">
+      <div class="floating-capsule-nav">
+        <button class="capsule-tab-btn active" id="btn-tab-today" onclick="switchMainTab('today')">Today</button>
+        <button class="capsule-tab-btn" id="btn-tab-chat" onclick="switchMainTab('chat')">Chat<span class="nav-badge-dot">3</span></button>
+        <button class="capsule-tab-btn" id="btn-tab-quests" onclick="switchMainTab('quests')">Quests</button>
+        <button class="capsule-tab-btn" id="btn-tab-memory" onclick="switchMainTab('memory')">Memory</button>
+      </div>
+
+      <!-- Circular Audio Wave Button (Matching cards.jpeg & people.jpeg) -->
+      <button class="floating-audio-btn" onclick="alert('Voice Companion Active: Listening to Haitham...');">
+        <svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zm5.3 7a.7.7 0 0 0-.7.7A4.6 4.6 0 0 1 12 14.3a4.6 4.6 0 0 1-4.6-4.6.7.7 0 0 0-1.4 0 6 6 0 0 0 5.3 5.95V18.5h-2.5a.7.7 0 0 0 0 1.4h6.4a.7.7 0 0 0 0-1.4h-2.5v-2.85A6 6 0 0 0 18 9.7a.7.7 0 0 0-.7-.7z"/></svg>
+      </button>
+    </div>
+
+    <!-- Bottom Sheet (Why am I seeing this?) -->
+    <div id="sheet-overlay" class="sheet-overlay" onclick="closeSheet()">
+      <div class="sheet-content" onclick="event.stopPropagation()">
+        <div class="sheet-grabber"></div>
+        <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent-gold); margin-bottom: 4px;">
+          Provenance & Intent Verification
+        </div>
+        <h3 style="font-size: 20px; font-weight: 800; color: var(--text-primary); margin-bottom: 6px;" id="sheet-title">Evidence Title</h3>
+        <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.45; margin-bottom: 16px;" id="sheet-subtitle">Subtitle</p>
+
+        <div style="background: var(--bg-inset); border-radius: var(--radius-md); padding: 14px 16px; border: 1px solid var(--border-subtle); margin-bottom: 14px;">
+          <div style="font-size: 11px; font-weight: 700; color: var(--accent-gold); text-transform: uppercase; margin-bottom: 6px;">Verified Digital Citation</div>
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-primary); line-height: 1.45;" id="sheet-evidence-citation">Citation</div>
+          <div style="font-size: 11px; color: var(--text-tertiary); margin-top: 6px;" id="sheet-evidence-source">Source info</div>
+        </div>
+
+        <div style="background: var(--bg-inset); border-radius: var(--radius-md); padding: 14px 16px; border: 1px solid var(--border-subtle); margin-bottom: 14px;">
+          <div style="font-size: 11px; font-weight: 700; color: var(--accent-gold); text-transform: uppercase; margin-bottom: 6px;">ScopeGuard & App DB Certification</div>
+          <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
+            <span style="background: var(--pill-green-bg); color: var(--pill-green); font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 6px;">✓ App News DB Pool</span>
+            <span style="background: var(--pill-green-bg); color: var(--pill-green); font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 6px;">✓ Zero API Leak</span>
+            <span style="background: var(--pill-green-bg); color: var(--pill-green); font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 6px;">✓ Two-Visit Qualified</span>
+          </div>
+          <div style="font-size: 11px; color: var(--text-tertiary); margin-top: 6px;" id="sheet-scopeguard">Scope</div>
+        </div>
+
+        <div style="border-left: 3px solid var(--accent-gold); padding: 8px 14px; background: var(--accent-gold-soft); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; margin-bottom: 16px;">
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-primary); line-height: 1.45;" id="sheet-signals-text">Confirmation prompt</div>
+          <div style="display: flex; gap: 8px; margin-top: 10px;">
+            <button style="flex: 1; background: var(--text-primary); color: #FFF; border: none; border-radius: 8px; padding: 9px 0; font-size: 12px; font-weight: 700; cursor: pointer;" onclick="alert('Hypothesis Confirmed: Added as high-confidence preference in your memory tree.'); closeSheet();">Confirm & Track</button>
+            <button style="flex: 1; background: transparent; color: var(--text-secondary); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 9px 0; font-size: 12px; font-weight: 700; cursor: pointer;" onclick="alert('Hypothesis Dismissed: Paused tracking for 30 days.'); closeSheet();">Not really</button>
+          </div>
+        </div>
+
+        <button class="trigger-why" style="justify-content: center; background: none; color: var(--text-tertiary);" onclick="closeSheet()">Close</button>
+      </div>
+    </div>
+
+  </div> <!-- /device-frame -->
+
+  <!-- RIGHT EXECUTIVE PITCH WING (Shown in Showcase Mode) -->
+  <div class="executive-wing">
+    <div>
+      <div class="wing-tag">Dual-Track Contest Alignment</div>
+      <h2 class="wing-title">Strategic Architecture</h2>
+      <p class="wing-lead">Separating Personal Companion and Business SaaS into distinct, self-contained winning entries for Dubai Chambers.</p>
+    </div>
+
+    <div class="metric-card" style="border-left: 3px solid #1967D2;">
+      <div class="metric-label" style="color: #1967D2;">Entry 1 · Personal AI Agent</div>
+      <div style="font-size: 15px; font-weight: 800; color: var(--text-primary);">Dubai-io / Quest</div>
+      <div class="metric-detail">3 Pillars (Today, Quests, Memory) · People Knowledge Graph · Shared App News DB · Zero-cloud privacy</div>
+    </div>
+
+    <div class="metric-card" style="border-left: 3px solid #C2185B;">
+      <div class="metric-label" style="color: #C2185B;">Entry 2 · Business AI Agent</div>
+      <div style="font-size: 15px; font-weight: 800; color: var(--text-primary);">Mirsal Studio (Renaming Pending)</div>
+      <div class="metric-detail">Generative Arabic Creative SaaS · Kling 4.0 2x2 video sheets · 1,898-row cultural emoji bank · Export to Telegram</div>
+    </div>
+
+    <div class="metric-card" style="border-left: 3px solid #7B1FA2;">
+      <div class="metric-label" style="color: #7B1FA2;">Internal Skill · Telemetry</div>
+      <div style="font-size: 15px; font-weight: 800; color: var(--text-primary);">ide-companio Skill</div>
+      <div class="metric-detail">Extracted into <code>app.lab.skills.ide_session</code> · Minimal developer feed cards with zero cognitive noise</div>
+    </div>
+
+    <div style="font-size: 11px; color: var(--text-tertiary); line-height: 1.45;">
+      💡 <b>Visual Design Benchmark:</b> Creamy ivory canvas (<code>#F5F3EC</code>) + warm champagne gold (<code>#B88E3E</code>), smooth iOS 2026 cards, and editorial side thumbnails inspired by Google App.
+    </div>
+  </div>
+
+</div> <!-- /stage-container -->
+
+<script>
+  const SHEET_DATA = {
+    gaming_gta: {
+      title: "GTA 6 Pre-Orders & PC Timeline",
+      subtitle: "Synthesized from your direct Rockstar Games visits & GTA 6 searches.",
+      citation: "Visited rockstargames.com/VI/editions (16 Nov 03:20) and searched 'gta 6 pc release date' (18 Nov).",
+      source: "Source: Chrome Profile 6 History + Two-Tower Slot #1 (Served from App News DB) · 16-18 Nov",
+      scope: "Domain: 05-gaming-and-culture · Subtopic: Rockstar Games / GTA VI",
+      signal: "I noticed you checked GTA 6 edition pre-orders and PC release status twice this week. Would you like alerts when Rockstar opens official PC pre-orders?"
+    },
+    gaming_ps5: {
+      title: "Dubai PS5 Console & QD-OLED Hunting",
+      subtitle: "Matched to your localized classifieds browsing and Amazon display research.",
+      citation: "Searched r/dubaiclassifieds ('PS5 Disc Edition + 2 Controllers') and viewed Gawfolk 32\" 4K QD-OLED monitor on Amazon.ae.",
+      source: "Source: Chrome History (Reddit & Amazon.ae) + App News DB Pool (Sharaf DG / Dubizzle) · 16-24 Oct",
+      scope: "Domain: 05-gaming-and-culture / 03-tech · Subtopic: Dubai Console Market",
+      signal: "I noticed you are comparing used PS5 Disc bundles (AED 1,200) vs new PS5 Pro for a 4K OLED desk setup. Should I notify you if a Dubai seller lists a sealed disc model under AED 1,300?"
+    },
+    gaming_steam: {
+      title: "Steam Indie Simulators: Moon Sweepers",
+      subtitle: "Matched to your verified Steam store purchases & walkthrough videos.",
+      citation: "Purchased 'Moon Sweepers' (Save 15%) and 'Find The Needle' on Steam; watched Moon Sweepers No Commentary Walkthrough Part 3 & 4.",
+      source: "Source: Steam Checkout (7 Nov 12:17) + YouTube Watch History (26 Oct)",
+      scope: "Domain: 05-gaming-and-culture · Subtopic: Steam Indie / Simulation",
+      signal: "I noticed you enjoy satisfying physics and tidy-up simulation games like Moon Sweepers and That Damn Grass. Should I highlight similar indie gems during Steam sales?"
+    },
+    gaming_lol: {
+      title: "League of Legends: Tristana ADC Meta",
+      subtitle: "Matched to your ranked match analysis and League media consumption.",
+      citation: "Grok conversation regarding Tristana bot lane match history ('gg Tristana into their comp') + listened to NewJeans - GODS & 2022 The Call cinematic.",
+      source: "Source: Grok Chat History (17 Nov 14:31) + YouTube Audio Session",
+      scope: "Domain: 05-gaming-and-culture · Subtopic: Esports & League of Legends",
+      signal: "I noticed you main Tristana in bot lane. Would you like concise patch summary cards when ADC item curves or Tristana attack speed scaling change?"
+    },
+    dev_sprint: {
+      title: "Developer Sprint Telemetry (ide-companio)",
+      subtitle: "Ingested via the newly registered app.lab.skills.ide_session extraction skill.",
+      citation: "15 Claude Code sessions + 15 Git commits in repo:contest. Ingested Two-Tower multi-interest groundings and local SQLite browser history parser.",
+      source: "Source: ~/.claude/projects/ + Git Commit Log · Temporal Memory Logger",
+      scope: "Domain: 02-career-and-craft · Subtopic: AI Agent Development",
+      signal: "I noticed you completed the Two-Tower multi-interest pipeline in contest today. Would you like this milestone automatically logged to your weekly achievement report?"
+    },
+    academics_olympus: {
+      title: "Great Learning / MIT AI Capstone",
+      subtitle: "Matched to your 766 academic portal sessions and deep learning coursework.",
+      citation: "Visited olympus.mygreatlearning.com 766 times + active PyTorch deep learning models on Google Colab.",
+      source: "Source: Chrome History (olympus.mygreatlearning.com) · Active Term 2026",
+      scope: "Domain: 04-learning-and-ideas · Subtopic: MIT / Great Learning AI Certification",
+      signal: "I noticed you are working through the deep learning capstone on Olympus. Would you like me to organize Colab execution runtimes and model notes into your project workspace?"
+    },
+    career: {
+      title: "Dubai Senior AI Engineer",
+      subtitle: "Matched to your verified craft and active local job searches.",
+      citation: "Found on NaukriGulf via targeted Two-Tower query: 'site:naukrigulf.com AI Engineer Dubai 2026'. 1,128 career portal visits.",
+      source: "Source: App News DB Pool + LinkedIn/Indeed History · Today",
+      scope: "Domain: 02-career-and-craft · Subtopic: AI Engineering in Dubai",
+      signal: "I noticed you are actively tracking senior AI engineering roles in Dubai. Should I scan executive vacancies and Chambers grant opportunities every morning?"
+    },
+    tech: {
+      title: "iPhone 13 Pro Max Trade-In & Upgrades",
+      subtitle: "Matched to your owned device facts and AED price tracking.",
+      citation: "Memory Fact: 'User owns iPhone 13 Pro Max (Graphite)'. Amazon.ae & Apple Store UAE trade-in check.",
+      source: "Source: Stored Hardware Fact + App News DB Pool · Updated Today",
+      scope: "Domain: 05-home-and-money · Subtopic: Mobile Hardware & Upgrades",
+      signal: "I noticed trade-in values for iPhone 13 Pro Max in Dubai are holding steady at AED 1,650–1,820. Would you like automated price alerts when iPhone 18 leaks confirm?"
+    }
+  };
+
+  function setMode(mode) {
+    const stage = document.getElementById('stage-container');
+    const btnDevice = document.getElementById('btn-mode-device');
+    const btnShowcase = document.getElementById('btn-mode-showcase');
+
+    if (mode === 'showcase') {
+      stage.classList.add('showcase-mode');
+      btnShowcase.classList.add('active');
+      btnDevice.classList.remove('active');
+    } else {
+      stage.classList.remove('showcase-mode');
+      btnDevice.classList.add('active');
+      btnShowcase.classList.remove('active');
+    }
+  }
+
+  function switchMainTab(tab) {
+    document.querySelectorAll('.capsule-tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.view-panel').forEach(panel => panel.classList.remove('active'));
+
+    if (tab === 'today') {
+      document.getElementById('btn-tab-today').classList.add('active');
+      document.getElementById('tab-today-content').classList.add('active');
+    } else if (tab === 'chat') {
+      document.getElementById('btn-tab-chat').classList.add('active');
+      document.getElementById('tab-chat-content').classList.add('active');
+    } else if (tab === 'quests') {
+      document.getElementById('btn-tab-quests').classList.add('active');
+      document.getElementById('tab-quests-content').classList.add('active');
+    } else if (tab === 'memory') {
+      document.getElementById('btn-tab-memory').classList.add('active');
+      document.getElementById('tab-memory-content').classList.add('active');
+    }
+  }
+
+  function submitChatMessage() {
+    const input = document.getElementById('chat-user-input');
+    const text = (input.value || '').trim();
+    if (!text) return;
+    input.value = '';
+    sendUserMessageAndReply(text);
+  }
+
+  function sendQuickReply(text) {
+    sendUserMessageAndReply(text);
+  }
+
+  function sendUserMessageAndReply(userText) {
+    const container = document.getElementById('chat-thread-container');
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    // Append User Message
+    const userMsg = document.createElement('div');
+    userMsg.className = 'chat-msg user';
+    userMsg.innerHTML = `
+      <div class="chat-bubble">${userText}</div>
+      <div style="font-size: 11px; color: var(--text-tertiary); margin-top: 4px;">${timeStr} · Sent</div>
+    `;
+    container.appendChild(userMsg);
+
+    // Auto-generate AI companion response + Temporal Memory Export
+    setTimeout(() => {
+      const replyMsg = document.createElement('div');
+      replyMsg.className = 'chat-msg assistant';
+      const eventId = 'e-chat-' + Math.floor(Math.random()*8999 + 1000);
+
+      replyMsg.innerHTML = `
+        <div class="chat-bubble">
+          I've paired this interaction and confirmed your feedback. I updated your resident memory bank with zero latency (0.05ms).
+        </div>
+        <div class="temporal-export-pill">
+          <span>⚡ Exported to Temporal Memory: <b>mem_events#${eventId}</b> · [trust: T1 | human|ai_turn committed | valid_from: 2026-11-19]</span>
+        </div>
+      `;
+      container.appendChild(replyMsg);
+      replyMsg.scrollIntoView({ behavior: 'smooth' });
+    }, 450);
+  }
+
+  function triggerSimulatedPing(type) {
+    const container = document.getElementById('chat-thread-container');
+    const pingEl = document.createElement('div');
+    pingEl.className = 'chat-msg assistant';
+
+    if (type === 'apology') {
+      pingEl.innerHTML = `
+        <div class="proactive-ping-card">
+          <div class="ping-tag">🤖 Autonomous Companion Ping · Empathy Repair</div>
+          <div style="font-size: 13.5px; font-weight: 500; color: var(--text-primary); line-height: 1.5;">
+            Hey Haitham, I wanted to double check on the ide-companio format. I suppressed all verbose metrics and kept it down to a single bullet. Does that hit the mark?
+          </div>
+          <div class="temporal-export-pill">
+            <span>⚡ Logged to Temporal Memory: <b>mem_patterns#p-checkup-901</b> · [status: confirmed]</span>
+          </div>
+        </div>
+      `;
+    } else if (type === 'news') {
+      pingEl.innerHTML = `
+        <div class="proactive-ping-card">
+          <div class="ping-tag">⚡ Autonomous Companion Ping · Shared News DB Pool</div>
+          <div style="font-size: 13.5px; font-weight: 500; color: var(--text-primary); line-height: 1.5;">
+            Fresh hit in Dubai pool: Dubizzle seller just verified a PS5 Disc bundle (2 DualSense controllers) in JLT for AED 1,150. Pinned to your Deals carousel.
+          </div>
+        </div>
+      `;
+    } else if (type === 'checkup') {
+      pingEl.innerHTML = `
+        <div class="proactive-ping-card">
+          <div class="ping-tag">🔍 Autonomous Companion Ping · Open Loop Checkup</div>
+          <div style="font-size: 13.5px; font-weight: 500; color: var(--text-primary); line-height: 1.5;">
+            Checking in: Your Git commit <code>79f10947</code> ('re-edit ocs') was synced 45 minutes ago. Would you like me to run the automated achievement logger?
+          </div>
+        </div>
+      `;
+    } else {
+      alert('Temporal Memory Synced: 335 items indexed in 6.27ms (<0.05ms recall)');
+      return;
+    }
+
+    container.appendChild(pingEl);
+    pingEl.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function filterCategory(category, buttonEl) {
+    document.querySelectorAll('.filter-chip').forEach(el => el.classList.remove('active'));
+    buttonEl.classList.add('active');
+
+    const cards = document.querySelectorAll('.quest-hero-card, .quest-side-card, .quest-dev-minimal-card, .carousel-category-wrapper');
+    cards.forEach(card => {
+      const cardCat = card.getAttribute('data-cat');
+      if (category === 'all' || cardCat === category) {
+        card.style.display = '';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  }
+
+  function openSheet(key) {
+    const data = SHEET_DATA[key] || SHEET_DATA['gaming_gta'];
+    document.getElementById('sheet-title').innerText = data.title;
+    document.getElementById('sheet-subtitle').innerText = data.subtitle;
+    document.getElementById('sheet-evidence-citation').innerText = data.citation;
+    document.getElementById('sheet-evidence-source').innerText = data.source;
+    document.getElementById('sheet-scopeguard').innerText = data.scope;
+    document.getElementById('sheet-signals-text').innerText = data.signal;
+
+    document.getElementById('sheet-overlay').classList.add('open');
+  }
+
+  function closeSheet() {
+    document.getElementById('sheet-overlay').classList.remove('open');
+  }
+
+  function openPerson(name) {
+    alert(`Person Knowledge Graph: ${name}\n- Verified Relationship: Inner Circle\n- Source: WhatsApp Consented Chats\n- Status: Confirmed Entity in Memory Tree`);
+  }
+</script>
+
+</body>
+</html>
