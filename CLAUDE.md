@@ -40,6 +40,7 @@ Founder instructions override anything below; sensitive categories (rule 9) are 
 
 ## Gates
 
+- **NEVER remove, move, or delete Quest reference files:** `docs/plan/Memory/_archive/quest-memory-export/`, `docs/plan/Memory/_archive/quest-memory-export.zip`, `docs/plan/Memory/_archive/quest-tree-mechanics.md`, and `docs/plan/Memory/_archive/hindsight-kb-export/` (gitignored on disk) are permanent founder benchmarks and must **never** be deleted, moved out, or cleaned up by any agent.
 - If a request needs something `PLAN.md` lists as **LATER** or **NEVER**, stop and ask. Don't build a "small version" of it.
 - New service idea, shop or reference image: follow `docs/services/intake.md`; file under `docs/services/<shops|service>/<category>/`; never write a case into `PLAN.md`; stop if it touches a NEVER item.
 - Never add top-level `*.md` beyond the four canon files: `CLAUDE.md`, `PLAN.md`, `ARCHITECTURE.md`, `README.md`. Add agent guidance as nested `<dir>/CLAUDE.md` instead.

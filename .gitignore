@@ -36,5 +36,8 @@ apps/ios/Local.xcconfig
 /docs/plan/Memory/references/quest - info/
 /docs/plan/Memory/references/Hindsight - info/
 
-# Founder private context (never commit)
+# Founder private context (never commit, never delete from disk)
 docs/Researches/quest - info/
+/docs/plan/Memory/_archive/quest-memory-export/
+/docs/plan/Memory/_archive/quest-memory-export.zip
+/docs/plan/Memory/_archive/hindsight-kb-export/

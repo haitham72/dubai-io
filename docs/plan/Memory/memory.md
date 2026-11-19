@@ -165,6 +165,40 @@ Morning cards / ScopeGuard: `docs/plan/morning-brief.md` §8.
 
 - Read **this file** for memory decisions — not `_archive/` first.  
 - Real chats/exports: `G:\Haitham\lab-data\` only — never under `docs/plan/Memory/data`.  
+- **NEVER remove, move, or delete Quest files ever:** `docs/plan/Memory/_archive/quest-memory-export/`, `quest-memory-export.zip`, `quest-tree-mechanics.md`, and `hindsight-kb-export/` are gitignored permanent local benchmarks on disk and must never be removed by any agent.  
 - Never invent success statuses; every number needs provenance.  
 - Family/faith/health: never plain facts without explicit user confirmation (`sensitive.py`).  
 - Links ≠ GraphRAG. HNSW = ANN index for embeddings, optional assist after FTS.
+
+---
+
+## 12. Hindsight Native Mental Models & Adaptive Knowledge Base Export Tree (`hindsight-kb-export/`)
+
+**Locked (18 Nov 2026, founder):** **Hindsight is the go-to memory engine.** Alongside its Postgres temporal fact bank (`retain` → `observations`), Hindsight natively supports **Mental Models / Knowledge Pages** (`create_mental_model` + background `reflect`) that auto-maintain living markdown pages per person, topic, and user profile. We materialize those Mental Models to disk using an **Adaptive Knowledge Base Export Tree** that upgrades Quest's flat 1-level export (`_archive/quest-memory-export/`, benchmarked side-by-side in `_archive/hindsight-kb-export/`):
+
+### 12.1 Architecture: Fixed 7-Theme Spine + Adaptive LLM-Proposed Sub-Branches
+
+1. **Four Root Control Files:**
+   - `USER.md` — 7-section executive synthesis (*Identity, Core Craft & Pivot, Personality, Values & Meaning, Strengths & Tensions, Interests [Thrive/Grow/Fuel/Spark], Drive & Relationships*), where every claim cites its relative leaf `.md` path.
+   - `NOW.md` *(New vs Quest)* — Live radar of active open loops, next-30-day occasions/deadlines, rising 21-day interests vs 6-month baseline, and pending `"I noticed..."` confirmations.
+   - `MEMORIES.md` — Auto-generated master tree index & LLM Step-1 router map with a non-empty 1-line description, fact count, and `last_verified` date for every leaf (fixing Quest's blank `## People` descriptions).
+   - `SOURCES.md` *(New vs Quest)* — Connected/imported source watermarks, explicit evidence limits (`"57 ISO weeks read; 182 voice notes/media skipped"`), and `Never Remember` (`forget_rules`) blocklist.
+
+2. **Seven Fixed Top-Level Spines (`01`–`07`) + `_staging/` Governance Gate:**
+   - `01-people/` — Tiered by closeness (`inner-circle/`, `friends-and-peers/`, `professional-network/`) seeded from `circle.json`, rather than mixing family and one-off contacts in one flat folder.
+   - `02-career-and-craft/` — LLM-branched by the user's actual profession/craft clusters (e.g., `ai-engineering-2026/` + `motion-3d-and-video/`).
+   - `03-projects/` — LLM-branched into domain sub-folders (e.g., `ai-agents-and-memory/dubai-io/`, `applied-ml-and-rag/`, `culture-and-faith-apps/`).
+   - `04-learning-and-ideas/` — Programs, degrees, research, and reading queues.
+   - `05-home-and-money/` — Dubai residence/admin, owned devices (`tech/devices/phone` with bilingual aliases), subscriptions (`superseded_by` price history in AED), and shopping/wishlists.
+   - `06-events-and-occasions/` — Confirmed birthdays/anniversaries, community meetups (AI Tinkerers Dubai), and opted-in routines.
+   - `07-travel-and-places/` — Trips, flights, and confirmed Dubai places.
+   - `_staging/` *(Rule 9 & Tree Evolution Inbox)*:
+     - `hypotheses-to-confirm.md` — Holds all `"I noticed..."` candidates and sensitive-category items (`family`, `health`, `faith`, `wellbeing`) awaiting explicit user `[Confirm / Edit / Not true / Forget]` (never stated as plain confirmed facts like Quest did).
+     - `proposed-tree-splits.md` — LLM proposals when a leaf crosses **≥ 8 durable facts** or **≥ 3 distinct sub-threads** and should split into a sub-folder.
+
+### 12.2 Four-Block Leaf `.md` File Contract
+Every leaf `.md` file (and corresponding Hindsight Mental Model prompt) follows a strict 4-block layout:
+1. **YAML Frontmatter:** `title`, `description`, `theme`, `ontology_id` (`docs/references/residence-ontology-tree.md`), `aliases` (English + Arabic/Arabizi), `sources`, `last_verified`, and optional person fields (`relationship`, `closeness`).
+2. **`## Current Snapshot`:** 2–4 bullets summarizing what is true *right now* (from Hindsight `observations` / Mental Model synthesis).
+3. **`## Open Loops & Active Signals`:** Unresolved questions, upcoming dates, or two-visit qualified hypotheses tied to this entity/topic (feeds `NOW.md` and Morning Brief cards).
+4. **`## Timeline & Fact History` + `## Evidence Limits`:** Append-only dated bullets newest-first with supersession pointers (`*(supersedes YYYY-MM-DD)*`), followed by an explicit evidence-limits footer stating what was not read.

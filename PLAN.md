@@ -18,6 +18,14 @@ The single plan: identity, founder decisions, scope locks, live rulings, contest
 
 Only decisions still in force. Superseded ones stay in git history.
 
+**18 Nov 2026 — Hindsight Go-To Engine, Adaptive KB Export Tree & Permanent Quest Files Lock**
+- **Hindsight is the go-to memory engine (`MEM-01`):** Hindsight owns the 3-tier memory lifecycle: Tier 1 Raw Facts (`retain`), Tier 2 Consolidated Beliefs (`observations`), and Tier 3 Living Knowledge Pages (`Mental Models` via `create_mental_model` + background `reflect`). Product retrieval stays FTS/BM25-first (`ScopeGuard` scoped by category/entity/person), with semantic/RRF ranking inside that scoped slice (`docs/plan/Memory/memory.md`).
+- **Adaptive Knowledge Base Export Tree (`docs/plan/Memory/memory.md` §12, benchmarked at `docs/plan/Memory/_archive/hindsight-kb-export/`):** Materializes Hindsight Mental Models & consolidated facts into an upgraded markdown vault:
+  - **4 Root Control Files:** `USER.md` (7-section profile with leaf citations), `NOW.md` (active open loops, next-30d occasions, rising 21d topics, pending confirmations), `MEMORIES.md` (complete router index with non-empty descriptions and fact counts), and `SOURCES.md` (watermarks, evidence limits, `Never Remember` blocklist).
+  - **7 Fixed Life-Theme Spines + Adaptive LLM-Proposed Sub-Branches:** Top-level folders (`01-people/` through `07-travel-and-places/`) remain fixed for UI/generator stability, while the LLM dynamically branches sub-folders by the user's actual craft and life density (`01-people/{inner-circle,friends-and-peers,professional-network}`, `02-career-and-craft/{ai-engineering-2026,motion-3d-and-video}`, `03-projects/{ai-agents-and-memory/dubai-io,applied-ml-and-rag,culture-and-faith-apps}`) once a leaf crosses ≥8 facts or ≥3 sub-threads.
+  - **4-Block Leaf File Format & `_staging/` Gate:** Every leaf file separates `Current Snapshot`, `Open Loops & Active Signals`, `Timeline & Fact History` (with supersession notes), and `Evidence Limits`. Unconfirmed inferences and sensitive categories (`family`, `health`, `faith`, `wellbeing`) stay quarantined in `_staging/hypotheses-to-confirm.md` phrased as `"I noticed..."` until user-confirmed.
+- **Permanent Quest Reference Lock:** **NEVER remove, move, or delete `docs/plan/Memory/_archive/quest-memory-export/`, `quest-memory-export.zip`, `quest-tree-mechanics.md`, or `hindsight-kb-export/` ever.** They are gitignored on disk so they remain permanently in `docs/plan/Memory/_archive/` as the side-by-side benchmark without being pushed to GitHub.
+
 **17 Nov 2026 — SRE Supervisor rulings & MEM-01 decision (AC-5)**
 
 Locked architectural decisions (do not relitigate without a written counter-evidence section here):
