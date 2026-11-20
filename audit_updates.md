@@ -1,9 +1,11 @@
 # Dubai-io (Quest Companion) & Dual-Track Contest Architecture: Comprehensive Audit & Review Guide
 
-**Date:** 19 November 2026  
+**Date:** 20 November 2026  
 **Auditor Target:** External Lead AI Architect / Independent Evaluator (Claude 3.5 Sonnet / Opus / GPT-4o)  
 **Workspace:** `g:\Haitham\VsCode\contest`  
-**Championship Context:** Dubai Chambers AI Agent Championship ($150k Award per track)
+**Championship Context:** Dubai Chambers AI Agent Championship ($150k Award per track)  
+**Latest Founder Prompt:**  
+> *"update related md files, already got updated design design\20-11-2026 annotate it log it push comment sync"*
 
 ---
 
@@ -16,12 +18,13 @@
 You are an expert Principal AI Systems Architect and Venture Judge for the Dubai Chambers AI Agent Championship.
 Please conduct a rigorous, critical audit of the latest achievements in the Dubai-io repository (g:\Haitham\VsCode\contest).
 
-Evaluate the implementation across these 5 core dimensions:
+Evaluate the implementation across these 6 core dimensions:
 1. Two-Speed Memory Architecture: Separation of Hot Active-Turn Memory (<10ms) and Cold Consolidated Theory-of-Mind Memory.
 2. Factual 7-Day Multi-Stream Benchmark: Verify the real user data tests (Chrome Profile 6 History, Gmail, YouTube, Dev Sessions, WhatsApp) and compare Native SQLite FTS5 vs Mem0 vs Honcho vs Hindsight.
 3. Interactive Chat & Temporal Memory Export: Implementation of human|ai paired logging into SQLite temporal tables, plus autonomous proactive pings (news, open-loop checkups, empathy/apology repair).
-4. Visual UI & Quest-Inspired Fidelity: Review the 4-pillar prototype (Today, Chat, Quests, Memory) and the 4 generated Higgsfield Flare visual assets.
-5. Ecosystem Knowledge Vault Connector: The architectural design of Dubai-io as a sovereign, scoped personal knowledge connector (similar to Google Docs MCP) with strict visibility boundaries.
+4. Visual UI & Mobile Standard (design/20-11-2026/): Review the luxury warm-white 4-pillar mobile layout (Today, Chat, Quests, Memory), 3:4 vertical card peeking carousels, and proactive empathy repair cards.
+5. Sovereign Knowledge Vault: Review the dual-view constellation graph (Subjects with 458 nodes; People & Places with 179 nodes and T1 Inner Circle boundary).
+6. Ecosystem Knowledge Vault Connector: The architectural design of Dubai-io as a sovereign, scoped personal knowledge connector (similar to Google Docs MCP) with strict visibility boundaries.
 
 Please point out strengths, architectural trade-offs, potential failure modes, and your final verdict on readiness for the Dubai Chambers submission.
 ```
@@ -70,6 +73,18 @@ All generated via Higgsfield `gpt_image_2_6_flare` model at 9:16 mobile aspect r
   - Internal Skill: `ide_session` developer telemetry.
 - **`docs/plan/Memory/memory.md`**: Canonical single source for temporal memory tables and 3-speed extraction.
 
+### F. Locked Mobile UI & Sovereign Knowledge Vault (`design/20-11-2026/`)
+- **`design/20-11-2026/INDEX.md`**: Exhaustive catalog, design tokens, and architectural specifications for the locked 20 Nov visual baseline.
+- **`design/20-11-2026/Dubai-io_ A Cinematic UI Showcase.jpg`**:
+  - Hero Morning Brief: Burj Khalifa sunrise backdrop, Playfair serif typography (*"Good morning, Haitham"*), `👑 Quest VIP` badge, and *"Your Weekly Recap"* video card with *"▶ Watch Recap"*.
+  - 3:4 Peeking Carousels: Vertical cards in 3:4 ratio (~78% viewport width) with ~18% right-margin peeking across *"Gaming & Hardware"* (GTA VI AED 299, PS5 Bundle) and *"Developer & AI Systems"* (ide-companio, Hermes Agent).
+- **`design/20-11-2026/Dubai-io Chat App Mockup.jpg`**:
+  - Companion Chat Stream: Dark charcoal user bubble, off-white assistant bubble, gold proactive empathy/repair card (`⚡ Proactive Ping · Memory Repair` with *"Apology Accepted 👍"*), live temporal memory ingestion badge (`✓ Ingested into Temporal Memory | trust: T1`), and shared news DB context card.
+  - Life Category Drawer: Slide-out menu organizing 6 life ontologies (`Today: 6`, `Career & Projects: 12`, `People & Family: 8`, `Gaming & Hardware: 4`, `Travel & Places: 3`, `Home & Money: 5`) and conversation history.
+- **`design/20-11-2026/Dubai-io Knowledge Graph Vault.jpg`**:
+  - Subjects Force Graph: Multi-node constellation of 458 nodes anchored by central `Haitham` node across 6 life clusters (`Career: 142`, `Projects: 98`, `Learning: 76`, `Gaming: 64`, `Travel: 41`, `Health: 37`) with verified badges.
+  - People & Places Graph: Social constellation of 179 nodes (`People: 28`, `Places: 19`, `Relations: 132`) with explicit `T1` Inner Circle boundaries (`Mamty`, `Radwa`, `Khalid`, `Abdelaziz`) and geographic anchors (`Dubai`, `Istanbul`, `Mirsal Studio`).
+
 ---
 
 ## 3. Executive Review Summary for the Auditor
@@ -85,7 +100,8 @@ Overnight Theory-of-Mind   | VALIDATED   | Honcho 3-Speed Model  | Careem supers
 Real Past-Week Data Test   | VERIFIED    | 350 real records      | data/sync/past_week_real_data.json
 Chat -> Temporal Memory    | AUTOMATED   | Human|AI turn pairing | apps/api/tests/test_memory_chat_turns.py
 Autonomous Proactive Pings | LIVE IN UI  | 3 ping categories     | design/demo/quest_memory_management_mockup.html
-Visual Design Assets       | DELIVERED   | 4 Flare 9:16 renders  | design/references/quest/generated/*.png
+Mobile UI & 3:4 Carousels  | LOCKED      | 3:4 aspect + peeking  | design/20-11-2026/Dubai-io_ A Cinematic UI Showcase.jpg
+Sovereign Knowledge Vault  | DELIVERED   | 458 subjects + 179 soc| design/20-11-2026/Dubai-io Knowledge Graph Vault.jpg
 Knowledge Vault Connector  | ARCHITECTED | 3-tier scoping        | docs/plan/dubai_io_knowledge_connector.md
 ========================================================================================
 ```

@@ -18,6 +18,15 @@ The single plan: identity, founder decisions, scope locks, live rulings, contest
 
 Only decisions still in force. Superseded ones stay in git history.
 
+**20 Nov 2026 — Sovereign Knowledge Vault, 3:4 Peeking Carousel & Proactive Memory Repair UI Lock (`design/20-11-2026/`)**
+- **Mobile UI Standard Locked:** Warm luxury white canvas (`#FFFFFF` / `#FAF8F5`), 4-pillar capsule dock (`Today`, `Chat`, `Quests`, `Memory`) with a central floating audio waveform orb. Full catalog and screen breakdown documented in [`design/20-11-2026/INDEX.md`](design/20-11-2026/INDEX.md).
+- **3:4 Vertical Card Ergonomics:** Category carousels render cards in 3:4 aspect ratio (~78% viewport width) with an ~18% right edge peek to signal horizontal swipe navigation naturally.
+- **Proactive Empathy & Memory Repair Cards:** In-chat gold proactive notification cards (`⚡ Proactive Ping · Memory Repair`) with an instant *"Apology Accepted 👍"* resolution tap, coupled with real-time temporal ingestion badges (`✓ Ingested into Temporal Memory | trust: T1`).
+- **Sovereign Knowledge Vault:** Dual-view interactive constellation graph:
+  1. *Subjects View:* 458 nodes across 6 life themes (`Career`, `Projects`, `Learning`, `Gaming`, `Travel`, `Health`) anchored by verified knowledge badges.
+  2. *People & Places View:* 179 nodes featuring social trust boundaries (`T1` Inner Circle: `Mamty`, `Radwa`, `Khalid`, `Abdelaziz`) and geographic anchors (`Dubai`, `Istanbul`, `Mirsal Studio`).
+- **Memory Engine Integration:** Fully wired to the locked memory pipeline: Custom Extractors $\to$ Honcho 3-speed deriver $\to$ Hindsight 4-way verdict engine $\to$ Sovereign Knowledge Base.
+
 **19 Nov 2026 (Evening) — Dual Contest Entry Strategy, Mirsal Studio Business Entry & IDE-Companio Skill Integration**
 - **Dual Contest Strategy (Dubai Chambers Championship $150k Tracks):**
   1. **Entry 1: Best Personal AI Agent ("AI-Companion: Quest / Dubai IO"):** Flagship personal companion with consented memory management, multi-source temporal ingestion (YouTube 500 titles, Gmail 250 threads, Chrome 23.9k URLs), ScopeGuard privacy shield, and Two-Tower feed spanning 6 life clusters (Gaming, Deals/Hardware, Academics, AI Systems, Design, Career). Presentation elevated to an Executive Showcase Suite.

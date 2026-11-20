@@ -19,6 +19,7 @@
 | Topics | Fixed spine (~10–15 sections / ontology leaves) + **dynamic** subtopics (split/merge/add) |
 | User folders | Seven life themes: `01-people` · `02-career-and-craft` · `03-projects` · `04-learning-and-ideas` · `05-home-and-money` · `06-events-and-occasions` · `07-travel-and-places` |
 | Cards | **App owns UI.** Memory feeds state; it does not render cards |
+| Knowledge Vault UI | **Dual-View Sovereign Graph:** `Subjects` (458 nodes across 6 life clusters) and `People & Places` (179 nodes with `T1` Inner Circle boundary). Locked 20 Nov 2026 in `design/20-11-2026/INDEX.md`. |
 | Gate | No new memory feature work until **AC-1** (live Hindsight LLM retain), **AC-2** (card lifecycle), **AC-3** (query rewriter) are green. *(Proposed AC-4: cross-agent restart continuity test).* |
 | LLM Provider Rule | **Zero Gemini API calls.** All extractions run through local LLMs / LM Studio / Qwen 1.5B–3B / Ollama or Antigravity/Haiku/Codex hooks. |
 | Provider Health Probe | **Startup verification required:** Backend must respond to health probe and pass 1 test round-trip; otherwise mark degraded and fall back to local session layer with visible notice. |
@@ -326,3 +327,28 @@ Before any prompt or memory payload leaves the local system:
 * Scans and scrubs auth headers, API keys, tokens, and signed URLs.
 * Blocks unconfirmed sensitive health/faith traits from external cloud requests.
 * Enforces least-privilege: retrieval agents have read-only access to the knowledge tree.
+
+---
+
+## 17. Visual Knowledge Vault & Active Chat UI Standard (20 Nov 2026)
+
+Documented and verified against production mockups in `design/20-11-2026/` ([INDEX.md](file:///g:/Haitham/VsCode/contest/design/20-11-2026/INDEX.md)):
+
+### 17.1 Dual-View Sovereign Knowledge Graph
+The memory engine's export and graph representation is rendered to the user via two specialized interactive visualizer modes:
+1. **Subjects Graph (`Dubai-io Knowledge Graph Vault.jpg`, Left Frame):**
+   - **Scale:** 458 nodes anchored by central `Haitham` node.
+   - **Clusters:** Mapped to life themes — `Career` (142 nodes), `Projects` (98 nodes), `Learning` (76 nodes), `Gaming` (64 nodes), `Travel` (41 nodes), `Health` (37 nodes).
+   - **Verification:** Verified facts carry gold/check badges directly corresponding to confirmed `trust_tier = 'T1'` rows in `memories`.
+2. **People & Places Graph (`Dubai-io Knowledge Graph Vault.jpg`, Right Frame):**
+   - **Scale:** 179 nodes across `People (28)`, `Places (19)`, `Relations (132)`.
+   - **Inner Circle (T1) Boundary:** Explicit visual demarcation of `Mamty (T1)`, `Khalid (Family)`, `Radwa (Family)`, and `Abdelaziz (Friend)`.
+   - **Geographic Anchors:** `Dubai (Home)`, `Istanbul (Travel)`, and `Mirsal Studio (Project)`.
+
+### 17.2 Chat Stream Integration & Proactive Memory Repair
+1. **Real-Time Temporal Ingestion Badge:** Every confirmed chat turn or feedback emits an inline feedback badge:
+   `✓ Ingested into Temporal Memory | trust: T1 · topic: <domain>`
+   This provides transparent evidence of the bi-temporal write pipeline (`POST /api/memory/chat/turn`).
+2. **Proactive Empathy & Memory Repair Cards:**
+   When background reflection identifies missed user preferences or contradictions, the engine surfaces an in-chat gold alert (`⚡ Proactive Ping · Memory Repair`) with an instant *"Apology Accepted 👍"* button. Tapping this issues a Hindsight `ends` verdict to invalidate the stale belief and establish the corrected preference without manual profile editing.
+
