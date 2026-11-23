@@ -29,3 +29,7 @@ Rename inventory at `6b45ba4`: 908 matching lines in 172 files (285 identifiers,
 D4 keeps the 19 Nov AI workspace. D3 leaves Community’s `chat_*` tables parked. D5 points memory at temporal_note (`api/app.py`, `mcp/server.py`, `models.py`, `privacy/forget.py`), not Hindsight, Honcho, or the Redis store. D6 and D7 drop the Builder and all AI image, video, and sticker generation. Packs are finished files. A user sticker is a photo plus on-device MediaPipe Selfie Segmentation (Apache-2.0).
 
 Transport stays open for P2: a cookie-authenticated FastAPI WebSocket until B0 identity exists. O2, the final name, stays open. No application code. No file outside `docs/submissions/messenger/` was edited.
+
+## 23 Nov 2026 — founder confirmation (Cursor)
+
+The founder confirmed M0 and approved MG-B1 and MG-B2 only. Concept sheets, the named screen frames, the video clips, and the motion-graphics audio and photos are kept, except images that show the old name or logo, and except the dynamic-island scrapes. The Diwan connector, the Nadi connector, and watermark removal are dropped. User stickers, when that later slice is approved, use U²-Net (Apache-2.0, official repository, checked 23 Nov 2026) for any subject. MediaPipe selfie segmentation is only a fallback. Transport and the final name stay open.

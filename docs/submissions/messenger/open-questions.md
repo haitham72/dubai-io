@@ -1,16 +1,12 @@
 # Messenger — founder questions
 
-**Status:** planned (revised to D1–D6) — awaiting founder approval (23 Nov 2026, Cursor).
-
-P2 cross-checks what is still open. The import does not run until the keep/exclude list is signed. Chat that needs a verified `user_id` waits for Gate S.
+**Status:** M0 answered — 23 Nov 2026 (founder). Transport and O2 stay open. Later slices wait for the full gate after P2.
 
 ## Answered (23 Nov)
 
-### M0 — D1
+### M0 — answered 23 Nov 2026
 
-The office owns the old product and its brand. The redesign repo is the founder’s own app. Every feature the founder added there is the founder’s, and the office app never implemented those features. M0 is **reuse that code as a rebranded snapshot**, not clean-room and not a history-keeping subtree. The list is `ip-and-baseline.md`: keep 12, exclude 8, rebuild 16. The logo, the Diwan pictures, the 97 photos, the four sticker packs, and the Builder generator are excluded.
-
-Import still waits on the signed sentence in that file. That signature is the rest of D1, not a new question.
+The founder confirmed the list. The confirmation block at the top of `ip-and-baseline.md` is the decision. Concept sheets, the named screen frames, the video clips, and the motion-graphics audio and photos are kept, except any image that shows the old name or logo, and except the dynamic-island scrapes. The Diwan connector, the Nadi connector, and the watermark-removal cleaner are dropped. Fonts without notices, Google Fonts links, and Unsplash or Pravatar hotlinks are fixed in the rebrand. `MG-B1` and `MG-B2` are approved. Every later slice waits.
 
 ### Updates tray — D4
 

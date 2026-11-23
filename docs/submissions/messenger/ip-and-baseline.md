@@ -1,7 +1,42 @@
 # Messenger IP list and M0 recommendation
 
-**Status:** planned (revised to D1–D6) — awaiting founder approval (23 Nov 2026, Cursor).  
-**Gate:** M0. The founder confirms the table. This file copies nothing.  
+## Founder confirmation — 23 Nov 2026
+
+The founder confirmed M0 and changed these rows. Where this section and the table below disagree, this section wins.
+
+**Keep, as the founder’s own**
+
+- Concept sheets: `Slides/*.jpg` and `Slides/output_grid/`.
+- Screen frames under `screens/`: `4 screens.jpg`, `Layer 0.jpg` through `Layer 10.jpg`, and `GPT design/01.jpg`.
+- Video clips in `media/videos/`.
+- Motion-graphics audio, and `motion graphics/app/public/photos/`.
+
+**Still excluded**
+
+- `screens/dynamic island/` scrapes.
+- The office logo and favicon.
+- Diwan commemoration pictures and the 97 files in `public/photos/`.
+- The four sticker packs and sticker-generation code.
+- The pytest dump directory.
+
+**Any image or frame that visibly shows the old name or the old logo is excluded from the shipped app**, even if its folder is in the keep list above.
+
+**Drop, in addition to the earlier exclude rows**
+
+- The Diwan connector: `agents/mirsal_agents/diwan.py`, `agents/mirsal_agents/routes/diwan.py`, `src/updates/diwan.ts`, `agents/mirsal_agents/diwan_demo.json`, and their UI hooks and tests.
+- The Nadi connector: `agents/mirsal_agents/skills/nadi.py`, `agents/mirsal_agents/routes/nadi.py`, and their UI hooks and tests.
+- The cleaner’s `remove-ai-watermarks` dependency, and any feature that removes an AI watermark or a provenance mark. That conflicts with the provenance rules.
+
+**Rebuild, and fix in the rebrand**
+
+- Fonts that have no notice in the tree: attach the notice, or drop the file.
+- Google Fonts links: self-host with the notice, or replace the link with a system stack.
+- Unsplash and Pravatar hotlinks: replace them. They are not owned assets.
+
+**Project licence.** `apps/messenger/NOTICE.md` is the founder licence statement. It ships with a placeholder for the founder’s sign-off. The pdoom MIT file and the OFL notices do not licence the app.
+
+**Status:** confirmed for the snapshot and the rebrand — 23 Nov 2026 (founder).  
+**Gate:** M0. This file copies nothing.  
 **Recommendation: reuse the founder-authored code as a rebranded snapshot.** This replaces the 23 Nov clean-room recommendation. D1 is the decision.
 
 The office owns the old product and its brand. The redesign repo is the founder’s own separate app. Every feature the founder added there is the founder’s, and the office app never implemented those features. The import, after this list is confirmed, is:

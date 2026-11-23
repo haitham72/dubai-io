@@ -1,8 +1,8 @@
 # Messenger delivery roadmap
 
-**Status:** planned (revised to D1–D6) — awaiting founder approval (23 Nov 2026, Cursor).
+**Status:** approved for MG-B1 and MG-B2 only — 23 Nov 2026 (founder). Every later slice waits for the full gate after P2.
 
-Order follows spec §9, revised by founder decisions D1–D7. Code starts only after the founder signs the keep/exclude list in `ip-and-baseline.md`. Slices that need a verified `user_id` or temporal_note wait for Gate S. The rebrand and the local chat shell do not.
+Order follows spec §9, revised by founder decisions D1–D7. MG-B1 and MG-B2 are approved. Every later slice waits for the full gate after P2. Slices that need a verified `user_id` or temporal_note also wait for Gate S.
 
 **Zero-conflict.** Every slice adds files only. Owned paths: `apps/messenger/**`, `apps/api/app/messenger/**`, `apps/api/tests/test_messenger_*.py`, `fixtures/messenger/**`, `docs/submissions/messenger/**`. RLS notes live in `apps/messenger/supabase/`. No new file under `supabase/migrations/`. No slice edits `actions.py`, `main.py`, `communities.py`, or any other existing file. Capabilities are registered by `apps/api/app/messenger/capabilities.py` inserting into `actions.CAPABILITIES` at import time. Settings come from env inside that package. Entrypoint: `app.messenger.server:app` on port 8070. There is no `shared-changes.md` entry.
 
@@ -10,25 +10,26 @@ Lane branches, when build starts, are `mg/<slice>` from `business`.
 
 Internal package target: Fri 18 Dec 2026 (`PLAN.md` §5). That date is a deck, a video, a host or tunnel, and a small user test.
 
-## MG-B1 — Audit and IP
+## MG-B1 — Snapshot import, excluded items removed
 
-**Depends on:** nothing.  
-**Owns:** the docs in this folder. No application code.  
-**This revision is the current commit.**
+**Depends on:** the 23 Nov founder confirmation in `ip-and-baseline.md`. Met.  
+**Owns:** `apps/messenger/**` created by the squashed snapshot, then deletions inside that tree only.  
+**Approved:** 23 Nov 2026.
 
 | | |
 |---|---|
-| Happy path | A reader sees the keep 12 / exclude 8 / rebuild 16 list, the 200 / 1 test rerun, and D1–D7 applied to the slices below. |
-| Failure path | A path that is only a filename is not marked working. The Redis skip stays a skip. |
-| Demo beat | None. It unlocks the founder’s signature on the M0 list. |
+| Happy path | The snapshot is under `apps/messenger/`, and the founder’s drop list is gone: logo, dynamic-island scrapes, Diwan connector, Nadi connector, watermark removal, sticker packs, Diwan pictures, the 97 photos, and the pytest dump. |
+| Failure path | An excluded path still present fails the slice. An image that shows the old name or logo and was left in the tree fails the slice. |
+| Demo beat | None. |
 
-## MG-B2 — Rebrand snapshot
+## MG-B2 — Rebrand
 
-**Depends on:** the signed sentence in `ip-and-baseline.md` (“I confirm this keep/exclude/rebuild list.”).  
-**Owns:** `apps/messenger/**` after the squash, then a rebrand commit in that tree only.  
-**Does not edit** any file that existed before the snapshot.
+**Depends on:** `MG-B1`.  
+**Owns:** renames and string replacements inside `apps/messenger/**` only, plus `apps/messenger/NOTICE.md`.  
+**Does not edit** any file that existed before the snapshot.  
+**Approved:** 23 Nov 2026. Later slices are not approved.
 
-Import, not run by this plan:
+The import command, run in MG-B1:
 
 ```
 git subtree add --prefix=apps/messenger https://github.com/haitham72/Mirsal-redesign master --squash
@@ -90,14 +91,14 @@ D6 and D7. Nothing from the Builder service: no code, prompts, design, emoji-ban
 
 Built-in packs: the founder supplies finished files. The client reads `apps/messenger/public/packs/manifest.json` when the tray opens. A tap sends `{ kind: "sticker", packId, stickerId }`. Limits: PNG, WebP, or SVG; longest edge 512 px; PNG/WebP at most 512 KB; SVG at most 100 KB with no script and no external reference; at most 50 stickers in a pack and 20 packs.
 
-User stickers: the user adds a photo. On-device MediaPipe Selfie Segmentation (Apache-2.0, bundled `selfie_segmentation.tflite`, about 249 KB) writes a PNG whose RGB is the photo and whose alpha is the person matte. The network does not emit colour pixels. Success stores one `mg_stickers` row and the object. Failure (`model_missing`, `timeout`, `low_contrast`, `person_not_detected`) leaves the photo unchanged, shows the error, and writes nothing. A pet, object, or logo fails closed.
+User stickers: any subject, not people only. The user adds a photo. The primary model is U²-Net (the official project at `github.com/xuebinqin/U-2-Net`, Apache License 2.0, licence file read 23 Nov 2026). It runs locally. It returns a matte for the foreground, and the saved PNG keeps the photo’s RGB with that matte as alpha. It does not paint new pixels. Do not use an ONNX conversion whose weight provenance is unrecorded. MediaPipe Selfie Segmentation (Apache-2.0) is only the fallback when the U²-Net weight is missing, and only then it can cut a person. A non-person photo on that fallback fails closed. Success stores one `mg_stickers` row. Failure (`model_missing`, `timeout`, `low_contrast`, `subject_not_detected`) leaves the photo unchanged, shows the error, and writes nothing. This slice is not approved yet.
 
 Voice policy from the offline suite (a send waits for the person) is wired to `mg_messages` and the registered capability. It does not generate images.
 
 | | |
 |---|---|
-| Happy path | `test_messenger_pack_sends_file_from_manifest`. `test_messenger_cutout_png_has_alpha` on a committed person fixture. |
-| Failure path | `test_messenger_cutout_missing_model_keeps_original`. `test_messenger_no_image_generation_route`. `test_messenger_voice_does_not_send_unconfirmed`. |
+| Happy path | `test_messenger_pack_sends_file_from_manifest`. `test_messenger_cutout_any_subject_png_has_alpha` on a committed object fixture, using U²-Net. |
+| Failure path | `test_messenger_cutout_missing_model_keeps_original`. `test_messenger_selfie_fallback_rejects_non_person`. `test_messenger_no_image_generation_route`. `test_messenger_voice_does_not_send_unconfirmed`. |
 | Demo beat | Optional. The business case does not depend on a sticker. |
 
 ## MG-B5 — Scoped memory
