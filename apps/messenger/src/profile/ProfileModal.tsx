@@ -17,13 +17,13 @@ const tabs: (Tab & { sub: string })[] = [
   { id: "profile", label: "Profile", icon: UserCircle, sub: "Manage your personal information and account details." },
   { id: "account", label: "Account", icon: User, sub: "Sign-in, security and recovery." },
   { id: "subscription", label: "Subscription", icon: Crown, sub: "Your plan, usage this month and billing." },
-  { id: "devices", label: "Devices", icon: Monitor, sub: "Where you're signed in to Mirsal." },
-  { id: "storage", label: "Storage", icon: HardDrive, sub: "What's using your Mirsal Cloud space." },
-  { id: "privacy", label: "Data & Privacy", icon: ShieldCheck, sub: "Control what others see and what Mirsal keeps." },
-  { id: "apps", label: "Connected Apps", icon: Link2, sub: "Services Mirsal can read from or send to." },
+  { id: "devices", label: "Devices", icon: Monitor, sub: "Where you're signed in to Messenger." },
+  { id: "storage", label: "Storage", icon: HardDrive, sub: "What's using your Messenger Cloud space." },
+  { id: "privacy", label: "Data & Privacy", icon: ShieldCheck, sub: "Control what others see and what Messenger keeps." },
+  { id: "apps", label: "Connected Apps", icon: Link2, sub: "Services Messenger can read from or send to." },
   { id: "notifications", label: "Notifications", icon: Bell, sub: "Choose what reaches you, and when." },
   { id: "appearance", label: "Appearance", icon: Palette, sub: "Theme and text size." },
-  { id: "ai", label: "AI Preferences", icon: Sparkles, sub: "How Mirsal AI works for you." },
+  { id: "ai", label: "AI Preferences", icon: Sparkles, sub: "How Messenger AI works for you." },
 ];
 
 // Module-level so edits survive closing and reopening the modal during the session.
@@ -111,7 +111,7 @@ function ProfileTab({ notify }: Notify) {
 function AccountTab({ notify }: Notify) {
   return <>
     <Group title="Sign-in">
-      <Row icon={Mail} label="Mirsal ID" value={me.email} />
+      <Row icon={Mail} label="Messenger ID" value={me.email} />
       <Row icon={User} label="Username" value={me.handle} onClick={() => notify("Usernames can be changed once every 30 days.")} />
       {sessions.map((x) => <Row key={x.label} icon={KeyRound} label={<span className={s.twoLine}>{x.label}<small>{x.value}</small></span>}
         action={x.action} onClick={() => notify(`${x.label}: we've sent a confirmation to your phone.`)} />)}
@@ -161,7 +161,7 @@ function DevicesTab({ notify }: Notify) {
 function StorageTab({ notify }: Notify) {
   return <>
     <Group>
-      <div className={s.storageHead}><strong>{storage.used} GB used</strong><span>of {storage.total} GB · Mirsal Cloud</span></div>
+      <div className={s.storageHead}><strong>{storage.used} GB used</strong><span>of {storage.total} GB · Messenger Cloud</span></div>
       <span className={`${s.track} ${s.storageBar}`}>
         {storage.categories.map((c) => <span key={c.id} className={`${s.fill} ${s[c.tone]}`} style={{ width: `${(c.size / storage.total) * 100}%` }} />)}
       </span>
@@ -227,7 +227,7 @@ function AiTab({ notify }: Notify) {
   return <>
     <Toggles group="ai" />
     <Group title="Response style">
-      {responseStyles.map((x) => <Row key={x} label={x} value={style === x ? "✓" : ""} onClick={() => { setStyle(x); notify(`Mirsal AI will answer in a ${x.toLowerCase()} style.`); }} />)}
+      {responseStyles.map((x) => <Row key={x} label={x} value={style === x ? "✓" : ""} onClick={() => { setStyle(x); notify(`Messenger AI will answer in a ${x.toLowerCase()} style.`); }} />)}
     </Group>
   </>;
 }

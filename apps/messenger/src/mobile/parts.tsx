@@ -5,7 +5,7 @@ import { useStore } from "../store";
 import { ICON } from "../ui";
 import s from "./mobile.module.css";
 
-export const ORB = "/mirsal-logo.png";
+export const ORB = "";
 
 /** Round Liquid Glass control (toolbar button). */
 export function GlassButton({ icon: I, label, onClick, primary }: {
@@ -18,11 +18,11 @@ export function GlassButton({ icon: I, label, onClick, primary }: {
   );
 }
 
-/** Mirsal Updates entry inside toolbars: the orb with the unread count. */
+/** Messenger Updates entry inside toolbars: the orb with the unread count. */
 export function OrbButton({ onClick }: { onClick: () => void }) {
   const unread = useStore((st) => st.tasks.filter((t) => t.unread && !t.dismissed).length);
   return (
-    <button className={`${s.gbtn} ${s.orbBtn}`} aria-label={`Mirsal Updates${unread ? `, ${unread} new` : ""}`} onClick={onClick}>
+    <button className={`${s.gbtn} ${s.orbBtn}`} aria-label={`Messenger Updates${unread ? `, ${unread} new` : ""}`} onClick={onClick}>
       <img src={ORB} alt="" />
       {unread > 0 && <span className={s.orbBadge}>{unread}</span>}
     </button>

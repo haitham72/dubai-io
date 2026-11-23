@@ -3,10 +3,10 @@ import asyncio
 
 import pytest
 
-from mirsal_agents.deciders import RuleDecider
-from mirsal_agents.engine import Conversation
-from mirsal_agents.session import VoiceSession
-from mirsal_agents.stt import FakeTranscriber
+from messenger_agents.deciders import RuleDecider
+from messenger_agents.engine import Conversation
+from messenger_agents.session import VoiceSession
+from messenger_agents.stt import FakeTranscriber
 
 
 class TraceCapture:

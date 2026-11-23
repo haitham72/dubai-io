@@ -13,7 +13,7 @@ const before = getState().messages.filter((m) => m.chatId === "arif");
 const seedPhoto = [...before].reverse().find((m) => m.body.kind === "image");
 if (!seedPhoto) fail("no seeded arif photo");
 for (let i = 1; i <= 5; i++) actions.sendToChat(text(`filler ${i}`), "arif");
-const q1 = "@mirsal what is he doing in this image";
+const q1 = "@messenger what is he doing in this image";
 actions.sendToChat(text(q1), "arif");
 const got1 = photoQuestionUrl("arif", q1);
 if (got1 !== seedPhoto.body.url) fail(`old-photo question: want seed photo, got ${got1}`);

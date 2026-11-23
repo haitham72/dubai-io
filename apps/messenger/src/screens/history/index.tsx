@@ -1,4 +1,4 @@
-// History: a timeline of everything Mirsal did, grouped by day, with filters and a detail panel.
+// History: a timeline of everything Messenger did, grouped by day, with filters and a detail panel.
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createStore } from "../../storeFactory";
 import {
@@ -63,7 +63,7 @@ function Main() {
   const shown = list.filter((e) => matches(e, filter, query));
   const current = list.find((e) => e.id === selected) ?? null;
   return <div className={s.main}>
-    <PageHeader title="History" subtitle="Everything Mirsal did for you" />
+    <PageHeader title="History" subtitle="Everything Messenger did for you" />
     <div className={s.chips} role="tablist" aria-label="Filter history">
       {filters.map((f) => <button key={f.id} role="tab" aria-selected={filter === f.id}
         className={`${s.chip} ${filter === f.id ? s.chipOn : ""}`} onClick={() => set({ filter: f.id })}>
@@ -110,7 +110,7 @@ function EntryRow({ e, active, onClick }: { e: Entry; active: boolean; onClick: 
 }
 
 const openIn: Record<Kind, [string, ScreenId]> = {
-  image: ["Open in Mirsal AI", "ai"], video: ["Open in Mirsal AI", "ai"], flight: ["Open Flights", "flights"],
+  image: ["Open in Messenger AI", "ai"], video: ["Open in Messenger AI", "ai"], flight: ["Open Flights", "flights"],
   research: ["Open Research", "research"], email: ["Open Mail", "mail"], weather: ["Open Weather", "weather"],
 };
 

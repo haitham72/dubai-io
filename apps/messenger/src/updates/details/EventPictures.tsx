@@ -1,7 +1,7 @@
 // A Diwan event's pictures as a swipe carousel: the current post centred and as tall as the space allows, neighbours
 // peeking in dimmed; each keeps its own ratio (posts 4:5, stories 9:16). The picture showing is the one "Use in chat" shares.
 // Every picture has a heart (favourites, this browser only). A picture Diwan holds more versions of offers
-// "Generate more": a spinner while Mirsal asks Diwan, then the versions nest under that picture (a count on the picture
+// "Generate more": a spinner while Messenger asks Diwan, then the versions nest under that picture (a count on the picture
 // and a strip below it). Picking a version makes it that picture's main image; the original stays in the strip.
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Lightbox } from "./ImageDetail";
@@ -14,7 +14,7 @@ import s from "../updates.module.css";
 type Status = "idle" | "loading" | "done" | "error";
 interface Slot { base: string; shown: string; versions: string[]; status: Status; open: boolean; source?: string }
 
-const FAVS = "mirsal.eventFavourites";
+const FAVS = "messenger.eventFavourites";
 const MIN_SPIN_MS = 700; // the demo answers instantly; keep the spinner long enough to read
 const name = (url: string) => url.split("?")[0].split("/").pop() ?? url;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));

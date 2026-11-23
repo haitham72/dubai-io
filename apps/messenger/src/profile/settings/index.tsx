@@ -10,9 +10,9 @@ const tabs: (Tab & { heading: string; sub: string; Body: (p: TabProps) => ReactE
   { id: "account", label: "Account", icon: UserRound, heading: "Account", sub: "Your sign-in, security and regional preferences.", Body: AccountTab },
   { id: "appearance", label: "Appearance", icon: Palette, heading: "Appearance", sub: "Theme, text size and how your chats look.", Body: AppearanceTab },
   { id: "notifications", label: "Notifications", icon: Bell, heading: "Notifications", sub: "Choose what reaches you, and when.", Body: NotificationsTab },
-  { id: "privacy", label: "Privacy", icon: Shield, heading: "Privacy", sub: "Control what others can see and what Mirsal keeps.", Body: PrivacyTab },
-  { id: "apps", label: "Connected Apps", icon: Blocks, heading: "Connected Apps", sub: "Services Mirsal can read from or send to.", Body: AppsTab },
-  { id: "ai", label: "AI Preferences", icon: Sparkles, heading: "AI Preferences", sub: "How Mirsal AI searches, remembers and responds.", Body: AiTab },
+  { id: "privacy", label: "Privacy", icon: Shield, heading: "Privacy", sub: "Control what others can see and what Messenger keeps.", Body: PrivacyTab },
+  { id: "apps", label: "Connected Apps", icon: Blocks, heading: "Connected Apps", sub: "Services Messenger can read from or send to.", Body: AppsTab },
+  { id: "ai", label: "AI Preferences", icon: Sparkles, heading: "AI Preferences", sub: "How Messenger AI searches, remembers and responds.", Body: AiTab },
 ];
 
 export function SettingsModal({ onClose }: { onClose: () => void }) {

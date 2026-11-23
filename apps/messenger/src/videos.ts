@@ -1,13 +1,13 @@
 // Mock video generation — owned by the lead session.
 // The pool is media/videos/ (committed Kling demo clips) plus Slides/vids/ (git-ignored, local). Drop an .mp4 there and Vite picks it up
 // (the page reloads); a video is "new" until it has been opened once in AI Chat (remembered per browser).
-import type { MirsalTask } from "./types";
+import type { MessengerTask } from "./types";
 
 export interface MockVideo { url: string; title: string }
 
 const files = import.meta.glob(["/Slides/vids/*.{mp4,MP4,mov,MOV,webm}", "/media/videos/*.{mp4,MP4,mov,MOV,webm}"], { query: "?url", import: "default", eager: true }) as Record<string, string>;
 
-/** "mirsal-reel-30s_sound.mp4" → "Mirsal reel 30s". */
+/** "messenger-reel-30s_sound.mp4" → "Messenger reel 30s". */
 function titleOf(path: string) {
   const words = (path.split("/").pop() ?? path).replace(/\.[^.]+$/, "")
     .replace(/[-_]+/g, " ").replace(/\b(sound|final|v\d+)\b/gi, "").replace(/\s+/g, " ").trim();
@@ -18,7 +18,7 @@ export const mockVideos: MockVideo[] = Object.entries(files)
   .map(([path, url]) => ({ url, title: titleOf(path) }))
   .sort((a, b) => a.title.localeCompare(b.title));
 
-const OPENED_KEY = "mirsal.videos.opened";
+const OPENED_KEY = "messenger.videos.opened";
 function loadOpened(): Set<string> {
   try { return new Set(JSON.parse(localStorage.getItem(OPENED_KEY) ?? "[]") as string[]); } catch { return new Set(); }
 }
@@ -41,8 +41,8 @@ export function pickMockVideo(): MockVideo {
   return v;
 }
 
-/** Mirsal Updates on load: every never-opened video (up to 3), topped up with random opened ones to at least 2. */
-export function videoSeedTasks(): MirsalTask[] {
+/** Messenger Updates on load: every never-opened video (up to 3), topped up with random opened ones to at least 2. */
+export function videoSeedTasks(): MessengerTask[] {
   const fresh = shuffle(mockVideos.filter(v => !isVideoOpened(v.url))).slice(0, 3);
   const old = shuffle(mockVideos.filter(v => isVideoOpened(v.url)));
   return [...fresh, ...old].slice(0, Math.max(2, fresh.length)).map((v, i) => {

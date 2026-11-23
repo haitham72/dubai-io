@@ -1,5 +1,5 @@
 // Telegram-style media panel over the composer: Emoji · Stickers · GIFs. Floats above the composer (the chat never
-// resizes). Stickers come from the sticker packs (agents service, else public/stickers); "+ New pack" asks Mirsal Builder
+// resizes). Stickers come from the sticker packs (agents service, else public/stickers); "+ New pack" asks Messenger Builder
 // for three options to swipe. GIFs come from GIPHY through the agents service — without a key the tab says so, no fakes.
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -15,9 +15,9 @@ import s from "./media.module.css";
 type Tab = "emoji" | "stickers" | "gifs";
 interface Pack { id: string; title: string; urls: string[]; mine?: boolean }
 
-const RECENT_EMOJI = "mirsal.recentEmoji";
-const RECENT_STICKERS = "mirsal.recentStickers";
-const MY_PACKS = "mirsal.myPacks";
+const RECENT_EMOJI = "messenger.recentEmoji";
+const RECENT_STICKERS = "messenger.recentStickers";
+const MY_PACKS = "messenger.myPacks";
 const read = <T,>(key: string, fallback: T): T => { try { return JSON.parse(localStorage.getItem(key) ?? "") as T; } catch { return fallback; } };
 const write = (key: string, value: unknown) => { try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* storage unavailable */ } };
 const remember = (key: string, value: string, max: number) => write(key, [value, ...read<string[]>(key, []).filter((v) => v !== value)].slice(0, max));
@@ -123,7 +123,7 @@ function StickersTab({ chatId, onPick }: { chatId: string; onPick: (url: string,
     <nav className={s.strip} aria-label="Sticker packs">
       <button aria-label="Recent stickers" className={active === "recent" ? s.stripOn : ""} onClick={() => setActive("recent")}><Clock {...ICON} size={18} /></button>
       {packs.map((p) => <button key={p.id} aria-label={p.title} title={p.title} className={`${s.cover} ${active === p.id ? s.stripOn : ""}`} onClick={() => setActive(p.id)}>{p.urls[0] && <StickerMedia url={p.urls[0]} />}</button>)}
-      <button aria-label="New pack with Mirsal" onClick={() => setBuilder(true)}><Sparkles {...ICON} size={18} /></button>
+      <button aria-label="New pack with Messenger" onClick={() => setBuilder(true)}><Sparkles {...ICON} size={18} /></button>
     </nav>
     {preview && <button className={s.preview} aria-label="Close preview" onClick={() => setPreview(null)}><StickerMedia url={preview} /></button>}
   </>;
@@ -138,7 +138,7 @@ function useRefTimer() {
   };
 }
 
-/** Mirsal Builder: three generated packs to swipe; "Keep this pack" saves it to My packs (this browser). */
+/** Messenger Builder: three generated packs to swipe; "Keep this pack" saves it to My packs (this browser). */
 function Builder({ chatId, onDone }: { chatId: string; onDone: (kept?: string) => void }) {
   const [opts, setOpts] = useState<{ mode: string; options: BuilderOption[] } | null>(null);
   const [error, setError] = useState(false);
@@ -154,8 +154,8 @@ function Builder({ chatId, onDone }: { chatId: string; onDone: (kept?: string) =
     onDone(id);
   };
   return <div className={s.body}>
-    <h3><Sparkles {...ICON} size={16} />New pack from Mirsal Builder{opts?.mode === "demo" && <em className={s.mine}>Demo</em>}</h3>
-    {error ? <p className={s.empty}>Mirsal Builder runs on the agents service (npm run agents). <button className={s.link} onClick={() => onDone()}>Back</button></p>
+    <h3><Sparkles {...ICON} size={16} />New pack from Messenger Builder{opts?.mode === "demo" && <em className={s.mine}>Demo</em>}</h3>
+    {error ? <p className={s.empty}>Messenger Builder runs on the agents service (npm run agents). <button className={s.link} onClick={() => onDone()}>Back</button></p>
       : !opts ? <div className={s.loading}><Loader2 {...ICON} className={s.spin} />Designing three packs…</div>
       : <>
         <div className={s.options} ref={track} onScroll={(e) => setIndex(Math.round(e.currentTarget.scrollLeft / e.currentTarget.clientWidth))}>

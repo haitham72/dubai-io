@@ -5,9 +5,9 @@ from dataclasses import replace
 import pytest
 from fastapi.testclient import TestClient
 
-from mirsal_agents.app import Services, build_app
-from mirsal_agents.config import Settings
-from mirsal_agents.store import MemoryStore
+from messenger_agents.app import Services, build_app
+from messenger_agents.config import Settings
+from messenger_agents.store import MemoryStore
 
 
 @pytest.fixture

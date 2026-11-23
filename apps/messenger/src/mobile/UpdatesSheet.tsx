@@ -1,4 +1,4 @@
-// Mirsal Updates on the phone: one sheet. List of tasks → tap → the same detail cards as desktop.
+// Messenger Updates on the phone: one sheet. List of tasks → tap → the same detail cards as desktop.
 import { useEffect, useMemo, useState } from "react";
 import { ChevronLeft, X } from "lucide-react";
 import { actions, useStore } from "../store";
@@ -29,11 +29,11 @@ export function UpdatesSheet({ initialId, onClose }: { initialId?: string; onClo
   const notify = (text: string) => setToast({ text, until: Date.now() + 3000 });
 
   return (
-    <Sheet label="Mirsal Updates" onClose={onClose}>
+    <Sheet label="Messenger Updates" onClose={onClose}>
       <div className={s.sheetHead}>
         {selected
           ? <button className={s.sheetBack} onClick={() => { setSelectedId(undefined); setLightbox(false); }}><ChevronLeft {...ICON} />Updates</button>
-          : <><img className={s.sheetOrb} src={ORB} alt="" /><h2 className={s.sheetTitle}>Mirsal Updates<small>{tasks.length} updates{running ? ` · ${running} running` : ""}</small></h2></>}
+          : <><img className={s.sheetOrb} src={ORB} alt="" /><h2 className={s.sheetTitle}>Messenger Updates<small>{tasks.length} updates{running ? ` · ${running} running` : ""}</small></h2></>}
         <button className={`${s.gbtn} ${s.gbtnSmall}`} aria-label="Close" onClick={onClose}><X {...ICON} size={18} /></button>
       </div>
 

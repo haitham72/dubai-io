@@ -1,6 +1,6 @@
 import { ExternalLink, MessageCircle, Share2 } from "lucide-react";
 import { actions } from "../../store";
-import type { MirsalTask } from "../../types";
+import type { MessengerTask } from "../../types";
 import { Button } from "../../ui";
 import { Retry, TaskStatus } from "../common";
 import { ImageDetail } from "./ImageDetail";
@@ -27,7 +27,7 @@ export function DetailActions({ openLabel, onOpen, onShare, onChat }: {
   </div>;
 }
 export function Detail({ task, now, lightbox, onLightbox, notify }: {
-  task: MirsalTask; now: number; lightbox: boolean; onLightbox: (value: boolean) => void; notify: Notify;
+  task: MessengerTask; now: number; lightbox: boolean; onLightbox: (value: boolean) => void; notify: Notify;
 }) {
   const result = task.result;
   const link = `${window.location.origin}/#update=${encodeURIComponent(task.id)}`;

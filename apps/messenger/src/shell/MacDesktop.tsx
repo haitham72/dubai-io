@@ -1,6 +1,6 @@
-// Desktop only: Mirsal runs as an app window on a macOS-style desktop (wallpaper, menu bar, Dock), so the demo reads as
-// "a Mac running the Mirsal app", not a website. Traffic lights: red closes, yellow minimizes to the Dock, green zooms to
-// fill the screen (and enters browser fullscreen). The Dock holds Mirsal and each of its workspaces (our own icons in the
+// Desktop only: Messenger runs as an app window on a macOS-style desktop (wallpaper, menu bar, Dock), so the demo reads as
+// "a Mac running the Messenger app", not a website. Traffic lights: red closes, yellow minimizes to the Dock, green zooms to
+// fill the screen (and enters browser fullscreen). The Dock holds Messenger and each of its workspaces (our own icons in the
 // macOS style — no Apple artwork); clicking one opens/restores the window on that screen.
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import {
@@ -11,7 +11,7 @@ import type { ScreenId } from "../types";
 import s from "./mac.module.css";
 
 const DOCK: { id: ScreenId; label: string; icon: LucideIcon; tone: string }[] = [
-  { id: "ai", label: "Mirsal AI", icon: Sparkles, tone: s.tViolet },
+  { id: "ai", label: "Messenger AI", icon: Sparkles, tone: s.tViolet },
   { id: "files", label: "Files", icon: Folder, tone: s.tAmber },
   { id: "flights", label: "Flights", icon: Plane, tone: s.tBlue },
   { id: "weather", label: "Weather", icon: CloudSun, tone: s.tSky },
@@ -32,7 +32,7 @@ const MENUS = ["File", "Edit", "View", "Window", "Help"];
  * down to fit, like a zoomed-out Mac window — the layout is never cropped. Zoomed overrides to full screen;
  * restoring returns to the last frame. Persisted to localStorage. */
 const DEF_W = 1440, DEF_H = 900, MARGIN = 16, APP_W = 1100, APP_H = 680;
-const FRAME_KEY = "mirsal:mac-frame";
+const FRAME_KEY = "messenger:mac-frame";
 interface Frame { x: number; y: number; w: number; h: number }
 
 function minSize(sw: number, sh: number) {
@@ -187,7 +187,7 @@ export function MacDesktop({ children }: { children: ReactNode }) {
   return (
     <div className={s.desktop} data-wallpaper={wallpaper}>
       <header className={s.menubar}>
-        <span className={s.menuApp}><img src="/mirsal-logo.png" alt="" />Mirsal</span>
+        <span className={s.menuApp}>Messenger</span>
         {MENUS.map((m) => <span key={m} className={s.menuItem}>{m}</span>)}
         <span className={s.menuRight}>
           <BatteryFull size={18} strokeWidth={1.75} /><Wifi size={16} strokeWidth={2} /><Search size={15} strokeWidth={2} /><Clock />
@@ -199,7 +199,7 @@ export function MacDesktop({ children }: { children: ReactNode }) {
           <section
             className={`${s.window} ${free ? s.free : ""} ${win === "zoomed" ? s.zoomed : ""} ${win === "minimized" ? s.minimized : ""} ${interacting ? s.interacting : ""}`}
             style={free ? { left: frame.x, top: frame.y, width: frame.w, height: frame.h } : undefined}
-            aria-label="Mirsal window"
+            aria-label="Messenger window"
           >
             <div className={s.titlebar} onDoubleClick={zoom} onPointerDown={begin("move")}>
               <span className={s.lights}>
@@ -207,7 +207,7 @@ export function MacDesktop({ children }: { children: ReactNode }) {
                 <button className={s.yellow} aria-label="Minimize" onClick={() => setWin("minimized")}><i>−</i></button>
                 <button className={s.green} aria-label={win === "zoomed" ? "Exit full screen" : "Enter full screen"} onClick={zoom}><i>{win === "zoomed" ? "↙" : "↗"}</i></button>
               </span>
-              <span className={s.title}>Mirsal</span>
+              <span className={s.title}>Messenger</span>
             </div>
             <FitContent>{children}</FitContent>
             {free && HANDLES.map((d) => (
@@ -221,8 +221,8 @@ export function MacDesktop({ children }: { children: ReactNode }) {
       {win !== "zoomed" && (
         <div className={s.deskIcons} aria-label="Desktop shortcuts">
           <button className={s.deskIcon} onClick={() => go("chats")}>
-            <img src="/mirsal-logo.png" alt="" />
-            <span>Mirsal</span>
+            Messenger
+            <span>Messenger</span>
           </button>
           {DOCK.map(({ id, label, icon: I, tone }) => (
             <button key={id} className={s.deskIcon} onClick={() => go(id)}>
@@ -234,9 +234,9 @@ export function MacDesktop({ children }: { children: ReactNode }) {
       )}
 
       <nav className={`${s.dock} ${win === "zoomed" ? s.dockHidden : ""}`} aria-label="Dock">
-        <button className={s.dockApp} aria-label="Mirsal" onClick={() => go("chats")}>
-          <img src="/mirsal-logo.png" alt="" />
-          <span className={s.dockLabel}>Mirsal</span>
+        <button className={s.dockApp} aria-label="Messenger" onClick={() => go("chats")}>
+          Messenger
+          <span className={s.dockLabel}>Messenger</span>
           {win !== "closed" && <i className={s.running} />}
         </button>
         <span className={s.dockDivider} aria-hidden="true" />

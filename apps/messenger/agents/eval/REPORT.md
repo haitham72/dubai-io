@@ -147,8 +147,8 @@ the turn open (4 s quiet, 30 s max) instead of cutting it at 1.4 s.
 
 "But also / and also / also" goes through a router: it splits only when a preset command head follows ("…and also
 plan the trip" → message + plan, the plan taking the reply's recipient as its companion, still confirmed): anything
-else stays dictation ("…but also bring chips" is sent whole). `@mirsal open/read/reply …` is decided by the same
-engine (`POST /agents/mirsal/command`, this user's chats most-recent first) instead of the generic chat model.
+else stays dictation ("…but also bring chips" is sent whole). `@messenger open/read/reply …` is decided by the same
+engine (`POST /agents/messenger/command`, this user's chats most-recent first) instead of the generic chat model.
 
 The planner no longer forces a country: 9 European destinations added, a region ("europe") or no destination asks
 which country, and the group step appears only for explicitly mentioned people — unrecognized names ride along as

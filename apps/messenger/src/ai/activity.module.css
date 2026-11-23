@@ -1,4 +1,4 @@
-/* Mirsal AI sidebar: Agents (working) · Ready (card stack) · Chats. */
+/* Messenger AI sidebar: Agents (working) · Ready (card stack) · Chats. */
 /* iPhone: results live in the stories row and the Updates sheet; the history sheet shows chats only. */
 @media (max-width: 820px) { .activity { display: none; } }
 .foldHead { display: flex; align-items: center; gap: var(--s-2); margin: var(--s-4) 0 var(--s-2); }

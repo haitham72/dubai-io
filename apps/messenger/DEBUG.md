@@ -1,7 +1,7 @@
-# Mirsal Redesign – Debug & Known Issues Guide
+# Messenger Redesign – Debug & Known Issues Guide
 
 ## Overview
-This document guides other LLMs through diagnosing and fixing known issues in the Mirsal redesign. **Always fetch the latest file SHA before pushing updates** — don't rely on cached SHAs from earlier in the session.
+This document guides other LLMs through diagnosing and fixing known issues in the Messenger redesign. **Always fetch the latest file SHA before pushing updates** — don't rely on cached SHAs from earlier in the session.
 
 ---
 
@@ -184,7 +184,7 @@ create_or_update_file({
 });
 
 // ✅ RIGHT: Always fetch fresh before pushing
-getfile({ path: "src/shell/MacDesktop.tsx", repo: "haitham72/Mirsal-redesign" });
+getfile({ path: "src/shell/MacDesktop.tsx", repo: "haitham72/Messenger-redesign" });
 // Returns fresh SHA: "d9fbb7714656682051efd5c8aaef9157f42701a5"
 create_or_update_file({
   path: "src/shell/MacDesktop.tsx",

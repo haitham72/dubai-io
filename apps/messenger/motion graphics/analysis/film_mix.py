@@ -1,4 +1,4 @@
-"""The Mirsal redesign film's sound: the Stable Audio track (audio/music.mp3), Will's nine lines (audio/vo/l01..l09)
+"""The Messenger redesign film's sound: the Stable Audio track (audio/music.mp3), Will's nine lines (audio/vo/l01..l09)
 at the times the picture uses (VO in app/src/scenes/film.ts), and a few very soft effects from audio/sfx/. The
 music ducks about 6 dB under the voice. Writes out/film_mix.wav; mux and normalise with:
 

@@ -1,6 +1,6 @@
-from mirsal_agents.research import DeepResearch, FakeLLM, FakeSearch
-from mirsal_agents.store import MemoryStore
-from mirsal_agents.trace import Tracer
+from messenger_agents.research import DeepResearch, FakeLLM, FakeSearch
+from messenger_agents.store import MemoryStore
+from messenger_agents.trace import Tracer
 
 
 class Skeptic(FakeLLM):
@@ -37,9 +37,9 @@ async def test_web_text_is_fenced_as_data_and_results_are_cached():
 async def test_openai_llm_sends_photos_as_low_detail_image_parts_to_the_vision_model(tmp_path):
     from types import SimpleNamespace as NS
 
-    from mirsal_agents.config import Prices
-    from mirsal_agents.research import IMAGE_TOKENS, OpenAILLM
-    from mirsal_agents.spend import Budget
+    from messenger_agents.config import Prices
+    from messenger_agents.research import IMAGE_TOKENS, OpenAILLM
+    from messenger_agents.spend import Budget
 
     sent = {}
 
@@ -61,9 +61,9 @@ async def test_openai_llm_sends_photos_as_low_detail_image_parts_to_the_vision_m
 async def test_openai_llm_caps_output_tokens_so_vision_calls_do_not_400(tmp_path):
     from types import SimpleNamespace as NS
 
-    from mirsal_agents.config import Prices
-    from mirsal_agents.research import OpenAILLM
-    from mirsal_agents.spend import Budget
+    from messenger_agents.config import Prices
+    from messenger_agents.research import OpenAILLM
+    from messenger_agents.spend import Budget
 
     sent = {}
 

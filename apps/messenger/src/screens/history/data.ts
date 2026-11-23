@@ -1,4 +1,4 @@
-// Fake History timeline: everything Mirsal did for the user. Owned by T11.
+// Fake History timeline: everything Messenger did for the user. Owned by T11.
 import { img } from "../../ui";
 
 export type Kind = "image" | "flight" | "research" | "email" | "weather" | "video";
@@ -36,8 +36,8 @@ export const entries: Entry[] = [
       "Talent demand outpaces supply; upskilling programs triple.",
       "Agentic workflows move from pilots to production.",
     ] } },
-  { id: "h5", kind: "video", day: "Yesterday", time: "7:48 PM", title: "Mirsal promo reel", summary: "30s vertical clip with music", source: "AI Chat",
-    image: img("photo-1513635269975-59663e0ac1ad", 1200), prompt: "Short upbeat promo reel for the Mirsal app" },
+  { id: "h5", kind: "video", day: "Yesterday", time: "7:48 PM", title: "Messenger promo reel", summary: "30s vertical clip with music", source: "AI Chat",
+    image: img("photo-1513635269975-59663e0ac1ad", 1200), prompt: "Short upbeat promo reel for the Messenger app" },
   { id: "h6", kind: "email", day: "Yesterday", time: "5:15 PM", title: "Follow-up to Sara about the dinner", summary: "Draft ready · sent at 5:20 PM", source: "Mail",
     mail: { to: "Sara Ali", subject: "Dinner on Friday 🎉", body: "Hi Sara,\n\nCongrats again on the promotion! I booked a table at Il Borro for Friday at 8. Let me know if that works.\n\nHaitham" } },
   { id: "h7", kind: "image", day: "Yesterday", time: "11:02 AM", title: "Kite Beach weekend poster", summary: "Group invite for Travel Buddies", source: "Chat with Travel Buddies",

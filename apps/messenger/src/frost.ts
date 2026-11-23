@@ -1,7 +1,7 @@
 // Frosted-glass tuning (Settings → Appearance). Overrides --frost / --frost-blur
 // on <html> so every frosted surface (nav, mobile headers) follows live. Persisted.
 export interface Frost { opacity: number; blur: number }
-const KEY = "mirsal.frost.v3";
+const KEY = "messenger.frost.v3";
 export const DEFAULT_FROST: Frost = { opacity: 0.7, blur: 15 };
 
 export function loadFrost(): Frost {

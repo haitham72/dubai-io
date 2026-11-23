@@ -2,7 +2,7 @@
 // Gmail, memory tasks) plus the other agents-backed routes (Diwan, stickers, GIFs)
 // and the generic server probe. Every caller has a fallback, so the demo (and the
 // Vercel deploy, which has no /agents) works unchanged when the service is off.
-import type { DiwanEvent, MirsalTask } from "../types";
+import type { DiwanEvent, MessengerTask } from "../types";
 import type { ResearchResult } from "./research";
 import { json } from "./http";
 
@@ -10,7 +10,7 @@ import { json } from "./http";
 export const AGENTS = "/agents";
 
 export interface ChatContextLine { sender: string; text: string }
-/** POST a JSON body to the agents service. Shared with mirsal.ts; not part of the public barrel. */
+/** POST a JSON body to the agents service. Shared with messenger.ts; not part of the public barrel. */
 export const post = async <T>(path: string, body: unknown): Promise<T> =>
   json<T>(await fetch(`${AGENTS}${path}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }));
 
@@ -35,7 +35,7 @@ export function agentsHealth(force = false): Promise<AgentsHealth | null> {
   return value;
 }
 
-/** Voice command stream. Protocol: agents/mirsal_agents/session.py. `sid` keeps a question and its answer together. */
+/** Voice command stream. Protocol: agents/messenger_agents/session.py. `sid` keeps a question and its answer together. */
 export function openVoiceStream(sid: string): WebSocket {
   const proto = location.protocol === "https:" ? "wss" : "ws";
   const ws = new WebSocket(`${proto}://${location.host}${AGENTS}/voice?sid=${encodeURIComponent(sid)}`);
@@ -90,11 +90,11 @@ export async function sendMail(to: string, subject: string, body: string): Promi
   }));
 }
 
-/** Mirsal Updates tasks kept by the agents service (Redis), so they survive a reload. */
-export async function loadTasks(): Promise<MirsalTask[]> {
-  return (await json<{ tasks: MirsalTask[] }>(await fetch(`${AGENTS}/memory/tasks`))).tasks;
+/** Messenger Updates tasks kept by the agents service (Redis), so they survive a reload. */
+export async function loadTasks(): Promise<MessengerTask[]> {
+  return (await json<{ tasks: MessengerTask[] }>(await fetch(`${AGENTS}/memory/tasks`))).tasks;
 }
-export async function saveTasks(tasks: MirsalTask[]): Promise<void> {
+export async function saveTasks(tasks: MessengerTask[]): Promise<void> {
   await fetch(`${AGENTS}/memory/tasks`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ tasks }) });
 }
 
@@ -112,7 +112,7 @@ export async function moreFromEventPicture(event: string, image: string): Promis
   return json(await fetch(`${AGENTS}/diwan/more?${new URLSearchParams({ event, image })}`));
 }
 
-/* ---------- stickers from Mirsal Builder (3 options to swipe) and GIFs ---------- */
+/* ---------- stickers from Messenger Builder (3 options to swipe) and GIFs ---------- */
 export interface BuilderOption { id: string; title: string; stickers: { url: string; format: string; emoji?: string }[] }
 export const generateStickerOptions = (request: string, context: ChatContextLine[]) =>
   post<{ mode: "builder" | "demo"; options: BuilderOption[] }>("/stickers/generate", { request, context });

@@ -7,7 +7,7 @@ import { relative, resolve } from "node:path";
  *  /api/chat → api/chat.ts · /api/images/abc → api/images.ts?id=abc (same rewrite as vercel.json) · method = exported GET/POST. */
 function apiRoutes(): Plugin {
   return {
-    name: "mirsal-api-routes",
+    name: "messenger-api-routes",
     configureServer(server: ViteDevServer) {
       server.middlewares.use(async (req, res, next) => {
         if (!req.url?.startsWith("/api/")) return next();

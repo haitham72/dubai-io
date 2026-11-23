@@ -2,9 +2,9 @@
 import pytest
 import asyncio
 
-from mirsal_agents.catalog import BY_NAME
-from mirsal_agents.deciders import RuleDecider
-from mirsal_agents.engine import Conversation, IntentEngine, Policy
+from messenger_agents.catalog import BY_NAME
+from messenger_agents.deciders import RuleDecider
+from messenger_agents.engine import Conversation, IntentEngine, Policy
 
 
 async def test_transcript_correction_during_request_discards_the_old_action(contacts):
@@ -206,9 +206,9 @@ async def test_dangling_pronoun_defaults_to_the_last_interacted_chat(contacts):
     assert out[0].args == {"contactId": "arif", "name": "Arif Khan", "text": "I am on my way"}
 
 async def test_question_answer_survives_a_reordered_contact_list(contacts):
-    from mirsal_agents.deciders import RuleDecider
-    from mirsal_agents.engine import Policy
-    from mirsal_agents.session import Conversations
+    from messenger_agents.deciders import RuleDecider
+    from messenger_agents.engine import Policy
+    from messenger_agents.session import Conversations
     convs = Conversations(RuleDecider(), Policy())
     first = convs.get("s", contacts)
     first.begin().partial("Open.", 0.0)

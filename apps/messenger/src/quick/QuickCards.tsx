@@ -92,7 +92,7 @@ function DraftCard({ id }: { id: string }) {
   const save = () => { mail.saveDraft({ to, subject, body, draftId: id }); actions.closeQuick(); };
   return (
     <form className={s.draft} onSubmit={(e) => { e.preventDefault(); void mail.send(to, subject, body, id); actions.closeQuick(); }}>
-      <Head title="Draft" sub={draft.by === "mirsal" ? "Written by Mirsal · not sent" : "Not sent"} />
+      <Head title="Draft" sub={draft.by === "messenger" ? "Written by Messenger · not sent" : "Not sent"} />
       <label>To<input type="email" required value={to} onChange={(e) => setTo(e.target.value)} /></label>
       <label>Subject<input required value={subject} onChange={(e) => setSubject(e.target.value)} /></label>
       <textarea required aria-label="Email message" value={body} onChange={(e) => setBody(e.target.value)} />

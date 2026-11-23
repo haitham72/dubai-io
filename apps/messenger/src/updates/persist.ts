@@ -1,4 +1,4 @@
-// Mirsal Updates survive a reload when the agents service (Redis) runs: finished tasks are saved a second after they
+// Messenger Updates survive a reload when the agents service (Redis) runs: finished tasks are saved a second after they
 // change and restored on load. Without the service nothing happens (tasks stay in memory, as before).
 import { agentsHealth, loadTasks, saveTasks } from "../api";
 import { actions, getState, subscribe } from "../store";

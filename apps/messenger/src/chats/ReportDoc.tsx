@@ -1,10 +1,10 @@
 // A research brief opened from a chat card, shown as a document page (PDF style) over the app — the chat never resizes.
-// Opening it marks the linked Mirsal Updates notification as seen.
+// Opening it marks the linked Messenger Updates notification as seen.
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { ArrowUpRight, BookOpen, ExternalLink, X } from "lucide-react";
 import { actions, getState } from "../store";
-import type { MessageBody, MirsalTask, ResearchItem } from "../types";
+import type { MessageBody, MessengerTask, ResearchItem } from "../types";
 import { Button, ICON, IconButton } from "../ui";
 import s from "./report.module.css";
 
@@ -12,21 +12,21 @@ type Card = Extract<MessageBody, { kind: "card" }>;
 type Brief = ResearchItem & { mode?: "live" | "demo" };
 
 /** The research task a chat card points at: its own `taskId`, else the finished research task with the same title. */
-export function researchTaskFor(card: Card): MirsalTask | undefined {
+export function researchTaskFor(card: Card): MessengerTask | undefined {
   const tasks = getState().tasks.filter((t) => t.result?.type === "research" && t.status === "completed");
   return tasks.find((t) => t.id === card.taskId)
     ?? tasks.find((t) => t.result?.type === "research" && t.result.items.some((i) => i.title === card.title || card.subtitle.includes(i.title)));
 }
 
-/** Open a research card: the brief as a document if Mirsal has it, else the Research screen. */
-export function openResearchCard(card: Card, open: (task: MirsalTask) => void) {
+/** Open a research card: the brief as a document if Messenger has it, else the Research screen. */
+export function openResearchCard(card: Card, open: (task: MessengerTask) => void) {
   const task = researchTaskFor(card);
   if (!task) return actions.navigate("research");
   if (task.unread) actions.updateTask(task.id, { unread: false }); // seen
   open(task);
 }
 
-export function ReportDoc({ task, onClose }: { task: MirsalTask; onClose: () => void }) {
+export function ReportDoc({ task, onClose }: { task: MessengerTask; onClose: () => void }) {
   const dialog = useRef<HTMLDivElement>(null);
   const brief = (task.result?.type === "research" ? task.result.items[0] : undefined) as Brief | undefined;
 
@@ -54,7 +54,7 @@ export function ReportDoc({ task, onClose }: { task: MirsalTask; onClose: () => 
       <div className={s.canvas}>
         <article className={s.page}>
           <div className={s.pageHead}>
-            <span className={s.brand}>MIRSAL RESEARCH</span>
+            <span className={s.brand}>MESSENGER RESEARCH</span>
             <span>{date}{brief.mode === "demo" && <em className={s.demo}>Demo</em>}</span>
           </div>
           <h1>{brief.title}</h1>
@@ -83,7 +83,7 @@ export function ReportDoc({ task, onClose }: { task: MirsalTask; onClose: () => 
             </li>)}</ol>
           </>}
 
-          <footer className={s.pageFoot}><span>Prepared by Mirsal{brief.mode === "demo" ? " · demo brief, not live research" : ""}</span><span>1</span></footer>
+          <footer className={s.pageFoot}><span>Prepared by Messenger{brief.mode === "demo" ? " · demo brief, not live research" : ""}</span><span>1</span></footer>
         </article>
       </div>
     </div>

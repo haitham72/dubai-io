@@ -1,4 +1,4 @@
-# Mirsal: the redesign film (plan)
+# Messenger: the redesign film (plan)
 
 Documentation review (2026-10-08): This is the film storyboard and recorded render history. Current app capabilities and verification are in [ARCHITECTURE.md](../ARCHITECTURE.md); the film has not been rerendered for the latest voice, meeting, and image changes. No generation or rendering was run during this documentation update.
 
@@ -8,11 +8,11 @@ Documentation review (2026-10-08): This is the film storyboard and recorded rend
 
 ## 1. The brief
 
-A launch film for the **Mirsal redesign**: the private chat app with its built-in assistant and its workspaces (`../Mirsal-redesign.md`, the 15 reference screens in `../Slides/output_grid/`).
+A launch film for the **Messenger redesign**: the private chat app with its built-in assistant and its workspaces (`../Messenger-redesign.md`, the 15 reference screens in `../Slides/output_grid/`).
 
 - **Feel:** clean, elegant and calm, like the ChatGPT launch films. Smooth transitions and unhurried shots. It should feel like a premium Apple product page.
-- **Not** the Mirsal Creator reel. That one is fast, punchy and sticker-loud. This one breathes.
-- **Look:** the redesign itself: iOS/macOS light glass, a soft sky behind frosted windows, Mirsal blue `#1677FF` with the lavender of Mirsal Updates `#7C3AED`, primary text `#101828`, secondary `#667085`, very soft shadows.
+- **Not** the Messenger Creator reel. That one is fast, punchy and sticker-loud. This one breathes.
+- **Look:** the redesign itself: iOS/macOS light glass, a soft sky behind frosted windows, Messenger blue `#1677FF` with the lavender of Messenger Updates `#7C3AED`, primary text `#101828`, secondary `#667085`, very soft shadows.
 
 ## 2. Length and pace
 
@@ -44,15 +44,15 @@ Times are approximate; the voice will set them exactly (the kit's aligner, as in
 
 | # | time | picture | transition in | narrator |
 |---|---|---|---|---|
-| 1 | 0 – 6 s | A soft sky (the references' blurred clouds). The glass **M** tile fades up and settles; "Mirsal" writes in beside it, light weight, large | fade from white | "This is Mirsal." |
+| 1 | 0 – 6 s | A soft sky (the references' blurred clouds). The glass **M** tile fades up and settles; "Messenger" writes in beside it, light weight, large | fade from white | "This is Messenger." |
 | 2 | 6 – 14 s | **Chats**, the golden screen (R04): the window glides up into place; the camera drifts across the chat list to Arif Khan's conversation; a new message arrives ("Hey! Are you free this weekend?") | glass push | "Your conversations, calm and in one place." |
-| 3 | 14 – 22 s | **Mirsal Updates**: the lavender card ("Image ready, flight found, 5 more…") glows once, then opens to the right as the horizontal tray (R13): Image ready, Flight found, Research ready, Email draft ready, sliding in one after another | match move (the card becomes the tray) | "Your assistant works in the background, and tells you when it's done." |
+| 3 | 14 – 22 s | **Messenger Updates**: the lavender card ("Image ready, flight found, 5 more…") glows once, then opens to the right as the horizontal tray (R13): Image ready, Flight found, Research ready, Email draft ready, sliding in one after another | match move (the card becomes the tray) | "Your assistant works in the background, and tells you when it's done." |
 | 4 | 22 – 30 s | **Image ready** opens (R16): the Dubai beach picture, "Generated 2 minutes ago · Ready"; the cursor presses **Use in chat**; the image flies into Arif's chat as a message | match move | "Use the result right in your chat." |
-| 5 | 30 – 38 s | **AI Chat**: "Generate a beautiful photo of cherry blossoms in Kyoto…" types in; the minimal status "Searched 8 sources · 12 s"; the image resolves softly; the Sources column fills | glass push | "Ask anything. Mirsal searches, writes and creates." |
+| 5 | 30 – 38 s | **AI Chat**: "Generate a beautiful photo of cherry blossoms in Kyoto…" types in; the minimal status "Searched 8 sources · 12 s"; the image resolves softly; the Sources column fills | glass push | "Ask anything. Messenger searches, writes and creates." |
 | 6 | 38 – 46 s | **Flights**: "Flights Dubai to London next Friday"; the Flight found card (EK007, 7h 25m); **Add to calendar**; the card flows into the **Calendar** week view and becomes the green event on Wednesday | match move (the flight card becomes the event) | "Find a flight, and it's already on your calendar." |
-| 7 | 46 – 52 s | A slow glide through the workspaces, about 1.5 s each, blur dissolves: **Weather** (Dubai 32°, sunny), **Stocks** (AAPL 224.91), **Mail** ("Your booking is confirmed", with *Summarize with Mirsal AI*) | blur dissolve | "Weather, markets, mail: everything you need, one click away." |
+| 7 | 46 – 52 s | A slow glide through the workspaces, about 1.5 s each, blur dissolves: **Weather** (Dubai 32°, sunny), **Stocks** (AAPL 224.91), **Mail** ("Your booking is confirmed", with *Summarize with Messenger AI*) | blur dissolve | "Weather, markets, mail: everything you need, one click away." |
 | 8 | 52 – 56 s | **Profile**: the frosted modal settles over the chats (R14): Arif Khan, Online, Status | glass push | "Private, and yours." |
-| 9 | 56 – 60 s | Depth pull: the window recedes into a slow field of all the screens floating at different depths, then they fade and the **M** tile and "Mirsal" return to centre | depth pull, fade to sky | "Mirsal. Your chats, with a private assistant." |
+| 9 | 56 – 60 s | Depth pull: the window recedes into a slow field of all the screens floating at different depths, then they fade and the **M** tile and "Messenger" return to centre | depth pull, fade to sky | "Messenger. Your chats, with a private assistant." |
 
 About 70 words. The narrator speaks in roughly half the film; the music carries the rest.
 
@@ -70,7 +70,7 @@ The screens are drawn in code (crisp at any zoom, every element animatable), fol
 ## 6. Before coding (setup notes for the build)
 
 1. `cd app && bun install` (node_modules are not copied).
-2. **Port:** the Mirsal app's own dev server uses 5173. Run the kit on another port (`bunx vite --port 5392`) and render with `--url http://localhost:5392`. Otherwise the renderer opens the app instead of the film. This happened once already.
+2. **Port:** the Messenger app's own dev server uses 5173. Run the kit on another port (`bunx vite --port 5392`) and render with `--url http://localhost:5392`. Otherwise the renderer opens the app instead of the film. This happened once already.
 3. `app/src/timeline.ts` still points at the Creator film's `reel` scene, which is not copied: replace it with this film's scenes.
 4. `data/audio.json` / `data/lyrics.json` are the Creator film's. The narrator's read plus `analysis/align_vo.py` and `audio_vo.py` replace them.
 5. Reusable from the kit: `scenes/card.ts` (`drawOrb`, the clean karaoke card), `scenes/_vo.ts` (camera, karaoke, text layout), Inter in `app/public/fonts/inter/`, the post-processing already set to the clean look.
@@ -80,5 +80,5 @@ The screens are drawn in code (crisp at any zoom, every element animatable), fol
 
 - **Length:** 60 s.
 - **Narrator:** Will (ElevenLabs, *Relaxed Optimist*), nine lines in `audio/vo/`.
-- **Closing line:** "Mirsal. Your chats, with a private assistant."
+- **Closing line:** "Messenger. Your chats, with a private assistant."
 - **Music:** both were made. Stable Audio is `audio/takes/stability-1.mp3`; the Suno track is still to come (`audio/suno-prompt.md`). Haitham picks one by ear.

@@ -1,5 +1,5 @@
 import {
-  BarChart3, Calendar, CloudSun, Eraser, FolderClosed, History, Mail, MessageCircle, PanelLeftClose, PanelLeftOpen, Plane,
+  BarChart3, Calendar, CloudSun, FolderClosed, History, Mail, MessageCircle, PanelLeftClose, PanelLeftOpen, Plane,
   Search, Settings,
 } from "lucide-react";
 import { useState, type ComponentType } from "react";
@@ -19,7 +19,6 @@ const main: { id: ScreenId; label: string; icon: ComponentType<LucideProps> }[] 
   { id: "mail", label: "Mail", icon: Mail },
   { id: "calendar", label: "Calendar", icon: Calendar },
   { id: "research", label: "Research", icon: Search },
-  { id: "ai-cleaner", label: "Clean AI", icon: Eraser },
 ];
 
 export function Nav() {
@@ -28,7 +27,7 @@ export function Nav() {
   const [collapsed, setCollapsed] = useState(false);
 
   const item = (id: ScreenId, label: string, I: ComponentType<LucideProps>, badge?: number) => {
-    const on = screen === id || (id === "chats" && screen === "ai"); // Mirsal AI opens from Chats
+    const on = screen === id || (id === "chats" && screen === "ai"); // Messenger AI opens from Chats
     return <button key={id} className={`${s.navItem} ${on ? s.navItemActive : ""}`}
       onClick={() => actions.navigate(id)} aria-current={on ? "page" : undefined} title={collapsed ? label : undefined}>
       <I {...ICON} />
@@ -40,8 +39,8 @@ export function Nav() {
   return (
     <nav className={`${s.nav} ${collapsed ? s.navCollapsed : ""}`} aria-label="Main">
       <div className={s.brand}>
-        <img className={s.logo} src="/mirsal-logo.png" alt="" />
-        <span className={s.brandName}>Mirsal</span>
+        <span className={s.logo}>Messenger</span>
+        <span className={s.brandName}>Messenger</span>
         <button className={s.collapseBtn} onClick={() => setCollapsed((c) => !c)}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"} title={collapsed ? "Expand" : "Collapse"}>
           {collapsed ? <PanelLeftOpen {...ICON} /> : <PanelLeftClose {...ICON} />}

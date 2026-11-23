@@ -1,8 +1,8 @@
 """The fast path: unambiguous in-app commands are decided by rules without a model call; names always reach the model."""
 import pytest
 
-from mirsal_agents.deciders import NOBODY, NO_SCREEN, Decision, FastPathDecider, RuleDecider
-from mirsal_agents.engine import IntentEngine
+from messenger_agents.deciders import NOBODY, NO_SCREEN, Decision, FastPathDecider, RuleDecider
+from messenger_agents.engine import IntentEngine
 
 
 class CountingModel:
@@ -64,7 +64,7 @@ async def test_engine_acts_on_fast_decisions_and_reads_a_named_person_only_by_ex
 
 
 async def test_a_dangling_verb_asks_and_completes_with_the_next_turn(contacts):
-    from mirsal_agents.engine import Conversation
+    from messenger_agents.engine import Conversation
     conv = Conversation(RuleDecider(), contacts)
     conv.begin().partial("Open.", 0.0)
     (ask,) = await conv.finish(1.0)
@@ -75,7 +75,7 @@ async def test_a_dangling_verb_asks_and_completes_with_the_next_turn(contacts):
 
 
 async def test_a_full_command_is_not_held(contacts):
-    from mirsal_agents.engine import Conversation
+    from messenger_agents.engine import Conversation
     conv = Conversation(RuleDecider(), contacts)
     conv.begin().partial("open my mail", 0.0)
     assert [e.action for e in await conv.finish(1.0) if e.type == "act"] == ["open_screen"] and conv.carry == ""

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { retryTask } from "../ai/runAction";
 import { CalendarHeart, Check, CircleAlert, FileSignature, FileText, Image, Mail, Plane, Video } from "lucide-react";
-import type { MirsalTask, TaskType } from "../types";
+import type { MessengerTask, TaskType } from "../types";
 import { ICON, Spinner } from "../ui";
 import s from "./updates.module.css";
 
@@ -17,7 +17,7 @@ export function relativeTime(timestamp: number, now: number) {
   if (minutes < 1440) return `${Math.floor(minutes / 60)}h ago`;
   return `${Math.floor(minutes / 1440)}d ago`;
 }
-export function TaskStatus({ task, now }: { task: MirsalTask; now: number }) {
+export function TaskStatus({ task, now }: { task: MessengerTask; now: number }) {
   if (task.status === "failed") return <span className={s.failed}><CircleAlert {...ICON} /> Failed</span>;
   if (task.status === "queued") return <span className={s.status}>Queued <Spinner /></span>;
   if (task.status === "running") {
@@ -28,7 +28,7 @@ export function TaskStatus({ task, now }: { task: MirsalTask; now: number }) {
   }
   return <span className={s.status}>{relativeTime(task.completedAt ?? task.startedAt, now)} <Check {...ICON} className={s.ready} /></span>;
 }
-export function Retry({ task, notify }: { task: MirsalTask; notify: (text: string) => void }) {
+export function Retry({ task, notify }: { task: MessengerTask; notify: (text: string) => void }) {
   const [starting, setStarting] = useState(false);
   return <button className={s.retry} disabled={starting} onClick={async () => {
     setStarting(true);

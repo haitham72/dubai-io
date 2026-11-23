@@ -7,16 +7,16 @@ import {
 } from "lucide-react";
 import { actions, useStore } from "../store";
 import { Avatar, Badge, IconButton, ICON, ListRow, SearchField, SidebarHeader, Spinner } from "../ui";
-import type { Message, MirsalTask } from "../types";
-import { MirsalAiRow } from "../updates";
+import type { Message, MessengerTask } from "../types";
+import { MessengerAiRow } from "../updates";
 import { contacts } from "./data";
 import { useChat, useChatList } from "./list";
 import { MediaPanel } from "./MediaPanel";
-import { MirsalMessage } from "./MirsalCards";
+import { MessengerMessage } from "./MessengerCards";
 import { openResearchCard, ReportDoc } from "./ReportDoc";
 import { plainText } from "./skills";
 import { StickerMedia } from "./StickerMedia";
-import { askMirsal, chatMentions, mentionAt, retryMirsal, useMirsalRequests, type Mention } from "./mirsal";
+import { askMessenger, chatMentions, mentionAt, retryMessenger, useMessengerRequests, type Mention } from "./messenger";
 import { scheduleContactReply, useContactTyping } from "./autoReply";
 import s from "./chats.module.css";
 
@@ -32,8 +32,8 @@ function ChatsSidebar() {
         <IconButton icon={ListFilter} label="Filter" />
       </SidebarHeader>
       <SearchField placeholder="Search chats, tasks, files..." value={q} onChange={setQ} />
-      {/* Mirsal AI: agents, results and the assistant open in their own workspace. */}
-      <MirsalAiRow />
+      {/* Messenger AI: agents, results and the assistant open in their own workspace. */}
+      <MessengerAiRow />
       <div className={s.list}>
         {list.map((c) => (
           <ListRow
@@ -82,12 +82,12 @@ function Bubble({ m, showAvatar, people, onMediaLoad, onReply, focusRequest }: {
     return () => { cancelAnimationFrame(frame); window.clearTimeout(timer); };
   }, [focusRequest]);
   const meta = <span className={s.time}>{m.time}{m.fromMe && <CheckCheck size={14} />}</span>;
-  const [report, setReport] = useState<MirsalTask | null>(null);
-  const quote = m.replyTo && m.by !== "mirsal" && <span className={s.replyQuote}><strong>{m.replyTo.sender}</strong>{m.replyTo.text.slice(0, 120)}</span>;
+  const [report, setReport] = useState<MessengerTask | null>(null);
+  const quote = m.replyTo && m.by !== "messenger" && <span className={s.replyQuote}><strong>{m.replyTo.sender}</strong>{m.replyTo.text.slice(0, 120)}</span>;
 
   let content;
   if (b.kind === "ai" || b.kind === "choices" || b.kind === "plan") {
-    content = <MirsalMessage m={m} />;
+    content = <MessengerMessage m={m} />;
   } else if (b.kind === "sticker") {
     content = <div className={s.stickerMsg}><StickerMedia url={b.url} onLoad={onMediaLoad} />{meta}</div>;
   } else if (b.kind === "image") {
@@ -132,11 +132,11 @@ function Bubble({ m, showAvatar, people, onMediaLoad, onReply, focusRequest }: {
   } else {
     content = <div className={s.bubble}>{quote}<span>{mentionText(b.text, people)}</span>{meta}</div>;
   }
-  if (m.by === "mirsal" && b.kind !== "ai" && b.kind !== "choices" && b.kind !== "plan") content = <MirsalMessage m={m}>{content}</MirsalMessage>;
+  if (m.by === "messenger" && b.kind !== "ai" && b.kind !== "choices" && b.kind !== "plan") content = <MessengerMessage m={m}>{content}</MessengerMessage>;
 
   // Long-press to reply on touch screens (the hover button is for mouse users).
   const press = useRef(0);
-  const touchReply = m.by === "mirsal" ? {} : {
+  const touchReply = m.by === "messenger" ? {} : {
     onPointerDown: (e: React.PointerEvent) => { if (e.pointerType !== "mouse") press.current = window.setTimeout(() => onReply(m), 450); },
     onPointerUp: () => window.clearTimeout(press.current),
     onPointerMove: () => window.clearTimeout(press.current),
@@ -145,11 +145,11 @@ function Bubble({ m, showAvatar, people, onMediaLoad, onReply, focusRequest }: {
 
   return (
     <div ref={row} className={`${s.msgRow} ${m.fromMe ? s.out : s.in} ${b.kind === "plan" ? s.planRow : ""} ${highlight ? s.messageFocus : ""}`} {...touchReply}>
-      {!m.fromMe && <span className={s.avatarCol}>{m.by === "mirsal"
-        ? <span className={s.mirsalTile} aria-label="Mirsal"><Sparkles {...ICON} /></span>
+      {!m.fromMe && <span className={s.avatarCol}>{m.by === "messenger"
+        ? <span className={s.messengerTile} aria-label="Messenger"><Sparkles {...ICON} /></span>
         : showAvatar && contact && <Avatar src={contact.avatar} size={32} />}</span>}
       {content}
-      {m.by !== "mirsal" && <button className={s.replyBtn} aria-label="Reply" title="Reply" onClick={() => onReply(m)}><Reply size={16} /></button>}
+      {m.by !== "messenger" && <button className={s.replyBtn} aria-label="Reply" title="Reply" onClick={() => onReply(m)}><Reply size={16} /></button>}
     </div>
   );
 }
@@ -168,14 +168,14 @@ function Conversation() {
   const typingSender = useContactTyping(activeId);
   const isTyping = typingSender !== undefined;
   const typingLabel = typingSender ? `${typingSender} is typing…` : "typing…";
-  const requests = useMirsalRequests().filter(r => r.chatId === activeId);
+  const requests = useMessengerRequests().filter(r => r.chatId === activeId);
   const people = chatMentions(activeId, messages);
   const mention = dismissed ? null : mentionAt(draft, caret);
   const choices = mention ? people.filter(p => `${p.name} ${p.token}`.toLowerCase().includes(mention.query.toLowerCase())) : [];
   const selectedMention = Math.min(mentionIndex, Math.max(0, choices.length - 1));
-  // "@mirsal …" anywhere in the message (start, middle, or on a reply).
-  const isMirsal = /(?:^|\s)@mirsal(?:\b|$)/i.test(draft);
-  const requestText = draft.replace(/(?:^|\s)@mirsal\b[,:]?/i, ' ').replace(/\s+/g, ' ').trim();
+  // "@messenger …" anywhere in the message (start, middle, or on a reply).
+  const isMessenger = /(?:^|\s)@messenger(?:\b|$)/i.test(draft);
+  const requestText = draft.replace(/(?:^|\s)@messenger\b[,:]?/i, ' ').replace(/\s+/g, ' ').trim();
   const scroller = useRef<HTMLDivElement>(null);
   const followLatest = useRef(true);
   const onMediaLoad = () => {
@@ -210,11 +210,11 @@ function Conversation() {
   };
 
   const send = () => {
-    if (!draft.trim() || (isMirsal && !requestText)) return;
+    if (!draft.trim() || (isMessenger && !requestText)) return;
     const text = draft.trim();
     const quoted = replyTo ? quoteOf(replyTo) : undefined;
     const id = actions.sendToChat({ kind: "text", text }, activeId, quoted);
-    if (isMirsal) askMirsal(activeId, requestText, id, quoted);
+    if (isMessenger) askMessenger(activeId, requestText, id, quoted);
     else scheduleContactReply(activeId, chat.contact.name, text);
     setDraft(""); setCaret(0); setDismissed(true); setReplyTo(null);
   };
@@ -243,29 +243,29 @@ function Conversation() {
         {messages.map((m, i) => (
           <Bubble key={m.id} m={m} people={people} onMediaLoad={onMediaLoad} onReply={startReply} focusRequest={messageFocus?.id === m.id ? messageFocus.request : undefined} showAvatar={!m.fromMe && messages[i + 1]?.fromMe !== false} />
         ))}
-        {requests.map(r => <div key={`${r.chatId}-${r.taskId ?? r.id}`} className={s.mirsalLine} role="status">
+        {requests.map(r => <div key={`${r.chatId}-${r.taskId ?? r.id}`} className={s.messengerLine} role="status">
           <Sparkles {...ICON} /><span>{r.label}</span>
-          {r.status === 'failed' ? <><span>·</span><button onClick={() => void retryMirsal(r.id)}>Retry</button></> : r.status !== 'ready' && <Spinner />}
+          {r.status === 'failed' ? <><span>·</span><button onClick={() => void retryMessenger(r.id)}>Retry</button></> : r.status !== 'ready' && <Spinner />}
         </div>)}
         {isTyping && <div className={`${s.msgRow} ${s.in}`} role="status" aria-label={typingLabel}>
           <span className={s.avatarCol}><Avatar src={chat.contact.avatar} size={32} /></span>
           <div className={`${s.bubble} ${s.typingBubble}`} aria-hidden="true"><i /><i /><i /></div>
         </div>}
       </div>
-      <footer className={`${s.composer} ${isMirsal ? s.mirsalComposer : ''}`}>
+      <footer className={`${s.composer} ${isMessenger ? s.messengerComposer : ''}`}>
         {replyTo && <div className={s.replyBar}>
           <Reply size={16} /><span><strong>Replying to {replyTo.fromMe ? "yourself" : chat.contact.name}</strong>{plainText(replyTo).slice(0, 120)}</span>
           <button aria-label="Cancel reply" onClick={() => setReplyTo(null)}><X size={16} /></button>
         </div>}
-        {mention && <div id={`mentions-${activeId}`} className={s.mentionPopover} role="listbox" aria-label="Mention a person or Mirsal">
+        {mention && <div id={`mentions-${activeId}`} className={s.mentionPopover} role="listbox" aria-label="Mention a person or Messenger">
           <div className={s.mentionHeading}>Mention in this chat</div>
           {choices.length ? choices.map((person, i) => <button key={person.token} id={`mention-${activeId}-${i}`} role="option" aria-selected={i === selectedMention} className={`${s.mentionOption} ${i === selectedMention ? s.mentionSelected : ''}`} onMouseDown={e => e.preventDefault()} onClick={() => insertMention(person)}>
-            {person.face ? <Avatar src={person.face} size={32} /> : <span className={s.mirsalTile}><Sparkles {...ICON} /></span>}
+            {person.face ? <Avatar src={person.face} size={32} /> : <span className={s.messengerTile}><Sparkles {...ICON} /></span>}
             <span><strong>{person.name}</strong><small>{person.token}</small></span>
           </button>) : <div className={s.mentionEmpty}>No matching people.</div>}
         </div>}
         <IconButton icon={Paperclip} label="Attach" />
-        <input ref={input} className={s.input} placeholder={isMirsal ? "Ask Mirsal: is this true · create sticker of this · create image about this · setup plan for this…" : replyTo ? "Reply… (add @mirsal is this true to fact-check it)" : "Type a message..."} value={draft}
+        <input ref={input} className={s.input} placeholder={isMessenger ? "Ask Messenger: is this true · create sticker of this · create image about this · setup plan for this…" : replyTo ? "Reply… (add @messenger is this true to fact-check it)" : "Type a message..."} value={draft}
           aria-label="Message" role="combobox" aria-autocomplete="list" aria-expanded={!!mention} aria-controls={mention ? `mentions-${activeId}` : undefined} aria-activedescendant={mention && choices.length ? `mention-${activeId}-${selectedMention}` : undefined}
           onChange={e => { setDraft(e.target.value); setCaret(e.target.selectionStart ?? e.target.value.length); setDismissed(false); setMentionIndex(0); }}
           onSelect={e => setCaret(e.currentTarget.selectionStart ?? draft.length)} onBlur={() => setDismissed(true)}
@@ -281,7 +281,7 @@ function Conversation() {
           onSticker={(url, pack) => actions.sendToChat({ kind: "sticker", url, pack }, activeId)}
           onGif={g => { actions.sendToChat({ kind: "image", url: g.url }, activeId); setMedia(false); }} />}
         <IconButton icon={Mic} label="Voice message" />
-        <button className={s.send} aria-label="Send" disabled={!draft.trim() || (isMirsal && !requestText)} onClick={send}><Send {...ICON} size={18} /></button>
+        <button className={s.send} aria-label="Send" disabled={!draft.trim() || (isMessenger && !requestText)} onClick={send}><Send {...ICON} size={18} /></button>
       </footer>
     </>
   );

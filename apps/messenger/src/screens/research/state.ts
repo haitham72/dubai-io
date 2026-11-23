@@ -6,7 +6,7 @@ import { reports, makeReport, seedResults, watchCovers, type Report } from './da
 // The list = your own research (kept in this browser), the weekly watch briefs (agents service) and the hand-written
 // demo reports, each labelled. New research runs live (deep research on the agents service, else the server route);
 // if it can't finish it says so and offers Try again — it never shows canned findings under your topic.
-const SAVED = 'mirsal.research';
+const SAVED = 'messenger.research';
 const KEEP = 20;
 
 function loadSaved(): Report[] {

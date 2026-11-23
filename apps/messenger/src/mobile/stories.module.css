@@ -1,4 +1,4 @@
-/* Mirsal stories row + full-screen story viewer. */
+/* Messenger stories row + full-screen story viewer. */
 .band {
   margin: 0 calc(var(--s-4) * -1) var(--s-4); padding: var(--s-3) 0 var(--s-3);
   background: radial-gradient(260px 120px at 12% 0%, var(--ai-faint), transparent 70%), linear-gradient(180deg, var(--blue-soft), transparent);

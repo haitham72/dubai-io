@@ -23,7 +23,5 @@ export {
   getDiwanEvents, moreFromEventPicture, generateStickerOptions, listStickerPacks,
   bundledStickerPacks, searchGifs,
 } from "./apiclient/agents";
-export type { FactCheck, ImageIdeas, CommandWireEvent, LookAnswer } from "./apiclient/mirsal";
-export { mirsalFactCheck, mirsalImageIdeas, mirsalStickers, mirsalPlan, mirsalCommand, mirsalLook, photoForCheck } from "./apiclient/mirsal";
-export type { CleanMode, CleanJob, CleanerCapabilities, OpenAiVerify, CleanRun } from "./apiclient/cleaner";
-export { startCleanJob, getCleanJob, cleanFileUrl, verifyCleanImage, getCleanerCapabilities, runCleanJob, visibleStages, CLEAN_MODE_LABEL, FALLBACK_STAGES } from "./apiclient/cleaner";
+export type { FactCheck, ImageIdeas, CommandWireEvent, LookAnswer } from "./apiclient/messenger";
+export { messengerFactCheck, messengerImageIdeas, messengerStickers, messengerPlan, messengerCommand, messengerLook, photoForCheck } from "./apiclient/messenger";

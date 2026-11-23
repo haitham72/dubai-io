@@ -1,4 +1,4 @@
-// Mirsal AI — agents, their results and the conversation, in one workspace (replaces Mirsal Updates + AI Chat).
+// Messenger AI — agents, their results and the conversation, in one workspace (replaces Messenger Updates + AI Chat).
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   ArrowUp, Check, ChevronDown, Copy, Globe, Mic, MoreHorizontal,
@@ -65,7 +65,7 @@ function AISidebar() {
   }, {});
   const chatCount = aiContacts.filter((c) => c.id !== "new").length;
   return <div className={s.sidebar}>
-    <SidebarHeader title="Mirsal AI"><IconButton icon={SquarePen} label="New chat" onClick={ai.newChat} /></SidebarHeader>
+    <SidebarHeader title="Messenger AI"><IconButton icon={SquarePen} label="New chat" onClick={ai.newChat} /></SidebarHeader>
     <div className={s.sidebarScroll}>
       <Activity />
       <section>
@@ -154,7 +154,7 @@ function MicButton() {
     else if (stage === "listening") voice.stop();
     else voice.close();
   };
-  const label = stage === "listening" ? "Stop and send" : stage === "thinking" || stage === "speaking" ? "Stop voice" : "Talk to Mirsal";
+  const label = stage === "listening" ? "Stop and send" : stage === "thinking" || stage === "speaking" ? "Stop voice" : "Talk to Messenger";
   return <button className={`${s.micBtn} ${stage === "listening" ? s.micLive : ""}`} aria-label={label} title={label}
     aria-pressed={stage !== "idle" && stage !== "error"} onClick={onClick}><Mic {...ICON} /></button>;
 }
@@ -196,7 +196,7 @@ function Conversation() {
   }, [busy]);
   const regenerate = (id: string) => { const text = ai.prepareRegeneration(id); if (text) void sendUserMessage(text); };
   const share = async () => {
-    try { await navigator.clipboard.writeText(messages.map((m) => `${m.role === "user" ? "You" : "Mirsal AI"}: ${m.text}${m.imageUrl ? `\n${m.imageUrl}` : ""}`).join("\n\n")); setNotice("Conversation copied for sharing."); }
+    try { await navigator.clipboard.writeText(messages.map((m) => `${m.role === "user" ? "You" : "Messenger AI"}: ${m.text}${m.imageUrl ? `\n${m.imageUrl}` : ""}`).join("\n\n")); setNotice("Conversation copied for sharing."); }
     catch { setNotice("Could not copy this conversation."); }
   };
   const composer = <div className={s.composerWrap}>
@@ -213,15 +213,15 @@ function Conversation() {
         <button className={s.sendBtn} aria-label="Send message" disabled={!draft.trim() || busy} onClick={() => send(draft)}><ArrowUp {...ICON} /></button>
       </div>
     </div>
-    <div className={s.disclaimer}>Mirsal AI can make mistakes. Check important info.</div>
+    <div className={s.disclaimer}>Messenger AI can make mistakes. Check important info.</div>
     <VoiceStatus />
     {notice && <div className={s.notice} role="status">{notice}</div>}
   </div>;
   return <div className={s.main}>
     <header className={s.pageHeader}>
       <div className={s.headerControl}>
-        <button className={s.modelButton} aria-expanded={modelOpen} onClick={() => setModelOpen(!modelOpen)}>Mirsal AI · GPT-5<ChevronDown {...ICON} /></button>
-        {modelOpen && <div className={s.headerPopover}>GPT-5 · Mirsal’s AI assistant</div>}
+        <button className={s.modelButton} aria-expanded={modelOpen} onClick={() => setModelOpen(!modelOpen)}>Messenger AI · GPT-5<ChevronDown {...ICON} /></button>
+        {modelOpen && <div className={s.headerPopover}>GPT-5 · Messenger’s AI assistant</div>}
       </div>
       <div className={s.spacer} />
       <IconButton icon={Share} label="Share conversation" onClick={() => void share()} />

@@ -1,4 +1,4 @@
-# Mirsal agents service
+# Messenger agents service
 
 Phase-two proof of concept: the app's AI becomes real, one capability at a time, without changing the Vercel deploy.
 Python (FastAPI) in Docker with Redis, **local first**; the browser reaches it only through `src/api.ts` at `/agents/*`
@@ -10,12 +10,12 @@ Python (FastAPI) in Docker with Redis, **local first**; the browser reaches it o
 | **Deep research** | Plan → 5–6 parallel searches → full pages read → cited brief (sections, ranking for "best of" topics) → every claim checked against its sources, unsupported claims dropped → cached | Tavily + OpenAI (strict JSON schemas) | Labelled demo brief |
 | **Weekly watch** | Research topics that refresh on a schedule (`watchlist.json`) so the newest brief is ready first | as above | Demo brief |
 | **Gmail** | Real inbox, search, message bodies; send only from the compose button (server refuses unconfirmed sends) | Gmail API, OAuth, dedicated test account | App's demo inbox |
-| **@mirsal in chats** | Fact check with sources, on text or photos (vision model reads the photo first) · sticker packs · three image choices · trip plan (leave in the HR portal, flights, budget in local currency, group, reminders; a date in the request, e.g. "on 2 january", is kept) — all from the last 10 messages | OpenAI + Tavily (fact check, ideas); free FX API; existing flights route | Demo answers, bundled packs, demo images, rule-based planner |
-| **Memory** | Mirsal Updates tasks survive a reload; user facts; conversation log; research cache | Redis | In-process memory |
+| **@messenger in chats** | Fact check with sources, on text or photos (vision model reads the photo first) · sticker packs · three image choices · trip plan (leave in the HR portal, flights, budget in local currency, group, reminders; a date in the request, e.g. "on 2 january", is kept) — all from the last 10 messages | OpenAI + Tavily (fact check, ideas); free FX API; existing flights route | Demo answers, bundled packs, demo images, rule-based planner |
+| **Memory** | Messenger Updates tasks survive a reload; user facts; conversation log; research cache | Redis | In-process memory |
 | **Spend cap** | Every paid call is priced before it runs and refused past the cap; ledger survives restarts | — | — |
 | **Traces** | Every utterance, decision (with probabilities), action, outcome and research run → `GET /agents/trace` and `.data/trace.jsonl`; no audio stored | — | — |
-| **Clean AI Detection** | One single-GPU FIFO job backend (`resize` / `sdxl` / `resize_then_sdxl`, 50 MB jpg/png/webp, per-user jobs, server-owned stages); Apps screen + `@mirsal clean` chat skill; OpenAI provenance check only when the key is set | local GPU (CUDA torch + Pillow) + `remove-ai-watermarks==0.45.1`; OpenAI key for verify only | Service-off message in chat, demo in the screen |
-| **Look at a photo** | `POST /agents/mirsal/look`: the vision model answers a question about a chat photo (pixels, not the caption) | vision model key for live; seeded demo photo described offline | Falls back to the text-only answer |
+| **Clean AI Detection** | One single-GPU FIFO job backend (`resize` / `sdxl` / `resize_then_sdxl`, 50 MB jpg/png/webp, per-user jobs, server-owned stages); Apps screen + `@messenger clean` chat skill; OpenAI provenance check only when the key is set | local GPU (CUDA torch + Pillow) + `remove-ai-watermarks==0.45.1`; OpenAI key for verify only | Service-off message in chat, demo in the screen |
+| **Look at a photo** | `POST /agents/messenger/look`: the vision model answers a question about a chat photo (pixels, not the caption) | vision model key for live; seeded demo photo described offline | Falls back to the text-only answer |
 
 ## Current verification (2026-10-08)
 
@@ -39,12 +39,12 @@ Open **Chats → Arif Khan** (the Egypt-in-January conversation is at the bottom
 
 | Type | What happens |
 |---|---|
-| `@mirsal is this true` | Fact-checks Arif's last message ("Grand Egyptian Museum is fully open"): verdict chip, one-or-two-line answer, sources. Faint dashed frame = Mirsal, not a person |
-| Hover a message → ↩ Reply (phone: long-press), then `@mirsal is this true` | Checks *that* message (e.g. "Flights from DXB are short, under 4 hours") |
-| `@mirsal create sticker of this` | Picks the pack that matches the chat (Nile Days) from `public/stickers/<pack>/`; tap one to send it; **Another pack** shuffles |
-| `@mirsal create image about this` | Three images to choose from; tap one to share it |
-| `@mirsal setup plan for this` | Files leave 1–12 Jan 2027 in the Nadi demo connector (7 leave days thanks to New Year's Day + 2 weekends), mini calendar, top 3 flights for 4 travellers, AED 1,500 → EGP, **Create group** with Arif, Omar and Hana, reminder + leave added to Calendar, typical Cairo weather, documents check |
-| `@mirsal` anywhere else in a message | As before (images, video, flights, weather, answers), now with the chat as context and a faint Mirsal reply |
+| `@messenger is this true` | Fact-checks Arif's last message ("Grand Egyptian Museum is fully open"): verdict chip, one-or-two-line answer, sources. Faint dashed frame = Messenger, not a person |
+| Hover a message → ↩ Reply (phone: long-press), then `@messenger is this true` | Checks *that* message (e.g. "Flights from DXB are short, under 4 hours") |
+| `@messenger create sticker of this` | Picks the pack that matches the chat (Nile Days) from `public/stickers/<pack>/`; tap one to send it; **Another pack** shuffles |
+| `@messenger create image about this` | Three images to choose from; tap one to share it |
+| `@messenger setup plan for this` | Files leave 1–12 Jan 2027 in the Nadi demo connector (7 leave days thanks to New Year's Day + 2 weekends), mini calendar, top 3 flights for 4 travellers, AED 1,500 → EGP, **Create group** with Arif, Omar and Hana, reminder + leave added to Calendar, typical Cairo weather, documents check |
+| `@messenger` anywhere else in a message | As before (images, video, flights, weather, answers), now with the chat as context and a faint Messenger reply |
 
 Also: voice (mic in **AI Chat**) — "open my messages and text Mazen I'm on my way"; **Research** shows the weekly
 watch topics; **Mail** shows Gmail once the test account is linked (below).
@@ -55,7 +55,7 @@ watch topics; **Mail** shows Gmail once the test account is linked (below).
 cd agents
 python3 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
 redis-server --daemonize yes                      # or: docker compose up redis
-.venv/bin/uvicorn mirsal_agents.app:app --port 8787
+.venv/bin/uvicorn messenger_agents.app:app --port 8787
 # in the repo root: npm run dev → http://localhost:5173 (proxies /agents → :8787)
 
 docker compose up --build                         # alternative: service + Redis in containers
@@ -156,12 +156,12 @@ Python files, restart `npm run agents`.
 
 | File | Role |
 |---|---|
-| `mirsal_agents/app.py` + `routes/` | `Services` + lifespan in `app.py`; one route module per area (`health`, `voice`, `research`, `mail`, `mirsal`, `stickers`, `diwan`, `nadi`, `memory`, `cleaner`) + shared request models |
+| `messenger_agents/app.py` + `routes/` | `Services` + lifespan in `app.py`; one route module per area (`health`, `voice`, `research`, `mail`, `messenger`, `stickers`, `diwan`, `nadi`, `memory`, `cleaner`) + shared request models |
 | `catalog.py` · `deciders.py` · `engine.py` · `contacts.py` · `text.py` · `router.py` | action list · Decisions API + rule decider · streaming intent engine · recipient guard · language rules · traceable final clause plan |
 | `stt.py` · `session.py` | streaming transcription · one voice WebSocket |
 | `research.py` · `watch.py` · `watchlist.json` | deep research · scheduled topics |
 | `mcp_client.py` · `diwan.py` · `sticker_builder.py` | MCP client (Streamable HTTP) · Diwan events + Supabase images (max 3) + "more from this picture" (`more_from_image`) · Builder sticker packs (3 options) + GIPHY |
-| `chat_skills.py` → `skills/` | compat re-exports; real code in `skills/{base,factcheck,image_ideas,stickers,nadi,planner,look}.py` (@mirsal: fact check, image ideas, sticker packs, trip planner, Nadi demo connector, `clean`, look-at-photo) |
+| `chat_skills.py` → `skills/` | compat re-exports; real code in `skills/{base,factcheck,image_ideas,stickers,nadi,planner,look}.py` (@messenger: fact check, image ideas, sticker packs, trip planner, Nadi demo connector, `clean`, look-at-photo) |
 | `ai_cleaner.py` · `ai_cleaner_engine.py` | single-GPU FIFO jobs, per-user isolation, stage payloads, key-gated OpenAI verify · battle-tested engine (tuning in config.py `Cleaner`, `CLEANER_*` env — do not retune from code) |
 | `tools/demo_stickers.py` | writes the demo sticker packs to `public/stickers/` (+ `index.json` fallback manifest) |
 | `run.py` | `npm run agents` / `agents:test` / `agents:eval` (creates the venv, installs, runs) |
@@ -172,16 +172,16 @@ Python files, restart `npm run agents`.
 Moving to Vercel + Supabase later: the HTTP surface is plain JSON, and `store.py` is the only storage seam.
 The voice WebSocket would need a host that keeps sockets open (Vercel functions do not).
 
-## Connectors (Diwan, Mirsal Builder, Nadi, GIPHY, Gmail, Supabase)
+## Connectors (Diwan, Messenger Builder, Nadi, GIPHY, Gmail, Supabase)
 
 All built and waiting for a URL or key; `GET /agents/connectors` shows each one's state. Contracts, data locations and
 what each one needs to go live: [ARCHITECTURE.md](../ARCHITECTURE.md) §2–§5. Demo Diwan events live in
 `diwan_demo.json`; an event with `"pinned": true` (the Rashid anniversary) keeps its notification past its date.
 
-## Stickers: the Mirsal Builder Library and other packs
+## Stickers: the Messenger Builder Library and other packs
 
-1. **Mirsal Builder's approved packs, read in place** (`BuilderLibrary` in `skills/stickers.py`, re-exported by `chat_skills.py`): `MIRSAL_BUILDER_LIBRARY`,
-   default the sibling checkout's `Mirsal-Builder/mirsal/out/library` (`library.json` + `files/<batch>/<file>`). Only
+1. **Messenger Builder's approved packs, read in place** (`BuilderLibrary` in `skills/stickers.py`, re-exported by `chat_skills.py`): `MESSENGER_BUILDER_LIBRARY`,
+   default the sibling checkout's `Messenger-Builder/messenger/out/library` (`library.json` + `files/<batch>/<file>`). Only
    `packs` are listed (the Builder adds a pack after its review gates; `trash` is skipped), animated `.webm` first, ids
    `mb-<pack id>`, re-read whenever `library.json` changes — approve a pack in the Builder and it shows here. Never
    written; file paths are confined to `files/`.
@@ -190,7 +190,7 @@ what each one needs to go live: [ARCHITECTURE.md](../ARCHITECTURE.md) §2–§5.
 
 Both are served at `/agents/stickers/file/<pack>/<name>`. With the service off the app uses `public/stickers/index.json`.
 The composer's media panel (`src/chats/MediaPanel.tsx`) shows them; tags matched against the chat pick the pack for
-"@mirsal create sticker of this".
+"@messenger create sticker of this".
 
 Voice implementation map: `meeting.py` extracts reviewable fields; `tests/test_meeting.py` checks full streaming/final-only recovery and clarification; `tests/test_voice_session.py` checks long dictation and cancellation.
 

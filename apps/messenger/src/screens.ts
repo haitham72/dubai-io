@@ -12,7 +12,6 @@ import { filesScreen } from "./screens/files";
 import { mailScreen } from "./screens/mail";
 import { researchScreen } from "./screens/research";
 import { historyScreen } from "./screens/history";
-import { aiCleanerScreen } from "./screens/ai-cleaner";
 
 /** The contract every screen folder's index.tsx exports. Omit Sidebar for a full-width screen (e.g. Weather). */
 export interface Screen {
@@ -31,5 +30,4 @@ export const screens: Record<ScreenId, Screen> = {
   ai: aiScreen,
   research: researchScreen,
   history: historyScreen,
-  "ai-cleaner": aiCleanerScreen,
 };

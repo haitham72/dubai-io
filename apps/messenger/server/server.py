@@ -1,4 +1,4 @@
-"""Mirsal POC server. Owned by T02-server (see prompts/llm3-ai.md → "Build: server").
+"""Messenger POC server. Owned by T02-server (see prompts/llm3-ai.md → "Build: server").
 
 Contract (must match src/api.ts exactly):
   GET  /api/health                 -> {"ok": true}
@@ -28,7 +28,7 @@ from pydantic import BaseModel
 
 load_dotenv()
 
-app = FastAPI(title="Mirsal POC")
+app = FastAPI(title="Messenger POC")
 
 # ---------------------------------------------------------------- config ---
 
@@ -50,14 +50,14 @@ def _higgs_model() -> str:
 
 
 def _fake_images() -> bool:
-    return os.getenv("MIRSAL_FAKE_IMAGES", "") == "1"
+    return os.getenv("MESSENGER_FAKE_IMAGES", "") == "1"
 
 
 # Verified to load (curl → 200): classic beach photo used only for fake dev jobs.
-FAKE_IMAGE_URL = "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600"
+FAKE_IMAGE_URL = ""
 
 SYSTEM_PROMPT = (
-    "You are Mirsal AI, a concise and friendly assistant inside the Mirsal chat app. "
+    "You are Messenger AI, a concise and friendly assistant inside the Messenger chat app. "
     "Today's date is {today}. "
     "Use the tools when the user asks for an image, a video, flights, or weather; "
     "otherwise answer directly in plain markdown. "
@@ -413,13 +413,13 @@ def chat(body: ChatBody):
         if name == "generate_image" and args.get("prompt"):
             prompt = str(args["prompt"])
             return {
-                "text": "On it — generating your image. I'll post it in Mirsal Updates.",
+                "text": "On it — generating your image. I'll post it in Messenger Updates.",
                 "action": {"type": "image", "prompt": prompt},
             }
         if name == "generate_video" and args.get("prompt"):
             prompt = str(args["prompt"])
             return {
-                "text": "On it — creating your video. I'll post it in Mirsal Updates.",
+                "text": "On it — creating your video. I'll post it in Messenger Updates.",
                 "action": {"type": "video", "prompt": prompt},
             }
         if name == "search_flights" and args.get("from") and args.get("to") and args.get("depart"):

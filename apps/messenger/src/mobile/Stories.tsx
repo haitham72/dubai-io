@@ -1,6 +1,6 @@
-// Mirsal stories: every agentic task is a story circle above the chats (like the old app's story row).
+// Messenger stories: every agentic task is a story circle above the chats (like the old app's story row).
 //   "+ Ask"  — start a new task (voice)
-//   running  — live progress ring · new result — glowing Mirsal ring · seen — grey ring
+//   running  — live progress ring · new result — glowing Messenger ring · seen — grey ring
 // Tap a circle: its card scales up out of the circle; swipe left/right between tasks, scroll the card for details.
 // Finished images/videos share ONE "Studio" story: a card stacking them vertically (tap one → TikTok-style feed).
 // × on that card removes the whole stack (it flies off); swiping still pages between stories like any other card.
@@ -9,7 +9,7 @@ import { ChevronLeft, ChevronRight, Download, Heart, Maximize2, MessageCircle, P
 import { EsignDocument } from "../esign/Document";
 import { feed, useFeed } from "./feedState";
 import { actions, useStore } from "../store";
-import type { MirsalTask } from "../types";
+import type { MessengerTask } from "../types";
 import { taskIcons, relativeTime } from "../updates/common";
 import { EventPictures, eventChatItem } from "../updates/details/EventDetail";
 import { voice } from "../voice/state";
@@ -17,16 +17,16 @@ import { Activity, tone } from "./DynamicIsland";
 import { ORB } from "./parts";
 import s from "./stories.module.css";
 
-const label: Record<MirsalTask["type"], string> = { image: "Image", video: "Video", flight: "Flight", research: "Research", email: "Email", esign: "e-Sign", event: "Event" };
-const isRunning = (t: MirsalTask) => t.status === "running" || t.status === "queued";
-const isMedia = (t: MirsalTask) => t.status === "completed" && (t.result?.type === "image" || t.result?.type === "video");
-const mediaUrl = (t: MirsalTask) => t.result?.type === "image" ? t.result.imageUrl : t.result?.type === "video" ? t.result.videoUrl : "";
+const label: Record<MessengerTask["type"], string> = { image: "Image", video: "Video", flight: "Flight", research: "Research", email: "Email", esign: "e-Sign", event: "Event" };
+const isRunning = (t: MessengerTask) => t.status === "running" || t.status === "queued";
+const isMedia = (t: MessengerTask) => t.status === "completed" && (t.result?.type === "image" || t.result?.type === "video");
+const mediaUrl = (t: MessengerTask) => t.result?.type === "image" ? t.result.imageUrl : t.result?.type === "video" ? t.result.videoUrl : "";
 
 /** One story in the row: a single task, or the stack of every finished image/video. */
-interface Story { id: string; task?: MirsalTask; media?: MirsalTask[] }
+interface Story { id: string; task?: MessengerTask; media?: MessengerTask[] }
 const STACK = "studio-stack";
 
-function toStories(tasks: MirsalTask[]): Story[] {
+function toStories(tasks: MessengerTask[]): Story[] {
   const media = tasks.filter(isMedia);
   const out: Story[] = [];
   for (const t of tasks) {
@@ -36,7 +36,7 @@ function toStories(tasks: MirsalTask[]): Story[] {
   return out;
 }
 
-export function MirsalStories({ onOpenUpdates }: { onOpenUpdates: (taskId?: string) => void }) {
+export function MessengerStories({ onOpenUpdates }: { onOpenUpdates: (taskId?: string) => void }) {
   const all = useStore((st) => st.tasks);
   const tasks = useMemo(() => all.filter((t) => !t.dismissed), [all]);
   const stories = useMemo(() => toStories(tasks), [tasks]);
@@ -47,16 +47,16 @@ export function MirsalStories({ onOpenUpdates }: { onOpenUpdates: (taskId?: stri
   const summary = [unread && `${unread} new`, running && `${running} running`].filter(Boolean).join(" · ") || "All caught up";
 
   return (
-    <section className={s.band} aria-label="Mirsal">
+    <section className={s.band} aria-label="Messenger">
       <button className={s.bandHead} onClick={() => onOpenUpdates()}>
-        <b>Mirsal</b><span>{summary}</span>
+        <b>Messenger</b><span>{summary}</span>
         <span className={s.seeAll}>See all<ChevronRight size={16} strokeWidth={2} /></span>
       </button>
       <div className={s.row}>
         <button className={s.story} onClick={voice.start}>
           <span className={`${s.ring} ${s.ringNew}`}><span className={s.face}><img src={ORB} alt="" /></span></span>
           <span className={s.plus}><Plus size={14} strokeWidth={3} /></span>
-          <span className={s.name}>Ask Mirsal</span>
+          <span className={s.name}>Ask Messenger</span>
         </button>
         {stories.map((story, i) => {
           if (story.media) {
@@ -209,7 +209,7 @@ function StoryViewer({ stories, start, from, circleOf, onClose, onOpenUpdates }:
   const story = stories[index];
   if (!story) return null;
   return (
-    <div className={s.viewer} role="dialog" aria-label="Mirsal tasks">
+    <div className={s.viewer} role="dialog" aria-label="Messenger tasks">
       <button ref={backdrop} className={s.backdrop} aria-label="Close" onClick={close} />
       <div ref={card} className={s.card} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={() => { drag.current = null; reset(); }}>
         <div ref={pane} className={s.pane}>
@@ -232,7 +232,7 @@ function StoryViewer({ stories, start, from, circleOf, onClose, onOpenUpdates }:
 }
 
 /** The Studio stack: every finished image/video in one card, stacked vertically. Tap one → full-screen feed. */
-function StackPage({ media, onRemove, onClose }: { media: MirsalTask[]; onRemove: () => void; onClose: () => void }) {
+function StackPage({ media, onRemove, onClose }: { media: MessengerTask[]; onRemove: () => void; onClose: () => void }) {
   const liked = useFeed((f) => f.liked);
   const latest = media[0];
   return (
@@ -240,7 +240,7 @@ function StackPage({ media, onRemove, onClose }: { media: MirsalTask[]; onRemove
       <div className={s.grabber} />
       <header className={s.pageHead}>
         <img src={ORB} alt="" />
-        <span><b>Mirsal Studio</b><small>{media.length} {media.length === 1 ? "creation" : "creations"} · {relativeTime(latest.completedAt ?? latest.startedAt, Date.now())}</small></span>
+        <span><b>Messenger Studio</b><small>{media.length} {media.length === 1 ? "creation" : "creations"} · {relativeTime(latest.completedAt ?? latest.startedAt, Date.now())}</small></span>
         <button className={s.x} aria-label="Remove this stack" onClick={onRemove}><X size={20} strokeWidth={2} /></button>
       </header>
       <div className={s.stack}>
@@ -262,7 +262,7 @@ function StackPage({ media, onRemove, onClose }: { media: MirsalTask[]; onRemove
 }
 
 /** One task as a scrollable page: hero visual, details, actions. */
-function TaskPage({ task, onClose, onOpenUpdates }: { task: MirsalTask; onClose: () => void; onOpenUpdates: (id: string) => void }) {
+function TaskPage({ task, onClose, onOpenUpdates }: { task: MessengerTask; onClose: () => void; onOpenUpdates: (id: string) => void }) {
   const r = task.status === "completed" ? task.result : undefined;
   const media = r?.type === "image" || r?.type === "video";
   const [pick, setPick] = useState(""); // the event picture showing, which "Use in chat" shares
@@ -271,12 +271,12 @@ function TaskPage({ task, onClose, onOpenUpdates }: { task: MirsalTask; onClose:
       <div className={s.grabber} />
       <header className={s.pageHead}>
         <img src={ORB} alt="" />
-        <span><b>{task.title}</b><small>Mirsal · {relativeTime(task.completedAt ?? task.startedAt, Date.now())}</small></span>
+        <span><b>{task.title}</b><small>Messenger · {relativeTime(task.completedAt ?? task.startedAt, Date.now())}</small></span>
         <button className={s.x} aria-label="Close" onClick={onClose}><X size={20} strokeWidth={2} /></button>
       </header>
 
       {media && (
-        <button className={s.heroBtn} aria-label="Open in Mirsal Studio" onClick={() => { onClose(); feed.open(task.id); }}>
+        <button className={s.heroBtn} aria-label="Open in Messenger Studio" onClick={() => { onClose(); feed.open(task.id); }}>
           {r.type === "image" ? <img className={s.hero} src={r.imageUrl} alt={r.prompt} /> : <video className={s.hero} src={r.videoUrl} autoPlay muted loop playsInline />}
           <span className={s.heroHint}><Maximize2 size={14} strokeWidth={2.2} />Full screen</span>
         </button>
@@ -308,7 +308,7 @@ function TaskPage({ task, onClose, onOpenUpdates }: { task: MirsalTask; onClose:
           {r.event.titleAr && <p className={s.prompt} dir="rtl" lang="ar">{r.event.titleAr}</p>}
           <p className={s.meta}>{r.event.summary} · {r.event.source}</p>
         </>}
-        {!r && task.status !== "failed" && <p className={s.meta}>{task.subtitle}. Mirsal posts the result here and in the island when it&apos;s ready.</p>}
+        {!r && task.status !== "failed" && <p className={s.meta}>{task.subtitle}. Messenger posts the result here and in the island when it&apos;s ready.</p>}
         {task.status === "failed" && <p className={s.meta}>{task.error ?? "This task couldn't finish."}</p>}
       </div>
 

@@ -1,8 +1,8 @@
 import pytest
 
-from mirsal_agents.config import Prices
-from mirsal_agents.spend import Budget, BudgetExceeded, Usage
-from mirsal_agents.store import MemoryStore
+from messenger_agents.config import Prices
+from messenger_agents.spend import Budget, BudgetExceeded, Usage
+from messenger_agents.store import MemoryStore
 
 
 async def test_cap_refuses_the_call_that_would_cross_it(tmp_path):

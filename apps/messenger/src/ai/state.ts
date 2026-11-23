@@ -1,4 +1,4 @@
-// Mirsal AI local state: which conversation (or agent result) is open and the messages of each.
+// Messenger AI local state: which conversation (or agent result) is open and the messages of each.
 // Module-level so Sidebar and Main share it and threads survive leaving the screen.
 import { createStore } from "../storeFactory";
 import type { AiMessage } from "../types";

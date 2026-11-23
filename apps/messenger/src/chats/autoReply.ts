@@ -7,7 +7,7 @@ import { contacts } from './data';
 
 const groups = new Set(['travel', 'family', 'gaming', 'study']);
 const DELAY_MS = 1200;
-const REACT_WINDOW = 5; // a reaction to Mirsal reads only the last few messages
+const REACT_WINDOW = 5; // a reaction to Messenger reads only the last few messages
 interface Pending { revision: number; due: number; running: boolean; window: number; timer?: ReturnType<typeof setTimeout> }
 const pending = new Map<string, Pending>();
 // Empty sender means still waiting for the group member to be selected.
@@ -36,11 +36,11 @@ function historyText(body: MessageBody): string {
     case 'plan': return `trip plan: ${body.plan.title} — ${body.plan.summary}`;
   }
 }
-/** One line of history for the contact's model. Mirsal is the user's assistant: its replies sit on the user's side,
- *  clearly labelled, so the contact reacts to Mirsal instead of speaking as it. */
+/** One line of history for the contact's model. Messenger is the user's assistant: its replies sit on the user's side,
+ *  clearly labelled, so the contact reacts to Messenger instead of speaking as it. */
 function historyLine(m: Message) {
-  return m.by === 'mirsal'
-    ? { fromMe: true, text: `[Mirsal, the AI assistant in this chat, replied: ${historyText(m.body)}]` }
+  return m.by === 'messenger'
+    ? { fromMe: true, text: `[Messenger, the AI assistant in this chat, replied: ${historyText(m.body)}]` }
     : { fromMe: m.fromMe, text: historyText(m.body) };
 }
 function arm(chatId: string, contactName: string, entry: Pending) {
@@ -73,7 +73,7 @@ async function reply(chatId: string, contactName: string, entry: Pending) {
 }
 /** Called only from the user's composer send, never from Use in chat or incoming posts. */
 export function scheduleContactReply(chatId: string, contactName: string, text: string) {
-  if (!text.trim() || /^\s*@mirsal(?:\s|$)/i.test(text)) return;
+  if (!text.trim() || /^\s*@messenger(?:\s|$)/i.test(text)) return;
   const entry = pending.get(chatId) ?? { revision: 0, due: 0, running: false, window: 20 };
   entry.revision += 1; entry.due = Date.now() + DELAY_MS; entry.window = 20;
   if (entry.timer) clearTimeout(entry.timer);
@@ -82,7 +82,7 @@ export function scheduleContactReply(chatId: string, contactName: string, text: 
   arm(chatId, contactName, entry);
 }
 
-/** After Mirsal answers in a chat (fact check, plan, ideas…), the person or group reacts to it in character, reading
+/** After Messenger answers in a chat (fact check, plan, ideas…), the person or group reacts to it in character, reading
  *  only the last 5 messages — e.g. Arif replying to a "False" verdict on his own claim. */
 export function scheduleReaction(chatId: string) {
   const name = (contacts as Record<string, { name: string }>)[chatId]?.name ?? getState().extraChats.find(c => c.id === chatId)?.contact.name;

@@ -30,7 +30,7 @@
 .navCollapsed .me { justify-content: center; padding: var(--s-1); }
 
 /* zone B: module sidebar */
-.sidebar { position: relative; display: flex; flex-direction: column; width: var(--sidebar-width); flex-shrink: 0; background: var(--surface-solid); border-inline-end: 1px solid var(--border); z-index: 2; /* overlays (Mirsal Updates) extend out of here over zone C */ }
+.sidebar { position: relative; display: flex; flex-direction: column; width: var(--sidebar-width); flex-shrink: 0; background: var(--surface-solid); border-inline-end: 1px solid var(--border); z-index: 2; /* overlays (Messenger Updates) extend out of here over zone C */ }
 
 /* zone C: workspace */
 .main { position: relative; flex: 1; min-width: 0; display: flex; flex-direction: column; background: var(--surface); overflow: hidden; }

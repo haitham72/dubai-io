@@ -1,10 +1,10 @@
-// Seed Mirsal tasks shown in Mirsal Updates on load. Owned by LLM 1 (may enrich; keep the export name).
-import type { MirsalTask } from "../types";
+// Seed Messenger tasks shown in Messenger Updates on load. Owned by LLM 1 (may enrich; keep the export name).
+import type { MessengerTask } from "../types";
 import { img } from "../ui";
 
 const ago = (min: number) => Date.now() - min * 60_000;
 
-export const seedTasks: MirsalTask[] = [
+export const seedTasks: MessengerTask[] = [
   {
     id: "seed-esign", type: "esign", title: "Signature needed", subtitle: "e& yearly contract renewal · AED 300/month",
     status: "completed", startedAt: ago(3), completedAt: ago(2), unread: true,

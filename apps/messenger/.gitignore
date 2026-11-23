@@ -17,6 +17,6 @@ Slides/vids
 # Photo-window regression check: generated bundle (rebuilt by the test script)
 tests/photo-window/bundle.*
 # AI Image Cleaner: local model weights + job uploads (never committed)
-agents/mirsal_agents/models/
+agents/messenger_agents/models/
 agents/models/
 agents/.data/

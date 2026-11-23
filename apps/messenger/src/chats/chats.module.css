@@ -44,38 +44,38 @@
 
 /* Mention UI overlays the golden composer; its geometry stays unchanged. */
 .composer { position: relative; }
-/* Mirsal AI halo: a blue/cyan gradient ring that rotates, with a soft blurred glow outside it. */
-.mirsalComposer {
+/* Messenger AI halo: a blue/cyan gradient ring that rotates, with a soft blurred glow outside it. */
+.messengerComposer {
   position: relative; isolation: isolate;
   border: 1.5px solid transparent;
   background: conic-gradient(from var(--ai-angle), var(--ai-cyan), var(--ai-blue) 25%, var(--ai-faint) 50%, var(--ai-blue) 75%, var(--ai-cyan)) border-box;
   animation: aiSpin 6s linear infinite;
 }
-.mirsalComposer::before {
+.messengerComposer::before {
   content: ""; position: absolute; inset: -2px; z-index: -1; border-radius: inherit; pointer-events: none;
   background: conic-gradient(from var(--ai-angle), var(--ai-cyan), var(--ai-blue) 25%, var(--ai-faint) 50%, var(--ai-blue) 75%, var(--ai-cyan));
   filter: blur(10px); opacity: 0.45;
   animation: aiSpin 6s linear infinite;
 }
 /* White fill above the glow, so the halo only shows around the outside. */
-.mirsalComposer::after {
+.messengerComposer::after {
   content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none;
   background: var(--surface-solid);
 }
 @keyframes aiSpin { to { --ai-angle: 360deg; } }
-@media (prefers-reduced-motion: reduce) { .mirsalComposer, .mirsalComposer::before { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .messengerComposer, .messengerComposer::before { animation: none; } }
 .mentionPopover { position: absolute; inset-inline-start: var(--s-3); bottom: calc(100% + var(--s-2)); width: 320px; max-height: 340px; overflow-y: auto; padding: var(--s-2); background: var(--surface-solid); border: 1px solid var(--border-strong); border-radius: var(--r-md); box-shadow: var(--shadow-md); z-index: var(--z-vertical); }
 .mentionHeading { color: var(--text-3); font-size: var(--fs-xs); padding: var(--s-2) var(--s-3); }
 .mentionOption { display: flex; align-items: center; gap: var(--s-3); width: 100%; text-align: start; padding: var(--s-2) var(--s-3); border-radius: var(--r-sm); }
 .mentionOption:hover, .mentionSelected { background: var(--bubble-in); }
 .mentionOption strong { display: block; font-size: var(--fs-sm); font-weight: 600; }
 .mentionOption small { display: block; margin-top: var(--s-1); font-size: var(--fs-xs); color: var(--text-2); }
-.mirsalTile { display: grid; place-items: center; width: 32px; height: 32px; border-radius: var(--r-sm); color: var(--purple); background: var(--lavender); }
+.messengerTile { display: grid; place-items: center; width: 32px; height: 32px; border-radius: var(--r-sm); color: var(--purple); background: var(--lavender); }
 .mentionEmpty { color: var(--text-2); font-size: var(--fs-sm); padding: var(--s-3); }
 .mentionText { color: var(--blue); font-weight: 650; }
-.mirsalLine { display: flex; align-items: center; justify-content: center; gap: var(--s-2); align-self: center; color: var(--text-2); font-size: var(--fs-xs); padding: var(--s-2) 0; }
-.mirsalLine > svg { color: var(--purple); }
-.mirsalLine button { color: var(--blue); text-decoration: underline; }
+.messengerLine { display: flex; align-items: center; justify-content: center; gap: var(--s-2); align-self: center; color: var(--text-2); font-size: var(--fs-xs); padding: var(--s-2) 0; }
+.messengerLine > svg { color: var(--purple); }
+.messengerLine button { color: var(--blue); text-decoration: underline; }
 .flightCardLink { position: absolute; inset: 0; border-radius: inherit; }
 .flightCardLink:hover { background: var(--blue-soft); }
 .send:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -111,7 +111,7 @@
   .mentionPopover { width: calc(100vw - var(--s-6)); inset-inline-start: 0; }
 }
 
-/* Replies (quote a message; "@mirsal is this true" on a reply checks that message) */
+/* Replies (quote a message; "@messenger is this true" on a reply checks that message) */
 .replyBtn { align-self: center; opacity: 0; display: grid; place-items: center; width: 28px; height: 28px; border-radius: var(--r-pill); color: var(--text-2); transition: opacity 0.15s; }
 .msgRow:hover .replyBtn, .replyBtn:focus-visible { opacity: 1; }
 .replyBtn:hover { background: var(--hover); color: var(--text); }

@@ -16,10 +16,10 @@ function seedOnce() {
   if (seeded) return;
   seeded = true;
   let flag = false;
-  try { flag = !!localStorage.getItem('mirsal.calendarSeeded'); } catch { /* storage unavailable */ }
+  try { flag = !!localStorage.getItem('messenger.calendarSeeded'); } catch { /* storage unavailable */ }
   if (!getState().events.length && !flag) {
     seedEvents(new Date()).forEach(e => actions.addEvent(e));
-    try { localStorage.setItem('mirsal.calendarSeeded', '1'); } catch { /* store still works in memory */ }
+    try { localStorage.setItem('messenger.calendarSeeded', '1'); } catch { /* store still works in memory */ }
   }
 }
 function Sidebar() {

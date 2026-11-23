@@ -30,6 +30,14 @@ D4 keeps the 19 Nov AI workspace. D3 leaves Community’s `chat_*` tables parked
 
 Transport stays open for P2: a cookie-authenticated FastAPI WebSocket until B0 identity exists. O2, the final name, stays open. No application code. No file outside `docs/submissions/messenger/` was edited.
 
+## 23 Nov 2026 — MG-B1 and MG-B2 (Cursor)
+
+Dubai-io API suite before the snapshot, from `apps/api` with the main worktree interpreter: 409 passed, 12 skipped, 3 failed. The failures are `test_filesystem_is_scoped` (a symlink the process cannot create on this Windows login) and two try-on tests that need `python-multipart` in that interpreter. Nothing under `apps/api` was edited.
+
+Imported agents suite, before the drops: 200 passed, 1 skipped. After the drops and the rebrand: 158 passed, 1 skipped. Typecheck (`tsc -b --noEmit` and `tsc -p tsconfig.api.json --noEmit`) passed.
+
+Concept sheets and screen frames were removed after the opened frames showed the old name or the M mark. Video clips and motion-graphics audio and photos were kept and were not frame-checked.
+
 ## 23 Nov 2026 — founder confirmation (Cursor)
 
 The founder confirmed M0 and approved MG-B1 and MG-B2 only. Concept sheets, the named screen frames, the video clips, and the motion-graphics audio and photos are kept, except images that show the old name or logo, and except the dynamic-island scrapes. The Diwan connector, the Nadi connector, and watermark removal are dropped. User stickers, when that later slice is approved, use U²-Net (Apache-2.0, official repository, checked 23 Nov 2026) for any subject. MediaPipe selfie segmentation is only a fallback. Transport and the final name stay open.

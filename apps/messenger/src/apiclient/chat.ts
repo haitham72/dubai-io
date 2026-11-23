@@ -15,19 +15,19 @@ export interface AiReply {
 }
 
 /** Where the chat model lives. Without it, a request like "open my last chat" gets the stock "I can't access
- *  external chat programs" — but in Mirsal the chats, mail and calendar are this app, and voice/@mirsal act on them. */
-const MIRSAL_CONTEXT =
-  "You are inside the Mirsal app itself: the person's chats, mail, calendar, research reports and Mirsal Updates are " +
-  "in this app, not an external program. Mirsal acts on them through voice commands (mic button) and @mirsal in a " +
+ *  external chat programs" — but in Messenger the chats, mail and calendar are this app, and voice/@messenger act on them. */
+const MESSENGER_CONTEXT =
+  "You are inside the Messenger app itself: the person's chats, mail, calendar, research reports and Messenger Updates are " +
+  "in this app, not an external program. Messenger acts on them through voice commands (mic button) and @messenger in a " +
   "chat: open a chat or 'my last chat', read messages aloud, send or reply to a message, write an email, check " +
-  "notifications, plan a trip, research a topic, fact-check with '@mirsal is this true'. If the person asks for one " +
+  "notifications, plan a trip, research a topic, fact-check with '@messenger is this true'. If the person asks for one " +
   "of those here, never say you can't access a chat app: say briefly which words to use (for example 'say: open my " +
   "chat with Arif'), or answer what you can. Never claim you already did an action in the app.";
 
 export async function askAi(history: Pick<AiMessage, "role" | "text">[]): Promise<AiReply> {
   return json<AiReply>(await fetch("/api/chat", {
     method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ messages: [{ role: "system", text: MIRSAL_CONTEXT }, ...history] }),
+    body: JSON.stringify({ messages: [{ role: "system", text: MESSENGER_CONTEXT }, ...history] }),
   }));
 }
 

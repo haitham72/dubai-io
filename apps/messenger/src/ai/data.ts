@@ -9,7 +9,7 @@ export const suggestionChips = [
   "Flights Dubai to London next Friday",
   "Weather in London",
   "Summarise my emails",
-  "Make a promo video for Mirsal",
+  "Make a promo video for Messenger",
 ];
 
 export const aiContacts = [

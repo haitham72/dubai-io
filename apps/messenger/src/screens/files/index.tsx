@@ -245,7 +245,7 @@ function PagedPhotos({ photos, total, onOpen }: { photos: PhotoHit[]; total: num
   );
 }
 
-/** "AI generated" folder tile: a 2×2 collage of the newest Mirsal generations. */
+/** "AI generated" folder tile: a 2×2 collage of the newest Messenger generations. */
 function GeneratedFolder({ items, onOpen }: { items: PhotoHit[]; onOpen: () => void }) {
   const cells = [0, 1, 2, 3].map((i) => items[i]);
   return (
@@ -300,14 +300,14 @@ function FilesMain() {
   const { category, photos, photosTotal, photosLoading } = useFiles();
   const [starredFiles, setStarredFiles] = useState<Set<string>>(new Set());
 
-  // Mirsal-generated images/videos (completed, not dismissed) live under the Generated category.
+  // Messenger-generated images/videos (completed, not dismissed) live under the Generated category.
   const tasks = useStore((st) => st.tasks);
   const generated: PhotoHit[] = [];
   for (const t of tasks) {
     if (t.status !== "completed" || t.dismissed || !t.result) continue;
     if (t.result.type !== "image" && t.result.type !== "video") continue;
     const url = t.result.type === "image" ? t.result.imageUrl : t.result.videoUrl;
-    generated.push({ file: t.id, meta: { account: "mirsal", event: t.title }, caption: "", tags: [], url });
+    generated.push({ file: t.id, meta: { account: "messenger", event: t.title }, caption: "", tags: [], url });
   }
 
   // Photo search. Typing (2+ chars) fuzzy-filters the loaded photos instantly;
@@ -444,7 +444,7 @@ function FilesMain() {
               {live.length === 0 ? (
                 <div className={s.emptyState}>
                   <div className={s.emptyIcon}><Search size={20} strokeWidth={ICON.strokeWidth} /></div>
-                  <div>{photos.length === 0 ? "Loading the photo collection…" : "Nothing matches by name. Press Enter and Mirsal will search by meaning."}</div>
+                  <div>{photos.length === 0 ? "Loading the photo collection…" : "Nothing matches by name. Press Enter and Messenger will search by meaning."}</div>
                 </div>
               ) : (
                 <PhotoGrid photos={live.slice(0, 48)} onOpen={setViewer} />
@@ -518,7 +518,7 @@ function FilesMain() {
               generated.length === 0 ? (
                 <div className={s.emptyState}>
                   <div className={s.emptyIcon}><Sparkles size={20} strokeWidth={ICON.strokeWidth} /></div>
-                  <div>No generated images yet — ask Mirsal to create one.</div>
+                  <div>No generated images yet — ask Messenger to create one.</div>
                 </div>
               ) : (
                 <div className={s.photoGrid}>
@@ -527,7 +527,7 @@ function FilesMain() {
                       <div className={s.photoThumb}><img src={h.url} alt={titleCase(h.meta.event)} loading="lazy" /></div>
                       <div className={s.photoInfo}>
                         <div className={s.photoTitle}>{titleCase(h.meta.event)}</div>
-                        <div className={s.photoMeta}>Mirsal generated</div>
+                        <div className={s.photoMeta}>Messenger generated</div>
                       </div>
                     </button>
                   ))}

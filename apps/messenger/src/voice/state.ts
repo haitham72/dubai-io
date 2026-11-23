@@ -1,4 +1,4 @@
-// Mirsal voice mode: listen → transcribe (OpenAI) → Mirsal AI (same chat + actions) → speak the answer (OpenAI TTS).
+// Messenger voice mode: listen → transcribe (OpenAI) → Messenger AI (same chat + actions) → speak the answer (OpenAI TTS).
 // With the agents service running (commands.ts), speech becomes commands: streamed while the person speaks when live
 // speech-to-text is on, otherwise the transcript below is sent to it. Anything that isn't a command goes to the chat.
 // The phone shell shows it in the Dynamic Island, Siri-style; `level` (0–1) drives the orb's pulse.
@@ -49,7 +49,7 @@ let live: { stream: CommandStream; node: AudioWorkletNode; sink: GainNode } | nu
 const PCM_WORKLET = `class P extends AudioWorkletProcessor{constructor(){super();this.r=sampleRate/24000;this.a=0;this.s=0;this.n=0;this.b=[]}
 process(i){const c=i[0]&&i[0][0];if(!c)return true;for(let k=0;k<c.length;k++){this.s+=c[k];this.n+=1;this.a+=1;if(this.a>=this.r){this.a-=this.r;
 const v=Math.max(-1,Math.min(1,this.s/this.n));this.s=0;this.n=0;this.b.push(v<0?v*32768:v*32767)}}if(this.b.length>=2400){const o=new Int16Array(this.b);
-this.b=[];this.port.postMessage(o.buffer,[o.buffer])}return true}}registerProcessor("mirsal-pcm24k",P);`;
+this.b=[];this.port.postMessage(o.buffer,[o.buffer])}return true}}registerProcessor("messenger-pcm24k",P);`;
 let workletReady: Promise<void> | null = null;
 
 /** Feed `level` from an audio node (mic or the spoken reply). Returns a stop function. */
@@ -141,7 +141,7 @@ async function answer(id: number, blob: Blob) {
   await chatAnswer(id, text);
 }
 
-/** A decided command: show what happened and say it; a question is spoken and Mirsal listens again for the answer. */
+/** A decided command: show what happened and say it; a question is spoken and Messenger listens again for the answer. */
 async function finishCommand(id: number, outcome: Outcome) {
   if (outcome.chat) return chatAnswer(id, outcome.chat);
   const reply = outcome.reply || "Done";
@@ -225,7 +225,7 @@ export const voice = {
     } catch (err) {
       const denied = err instanceof DOMException && (err.name === "NotAllowedError" || err.name === "SecurityError");
       failAndClose(id, denied
-        ? "Mirsal couldn't reach the microphone — tap again. If it repeats: Settings › Apps › Safari › Microphone › Allow."
+        ? "Messenger couldn't reach the microphone — tap again. If it repeats: Settings › Apps › Safari › Microphone › Allow."
         : `The microphone isn't available (${why(err)})`);
     }
   },
@@ -261,7 +261,7 @@ async function startStreaming(id: number): Promise<boolean> {
       set({ transcript: text });
     }, () => { if (id === run) holdingReply = true; });
     if (!stream || id !== run) { stream?.close(); return false; }
-    const node = new AudioWorkletNode(audioCtx!, "mirsal-pcm24k");
+    const node = new AudioWorkletNode(audioCtx!, "messenger-pcm24k");
     const sink = audioCtx!.createGain();
     sink.gain.value = 0; // the node must reach the destination to run; silent
     node.port.onmessage = (m) => stream.audio(m.data as ArrayBuffer);

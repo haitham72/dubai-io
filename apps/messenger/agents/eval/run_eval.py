@@ -24,11 +24,11 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
 
-from mirsal_agents.catalog import BY_NAME  # noqa: E402
-from mirsal_agents.contacts import Contact  # noqa: E402
-from mirsal_agents.deciders import Decision, RuleDecider  # noqa: E402
-from mirsal_agents.engine import Conversation, Event, Policy  # noqa: E402
-from mirsal_agents.text import norm  # noqa: E402
+from messenger_agents.catalog import BY_NAME  # noqa: E402
+from messenger_agents.contacts import Contact  # noqa: E402
+from messenger_agents.deciders import Decision, RuleDecider  # noqa: E402
+from messenger_agents.engine import Conversation, Event, Policy  # noqa: E402
+from messenger_agents.text import norm  # noqa: E402
 
 
 class Delayed:
@@ -287,10 +287,10 @@ async def main() -> None:
     if args.live:
         from openai import AsyncOpenAI
 
-        from mirsal_agents.config import Settings
-        from mirsal_agents.deciders import ModelDecider
-        from mirsal_agents.spend import Budget
-        from mirsal_agents.store import connect
+        from messenger_agents.config import Settings
+        from messenger_agents.deciders import ModelDecider
+        from messenger_agents.spend import Budget
+        from messenger_agents.store import connect
         cfg = Settings()
         if not cfg.openai_live:
             sys.exit("Live run needs AGENTS_LIVE=1 and OPENAI_API_KEY (and the owner's go-ahead).")

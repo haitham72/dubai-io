@@ -1,4 +1,4 @@
-# Mirsal Architecture & Cheat Sheet
+# Messenger Architecture & Cheat Sheet
 
 A concise, high-yield guide covering **100% of the working application**: architecture, complete folder map, key runtime engines, and the exact protocol when backend teams ask you to update fields or endpoints.
 
@@ -37,38 +37,38 @@ A concise, high-yield guide covering **100% of the working application**: archit
 ### Core Shell & Application Wiring
 | Path | What Happens Here |
 |---|---|
-| [`src/App.tsx`](file:///g:/Haitham/VsCode/Mirsal-redesign/src/App.tsx) | **Main Root:** Checks viewport; renders `MacDesktop` or `MobileApp`. Mounts screen, sidebar, modals, command cards, and quick cards. |
-| [`src/screens.ts`](file:///g:/Haitham/VsCode/Mirsal-redesign/src/screens.ts) | **Screen Registry:** Central dictionary mapping route IDs to their component (`Sidebar` + `Main`). |
-| [`src/types.ts`](file:///g:/Haitham/VsCode/Mirsal-redesign/src/types.ts) | **Single Type Authority:** Shared contracts for Chat, Messages, Trip Plans, Flights, Cleaner, Tasks. |
-| [`src/store.ts`](file:///g:/Haitham/VsCode/Mirsal-redesign/src/store.ts) | **Global Reactive Store:** Screen state, active chat, messages, Mirsal tasks, email drafts, calendar events, theme & wallpaper. |
-| [`src/shell/`](file:///g:/Haitham/VsCode/Mirsal-redesign/src/shell) | **Desktop Frame:** macOS window chrome (traffic lights, titlebar, dock, blur backdrop, navigation rail `Nav.tsx`). |
-| [`src/mobile/`](file:///g:/Haitham/VsCode/Mirsal-redesign/src/mobile) | **Mobile Subsystem:** iPhone 17 Pro Max shell, `DynamicIsland.tsx` live activities, bottom `Sheet.tsx`, stories feed, and touch gestures. |
+| [`src/App.tsx`](file:///g:/Haitham/VsCode/Messenger-redesign/src/App.tsx) | **Main Root:** Checks viewport; renders `MacDesktop` or `MobileApp`. Mounts screen, sidebar, modals, command cards, and quick cards. |
+| [`src/screens.ts`](file:///g:/Haitham/VsCode/Messenger-redesign/src/screens.ts) | **Screen Registry:** Central dictionary mapping route IDs to their component (`Sidebar` + `Main`). |
+| [`src/types.ts`](file:///g:/Haitham/VsCode/Messenger-redesign/src/types.ts) | **Single Type Authority:** Shared contracts for Chat, Messages, Trip Plans, Flights, Cleaner, Tasks. |
+| [`src/store.ts`](file:///g:/Haitham/VsCode/Messenger-redesign/src/store.ts) | **Global Reactive Store:** Screen state, active chat, messages, Messenger tasks, email drafts, calendar events, theme & wallpaper. |
+| [`src/shell/`](file:///g:/Haitham/VsCode/Messenger-redesign/src/shell) | **Desktop Frame:** macOS window chrome (traffic lights, titlebar, dock, blur backdrop, navigation rail `Nav.tsx`). |
+| [`src/mobile/`](file:///g:/Haitham/VsCode/Messenger-redesign/src/mobile) | **Mobile Subsystem:** iPhone 17 Pro Max shell, `DynamicIsland.tsx` live activities, bottom `Sheet.tsx`, stories feed, and touch gestures. |
 
 ### Working Features & Screen Modules
 | Feature / Screen | Path | Responsibilities & Details |
 |---|---|---|
-| **Chats & AI Assistant** | [`src/chats/`](file:///g:/Haitham/VsCode/Mirsal-redesign/src/chats) & [`src/ai/`](file:///g:/Haitham/VsCode/Mirsal-redesign/src/ai) | Messaging threads, voice notes, stickers, quoted replies, `@mirsal` assistant tags, interactive `TripPlan` cards. |
-| **Voice Command Engine** | [`src/voice/`](file:///g:/Haitham/VsCode/Mirsal-redesign/src/voice) | Real-time speech/command orchestrator (`CommandCard.tsx`, `state.ts`). Connects via WebSocket to parse commands into UI actions. |
-| **Updates & Tasks Tray** | [`src/updates/`](file:///g:/Haitham/VsCode/Mirsal-redesign/src/updates) | "Mirsal Updates" notification tray (`Tray.tsx`, `Collapsed.tsx`). Manages background agent tasks, Diwan events, and status cards. |
-| **Quick Action Overlays** | [`src/quick/`](file:///g:/Haitham/VsCode/Mirsal-redesign/src/quick) | Flyout cards (`QuickCards.tsx`) that display flight search results or email drafts floating over any active screen. |
-| **AI Cleaner & Detection**| [`src/screens/ai-cleaner/`](file:///g:/Haitham/VsCode/Mirsal-redesign/src/screens/ai-cleaner) | Uploads images to clean AI artifacts (Resize, SDXL, Resize+SDXL). Polls progress checklist and outputs PSNR quality scores. |
-| **Flights Workspace** | [`src/screens/flights/`](file:///g:/Haitham/VsCode/Mirsal-redesign/src/screens/flights) | Airport autocompletion, route search, departure/return dates, interactive flight result cards. |
-| **Mail & Compose** | [`src/screens/mail/`](file:///g:/Haitham/VsCode/Mirsal-redesign/src/screens/mail) | Mail inbox, draft generator (e.g. vacation requests drafted by `@mirsal` trip planner), and compose view. |
-| **Calendar** | [`src/screens/calendar/`](file:///g:/Haitham/VsCode/Mirsal-redesign/src/screens/calendar) | Schedule planner, month view, event booking automatically wired from chat trip plans. |
-| **Stocks & Market** | [`src/screens/stocks/`](file:///g:/Haitham/VsCode/Mirsal-redesign/src/screens/stocks) | Real-time watchlist, market cards, percentage gainers/losers. |
-| **Weather** | [`src/screens/weather/`](file:///g:/Haitham/VsCode/Mirsal-redesign/src/screens/weather) | Direct Open-Meteo live integration with local forecast, hourly temps, and rain probabilities. |
-| **Files & Documents** | [`src/screens/files/`](file:///g:/Haitham/VsCode/Mirsal-redesign/src/screens/files) | Cloud file browser, photos search index, and document preview. |
-| **E-Sign** | [`src/esign/`](file:///g:/Haitham/VsCode/Mirsal-redesign/src/esign) | Document signing canvas and verification state. |
-| **Research & History** | [`src/screens/research/`](file:///g:/Haitham/VsCode/Mirsal-redesign/src/screens/research) & [`src/screens/history/`](file:///g:/Haitham/VsCode/Mirsal-redesign/src/screens/history) | Deep research synthesis briefs, source link citations, and agent execution history. |
-| **Profile & Settings** | [`src/profile/`](file:///g:/Haitham/VsCode/Mirsal-redesign/src/profile) | User modal, security preferences, theme toggler (Light / Dark / System), and desktop wallpapers. |
+| **Chats & AI Assistant** | [`src/chats/`](file:///g:/Haitham/VsCode/Messenger-redesign/src/chats) & [`src/ai/`](file:///g:/Haitham/VsCode/Messenger-redesign/src/ai) | Messaging threads, voice notes, stickers, quoted replies, `@messenger` assistant tags, interactive `TripPlan` cards. |
+| **Voice Command Engine** | [`src/voice/`](file:///g:/Haitham/VsCode/Messenger-redesign/src/voice) | Real-time speech/command orchestrator (`CommandCard.tsx`, `state.ts`). Connects via WebSocket to parse commands into UI actions. |
+| **Updates & Tasks Tray** | [`src/updates/`](file:///g:/Haitham/VsCode/Messenger-redesign/src/updates) | "Messenger Updates" notification tray (`Tray.tsx`, `Collapsed.tsx`). Manages background agent tasks, Diwan events, and status cards. |
+| **Quick Action Overlays** | [`src/quick/`](file:///g:/Haitham/VsCode/Messenger-redesign/src/quick) | Flyout cards (`QuickCards.tsx`) that display flight search results or email drafts floating over any active screen. |
+| **AI Cleaner & Detection**| [`src/screens/ai-cleaner/`](file:///g:/Haitham/VsCode/Messenger-redesign/src/screens/ai-cleaner) | Uploads images to clean AI artifacts (Resize, SDXL, Resize+SDXL). Polls progress checklist and outputs PSNR quality scores. |
+| **Flights Workspace** | [`src/screens/flights/`](file:///g:/Haitham/VsCode/Messenger-redesign/src/screens/flights) | Airport autocompletion, route search, departure/return dates, interactive flight result cards. |
+| **Mail & Compose** | [`src/screens/mail/`](file:///g:/Haitham/VsCode/Messenger-redesign/src/screens/mail) | Mail inbox, draft generator (e.g. vacation requests drafted by `@messenger` trip planner), and compose view. |
+| **Calendar** | [`src/screens/calendar/`](file:///g:/Haitham/VsCode/Messenger-redesign/src/screens/calendar) | Schedule planner, month view, event booking automatically wired from chat trip plans. |
+| **Stocks & Market** | [`src/screens/stocks/`](file:///g:/Haitham/VsCode/Messenger-redesign/src/screens/stocks) | Real-time watchlist, market cards, percentage gainers/losers. |
+| **Weather** | [`src/screens/weather/`](file:///g:/Haitham/VsCode/Messenger-redesign/src/screens/weather) | Direct Open-Meteo live integration with local forecast, hourly temps, and rain probabilities. |
+| **Files & Documents** | [`src/screens/files/`](file:///g:/Haitham/VsCode/Messenger-redesign/src/screens/files) | Cloud file browser, photos search index, and document preview. |
+| **E-Sign** | [`src/esign/`](file:///g:/Haitham/VsCode/Messenger-redesign/src/esign) | Document signing canvas and verification state. |
+| **Research & History** | [`src/screens/research/`](file:///g:/Haitham/VsCode/Messenger-redesign/src/screens/research) & [`src/screens/history/`](file:///g:/Haitham/VsCode/Messenger-redesign/src/screens/history) | Deep research synthesis briefs, source link citations, and agent execution history. |
+| **Profile & Settings** | [`src/profile/`](file:///g:/Haitham/VsCode/Messenger-redesign/src/profile) | User modal, security preferences, theme toggler (Light / Dark / System), and desktop wallpapers. |
 
 ### API & Backends
 | Layer | Path | What Lives Here |
 |---|---|---|
-| **Frontend API Barrel** | [`src/api.ts`](file:///g:/Haitham/VsCode/Mirsal-redesign/src/api.ts) | Public facade exporting all fetchers. Screens import from here only. |
-| **Frontend Fetchers** | [`src/apiclient/`](file:///g:/Haitham/VsCode/Mirsal-redesign/src/apiclient) | Individual client fetchers (`cleaner.ts`, `agents.ts`, `chat.ts`, `flights.ts`, `photos.ts`, `weather.ts`, `stocks.ts`). |
-| **Node Serverless API** | [`api/`](file:///g:/Haitham/VsCode/Mirsal-redesign/api) | Vercel serverless endpoints: `chat.ts`, `flights.ts`, `photos.ts`, `reply.ts`, `images.ts`, `videos.ts`. |
-| **Python Agents Service**| [`agents/`](file:///g:/Haitham/VsCode/Mirsal-redesign/agents) | FastAPI backend on `:8787` (`run.py`, `mirsal_agents/`): Voice STT/TTS WebSocket, cleaner engine, fact checking, research. |
+| **Frontend API Barrel** | [`src/api.ts`](file:///g:/Haitham/VsCode/Messenger-redesign/src/api.ts) | Public facade exporting all fetchers. Screens import from here only. |
+| **Frontend Fetchers** | [`src/apiclient/`](file:///g:/Haitham/VsCode/Messenger-redesign/src/apiclient) | Individual client fetchers (`cleaner.ts`, `agents.ts`, `chat.ts`, `flights.ts`, `photos.ts`, `weather.ts`, `stocks.ts`). |
+| **Node Serverless API** | [`api/`](file:///g:/Haitham/VsCode/Messenger-redesign/api) | Vercel serverless endpoints: `chat.ts`, `flights.ts`, `photos.ts`, `reply.ts`, `images.ts`, `videos.ts`. |
+| **Python Agents Service**| [`agents/`](file:///g:/Haitham/VsCode/Messenger-redesign/agents) | FastAPI backend on `:8787` (`run.py`, `messenger_agents/`): Voice STT/TTS WebSocket, cleaner engine, fact checking, research. |
 
 ---
 
@@ -86,19 +86,19 @@ Step 4: src/screens/<feature>/     → Update where JSX renders it
 ### Quick Scenarios:
 
 1. **Backend renamed/added a field in a payload:**
-   - Go to [`src/types.ts`](file:///g:/Haitham/VsCode/Mirsal-redesign/src/types.ts) (or module interface in `src/apiclient/`).
+   - Go to [`src/types.ts`](file:///g:/Haitham/VsCode/Messenger-redesign/src/types.ts) (or module interface in `src/apiclient/`).
    - Rename/add the field on the interface.
    - Update the UI component rendering it in `src/screens/<feature>/`.
    - Run `npm run typecheck` — TypeScript will highlight any missed references.
 
 2. **Backend added a new API endpoint:**
-   - Create or update the fetcher function in [`src/apiclient/<module>.ts`](file:///g:/Haitham/VsCode/Mirsal-redesign/src/apiclient).
-   - Re-export it from [`src/api.ts`](file:///g:/Haitham/VsCode/Mirsal-redesign/src/api.ts).
+   - Create or update the fetcher function in [`src/apiclient/<module>.ts`](file:///g:/Haitham/VsCode/Messenger-redesign/src/apiclient).
+   - Re-export it from [`src/api.ts`](file:///g:/Haitham/VsCode/Messenger-redesign/src/api.ts).
    - Import and call it inside the component: `import { yourFunction } from "../../api"`.
 
 3. **Backend changed Chat / AI Plan format:**
-   - Check `MessageBody`, `TripPlan`, or `PlanStep` in [`src/types.ts`](file:///g:/Haitham/VsCode/Mirsal-redesign/src/types.ts).
-   - Update message rendering in [`src/chats/`](file:///g:/Haitham/VsCode/Mirsal-redesign/src/chats).
+   - Check `MessageBody`, `TripPlan`, or `PlanStep` in [`src/types.ts`](file:///g:/Haitham/VsCode/Messenger-redesign/src/types.ts).
+   - Update message rendering in [`src/chats/`](file:///g:/Haitham/VsCode/Messenger-redesign/src/chats).
 
 ---
 

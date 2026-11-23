@@ -1,4 +1,4 @@
-/* An agent result in the Mirsal AI workspace: room for media at its natural size. */
+/* An agent result in the Messenger AI workspace: room for media at its natural size. */
 .view { position: relative; display: flex; flex-direction: column; height: 100%; min-height: 0; background: var(--surface-solid); container-type: size; }
 .header { display: flex; align-items: center; gap: var(--s-3); height: var(--header-height); padding: 0 var(--gutter); border-bottom: 1px solid var(--border); flex-shrink: 0; }
 .heading { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }

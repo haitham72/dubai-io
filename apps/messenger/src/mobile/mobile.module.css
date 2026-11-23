@@ -63,7 +63,7 @@
 .chip { flex-shrink: 0; padding: 7px 15px; border-radius: var(--r-pill); font-size: var(--fs-md); color: var(--text-2); background: var(--surface-solid); box-shadow: inset 0 0 0 1px var(--border-strong); }
 .chipOn { background: var(--blue-soft); color: var(--blue); font-weight: 600; box-shadow: none; }
 
-/* ---------- Mirsal strip: edge-to-edge band, not a contact ---------- */
+/* ---------- Messenger strip: edge-to-edge band, not a contact ---------- */
 .strip {
   margin: 0 calc(var(--s-4) * -1) var(--s-4); padding: var(--s-3) 0 var(--s-4);
   background:
@@ -244,7 +244,7 @@
 /* ---------- ?device preview (iPhone 17 Pro Max, 440×956 pt) ---------- */
 .device {
   --safe-top: 62px; --safe-bottom: 34px;
-  /* Mirsal's island grows out of the camera pill and covers the status bar, like iOS; the pill stays on top. */
+  /* Messenger's island grows out of the camera pill and covers the status bar, like iOS; the pill stays on top. */
   --island-top: var(--hw-island-top); --island-head: calc(var(--hw-island-h) + var(--s-2));
   --island-camera-w: var(--hw-island-w); --island-z: calc(var(--z-modal) + 15);
   width: 440px; height: 956px; max-height: 100dvh; margin: 0 auto; border-radius: 56px; transform: translateZ(0); /* fixed children stay inside */
@@ -257,7 +257,7 @@
 }
 .hwIsland { position: absolute; left: 50%; top: var(--hw-island-top); width: var(--hw-island-w); height: var(--hw-island-h); transform: translateX(-50%); border-radius: var(--r-pill); background: var(--hw-island); }
 .deviceIcons { display: inline-flex; align-items: center; gap: 6px; }
-.device::before { /* the camera pill, drawn above Mirsal's island */
+.device::before { /* the camera pill, drawn above Messenger's island */
   content: ""; position: absolute; z-index: calc(var(--z-modal) + 20); left: 50%; top: var(--hw-island-top);
   width: var(--hw-island-w); height: var(--hw-island-h); transform: translateX(-50%); border-radius: var(--r-pill);
   background: var(--hw-island); pointer-events: none;

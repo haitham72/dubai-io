@@ -1,6 +1,6 @@
-// CARD: the rough-cut plate, in the Mirsal app's clean iOS look. Until a plate has its own scene, the
+// CARD: the rough-cut plate, in the Messenger app's clean iOS look. Until a plate has its own scene, the
 // timeline points at this one: the plate's lines in Inter on the light stage, each word appearing as it is
-// said (Mirsal blue, settling to slate), the Mirsal orb gliding under the word being said, the camera
+// said (Messenger blue, settling to slate), the Messenger orb gliding under the word being said, the camera
 // holding on a line and easing to the next, and the plate's name in a pill. It reads its lines from
 // ctx.params.lines (queries, as lineOf takes them), so it re-times itself to any read.
 import type * as THREE from 'three';
@@ -14,7 +14,7 @@ import { Cam2D, drawKaraoke, placeRow, rowWidth, w2s, lineOf, type KWord } from 
 
 const SIZE = 76, MAXW = 1480, LEAD = 1.28;
 
-/** The Mirsal orb (the logo): a blue sphere with a lighter inner sphere, a small highlight, a soft shadow. */
+/** The Messenger orb (the logo): a blue sphere with a lighter inner sphere, a small highlight, a soft shadow. */
 export function drawOrb(c: CanvasRenderingContext2D, x: number, y: number, r: number, alpha = 1) {
   if (alpha <= 0.003 || r <= 0.5) return;
   c.save();
@@ -125,7 +125,7 @@ export default class Card extends Scene {
     bg.addColorStop(0, 'rgba(59,130,246,0.10)');
     bg.addColorStop(1, 'rgba(59,130,246,0)');
     ctx.fillStyle = bg; ctx.fillRect(0, 0, 1920, 1080);
-    // words: hidden until said, Mirsal blue while said, slate after
+    // words: hidden until said, Messenger blue while said, slate after
     drawKaraoke(ctx, c, t, this.kw, { paper: true, outline: false, pop: 0.03, alpha: (g, tt) => this.lineAlpha(g, tt) });
     // the orb glides along under the word being said, a step behind (smoothed over 60 ms)
     const h0 = this.head(t), h1 = this.head(t - 0.06);

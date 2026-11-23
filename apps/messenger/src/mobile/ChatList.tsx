@@ -1,4 +1,4 @@
-// Mobile Chats tab: large title, search, the full-width Mirsal strip, filter chips, chat rows.
+// Mobile Chats tab: large title, search, the full-width Messenger strip, filter chips, chat rows.
 import { useState } from "react";
 import { AudioLines, BellOff, CheckCheck, Plus, Search } from "lucide-react";
 import { actions } from "../store";
@@ -6,7 +6,7 @@ import { ICON } from "../ui";
 import { voice } from "../voice/state";
 import { useChatList } from "../chats/list";
 import { GlassButton, LargeTitle } from "./parts";
-import { MirsalStories } from "./Stories";
+import { MessengerStories } from "./Stories";
 import s from "./mobile.module.css";
 
 const filters = ["All", "Unread", "Groups", "Favorites"] as const;
@@ -23,7 +23,7 @@ export function ChatList({ onOpenChat, onOpenUpdates }: { onOpenChat: (id: strin
   return (
     <div className={s.scroll}>
       <LargeTitle title="Chats">
-        <GlassButton icon={AudioLines} label="Talk to Mirsal" onClick={voice.start} />
+        <GlassButton icon={AudioLines} label="Talk to Messenger" onClick={voice.start} />
         <GlassButton icon={Plus} label="New chat" primary />
       </LargeTitle>
       <label className={s.search}>
@@ -31,7 +31,7 @@ export function ChatList({ onOpenChat, onOpenUpdates }: { onOpenChat: (id: strin
         <input placeholder="Search chats, tasks, files…" value={q} onChange={(e) => setQ(e.target.value)} />
       </label>
 
-      <MirsalStories onOpenUpdates={onOpenUpdates} />
+      <MessengerStories onOpenUpdates={onOpenUpdates} />
 
       <div className={s.chips} role="tablist">
         {filters.map((f) => (

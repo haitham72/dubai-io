@@ -5,11 +5,11 @@ import asyncio
 from openai.types.decision import Decision as SDKDecision
 from openai.types.decision_create_params import DecisionCreateParams
 
-from mirsal_agents.config import Prices
-from mirsal_agents.catalog import ACTIONS
-from mirsal_agents.deciders import ModelDecider
-from mirsal_agents.spend import Budget
-from mirsal_agents.store import MemoryStore
+from messenger_agents.config import Prices
+from messenger_agents.catalog import ACTIONS
+from messenger_agents.deciders import ModelDecider
+from messenger_agents.spend import Budget
+from messenger_agents.store import MemoryStore
 
 
 class FakeDecisions:

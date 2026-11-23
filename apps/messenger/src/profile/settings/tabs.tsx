@@ -295,12 +295,12 @@ export function AiTab({ say }: TabProps) {
     <Group title="Responses">
       <Row label="Response style">
         <Segmented options={responseStyles.map((r) => ({ value: r, label: r }))} value={style}
-          onChange={(v) => { setStyle(v); say(`Mirsal will answer in a ${v.toLowerCase()} style`); }} />
+          onChange={(v) => { setStyle(v); say(`Messenger will answer in a ${v.toLowerCase()} style`); }} />
       </Row>
       <Row icon={BrainCircuit} label="Memory" value={memories ? `${memories} saved memories` : "No saved memories"}
         action={memories ? "Clear" : undefined}
         onClick={() => { if (memories) { setMemories(0); say("All memories cleared"); } else say("Nothing to clear yet"); }} />
-      <Row icon={Cpu} label="Model" value="GPT-5 · Mirsal default" onClick={() => say("Mirsal picks the best model for each task")} />
+      <Row icon={Cpu} label="Model" value="GPT-5 · Messenger default" onClick={() => say("Messenger picks the best model for each task")} />
     </Group>
   </>;
 }

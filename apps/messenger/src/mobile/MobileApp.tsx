@@ -1,4 +1,4 @@
-// iPhone layout: 4 tabs (Chats · Mirsal AI · Apps · Settings), pushed pages, sheets.
+// iPhone layout: 4 tabs (Chats · Messenger AI · Apps · Settings), pushed pages, sheets.
 // Navigation still goes through `actions` in src/store.ts; this shell only maps store.screen to a tab.
 import { useEffect, useRef, useState } from "react";
 import {
@@ -24,14 +24,14 @@ const tabOf = (screen: ScreenId): Tab => (screen === "chats" ? "chats" : screen 
 
 const settingsCells = [
   [
-    { tone: s.toneCyan, icon: Sparkles, label: "Mirsal AI", value: "Nano Banana 2" },
+    { tone: s.toneCyan, icon: Sparkles, label: "Messenger AI", value: "Nano Banana 2" },
     { tone: s.toneBlue, icon: UserRound, label: "Account" },
     { tone: s.toneGreen, icon: MessageCircle, label: "Chats" },
     { tone: s.toneRed, icon: Bell, label: "Notifications" },
     { tone: s.toneBlue, icon: ShieldCheck, label: "Privacy" },
   ],
   [
-    { tone: s.toneGrey, icon: Monitor, label: "Mirsal Web/Desktop" },
+    { tone: s.toneGrey, icon: Monitor, label: "Messenger Web/Desktop" },
     { tone: s.toneGreen, icon: ArrowDownUp, label: "Data Usage" },
     { tone: s.toneOrange, icon: HardDrive, label: "Storage Usage", value: "2.4 GB" },
   ],
@@ -92,7 +92,7 @@ export function MobileApp() {
         <nav className={s.tabbar}>
           {([
             ["chats", "Chats", MessageCircle],
-            ["ai", "Mirsal AI", Sparkles],
+            ["ai", "Messenger AI", Sparkles],
             ["apps", "Apps", LayoutGrid],
             ["settings", "Settings", Settings],
           ] as const).map(([id, label, I]) => (

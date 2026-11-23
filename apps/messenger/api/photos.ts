@@ -2,7 +2,7 @@
 // Images live as static files in public/photos/ (Vercel CDN in production, Vite static locally).
 // Postgres holds METADATA ONLY (file, meta, result, doc, embedding) — never image bytes, never base64.
 // Two databases, same code:
-//   local dev  (`npm run dev`, DATABASE_URL in .env → Docker `mirsal-pg`) — the annotation queue
+//   local dev  (`npm run dev`, DATABASE_URL in .env → Docker `messenger-pg`) — the annotation queue
 //   production (Vercel, DATABASE_URL → Supabase) — only finished rows, migrated with `node scripts/photos.mjs migrate`; serves search
 // Workers reach Postgres only through this route (HTTP), so firewalls don't matter.
 //

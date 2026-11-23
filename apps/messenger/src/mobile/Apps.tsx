@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import type { ComponentType } from "react";
 import type { LucideProps } from "lucide-react";
-import { ChartSpline, Clock3, CloudSun, Eraser, Folder, Mail, Navigation, Plane, Telescope, TrendingUp } from "lucide-react";
+import { ChartSpline, Clock3, CloudSun, Folder, Mail, Navigation, Plane, Telescope, TrendingUp } from "lucide-react";
 import { actions, useStore } from "../store";
 import { getWeather, peekWeather } from "../api";
 import type { ScreenId, WeatherReport } from "../types";
@@ -19,12 +19,11 @@ export const APPS: App[] = [
   { id: "files", label: "Files", sub: "Photos, documents & AI creations", icon: Folder, tile: s.tileFiles },
   { id: "flights", label: "Flights", sub: "Search fares and track trips", icon: Plane, tile: s.tileFlights },
   { id: "weather", label: "Weather", sub: "Live forecasts for your cities", icon: CloudSun, tile: s.tileWeather },
-  { id: "calendar", label: "Calendar", sub: "Your schedule, shared with Mirsal", icon: null, tile: s.tileCalendar },
+  { id: "calendar", label: "Calendar", sub: "Your schedule, shared with Messenger", icon: null, tile: s.tileCalendar },
   { id: "stocks", label: "Stocks", sub: "Live watchlist and markets", icon: ChartSpline, tile: s.tileStocks },
-  { id: "mail", label: "Mail", sub: "Inbox with Mirsal drafts", icon: Mail, tile: s.tileMail },
+  { id: "mail", label: "Mail", sub: "Inbox with Messenger drafts", icon: Mail, tile: s.tileMail },
   { id: "research", label: "Research", sub: "Deep web research briefs", icon: Telescope, tile: s.tileResearch },
-  { id: "history", label: "History", sub: "Everything Mirsal did for you", icon: Clock3, tile: s.tileHistory },
-  { id: "ai-cleaner", label: "Clean AI Detection", sub: "Remove AI fingerprints from images", icon: Eraser, tile: s.tileFiles },
+  { id: "history", label: "History", sub: "Everything Messenger did for you", icon: Clock3, tile: s.tileHistory },
 ];
 
 /** iOS-style app icon: squircle tile, top-lit gradient, white glyph (Files and Calendar use a white tile). */

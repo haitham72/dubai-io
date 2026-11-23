@@ -1,7 +1,7 @@
-// FILM: the Mirsal redesign film (VIDEO-PLAN.md), 60 s. Clean and elegant, but it moves: a cursor that hovers and
+// FILM: the Messenger redesign film (VIDEO-PLAN.md), 60 s. Clean and elegant, but it moves: a cursor that hovers and
 // clicks, the camera pushing in on every click and pulling out on every reveal, lists and messages revealing row
 // by row, soft transitions between workspaces (rise, glass push, blur dissolve, match dissolve, depth pull).
-// The screens are the real redesign (../../Mirsal-redesign.md, the 15 references) drawn in code: Lucide icons
+// The screens are the real redesign (../../Messenger-redesign.md, the 15 references) drawn in code: Lucide icons
 // (icons.ts), the app's own photos, avatars and sample data (app/public/photos/, fetched once), four weather
 // scenes made with Higgsfield (weather-*.jpg). Will's lines are placed by analysis/film_mix.py at VO below.
 import type * as THREE from 'three';
@@ -212,7 +212,7 @@ export default class Film extends Scene {
     c.fillStyle = LINE; c.fillRect(NAV - 1, 0, 1, WH);
     ['#FF5F57', '#FEBC2E', '#28C840'].forEach((col, i) => { c.fillStyle = col; c.beginPath(); c.arc(26 + i * 20, 26, 6, 0, 7); c.fill(); });
     this.mTile(c, 44, 82, 40);
-    T(c, 'Mirsal', 74, 90, 20, { w: 700 });
+    T(c, 'Messenger', 74, 90, 20, { w: 700 });
     const items: [string, string][] = [['Chats', 'message-circle'], ['Flights', 'plane'], ['Stocks', 'chart-line'], ['Weather', 'cloud-sun'], ['Mail', 'mail'], ['Calendar', 'calendar'], ['Files', 'folder'], ['', ''], ['AI Chat', 'sparkles'], ['Research', 'telescope'], ['', ''], ['History', 'history'], ['Settings', 'settings']];
     let y = 140;
     for (const [label, icon] of items) {
@@ -272,7 +272,7 @@ export default class Film extends Scene {
     const shift = 170 * oc(wordA);
     c.save(); c.translate(-shift, 0); c.scale(k, k); this.mTile(c, 0, 0, 170); c.restore();
     c.globalAlpha = (1 - out) * wordA;
-    T(c, 'Mirsal', -shift + 130 + (1 - oc(wordA)) * 30, 6, 132, { w: 600, base: 'middle' });
+    T(c, 'Messenger', -shift + 130 + (1 - oc(wordA)) * 30, 6, 132, { w: 600, base: 'middle' });
     c.restore();
   }
 
@@ -307,7 +307,7 @@ export default class Film extends Scene {
       const lg = c.createLinearGradient(U.x, U.y, U.x + U.w, U.y); lg.addColorStop(0, '#F3EDFF'); lg.addColorStop(1, '#E6DBFF');
       c.fillStyle = lg; rr(c, U.x, U.y, U.w, U.h, 18); c.fill(); c.restore();
       drawIcon(c, 'sparkles', U.x + 30, U.y + 37, 22, PURPLE);
-      T(c, 'Mirsal Updates', U.x + 56, U.y + 32, 16, { w: 600 });
+      T(c, 'Messenger Updates', U.x + 56, U.y + 32, 16, { w: 600 });
       T(c, 'Image ready, flight found, 5 more…', U.x + 56, U.y + 54, 14, { col: GREY });
       pill(c, '9+', U.x + U.w - 82, U.y + 24, 24, { fill: PURPLE, size: 12, pad: 9 });
       drawIcon(c, 'chevron-right', U.x + U.w - 22, U.y + 37, 18, GREY);
@@ -413,7 +413,7 @@ export default class Film extends Scene {
     c.save(); rr(c, x, y, w, h, 24); c.clip();
     c.globalAlpha *= sat((open - 0.55) / 0.45);
     drawIcon(c, 'sparkles', Bx.x + 34, Bx.y + 38, 24, PURPLE);
-    T(c, 'Mirsal Updates', Bx.x + 62, Bx.y + 36, 20, { w: 700 });
+    T(c, 'Messenger Updates', Bx.x + 62, Bx.y + 36, 20, { w: 700 });
     pill(c, '9+', Bx.x + 220, Bx.y + 20, 24, { fill: 'rgba(124,58,237,0.14)', col: PURPLE, size: 12, pad: 9 });
     T(c, 'Stay updated with your latest results, insights and drafts.', Bx.x + 62, Bx.y + 60, 14, { col: GREY });
     drawIcon(c, 'x', Bx.x + Bx.w - 34, Bx.y + 34, 20, GREY);
@@ -487,7 +487,7 @@ export default class Film extends Scene {
   aiApp(c: X, t: number, still = false) {
     this.nav(c, 'AI Chat');
     c.fillStyle = 'rgba(250,252,255,0.96)'; c.fillRect(NAV, 0, SIDE, WH); c.fillStyle = LINE; c.fillRect(MX - 1, 0, 1, WH);
-    T(c, 'Mirsal AI', NAV + 24, 72, 28, { w: 700 }); drawIcon(c, 'square-pen', MX - 36, 62, 20, '#344054');
+    T(c, 'Messenger AI', NAV + 24, 72, 28, { w: 700 }); drawIcon(c, 'square-pen', MX - 36, 62, 20, '#344054');
     c.fillStyle = 'rgba(22,119,255,0.08)'; rr(c, NAV + 14, 100, SIDE - 28, 46, 12); c.fill();
     drawIcon(c, 'message-circle', NAV + 40, 123, 20, BLUE); T(c, 'New Chat', NAV + 62, 129, 15, { w: 600, col: BLUE });
     T(c, 'RECENT', NAV + 26, 186, 12, { w: 600, col: '#98A2B3' });
@@ -498,7 +498,7 @@ export default class Film extends Scene {
       c.restore();
     });
     c.fillStyle = 'rgba(255,255,255,0.97)'; c.fillRect(MX, 0, WW - MX, WH);
-    drawIcon(c, 'sparkles', MX + 36, 46, 20, PURPLE); T(c, 'Mirsal AI', MX + 56, 52, 17, { w: 600 }); T(c, 'GPT-5', MX + 140, 52, 15, { col: GREY });
+    drawIcon(c, 'sparkles', MX + 36, 46, 20, PURPLE); T(c, 'Messenger AI', MX + 56, 52, 17, { w: 600 }); T(c, 'GPT-5', MX + 140, 52, 15, { col: GREY });
     drawIcon(c, 'share', WW - 96, 46, 20, '#344054'); drawIcon(c, 'ellipsis', WW - 52, 46, 20, '#344054');
     c.fillStyle = LINE; c.fillRect(MX, 90, WW - MX, 1);
     const CX0 = MX + 44, CX1 = WW - 356;
@@ -820,7 +820,7 @@ export default class Film extends Scene {
     this.nav(c, 'Stocks');
     c.fillStyle = '#fff'; c.fillRect(NAV, 0, WW - NAV, WH);
     T(c, 'Stocks & Markets', NAV + 40, 72, 30, { w: 700 });
-    card(c, NAV + 360, 36, 620, 52, 26, { shadow: 0.4 }); drawIcon(c, 'sparkles', NAV + 392, 62, 18, PURPLE); T(c, 'Ask Mirsal AI about any stock, market or investment…', NAV + 414, 68, 15, { col: '#98A2B3' });
+    card(c, NAV + 360, 36, 620, 52, 26, { shadow: 0.4 }); drawIcon(c, 'sparkles', NAV + 392, 62, 18, PURPLE); T(c, 'Ask Messenger AI about any stock, market or investment…', NAV + 414, 68, 15, { col: '#98A2B3' });
     [['S&P 500', '5,274.12', '+0.92%'], ['NASDAQ', '16,735.02', '+0.94%'], ['DOW JONES', '39,387.76', '+0.85%'], ['DAX', '18,492.21', '+0.61%']].forEach(([n, v, d], i) => {
       const k = rv(t, 44.8, i, 0.06), x = NAV + 40 + i * 368;
       c.save(); c.globalAlpha = k;
@@ -868,7 +868,7 @@ export default class Film extends Scene {
     this.nav(c, 'Mail');
     c.fillStyle = 'rgba(250,252,255,0.96)'; c.fillRect(NAV, 0, SIDE, WH); c.fillStyle = LINE; c.fillRect(MX - 1, 0, 1, WH);
     T(c, 'Mail', NAV + 24, 72, 28, { w: 700 });
-    const list: [string, string, string, string, string][] = [['Emirates', 'Your booking is confirmed', 'Booking reference EK4Z9H', '9:14 AM', '#D71921'], ['Booking.com', 'Your Dubai stay is confirmed', 'Rove Downtown · 12–16 Dec', '8:47 AM', '#003580'], ['Team Mirsal', 'Weekly product update', 'New features and improvements', 'Yesterday', BLUE], ['IDC Technologies', 'QA Automation (Arabic Speaker)', 'Next steps for the interview', 'Mon', '#0EA5E9'], ['NeoHealth', 'Partnership opportunity', 'AI-powered front desk', 'Mon', '#16A34A'], ['LinkedIn', '5 new job recommendations', 'AI Engineer, Dubai', 'Sun', '#0A66C2'], ['GitHub', '[Mirsal] 3 new notifications', '2 pull requests, 1 comment', 'Sun', '#24292F']];
+    const list: [string, string, string, string, string][] = [['Emirates', 'Your booking is confirmed', 'Booking reference EK4Z9H', '9:14 AM', '#D71921'], ['Booking.com', 'Your Dubai stay is confirmed', 'Rove Downtown · 12–16 Dec', '8:47 AM', '#003580'], ['Team Messenger', 'Weekly product update', 'New features and improvements', 'Yesterday', BLUE], ['IDC Technologies', 'QA Automation (Arabic Speaker)', 'Next steps for the interview', 'Mon', '#0EA5E9'], ['NeoHealth', 'Partnership opportunity', 'AI-powered front desk', 'Mon', '#16A34A'], ['LinkedIn', '5 new job recommendations', 'AI Engineer, Dubai', 'Sun', '#0A66C2'], ['GitHub', '[Messenger] 3 new notifications', '2 pull requests, 1 comment', 'Sun', '#24292F']];
     const opened = t > 47.55, rh = hv(t, 47.2, 48.0);
     list.forEach(([f, s, p, tm, col], i) => {
       const k = rv(t, 46.5, i, 0.06, 0.4), y = 104 + i * 92 + (1 - k) * 18;
@@ -910,7 +910,7 @@ export default class Film extends Scene {
     c.save(); c.globalAlpha = k; c.translate((1 - k) * 30, 0);
     const opened2 = t > 49.55, sh2 = hv(t, 49.2, 50.2);
     card(c, sx, 100, 340, opened2 ? 290 : 96, 22, { fill: 'rgba(247,243,255,0.96)', shadow: 0.8 + sh2, border: 'rgba(124,58,237,0.16)' });
-    drawIcon(c, 'sparkles', sx + 32, 136, 20, PURPLE); T(c, 'Mirsal AI', sx + 52, 142, 15, { w: 600 });
+    drawIcon(c, 'sparkles', sx + 32, 136, 20, PURPLE); T(c, 'Messenger AI', sx + 52, 142, 15, { w: 600 });
     about(c, sx + 260, 136, (1 + 0.06 * sh2) * press(t, 49.55), () => pill(c, 'Summarize', sx + 204, 120, 32, { fill: opened2 ? PURPLE : `rgba(124,58,237,${0.12 + 0.12 * sh2})`, col: opened2 ? '#fff' : PURPLE, size: 13, pad: 12 }));
     if (opened2) {
       const sum = 'Your Emirates flight EK007 from Dubai to London on 12 Dec is confirmed. 1 passenger, Economy. Booking reference EK4Z9H.';
@@ -957,7 +957,7 @@ export default class Film extends Scene {
         T(c, 'Haitham', px + 124, my + 158, 22, { w: 700 });
         c.fillStyle = GREEN; c.beginPath(); c.arc(px + 130, my + 182, 4, 0, 7); c.fill(); T(c, 'Online', px + 140, my + 187, 14, { col: GREY });
         pill(c, 'Edit', mx + mw - 120, my + 146, 36, { fill: 'rgba(16,24,40,0.05)', col: INK, size: 14 });
-        [['user', 'Full name', 'Haitham'], ['mail', 'Email', 'haitham@mirsal.app'], ['phone', 'Phone', '+971 50 123 4567'], ['map-pin', 'Location', 'Dubai, UAE'], ['globe', 'Language', 'English']].forEach(([ic, a, b], i) => {
+        [['user', 'Full name', 'Haitham'], ['mail', 'Email', 'haitham@messenger.app'], ['phone', 'Phone', '+971 50 123 4567'], ['map-pin', 'Location', 'Dubai, UAE'], ['globe', 'Language', 'English']].forEach(([ic, a, b], i) => {
           const y = my + 262 + i * 58, kk = rv(t, 52.0, i, 0.07), hov = i === 3 ? hv(t, 53.3, 54.5) : 0;
           c.save(); c.globalAlpha *= kk; c.translate(0, (1 - kk) * 12);
           if (hov > 0) { c.fillStyle = `rgba(22,119,255,${0.06 * hov})`; rr(c, px - 10, y - 4, mw - 300, 46, 12); c.fill(); }
@@ -1009,7 +1009,7 @@ export default class Film extends Scene {
     c.save(); c.globalAlpha = a;
     c.translate(SW / 2, SH / 2); const z = 0.94 + 0.06 * a; c.scale(z, z);
     this.mTile(c, -230, -10, 130);
-    T(c, 'Mirsal', -140, -4, 110, { w: 600, base: 'middle' });
+    T(c, 'Messenger', -140, -4, 110, { w: 600, base: 'middle' });
     c.globalAlpha = sat((t - 57.2) / 0.9);
     T(c, 'Your chats, with a private assistant.', 0, 120, 32, { col: GREY, align: 'center' });
     c.restore();

@@ -6,7 +6,7 @@ const port = 9300 + (process.pid % 600);
 const [url, out, nav, extra] = process.argv.slice(2);
 const chrome = spawn("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
   [`--headless=new`, `--remote-debugging-port=${port}`, "--window-size=1920,1080", "--hide-scrollbars",
-   `--user-data-dir=/tmp/mirsal-shot-${process.pid}`, "about:blank"], { stdio: "ignore" });
+   `--user-data-dir=/tmp/messenger-shot-${process.pid}`, "about:blank"], { stdio: "ignore" });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 let ws;
 for (let i = 0; i < 40 && !ws; i++) {

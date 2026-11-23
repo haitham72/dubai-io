@@ -1,7 +1,7 @@
 import pytest
 
-from mirsal_agents.contacts import mentions, resolve, similar
-from mirsal_agents.text import apply_correction, message_text, split_clauses
+from messenger_agents.contacts import mentions, resolve, similar
+from messenger_agents.text import apply_correction, message_text, split_clauses
 
 
 def test_similar_names():

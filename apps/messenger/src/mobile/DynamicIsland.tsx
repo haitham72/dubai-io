@@ -1,10 +1,10 @@
-// Mirsal's Dynamic Island — the primary place Mirsal talks to you on iPhone 17 Pro Max.
+// Messenger's Dynamic Island — the primary place Messenger talks to you on iPhone 17 Pro Max.
 // Modelled on real Live Activities and system sheets (screens/dynamic island/):
 //   compact  — leading: type icon in a progress ring · camera · trailing: one big accent value
 //   expanded — drops out of the island when a task starts/finishes; a layout per type
 //              (flight arc JED ✈ DXB, video tick-bar %, image, research count). Swipe up to dismiss.
 //   large    — tap: grows into a big card with the real result (image, playing video, fares) + actions
-//   voice    — Siri-style: orb pulsing with your voice → what you said → Mirsal's spoken answer
+//   voice    — Siri-style: orb pulsing with your voice → what you said → Messenger's spoken answer
 //   confirm  — Apple-Pay-style UAE PASS sheet for e-signing (mock): rows + "Confirm with Side Button"
 // It drops down from just under the hardware island (the status bar stays native: dark clock on the light app).
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -13,7 +13,7 @@ import {
   CalendarHeart,
 } from "lucide-react";
 import { actions, useStore } from "../store";
-import type { MirsalTask, TaskType } from "../types";
+import type { MessengerTask, TaskType } from "../types";
 import { taskIcons } from "../updates/common";
 import { EventPictures, eventChatItem } from "../updates/details/EventDetail";
 import { esign, setIslandPresent, useEsign } from "../esign/state";
@@ -28,14 +28,14 @@ const BANNER_MS = { started: 3500, done: 7500 } as const;
 const ISLAND_SPACE = "46px";
 
 type Banner = { id: string; kind: keyof typeof BANNER_MS };
-const isRunning = (t: MirsalTask) => t.status === "running" || t.status === "queued";
+const isRunning = (t: MessengerTask) => t.status === "running" || t.status === "queued";
 
-function elapsed(t: MirsalTask, now: number) {
+function elapsed(t: MessengerTask, now: number) {
   const sec = Math.max(0, Math.floor((now - t.startedAt) / 1000));
   return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
 }
 /** The one big value on the compact island's trailing side. */
-function trailingValue(t: MirsalTask) {
+function trailingValue(t: MessengerTask) {
   if (t.status === "failed") return "Failed";
   if (t.result?.type === "flight" && t.result.flights[0]) return `${t.result.flights[0].currency} ${t.result.flights[0].price.toLocaleString()}`;
   if (t.status === "completed") return "Ready";
@@ -60,7 +60,7 @@ export function DynamicIsland({ onOpen }: { onOpen: (taskId?: string) => void })
 
   // Expand on new work and on finished/signed work (never for tasks that were already there at load).
   useEffect(() => {
-    const key = (t: MirsalTask) => `${t.status}|${t.result?.type === "esign" ? t.result.signedAt ?? "" : ""}`;
+    const key = (t: MessengerTask) => `${t.status}|${t.result?.type === "esign" ? t.result.signedAt ?? "" : ""}`;
     if (!seen.current) { seen.current = new Map(tasks.map((t) => [t.id, key(t)])); return; }
     for (const t of tasks) {
       const before = seen.current.get(t.id);
@@ -96,7 +96,7 @@ export function DynamicIsland({ onOpen }: { onOpen: (taskId?: string) => void })
      Opening Updates marks it read, so it clears once seen; swipe up snoozes it for this session. */
   const eventTask = useMemo(() => {
     const evs = tasks.filter((t) => t.type === "event" && t.status === "completed" && t.unread);
-    const rank = (t: MirsalTask) => {
+    const rank = (t: MessengerTask) => {
       const when = t.result?.type === "event" ? t.result.event.when : "";
       return when === "Yesterday" ? 0 : when === "Today" ? 1 : 2;
     };
@@ -163,7 +163,7 @@ export function DynamicIsland({ onOpen }: { onOpen: (taskId?: string) => void })
   const I = taskIcons[lead.type];
   return (
     <button key="compact" className={`${s.island} ${s.compact} ${tone[lead.type]}`} onClick={() => enlarge(lead.id)}
-      aria-label={`Mirsal is working: ${lead.title}${running.length > 1 ? ` and ${running.length - 1} more` : ""}`}>
+      aria-label={`Messenger is working: ${lead.title}${running.length > 1 ? ` and ${running.length - 1} more` : ""}`}>
       <span className={s.lead}><Ring task={lead} size={28} /><I size={13} strokeWidth={2.4} /></span>
       <span className={s.camera} />
       <span className={s.trail}>{running.length > 1 ? `${running.length} tasks` : trailingValue(lead)}</span>
@@ -182,7 +182,7 @@ function VoiceIsland() {
         aria-live="polite" aria-label={stage === "listening" ? "Stop listening" : "Close voice"}>
         <span className={s.voiceOrb} style={{ "--level": level } as React.CSSProperties}><img src={ORB} alt="" /></span>
         <span className={s.voiceText}>
-          <small>{stage === "listening" ? "Mirsal is listening" : stage === "thinking" ? "You said" : stage === "speaking" ? "Mirsal" : "Mirsal"}</small>
+          <small>{stage === "listening" ? "Messenger is listening" : stage === "thinking" ? "You said" : stage === "speaking" ? "Messenger" : "Messenger"}</small>
           <span className={stage === "thinking" ? s.dim : ""}>{line}</span>
           {stage === "thinking" && <i className={s.dots}><b /><b /><b /></i>}
         </span>
@@ -216,20 +216,20 @@ function SignConfirm() {
 }
 
 /* ================= Live Activity parts ================= */
-/** Top row under the camera: what it is (left) and Mirsal (right) — like "AA 1001 … FLIGHTY". */
-function Header({ task }: { task: MirsalTask }) {
+/** Top row under the camera: what it is (left) and Messenger (right) — like "AA 1001 … FLIGHTY". */
+function Header({ task }: { task: MessengerTask }) {
   const f = task.result?.type === "flight" ? task.result.flights[0] : undefined;
   const I = task.status === "failed" ? CircleAlert : taskIcons[task.type];
   return (
     <span className={s.header}>
       <span className={s.what}><I size={15} strokeWidth={2} />{f ? `${f.airline} · ${f.flightNo}` : task.title}</span>
-      <span className={s.brand}><img src={ORB} alt="" />MIRSAL</span>
+      <span className={s.brand}><img src={ORB} alt="" />MESSENGER</span>
     </span>
   );
 }
 
 /** The type-specific Live Activity body (also used inside stories). */
-export function Activity({ task, now, big }: { task: MirsalTask; now: number; big?: boolean }) {
+export function Activity({ task, now, big }: { task: MessengerTask; now: number; big?: boolean }) {
   const r = task.status === "completed" ? task.result : undefined;
 
   if (task.status === "failed") {
@@ -320,7 +320,7 @@ export function Activity({ task, now, big }: { task: MirsalTask; now: number; bi
 }
 
 /** Extra visual only in the large state. */
-function LargeMedia({ task, onPick }: { task: MirsalTask; onPick: (url: string) => void }) {
+function LargeMedia({ task, onPick }: { task: MessengerTask; onPick: (url: string) => void }) {
   const r = task.status === "completed" ? task.result : undefined;
   if (!r) return task.status === "failed" ? null : <div className={s.shimmer} />;
   switch (r.type) {
@@ -343,7 +343,7 @@ function LargeMedia({ task, onPick }: { task: MirsalTask; onPick: (url: string) 
   }
 }
 
-function LargeActions({ task, pick, done, onOpen }: { task: MirsalTask; pick: string; done: () => void; onOpen: () => void }) {
+function LargeActions({ task, pick, done, onOpen }: { task: MessengerTask; pick: string; done: () => void; onOpen: () => void }) {
   const r = task.status === "completed" ? task.result : undefined;
   if (!r) return null;
   if (r.type === "esign") return <button className={`${s.chip} ${s.chipPrimary}`} onClick={onOpen}><FileSignature size={16} strokeWidth={2} />{r.signedAt ? "View document" : "Review & sign"}</button>;
@@ -362,7 +362,7 @@ function LargeActions({ task, pick, done, onOpen }: { task: MirsalTask; pick: st
 }
 
 /** Progress ring in the type's accent: real % when known, otherwise a spinning arc. */
-function Ring({ task, size }: { task: MirsalTask; size: number }) {
+function Ring({ task, size }: { task: MessengerTask; size: number }) {
   const pct = isRunning(task) ? task.progress : 100;
   const r = 8, c = 2 * Math.PI * r;
   return (

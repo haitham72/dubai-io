@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Check, X } from "lucide-react";
-import type { MirsalTask, TaskResult } from "../../types";
+import type { MessengerTask, TaskResult } from "../../types";
 import { actions } from "../../store";
 import { ICON, IconButton } from "../../ui";
 import { relativeTime } from "../common";
@@ -28,7 +28,7 @@ function VideoLightbox({ url, title, onClose }: { url: string; title: string; on
   </div>, document.body);
 }
 export function VideoDetail({ result, task, now, lightbox, onLightbox, notify }: {
-  result: Extract<TaskResult, { type: "video" }>; task: MirsalTask; now: number;
+  result: Extract<TaskResult, { type: "video" }>; task: MessengerTask; now: number;
   lightbox: boolean; onLightbox: (value: boolean) => void; notify: Notify;
 }) {
   const closeLightbox = useCallback(() => onLightbox(false), [onLightbox]);

@@ -1,6 +1,6 @@
-# Run Mirsal locally
+# Run Messenger locally
 
-Every command runs from the **repo root** (`G:\Haitham\VsCode\Mirsal-redesign`), in PowerShell or any terminal.
+Every command runs from the **repo root** (`G:\Haitham\VsCode\Messenger-redesign`), in PowerShell or any terminal.
 No `cd` into sub-folders. There is no `npm run server` any more: the old Python server was retired.
 
 ## Once
@@ -19,7 +19,7 @@ Needs Node 18+ and Python 3.11+ (only for the agents service).
 | Terminal | Command | What it is |
 |---|---|---|
 | 1 | `npm run dev` | The app → <http://localhost:5173>. Also serves the `api/*.ts` routes (chat, weather, flights, stocks…). |
-| 2 | `npm run agents` | The agents service → `:8787` (voice commands, research, @mirsal skills, Diwan events, stickers, GIFs). First run creates `agents/.venv` and installs its packages (a minute). Clean AI Detection needs the GPU env instead — see Optional below. |
+| 2 | `npm run agents` | The agents service → `:8787` (voice commands, research, @messenger skills, Diwan events, stickers, GIFs). First run creates `agents/.venv` and installs its packages (a minute). Clean AI Detection needs the GPU env instead — see Optional below. |
 
 The app works without terminal 2: features that need the agents service fall back to demo data.
 
@@ -47,9 +47,9 @@ curl http://localhost:8787/agents/ai-cleaner/capabilities  # cleaner modes + eng
   it at `localhost:6379` on its own; without it, memory is kept in-process.
 - **Live AI in the agents service** costs money and is off by default. Turn it on with `AGENTS_LIVE=1` in `.env`;
   the hard cap is `AGENTS_BUDGET_USD` (default `1.00`).
-- **Images/video** stay fake while `MIRSAL_FAKE_IMAGES=1` / `MIRSAL_FAKE_VIDEOS=1` (real generation costs credits).
+- **Images/video** stay fake while `MESSENGER_FAKE_IMAGES=1` / `MESSENGER_FAKE_VIDEOS=1` (real generation costs credits).
 - **Clean AI Detection (local GPU):** run terminal 2 from the sibling env instead of `agents/.venv` — from `agents/`:
-  `G:\Haitham\VsCode\remove-ai-watermarks\venv\Scripts\python.exe -m uvicorn mirsal_agents.app:app --port 8787`
+  `G:\Haitham\VsCode\remove-ai-watermarks\venv\Scripts\python.exe -m uvicorn messenger_agents.app:app --port 8787`
   (or pip-install CUDA torch + Pillow + `remove-ai-watermarks==0.45.1` into `agents/.venv`, several GB).
   Needs ~6 GiB free VRAM. The OpenAI provenance check needs only `OPENAI_API_KEY` — no new env keys.
 

@@ -59,7 +59,7 @@ def test_flights_mock_deterministic(monkeypatch):
 
 
 def test_fake_image_job(monkeypatch):
-    monkeypatch.setenv("MIRSAL_FAKE_IMAGES", "1")
+    monkeypatch.setenv("MESSENGER_FAKE_IMAGES", "1")
     r = client.post("/api/images", json={"prompt": "a Dubai beach at sunset"})
     assert r.status_code == 200, r.text
     job_id = r.json()["id"]
@@ -150,7 +150,7 @@ def test_serpapi_cabin_display(monkeypatch, cabin, label):
 
 def test_failed_fake_image_can_be_started_again(monkeypatch):
     """Controlled failure/success uses no Higgs subprocess or image credits."""
-    monkeypatch.setenv("MIRSAL_FAKE_IMAGES", "1")
+    monkeypatch.setenv("MESSENGER_FAKE_IMAGES", "1")
     calls = []
 
     def fake_worker(job_id):

@@ -1,5 +1,5 @@
-/* Mirsal design tokens — owned by the lead session. Every screen uses these; no screen defines its own colors/sizes. */
-/* Angle for the rotating Mirsal AI border (animated per element). */
+/* Messenger design tokens — owned by the lead session. Every screen uses these; no screen defines its own colors/sizes. */
+/* Angle for the rotating Messenger AI border (animated per element). */
 @property --ai-angle { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
 
 :root {
@@ -60,11 +60,11 @@
   --text-3: #98a2b3;
   --blue: #1677ff;
   --blue-soft: rgba(22, 119, 255, 0.1);
-  /* Mirsal AI accent: the app blue (token names kept from the old purple). */
+  /* Messenger AI accent: the app blue (token names kept from the old purple). */
   --purple: #1677ff;
   --lavender: rgba(22, 119, 255, 0.08);
   --lavender-glass: rgba(255, 255, 255, 0.86);
-  /* Rotating Mirsal AI halo (Antigravity-style): blue/cyan stops for a conic ring + blurred glow. */
+  /* Rotating Messenger AI halo (Antigravity-style): blue/cyan stops for a conic ring + blurred glow. */
   --ai-cyan: rgba(34, 211, 238, 0.95);
   --ai-blue: rgba(22, 119, 255, 0.95);
   --ai-faint: rgba(147, 197, 253, 0.3);
@@ -103,17 +103,17 @@
   --sep: rgba(60, 60, 67, 0.12);
   --glass-edge: inset 0 0 0 0.5px rgba(255, 255, 255, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.8);
   --sheet-dim: rgba(16, 24, 40, 0.28);
-  /* iPhone 17 Pro Max hardware Dynamic Island (points); Mirsal's island grows out of it */
+  /* iPhone 17 Pro Max hardware Dynamic Island (points); Messenger's island grows out of it */
   --hw-island-w: 126px;
   --hw-island-h: 37px;
   --hw-island-top: 11px;
   /* e-sign documents: body text that renders Arabic and English, handwritten signatures per script */
-  --font-doc: "IBM Plex Sans Arabic", var(--font);
-  --font-sign-ar: "Aref Ruqaa", "IBM Plex Sans Arabic", serif;
-  --font-sign-en: "Great Vibes", cursive;
+  --font-doc: var(--font);
+  --font-sign-ar: "Segoe UI", Tahoma, serif;
+  --font-sign-en: "Segoe Script", "Brush Script MT", cursive;
   --brand-eand: #e00800;              /* e& wordmark (brand colour) */
   --brand-uaepass: #00a37d;           /* UAE PASS accent (brand colour) */
-  /* Mirsal's island: light glass with a colourful AI halo (the hardware island in ?device stays black) */
+  /* Messenger's island: light glass with a colourful AI halo (the hardware island in ?device stays black) */
   --island: rgba(255, 255, 255, 0.9);
   --on-island: var(--text);
   --on-island-2: var(--text-2);

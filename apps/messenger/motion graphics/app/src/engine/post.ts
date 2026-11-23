@@ -139,7 +139,7 @@ ${SCALE === 1 ? `        c += texture(src, vUv + texel * vec2(-1, -1)).rgb; c +=
         vec3 bl = texture(bloomTex, uv).rgb;
         vec3 ha = texture(haloTex, uv).rgb;
         col += bl * bloom;
-        col += vec3(0.18, 0.55, 1.0) * luma(ha) * halation; // cold blue (Mirsal), was red-orange
+        col += vec3(0.18, 0.55, 1.0) * luma(ha) * halation; // cold blue (Messenger), was red-orange
         col *= exposure;
         // HUD is composited in linear space before the shoulder so it gets grain & vignette too
         vec4 h = texture(hudTex, vUv);

@@ -38,7 +38,7 @@ export const chats: Chat[] = [
   { id: "lena", contact: contacts.lena, preview: "Welcome back to Dubai!", time: "Sat", unread: 0 },
 ];
 
-/** Offline stand-ins for "@mirsal create image about this" when image generation is not live (ids already used in the app). */
+/** Offline stand-ins for "@messenger create image about this" when image generation is not live (ids already used in the app). */
 export const demoImagePool: { url: string; tags: string[] }[] = [
   { url: img("photo-1436491865332-7a61a109cc05", 1200), tags: ["trip", "travel", "flight", "egypt", "january"] },
   { url: img("photo-1507525428034-b723cf961d3e", 1200), tags: ["beach", "weekend", "trip", "travel", "sea"] },
@@ -78,7 +78,7 @@ export const seedMessages: Message[] = [
   m("a23", "arif", false, "3:20 PM", { kind: "text", text: "Haha same! We should plan it soon." }),
   m("a24", "arif", false, "3:44 PM", { kind: "voice", seconds: 18 }),
   m("a25", "arif", true, "3:47 PM", { kind: "text", text: "Definitely! I'll check the dates and let you know. 😊" }),
-  /* Egypt trip idea — the context for "@mirsal is this true", "create sticker/image of this", "setup plan for this" */
+  /* Egypt trip idea — the context for "@messenger is this true", "create sticker/image of this", "setup plan for this" */
   m("a26", "arif", false, "4:02 PM", { kind: "text", text: "Random idea… Egypt in January? 🇪🇬" }),
   m("a27", "arif", true, "4:03 PM", { kind: "text", text: "I'm in! I've wanted to see the pyramids for years" }),
   m("a28", "arif", false, "4:05 PM", { kind: "text", text: "Omar and Hana said they're taking leave in January too" }),
@@ -208,7 +208,7 @@ export const seedMessages: Message[] = [
   m("o12", "omar", false, "Yesterday", { kind: "text", text: "Thanks! 🙏" }),
 
   /* ---------------- Hana (12) — AI beach image ---------------- */
-  m("h1", "hana", true, "Mon", { kind: "text", text: "Look what Mirsal made for my post 👀" }),
+  m("h1", "hana", true, "Mon", { kind: "text", text: "Look what Messenger made for my post 👀" }),
   m("h2", "hana", true, "Mon", { kind: "image", url: img("photo-1519046904884-53103b34b206", 1200), caption: "Dubai beach at golden hour 🏖️" }),
   m("h3", "hana", false, "Mon", { kind: "text", text: "WAIT. That's AI?? 😱" }),
   m("h4", "hana", true, "Mon", { kind: "text", text: "Yep! Typed one sentence, got this" }),

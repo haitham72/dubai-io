@@ -10,7 +10,6 @@ import { MacDesktop } from "./shell/MacDesktop";
 import { CommandCard } from "./voice/CommandCard";
 import { QuickCards } from "./quick/QuickCards";
 import "./updates/persist";
-import "./updates/diwan";
 import s from "./shell/shell.module.css";
 
 export default function App() {

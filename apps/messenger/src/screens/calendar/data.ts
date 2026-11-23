@@ -18,11 +18,11 @@ export function seedEvents(today: Date): Omit<CalendarEvent, 'id'>[] {
   });
   return [
     event(0, 10, 1, 'Coffee & weekly reset', 'personal', 'Alserkal Avenue, Dubai'),
-    event(1, 9, 1, 'Team sync', 'work', 'Mirsal HQ', 'Review this week’s priorities and project milestones.'),
+    event(1, 9, 1, 'Team sync', 'work', 'Messenger HQ', 'Review this week’s priorities and project milestones.'),
     event(1, 12, 1, 'Lunch with Omar', 'family', 'Zabeel'),
     event(1, 15, 1, 'Weekly planning', 'work', 'Zoom'),
     event(2, 10, 1, 'Product review', 'personal', 'Meeting room 2'),
-    event(2, 16, 1, 'Roadmap update', 'work', 'Mirsal HQ'),
+    event(2, 16, 1, 'Roadmap update', 'work', 'Messenger HQ'),
     event(3, 0, 24, 'Travel preparation', 'travel', 'Dubai', 'Pack bags and review the itinerary.'),
     event(3, 9, 1, 'Client call', 'work', 'Zoom'),
     event(4, 8.5, 7.25, 'DXB → LHR · EK 007', 'flights', 'Dubai International Airport', 'Demo itinerary · Emirates EK 007 · Terminal 3 · 1 adult · Economy. Times shown in your device’s local time.'),

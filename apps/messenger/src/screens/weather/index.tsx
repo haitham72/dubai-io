@@ -11,10 +11,10 @@ import s from "./weather.module.css";
 
 /* ---------- city → skyline image mapping (verified Unsplash IDs, curl-w=100 → 200) ---------- */
 const CITY_IMAGES: Record<string, string> = {
-  Dubai:        "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=1400&q=80&auto=format&fit=crop", // beach sunset, verified 200 + viewed
-  London:       "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1400&q=80&auto=format&fit=crop", // Tower Bridge/London Eye, verified 200 + viewed
+  Dubai:        "", // beach sunset, verified 200 + viewed
+  London:       "", // Tower Bridge/London Eye, verified 200 + viewed
 };
-const DEFAULT_SKYLINE = "https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=1400&q=80&auto=format&fit=crop"; // generic sky (verified 200, used as fallback)
+const DEFAULT_SKYLINE = ""; // generic sky (verified 200, used as fallback)
 
 function skylineFor(city: string): string {
   return CITY_IMAGES[city] ?? DEFAULT_SKYLINE;

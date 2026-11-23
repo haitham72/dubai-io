@@ -1,7 +1,7 @@
-// Turns an AI reply's `action` into real work + Mirsal tasks. Exported so Chats can reuse it later.
+// Turns an AI reply's `action` into real work + Messenger tasks. Exported so Chats can reuse it later.
 import { actions, getState } from "../store";
 import { askAi, getImageJob, getVideoJob, getWeather, runResearch, searchFlights, startImage, startVideo, type AiReply } from "../api";
-import type { AiMessage, MirsalTask } from "../types";
+import type { AiMessage, MessengerTask } from "../types";
 import { MOCK_VIDEO_MS, MOCK_VIDEO_TICK_MS, pickMockVideo } from "../videos";
 import { cabinLabel, flightDate } from "../screens/flights/format";
 import { ai } from "./state";
@@ -9,7 +9,7 @@ import { ai } from "./state";
 type Action = NonNullable<AiReply["action"]>;
 const uid = () => Math.random().toString(36).slice(2, 10);
 
-/** Poll a server image job until done; retries update the original Mirsal task id. */
+/** Poll a server image job until done; retries update the original Messenger task id. */
 async function pollImage(jobId: string, prompt: string, taskId = jobId) {
   for (let i = 0; i < 90; i++) {
     await new Promise((r) => setTimeout(r, 2000));
@@ -91,9 +91,9 @@ function videoTask(prompt: string, existingId?: string) {
   return taskId;
 }
 
-/** "Prompt your edits" in Mirsal Studio — images only: Nano Banana 2 edits the original image with the instruction
+/** "Prompt your edits" in Messenger Studio — images only: Nano Banana 2 edits the original image with the instruction
  *  (real Higgsfield on the dev server via the CLI, or via the API when keys are set). The edit lands as a new task. */
-export async function editImage(task: MirsalTask, instruction: string): Promise<{ taskId: string; fake: boolean }> {
+export async function editImage(task: MessengerTask, instruction: string): Promise<{ taskId: string; fake: boolean }> {
   const r = task.result;
   if (r?.type !== "image") throw new Error("Only images can be edited.");
   const job = await startImage(instruction.trim(), r.imageUrl);
@@ -104,7 +104,7 @@ export async function editImage(task: MirsalTask, instruction: string): Promise<
 }
 
 /** Retry only failed generation tasks. The original task id keeps inline replies linked. */
-export async function retryTask(task: MirsalTask): Promise<boolean> {
+export async function retryTask(task: MessengerTask): Promise<boolean> {
   const current = getState().tasks.find(t => t.id === task.id);
   if (!current || current.status !== "failed" || (current.type !== "image" && current.type !== "video")) return false;
   const prompt = (current.result?.type === current.type ? current.result.prompt : current.subtitle).trim();
@@ -198,7 +198,7 @@ export async function sendUserMessage(text: string) {
     ai.push({
       id: uid(), role: "assistant",
       text: offline
-        ? "Mirsal AI is unavailable right now — check `OPENAI_API_KEY` in `.env` (or the Vercel project settings)."
+        ? "Messenger AI is unavailable right now — check `OPENAI_API_KEY` in `.env` (or the Vercel project settings)."
         : `Sorry, something went wrong: ${e}`,
     }, thread);
   } finally {

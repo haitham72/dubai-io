@@ -1,4 +1,4 @@
-# Suno prompt: the Mirsal redesign film (60 s, calm)
+# Suno prompt: the Messenger redesign film (60 s, calm)
 
 Maintained music brief (reviewed 2026-10-08). The associated film status is in [VIDEO-PLAN.md](../VIDEO-PLAN.md); this prompt is creative input, not a claim that a track was generated or updated.
 

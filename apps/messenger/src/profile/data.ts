@@ -5,10 +5,10 @@ export const me = {
   name: "Haitham",
   fullName: "Haitham Mohamed Ibrahim",
   handle: "@haitham",
-  bio: "Building Mirsal. Coffee, kite beach weekends and good design.",
+  bio: "Building Messenger. Coffee, kite beach weekends and good design.",
   avatar: avatar(12),
   cover: img("photo-1512453979798-5ea266f8880c", 1400),
-  email: "haitham@mirsal.app",
+  email: "haitham@messenger.app",
   phone: "+971 50 123 4567",
   location: "Dubai, UAE",
   birthday: "Mar 14, 1990",
@@ -25,7 +25,7 @@ export const statuses: { value: Status; label: string }[] = [
 ];
 
 export const plan = {
-  name: "Mirsal Pro",
+  name: "Messenger Pro",
   price: "AED 29 / month",
   renews: "Renews on Nov 4, 2026",
   usage: [
@@ -37,17 +37,17 @@ export const plan = {
 };
 
 export const billing = [
-  { id: "b1", date: "Oct 4, 2026", item: "Mirsal Pro · monthly", amount: "AED 29.00", status: "Paid" },
-  { id: "b2", date: "Sep 4, 2026", item: "Mirsal Pro · monthly", amount: "AED 29.00", status: "Paid" },
-  { id: "b3", date: "Aug 4, 2026", item: "Mirsal Pro · monthly", amount: "AED 29.00", status: "Paid" },
+  { id: "b1", date: "Oct 4, 2026", item: "Messenger Pro · monthly", amount: "AED 29.00", status: "Paid" },
+  { id: "b2", date: "Sep 4, 2026", item: "Messenger Pro · monthly", amount: "AED 29.00", status: "Paid" },
+  { id: "b3", date: "Aug 4, 2026", item: "Messenger Pro · monthly", amount: "AED 29.00", status: "Paid" },
   { id: "b4", date: "Jul 21, 2026", item: "Extra image credits · 50", amount: "AED 15.00", status: "Paid" },
 ];
 
 export type DeviceKind = "laptop" | "phone" | "tablet" | "desktop";
 export const devices: { id: string; name: string; kind: DeviceKind; detail: string; active: string; current?: boolean }[] = [
   { id: "d1", name: "MacBook Pro 16″", kind: "laptop", detail: "Chrome · Dubai, UAE", active: "Active now", current: true },
-  { id: "d2", name: "iPhone 16 Pro", kind: "phone", detail: "Mirsal for iOS · Dubai, UAE", active: "2 min ago" },
-  { id: "d3", name: "iPad Air", kind: "tablet", detail: "Mirsal for iPadOS · Abu Dhabi, UAE", active: "Yesterday" },
+  { id: "d2", name: "iPhone 16 Pro", kind: "phone", detail: "Messenger for iOS · Dubai, UAE", active: "2 min ago" },
+  { id: "d3", name: "iPad Air", kind: "tablet", detail: "Messenger for iPadOS · Abu Dhabi, UAE", active: "Yesterday" },
   { id: "d4", name: "Office iMac", kind: "desktop", detail: "Safari · Dubai Internet City", active: "3 days ago" },
 ];
 
@@ -77,7 +77,7 @@ export const toggleGroups: Record<string, { id: string; label: string; detail: s
   notifications: [
     { id: "n-msg", label: "Messages", detail: "New messages from chats and groups", on: true },
     { id: "n-mention", label: "Mentions only in groups", detail: "Mute group chatter except @mentions", on: false },
-    { id: "n-updates", label: "Mirsal Updates", detail: "When images, videos and research are ready", on: true },
+    { id: "n-updates", label: "Messenger Updates", detail: "When images, videos and research are ready", on: true },
     { id: "n-calendar", label: "Calendar reminders", detail: "15 minutes before each event", on: true },
     { id: "n-sound", label: "Sounds", detail: "Play a sound for incoming messages", on: true },
     { id: "n-preview", label: "Message previews", detail: "Show message text in notifications", on: false },
@@ -87,12 +87,12 @@ export const toggleGroups: Record<string, { id: string; label: string; detail: s
     { id: "p-online", label: "Show online status", detail: "Others can see when you're online", on: true },
     { id: "p-photo", label: "Profile photo visible to everyone", detail: "Otherwise contacts only", on: false },
     { id: "p-lock", label: "App lock", detail: "Require Face ID after 5 minutes", on: true },
-    { id: "p-analytics", label: "Share usage analytics", detail: "Anonymous, helps improve Mirsal", on: false },
+    { id: "p-analytics", label: "Share usage analytics", detail: "Anonymous, helps improve Messenger", on: false },
   ],
   ai: [
-    { id: "ai-web", label: "Web search", detail: "Let Mirsal AI search the web for fresh answers", on: true },
+    { id: "ai-web", label: "Web search", detail: "Let Messenger AI search the web for fresh answers", on: true },
     { id: "ai-memory", label: "Memory", detail: "Remember preferences across conversations", on: true },
-    { id: "ai-chat", label: "@mirsal in chats", detail: "Ask Mirsal from any conversation", on: true },
+    { id: "ai-chat", label: "@messenger in chats", detail: "Ask Messenger from any conversation", on: true },
     { id: "ai-images", label: "Image generation", detail: "Allow creating images from prompts", on: true },
     { id: "ai-actions", label: "Ask before actions", detail: "Confirm before sending mail or booking", on: true },
   ],

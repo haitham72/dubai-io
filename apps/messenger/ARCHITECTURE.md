@@ -1,4 +1,4 @@
-# Architecture — Mirsal agents
+# Architecture — Messenger agents
 
 How the app's AI works, where every piece of data comes from, and the contracts of the outside systems it talks to.
 Run instructions: [run.md](run.md) · app overview and deploy: [README.md](README.md) · agents service internals:
@@ -19,7 +19,7 @@ Run instructions: [run.md](run.md) · app overview and deploy: [README.md](READM
 
 | Signal of depth | Where it is | Proof |
 |---|---|---|
-| Streaming voice agent that acts mid-sentence, with a closed action list (14), probability gates, a ~30 ms fast path for nameless in-app commands, and dangling-verb carry ("Open." … "my last chat") | `agents/mirsal_agents/engine.py`, `deciders.py`, `session.py` | `agents/eval/REPORT.md` |
+| Streaming voice agent that acts mid-sentence, with a closed action list (14), probability gates, a ~30 ms fast path for nameless in-app commands, and dangling-verb carry ("Open." … "my last chat") | `agents/messenger_agents/engine.py`, `deciders.py`, `session.py` | `agents/eval/REPORT.md` |
 | Safety by construction: exact-recipient guard, undo window for sends, confirm for paid actions, corrections withdraw actions | `contacts.py`, `engine.py` | eval: 0 wrong recipients, 0 unconfirmed paid actions; `tests/test_engine.py` |
 | Measured before tuned: baseline 80.3 % → held-out first run 83.3 % (1 wrong recipient, found and fixed) → 100 % / 0 | `agents/eval/` (113 dev + 32 holdout items; original first-run figures remain historical) | `tests/test_eval_gate.py` (regression gate) |
 | Deep research: plan → parallel search → full pages → cited brief → claim verification → cache; scheduled watch topics | `research.py`, `watch.py`, `watchlist.json` | `tests/test_research.py` |
@@ -27,7 +27,7 @@ Run instructions: [run.md](run.md) · app overview and deploy: [README.md](READM
 | MCP connectors with written contracts, a real Streamable-HTTP client (JSON and SSE replies, sessions, tool errors) | `mcp_client.py`, `diwan.py`, `sticker_builder.py`, `Nadi` in `skills/nadi.py` | `tests/test_diwan_builder.py` (mock MCP servers) |
 | Spend cap priced before every paid call, persisted ledger; per-turn traces with decisions and probabilities | `spend.py`, `trace.py` | `tests/test_spend.py`, `GET /agents/trace` |
 | Prompt-injection fencing of chat and web text | `research.py` (`DATA_RULE`), `skills/base.py` (`CHAT_RULE`) | `tests/test_research.py` |
-| Clean AI Detection: Apps screen + `@mirsal clean` chat skill on one single-GPU FIFO job backend with server-owned stages (checking → resizing → cleaning → faces → presenting), quality counters and a key-gated OpenAI provenance check | `agents/mirsal_agents/ai_cleaner.py`, `ai_cleaner_engine.py`, `src/screens/ai-cleaner/`, `src/chats/skills.ts` | `tests/test_ai_cleaner.py` (10, socket-free) |
+| Clean AI Detection: Apps screen + `@messenger clean` chat skill on one single-GPU FIFO job backend with server-owned stages (checking → resizing → cleaning → faces → presenting), quality counters and a key-gated OpenAI provenance check | `agents/messenger_agents/ai_cleaner.py`, `ai_cleaner_engine.py`, `src/screens/ai-cleaner/`, `src/chats/skills.ts` | `tests/test_ai_cleaner.py` (10, socket-free) |
 | Graceful degradation: the app runs with the service off, and the service runs with no keys | every `src/api.ts` caller has a fallback | browser checks |
 
 Run it all: `npm run agents:test` (169 passed, 1 skipped without Redis; offline) · `npm run agents:eval` · `curl localhost:8787/agents/connectors`.
@@ -39,20 +39,20 @@ Run it all: `npm run agents:test` (169 passed, 1 skipped without Redis; offline)
 | Feature | Demo data lives in | Live source | Connector / env | State today |
 |---|---|---|---|---|
 | Voice commands | contacts: `src/chats/data.ts` (incl. 3 near-namesakes); eval: `agents/eval/*.jsonl` | OpenAI streaming transcription + Decisions API | `OPENAI_API_KEY`, `AGENTS_LIVE=1` | **built**; recent traces show model connection failures; current cloud connectivity and model accuracy remain unverified |
-| @mirsal fact check (text and photos) | `DEMO_FACTS` (2 seeded claims) and `DEMO_PHOTO_FACTS` (the seeded Tegalalang photo) in `agents/mirsal_agents/skills/factcheck.py` | Tavily search + OpenAI model; photos read by the vision model (`AGENTS_VISION_MODEL`, default the research model, detail "low"), sources cited | `TVLY_API_KEY`, `OPENAI_API_KEY`, `AGENTS_LIVE=1`; fallback `/api/chat` (text only, says the photo wasn't checked) | **built** |
-| @mirsal trip plan | rules in `skills/planner.py` (`PLACES`, `UAE_HOLIDAYS`, `FX_FALLBACK`); seeded Egypt chat in `src/chats/data.ts` | flights: existing `/api/flights` (SerpAPI); FX: open.er-api.com (free) | `SERPAPI_KEY` | **built** |
+| @messenger fact check (text and photos) | `DEMO_FACTS` (2 seeded claims) and `DEMO_PHOTO_FACTS` (the seeded Tegalalang photo) in `agents/messenger_agents/skills/factcheck.py` | Tavily search + OpenAI model; photos read by the vision model (`AGENTS_VISION_MODEL`, default the research model, detail "low"), sources cited | `TVLY_API_KEY`, `OPENAI_API_KEY`, `AGENTS_LIVE=1`; fallback `/api/chat` (text only, says the photo wasn't checked) | **built** |
+| @messenger trip plan | rules in `skills/planner.py` (`PLACES`, `UAE_HOLIDAYS`, `FX_FALLBACK`); seeded Egypt chat in `src/chats/data.ts` | flights: existing `/api/flights` (SerpAPI); FX: open.er-api.com (free) | `SERPAPI_KEY` | **built** |
 | HR leave ("Nadi") | memory store key `nadi:<user>` (30-day balance) | **Nadi MCP** — tools `file_leave`, `list_leave` (§4.3) | `NADI_MCP_URL`, `NADI_MCP_TOKEN` | **connector open**, waiting for URL |
-| UAE events ("Diwan") | `agents/mirsal_agents/diwan_demo.json` + 3 pictures in `public/diwan/rashid-bin-saeed-anniversary/` | **Diwan MCP** — tool `upcoming_events` (§4.1) | `DIWAN_MCP_URL`, `DIWAN_MCP_TOKEN` | **connector open**, waiting for URL |
+| UAE events ("Diwan") | `agents/messenger_agents/diwan_demo.json` + 3 pictures in `public/diwan/rashid-bin-saeed-anniversary/` | **Diwan MCP** — tool `upcoming_events` (§4.1) | `DIWAN_MCP_URL`, `DIWAN_MCP_TOKEN` | **connector open**, waiting for URL |
 | Event pictures | `public/diwan/<image_folder>/01–03.jpg` — the 2026 commemoration posts (two 4:5, one 9:16) in a swipe carousel; the picture showing is the one shared | **Supabase Storage**, public bucket `diwan`, folder per event, **max 3 images** (§4.2) | `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `DIWAN_BUCKET` | **connector open**, waiting for keys + folder |
 | Research | 6 hand-written reports in `src/screens/research/data.ts` (labelled Demo); offline briefs from `FakeLLM`/`FakeSearch` (labelled Demo); your new reports kept in this browser | Tavily + OpenAI deep research; failure shows Try again, never canned findings | `TVLY_API_KEY`, `OPENAI_API_KEY`, `AGENTS_LIVE=1` | **built**; weekly topics in `agents/watchlist.json` |
 | Weekly watch topics | `agents/watchlist.json` (2 topics); results in Redis `watch:<id>` and `agents/.data/watch/` | as research | as research | **done** |
-| Stickers (packs) | **The Mirsal Builder Library, read in place** (`MIRSAL_BUILDER_LIBRARY`, default the sibling checkout's `mirsal/out/library`: approved packs only, `.webm` animated first, re-read when `library.json` changes); then `public/stickers/<pack>/` — 4 demo packs × 8 + `index.json` | **Mirsal Builder MCP** — tool `create_sticker_pack` → 3 options (§4.4); exported packs folder via `STICKERS_DIR` | `MIRSAL_BUILDER_MCP_URL`, `MIRSAL_BUILDER_MCP_TOKEN`, `STICKERS_DIR` | **built**: media panel Stickers tab, Builder Library live; Builder MCP waiting for URL |
-| Animated stickers | the Builder Library's `.webm` stickers (68 across its approved packs on this machine) | Mirsal Builder | `MIRSAL_BUILDER_LIBRARY` | **live** (plays in the panel and in chat) |
+| Stickers (packs) | **The Messenger Builder Library, read in place** (`MESSENGER_BUILDER_LIBRARY`, default the sibling checkout's `messenger/out/library`: approved packs only, `.webm` animated first, re-read when `library.json` changes); then `public/stickers/<pack>/` — 4 demo packs × 8 + `index.json` | **Messenger Builder MCP** — tool `create_sticker_pack` → 3 options (§4.4); exported packs folder via `STICKERS_DIR` | `MESSENGER_BUILDER_MCP_URL`, `MESSENGER_BUILDER_MCP_TOKEN`, `STICKERS_DIR` | **built**: media panel Stickers tab, Builder Library live; Builder MCP waiting for URL |
+| Animated stickers | the Builder Library's `.webm` stickers (68 across its approved packs on this machine) | Messenger Builder | `MESSENGER_BUILDER_LIBRARY` | **live** (plays in the panel and in chat) |
 | "More from this picture" | `diwan_demo.json` → `more` (3 versions of `03.jpg` in `public/diwan/<folder>/03/03-01…03.jpg`) | **Diwan MCP** — tool `more_from_image` (§4.5); else the picture's Supabase sub-folder | as Diwan / Supabase | **connector open** (mock-server tests), waiting for Diwan |
 | GIFs | none without a key (panel says "not connected") | GIPHY search/trending | `GIPHY_API_KEY` → `GET /agents/gifs` | **live** when the key is set |
 | Emoji | 9 categories, ~384 curated in `src/chats/data.ts`, system emoji font | — | — | **built** (media panel Emoji tab: search, recents, category strip). Noto Animated set not downloaded yet |
 | Mail | fake inbox `src/screens/mail/data.ts` | Gmail API, OAuth (read/search; send only from the compose button) | `agents/.secrets/gmail_client.json`, sign-in at `/agents/mail/oauth/start` | **built, OAuth ready**, waiting for the Gmail test account |
-| Images / video | fake jobs + 3 Kling clips in `media/videos/`; 3 demo pictures for "@mirsal create image" in `src/chats/data.ts` | Higgs (Nano Banana 2, Kling 3.0) | `HF_CREDENTIALS`, `HIGGS_IMAGE_ENDPOINT`, `MIRSAL_FAKE_*=0` | fakes by default (credits) |
+| Images / video | fake jobs + 3 Kling clips in `media/videos/`; 3 demo pictures for "@messenger create image" in `src/chats/data.ts` | Higgs (Nano Banana 2, Kling 3.0) | `HF_CREDENTIALS`, `HIGGS_IMAGE_ENDPOINT`, `MESSENGER_FAKE_*=0` | fakes by default (credits) |
 | Memory | in-process when Redis is off | Redis (`docker compose up redis`) | `REDIS_URL` | **built** |
 | AI image cleaning | none — jobs live under `agents/.data/ai-cleaner/<job_id>/` (git-ignored) | local GPU: CUDA torch + Pillow in the sibling env, `remove-ai-watermarks==0.45.1`; provenance check via the OpenAI key | `OPENAI_API_KEY` (verify only; no new keys) | **built on `app-ai-removal`**; GPU run and verify call unverified |
 
@@ -63,7 +63,7 @@ Run it all: `npm run agents:test` (169 passed, 1 skipped without Redis; offline)
 ```
 browser ──/agents/* (Vite proxy)──▶ agents service (FastAPI)
                                       ├─ McpClient ──▶ Diwan MCP            upcoming_events
-                                      ├─ McpClient ──▶ Mirsal Builder MCP   create_sticker_pack
+                                      ├─ McpClient ──▶ Messenger Builder MCP   create_sticker_pack
                                       ├─ McpClient ──▶ Nadi MCP             file_leave · list_leave
                                       ├─ Supabase Storage (REST list + public URLs, max 3 per event)
                                       ├─ GIPHY (HTTP) · Gmail (OAuth) · OpenAI · Tavily
@@ -71,7 +71,7 @@ browser ──/agents/* (Vite proxy)──▶ agents service (FastAPI)
                                       └─ Redis (memory, cache, spend ledger, traces)
 ```
 
-- **Client:** `agents/mirsal_agents/mcp_client.py` — Streamable HTTP, JSON-RPC 2.0: `initialize` →
+- **Client:** `agents/messenger_agents/mcp_client.py` — Streamable HTTP, JSON-RPC 2.0: `initialize` →
   `notifications/initialized` → `tools/call`; reads JSON or SSE replies; keeps `Mcp-Session-Id`; sends
   `Authorization: Bearer <TOKEN>` when set; `isError` results raise `McpError`. A tool result is read from
   `structuredContent`, else the first text block parsed as JSON.
@@ -84,8 +84,8 @@ browser ──/agents/* (Vite proxy)──▶ agents service (FastAPI)
 
 ### 4.1 Diwan MCP — `upcoming_events`
 
-The whole events backend lives in the separate **Diwan** project (formerly "Diwan Hamdan"). Mirsal only asks for
-events from yesterday to 7 days ahead and shows them as notifications (Mirsal Updates; Dynamic Island on phones).
+The whole events backend lives in the separate **Diwan** project (formerly "Diwan Hamdan"). Messenger only asks for
+events from yesterday to 7 days ahead and shows them as notifications (Messenger Updates; Dynamic Island on phones).
 
 ```jsonc
 // tools/call  name: "upcoming_events"
@@ -103,14 +103,14 @@ events from yesterday to 7 days ahead and shows them as notifications (Mirsal Up
 } ] }
 ```
 
-Mirsal filters to `-1 ≤ days from today < 7`, labels "Yesterday / Today / Tomorrow / In N days", caches for an hour.
-Code: `agents/mirsal_agents/diwan.py`; route `GET /agents/diwan/events`; UI `src/updates/diwan.ts`,
+Messenger filters to `-1 ≤ days from today < 7`, labels "Yesterday / Today / Tomorrow / In N days", caches for an hour.
+Code: `agents/messenger_agents/diwan.py`; route `GET /agents/diwan/events`; UI `src/updates/diwan.ts`,
 `src/updates/details/EventDetail.tsx`.
 
 ### 4.2 Supabase Storage — event pictures
 
 - Bucket `diwan` (public read), one folder per event: `diwan/<image_folder>/01.jpg … 03.jpg`.
-- Mirsal lists the folder (`POST /storage/v1/object/list/diwan`, anon key) and uses **only the first 3** images
+- Messenger lists the folder (`POST /storage/v1/object/list/diwan`, anon key) and uses **only the first 3** images
   (`.jpg .jpeg .png .webp`, sorted by name), via public URLs. Nothing else is read from Supabase.
 - Demo stand-in: `public/diwan/rashid-bin-saeed-anniversary/01–03.jpg` (the 2026 commemoration posts, same folder layout as the
   bucket, so uploading that folder to Supabase is the whole switch). Shapes differ (4:5 posts, a 9:16 story); each keeps its
@@ -126,9 +126,9 @@ Code: `agents/mirsal_agents/diwan.py`; route `GET /agents/diwan/events`; UI `src
 // list_leave  arguments { "user": "demo" }  →  { "requests": [ …file_leave results… ] }
 ```
 
-### 4.4 Mirsal Builder MCP — new sticker packs (three options)
+### 4.4 Messenger Builder MCP — new sticker packs (three options)
 
-The separate **mirsal-builder** repo generates sticker packs. Mirsal asks for one pack and gets **3 options**; the
+The separate **messenger-builder** repo generates sticker packs. Messenger asks for one pack and gets **3 options**; the
 person swipes between them and keeps the best.
 
 ```jsonc
@@ -148,23 +148,23 @@ Sticker formats (copy Telegram): **static** WebP/PNG, 512 px on the long side, t
 
 Exported packs can also land as folders under `STICKERS_DIR` (one folder per pack, optional `pack.json`
 `{ "title", "tags": [] }`); they appear in the picker without code changes.
-Code: `agents/mirsal_agents/sticker_builder.py`; route `POST /agents/stickers/generate` (demo returns 3 local packs,
+Code: `agents/messenger_agents/sticker_builder.py`; route `POST /agents/stickers/generate` (demo returns 3 local packs,
 best match to the chat first).
 
 ### 4.5 Diwan MCP — `more_from_image` ("More from this picture")
 
-Diwan keeps several versions of some pictures. Mirsal never makes pictures: it asks Diwan for the ones it already has.
+Diwan keeps several versions of some pictures. Messenger never makes pictures: it asks Diwan for the ones it already has.
 
 ```jsonc
 // tools/call  name: "more_from_image"
-// arguments — `image` is the picture's file name only (no folders; Mirsal rejects anything else)
+// arguments — `image` is the picture's file name only (no folders; Messenger rejects anything else)
 { "event_id": "rashid-bin-saeed-anniversary", "image": "03.jpg", "count": 3 }
 // result
 { "images": [ { "url": "https://…/03/03-01.jpg", "width": 768, "height": 1363 } ] }   // 0–6; [] = nothing more
 ```
 
 - Which pictures have more: `upcoming_events` may list them per event as `"more_from": ["03.jpg"]`; with Supabase, a
-  sub-folder named after the picture (`diwan/<folder>/03/`) means the same. Mirsal adds `more: [urls]` to each event so
+  sub-folder named after the picture (`diwan/<folder>/03/`) means the same. Messenger adds `more: [urls]` to each event so
   the button only shows where there is something.
 - Storage naming (the events team's folder convention): versions of `<stem>.jpg` are `<stem>/<stem>-01.jpg …`.
 - Order: Diwan MCP → Supabase sub-folder → demo (`more` in `diwan_demo.json`). Cached an hour; every call traced
@@ -172,7 +172,7 @@ Diwan keeps several versions of some pictures. Mirsal never makes pictures: it a
 - Route `GET /agents/diwan/more?event=&image=` → 400 bad name · 404 not this event's picture · 502 Diwan down.
 - UI (`src/updates/details/EventPictures.tsx`, used by the Updates detail, the island and the phone story card):
   each picture has a heart (favourites, this browser) and, where Diwan has more, **Generate more** — a spinner while
-  Mirsal asks Diwan, then the versions nest under that picture: a count on the picture and a strip of thumbnails
+  Messenger asks Diwan, then the versions nest under that picture: a count on the picture and a strip of thumbnails
   (original first). Picking one makes it the picture's main image, which is what **Use in chat** shares.
   Desktop: pictures left (as tall as the tray allows, neighbours peek in dimmed), versions beside the picture, text
   right. Phone: the event is a story (its picture is the circle), the pictures fill the card, versions below.
@@ -184,7 +184,7 @@ Diwan keeps several versions of some pictures. Mirsal never makes pictures: it a
 |---|---|---|
 | Diwan MCP | `DIWAN_MCP_URL` (+ `DIWAN_MCP_TOKEN`); Diwan exposes `upcoming_events` (§4.1) and `more_from_image` (§4.5) | live events and picture versions |
 | Supabase Storage | `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `DIWAN_BUCKET`; upload `public/diwan/<folder>/` as is | live event pictures |
-| Mirsal Builder MCP | `MIRSAL_BUILDER_MCP_URL` (+ token) exposing `create_sticker_pack` (§4.4) | generated sticker packs |
+| Messenger Builder MCP | `MESSENGER_BUILDER_MCP_URL` (+ token) exposing `create_sticker_pack` (§4.4) | generated sticker packs |
 | Animated stickers | `.webm` files (spec in §4.4) in `public/stickers/<pack>/` or `STICKERS_DIR` | animated stickers |
 | GIPHY | `GIPHY_API_KEY` | GIFs |
 | Gmail | `agents/.secrets/gmail_client.json` + sign-in at `/agents/mail/oauth/start` | real inbox |
@@ -203,7 +203,7 @@ estimate its cost from the current corpus. See [agents/eval/REPORT.md](agents/ev
 The app and `api/` deploy to Vercel as today. The agents service needs a host that keeps WebSockets open and runs
 scheduled jobs, which Vercel functions do not: run its Docker image (`agents/Dockerfile`, `agents/docker-compose.yml`) on a
 small container host with managed Redis, and point `/agents/*` at it. Supabase provides storage (event pictures) and,
-later, Postgres; `agents/mirsal_agents/store.py` is the only storage seam.
+later, Postgres; `agents/messenger_agents/store.py` is the only storage seam.
 
 ## 7. Current voice and media behavior (2026-10-08)
 

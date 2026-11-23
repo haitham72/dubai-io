@@ -40,7 +40,7 @@ export function ConversationPage({ onBack, onUpdates }: { onBack: () => void; on
   );
 }
 
-/** Mirsal AI tab: the existing AI conversation; its chat history opens as a sheet. */
+/** Messenger AI tab: the existing AI conversation; its chat history opens as a sheet. */
 export function AiPage({ onUpdates }: { onUpdates: () => void }) {
   const [history, setHistory] = useState(false);
   const { Main, Sidebar } = screens.ai;
@@ -50,7 +50,7 @@ export function AiPage({ onUpdates }: { onUpdates: () => void }) {
         <GlassButton icon={History} label="Chat history" onClick={() => setHistory(true)} />
         <div className={`${s.gpill} ${s.who} ${s.whoCenter}`}>
           <img src={ORB} alt="" />
-          <span><b>Mirsal AI</b><small>Images · video · research</small></span>
+          <span><b>Messenger AI</b><small>Images · video · research</small></span>
         </div>
         <GlassButton icon={SquarePen} label="New chat" onClick={ai.newChat} />
         <OrbButton onClick={onUpdates} />

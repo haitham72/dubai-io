@@ -26,7 +26,7 @@
   position: relative; display: flex; flex-direction: column; width: min(1680px, 100%); height: 100%; max-height: 1000px;
   border-radius: var(--mac-window-r); overflow: hidden; background: transparent;
   box-shadow: 0 0 0 0.5px var(--mac-window-edge), 0 30px 80px var(--mac-window-shadow), 0 8px 24px var(--mac-window-shadow);
-  transform: translateZ(0); /* fixed-position overlays (modals, Mirsal Updates) stay inside the window */
+  transform: translateZ(0); /* fixed-position overlays (modals, Messenger Updates) stay inside the window */
   transition: all 0.42s cubic-bezier(0.2, 0.9, 0.25, 1);
   animation: open 0.4s cubic-bezier(0.2, 0.9, 0.25, 1);
 }
@@ -62,7 +62,7 @@
 .yellow { background: var(--mac-yellow); }
 .green { background: var(--mac-green); }
 .title { font-size: var(--fs-md); font-weight: 600; color: var(--text-2); }
-/* Size container: overlays inside (Mirsal Updates tray) size to the window via cqw/cqh, not the screen. */
+/* Size container: overlays inside (Messenger Updates tray) size to the window via cqw/cqh, not the screen. */
 .content { position: relative; flex: 1; min-height: 0; }
 /* the shell's box; MacDesktop zooms it down (inline zoom + design-size width/height) when the window is small */
 .fit { position: relative; width: 100%; height: 100%; container-type: size; }

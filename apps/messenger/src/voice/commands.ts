@@ -5,7 +5,7 @@ import { createStore } from "../storeFactory";
 import { agentsHealth, openVoiceStream } from "../api";
 import { actions, getState } from "../store";
 import { chats } from "../chats/data";
-import { askMirsal } from "../chats/mirsal";
+import { askMessenger } from "../chats/messenger";
 import { plainText } from "../chats/skills";
 import { emails } from "../screens/mail/data";
 import { runAction, sendUserMessage } from "../ai/runAction";
@@ -42,8 +42,8 @@ const drop = (id: string) => { window.clearTimeout(timers.get(id)); timers.delet
 /** One id per tab, so "Sara Ali or Sarah Malik?" and the answer land in the same conversation on the server. */
 const sid = (() => {
   try {
-    let v = sessionStorage.getItem("mirsal.voice.sid");
-    if (!v) { v = Math.random().toString(36).slice(2); sessionStorage.setItem("mirsal.voice.sid", v); }
+    let v = sessionStorage.getItem("messenger.voice.sid");
+    if (!v) { v = Math.random().toString(36).slice(2); sessionStorage.setItem("messenger.voice.sid", v); }
     return v;
   } catch { return Math.random().toString(36).slice(2); }
 })();
@@ -132,7 +132,7 @@ function notificationsSummary(): string {
 }
 /** One person's latest messages, or the unread chats. */
 function messagesSummary(contactId?: string): string {
-  const incoming = (chatId: string) => getState().messages.filter((m) => m.chatId === chatId && !m.fromMe && m.by !== "mirsal");
+  const incoming = (chatId: string) => getState().messages.filter((m) => m.chatId === chatId && !m.fromMe && m.by !== "messenger");
   if (contactId) {
     const last = incoming(contactId).slice(-3);
     return last.length ? `${nameOf(contactId)} said: ${last.map((m) => `“${clip(plainText(m), 70)}”`).join(" ")}` : `No messages from ${nameOf(contactId)} yet.`;
@@ -201,11 +201,11 @@ async function runPaid(p: PendingCommand) {
   const a = p.args;
   if (p.action === "search_flights") return sendUserMessage(a.utterance); // the chat route resolves airports and dates
   if (p.action === "plan_trip") {
-    // The same planner as "@mirsal plan …" in a chat: with the named person, else in the chat that is open.
+    // The same planner as "@messenger plan …" in a chat: with the named person, else in the chat that is open.
     const chatId = a.contactId ?? getState().activeChatId;
-    const request = `@mirsal ${a.request}`;
+    const request = `@messenger ${a.request}`;
     actions.openChat(chatId);
-    askMirsal(chatId, request, actions.sendToChat({ kind: "text", text: request }, chatId));
+    askMessenger(chatId, request, actions.sendToChat({ kind: "text", text: request }, chatId));
     return;
   }
   const action = p.action === "generate_image" ? { type: "image" as const, prompt: a.prompt }

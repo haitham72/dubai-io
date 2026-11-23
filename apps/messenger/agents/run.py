@@ -39,7 +39,7 @@ def main() -> None:
         sys.exit(subprocess.call([str(PY), "-m", "eval.run_eval", *sys.argv[2:]]))
     # An open voice WebSocket would otherwise block --reload forever (old code keeps serving): cap the shutdown wait.
     args = sys.argv[1:] or ["--port", "8787", "--reload", "--timeout-graceful-shutdown", "2"]
-    os.execv(str(PY), [str(PY), "-m", "uvicorn", "mirsal_agents.app:app", *args])
+    os.execv(str(PY), [str(PY), "-m", "uvicorn", "messenger_agents.app:app", *args])
 
 
 if __name__ == "__main__":

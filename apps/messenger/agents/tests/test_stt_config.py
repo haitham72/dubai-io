@@ -2,7 +2,7 @@
 import pytest
 from openai.types.realtime.audio_transcription import AudioTranscription
 
-from mirsal_agents.stt import transcription_config
+from messenger_agents.stt import transcription_config
 
 
 @pytest.mark.parametrize("model", ["gpt-realtime-whisper", "gpt-live-transcribe", "gpt-transcribe", "gpt-4o-transcribe",
@@ -18,6 +18,6 @@ def test_each_model_gets_only_its_own_hints():
     assert whisper == {"model": "gpt-realtime-whisper", "language": "en", "delay": "low"}     # takes no vocabulary
     live = transcription_config("gpt-live-transcribe", "low", ["Arif Khan", "Arif Khan", " "])
     assert "delay" not in live and live["languages"] == ["en", "ar"]
-    assert "Arif Khan" in live["keywords"] and "Mirsal" in live["keywords"] and live["keywords"].count("Arif Khan") == 1
+    assert "Arif Khan" in live["keywords"] and "Messenger" in live["keywords"] and live["keywords"].count("Arif Khan") == 1
     assert "Arif Khan" in transcription_config("gpt-4o-transcribe", "low", ["Arif Khan"])["prompt"]
     assert len(transcription_config("gpt-live-transcribe", "low", [f"Name {i}" for i in range(500)])["keywords"]) == 100

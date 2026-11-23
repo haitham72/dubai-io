@@ -1,7 +1,7 @@
 // e& yearly renewal contract (demo) in English / Arabic, signed by typing "Haitham Mohamed" or "هيثم محمد".
 import { useState } from "react";
 import { BadgeCheck, Fingerprint } from "lucide-react";
-import type { MirsalTask } from "../types";
+import type { MessengerTask } from "../types";
 import { Spinner } from "../ui";
 import { esign, isArabic, isValidSignature, useEsign } from "./state";
 import s from "./esign.module.css";
@@ -51,7 +51,7 @@ export function Signature({ name, className }: { name: string; className?: strin
   return <span className={`${s.signature} ${isArabic(name) ? s.sigAr : s.sigEn} ${className ?? ""}`}>{name}</span>;
 }
 
-export function EsignDocument({ task }: { task: MirsalTask }) {
+export function EsignDocument({ task }: { task: MessengerTask }) {
   const result = task.result?.type === "esign" ? task.result : undefined;
   const [lang, setLang] = useState<Lang>("en");
   const [typed, setTyped] = useState("");

@@ -1,12 +1,12 @@
 import pytest
 from datetime import date
 
-from mirsal_agents.deciders import RuleDecider
-from mirsal_agents.engine import Conversation
-from mirsal_agents.meeting import meeting_args
-from mirsal_agents.session import Conversations
-from mirsal_agents.engine import Policy
-from mirsal_agents.text import split_clauses
+from messenger_agents.deciders import RuleDecider
+from messenger_agents.engine import Conversation
+from messenger_agents.meeting import meeting_args
+from messenger_agents.session import Conversations
+from messenger_agents.engine import Policy
+from messenger_agents.text import split_clauses
 
 
 STREAM = ("reply to him that i will be late tonight but we can meet tomorrow in on the wood restaurant plan for it "

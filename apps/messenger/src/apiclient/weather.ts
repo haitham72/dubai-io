@@ -13,7 +13,7 @@ export const weatherLabel = (code: number) => WMO[code] ?? "—";
 /* Cache: one fetch per city per hour, kept in localStorage so reloads and screen switches reuse it.
    If a refresh fails, the last saved report is used instead (however old). */
 const WEATHER_TTL_MS = 60 * 60 * 1000;
-const WEATHER_KEY = "mirsal.weather";
+const WEATHER_KEY = "messenger.weather";
 type WeatherCache = Record<string, { at: number; report: WeatherReport }>;
 const cacheKey = (city: string) => city.trim().toLowerCase();
 function readWeatherCache(): WeatherCache {

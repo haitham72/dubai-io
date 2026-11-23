@@ -1,8 +1,8 @@
-// Mirsal AI sidebar, top half: agents still working (collapsible) and finished results as a card stack.
+// Messenger AI sidebar, top half: agents still working (collapsible) and finished results as a card stack.
 import { useEffect, useMemo, useState } from "react";
 import { ChevronDown, ChevronRight, X } from "lucide-react";
 import { actions, useStore } from "../store";
-import type { MirsalTask } from "../types";
+import type { MessengerTask } from "../types";
 import { ICON } from "../ui";
 import { relativeTime, Retry, TaskIcon, TaskStatus } from "../updates/common";
 import { ai, useAi } from "./state";
@@ -18,7 +18,7 @@ export function useNow() {
   return now;
 }
 
-export function openTask(task: MirsalTask) {
+export function openTask(task: MessengerTask) {
   if (task.unread) actions.updateTask(task.id, { unread: false });
   ai.openTask(task.id);
 }
@@ -36,7 +36,7 @@ export function Fold({ title, count, open, onToggle, action }: {
   </div>;
 }
 
-function Agents({ tasks, now }: { tasks: MirsalTask[]; now: number }) {
+function Agents({ tasks, now }: { tasks: MessengerTask[]; now: number }) {
   const [open, setOpen] = useState(true);
   const current = useAi((st) => st.task);
   const [notice, setNotice] = useState("");
@@ -62,14 +62,14 @@ function Agents({ tasks, now }: { tasks: MirsalTask[]; now: number }) {
   </section>;
 }
 
-function Media({ task }: { task: MirsalTask }) {
+function Media({ task }: { task: MessengerTask }) {
   if (task.result?.type === "image") return <img className={s.media} src={task.result.imageUrl} alt="" loading="lazy" />;
   if (task.result?.type === "video") return <video className={s.media} src={task.result.videoUrl} muted playsInline preload="metadata" />;
   return null;
 }
 
 function ResultCard({ task, now, active, layer = 0, onClick }: {
-  task: MirsalTask; now: number; active: boolean; layer?: number; onClick: () => void;
+  task: MessengerTask; now: number; active: boolean; layer?: number; onClick: () => void;
 }) {
   return <div className={s.cardWrap} data-layer={layer}>
     <button className={`${s.card} ${active ? s.cardOn : ""}`} onClick={onClick} tabIndex={layer ? -1 : 0} aria-hidden={layer ? true : undefined}>
@@ -86,7 +86,7 @@ function ResultCard({ task, now, active, layer = 0, onClick }: {
   </div>;
 }
 
-function Ready({ tasks, now }: { tasks: MirsalTask[]; now: number }) {
+function Ready({ tasks, now }: { tasks: MessengerTask[]; now: number }) {
   const [open, setOpen] = useState(true);
   const [fanned, setFanned] = useState(false);
   const current = useAi((st) => st.task);

@@ -2,7 +2,7 @@
 same 64-beat grid the picture is cut to (app/src/scenes/reel.ts, B(n) = n * 60/128). Writes out/reel_mix.wav.
 
     uv run --no-project --with numpy --with scipy python analysis/reel_mix.py
-    ffmpeg -i out/mirsal-reel-30s.mp4 -i out/reel_mix.wav -map 0:v -map 1:a -c:v copy -c:a aac -b:a 256k -af loudnorm=I=-14:TP=-1 -shortest out/mirsal-reel-30s_sound.mp4
+    ffmpeg -i out/messenger-reel-30s.mp4 -i out/reel_mix.wav -map 0:v -map 1:a -c:v copy -c:a aac -b:a 256k -af loudnorm=I=-14:TP=-1 -shortest out/messenger-reel-30s_sound.mp4
 
 A track from elsewhere (Suno) replaces the music: set MUSIC to its path (first downbeat at 0, 128 BPM).
 """
@@ -226,7 +226,7 @@ for b in (2, 3, 5):
 W(4)
 cue(B(6) + 0.18, "mouse_click", -10); cue(B(6) + 0.22, "sent", -10)
 cue(B(7) + 0.12, "whoosh2", -12); cue(B(8), "riser2", -14)
-# B. Mirsal AI at work, the sheet (beats 8-16)
+# B. Messenger AI at work, the sheet (beats 8-16)
 cue(B(8), "impact2", -11); cue(B(8.5), "scan_sweep", -22)
 cue(B(10), "whoosh_soft", -17); cue(B(10) + 0.05, "spark_zip", -21)
 W(11)
@@ -254,7 +254,7 @@ cue(B(41), "riser2", -15)
 for b, db in [(41, -10), (42, -12), (43, -12), (44, -12), (45, -12), (46, -12), (47, -13), (47.25, -15), (47.5, -15), (48, -12), (49, -12), (50, -12), (51, -12)]:
     cue(B(b), "sparkle", db); cue(B(b) + 0.03, "falling_pieces", db - 7)
 W(42)
-# F. export to Mirsal, live (beats 52-60)
+# F. export to Messenger, live (beats 52-60)
 cue(B(53), "mouse_click", -9); cue(B(53) + 0.12, "whoosh2", -12); cue(B(53) + 0.75, "pop2", -10, rate=0.8)
 cue(B(54), "whoosh_soft", -15); cue(B(54.4), "chime2", -10)
 for i in range(9):

@@ -27,9 +27,9 @@ FRAME = HOP / SR
 SCRIPT = [
     # hook
     "What if one sentence could become a whole sticker pack… already moving, already in your chat?",
-    "No designer. No editing app. Just Mirsal.",
+    "No designer. No editing app. Just Messenger.",
     # creator: one click
-    "Meet the Mirsal Creator.",
+    "Meet the Messenger Creator.",
     "You say what you want, you see the price, and you press one button.",
     "Turn on “approve for me”, and that one click runs the whole path: sheet, cut, check, approve, animate, pack — and send.",
     # persona: it learns you
@@ -47,12 +47,12 @@ SCRIPT = [
     "It’s made for the whole team.",
     "Everyone signs in, gets approved, and has their own credits and their own work.",
     "The best packs go to Trending — to like, to comment on, to make your own.",
-    # app: the Mirsal app
-    "This is the piece Mirsal has been waiting for.",
-    "The Creator is an engine with an API, built to live right inside the Mirsal app, next to your chats.",
+    # app: the Messenger app
+    "This is the piece Messenger has been waiting for.",
+    "The Creator is an engine with an API, built to live right inside the Messenger app, next to your chats.",
     # outro
     "Your words. Your taste. Your stickers.",
-    "Mirsal Creator — one click.",
+    "Messenger Creator — one click.",
 ]
 SPOKEN = {
     "—": [],  # the dash is the pause between two words

@@ -1,6 +1,6 @@
-# Mirsal photo-annotation worker — prompt for an LLM agent
+# Messenger photo-annotation worker — prompt for an LLM agent
 
-Maintained utility instructions (reviewed 2026-10-08). This worker annotates photos; it does not select Mirsal's voice classifier. App and agents verification is documented in [ARCHITECTURE.md](../ARCHITECTURE.md).
+Maintained utility instructions (reviewed 2026-10-08). This worker annotates photos; it does not select Messenger's voice classifier. App and agents verification is documented in [ARCHITECTURE.md](../ARCHITECTURE.md).
 
 Paste everything below the line into an agent that has a shell and access to a vision model
 (e.g. Claude Code / Codex on a cloud GPU box running vLLM, or any agent with an OpenAI-compatible vision endpoint).
@@ -8,7 +8,7 @@ Fill in the three `<…>` values first.
 
 ---
 
-You are an annotation worker for the Mirsal photo search index. A shared queue holds images; several workers run at
+You are an annotation worker for the Messenger photo search index. A shared queue holds images; several workers run at
 the same time, so you must CLAIM work before doing it. Work in batches of 10 until the queue is empty.
 
 **Queue API** (HTTP, JSON; every request needs the header `Authorization: Bearer <PHOTOS_TOKEN>`)
@@ -50,8 +50,8 @@ them instead ("man in military uniform").
 
 **If you have a shell** you may instead run the ready-made worker, which does exactly this loop:
 ```sh
-git clone <repo> && cd Mirsal-redesign
-PHOTOS_TOKEN=<PHOTOS_TOKEN> MIRSAL_API=<QUEUE_URL> \
+git clone <repo> && cd Messenger-redesign
+PHOTOS_TOKEN=<PHOTOS_TOKEN> MESSENGER_API=<QUEUE_URL> \
   node scripts/photos.mjs work --worker <WORKER_NAME> --base-url http://localhost:8000/v1 --model <vision model id>
 ```
 (`--base-url` is your OpenAI-compatible vision server, e.g. vLLM `--served-model-name`; add `--api-key` if it needs one.)

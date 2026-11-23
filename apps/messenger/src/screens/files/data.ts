@@ -50,7 +50,7 @@ export const cloudSources = [
 ];
 
 const recent: Omit<FileItem, "group">[] = [
-  { id: "f13", name: "Mirsal pitch deck", type: "folder", size: "8 items", modified: "10 min ago" },
+  { id: "f13", name: "Messenger pitch deck", type: "folder", size: "8 items", modified: "10 min ago" },
   { id: "f2", name: "Project proposal.pdf", type: "pdf", size: "1.8 MB", modified: "15 min ago" },
   { id: "f4", name: "Budget 2025.xlsx", type: "document", size: "340 KB", modified: "2 hours ago" },
   { id: "f5", name: "Meeting notes.docx", type: "document", size: "128 KB", modified: "3 hours ago" },

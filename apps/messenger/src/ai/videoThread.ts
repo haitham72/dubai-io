@@ -1,13 +1,13 @@
-// Opening a video from Mirsal Updates lands it in AI Chat's shared "Videos" thread.
+// Opening a video from Messenger Updates lands it in AI Chat's shared "Videos" thread.
 // First open: a welcome line and an entrance animation. Later opens: "Here is your video."
 import { actions } from "../store";
-import type { MirsalTask } from "../types";
+import type { MessengerTask } from "../types";
 import { isVideoOpened, markVideoOpened } from "../videos";
 import { ai } from "./state";
 
 export const VIDEOS_THREAD = "videos";
 
-export function openVideoInAi(task: MirsalTask) {
+export function openVideoInAi(task: MessengerTask) {
   if (task.result?.type !== "video") return;
   const { videoUrl, title } = task.result;
   const isNew = !isVideoOpened(videoUrl);

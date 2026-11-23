@@ -22,7 +22,7 @@ for (const wt of [400, 600]) {
 for (const [n, f] of [['300', 'Light'], ['400', 'Regular'], ['500', 'Medium'], ['600', 'SemiBold'], ['700', 'Bold']] as const)
   DEFS.push({ family: `Plex-${n}`, file: `src/IBMPlexMono-${f}.ttf` });
 DEFS.push({ family: 'PlexItalic-400', file: 'src/IBMPlexMono-Italic.ttf' });
-// Inter: the Mirsal app's face (static TTFs from rsms/inter 4.1, OFL; opentype.js cannot read WOFF2)
+// Inter: the Messenger app's face (static TTFs from rsms/inter 4.1, OFL; opentype.js cannot read WOFF2)
 for (const [n, f] of [['400', 'Regular'], ['500', 'Medium'], ['600', 'SemiBold'], ['700', 'Bold'], ['800', 'ExtraBold']] as const)
   DEFS.push({ family: `Inter-${n}`, file: `inter/Inter-${f}.ttf`, features: '"cv11" 1, "ss01" 1' });
 

@@ -1,4 +1,4 @@
-// Mirsal AI entry in the Chats list: a quiet row with live status. Results and agents live in the Mirsal AI workspace.
+// Messenger AI entry in the Chats list: a quiet row with live status. Results and agents live in the Messenger AI workspace.
 import { useEffect, useMemo } from "react";
 import { actions, useStore } from "../store";
 import { Badge, ListRow } from "../ui";
@@ -10,7 +10,6 @@ import s from "./updates.module.css";
 function Orb({ running, progress }: { running: boolean; progress: number | null }) {
   const r = 22, c = 2 * Math.PI * r;
   return <span className={s.orb}>
-    <img src="/mirsal-logo.png" alt="" />
     {running && <svg className={`${s.ring} ${progress == null ? s.ringSpin : ""}`} viewBox="0 0 48 48" aria-hidden>
       <circle cx="24" cy="24" r={r} className={s.ringTrack} />
       <circle cx="24" cy="24" r={r} className={s.ringFill} strokeDasharray={c}
@@ -19,11 +18,11 @@ function Orb({ running, progress }: { running: boolean; progress: number | null 
   </span>;
 }
 
-export function MirsalAiRow() {
+export function MessengerAiRow() {
   const all = useStore((st) => st.tasks);
   const screen = useStore((st) => st.screen);
   const tasks = useMemo(() => all.filter((t) => !t.dismissed), [all]);
-  // Shared result links (#update=<id>) open that result in Mirsal AI.
+  // Shared result links (#update=<id>) open that result in Messenger AI.
   useEffect(() => {
     const openShared = () => {
       const id = new URLSearchParams(window.location.hash.slice(1)).get("update");
@@ -45,7 +44,7 @@ export function MirsalAiRow() {
   return <div className={s.entry}>
     <ListRow selected={screen === "ai"} onClick={() => actions.openUpdates()}
       leading={<Orb running={running.length > 0} progress={progress} />}
-      title="Mirsal AI" subtitle={status}
+      title="Messenger AI" subtitle={status}
       trailing={<>
         {latest && <span>{relativeTime(latest.completedAt ?? latest.startedAt, Date.now())}</span>}
         {unread > 0 && <Badge>{unread > 9 ? "9+" : unread}</Badge>}

@@ -1,5 +1,5 @@
 // POST /api/transcribe (raw audio body, Content-Type = recorder mime) → {text}. Voice mode speech-to-text.
-// Mirsal speaks English and Arabic only. The model auto-detects (and sometimes picks Urdu or Japanese), so the
+// Messenger speaks English and Arabic only. The model auto-detects (and sometimes picks Urdu or Japanese), so the
 // first pass is steered with a prompt; if the text still comes back in another script, the same audio is
 // transcribed again with the language forced (Arabic-script → "ar", anything else → "en").
 import { env, fail, json, openaiKey, route } from "../lib/http.js";

@@ -1,18 +1,18 @@
 // Photo collection → annotation queue → search. Talks to /api/photos over HTTP (Postgres stays behind the API).
-// The queue lives in the LOCAL Postgres (Docker `mirsal-pg`, served by `npm run dev`); only finished rows are
+// The queue lives in the LOCAL Postgres (Docker `messenger-pg`, served by `npm run dev`); only finished rows are
 // migrated to production (Supabase) at the end, so annotation never touches the Supabase quota.
 //
 //   node scripts/photos.mjs setup                                    create the table (local)
 //   node scripts/photos.mjs seed <folder> [--collection faz3]        add images (local)
 //   node scripts/photos.mjs work [--worker laptop] [--base-url http://localhost:1234/v1] [--model qwen3.5-4b] [--batch 10] [--api-key KEY]
 //   node scripts/photos.mjs status                                   progress by status/worker
-//   node scripts/photos.mjs migrate [--to https://mirsal-demo.vercel.app]   copy finished rows to production, then embed there
-//   node scripts/photos.mjs search "sheikh zayed" [--api https://mirsal-demo.vercel.app]
+//   node scripts/photos.mjs migrate [--to https://messenger-demo.vercel.app]   copy finished rows to production, then embed there
+//   node scripts/photos.mjs search "sheikh zayed" [--api https://messenger-demo.vercel.app]
 //
 // Run `work` on as many machines as you like (LM Studio here, vLLM in the cloud — any OpenAI-compatible vision endpoint):
 // each claims 10 images, annotates them, claims the next 10… until the queue is empty. Crashed claims return after 10 min.
-// Cloud workers reach this PC's queue through a tunnel:  cloudflared tunnel --url http://localhost:5173  → MIRSAL_API=<https://….trycloudflare.com>
-// Env (.env or shell): PHOTOS_TOKEN (required for everything but status/search), MIRSAL_API (default http://localhost:5173).
+// Cloud workers reach this PC's queue through a tunnel:  cloudflared tunnel --url http://localhost:5173  → MESSENGER_API=<https://….trycloudflare.com>
+// Env (.env or shell): PHOTOS_TOKEN (required for everything but status/search), MESSENGER_API (default http://localhost:5173).
 import { readdir } from "node:fs/promises";
 import { existsSync, readFileSync } from "node:fs";
 import { basename } from "node:path";
@@ -24,7 +24,7 @@ if (existsSync(".env")) for (const line of readFileSync(".env", "utf8").split(/\
 const [cmd, ...rest] = process.argv.slice(2);
 const opt = (name, fallback) => { const i = rest.indexOf(`--${name}`); return i >= 0 ? rest[i + 1] : fallback; };
 const positional = rest.filter((a, i) => !a.startsWith("--") && !rest[i - 1]?.startsWith("--"));
-const API = (opt("api", process.env.MIRSAL_API ?? "http://localhost:5173")).replace(/\/$/, "");
+const API = (opt("api", process.env.MESSENGER_API ?? "http://localhost:5173")).replace(/\/$/, "");
 const TOKEN = process.env.PHOTOS_TOKEN;
 
 async function api(action, payload, method = payload ? "POST" : "GET", query = "", base = API) {
@@ -152,7 +152,7 @@ else if (cmd === "work") {
 }
 
 else if (cmd === "migrate") {
-  const to = opt("to", "https://mirsal-demo.vercel.app").replace(/\/$/, "");
+  const to = opt("to", "https://messenger-demo.vercel.app").replace(/\/$/, "");
   if (to === API) throw new Error("--to must be a different deployment than the source");
   let after = "", moved = 0;
   for (;;) {

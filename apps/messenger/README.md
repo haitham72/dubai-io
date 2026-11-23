@@ -1,13 +1,13 @@
-# Mirsal POC
+# Messenger POC
 
-An investor demo of Mirsal: private messaging with an AI assistant, agentic tasks and utility workspaces. Clickable and polished — not a production product.
+An investor demo of Messenger: private messaging with an AI assistant, agentic tasks and utility workspaces. Clickable and polished — not a production product.
 
 Two layouts from one codebase:
 
 - **Desktop** (1920×1080) — nav · sidebar · workspace shell.
-- **iPhone 17 Pro Max** (any phone-width screen) — iOS 26 Liquid Glass look, 4 tabs, Mirsal stories, Dynamic Island, voice mode, UAE PASS e-sign (mock). Opens full-screen from the Home Screen.
+- **iPhone 17 Pro Max** (any phone-width screen) — iOS 26 Liquid Glass look, 4 tabs, Messenger stories, Dynamic Island, voice mode, UAE PASS e-sign (mock). Opens full-screen from the Home Screen.
 
-Visual references live in `Mirsal-redesign.md`, `Slides/output_grid/` and `screens/`.
+Visual references live in `Messenger-redesign.md`, `Slides/output_grid/` and `screens/`.
 Run it locally: [run.md](run.md) · how the AI agents work, data map and connector contracts: [ARCHITECTURE.md](ARCHITECTURE.md).
 
 **Stack:** React · TypeScript · Vite · Vercel Functions (`api/`) · Python agents · Lucide
@@ -25,8 +25,8 @@ o paid live calls were started for these repairs. Local models remain deferred. 
 pushed checkpoint `8d43c23` predates them. See [agents/README.md](agents/README.md) for behavior and remaining checks.
 
 The `app-ai-removal` line adds **Clean AI Detection** (2026-10-14): a local-GPU image-cleaning job backend
-(`agents/mirsal_agents/ai_cleaner.py` wrapping the battle-tested `ai_cleaner_engine.py`), an Apps screen
-(`src/screens/ai-cleaner/`), an `@mirsal clean` chat skill and a key-gated OpenAI provenance check —
+(`agents/messenger_agents/ai_cleaner.py` wrapping the battle-tested `ai_cleaner_engine.py`), an Apps screen
+(`src/screens/ai-cleaner/`), an `@messenger clean` chat skill and a key-gated OpenAI provenance check —
 commits `998aef4` (script + plans), `80ec042` (app, skill, engine service) and `f443d6f` (docs). Details:
 [docs/ai-image-cleaner.md](docs/ai-image-cleaner.md). The cleaner backend has 10 socket-free tests
 (`agents/tests/test_ai_cleaner.py`, passing); the 169-test figure below predates them.
@@ -56,10 +56,10 @@ npm run agents         # optional, second terminal: the Python agents service on
 | `SERPAPI_KEY` | Live flights; empty → deterministic mock |
 | `FINNHUB_API_KEY` | Live stock quotes; empty → demo prices |
 | `TVLY_API_KEY` | Live research (Tavily); empty → demo brief |
-| `MIRSAL_FAKE_IMAGES` | `1` = stock fakes (no credits). Real Nano Banana 2 needs `HF_CREDENTIALS` + `HIGGS_IMAGE_ENDPOINT` |
-| `MIRSAL_FAKE_VIDEOS` | `1` = the bundled Kling clips in `media/videos/`. Real Kling needs `HF_CREDENTIALS` |
+| `MESSENGER_FAKE_IMAGES` | `1` = stock fakes (no credits). Real Nano Banana 2 needs `HF_CREDENTIALS` + `HIGGS_IMAGE_ENDPOINT` |
+| `MESSENGER_FAKE_VIDEOS` | `1` = the bundled Kling clips in `media/videos/`. Real Kling needs `HF_CREDENTIALS` |
 | `PHOTOS_TOKEN` | Worker/admin token for `/api/photos` (seed/claim/complete/embed/import/export) |
-| `DATABASE_URL` | Postgres for `/api/photos`: local Docker (`mirsal-pg`) in dev, Supabase pooler in production |
+| `DATABASE_URL` | Postgres for `/api/photos`: local Docker (`messenger-pg`) in dev, Supabase pooler in production |
 | `DEMO_KEY` | Production only: private link gate (`/?key=…`, remembered 30 days) |
 
 Every Higgs generation costs credits — keep the fake flags on while iterating.
@@ -68,7 +68,7 @@ Every Higgs generation costs credits — keep the fake flags on while iterating.
 
 ## Deploy (Vercel)
 
-Project `mirsal-demo` → **https://mirsal-demo.vercel.app** (private: share `https://mirsal-demo.vercel.app/?key=<DEMO_KEY>`).
+Project `messenger-demo` → **https://messenger-demo.vercel.app** (private: share `https://messenger-demo.vercel.app/?key=<DEMO_KEY>`).
 
 ```sh
 vercel deploy --prod
@@ -83,15 +83,15 @@ Env vars live in the Vercel project (Production). `vercel.json` rewrites `/api/:
 | Area | Path | Notes |
 |---|---|---|
 | Shell + nav | `src/App.tsx`, `src/shell/` | Screen registry in `src/screens.ts`; phones get `src/mobile/` |
-| iPhone layout | `src/mobile/` | Tabs, chat list + Mirsal stories, Dynamic Island, sheets, `?device` preview |
+| iPhone layout | `src/mobile/` | Tabs, chat list + Messenger stories, Dynamic Island, sheets, `?device` preview |
 | Design system | `src/tokens.css`, `src/ui/` | Shared primitives; Lucide icons only; phone tweaks are `@media (max-width: 820px)` in each module |
 | State / API | `src/store.ts` (+ `storeFactory.ts`), `src/api.ts` (barrel over `src/apiclient/`), `src/types.ts` | Cross-screen via `actions`; network only through `api.ts` |
 | Chats | `src/chats/` | Golden screen / geometry reference |
-| Mirsal Updates | `src/updates/` | Desktop tray + detail cards (also used in the phone sheet) |
+| Messenger Updates | `src/updates/` | Desktop tray + detail cards (also used in the phone sheet) |
 | AI Chat | `src/ai/` | Intent routing into image / video / flight / weather |
-| Voice | `src/voice/` | Listen → transcribe → Mirsal AI → speak (Siri-style island on phones) |
+| Voice | `src/voice/` | Listen → transcribe → Messenger AI → speak (Siri-style island on phones) |
 | E-sign | `src/esign/` | e& renewal contract (EN/AR), typed signature, UAE PASS confirm (mock) |
-| Clean AI Detection | `src/screens/ai-cleaner/` | Remove-AI-fingerprints jobs on the local GPU engine (Apps tile, nav "Clean AI"); `@mirsal clean` skill in chats |
+| Clean AI Detection | `src/screens/ai-cleaner/` | Remove-AI-fingerprints jobs on the local GPU engine (Apps tile, nav "Clean AI"); `@messenger clean` skill in chats |
 | Workspaces | `src/screens/*` | Flights, weather, calendar, stocks, files, mail, research, history |
 | Profile | `src/profile/` | Profile + Settings modals |
 | Photos | `public/photos/`, `api/photos.ts` | 97 annotated images on the CDN (Vercel) + metadata/embeddings in Postgres (local Docker in dev, Supabase in prod). Never bytea, never base64 |
@@ -121,8 +121,8 @@ Event photos: three primary images plus three versions under `public/diwan/rashi
 
 ## Demo flows (phone)
 
-1. **Stories** — tap a Mirsal circle → its card scales up; swipe left/right between tasks, scroll for details, swipe down to close.
-2. **Voice** — waveform button (or "Ask Mirsal" circle) → speak → island shows what you said → Mirsal answers aloud.
+1. **Stories** — tap a Messenger circle → its card scales up; swipe left/right between tasks, scroll for details, swipe down to close.
+2. **Voice** — waveform button (or "Ask Messenger" circle) → speak → island shows what you said → Messenger answers aloud.
 3. **AI → flights** — "Find flights Jeddah to Dubai next Friday" → Dynamic Island Live Activity (JED ✈ DXB) → tap to enlarge.
 4. **AI → video** — "Make a Dubai sunset video" → island tick-bar progress → plays in the story card.
 5. **E-sign** — e-Sign story → type *Haitham Mohamed* or *هيثم محمد* → UAE PASS sheet in the island → Signed.

@@ -1,4 +1,4 @@
-"""@mirsal chat skills, offline: planner, leave optimiser, stickers, fact check, image ideas, and their routes."""
+"""@messenger chat skills, offline: planner, leave optimiser, stickers, fact check, image ideas, and their routes."""
 import datetime as dt
 import json
 import random
@@ -8,10 +8,10 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-from mirsal_agents.app import Services, build_app
-from mirsal_agents.chat_skills import FactChecker, Msg, Nadi, Planner, Stickers, best_leave, companions, extract_trip, image_ideas
-from mirsal_agents.config import ROOT, Settings
-from mirsal_agents.store import MemoryStore
+from messenger_agents.app import Services, build_app
+from messenger_agents.chat_skills import FactChecker, Msg, Planner, Stickers, best_leave, companions, extract_trip, image_ideas
+from messenger_agents.config import ROOT, Settings
+from messenger_agents.store import MemoryStore
 
 EGYPT = [Msg(s, t) for s, t in [
     ("Arif Khan", "Random idea… Egypt in January? 🇪🇬"), ("me", "I'm in! I've wanted to see the pyramids for years"),
@@ -40,7 +40,7 @@ def test_companions_empty_without_a_mention(contacts):
 
 async def test_plan_suggests_unrecognized_names_for_confirmation(contacts):
     ctx = [Msg("Arif Khan", "Omar and Zane said they're taking leave in January too")]
-    out = await Planner(Nadi(MemoryStore())).plan("u", ctx, contacts, "arif", today=dt.date(2026, 10, 8),
+    out = await Planner(MemoryStore()).plan("u", ctx, contacts, "arif", today=dt.date(2026, 10, 8),
                                                   request="plan egypt in january with Omar and Zane")
     group = next(s for s in out["steps"] if s["kind"] == "group")
     assert group["data"]["members"] == ["omar"] and group["data"]["suggested"] == ["Zane"]
@@ -49,14 +49,14 @@ async def test_plan_suggests_unrecognized_names_for_confirmation(contacts):
 
 async def test_plan_has_no_group_step_without_any_mention(contacts):
     ctx = [Msg("me", "plan a trip to europe next december")]
-    out = await Planner(Nadi(MemoryStore())).plan("u", ctx, contacts, "arif", today=dt.date(2026, 10, 8),
+    out = await Planner(MemoryStore()).plan("u", ctx, contacts, "arif", today=dt.date(2026, 10, 8),
                                                   request="plan spain in december")
     assert [s["kind"] for s in out["steps"]] and not any(s["kind"] == "group" for s in out["steps"])
 
 
 async def test_plan_files_leave_and_builds_every_step(contacts):
     store = MemoryStore()
-    plan = await Planner(Nadi(store)).plan("demo", EGYPT, contacts, "arif", dt.date(2026, 10, 8),
+    plan = await Planner(store).plan("demo", EGYPT, contacts, "arif", dt.date(2026, 10, 8),
                                            request="plan egypt from 2027-01-01 to 2027-01-12")
     kinds = [s["kind"] for s in plan["steps"]]
     assert kinds[:5] == ["leave", "email", "flights", "budget", "reminder"]  # nobody named → solo, no group
@@ -64,26 +64,26 @@ async def test_plan_files_leave_and_builds_every_step(contacts):
     flights = plan["steps"][2]["data"]["query"]
     assert flights == {"from": "DXB", "to": "CAI", "depart": "2027-01-01", "return": "2027-01-12", "passengers": 1, "cabin": "economy"}
     assert plan["steps"][3]["data"]["aed"] == 1500 and plan["steps"][3]["data"]["currency"] == "EGP"
-    nadi = await Nadi(store).requests("demo")
+    nadi = await store.get("nadi:" + "demo")
     assert len(nadi) == 1 and nadi[0]["balanceAfter"] == 23
-    again = await Planner(Nadi(store)).plan("demo", EGYPT, contacts, "arif", dt.date(2026, 10, 8),
+    again = await Planner(store).plan("demo", EGYPT, contacts, "arif", dt.date(2026, 10, 8),
                                             request="plan egypt from 2027-01-01 to 2027-01-12")
-    assert again["steps"][0]["data"]["nadi"]["duplicate"] and len(await Nadi(store).requests("demo")) == 1
+    assert again["steps"][0]["data"]["nadi"]["duplicate"] and len(await store.get("nadi:" + "demo")) == 1
 
 
 async def test_plan_without_dates_asks_instead_of_picking_a_window(contacts):
     store = MemoryStore()
-    plan = await Planner(Nadi(store)).plan("demo", EGYPT, contacts, "arif", dt.date(2026, 10, 8))
+    plan = await Planner(store).plan("demo", EGYPT, contacts, "arif", dt.date(2026, 10, 8))
     assert plan.get("needsDates") is True and plan["summary"] == "DXB → CAI · 1 traveller"
     assert [s["kind"] for s in plan["steps"]] == ["dates"]  # minimal: no Omar/Hana from history, no flights yet
-    assert await Nadi(store).requests("demo") == []  # no leave filed while dates are missing
+    assert (await store.get("nadi:demo") or []) == []  # no leave filed while dates are missing
 
 
-def test_stickers_match_context_and_refuse_traversal():
-    st = Stickers(ROOT / "public" / "stickers")
-    assert st.pick(EGYPT, random.Random(1))["id"] == "nile-days"
-    assert st.pick([Msg("me", "zzz")], random.Random(1))["id"] in {p["id"] for p in st.packs()}
-    assert st.file("nile-days", "../../index.html") is None and st.file("nile-days", "01-pyramids.svg")
+def test_stickers_missing_packs_refuse_traversal(tmp_path):
+    st = Stickers(tmp_path)
+    assert st.pick(EGYPT, random.Random(1)) is None
+    assert st.packs() == []
+    assert st.file("nile-days", "../../index.html") is None and st.file("nile-days", "01-pyramids.svg") is None
 
 
 async def test_fact_check_demo_and_fallback():
@@ -107,19 +107,17 @@ def client(tmp_path):
 
 def test_skill_routes(client, contacts):
     ctx = [{"sender": m.sender, "text": m.text} for m in EGYPT]
-    plan = client.post("/agents/mirsal/plan", json={"context": ctx, "contacts": [c.__dict__ for c in contacts],
+    plan = client.post("/agents/messenger/plan", json={"context": ctx, "contacts": [c.__dict__ for c in contacts],
                                                     "chatPartner": "arif",
                                                     "request": "plan egypt from 2027-01-01 to 2027-01-12"}).json()
     assert plan["title"].startswith("Egypt")
-    pack = client.post("/agents/mirsal/stickers", json={"context": ctx}).json()
-    assert pack["id"] == "nile-days" and client.get(pack["urls"][0]).status_code == 200
-    assert client.get("/agents/nadi/leave").json()["requests"][0]["ref"].startswith("NADI-")
-    assert client.post("/agents/mirsal/factcheck", json={"context": ctx, "target": ctx[6]["text"]}).json()["verdict"] == "mostly_true"
+    assert client.post("/agents/messenger/stickers", json={"context": ctx}).status_code == 404
+    assert client.post("/agents/messenger/factcheck", json={"context": ctx, "target": ctx[6]["text"]}).json()["verdict"] == "mostly_true"
 
 
 # ---------------------------------------------------------------- "is this true" on photos (multimodal)
-BALI = "https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=1200"
 PNG = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+BALI = PNG
 
 
 class RecordingLLM:
@@ -160,10 +158,9 @@ async def test_text_claims_still_skip_the_photo_step():
     assert [c["name"] for c in llm.calls] == ["factcheck"] and llm.calls[0]["images"] is None
 
 
-async def test_photo_demo_answer_only_for_the_seeded_photo():
-    out = await FactChecker(None, None).check("[photo]", [], [BALI])
-    assert out["mode"] == "demo" and out["verdict"] == "mostly_true" and out["photos"] == 1
-    assert (await FactChecker(None, None).check("[photo]", [], [PNG]))["fallback"] is True   # no invented answers
+async def test_photo_without_a_local_seed_is_not_invented():
+    out = await FactChecker(None, None).check("[photo]", [], [PNG])
+    assert out["mode"] == "offline" and out["fallback"] is True and out["photos"] == 1
 
 
 def test_photo_inputs_inline_app_pictures_and_refuse_everything_else(tmp_path):
@@ -173,7 +170,7 @@ def test_photo_inputs_inline_app_pictures_and_refuse_everything_else(tmp_path):
     (tmp_path / "secret.jpg").write_bytes(b"x")
     (public / "notes.txt").write_text("x")
     checker = FactChecker(None, None, public)
-    from mirsal_agents.chat_skills import photo_inputs
+    from messenger_agents.chat_skills import photo_inputs
     assert photo_inputs(["/photos/a.jpg"], public)[0].startswith("data:image/jpeg;base64,")
     assert photo_inputs([BALI, PNG], public) == [BALI, PNG]
     for bad in ["/../secret.jpg", "/photos/../../secret.jpg", "/notes.txt", "/photos/missing.jpg", "http://evil.test/a.jpg",
@@ -186,10 +183,10 @@ def test_photo_inputs_inline_app_pictures_and_refuse_everything_else(tmp_path):
 
 
 def test_factcheck_route_takes_photos_and_rejects_bad_ones(client):
-    ok = client.post("/agents/mirsal/factcheck", json={"target": "[photo: Tegalalang terraces]", "images": [BALI]}).json()
-    assert ok["mode"] == "demo" and ok["photos"] == 1
-    assert client.post("/agents/mirsal/factcheck", json={"target": "x", "images": ["file:///etc/passwd"]}).status_code == 400
-    assert client.post("/agents/mirsal/factcheck", json={"target": "x", "images": [BALI] * 4}).status_code == 422
+    ok = client.post("/agents/messenger/factcheck", json={"target": "[photo]", "images": [PNG]}).json()
+    assert ok["mode"] == "offline" and ok["photos"] == 1
+    assert client.post("/agents/messenger/factcheck", json={"target": "x", "images": ["file:///etc/passwd"]}).status_code == 400
+    assert client.post("/agents/messenger/factcheck", json={"target": "x", "images": [BALI] * 4}).status_code == 422
 
 
 async def test_look_answers_from_the_photo_itself():
@@ -200,24 +197,23 @@ async def test_look_answers_from_the_photo_itself():
             seen.append((name, images))
             return {"answer": "A man harvesting rice."}
 
-    from mirsal_agents.skills.look import look
+    from messenger_agents.skills.look import look
     out = await look(LookLLM(), "What is he doing in the image?", EGYPT, [BALI])
-    assert seen[0] == ("mirsal_look", [BALI])
+    assert seen[0] == ("messenger_look", [BALI])
     assert out["mode"] == "live" and out["answer"] == "A man harvesting rice." and out["photos"] == 1
-    demo = await look(None, "What is this?", [], [BALI])
-    assert demo["mode"] == "demo" and "Terraced green rice" in demo["answer"]
-    assert (await look(None, "What is this?", [], [PNG]))["fallback"] is True   # no invented answers
+    demo = await look(None, "What is this?", [], [PNG])
+    assert demo["mode"] == "offline" and demo["fallback"] is True
 
 
 def test_look_route_answers_and_rejects_bad_ones(client):
-    ok = client.post("/agents/mirsal/look", json={"target": "What is he doing?", "images": [BALI]}).json()
-    assert ok["mode"] == "demo" and ok["photos"] == 1 and "Terraced green rice" in ok["answer"]
-    assert client.post("/agents/mirsal/look", json={"target": "x", "images": ["file:///etc/passwd"]}).status_code == 400
+    ok = client.post("/agents/messenger/look", json={"target": "What is he doing?", "images": [PNG]}).json()
+    assert ok["mode"] == "offline" and ok["photos"] == 1 and ok["fallback"] is True
+    assert client.post("/agents/messenger/look", json={"target": "x", "images": ["file:///etc/passwd"]}).status_code == 400
 
 
 async def test_plan_keeps_the_date_in_the_request_and_books_an_all_day_trip(contacts):
-    out = await Planner(Nadi(MemoryStore())).plan("u", EGYPT, contacts, "arif", today=dt.date(2026, 10, 8),
-                                                 request="@mirsal plan the vacation to egypt on 2 january")
+    out = await Planner(MemoryStore()).plan("u", EGYPT, contacts, "arif", today=dt.date(2026, 10, 8),
+                                                 request="@messenger plan the vacation to egypt on 2 january")
     assert out["calendar"]["from"] == "2027-01-02"                        # the asked date, not the optimiser's pick
     leave = next(s for s in out["steps"] if s["kind"] == "leave")["data"]["leave"]
     assert leave["fixed"] is True and leave["from"] == "2027-01-02"
@@ -226,7 +222,7 @@ async def test_plan_keeps_the_date_in_the_request_and_books_an_all_day_trip(cont
 
 
 def test_start_date_phrasings():
-    from mirsal_agents.chat_skills import start_date
+    from messenger_agents.chat_skills import start_date
     today = dt.date(2026, 10, 8)
     for text in ["on 2 january", "2nd of Jan", "January 2", "from jan 2nd for 5 days"]:
         assert start_date(text, today) == dt.date(2027, 1, 2), text
@@ -235,7 +231,7 @@ def test_start_date_phrasings():
 
 
 async def test_plan_drafts_the_leave_email_to_the_approver(contacts):
-    out = await Planner(Nadi(MemoryStore())).plan("u", EGYPT, contacts, "arif", today=dt.date(2026, 10, 8),
+    out = await Planner(MemoryStore()).plan("u", EGYPT, contacts, "arif", today=dt.date(2026, 10, 8),
                                                  request="plan egypt on 2 january")
     email = next(s for s in out["steps"] if s["kind"] == "email")
     assert email["data"]["to"] == "r.khalfan@nadi.ae" and email["title"] == "Added draft email to r.khalfan@nadi.ae"
@@ -243,22 +239,22 @@ async def test_plan_drafts_the_leave_email_to_the_approver(contacts):
 
 
 async def test_repro_kazakhistan_with_sara_asks_for_dates(contacts):
-    """The reported bug: "@mirsal plan trip to kazakhistan with sara aswell" in the Arif chat planned
+    """The reported bug: "@messenger plan trip to kazakhistan with sara aswell" in the Arif chat planned
     Egypt/Cairo in January with Omar/Hana. It must plan Kazakhstan with you + Sara and ask for dates."""
     store = MemoryStore()
-    out = await Planner(Nadi(store)).plan("u", EGYPT, contacts, "arif", today=dt.date(2026, 10, 8),
-                                          request="@mirsal plan trip to kazakhistan with sara aswell")
+    out = await Planner(store).plan("u", EGYPT, contacts, "arif", today=dt.date(2026, 10, 8),
+                                          request="@messenger plan trip to kazakhistan with sara aswell")
     assert out.get("needsDates") is True
     assert "Egypt" not in out["title"] and "Cairo" not in out["summary"] and "CAI" not in out["summary"]
     assert out["summary"] == "With Sara · DXB → ALA · 2 travellers"
     assert [s["kind"] for s in out["steps"]] == ["dates", "group"]
     group = next(s for s in out["steps"] if s["kind"] == "group")
     assert group["data"]["members"] == ["sara"]  # only who the request named: not the partner, never Omar/Hana
-    assert await Nadi(store).requests("u") == []  # no leave filed while dates are missing
+    assert (await store.get("nadi:u") or []) == []  # no leave filed while dates are missing
 
 
 def test_kazakhistan_typo_resolves_to_kazakhstan():
-    from mirsal_agents.chat_skills import extract_trip
+    from messenger_agents.chat_skills import extract_trip
     for text in ["plan trip to kazakhistan", "plan trip to kazakstan", "plan trip to almaty"]:
         trip = extract_trip([], dt.date(2026, 10, 8), text)
         assert trip["place"]["name"] == "Kazakhstan" and trip["place"]["iata"] == "ALA", text
@@ -268,16 +264,16 @@ def test_kazakhistan_typo_resolves_to_kazakhstan():
 
 async def test_unknown_destination_asks_and_never_reuses_history(contacts):
     store = MemoryStore()
-    out = await Planner(Nadi(store)).plan("u", EGYPT, contacts, "arif", today=dt.date(2026, 10, 8),
+    out = await Planner(store).plan("u", EGYPT, contacts, "arif", today=dt.date(2026, 10, 8),
                                           request="plan trip to atlantis")
     assert "ask" in out and "Egypt" not in out["ask"] and "Cairo" not in out["ask"]
-    assert await Nadi(store).requests("u") == []
+    assert (await store.get("nadi:u") or []) == []
 
 
 async def test_repro_complete_with_dates_uses_actual_range_and_passengers(contacts):
     store = MemoryStore()
-    out = await Planner(Nadi(store)).plan("u", EGYPT, contacts, "arif", today=dt.date(2026, 10, 8),
-                                          request="@mirsal plan trip to kazakhistan with sara aswell "
+    out = await Planner(store).plan("u", EGYPT, contacts, "arif", today=dt.date(2026, 10, 8),
+                                          request="@messenger plan trip to kazakhistan with sara aswell "
                                                   "from 2027-05-01 to 2027-05-07")
     assert out.get("needsDates") is None and out["title"].startswith("Kazakhstan")
     assert out["destination"] == {"country": "Kazakhstan", "city": "Almaty", "iata": "ALA"}
@@ -291,16 +287,16 @@ async def test_repro_complete_with_dates_uses_actual_range_and_passengers(contac
     assert group["data"]["members"] == ["sara"]
     assert not any(s["kind"] == "docs" for s in out["steps"])  # no passport-check step
     assert next(s for s in out["steps"] if s["kind"] == "budget")["data"]["currency"] == "KZT"
-    assert len(await Nadi(store).requests("u")) == 1
+    assert len(await store.get("nadi:" + "u")) == 1
 
 
 async def test_date_change_keeps_participants(contacts):
     store = MemoryStore()
-    first = await Planner(Nadi(store)).plan("u", EGYPT, contacts, "arif", today=dt.date(2026, 10, 8),
+    first = await Planner(store).plan("u", EGYPT, contacts, "arif", today=dt.date(2026, 10, 8),
                                             request="plan trip to kazakhistan with sara "
                                                     "from 2027-05-01 to 2027-05-07")
     members = next(s for s in first["steps"] if s["kind"] == "group")["data"]["members"]
-    second = await Planner(Nadi(store)).plan("u", EGYPT, contacts, "arif", today=dt.date(2026, 10, 8),
+    second = await Planner(store).plan("u", EGYPT, contacts, "arif", today=dt.date(2026, 10, 8),
                                              request="plan trip to kazakhistan from 2027-06-04 to 2027-06-08",
                                              keep_members=members)
     group = next(s for s in second["steps"] if s["kind"] == "group")
@@ -314,62 +310,36 @@ async def test_date_change_keeps_participants(contacts):
 
 def test_request_names_resolve_exact_despite_similar_namesake(contacts):
     """Typed "sara" is exactly Sara Ali — the near-namesake Sarah Malik must not steal or block it."""
-    from mirsal_agents.chat_skills import resolve_request_companions
+    from messenger_agents.chat_skills import resolve_request_companions
     found, ambiguous, unknown, named = resolve_request_companions(
-        "@mirsal plan trip to kazakhistan with sara aswell", contacts, "arif")
+        "@messenger plan trip to kazakhistan with sara aswell", contacts, "arif")
     assert [c.id for c in found] == ["sara"] and ambiguous == [] and unknown == [] and named is True
 
 
 async def test_ambiguous_first_name_asks():
-    from mirsal_agents.contacts import Contact
+    from messenger_agents.contacts import Contact
     dupes = [Contact("sara1", "Sara One"), Contact("sara2", "Sara Two")]
-    out = await Planner(Nadi(MemoryStore())).plan("u", [], dupes, None, today=dt.date(2026, 10, 8),
+    out = await Planner(MemoryStore()).plan("u", [], dupes, None, today=dt.date(2026, 10, 8),
                                                   request="plan trip to spain with sara")
     assert "ask" in out and "Sara One" in out["ask"] and "Sara Two" in out["ask"]
 
 
 def test_fixed_leave_keeps_weekends_and_counts_workdays():
-    from mirsal_agents.chat_skills import fixed_leave
+    from messenger_agents.chat_skills import fixed_leave
     w = fixed_leave(dt.date(2027, 5, 1), dt.date(2027, 5, 4))  # Sat–Tue
     assert (w["from"], w["to"], w["days"], w["leaveDays"]) == ("2027-05-01", "2027-05-04", 4, 2)
 
 
 def test_request_dates_iso_range_and_day_month():
-    from mirsal_agents.chat_skills import request_dates
+    from messenger_agents.chat_skills import request_dates
     today = dt.date(2026, 10, 8)
     assert request_dates("from 2027-05-01 to 2027-05-07", today) == (dt.date(2027, 5, 1), dt.date(2027, 5, 7))
     assert request_dates("plan egypt", today) == (None, None)
     assert request_dates("on 2 january for 5 days", today) == (dt.date(2027, 1, 2), dt.date(2027, 1, 6))
 
 
-def test_builder_library_packs_are_read_in_place_animated_first_and_follow_approvals(tmp_path):
-    import os
-    from mirsal_agents.chat_skills import BuilderLibrary
-    lib = tmp_path / "library"
-    (lib / "files" / "G002").mkdir(parents=True)
-    (lib / "files" / "G002" / "a.webm").write_bytes(b"webm")
-    (lib / "files" / "G002" / "b.png").write_bytes(b"png")
-    (tmp_path / "secret.webm").write_bytes(b"x")
-    pack = {"id": "20b742ee", "name": "Batman Lego", "slug": "batman_lego", "owner": "local", "stickers": [
-        {"id": "s2", "file": "G002/b.png", "type": "static"}, {"id": "s1", "file": "G002/a.webm", "type": "animated"},
-        {"id": "s3", "file": "../../secret.webm", "type": "animated"}]}
-    db = lib / "library.json"
-    db.write_text(json.dumps({"packs": [pack], "trash": {"packs": [{**pack, "id": "gone"}]}}), encoding="utf-8")
-    stickers = Stickers(tmp_path / "none", BuilderLibrary(lib))
-    (p,) = stickers.packs()
-    assert p["id"] == "mb-20b742ee" and p["title"] == "Batman Lego" and p["stickers"][:2] == ["s1.webm", "s2.png"]
-    assert {"batman", "lego"} <= set(p["tags"]) and "files" not in p                 # trash skipped, paths not exposed
-    assert stickers.file("mb-20b742ee", "s1.webm") == (lib / "files" / "G002" / "a.webm").resolve()
-    assert stickers.file("mb-20b742ee", "s3.webm") is None                          # a path outside files/ is refused
-    assert stickers.file("mb-20b742ee", "nope.webm") is None and stickers.file("mb-other", "s1.webm") is None
-    pack2 = {**pack, "id": "new1", "name": "Superman"}
-    db.write_text(json.dumps({"packs": [pack, pack2]}), encoding="utf-8")
-    os.utime(db, (db.stat().st_atime, db.stat().st_mtime + 5))                       # approved in the Builder → shows up
-    assert [x["title"] for x in stickers.packs()] == ["Batman Lego", "Superman"]
-
-
 def test_relative_start_days():
-    from mirsal_agents.chat_skills import relative_start
+    from messenger_agents.chat_skills import relative_start
     fri = dt.date(2026, 10, 9)  # a Friday
     assert relative_start("visit alexandria next friday", fri) == dt.date(2026, 10, 16)
     assert relative_start("this friday", fri) == dt.date(2026, 10, 16)  # today is Friday: the coming one
@@ -382,10 +352,10 @@ def test_relative_start_days():
 
 
 async def test_repro_alexandria_typo_next_friday_is_solo(contacts):
-    """The reported bug: "@mirsal plan a visit to alesxandria next friday" planned Cairo with Omar and Hana
+    """The reported bug: "@messenger plan a visit to alesxandria next friday" planned Cairo with Omar and Hana
     and asked for dates. It must plan Alexandria, start next Friday, and be just you."""
-    out = await Planner(Nadi(MemoryStore())).plan("u", EGYPT, contacts, "arif", today=dt.date(2026, 10, 9),
-                                                  request="@mirsal plan a visit to alesxandria next friday")
+    out = await Planner(MemoryStore()).plan("u", EGYPT, contacts, "arif", today=dt.date(2026, 10, 9),
+                                                  request="@messenger plan a visit to alesxandria next friday")
     assert out.get("needsDates") is None and out["destination"]["iata"] == "HBE"
     assert out["calendar"]["from"] == "2026-10-16"
     assert not any(s["kind"] == "group" for s in out["steps"])
@@ -394,7 +364,7 @@ async def test_repro_alexandria_typo_next_friday_is_solo(contacts):
 
 
 def test_partner_travels_only_when_named(contacts):
-    from mirsal_agents.chat_skills import resolve_request_companions
+    from messenger_agents.chat_skills import resolve_request_companions
     found, _, _, named = resolve_request_companions("plan trip to spain with arif and sara", contacts, "arif")
     assert [c.id for c in found] == ["arif", "sara"] and named
     found, _, _, named = resolve_request_companions("plan trip to spain", contacts, "arif")

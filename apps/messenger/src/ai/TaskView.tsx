@@ -1,7 +1,7 @@
-// An agent result, full size in the Mirsal AI workspace (replaces the old Updates tray detail).
+// An agent result, full size in the Messenger AI workspace (replaces the old Updates tray detail).
 import { useEffect, useState } from "react";
 import { MessageCircle } from "lucide-react";
-import type { MirsalTask } from "../types";
+import type { MessengerTask } from "../types";
 import { Button } from "../ui";
 import { TaskIcon, TaskStatus } from "../updates/common";
 import { Detail } from "../updates/details/Detail";
@@ -9,7 +9,7 @@ import { useNow } from "./Activity";
 import { ai } from "./state";
 import v from "./taskview.module.css";
 
-export function TaskView({ task }: { task: MirsalTask }) {
+export function TaskView({ task }: { task: MessengerTask }) {
   const now = useNow();
   const [lightbox, setLightbox] = useState(false);
   const [notice, setNotice] = useState<{ text: string; until: number } | null>(null);

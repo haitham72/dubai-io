@@ -13,7 +13,7 @@ const scene = (name: string) => () => {
   return m ? m() : Promise.reject(new Error(`scene module not found: scenes/${name}.ts`));
 };
 
-// The Mirsal redesign film (VIDEO-PLAN.md): one scene, scenes/film.ts, over the whole 60 s.
+// The Messenger redesign film (VIDEO-PLAN.md): one scene, scenes/film.ts, over the whole 60 s.
 export function makeTimeline(ly: Lyrics, au: AudioData): TimelineEntry[] {
   void ly;
   return [{ id: 'film', load: scene('film'), start: 0, end: au.duration }];
@@ -29,12 +29,12 @@ function makeVoiced(ly: Lyrics, au: AudioData): TimelineEntry[] {
     return l.start - Math.min(0.18, Math.max(0.04, gap * 0.45));
   };
   const b = {
-    creator: cut('Meet the Mirsal Creator'),
+    creator: cut('Meet the Messenger Creator'),
     persona: cut('And it gets to know you'),
     batch: cut('Need more than one'),
     override: cut('a rejection is never'),
     users: cut('made for the whole team'),
-    app: cut('Mirsal has been waiting'),
+    app: cut('Messenger has been waiting'),
     outro: cut('Your words'),
     end: au.duration,
   };
@@ -46,12 +46,12 @@ function makeVoiced(ly: Lyrics, au: AudioData): TimelineEntry[] {
     E(id, 'card', start, end, { params: { fig, lines } });
   return [
     E('hook', 'hook', 0, b.creator),
-    card('creator', 'One click', b.creator, b.persona, ['Meet the Mirsal Creator', 'press one button', 'that one click runs']),
+    card('creator', 'One click', b.creator, b.persona, ['Meet the Messenger Creator', 'press one button', 'that one click runs']),
     card('persona', 'It learns you', b.persona, b.batch, ['And it gets to know you', 'Tell it your name', 'Ask for cartoonish']),
     card('batch', 'Batching', b.batch, b.override, ['Need more than one', 'It picks the subjects', 'Nine stickers a sheet']),
     card('override', 'No dead ends', b.override, b.users, ['a rejection is never', 'Every blocked sticker']),
     card('users', 'The whole team', b.users, b.app, ['made for the whole team', 'Everyone signs in', 'The best packs']),
-    card('app', 'Inside Mirsal', b.app, b.outro, ['Mirsal has been waiting', 'The Creator is an engine']),
-    card('outro', 'Mirsal Creator', b.outro, b.end, ['Your words', 'Mirsal Creator —']),
+    card('app', 'Inside Messenger', b.app, b.outro, ['Messenger has been waiting', 'The Creator is an engine']),
+    card('outro', 'Messenger Creator', b.outro, b.end, ['Your words', 'Messenger Creator —']),
   ];
 }

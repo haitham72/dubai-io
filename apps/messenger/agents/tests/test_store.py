@@ -1,7 +1,7 @@
 """Both stores behave the same. The Redis case runs when a local Redis answers (docker compose up redis)."""
 import pytest
 
-from mirsal_agents.store import MemoryStore, RedisStore, connect
+from messenger_agents.store import MemoryStore, RedisStore, connect
 
 
 @pytest.fixture(params=["memory", "redis"])

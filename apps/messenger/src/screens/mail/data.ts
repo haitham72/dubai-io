@@ -6,7 +6,7 @@ export const folders = ['Inbox', 'Drafts', 'Sent', 'Deleted'] as const;
 export type Folder = typeof folders[number];
 export interface Email {
   /** Inbox when absent. Drafts come from the store (any screen can save one). */
-  folder?: Exclude<Folder, 'Drafts'>; draftId?: string; draftBy?: 'mirsal';
+  folder?: Exclude<Folder, 'Drafts'>; draftId?: string; draftBy?: 'messenger';
   id: string; sender: string; address: string; category: Exclude<Category, 'All'>;
   subject: string; preview: string; time: string; date: string; unread: boolean; starred: boolean;
   initials: string; face?: string; tone: 'blue' | 'purple' | 'red' | 'green';
@@ -38,11 +38,11 @@ export const emails: Email[] = [
     'Check-in starts at 2 PM. The hotel can keep your bags if you arrive early. Your total is AED 2,180, payable at the property.',
     'Free cancellation is available until 12 October at 6 PM local time. The booking number is 4819 2057. Have a wonderful stay in London.',
   ], { unread: true, address: 'bookings@booking.com', website: 'booking.com', attachments: [{ name: 'Hotel_Confirmation.pdf', size: '186 KB' }] }),
-  email('mirsal', 'Team Mirsal', 'Weekly product update', 'Primary', 'Yesterday', [
-    'This week we polished the Flights workspace and made Mirsal Updates easier to scan. The new details now stay in context while you keep chatting.',
+  email('messenger', 'Team Messenger', 'Weekly product update', 'Primary', 'Yesterday', [
+    'This week we polished the Flights workspace and made Messenger Updates easier to scan. The new details now stay in context while you keep chatting.',
     'Please review the desktop demo before Wednesday. We especially want feedback on mail reading, quick research, and the transition back into a chat.',
     'Add screenshots and one sentence about what felt confusing. Thanks for helping us make the demo feel calm and useful.',
-  ], { unread: true, tone: 'purple', address: 'team@mirsal.app', website: 'mirsal.app', attachments: [{ name: 'Demo_Checklist.pdf', size: '92 KB' }] }),
+  ], { unread: true, tone: 'purple', address: 'team@messenger.app', website: 'messenger.app', attachments: [{ name: 'Demo_Checklist.pdf', size: '92 KB' }] }),
   email('linkedin', 'LinkedIn', '5 new job recommendations', 'Social', 'Yesterday', [
     'Your experience in AI products matches five new roles in the UAE, including Senior AI Engineer, Applied ML Lead, and Solutions Architect.',
     'Two roles offer hybrid schedules and three are based in Dubai. The listed salary bands range from AED 28,000 to AED 45,000 per month.',
@@ -73,7 +73,7 @@ export const emails: Email[] = [
     'The next stage is a 45-minute discussion about a multilingual support assistant. There is no take-home assignment; we will work through trade-offs together.',
     'Please share two time slots for Wednesday or Thursday. We will send the agenda and panel names with the calendar invitation.',
   ], { unread: true, attachments: [{ name: 'Interview_Agenda.pdf', size: '78 KB' }], address: 'talent@hypersolutions.example', website: 'hypersolutions.example' }),
-  email('github', 'GitHub', '[Mirsal] 3 new notifications', 'Updates', 'Sun', [
+  email('github', 'GitHub', '[Messenger] 3 new notifications', 'Updates', 'Sun', [
     'You have two pull requests awaiting review and one comment on the desktop layout issue.',
     'The Flights date formatting change is ready for review. The second pull request adds retry handling for completed-generation cards.',
     'Your notification preferences are unchanged. Review the small changes first so the remaining branches can merge cleanly.',
@@ -99,7 +99,7 @@ export const emails: Email[] = [
     'Bring your appetite. I’ve already looked at the dessert menu twice 😄',
   ], { face: avatar(47), hero: food, address: 'sara@friends.example', website: 'friends.example', starred: true }),
   email('figma', 'Figma', 'Your team’s latest design notes', 'Social', 'Thu', [
-    'There are four new comments on the Mirsal desktop exploration. The latest frames include mail context cards and a quieter research reader.',
+    'There are four new comments on the Messenger desktop exploration. The latest frames include mail context cards and a quieter research reader.',
     'Lina suggested keeping the header height consistent across workspaces. Omar left a note about making the report’s source list easier to scan.',
     'The prototype is ready for another walkthrough whenever you are. All comments are grouped by frame.',
   ], { tone: 'purple', address: 'notifications@figma.com', website: 'figma.com' }),

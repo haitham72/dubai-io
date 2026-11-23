@@ -180,7 +180,7 @@ export function Placeholder({ title, owner }: { title: string; owner: string }) 
   );
 }
 
-/** Unsplash photo helper: img("photo-1507525428034-b723cf961d3e", 800). */
-export const img = (id: string, w = 800) => `https://images.unsplash.com/${id}?w=${w}&q=80&auto=format&fit=crop`;
-/** Portrait avatar helper: avatar(12) → https://i.pravatar.cc/150?img=12 (1–70). */
-export const avatar = (n: number) => `https://i.pravatar.cc/150?img=${n}`;
+/** Placeholder. Remote photo hosts are not used. */
+export const img = (_id: string, _w = 800) => "";
+/** Placeholder. Remote portrait hosts are not used. */
+export const avatar = (_n: number) => "";

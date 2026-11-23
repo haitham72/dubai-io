@@ -1,10 +1,10 @@
-// Mirsal Studio feed: every generated image/video full-screen, swiped vertically like TikTok/Reels.
+// Messenger Studio feed: every generated image/video full-screen, swiped vertically like TikTok/Reels.
 // Right rail: like · report · share · use in chat. Bottom: the prompt + (images only) a floating "Prompt your edits…"
 // composer — Nano Banana 2 edits the image for real (Higgsfield) and the result arrives as a new notification/feed item.
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { ArrowUp, Flag, Heart, MessageCircle, Share, Sparkles, Volume2, VolumeX, X } from "lucide-react";
 import { actions, useStore } from "../store";
-import type { MirsalTask } from "../types";
+import type { MessengerTask } from "../types";
 import { editImage } from "../ai/runAction";
 import { relativeTime } from "../updates/common";
 import { feed, useFeed } from "./feedState";
@@ -13,7 +13,7 @@ import { Sheet } from "./Sheet";
 import s from "./feed.module.css";
 
 const REASONS = ["Inaccurate or misleading", "Offensive or unsafe", "Copyright or likeness", "Low quality", "Something else"];
-const isMedia = (t: MirsalTask) => t.status === "completed" && (t.result?.type === "image" || t.result?.type === "video") && !t.dismissed;
+const isMedia = (t: MessengerTask) => t.status === "completed" && (t.result?.type === "image" || t.result?.type === "video") && !t.dismissed;
 
 export function MediaFeed() {
   const openAt = useFeed((f) => f.openAt);
@@ -23,11 +23,11 @@ export function MediaFeed() {
   return <FeedView items={items} startId={openAt} />;
 }
 
-function FeedView({ items, startId }: { items: MirsalTask[]; startId: string }) {
+function FeedView({ items, startId }: { items: MessengerTask[]; startId: string }) {
   const scroller = useRef<HTMLDivElement>(null);
   const [current, setCurrent] = useState(Math.max(0, items.findIndex((t) => t.id === startId)));
   const [muted, setMuted] = useState(true);
-  const [report, setReport] = useState<MirsalTask | null>(null);
+  const [report, setReport] = useState<MessengerTask | null>(null);
   const [toast, setToast] = useState("");
 
   useLayoutEffect(() => {
@@ -44,7 +44,7 @@ function FeedView({ items, startId }: { items: MirsalTask[]; startId: string }) 
   };
 
   return (
-    <div className={s.feed} role="dialog" aria-label="Mirsal Studio">
+    <div className={s.feed} role="dialog" aria-label="Messenger Studio">
       <div ref={scroller} className={s.scroller} onScroll={onScroll}>
         {items.map((t, i) => (
           <Slide key={t.id} task={t} active={i === current} muted={muted}
@@ -54,7 +54,7 @@ function FeedView({ items, startId }: { items: MirsalTask[]; startId: string }) 
 
       <header className={s.top}>
         <button className={s.round} aria-label="Close" onClick={feed.close}><X size={22} strokeWidth={2} /></button>
-        <span className={s.brand}><img src={ORB} alt="" />Mirsal Studio</span>
+        <span className={s.brand}><img src={ORB} alt="" />Messenger Studio</span>
         <button className={s.round} aria-label={muted ? "Unmute" : "Mute"} onClick={() => setMuted(!muted)}>
           {muted ? <VolumeX size={20} strokeWidth={2} /> : <Volume2 size={20} strokeWidth={2} />}
         </button>
@@ -63,10 +63,10 @@ function FeedView({ items, startId }: { items: MirsalTask[]; startId: string }) 
       {report && (
         <Sheet label="Report" tall={false} onClose={() => setReport(null)}>
           <h2 className={s.sheetTitle}>Report this generation</h2>
-          <p className={s.sheetSub}>Mirsal reviews reports to improve its models. Nothing is shared with other people.</p>
+          <p className={s.sheetSub}>Messenger reviews reports to improve its models. Nothing is shared with other people.</p>
           <div className={s.reasons}>
             {REASONS.map((r) => (
-              <button key={r} onClick={() => { setReport(null); setToast("Thanks — reported. Mirsal will review it."); }}>
+              <button key={r} onClick={() => { setReport(null); setToast("Thanks — reported. Messenger will review it."); }}>
                 <Flag size={18} strokeWidth={1.75} />{r}
               </button>
             ))}
@@ -79,9 +79,9 @@ function FeedView({ items, startId }: { items: MirsalTask[]; startId: string }) 
 }
 
 function Slide({ task, active, muted, onReport, notify }: {
-  task: MirsalTask; active: boolean; muted: boolean; onReport: () => void; notify: (t: string) => void;
+  task: MessengerTask; active: boolean; muted: boolean; onReport: () => void; notify: (t: string) => void;
 }) {
-  const r = task.result as Extract<NonNullable<MirsalTask["result"]>, { type: "image" | "video" }>;
+  const r = task.result as Extract<NonNullable<MessengerTask["result"]>, { type: "image" | "video" }>;
   const liked = useFeed((f) => !!f.liked[task.id]);
   const video = useRef<HTMLVideoElement>(null);
   const [edit, setEdit] = useState("");

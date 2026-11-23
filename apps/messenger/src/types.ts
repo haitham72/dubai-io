@@ -2,7 +2,7 @@
 
 export type ScreenId =
   | "chats" | "flights" | "stocks" | "weather" | "mail" | "calendar"
-  | "files" | "ai" | "research" | "history" | "ai-cleaner";
+  | "files" | "ai" | "research" | "history";
 
 export type ModalId = "profile" | "settings" | null;
 /** A card that opens over whatever screen is showing (desktop: centred; phone: bottom sheet) instead of switching screens. */
@@ -21,10 +21,10 @@ export type MessageBody =
   | { kind: "image"; url: string; caption?: string }
   | { kind: "voice"; seconds: number }
   | { kind: "video"; url: string; caption?: string }
-  /** `taskId` links the card to its Mirsal Updates task (tap opens it and marks it seen). */
+  /** `taskId` links the card to its Messenger Updates task (tap opens it and marks it seen). */
   | { kind: "card"; title: string; subtitle: string; icon: "flight" | "research" | "mail"; taskId?: string }
   | { kind: "sticker"; url: string; pack?: string }
-  /* @mirsal replies in a chat (rendered faint, with the Mirsal mark) */
+  /* @messenger replies in a chat (rendered faint, with the Messenger mark) */
   | { kind: "ai"; text: string; label?: string; verdict?: Verdict; sources?: AiSource[]; status?: string; demo?: boolean }
   | { kind: "choices"; mode: "sticker" | "image"; title: string; status?: string; packId?: string;
       options: { url?: string; label?: string; prompt?: string }[]; chosen?: number }
@@ -33,7 +33,7 @@ export type MessageBody =
 export type Verdict = "true" | "mostly_true" | "misleading" | "false" | "unverified";
 export interface AiSource { title: string; url: string; domain: string }
 
-/** "@mirsal setup plan for this" — built by the agents service (agents/mirsal_agents/chat_skills.py).
+/** "@messenger setup plan for this" — built by the agents service (agents/messenger_agents/chat_skills.py).
  *  `needsDates` = dates are still missing: the card asks for them and nothing was filed, drafted or scheduled.
  *  `destination` identifies the resolved country/city/airport for date changes. */
 export interface TripPlan {
@@ -59,8 +59,8 @@ export interface Message {
   fromMe: boolean;
   time: string; // display time, e.g. "3:03 PM"
   body: MessageBody;
-  /** Written by Mirsal (an @mirsal reply), not by a person. */
-  by?: "mirsal";
+  /** Written by Messenger (an @messenger reply), not by a person. */
+  by?: "messenger";
   /** Quoted message this one replies to. */
   replyTo?: { id: string; sender: string; text: string };
 }
@@ -74,11 +74,11 @@ export interface Chat {
   muted?: boolean;
 }
 
-/* ---------- Mirsal tasks (powers Mirsal Updates) ---------- */
+/* ---------- Messenger tasks (powers Messenger Updates) ---------- */
 export type TaskStatus = "queued" | "running" | "completed" | "failed";
 export type TaskType = "image" | "flight" | "research" | "email" | "video" | "esign" | "event";
 
-export interface MirsalTask {
+export interface MessengerTask {
   id: string;
   type: TaskType;
   title: string;      // "Image ready" / "Generating image"
@@ -90,7 +90,7 @@ export interface MirsalTask {
   unread: boolean;
   result?: TaskResult;
   error?: string;
-  dismissed?: boolean; // hidden from Mirsal Updates; the task still runs and delivers
+  dismissed?: boolean; // hidden from Messenger Updates; the task still runs and delivers
 }
 
 export type TaskResult =
@@ -185,8 +185,8 @@ export interface EmailDraft {
   subject: string;
   body: string;
   time: string;
-  /** Written by Mirsal (e.g. a trip plan's leave email), shown as such in Drafts. */
-  by?: "mirsal";
+  /** Written by Messenger (e.g. a trip plan's leave email), shown as such in Drafts. */
+  by?: "messenger";
 }
 
 /* ---------- AI chat ---------- */
@@ -197,6 +197,6 @@ export interface AiMessage {
   imageUrl?: string;
   status?: string; // minimal, e.g. "Searched 8 sources · 12s"
   pending?: boolean;
-  taskId?: string; // Mirsal task this reply waits on (e.g. an image job); the image shows when it completes
+  taskId?: string; // Messenger task this reply waits on (e.g. an image job); the image shows when it completes
   enter?: boolean; // play the entrance animation (a newly arrived video)
 }

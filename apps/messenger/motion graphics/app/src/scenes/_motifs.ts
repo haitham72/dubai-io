@@ -1,5 +1,5 @@
 // Shared motifs used by several plates so they look identical everywhere:
-//  - the SPARK, now the Mirsal ORB: a blue halo, a cyan core, a cool white highlight and sputtering particles
+//  - the SPARK, now the Messenger ORB: a blue halo, a cyan core, a cool white highlight and sputtering particles
 //  - the MASK: the bland "assistant smile" (bone disc, two dots, one curve)
 import { LineBatch } from '../engine/lines';
 import { LIN, rgba } from '../engine/palette';
@@ -47,7 +47,7 @@ export function sparkParticles(lb: LineBatch, t: number, headAt: (t: number) => 
   }
 }
 
-/** The pen head, the Mirsal orb: a blue halo, a cyan core, a cool white highlight (draw after the line it drags). 2D LineBatch. */
+/** The pen head, the Messenger orb: a blue halo, a cyan core, a cool white highlight (draw after the line it drags). 2D LineBatch. */
 export function sparkHead(lb: LineBatch, x: number, y: number, t: number, scale = 1, intensity = 1) {
   const flick = 0.85 + 0.15 * Math.sin(t * 91.7) * Math.sin(t * 57.3);
   const I = intensity * flick;

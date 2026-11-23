@@ -17,7 +17,7 @@
   if (current) {
     const tabs = [
       ["chats", "Chats", "message-circle"],
-      ["ai", "Mirsal AI", "sparkles"],
+      ["ai", "Messenger AI", "sparkles"],
       ["apps", "Apps", "layout-grid"],
       ["settings", "Settings", "settings"],
     ];

@@ -1,4 +1,4 @@
-/* Mirsal iOS — static design samples. Builds on src/tokens.css; only iOS-specific sizes live here. */
+/* Messenger iOS — static design samples. Builds on src/tokens.css; only iOS-specific sizes live here. */
 :root {
   --sb-h: env(safe-area-inset-top, 20px);
   --home-h: env(safe-area-inset-bottom, 12px);
@@ -69,7 +69,7 @@ html.framed .home {
 }
 .search svg.lucide { width: 18px; height: 18px; }
 
-/* ---------- Mirsal AI glow (same conic ring as desktop Mirsal Updates) ---------- */
+/* ---------- Messenger AI glow (same conic ring as desktop Messenger Updates) ---------- */
 .ai-ring {
   position: relative; border: 1.5px solid transparent;
   background: linear-gradient(var(--surface-solid), var(--surface-solid)) padding-box,
@@ -86,7 +86,7 @@ html.framed .home {
 
 .orb { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; flex: none; }
 
-/* Mirsal = the orb, everywhere: a pinned chat row in the list, a glass orb button in toolbars, a sheet when tapped. */
+/* Messenger = the orb, everywhere: a pinned chat row in the list, a glass orb button in toolbars, a sheet when tapped. */
 .av.ring { padding: 3px; border-radius: 50%; isolation: isolate; }
 .av.ring img { border-radius: 50%; }
 .pinned-ic { color: var(--text-3); }

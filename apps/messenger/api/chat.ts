@@ -8,7 +8,7 @@ const nextWeek = (today: Date) =>
   Array.from({ length: 8 }, (_, i) => dubaiDay(new Date(today.getTime() + (i + 1) * 86_400_000))).join(", ");
 
 const SYSTEM_PROMPT = (today: Date) =>
-  "You are Mirsal AI, a concise and friendly assistant inside the Mirsal chat app. " +
+  "You are Messenger AI, a concise and friendly assistant inside the Messenger chat app. " +
   `Today is ${dubaiDay(today)} (Dubai). The coming days are: ${nextWeek(today)}. "Next <weekday>" means the first such day in that list. ` +
   "Use the tools when the user asks for an image, a video, flights, research, or weather; otherwise answer directly in plain markdown. " +
   "When the user asks to make, create or generate a video, reel or clip, call generate_video (never generate_image). " +
@@ -55,8 +55,8 @@ export const POST = route(async (req) => {
     let args: Record<string, unknown> = {};
     try { args = JSON.parse(call.function.arguments || "{}"); } catch { /* unusable args → text */ }
     const name = call.function.name;
-    if (name === "generate_image" && args.prompt) return json({ text: "On it — generating your image. I'll post it in Mirsal Updates.", action: { type: "image", prompt: String(args.prompt) } });
-    if (name === "generate_video" && args.prompt) return json({ text: "On it — creating your video. I'll post it in Mirsal Updates.", action: { type: "video", prompt: String(args.prompt) } });
+    if (name === "generate_image" && args.prompt) return json({ text: "On it — generating your image. I'll post it in Messenger Updates.", action: { type: "image", prompt: String(args.prompt) } });
+    if (name === "generate_video" && args.prompt) return json({ text: "On it — creating your video. I'll post it in Messenger Updates.", action: { type: "video", prompt: String(args.prompt) } });
     if (name === "search_flights" && args.from && args.to && args.depart) {
       const cabin = ["economy", "business", "first"].includes(String(args.cabin)) ? String(args.cabin) : "economy";
       const query = {
@@ -65,7 +65,7 @@ export const POST = route(async (req) => {
       };
       return json({ text: `On it — searching flights ${query.from} → ${query.to}.`, action: { type: "flight", query } });
     }
-    if (name === "research_topic" && args.topic) return json({ text: "On it — researching that now. I'll post the brief in Mirsal Updates.", action: { type: "research", topic: String(args.topic) } });
+    if (name === "research_topic" && args.topic) return json({ text: "On it — researching that now. I'll post the brief in Messenger Updates.", action: { type: "research", topic: String(args.topic) } });
     if (name === "get_weather" && args.city) return json({ text: `Here's the weather in ${args.city}.`, action: { type: "weather", city: String(args.city) } });
   }
   return json({ text: msg?.content ?? "" });
