@@ -20,7 +20,8 @@
   - Paths: `apps/messenger/`, `apps/api/app/messenger/`, `docs/submissions/messenger/`. Lane prefix `mg/`, table prefix `mg_`, tests `test_messenger_*`.
   - The old name must not appear in the UI, code identifiers, package names, routes, `@`-skills, the deck, the video or any new doc.
   - The only exceptions are the source-repo URL, local paths that already exist, and the founder's own filed documents in `founder-inputs/`, which stay unchanged as history.
-  - Gate: `git grep -n -i -e "m[i]rsal" -- apps/messenger apps/api/app/messenger docs/submissions/messenger` prints nothing.
+  - Planning docs may cite the redesign repo's own file paths so builders can find code; they never use the old name as the product's name.
+  - Gate: `git grep -n -i -e "m[i]rsal" -- apps/messenger apps/api/app/messenger` prints nothing.
 
 ## D2 — Persocial
 
@@ -47,8 +48,23 @@ Dubai-io Community is the new home of the Persocial idea; Persocial stops as a s
 
 The redesign's latest design is current: commit `6b45ba4`, "AI workspace replaces Updates tray". The founder spec's line about keeping the compact Updates tray is outdated.
 
+## D5 — Memory engine: temporal_note
+
+> The other PC's main "is using completly rewritten temporal_note mcp instead of hindsight or honcho".
+
+- Memory for all three entries is the rewritten **temporal_note** engine: `apps/memory/`, package `temporal_memory` (HTTP API `api/app.py`, MCP server `mcp/server.py`, contract `models.py`, Forget `privacy/forget.py`).
+- **Hindsight and Honcho are not used.** The founder inputs' mentions of Hindsight, `MemoryBackend` and `ScopeGuard` mean temporal_note. Hindsight's `AC-1` / `MEM-01` gates do not apply to these entries.
+- `apps/api/app/memory_bridge/` is a client of temporal_note and never a second engine. Until temporal_note is on `main`, the bridge's tests use a clearly named fake with the same interface.
+- The other PC's `main` builds Dubai-io's **iOS and desktop apps** and is far ahead of `origin/main`. These branches therefore only add new files in new folders (`docs/submissions/CLAUDE.md` §1–§2).
+
+## D6 — The sticker Builder service is excluded
+
+- The sticker Builder service (`D:\Vscode\mirsal-builder-io`) began as an office-assigned task, and its ownership is **contested**.
+- The Messenger uses **nothing** from it: no code, prompts, system design, emoji-bank data or MCP adapter.
+- The Messenger's stickers and images are built fresh, from the founder's own redesign features plus licensed generation providers.
+- This supersedes the old O1.
+
 ## Still open (raise at the founder gate after P2)
 
-- **O1** The sticker Builder service (`D:\Vscode\mirsal-builder-io`): is it the founder's own or the office's, and what is its new name? Until answered, the Messenger's sticker features use only founder-authored code, or are labelled as a pending dependency.
 - **O2** The Messenger's new product name.
-- **O3** Anything the P1 planners list as blocking in their `open-questions.md`.
+- **O3** Anything the planners list as blocking in their `open-questions.md`.
