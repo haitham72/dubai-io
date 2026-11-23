@@ -6,8 +6,8 @@ from uuid import uuid4
 from fastapi import APIRouter, HTTPException, Query, Request
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from ..actions import COOKIE, engine
 from . import store as cm
+from .principal import resolve
 
 router = APIRouter(tags=["community"])
 HANDLE_RE = re.compile(r"^[a-z0-9_]{3,30}$")
@@ -15,8 +15,7 @@ MENTION_RE = re.compile(r"@([A-Za-z0-9_]{3,30})")
 
 
 def scope(request: Request):
-    store = engine().store
-    return store, store.owner(request.cookies.get(COOKIE))
+    return resolve(request)
 
 
 # ---------------------------------------------------------------- helpers
@@ -95,9 +94,14 @@ def post_row(store, post_id):
         (post_id,)).fetchone()
 
 
+def _post_removed(store, post_id) -> bool:
+    from .moderation import is_removed
+    return is_removed(store, "post", post_id)
+
+
 def require_visible_post(store, owner, post_id):
     row = post_row(store, post_id)
-    if not row or row[6]:
+    if not row or row[6] or _post_removed(store, post_id):
         raise HTTPException(404, "Post not found")
     if row[2]:
         group = group_row(store, row[2])
@@ -394,6 +398,15 @@ def _create_post(store, owner, text, group_id):
     return pid
 
 
+def _remember_public_post(request, store, owner, post_id, text, group_id):
+    if group_id:
+        group = group_row(store, group_id)
+        if group is None or group[4] != "public":
+            return
+    from .memory import remember
+    remember(request, record_id=f"cmpost:{post_id}", source_id=f"community:post:{post_id}", text=text, author_id=owner)
+
+
 @router.post("/api/community/posts")
 def create_post(body: PostIn, request: Request):
     store, owner = scope(request)
@@ -402,6 +415,7 @@ def create_post(body: PostIn, request: Request):
         pid = _create_post(store, owner, body.text, body.group_id)
         notify_mentions(store, owner, body.text, pid, group_id=body.group_id)
         store.db.commit()
+        _remember_public_post(request, store, owner, pid, body.text, body.group_id)
         return {"post": present_post(store, post_row(store, pid), owner)}
 
 
@@ -550,6 +564,9 @@ def add_bookmark(post_id: str, request: Request):
         require_visible_post(store, owner, post_id)
         store.db.execute("INSERT OR IGNORE INTO cm_bookmarks VALUES (?,?,?)", (owner, post_id, cm.now()))
         store.db.commit()
+        row = post_row(store, post_id)
+        from .memory import remember
+        remember(request, record_id=f"cmsave:{post_id}", source_id=f"community:post:{post_id}", text=row[3], author_id=row[1])
         return {"post_id": post_id, "bookmarked": True}
 
 
@@ -605,6 +622,8 @@ def feed(request: Request, limit: int = Query(default=50, ge=1, le=100)):
             "SELECT id,owner,group_id,text,revision,pinned,deleted,provenance,created_at,updated_at FROM cm_posts WHERE deleted=0 ORDER BY created_at DESC, id DESC").fetchall()
         out = []
         for r in rows:
+            if _post_removed(store, r[0]):
+                continue
             if r[1] == owner or r[1] in followed or (r[2] and r[2] in groups):
                 # Private-group fencing is redundant here (membership required) but keep it explicit.
                 if r[2]:
@@ -706,6 +725,8 @@ def join_group(group_id: str, request: Request):
         store.db.execute(
             "INSERT OR IGNORE INTO cm_group_members VALUES (?,?, 'member', 'active', NULL, ?)", (group_id, owner, cm.now()))
         store.db.commit()
+        from .memory import remember
+        remember(request, record_id=f"cmjoin:{group_id}", source_id=f"community:group:{group_id}", text=group[1], author_id=owner, subject_path=group[2])
         return {"group": present_group(store, group_row(store, group_id), owner), "membership": {"role": "member", "status": "active"}}
 
 
@@ -910,6 +931,7 @@ def create_group_post(group_id: str, body: PostIn, request: Request):
         pid = _create_post(store, owner, merged.text, group_id)
         notify_mentions(store, owner, merged.text, pid, group_id=group_id)
         store.db.commit()
+        _remember_public_post(request, store, owner, pid, merged.text, group_id)
         return {"post": present_post(store, post_row(store, pid), owner)}
 
 
@@ -924,7 +946,8 @@ def list_group_posts(group_id: str, request: Request):
             rows = store.db.execute(
                 "SELECT id,owner,group_id,text,revision,pinned,deleted,provenance,created_at,updated_at FROM cm_posts WHERE group_id=? AND deleted=0 ORDER BY pinned DESC, created_at DESC",
                 (group_id,)).fetchall()
-            return {"posts": [present_post(store, r, owner) for r in rows], "group": present_group(store, group, owner)}
+            visible = [r for r in rows if not _post_removed(store, r[0])]
+            return {"posts": [present_post(store, r, owner) for r in visible], "group": present_group(store, group, owner)}
         raise HTTPException(404, "Group not found")
 
 
@@ -939,7 +962,8 @@ def search_group(group_id: str, request: Request, q: str = Query(default="", max
         rows = store.db.execute(
             "SELECT id,owner,group_id,text,revision,pinned,deleted,provenance,created_at,updated_at FROM cm_posts WHERE group_id=? AND deleted=0 AND lower(text) LIKE ? ORDER BY created_at DESC",
             (group_id, term)).fetchall()
-        return {"posts": [present_post(store, r, owner) for r in rows], "q": q}
+        visible = [r for r in rows if not _post_removed(store, r[0])]
+        return {"posts": [present_post(store, r, owner) for r in visible], "q": q}
 
 
 @router.get("/api/community/groups/{group_id}/moderation-log")
@@ -1026,7 +1050,8 @@ def list_notifications(request: Request, unread_only: bool = Query(default=False
             sql += " AND is_read=0"
         sql += " ORDER BY created_at DESC, id DESC"
         rows = store.db.execute(sql, (owner,)).fetchall()
-        unread = store.db.execute("SELECT COUNT(*) FROM cm_notifications WHERE owner=? AND is_read=0", (owner,)).fetchone()[0]
+        rows = [r for r in rows if not r[4] or not _post_removed(store, r[4])]
+        unread = sum(1 for r in rows if not r[9])
         items = [_present_notification(r) for r in rows]
         return {"notifications": items, "inbox": items, "unread": unread, "unread_count": unread}
 

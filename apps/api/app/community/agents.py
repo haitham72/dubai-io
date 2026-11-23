@@ -16,10 +16,10 @@ Hard rules:
   first result and never creates a second post.
 - Group Organizer proposes only, never contacts/invites (D14): a proposal
   creates zero notifications for other members.
-- No raw private text in ranking: Discovery scores ONLY from the
-  requester's own cm profile interests (local, consented features they
-  typed into their Community profile) + their follows. Cross-app interest
-  features wait for B0; they are intentionally NOT read here.
+- No raw private text in ranking. When a memory bridge is configured, Discovery
+  reads only InterestFeature values from read_community_interest_features and
+  shows that DTO's why_this_text. With no bridge, it still uses the adult's
+  own Community profile interests and follows.
 - No messenger: no DM endpoints, no outbound contact of any kind.
 """
 import hashlib
@@ -196,6 +196,57 @@ def _destination(group_id, destination):
 
 
 # ---------------------------------------------------------------- Discovery
+def _discovery_from_bridge(request, store, owner, limit):
+    from app.memory_bridge.models import ConsentDeniedError
+
+    from .memory import bridge_of
+
+    bridge = bridge_of(request)
+    principal = getattr(request.state, "community_principal", None)
+    if bridge is None or principal is None:
+        return None
+    try:
+        features = list(bridge.read_community_interest_features(principal))
+    except ConsentDeniedError:
+        features = []
+    items = []
+    for feature in features:
+        needle = (feature.topic_slug or "").lower()
+        label = (feature.topic_label or "").lower()
+        rows = store.db.execute(
+            "SELECT id,owner,group_id,text FROM cm_posts WHERE deleted=0"
+        ).fetchall()
+        for row in rows:
+            if row[1] == owner:
+                continue
+            hay = (row[3] or "").lower()
+            if not ((needle and needle in hay) or (label and label in hay)):
+                continue
+            if row[2]:
+                group = store.db.execute("SELECT visibility FROM cm_groups WHERE id=?", (row[2],)).fetchone()
+                if group and group[0] == "private":
+                    continue
+            items.append({
+                "kind": "post",
+                "id": row[0],
+                "why_this": feature.why_this_text,
+                "features_used": [feature.feature_id],
+                "why_chip": "Why this?",
+                "demo_data": feature.demo_data,
+            })
+            if len(items) >= limit:
+                break
+    return {
+        "items": items[:limit],
+        "candidates": items[:limit],
+        "reason": "" if items else "No consented interest features are available for Discover.",
+        "empty": len(items) == 0,
+        "features_used": [feature.feature_id for feature in features],
+        "source": "interest_feature",
+        "why_chip": "Why this?",
+    }
+
+
 @router.get("/api/community/discovery")
 def discovery(request: Request, limit: int = Query(default=20, ge=1, le=100)):
     store, owner = scope(request)
@@ -213,6 +264,9 @@ def discovery(request: Request, limit: int = Query(default=20, ge=1, le=100)):
             (owner,)).fetchall()
         follow_owners = {r[0] for r in follows}
         follow_handles = {r[0]: r[1] for r in follows}
+        bridged = _discovery_from_bridge(request, store, owner, limit)
+        if bridged is not None:
+            return bridged
 
         def log(candidate_type, candidate_id, features, why, reason=""):
             store.db.execute(

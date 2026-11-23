@@ -12,6 +12,7 @@ from app import actions
 from app.actions import ActionEngine, ActionStore
 from app.community.media import router as media_router
 from app.community.routes import router as community_router
+from tests.fixtures.community.bind import install
 
 FIXTURE = Path(__file__).parent / "fixtures" / "community" / "media_fixture.json"
 
@@ -32,6 +33,7 @@ def clients(tmp_path, monkeypatch):
     app.include_router(actions.router)
     app.include_router(community_router)
     app.include_router(media_router)
+    install(app, store, tmp_path)
     c = TestClient(app)
     c.get("/api/session")
     yield c, store, tmp_path, monkeypatch

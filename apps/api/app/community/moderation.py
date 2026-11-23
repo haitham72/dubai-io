@@ -301,6 +301,15 @@ def _order(store, desc: bool = False) -> str:
     return f"{col} {'DESC' if desc else 'ASC'}"
 
 
+def is_removed(store, target_type: str, target_id: str) -> bool:
+    """Latest human decision. A flag alone is not removed. Restore clears it."""
+    try:
+        setup_mod(store)
+        return bool(get_target_state(store, target_type, target_id)["removed"])
+    except Exception:
+        return False
+
+
 def get_target_state(store, target_type: str, target_id: str) -> dict:
     rows = store.db.execute(
         f"SELECT {_EVENT_COLS} FROM cm_moderation_events WHERE target_type=? AND target_id=? ORDER BY {_order(store)}",
@@ -416,5 +425,5 @@ def moderation_target(target_type: str, target_id: str, request: Request):
             if not _can_view(store, owner, latest_ctx, reporter=reporter):
                 raise HTTPException(403, "You cannot view moderation state for this target")
         # Honest integration note: routes.py feed/post filtering is a follow-up.
-        state["feed_filtering"] = "follow-up: routes.py does not yet filter removed targets"
+        state["feed_filtering"] = "removed targets are hidden from the feed, search, notifications and community pages"
         return state

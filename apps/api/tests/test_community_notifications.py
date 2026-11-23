@@ -6,6 +6,7 @@ from app import actions
 from app.actions import ActionEngine, ActionStore
 from app.community.routes import router as community_router
 from app.community import server as community_server
+from tests.fixtures.community.bind import install
 
 
 @pytest.fixture
@@ -15,6 +16,7 @@ def client(tmp_path, monkeypatch):
     app = FastAPI()
     app.include_router(actions.router)
     app.include_router(community_router)
+    install(app, store, tmp_path)
     c = TestClient(app)
     c.get("/api/session")
     yield c, store

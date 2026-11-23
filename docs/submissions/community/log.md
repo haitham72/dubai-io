@@ -1,5 +1,31 @@
 # Dubai-io Community — log
 
+## 24 Nov 2026 — CM-B5, CM-B8, remove-hides, staged preview (Cursor)
+
+**Baseline** on `cf2be98` before these slices: 567 passed, 13 skipped, 3 failed (`test_filesystem_is_scoped`, `test_tryon_requires_adult_confirm`, `test_tryon_fixture_preview`).
+**After:** 578 passed, 14 skipped, the same 3 failures. Community tests 62 passed, 1 skipped (`SUPABASE_LOCAL_URL` unset). `npm test` 9 passed. `npm run build` exited 0 on retry (7 static routes).
+**CM-B5:** owners resolve only through `require_app_principal`; spoofed headers are rejected; `adopt_session_owner` links a lab cookie without becoming the owner; minor-protected sessions fail closed. Identity router is mounted on `:8060`.
+**CM-B8:** Discovery uses `read_community_interest_features` when a bridge is attached (`Why this?` from the InterestFeature). Consent is default-off. Saves, joins and own public posts call `write_consented`. `forget_source` erases the bridge record and leaves the post. Canaries: no raw text, no sensitive text, no minor payload.
+**Moderation:** a human `removed` decision hides the post from the feed, search, notifications and the community page. Restore shows it again. A flag alone does not hide it.
+**CM-B11** was not run. **CM-B12** still waits for the founder. The UI was not changed.
+
+## Founder visual review — pending
+
+Staged at `http://localhost:3060/` on 24 Nov 2026. The UI was not changed. Desktop frames are 1280×900. Phone frames are 390×844.
+
+- `docs/submissions/community/review/founder-review-desktop-feed.png`
+- `docs/submissions/community/review/founder-review-desktop-community.png`
+- `docs/submissions/community/review/founder-review-desktop-post.png`
+- `docs/submissions/community/review/founder-review-desktop-discover.png`
+- `docs/submissions/community/review/founder-review-desktop-inbox.png`
+- `docs/submissions/community/review/founder-review-desktop-memory.png`
+- `docs/submissions/community/review/founder-review-phone-feed.png`
+- `docs/submissions/community/review/founder-review-phone-community.png`
+- `docs/submissions/community/review/founder-review-phone-post.png`
+- `docs/submissions/community/review/founder-review-phone-discover.png`
+- `docs/submissions/community/review/founder-review-phone-inbox.png`
+- `docs/submissions/community/review/founder-review-phone-memory.png`
+
 ## 23 Nov 2026 — Build waves 1+2 (Muse, D11 approved; adults only 18+)
 
 **Preconditions met:** roadmap status `approved — 23 Nov 2026 (founder, D11)`. Gate S has **not** passed — no `identity/` or `memory_bridge/` in this tree, so CM-B5/CM-B8 were not started. Under-18 slices not built (D11). Baseline on the untouched tree: 409 passed + same 3 pre-existing failures (connectors scoping, 2 tryon — unrelated, no Community files).

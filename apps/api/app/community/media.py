@@ -19,7 +19,7 @@ from fastapi import APIRouter, HTTPException, Query, Request
 from fastapi.responses import Response
 from pydantic import BaseModel, ConfigDict, Field
 
-from ..actions import COOKIE, engine
+from ..actions import engine
 from . import store as cm
 
 router = APIRouter(tags=["community-media"])
@@ -74,8 +74,8 @@ def _max_file_bytes() -> int:
 
 
 def _scope(request: Request):
-    store = engine().store
-    return store, store.owner(request.cookies.get(COOKIE))
+    from .routes import scope
+    return scope(request)
 
 
 def _sign(media_id: str, exp: int) -> str:
