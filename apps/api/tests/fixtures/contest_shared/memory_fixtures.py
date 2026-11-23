@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from app.db import SQLiteDB
+from app import db as db_mod
 from app.memory_bridge.fake_client import FakeTemporalMemoryClient
 from app.memory_bridge.models import MemoryRecordInput
 from app.memory_bridge.schema import ensure_memory_bridge_schema
@@ -12,8 +12,8 @@ SYNTH_OWNER_A = "usr_synth_alpha"
 SYNTH_OWNER_B = "usr_synth_beta"
 
 
-def make_sqlite_db(tmp_path: Path, name: str = "cs_b2.db") -> SQLiteDB:
-    db = SQLiteDB(tmp_path / name)
+def make_sqlite_db(tmp_path: Path, name: str = "cs_b2.db"):
+    db = db_mod.connect(tmp_path / name)
     ensure_memory_bridge_schema(db)
     return db
 

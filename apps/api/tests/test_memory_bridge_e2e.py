@@ -22,6 +22,7 @@ from app.identity import (
 from app.identity.deps import LEGACY_ANON_COOKIE
 from app.memory_bridge import FakeTemporalMemoryClient, MemoryBridge, create_memory_bridge_router
 from app.memory_bridge.models import MemoryBridgeUnavailable, SensitiveContentError
+from tests.fixtures.contest_shared.db_fixtures import cs_postgres_isolation  # noqa: F401
 from tests.fixtures.contest_shared.identity_fixtures import (
     TEST_AUDIENCE,
     TEST_HS256_SECRET,

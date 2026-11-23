@@ -12,6 +12,7 @@ if str(API_ROOT) not in sys.path:
     sys.path.insert(0, str(API_ROOT))
 
 from app import db as db_mod
+from tests.fixtures.contest_shared.db_fixtures import cs_postgres_isolation  # noqa: F401
 from app.identity.models import AgeBand, AppId, VerifiedPrincipal
 from app.memory_bridge.bridge import MemoryBridge
 from app.memory_bridge.fake_client import FakeTemporalMemoryClient
