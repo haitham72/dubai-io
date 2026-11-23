@@ -1,0 +1,125 @@
+{
+  "owner": {
+    "id": "karim",
+    "label": "Karim Haddad",
+    "kind": "real",
+    "display_name": "Karim Haddad",
+    "self_aliases": ["Karim", "Kimo", "كريم"]
+  },
+  "entities": [
+    {"id": "p01", "kind": "person", "name": "Karim Haddad", "status": "active", "relation_to_user": "self", "closeness_tier": null, "aliases": ["Karim", "Kimo", "كريم"], "salience": 1.0, "first_seen": "2026-10-20", "last_seen": "2026-11-19"},
+    {"id": "p02", "kind": "person", "name": "Omar Farouk", "status": "active", "relation_to_user": "friend", "closeness_tier": "T1", "aliases": ["Omar", "عمر", "3omar"], "salience": 0.92, "first_seen": "2026-10-20", "last_seen": "2026-11-18"},
+    {"id": "p03", "kind": "person", "name": "Omar El-Sayed", "status": "active", "relation_to_user": "colleague", "closeness_tier": "T2", "aliases": ["Omar", "Omar El-Sayed", "عمر السيد"], "salience": 0.78, "first_seen": "2026-10-21", "last_seen": "2026-11-19"},
+    {"id": "p06", "kind": "person", "name": "Nour El-Din", "status": "active", "relation_to_user": "friend", "closeness_tier": "T1", "aliases": ["Nour El-Din", "نور الدين"], "salience": 0.88, "first_seen": "2026-10-20", "last_seen": "2026-11-18"},
+    {"id": "p22", "kind": "person", "name": "Rana Diab", "status": "active", "relation_to_user": null, "closeness_tier": "T2", "aliases": ["Rana", "رنا"], "salience": 0.65, "first_seen": "2026-10-23", "last_seen": "2026-11-09"},
+    {"id": "o01", "kind": "org", "name": "QamarTech", "status": "active", "relation_to_user": null, "closeness_tier": null, "aliases": ["QamarTech"], "salience": 0.85, "first_seen": "2026-10-20", "last_seen": "2026-11-19"},
+    {"id": "l01", "kind": "place", "name": "Al Barsha", "status": "active", "relation_to_user": null, "closeness_tier": null, "aliases": ["Al Barsha", "Barsha", "البرشاء"], "salience": 0.75, "first_seen": "2026-10-20", "last_seen": "2026-11-01"},
+    {"id": "l06", "kind": "place", "name": "Zabeel Hall", "status": "active", "relation_to_user": null, "closeness_tier": null, "aliases": ["Zabeel Hall", "قاعة زعبيل"], "salience": 0.60, "first_seen": "2026-11-09", "last_seen": "2026-11-09"}
+  ],
+  "subjects": [
+    {"id": "th_career", "path": "career", "label": "Career", "kind": "theme", "parent_id": null, "status": "active", "salience": 0.9},
+    {"id": "th_projects", "path": "projects", "label": "Projects", "kind": "theme", "parent_id": null, "status": "active", "salience": 0.85},
+    {"id": "th_lifestyle", "path": "lifestyle", "label": "Lifestyle", "kind": "theme", "parent_id": null, "status": "active", "salience": 0.8},
+    {"id": "th_money", "path": "money", "label": "Money", "kind": "theme", "parent_id": null, "status": "active", "salience": 0.75},
+    {"id": "th_learning", "path": "learning", "label": "Learning", "kind": "theme", "parent_id": null, "status": "active", "salience": 0.75},
+    {"id": "s01", "path": "projects/raseef-app", "label": "Raseef side-project app", "kind": "goal", "parent_id": "th_projects", "status": "active", "salience": 0.9},
+    {"id": "s05", "path": "learning/llm-agents-course", "label": "LLM agents course", "kind": "topic", "parent_id": "th_learning", "status": "active", "salience": 0.75},
+    {"id": "s06", "path": "money/al-barsha-rent", "label": "Apartment hunt & rent", "kind": "topic", "parent_id": "th_money", "status": "active", "salience": 0.7},
+    {"id": "s07", "path": "lifestyle/omar-wedding", "label": "Omar Farouk wedding", "kind": "topic", "parent_id": "th_lifestyle", "status": "active", "salience": 0.85},
+    {"id": "s08", "path": "career/atlas-work", "label": "Atlas work project", "kind": "topic", "parent_id": "th_career", "status": "active", "salience": 0.88}
+  ],
+  "records": [
+    {"id": "n001", "source": "notes", "at": "2026-10-20T09:00:00Z", "author": "Karim", "text": "31yo AI engineer at QamarTech, living in Al Barsha."},
+    {"id": "g012", "source": "gmail", "at": "2026-10-20T12:00:00Z", "author": "DarProperty", "text": "Tenancy renewal AED 5,000/month in Al Barsha."},
+    {"id": "g081", "source": "gmail", "at": "2026-11-01T10:00:00Z", "author": "DarProperty", "text": "Updated Al Barsha rent AED 5,400/month effective Nov 1."},
+    {"id": "wab-0032", "source": "whatsapp:best", "at": "2026-10-23T18:10:00Z", "author": "3omar", "text": "Wedding with Rana is set for December 18, 2026."},
+    {"id": "wab-0204", "source": "whatsapp:best", "at": "2026-11-09T19:00:00Z", "author": "Omar Farouk", "text": "Moved wedding venue to قاعة زعبيل (Zabeel Hall)."},
+    {"id": "wag-0014", "source": "whatsapp:work", "at": "2026-10-21T10:30:00Z", "author": "Salma Nasser", "text": "Omar El-Sayed joined Atlas squad at QamarTech for billing module."},
+    {"id": "wag-0304", "source": "whatsapp:work", "at": "2026-11-19T14:20:00Z", "author": "Omar El-Sayed", "text": "Merged Atlas billing module to staging after review."},
+    {"id": "n011", "source": "notes", "at": "2026-11-04T08:00:00Z", "author": "Karim", "text": "الكورس يبدأ 16 نوفمبر (LLM agents cohort start)."}
+  ],
+  "facts": [
+    {
+      "id": "f001", "text": "Karim Haddad is a 31-year-old AI engineer living in Al Barsha, Dubai.", "text_orig": null, "lang": "en",
+      "subject_id": "s08", "valid_from": "2026-10-20", "valid_to": null, "status": "active", "superseded_by": null,
+      "provenance": "user_supplied", "job_id": "j1", "attempt_id": "att-haiku-1", "worker_id": "w-haiku", "model": "claude-haiku-5-5",
+      "evidence": ["n001"],
+      "entities": [{"entity_id": "p01", "role": "self"}, {"entity_id": "l01", "role": "residence"}]
+    },
+    {
+      "id": "f003", "text": "Karim rents a 1BR flat in Al Barsha for AED 5,000 per month.", "text_orig": null, "lang": "en",
+      "subject_id": "s06", "valid_from": "2026-10-20", "valid_to": "2026-11-01", "status": "superseded", "superseded_by": "f004",
+      "provenance": "provider_confirmed", "job_id": "j1", "attempt_id": "att-hook-1", "worker_id": "w-owner", "model": "claude-code-hook",
+      "evidence": ["g012"],
+      "entities": [{"entity_id": "p01", "role": "tenant"}, {"entity_id": "l01", "role": "location"}]
+    },
+    {
+      "id": "f004", "text": "Karim's Al Barsha rent increased to AED 5,400 per month from November 1.", "text_orig": null, "lang": "en",
+      "subject_id": "s06", "valid_from": "2026-11-01", "valid_to": null, "status": "active", "superseded_by": null,
+      "provenance": "provider_confirmed", "job_id": "j2", "attempt_id": "att-hook-1", "worker_id": "w-owner", "model": "claude-code-hook",
+      "evidence": ["g081"],
+      "entities": [{"entity_id": "p01", "role": "tenant"}, {"entity_id": "l01", "role": "location"}]
+    },
+    {
+      "id": "f008", "text": "Omar Farouk and Rana Diab wedding is scheduled for December 18, 2026.", "text_orig": "فرح عمر ورنا يوم 18 ديسمبر", "lang": "ar",
+      "subject_id": "s07", "valid_from": "2026-10-23", "valid_to": null, "status": "active", "superseded_by": null,
+      "provenance": "user_supplied", "job_id": "j1", "attempt_id": "att-haiku-1", "worker_id": "w-haiku", "model": "claude-haiku-5-5",
+      "evidence": ["wab-0032"],
+      "entities": [{"entity_id": "p02", "role": "groom"}, {"entity_id": "p22", "role": "bride"}]
+    },
+    {
+      "id": "f010", "text": "Omar Farouk moved the wedding venue to Zabeel Hall.", "text_orig": "فرح عمر اتنقل لقاعة زعبيل", "lang": "ar",
+      "subject_id": "s07", "valid_from": "2026-11-09", "valid_to": null, "status": "active", "superseded_by": null,
+      "provenance": "user_supplied", "job_id": "j2", "attempt_id": "att-haiku-1", "worker_id": "w-haiku", "model": "claude-haiku-5-5",
+      "evidence": ["wab-0204"],
+      "entities": [{"entity_id": "p02", "role": "groom"}, {"entity_id": "p22", "role": "bride"}, {"entity_id": "l06", "role": "venue"}]
+    },
+    {
+      "id": "f012", "text": "Omar El-Sayed joined the Atlas squad at QamarTech owning the billing module.", "text_orig": null, "lang": "en",
+      "subject_id": "s08", "valid_from": "2026-10-21", "valid_to": null, "status": "active", "superseded_by": null,
+      "provenance": "inferred", "job_id": "j1", "attempt_id": "att-haiku-1", "worker_id": "w-haiku", "model": "claude-haiku-5-5",
+      "evidence": ["wag-0014"],
+      "entities": [{"entity_id": "p03", "role": "billing owner"}, {"entity_id": "o01", "role": "employer"}]
+    },
+    {
+      "id": "f079", "text": "Omar El-Sayed merged the Atlas billing module to staging after Karim's review.", "text_orig": null, "lang": "en",
+      "subject_id": "s08", "valid_from": "2026-11-19", "valid_to": null, "status": "active", "superseded_by": null,
+      "provenance": "user_supplied", "job_id": "j3", "attempt_id": "att-hook-1", "worker_id": "w-owner", "model": "claude-code-hook",
+      "evidence": ["wag-0304"],
+      "entities": [{"entity_id": "p03", "role": "billing owner"}, {"entity_id": "o01", "role": "employer"}]
+    },
+    {
+      "id": "f040", "text": "LLM Agents course cohort actually starts November 16.", "text_orig": "كورس الوكلاء الذكية يبدأ ١٦ نوفمبر", "lang": "ar",
+      "subject_id": "s05", "valid_from": "2026-11-04", "valid_to": null, "status": "active", "superseded_by": null,
+      "provenance": "user_supplied", "job_id": "j2", "attempt_id": "att-haiku-1", "worker_id": "w-haiku", "model": "claude-haiku-5-5",
+      "evidence": ["n011"],
+      "entities": [{"entity_id": "p01", "role": "student"}]
+    },
+    {
+      "id": "f015", "text": "Karim and Nour El-Din planned Raseef beta rollout.", "text_orig": null, "lang": "en",
+      "subject_id": "s01", "valid_from": "2026-10-22", "valid_to": null, "status": "active", "superseded_by": null,
+      "provenance": "user_supplied", "job_id": "j1", "attempt_id": "att-haiku-1", "worker_id": "w-haiku", "model": "claude-haiku-5-5",
+      "evidence": ["n001"],
+      "entities": [{"entity_id": "p01", "role": "founder"}, {"entity_id": "p06", "role": "cofounder"}]
+    },
+    {
+      "id": "f016", "text": "Nour El-Din shipped Raseef beta 0.3 to testers on October 29.", "text_orig": null, "lang": "en",
+      "subject_id": "s01", "valid_from": "2026-10-29", "valid_to": null, "status": "active", "superseded_by": null,
+      "provenance": "user_supplied", "job_id": "j2", "attempt_id": "att-haiku-1", "worker_id": "w-haiku", "model": "claude-haiku-5-5",
+      "evidence": ["n001"],
+      "entities": [{"entity_id": "p06", "role": "beta lead"}]
+    }
+  ],
+  "links": [
+    {"id": "lnk1", "src": "p01", "rel": "FRIEND_OF", "dst": "p02", "valid_from": "2026-10-20", "evidence_fact_id": "f008"},
+    {"id": "lnk2", "src": "p02", "rel": "RELATED_TO", "dst": "p22", "valid_from": "2026-10-23", "evidence_fact_id": "f008"},
+    {"id": "lnk3", "src": "p03", "rel": "WORKS_AT", "dst": "o01", "valid_from": "2026-10-21", "evidence_fact_id": "f012"}
+  ],
+  "milestones": [
+    {"id": "ms01", "subject_id": "s01", "title": "Ship Raseef beta to testers", "state": "done", "evidence_fact_ids": ["f015", "f016"]}
+  ],
+  "quarantine": {
+    "family_health": 1,
+    "credential": 1
+  }
+}
