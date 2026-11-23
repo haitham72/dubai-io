@@ -54,6 +54,12 @@ def run_job(
     if bundle is None:
         return {"status": "skipped", "job_id": job_id}
 
+    if bundle.job.kind == "import.split":
+        count = jobs_svc.split_import(bundle.job)
+        if count is None:
+            return {"status": "skipped", "job_id": job_id}
+        return {"status": "applied", "job_id": job_id, "days": count}
+
     attempt = extract.run(bundle, used_runner, used_model)
     attempt.worker_id = worker.id
     attempt.worker_kind = worker.kind
