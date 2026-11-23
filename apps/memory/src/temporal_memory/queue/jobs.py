@@ -412,8 +412,12 @@ class PostgresJobs:
             current_generation=current_gen,
             owner_obj=owner_obj,
         )
+        warn_reasons = [r for r in verdict.reasons if r == "model_mismatch"]
         if verdict.ok:
             verdict = _call_apply(applier.apply, job.owner, job, attempt, db=self.db, bundle=bundle)
+            for wr in warn_reasons:
+                if wr not in verdict.reasons:
+                    verdict.reasons.append(wr)
 
         new_state = "applied" if verdict.ok else "rejected"
         verdict_str = "applied" if verdict.ok else f"rejected:{','.join(verdict.reasons)}"
@@ -433,12 +437,12 @@ class PostgresJobs:
                 """
                 INSERT INTO job_attempts (
                     id, job_id, owner, attempt_no, fence_token, worker_id, worker_kind,
-                    model, prompt_version, started_at, finished_at,
+                    model, model_observed, prompt_version, started_at, finished_at,
                     tokens_in, tokens_out, cost_usd, output_json, verdict
                 )
                 VALUES (
                     %s, %s, %s, %s, %s, %s, %s,
-                    %s, %s, COALESCE(%s::timestamptz, now()), COALESCE(%s::timestamptz, now()),
+                    %s, %s, %s, COALESCE(%s::timestamptz, now()), COALESCE(%s::timestamptz, now()),
                     %s, %s, %s, %s::jsonb, %s
                 )
                 """,
@@ -451,6 +455,7 @@ class PostgresJobs:
                     attempt.worker_id,
                     attempt.worker_kind,
                     attempt.model,
+                    attempt.model_observed,
                     attempt.prompt_version,
                     attempt.started_at,
                     attempt.finished_at,

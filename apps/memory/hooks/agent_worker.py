@@ -28,6 +28,7 @@ class CliInvocationResult:
     tokens_in: int = 0
     tokens_out: int = 0
     cost_usd: float = 0.0
+    model_observed: str | None = None
 
 
 InvokeCliFn = Callable[[dict[str, Any], str, str], CliInvocationResult | dict[str, Any]]
@@ -96,6 +97,72 @@ def _extract_json_dict(text: str) -> dict[str, Any]:
     return parsed
 
 
+def _clean_model_str(value: Any) -> str | None:
+    if isinstance(value, str):
+        stripped = value.strip()
+        if stripped:
+            return stripped
+    return None
+
+
+def _usage_map_score(entry: Any) -> float:
+    if isinstance(entry, bool):
+        return 0.0
+    if isinstance(entry, (int, float)):
+        return float(entry)
+    if not isinstance(entry, dict):
+        return 0.0
+    if isinstance(entry.get("tokens"), dict):
+        return _usage_map_score(entry["tokens"])
+    for total_key in ("total", "total_tokens", "totalTokens"):
+        val = entry.get(total_key)
+        if isinstance(val, (int, float)) and not isinstance(val, bool):
+            return float(val)
+    total = 0.0
+    for k, v in entry.items():
+        if isinstance(v, (int, float)) and not isinstance(v, bool):
+            kl = str(k).lower()
+            if any(
+                tok in kl
+                for tok in ("token", "input", "output", "prompt", "candidate", "response", "cached", "thought")
+            ):
+                total += float(v)
+    return total
+
+
+def _pick_model_from_usage(usage_map: Any) -> str | None:
+    if not isinstance(usage_map, dict) or not usage_map:
+        return None
+    candidates: list[tuple[str, float]] = []
+    for raw_key, val in usage_map.items():
+        name = _clean_model_str(raw_key)
+        if name:
+            candidates.append((name, _usage_map_score(val)))
+    if not candidates:
+        return None
+    best_name, _ = max(candidates, key=lambda item: item[1])
+    return best_name
+
+
+def extract_observed_model(parsed: dict[str, Any]) -> str | None:
+    """Extract the model reported by CLI runner metadata (contract v1.2)."""
+    if not isinstance(parsed, dict):
+        return None
+    picked = _pick_model_from_usage(parsed.get("modelUsage"))
+    if picked:
+        return picked
+    stats = parsed.get("stats")
+    if isinstance(stats, dict):
+        picked = _pick_model_from_usage(stats.get("models"))
+        if picked:
+            return picked
+    for key in ("model", "model_id", "modelVersion"):
+        cleaned = _clean_model_str(parsed.get(key))
+        if cleaned:
+            return cleaned
+    return None
+
+
 def default_invoke_cli(bundle: dict[str, Any], model: str, command: str) -> CliInvocationResult:
     """Run an agent CLI subprocess (e.g. claude -p / codex exec / gemini) for one JobBundle."""
     cmd_str = command.format(model=model)
@@ -115,6 +182,7 @@ def default_invoke_cli(bundle: dict[str, Any], model: str, command: str) -> CliI
         raise RuntimeError(f"agent CLI exited with {proc.returncode}: {(proc.stderr or '').strip()[:500]}")
 
     parsed = _extract_json_dict(stdout)
+    model_observed = extract_observed_model(parsed)
     tokens_in = 0
     tokens_out = 0
     cost_usd = 0.0
@@ -139,6 +207,7 @@ def default_invoke_cli(bundle: dict[str, Any], model: str, command: str) -> CliI
         tokens_in=tokens_in,
         tokens_out=tokens_out,
         cost_usd=cost_usd,
+        model_observed=model_observed,
     )
 
 
@@ -222,6 +291,7 @@ def _normalize_cli_result(raw: CliInvocationResult | dict[str, Any]) -> CliInvoc
             tokens_in=int(raw.get("tokens_in", 0)),
             tokens_out=int(raw.get("tokens_out", 0)),
             cost_usd=float(raw.get("cost_usd", 0.0)),
+            model_observed=_clean_model_str(raw.get("model_observed")),
         )
     return CliInvocationResult(output=raw)
 
@@ -278,21 +348,21 @@ def run_worker(
             for bundle in bundles:
                 job = bundle["job"]
                 cli_res = _normalize_cli_result(invoker(bundle, model, command))
-                verdict = mcp.call_tool(
-                    "memory_submit_result",
-                    {
-                        "job_id": job["id"],
-                        "fence_token": job["fence_token"],
-                        "attempt_no": int(job["attempt_no"]),
-                        "output": cli_res.output,
-                        "model": model,
-                        "tokens_in": cli_res.tokens_in,
-                        "tokens_out": cli_res.tokens_out,
-                        "cost_usd": cli_res.cost_usd,
-                        "worker_id": wid,
-                        "worker_kind": "agent-cli",
-                    },
-                )
+                submit_args: dict[str, Any] = {
+                    "job_id": job["id"],
+                    "fence_token": job["fence_token"],
+                    "attempt_no": int(job["attempt_no"]),
+                    "output": cli_res.output,
+                    "model": model,
+                    "tokens_in": cli_res.tokens_in,
+                    "tokens_out": cli_res.tokens_out,
+                    "cost_usd": cli_res.cost_usd,
+                    "worker_id": wid,
+                    "worker_kind": "agent-cli",
+                }
+                if cli_res.model_observed is not None:
+                    submit_args["model_observed"] = cli_res.model_observed
+                verdict = mcp.call_tool("memory_submit_result", submit_args)
                 verdicts.append(verdict)
 
             if once:

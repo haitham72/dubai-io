@@ -550,7 +550,7 @@ class PostgresGraphStore:
             row = conn.execute(
                 """
                 SELECT id, job_id, owner, attempt_no, fence_token, worker_id, worker_kind,
-                       model, prompt_version, started_at, finished_at, tokens_in, tokens_out,
+                       model, model_observed, prompt_version, started_at, finished_at, tokens_in, tokens_out,
                        cost_usd, output_json, verdict
                 FROM job_attempts
                 WHERE id = %s
@@ -771,7 +771,7 @@ class PostgresGraphStore:
             rows = conn.execute(
                 f"""
                 SELECT id, job_id, owner, attempt_no, fence_token, worker_id, worker_kind,
-                       model, prompt_version, started_at, finished_at, tokens_in, tokens_out,
+                       model, model_observed, prompt_version, started_at, finished_at, tokens_in, tokens_out,
                        cost_usd, output_json, verdict
                 FROM job_attempts
                 {where}
@@ -810,6 +810,7 @@ class PostgresGraphStore:
             cost_usd=float(row["cost_usd"]),
             started_at=_as_iso(row["started_at"]),
             finished_at=_as_iso(row["finished_at"]),
+            model_observed=row.get("model_observed"),
         )
         setattr(att, "verdict", row["verdict"])
         return att

@@ -103,6 +103,7 @@ def migrate(db: Database) -> None:
             conn.execute(f"CREATE SCHEMA IF NOT EXISTS {db.schema}")
             conn.execute(f"SET search_path TO {db.schema}, public")
         conn.execute(sql)
+        conn.execute("ALTER TABLE job_attempts ADD COLUMN IF NOT EXISTS model_observed TEXT")
         conn.commit()
 
 

@@ -60,9 +60,13 @@ def ops_memory(
                 "released": w.released,
             })
 
-    # Attempts by verdict per model + cost per owner per week + demo cost saved
+    # Attempts by verdict per model + cost per owner per week + demo cost saved + declared vs observed models
     verdicts_per_model: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
     cost_owner_week: dict[str, dict[str, float]] = defaultdict(lambda: defaultdict(float))
+    declared_counts: dict[str, int] = defaultdict(int)
+    observed_counts: dict[str, int] = defaultdict(int)
+    pair_counts: dict[str, int] = defaultdict(int)
+    mismatch_count = 0
     jobs_by_id = {j.id: j for j in jobs}
     rate_in, rate_out = _cloud_rates()
     saved_usd = 0.0
@@ -72,6 +76,16 @@ def ops_memory(
     for a in attempts:
         verdict = getattr(a, "verdict", None) or "unknown"
         verdicts_per_model[a.model][verdict] += 1
+        declared = (a.model or "").strip() or "unknown"
+        obs_raw = getattr(a, "model_observed", None)
+        observed = obs_raw.strip() if isinstance(obs_raw, str) and obs_raw.strip() else None
+        declared_counts[declared] += 1
+        if observed:
+            observed_counts[observed] += 1
+            if observed.lower() != declared.lower():
+                mismatch_count += 1
+        pair_counts[f"{declared} -> {observed or 'unknown'}"] += 1
+
         job = jobs_by_id.get(a.job_id)
         if job:
             wk = (job.day or (a.started_at or now.isoformat())[:10])[:10]
@@ -92,6 +106,12 @@ def ops_memory(
         "oldest_job_age_seconds": round(oldest_age_s, 2),
         "workers_online_by_model": dict(workers_by_model),
         "attempts_by_verdict_per_model": {m: dict(vs) for m, vs in verdicts_per_model.items()},
+        "models_declared_vs_observed": {
+            "declared": dict(declared_counts),
+            "observed": dict(observed_counts),
+            "pairs": dict(pair_counts),
+            "mismatches": mismatch_count,
+        },
         "cost_per_owner_per_week": {o: dict(ws) for o, ws in cost_owner_week.items()},
         "demo_cost_saved_usd": round(saved_usd, 6),
         "demo_cost_saved_tokens": {"tokens_in": saved_in, "tokens_out": saved_out},

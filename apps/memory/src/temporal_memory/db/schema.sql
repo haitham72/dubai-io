@@ -253,6 +253,7 @@ CREATE TABLE IF NOT EXISTS job_attempts (
     worker_id TEXT NOT NULL,
     worker_kind TEXT NOT NULL,
     model TEXT NOT NULL,
+    model_observed TEXT,
     prompt_version TEXT NOT NULL,
     started_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     finished_at TIMESTAMPTZ NOT NULL DEFAULT now(),

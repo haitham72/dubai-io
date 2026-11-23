@@ -411,6 +411,7 @@ def create_mcp_app(
         cost_usd: float = 0.0,
         worker_id: str | None = None,
         worker_kind: str | None = None,
+        model_observed: str | None = None,
     ) -> dict[str, Any]:
         auth = _require_auth()
         prompt_ver = _check_job_access(database, auth, job_id) or PROMPT_VERSION
@@ -438,6 +439,7 @@ def create_mcp_app(
             tokens_in=int(tokens_in),
             tokens_out=int(tokens_out),
             cost_usd=effective_cost,
+            model_observed=model_observed,
         )
         verdict = jobs.submit(attempt)
         res = asdict(verdict)
