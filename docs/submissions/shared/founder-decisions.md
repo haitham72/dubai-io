@@ -120,8 +120,18 @@ The redesign's latest design is current: commit `6b45ba4`, "AI workspace replace
 - **Hand-off (amends D10):** the founder has no access to the other PC for now, so the hand-off happens from here. `docs/submissions/shared/handoff-temporal-note.md` is on GitHub (`origin/contest-shared`), and the founder shares that path. No `pc2-main` snapshot is possible yet: gate 5 is skipped until one exists, and the zero-conflict rule (add files only) is the protection.
 - **Name:** parked. Build as "Messenger"; no name work until the founder raises it.
 
+## D13 — Demo infrastructure: own server + Cloudflare Tunnel, no hosting (24 Nov)
+
+> "lets go with cloudflare tunnel, but for now, everything runs through my own server, no hosting for this moment"
+
+- **Everything runs on the founder's own server or PC**: APIs (Community :8060, Messenger :8070), web apps, local Supabase in Docker, and the memory bridge. There is **no hosting** for now: no Vercel, no cloud containers, no hosted Supabase. This supersedes D12's "hosted project later" until the founder says otherwise.
+- **Public access is through a named Cloudflare Tunnel** (`cloudflared`) on a domain whose DNS is on Cloudflare, gated by Cloudflare Access with an email allowlist of the testers (Codex research R3). No port is opened on the router.
+- The packaging slices (Community CM-B12, Messenger MG-B8) write the tunnel runbook and scripts in their own folders. The shared part goes under `docs/submissions/shared/tunnel/`. No secrets or tunnel credentials go into the repo.
+- WebSockets (the Messenger's :8070) must work through the tunnel. The Origin-bound WS tickets must accept the tunnel hostname as an allowed Origin, set through env and never hard-coded.
+
 ## Founder to-dos (not agent work)
 
 - Share `docs/submissions/shared/handoff-temporal-note.md` (on GitHub) with the memory team.
-- Start local Supabase in Docker when B0 needs it. A hosted project comes later.
+- Local Supabase in Docker is running (verified by Antigravity, 23 Nov). There is no hosted project for now (D13).
+- Have a domain on Cloudflare and `cloudflared` installed on the server before packaging (D13).
 - Optional: email the organisers about reusing one's own pre-contest code, after Codex's research R1.
