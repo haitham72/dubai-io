@@ -1,6 +1,6 @@
-# temporal-memory
+# temporal-memory (`apps/memory/`)
 
-A personal memory engine (in the spirit of mem0 / Hindsight). It turns a person's WhatsApp, email, notes and chat into a dated **entity ↔ subject graph**, a Quest-style markdown tree, and instant context for replies. It's built as a standalone service; the Dubai-io app is its first client.
+A personal memory engine (in the spirit of mem0 / Hindsight). It turns a person's WhatsApp, email, notes and chat into a dated **entity ↔ subject graph**, a Quest-style markdown tree, and instant context for replies. It lives in the Dubai-io repo at `apps/memory/` (branch `memory`) and runs as its own service; the Dubai-io backend (`apps/api`) is its first client.
 
 **Status:** under construction (build plan v2.1). Nothing here is production-ready yet.
 
@@ -17,6 +17,7 @@ A personal memory engine (in the spirit of mem0 / Hindsight). It turns a person'
 Python 3.12+ · FastAPI · Postgres 17 (+ pgvector, tsvector) · Celery on RabbitMQ · Redis · MCP (streamable HTTP). Everything runs in `docker compose`.
 
 ```powershell
+cd apps\memory
 copy .env.example .env      # fill keys you have; none are required for tests
 docker compose up -d postgres rabbitmq redis
 docker compose up -d api worker-p0 worker-p1 beat
@@ -42,9 +43,9 @@ tests/                 synthetic fixtures only
 
 ## Branches
 
-- `memory`: integration branch for the memory engine; all work lands here.
-- `wp<X>`: one branch + worktree per work package (`../temporal-memory-wp<X>`), merged into `memory` by the integrator.
-- `main`: owned by the project orchestrator; never committed to directly.
+- `memory`: integration branch for the memory engine, checked out at `G:\Haitham\VsCode\contest-memory`. All engine work lands here.
+- `mem-wp<X>`: one branch + worktree per work package (`G:\Haitham\VsCode\contest-mem-wp<X>`), merged into `memory` by the integrator.
+- `main`: owned by the project orchestrator; never committed to from here.
 
 ## Data rule
 

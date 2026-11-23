@@ -50,6 +50,7 @@ Founder instructions override anything below; sensitive categories (rule 9) are 
 ```
 apps/api/          FastAPI + LangGraph backend, tests/
 apps/api/app/lab/  Headless Know / Notice / Do pipeline (extraction skills: chat, email, ide_session)
+apps/memory/       temporal-memory engine (own service + Docker stack; branch `memory`; guide apps/memory/CLAUDE.md)
 apps/site/         THE app: one React codebase → website, desktop app (Tauri/Electron), iOS/Android (Capacitor); UI paused 9 Nov
 apps/web/          Original mobile app PWA — FROZEN, the reference (tag mobile-pwa-baseline-2026-10-23), embedded at /?devices
 apps/ios/          Native SwiftUI client — STOPPED 23 Oct (history only)
