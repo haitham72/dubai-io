@@ -12,6 +12,7 @@ import uuid
 from temporal_memory.core.graph_store import PostgresGraphStore
 from temporal_memory.db.db import Database, get_database
 from temporal_memory.models import Owner, Record
+from .dev_sessions import parse_dev_sessions
 from .email import (
     email_to_records,
     gmail_to_records,
@@ -20,8 +21,12 @@ from .email import (
     parse_mailbox,
     parse_notes,
 )
+from .export_cli import export_owner_tree
+from .gmail_json import parse_gmail_json
+from .temporal_note import import_temporal_note
 from .triage import ingest_records, is_noise_email, is_noise_whatsapp
 from .whatsapp import parse_whatsapp_file
+from .youtube import parse_youtube_history
 
 
 def _slugify(value: str) -> str:
@@ -56,28 +61,44 @@ def _cmd_owner_create(args: argparse.Namespace, db: Database) -> dict[str, Any]:
     }
 
 
-def _load_and_triage(kind: str, path: Path, owner: str, source_name: str | None) -> tuple[list[Record], int]:
+def _load_and_triage(
+    kind: str,
+    path: Path,
+    owner: str,
+    source_name: str | None,
+) -> tuple[list[Record], int, dict[str, Any]]:
     if not path.exists():
         raise FileNotFoundError(f"Import path does not exist: {path}")
 
     if kind == "whatsapp":
         raw_recs = parse_whatsapp_file(path, owner, source_name=source_name)
         kept = [r for r in raw_recs if not is_noise_whatsapp(r)]
-        return kept, len(raw_recs) - len(kept)
+        return kept, len(raw_recs) - len(kept), {}
 
     if kind in {"mbox", "eml"}:
         msgs = parse_mailbox(path)
         kept_msgs = [m for m in msgs if not is_noise_email(m)]
-        return email_to_records(kept_msgs, owner, slug=path.stem), len(msgs) - len(kept_msgs)
+        return email_to_records(kept_msgs, owner, slug=path.stem), len(msgs) - len(kept_msgs), {}
 
     if kind == "gmail":
         items = parse_gold_gmail(path)
         kept_items = [(m, row) for m, row in items if not is_noise_email(m)]
-        return gmail_to_records(kept_items, owner), len(items) - len(kept_items)
+        return gmail_to_records(kept_items, owner), len(items) - len(kept_items), {}
+
+    if kind == "gmail-json":
+        recs, dropped = parse_gmail_json(path, owner)
+        return recs, dropped, {}
 
     if kind == "notes":
         msgs = parse_notes(path)
-        return notes_to_records(msgs, owner, slug=path.stem), 0
+        return notes_to_records(msgs, owner, slug=path.stem), 0, {}
+
+    if kind == "youtube":
+        recs, held_back = parse_youtube_history(path, owner)
+        return recs, 0, {"held_back": held_back, "held_back_count": sum(held_back.values())}
+
+    if kind == "dev-sessions":
+        return parse_dev_sessions(path, owner), 0, {}
 
     raise ValueError(f"Unsupported import kind: {kind}")
 
@@ -87,7 +108,16 @@ def _cmd_import(args: argparse.Namespace, db: Database) -> dict[str, Any]:
     if store.get_owner(args.owner) is None:
         raise ValueError(f"Owner not found: {args.owner}")
 
-    records, pre_dropped = _load_and_triage(args.kind, Path(args.path), args.owner, args.source_name)
+    target_path = Path(args.path)
+    if not target_path.exists():
+        raise FileNotFoundError(f"Import path does not exist: {target_path}")
+
+    if args.kind == "temporal-note":
+        summary = import_temporal_note(db, args.owner, target_path, split=not args.no_split)
+        summary["kind"] = args.kind
+        return summary
+
+    records, pre_dropped, extra = _load_and_triage(args.kind, target_path, args.owner, args.source_name)
     summary = ingest_records(
         db,
         args.owner,
@@ -97,7 +127,15 @@ def _cmd_import(args: argparse.Namespace, db: Database) -> dict[str, Any]:
     )
     summary["dropped_triage"] = pre_dropped + int(summary.get("dropped_triage", 0))
     summary["kind"] = args.kind
+    summary.update(extra)
     return summary
+
+
+def _cmd_export(args: argparse.Namespace, db: Database) -> dict[str, Any]:
+    store = PostgresGraphStore(db)
+    if store.get_owner(args.owner) is None:
+        raise ValueError(f"Owner not found: {args.owner}")
+    return export_owner_tree(db, args.owner, args.out)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -117,11 +155,28 @@ def build_parser() -> argparse.ArgumentParser:
     create_p.add_argument("--timezone", default="Asia/Dubai")
 
     imp_p = sub.add_parser("import", help="Import records from a source file or directory")
-    imp_p.add_argument("kind", choices=["whatsapp", "mbox", "eml", "notes", "gmail"])
-    imp_p.add_argument("path", help="External path to chat, mailbox, notes, or gmail.jsonl")
+    imp_p.add_argument(
+        "kind",
+        choices=[
+            "whatsapp",
+            "mbox",
+            "eml",
+            "notes",
+            "gmail",
+            "youtube",
+            "gmail-json",
+            "dev-sessions",
+            "temporal-note",
+        ],
+    )
+    imp_p.add_argument("path", help="External path to export file or temporal_note directory")
     imp_p.add_argument("--owner", required=True, help="Target owner ID")
     imp_p.add_argument("--source-name", default=None, help="Optional chat/source label for WhatsApp")
     imp_p.add_argument("--no-split", action="store_true", help="Insert records without enqueueing day jobs")
+
+    exp_p = sub.add_parser("export", help="Render owner Quest-style Markdown tree to an external folder")
+    exp_p.add_argument("--owner", required=True, help="Target owner ID")
+    exp_p.add_argument("--out", required=True, help="Output directory outside repository root")
     return parser
 
 
@@ -135,6 +190,8 @@ def main(argv: list[str] | None = None, *, db: Database | None = None) -> int:
             out = _cmd_owner_create(args, database)
         elif args.command == "import":
             out = _cmd_import(args, database)
+        elif args.command == "export":
+            out = _cmd_export(args, database)
         else:
             parser.error("Unknown command")
             return 2

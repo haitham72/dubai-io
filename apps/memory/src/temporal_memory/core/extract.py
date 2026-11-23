@@ -354,11 +354,77 @@ def _worker_kind_for_runner(runner: str) -> WorkerKind:
     return "agent-cli"
 
 
+def _clean_model_str(value: Any) -> str | None:
+    if isinstance(value, str):
+        stripped = value.strip()
+        if stripped:
+            return stripped
+    return None
+
+
+def _usage_map_score(entry: Any) -> float:
+    if isinstance(entry, bool):
+        return 0.0
+    if isinstance(entry, (int, float)):
+        return float(entry)
+    if not isinstance(entry, dict):
+        return 0.0
+    if isinstance(entry.get("tokens"), dict):
+        return _usage_map_score(entry["tokens"])
+    for total_key in ("total", "total_tokens", "totalTokens"):
+        val = entry.get(total_key)
+        if isinstance(val, (int, float)) and not isinstance(val, bool):
+            return float(val)
+    total = 0.0
+    for k, v in entry.items():
+        if isinstance(v, (int, float)) and not isinstance(v, bool):
+            kl = str(k).lower()
+            if any(
+                tok in kl
+                for tok in ("token", "input", "output", "prompt", "candidate", "response", "cached", "thought")
+            ):
+                total += float(v)
+    return total
+
+
+def _pick_model_from_usage(usage_map: Any) -> str | None:
+    if not isinstance(usage_map, dict) or not usage_map:
+        return None
+    candidates: list[tuple[str, float]] = []
+    for raw_key, val in usage_map.items():
+        name = _clean_model_str(raw_key)
+        if name:
+            candidates.append((name, _usage_map_score(val)))
+    if not candidates:
+        return None
+    best_name, _ = max(candidates, key=lambda item: item[1])
+    return best_name
+
+
+def extract_observed_model(parsed: dict[str, Any]) -> str | None:
+    """Extract the model reported by CLI runner metadata (contract v1.2)."""
+    if not isinstance(parsed, dict):
+        return None
+    picked = _pick_model_from_usage(parsed.get("modelUsage"))
+    if picked:
+        return picked
+    stats = parsed.get("stats")
+    if isinstance(stats, dict):
+        picked = _pick_model_from_usage(stats.get("models"))
+        if picked:
+            return picked
+    for key in ("model", "model_id", "modelVersion"):
+        cleaned = _clean_model_str(parsed.get(key))
+        if cleaned:
+            return cleaned
+    return None
+
+
 def _run_anthropic(
     system_prompt: str,
     user_prompt: str,
     model: str,
-) -> tuple[ExtractionOutput, str, int, int, float]:
+) -> tuple[ExtractionOutput, str, int, int, float, str | None]:
     if anthropic is None:
         raise RuntimeError("anthropic package is not installed; install with temporal-memory[cloud]")
     cfg = get_settings()
@@ -387,7 +453,8 @@ def _run_anthropic(
         6,
     )
     output = _parse_extraction_output(_extract_json_dict(raw_text))
-    return output, used_model, tokens_in, tokens_out, cost_usd
+    model_observed = _clean_model_str(getattr(resp, "model", None))
+    return output, used_model, tokens_in, tokens_out, cost_usd, model_observed
 
 
 def _run_lmstudio(
@@ -395,7 +462,7 @@ def _run_lmstudio(
     user_prompt: str,
     output_schema: dict[str, Any],
     model: str,
-) -> tuple[ExtractionOutput, str, int, int, float]:
+) -> tuple[ExtractionOutput, str, int, int, float, str | None]:
     cfg = get_settings()
     used_model = model or cfg.lmstudio_model
     url = f"{cfg.lmstudio_url.rstrip('/')}/chat/completions"
@@ -429,14 +496,15 @@ def _run_lmstudio(
     if not raw_text:
         raise ValueError(f"lmstudio returned empty message (finish_reason={choice.get('finish_reason')!r})")
     output = _parse_extraction_output(_extract_json_dict(raw_text))
-    return output, used_model, tokens_in, tokens_out, 0.0
+    model_observed = _clean_model_str(out.get("model"))
+    return output, used_model, tokens_in, tokens_out, 0.0, model_observed
 
 
 def _run_cli(
     system_prompt: str,
     user_prompt: str,
     model: str,
-) -> tuple[ExtractionOutput, str, int, int, float]:
+) -> tuple[ExtractionOutput, str, int, int, float, str | None]:
     cfg = get_settings()
     used_model = model or "default"
     cmd_str = cfg.agent_cli_cmd.format(model=used_model)
@@ -456,6 +524,7 @@ def _run_cli(
         raise RuntimeError(f"agent CLI exited with {proc.returncode}: {(proc.stderr or '').strip()[:500]}")
 
     parsed = _extract_json_dict(stdout)
+    model_observed = extract_observed_model(parsed)
     tokens_in = 0
     tokens_out = 0
     cost_usd = 0.0
@@ -476,7 +545,7 @@ def _run_cli(
         payload = parsed
 
     output = _parse_extraction_output(payload)
-    return output, used_model, tokens_in, tokens_out, cost_usd
+    return output, used_model, tokens_in, tokens_out, cost_usd, model_observed
 
 
 def run(bundle: JobBundle, runner: str, model: str) -> Attempt:
@@ -487,13 +556,17 @@ def run(bundle: JobBundle, runner: str, model: str) -> Attempt:
     output_schema = bundle.output_schema or OUTPUT_SCHEMA
 
     if runner == "anthropic":
-        output, used_model, tokens_in, tokens_out, cost_usd = _run_anthropic(system_prompt, user_prompt, model)
+        output, used_model, tokens_in, tokens_out, cost_usd, model_observed = _run_anthropic(
+            system_prompt, user_prompt, model
+        )
     elif runner == "lmstudio":
-        output, used_model, tokens_in, tokens_out, cost_usd = _run_lmstudio(
+        output, used_model, tokens_in, tokens_out, cost_usd, model_observed = _run_lmstudio(
             system_prompt, user_prompt, output_schema, model
         )
     elif runner in ("agent-cli", "claude-cli", "codex-cli", "cli") or runner.endswith("-cli"):
-        output, used_model, tokens_in, tokens_out, cost_usd = _run_cli(system_prompt, user_prompt, model)
+        output, used_model, tokens_in, tokens_out, cost_usd, model_observed = _run_cli(
+            system_prompt, user_prompt, model
+        )
     else:
         raise ValueError(f"Unsupported runner: {runner!r}")
 
@@ -512,6 +585,7 @@ def run(bundle: JobBundle, runner: str, model: str) -> Attempt:
         cost_usd=cost_usd,
         started_at=started_at,
         finished_at=finished_at,
+        model_observed=model_observed,
     )
 
 

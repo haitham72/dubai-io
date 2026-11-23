@@ -145,6 +145,7 @@ class AttemptIn(BaseModel):
     cost_usd: float = 0.0
     started_at: Optional[str] = None
     finished_at: Optional[str] = None
+    model_observed: Optional[str] = None
 
 
 # ---------------------------------------------------------------- helpers
@@ -233,6 +234,7 @@ def _deserialize_attempt(job_id: str, body: AttemptIn) -> Attempt:
         cost_usd=cost_usd,
         started_at=body.started_at,
         finished_at=body.finished_at,
+        model_observed=body.model_observed,
     )
 
 

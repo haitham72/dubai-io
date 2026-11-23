@@ -305,9 +305,16 @@ def validate(
             seen_norm_subjects.add(norm_key)
             seen_hashes.update(hashes)
 
+    if (
+        attempt.model_observed
+        and attempt.model
+        and attempt.model_observed.strip().lower() != attempt.model.strip().lower()
+    ):
+        reasons.append("model_mismatch")
+
     unique_reasons = list(dict.fromkeys(reasons))
     return Verdict(
-        ok=(len(unique_reasons) == 0),
+        ok=all(r == "model_mismatch" for r in unique_reasons),
         reasons=unique_reasons,
         quarantined=quarantined,
     )
