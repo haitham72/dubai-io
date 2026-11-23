@@ -1,33 +1,38 @@
 """Forget-by-source with a generation fence (WP-C). Implements plan A5 + §3.2.
 
 `forget_source(owner, record_ids)`:
-  1. bumps `records.generation` for those records;
+  1. bumps `records.generation` and stamps `erased_at` for those records
+     (planaudit §7: Forget bumps the generation and sets `erased_at`);
   2. sets `erased_at` on facts whose evidence is ONLY those records (facts with
      other surviving evidence keep the fact and drop just those evidence rows);
-  3. recomputes `entity_subjects` from the surviving facts;
-  4. re-queues affected non-terminal day jobs (queued/expired/submitted/rejected
-     -> queued; their attempts are invalidated by the fence);
-  5. writes `forget_rules` rows so a re-import of the same records is blocked.
+  3. recomputes `entity_subjects` from the surviving `visible_facts`;
+  4. re-queues affected non-terminal day jobs in place with surviving-only
+     `input_ref` and a recomputed `input_version` (a stale version would be
+     rejected by the generation fence forever); fully-forgotten jobs go to
+     `dead` so they can never be claimed again;
+  5. re-queues affected *applied* days as fresh jobs through
+     `temporal_memory.queue.jobs.PostgresJobs.enqueue` (CR-3), passing only
+     surviving record ids so forgotten records cannot resurrect;
+  6. writes `forget_rules` rows so a re-import of the same records is blocked
+     at capture (WP-D `ingest.triage`, contract request) and at apply.
 
-Nothing resurrects: the validator/applier fence (WP-A) drops any attempt whose
-`input_version` predates the bumped generation, and all reads go through
-`visible_facts` (erased_at IS NULL, no forget-rule match). Days whose jobs had
-already applied are returned as `days_needing_requeue` — minting fresh job rows
-is WP-A's `Jobs.enqueue` (contract request CR-3); this module never invents jobs.
+Nothing resurrects: the validator/applier fence drops any attempt whose
+`input_version` predates the bumped generation, records are `erased_at` so
+job bundles never re-send forgotten text, and all reads go through
+`visible_facts` (erased_at IS NULL, generation current, no forget-rule match).
 
-Table names follow planaudit.md v2.1 §3.2 as applied to the standalone repo
-(v2.1 box §11: no `mem_` prefix; `connector_records` is `records`). The DDL
-itself is WP-A's (`db/schema.sql`); until it lands, the DB path raises a clear
-error and the DB tests are xfail.
+DB access goes through `temporal_memory.db` (CR-1): `db.connect()` for the
+forget transaction and `db.get_database()` for the queue's pool.
 """
 from __future__ import annotations
 
-import os
 from typing import Any
 
-# Non-terminal job states that Forget may reset to queued. `submitted` (validated,
-# awaiting apply) is included on purpose: a late submit for the old lease then
-# fails the fence instead of applying stale facts.
+# Non-terminal job states that Forget may reset to queued. `submitted`
+# (validated, awaiting apply) is included on purpose: a late submit for the
+# old lease then fails the fence instead of applying stale facts. `leased`
+# jobs are deliberately NOT touched: their in-flight attempt is fenced by
+# the generation bump and rejected on submit.
 REQUEUEABLE_STATES = ("queued", "expired", "submitted", "rejected")
 
 
@@ -48,60 +53,45 @@ def plan_forget(evidence: dict[str, list[str]], record_ids: list[str]) -> dict[s
     return {"erase": sorted(erase), "trim": sorted(trim)}
 
 
-def _connect():
-    """DB seam. WP-A's `temporal_memory.db` helper wins when it lands (CR-1);
-    until then, fall back to TM_DATABASE_URL via psycopg. Raises RuntimeError
-    with an actionable message when neither exists.
-    """
-    try:
-        from temporal_memory import db as _db  # WP-A, not landed yet
-
-        connect = getattr(_db, "connect", None) or getattr(_db, "get_connection", None)
-        if connect is not None:
-            return connect()
-    except ImportError:
-        pass
-    dsn = os.environ.get("TM_DATABASE_URL", "")
-    if not dsn:
-        raise RuntimeError(
-            "forget_source needs a database: WP-A temporal_memory.db is not landed "
-            "and TM_DATABASE_URL is not set (CR-1)."
-        )
-    import psycopg
-
-    return psycopg.connect(dsn)
-
-
 def forget_source(owner: str, record_ids: list[str]) -> dict[str, Any]:
     """Forget one source's records for an owner. Returns counts + new generation."""
     if not record_ids:
         return {"owner": owner, "records": 0, "facts_erased": 0, "facts_trimmed": 0,
-                "entity_subjects_recomputed": 0, "jobs_requeued": 0,
-                "days_needing_requeue": [], "generation": None}
+                "entity_subjects_recomputed": 0, "jobs_requeued": 0, "jobs_enqueued": 0,
+                "days_needing_requeue": [], "days_dead": [], "generation": None}
     rids = sorted(set(record_ids))
+    forgotten = set(rids)
     out: dict[str, Any] = {"owner": owner, "records": 0, "facts_erased": 0,
                            "facts_trimmed": 0, "entity_subjects_recomputed": 0,
-                           "jobs_requeued": 0, "days_needing_requeue": [],
+                           "jobs_requeued": 0, "jobs_enqueued": 0,
+                           "days_needing_requeue": [], "days_dead": [],
                            "generation": None}
-    conn = _connect()
+    from temporal_memory import db as _db  # CR-1: WP-A pool/connect, no local seam
+
+    # Applied days to mint fresh survivor-only jobs for, after the forget
+    # transaction commits: (day, surviving record ids).
+    applied_requeue: list[tuple[str, list[str]]] = []
+
+    conn = _db.connect()
     try:
         with conn:
             with conn.cursor() as cur:
+                # 1) Generation bump + erasure. No aggregates in RETURNING:
+                # collect per-row generations and take the max in Python.
                 cur.execute(
-                    "UPDATE records SET generation = generation + 1 "
+                    "UPDATE records SET generation = generation + 1, "
+                    "erased_at = coalesce(erased_at, now()) "
                     "WHERE owner = %(owner)s AND id = ANY(%(rids)s) "
-                    "RETURNING max(generation)",
+                    "RETURNING generation",
                     {"owner": owner, "rids": rids},
                 )
-                row = cur.fetchone()
-                if row is None or row[0] is None:
+                generations = [r[0] for r in cur.fetchall()]
+                if not generations:
                     return out
-                gen = out["generation"] = row[0]
-                cur.execute("SELECT count(*) FROM records WHERE owner = %(owner)s "
-                            "AND id = ANY(%(rids)s)",
-                            {"owner": owner, "rids": rids})
-                out["records"] = cur.fetchone()[0]
+                gen = out["generation"] = max(generations)
+                out["records"] = len(generations)
 
+                # 2) Erase only-evidence facts, trim shared facts.
                 cur.execute(
                     "SELECT fact_id, record_id FROM fact_evidence "
                     "WHERE owner = %(owner)s AND fact_id IN "
@@ -130,50 +120,71 @@ def forget_source(owner: str, record_ids: list[str]) -> dict[str, Any]:
                     )
                     out["facts_trimmed"] = len(plan["trim"])
 
-                # Recompute entity_subjects from surviving facts: drop pairs with
-                # no visible facts left, recount the rest (role = most common
-                # surviving role; weight is WP-A applier's formula — untouched).
+                # 3) Recompute entity_subjects from surviving visible facts
+                # (same derivation as the applier; owner-qualified join).
                 cur.execute(
-                    "DELETE FROM entity_subjects es WHERE es.owner = %(owner)s AND NOT EXISTS "
-                    "(SELECT 1 FROM fact_entities fe JOIN facts f ON f.id = fe.fact_id "
-                    "WHERE fe.owner = %(owner)s AND fe.entity_id = es.entity_id "
-                    "AND f.subject_id = es.subject_id AND f.erased_at IS NULL)",
+                    "DELETE FROM entity_subjects WHERE owner = %(owner)s",
                     {"owner": owner},
                 )
-                dropped = cur.rowcount
                 cur.execute(
-                    "WITH agg AS (SELECT fe.entity_id, f.subject_id AS subject_id, "
-                    "count(*) AS c, min(f.valid_from) AS first_seen, "
-                    "max(coalesce(f.valid_to, f.valid_from)) AS last_seen "
-                    "FROM fact_entities fe JOIN facts f ON f.id = fe.fact_id "
-                    "WHERE fe.owner = %(owner)s AND f.erased_at IS NULL "
-                    "GROUP BY 1, 2) "
-                    "UPDATE entity_subjects es SET fact_count = agg.c, "
-                    "first_seen = agg.first_seen, last_seen = agg.last_seen "
-                    "FROM agg WHERE es.owner = %(owner)s "
-                    "AND es.entity_id = agg.entity_id AND es.subject_id = agg.subject_id",
+                    "INSERT INTO entity_subjects (owner, entity_id, subject_id, "
+                    "role, weight, fact_count, first_seen, last_seen) "
+                    "SELECT vf.owner, fe.entity_id, vf.subject_id, "
+                    "coalesce(fe.role, ''), "
+                    "sum(CASE WHEN vf.status = 'active' THEN 1.0 ELSE 0.3 END), "
+                    "count(*)::int, min(vf.valid_from), max(vf.valid_from) "
+                    "FROM visible_facts vf "
+                    "JOIN fact_entities fe ON fe.owner = vf.owner AND fe.fact_id = vf.id "
+                    "WHERE vf.owner = %(owner)s "
+                    "GROUP BY vf.owner, fe.entity_id, vf.subject_id, coalesce(fe.role, '')",
                     {"owner": owner},
                 )
-                out["entity_subjects_recomputed"] = dropped + cur.rowcount
+                out["entity_subjects_recomputed"] = cur.rowcount
 
-                # Re-queue affected live jobs; collect applied days for WP-A.
+                # 4/5) Affected day jobs, classified by state.
                 cur.execute(
-                    "UPDATE jobs SET state = 'queued', fence_token = NULL, "
-                    "lease_expires_at = NULL, worker_id = NULL "
+                    "SELECT id, day, state, input_ref FROM jobs "
                     "WHERE owner = %(owner)s AND kind = 'extract.day' "
-                    "AND state = ANY(%(states)s) AND input_ref && %(rids)s "
-                    "RETURNING id",
-                    {"owner": owner, "states": list(REQUEUEABLE_STATES), "rids": rids},
-                )
-                out["jobs_requeued"] = len(cur.fetchall())
-                cur.execute(
-                    "SELECT DISTINCT day FROM jobs WHERE owner = %(owner)s "
-                    "AND kind = 'extract.day' AND day IS NOT NULL "
-                    "AND input_ref && %(rids)s AND state NOT IN ('queued', 'leased')",
+                    "AND input_ref && %(rids)s",
                     {"owner": owner, "rids": rids},
                 )
-                out["days_needing_requeue"] = sorted(r[0] for r in cur.fetchall()
-                                                    if r[0] is not None)
+                affected = cur.fetchall()
+                days_needing: set[str] = set()
+                days_dead: set[str] = set()
+                for job_id, day, state, input_ref in affected:
+                    survivors = [r for r in (input_ref or []) if r not in forgotten]
+                    if state in REQUEUEABLE_STATES:
+                        if survivors:
+                            cur.execute(
+                                "UPDATE jobs SET state = 'queued', fence_token = NULL, "
+                                "lease_expires_at = NULL, worker_id = NULL, "
+                                "input_ref = %(surv)s, "
+                                "input_version = (SELECT coalesce(max(generation), 0) "
+                                "FROM records WHERE owner = %(owner)s "
+                                "AND id = ANY(%(surv)s)), updated_at = now() "
+                                "WHERE id = %(jid)s",
+                                {"owner": owner, "surv": survivors, "jid": job_id},
+                            )
+                            out["jobs_requeued"] += cur.rowcount
+                        else:
+                            # Nothing left to extract: never claimable again.
+                            cur.execute(
+                                "UPDATE jobs SET state = 'dead', fence_token = NULL, "
+                                "lease_expires_at = NULL, worker_id = NULL, "
+                                "updated_at = now() WHERE id = %(jid)s",
+                                {"jid": job_id},
+                            )
+                    elif state == "applied":
+                        if day is not None and survivors:
+                            applied_requeue.append((day, survivors))
+                            days_needing.add(day)
+                    elif state == "dead":
+                        if day is not None:
+                            days_dead.add(day)
+                    # leased: left alone; the generation fence rejects its
+                    # late submit and no fact can resurrect.
+                out["days_needing_requeue"] = sorted(days_needing)
+                out["days_dead"] = sorted(days_dead)
 
                 for rid in rids:
                     cur.execute(
@@ -183,4 +194,19 @@ def forget_source(owner: str, record_ids: list[str]) -> dict[str, Any]:
                     )
     finally:
         conn.close()
+
+    # CR-3: mint fresh jobs for applied days through the real queue, with
+    # surviving records only, after the forget has committed.
+    if applied_requeue:
+        from temporal_memory.queue.jobs import PostgresJobs
+
+        jobs = PostgresJobs(_db.get_database())
+        seen: set[tuple[str, tuple[str, ...]]] = set()
+        for day, survivors in applied_requeue:
+            key = (day, tuple(survivors))
+            if key in seen:
+                continue
+            seen.add(key)
+            jobs.enqueue(owner, "extract.day", survivors, priority=1, day=day)
+            out["jobs_enqueued"] += 1
     return out

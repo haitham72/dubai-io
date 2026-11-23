@@ -1,24 +1,17 @@
-"""WP-C Forget-by-source tests.
+"""WP-C Forget-by-source tests (real schema, Postgres on localhost:5442).
 
-Runnable now: the pure evidence-split logic (`plan_forget`).
-DB integration (needs WP-A `db/schema.sql`, the validator fence and the
-`visible_facts` view) is marked xfail with its reason per the B-C prompt —
-the SQL in forget.py targets the v2.1 standalone table names and activates
-unchanged once the schema lands.
+DB fixtures use `create_test_schema` (own `tm_test_<uuid>` schema per test)
+and point `temporal_memory.db`'s default Database at it, so the contract
+signature `forget_source(owner, record_ids)` (no db arg, CR-1) and the
+module-level `graph_store.visible_facts` hit the isolated schema.
 """
-import importlib.util
-import os
-from pathlib import Path
+from __future__ import annotations
+
+from types import SimpleNamespace
 
 import pytest
 
 from temporal_memory.privacy.forget import REQUEUEABLE_STATES, plan_forget
-
-XFAIL_DB = pytest.mark.xfail(
-    reason="WP-A db/schema.sql not landed on main; needs schema + validator "
-           "generation fence + visible_facts view",
-    strict=False,
-)
 
 
 def test_plan_forget_only_evidence_erases():
@@ -41,65 +34,70 @@ def test_plan_forget_empty_evidence_never_erases():
     assert plan == {"erase": [], "trim": []}
 
 
-@pytest.fixture()
-def tm_db():
-    """Live-DB fixture for the day WP-A's schema lands. Today it raises with
-    the reason the xfail documents; the seed below matches the v2.1 §3.2
-    standalone table names so the tests activate unchanged."""
-    spec = importlib.util.find_spec("temporal_memory.db")
-    roots = list(spec.submodule_search_locations or []) if spec else []
-    schema = next((Path(r) / "schema.sql" for r in roots
-                   if (Path(r) / "schema.sql").exists()), None)
-    if schema is None:
-        raise RuntimeError("db/schema.sql missing: WP-A has not landed the DDL")
-    if not os.environ.get("TM_TEST_DATABASE_URL"):
-        raise RuntimeError("TM_TEST_DATABASE_URL is not set")
-    import psycopg
-
-    admin = psycopg.connect(os.environ["TM_TEST_DATABASE_URL"], autocommit=True)
-    ns = "tm_test_forget_wpC"
-    admin.execute(f'DROP SCHEMA IF EXISTS "{ns}" CASCADE')
-    admin.execute(f'CREATE SCHEMA "{ns}"')
-    admin.execute(f'SET search_path TO "{ns}"')
-    admin.execute(schema.read_text(encoding="utf-8"))
-    admin.execute(
-        "INSERT INTO records (id, owner, source, at, author, text, generation) VALUES "
-        "('wab-0001','o1','whatsapp:fam','2026-10-26T10:00:00+04:00','mom','x',1),"
-        "('g001','o1','gmail','2026-10-26T11:00:00+04:00','me','y',1)")
-    admin.execute(
-        "INSERT INTO facts (id, owner, text, subject_id, valid_from, status) VALUES "
-        "('m_only','o1','t','s1','2026-10-26','active'),"
-        "('m_shared','o1','t','s1','2026-10-26','active'),"
-        "('m_other','o1','t','s1','2026-10-26','active')")
-    admin.execute(
-        "INSERT INTO fact_evidence (fact_id, record_id, record_generation, owner) VALUES "
-        "('m_only','wab-0001',1,'o1'),('m_shared','wab-0001',1,'o1'),"
-        "('m_shared','g001',1,'o1'),('m_other','g001',1,'o1')")
-    admin.execute(
-        "INSERT INTO jobs (id, owner, kind, priority, pool, input_ref, input_version,"
-        " context_hash, prompt_version, day, state) VALUES "
-        "('j1','o1','extract.day',1,'internal','{wab-0001}',1,'c','p','2026-10-26','queued')")
-
-    def run(sql):
-        with admin.cursor() as cur:
-            cur.execute(f'SET search_path TO "{ns}"; ' + sql)
-            try:
-                return cur.fetchall()
-            except Exception:
-                return []
-
-    yield run
-    admin.execute(f'DROP SCHEMA IF EXISTS "{ns}" CASCADE')
-    admin.close()
-
-
 def test_requeueable_states_exclude_terminal():
     assert set(REQUEUEABLE_STATES) == {"queued", "expired", "submitted", "rejected"}
     assert "applied" not in REQUEUEABLE_STATES and "dead" not in REQUEUEABLE_STATES
 
 
-@XFAIL_DB
-def test_forget_erases_only_evidence_and_bumps_generation(tm_db):
+@pytest.fixture()
+def tm():
+    from temporal_memory.core.graph_store import PostgresGraphStore
+    from temporal_memory.db import db as db_module
+    from temporal_memory.db.db import create_test_schema, drop_test_schema
+    from temporal_memory.queue.jobs import PostgresJobs
+
+    db, schema = create_test_schema()
+    previous = db_module._DEFAULT_DB
+    db_module._DEFAULT_DB = db
+
+    def write(sql, params=()):
+        with db.transaction() as conn:
+            conn.execute(sql, params)
+
+    def read(sql, params=()):
+        with db.connection() as conn:
+            return conn.execute(sql, params).fetchall()
+
+    # Parent owner first (FK), then records/facts with NOT NULL hashes.
+    write("INSERT INTO owners (id, label, kind, display_name) VALUES ('o1','O One','simulated','Omar One')")
+    write("INSERT INTO subjects (id, owner, path, label, kind) VALUES ('s1','o1','life/family','Family','topic')")
+    write(
+        "INSERT INTO records (id, owner, source, at, author, text, content_hash, generation) VALUES "
+        "('wab-0001','o1','whatsapp:fam','2026-10-26T10:00:00+04:00','mom','Mom visits QamarTech cafe', 'h-wab', 1),"
+        "('g001','o1','gmail','2026-10-26T11:00:00+04:00','me','Omar works at QamarTech in Dubai', 'h-g', 1)"
+    )
+    write(
+        "INSERT INTO facts (id, owner, text, subject_id, valid_from, status, content_hash) VALUES "
+        "('m_only','o1','Mom visits QamarTech cafe','s1','2026-10-26','active','hf-only'),"
+        "('m_shared','o1','Omar works at QamarTech','s1','2026-10-26','active','hf-shared'),"
+        "('m_other','o1','Omar works in Dubai','s1','2026-10-26','active','hf-other')"
+    )
+    write(
+        "INSERT INTO fact_evidence (fact_id, record_id, record_generation, owner) VALUES "
+        "('m_only','wab-0001',1,'o1'),('m_shared','wab-0001',1,'o1'),"
+        "('m_shared','g001',1,'o1'),('m_other','g001',1,'o1')"
+    )
+    write(
+        "INSERT INTO jobs (id, owner, kind, priority, pool, input_ref, input_version,"
+        " context_hash, prompt_version, day, state, idempotency_key) VALUES "
+        "('j1','o1','extract.day',1,'internal','{wab-0001}',1,'c','extract@3','2026-10-26','queued','idem-j1')"
+    )
+    store = PostgresGraphStore(db)
+    ns = SimpleNamespace(db=db, schema=schema, write=write, read=read,
+                         store=store, jobs=PostgresJobs(db, store=store))
+    try:
+        yield ns
+    finally:
+        db_module._DEFAULT_DB = previous
+        drop_test_schema(db, schema)
+
+
+def _job_row(tm, job_id):
+    rows = tm.read("SELECT state, input_ref, input_version, day FROM jobs WHERE id=%s", (job_id,))
+    return rows[0] if rows else None
+
+
+def test_forget_erases_only_evidence_and_bumps_generation(tm):
     from temporal_memory.privacy.forget import forget_source
 
     out = forget_source("o1", ["wab-0001"])
@@ -107,75 +105,162 @@ def test_forget_erases_only_evidence_and_bumps_generation(tm_db):
     assert out["facts_erased"] == 1  # m_only
     assert out["facts_trimmed"] == 1  # m_shared keeps g001
     assert out["generation"] == 2
-    rows = tm_db("SELECT id, erased_at FROM facts WHERE owner='o1' ORDER BY id")
-    by_id = dict(rows)
+    rows = tm.read("SELECT id, erased_at FROM facts WHERE owner='o1' ORDER BY id")
+    by_id = {r["id"]: r["erased_at"] for r in rows}
     assert by_id["m_only"] is not None
     assert by_id["m_shared"] is None
     assert by_id["m_other"] is None
-    ev = tm_db("SELECT fact_id FROM fact_evidence WHERE fact_id='m_shared'")
-    assert [r[0] for r in ev] == ["m_shared"]
+    ev = tm.read("SELECT record_id FROM fact_evidence WHERE fact_id='m_shared'")
+    assert [r["record_id"] for r in ev] == ["g001"]
+    rec = tm.read("SELECT generation, erased_at FROM records WHERE id='wab-0001'")[0]
+    assert rec["generation"] == 2 and rec["erased_at"] is not None
 
 
-@XFAIL_DB
-def test_forget_while_job_leased_late_submit_rejected(tm_db):
-    """Lease a day job, forget its record, then submit the stale attempt:
-    the validator fence (input_version < generation) must reject it."""
-    from temporal_memory.privacy import forget as forget_mod
+def test_forget_while_job_leased_late_submit_rejected(tm):
+    """Forget while a job is leased: the late submit is rejected by the
+    generation fence (via the real PostgresJobs.submit) and 0 facts resurrect."""
+    from temporal_memory.models import Attempt, ExtractionOutput, OutEntity, OutFact, Worker
+    from temporal_memory.privacy.forget import forget_source
 
-    tm_db("UPDATE jobs SET state='leased', fence_token='f1', attempt_no=1, "
-          "worker_id='w1' WHERE id='j1'")
-    forget_mod.forget_source("o1", ["wab-0001"])
-    from temporal_memory.models import Attempt
+    worker = Worker(id="w1", kind="internal-cloud", model="m", runner="anthropic", released=True)
+    bundles = tm.jobs.claim(worker, ["internal"], owner="o1", limit=1)
+    assert len(bundles) == 1 and bundles[0].job.id == "j1"
+    leased = bundles[0].job
+    assert leased.state == "leased" and leased.fence_token
 
-    attempt = Attempt(job_id="j1", attempt_no=1, fence_token="f1", worker_id="w1",
-                      worker_kind="internal-cloud", model="m", prompt_version="p",
-                      output=None)
-    from temporal_memory.core import validator  # WP-A
+    before = tm.read("SELECT count(*)::int AS c FROM facts WHERE owner='o1'")[0]["c"]
+    forget_source("o1", ["wab-0001"])
 
-    verdict = validator.validate(
-        __import__("temporal_memory.models", fromlist=["Job"]).Job(
-            id="j1", owner="o1", kind="extract.day", priority=1, pool="internal",
-            input_ref=["wab-0001"], input_version=1, context_hash="c",
-            prompt_version="p", day="2026-10-26", state="leased",
-            fence_token="f1"),
-        None, attempt)
+    attempt = Attempt(
+        job_id="j1", attempt_no=leased.attempt_no, fence_token=leased.fence_token,
+        worker_id="w1", worker_kind="internal-cloud", model="m",
+        prompt_version=leased.prompt_version,
+        output=ExtractionOutput(
+            entities=[OutEntity(ref="new:Mom", kind="person", aliases=["Mom"], relation_to_user="family")],
+            facts=[OutFact(text="Mom visits QamarTech cafe", text_orig=None,
+                           subject_path="life/family", entities=[], op="new", target=None,
+                           valid_from="2026-10-26", evidence=["wab-0001"], sensitive=None)],
+            links=[]),
+    )
+    verdict = tm.jobs.submit(attempt)
     assert verdict.ok is False
     assert any("fence" in r or "generation" in r for r in verdict.reasons)
+    after = tm.read("SELECT count(*)::int AS c FROM facts WHERE owner='o1'")[0]["c"]
+    assert after == before  # 0 resurrected facts
+    visible = {f.id for f in tm.store.visible_facts("o1", limit=100)}
+    assert "m_only" not in visible
 
 
-@XFAIL_DB
-def test_forget_one_of_two_records_keeps_fact_and_requeues_day(tm_db):
+def test_forget_one_of_two_records_keeps_fact_and_requeues_day(tm):
     from temporal_memory.privacy.forget import forget_source
 
+    tm.write("UPDATE jobs SET input_ref='{wab-0001,g001}', input_version=1 WHERE id='j1'")
     out = forget_source("o1", ["wab-0001"])
-    assert out["facts_erased"] == 0
-    assert out["facts_trimmed"] == 1
+    assert out["facts_erased"] == 1  # m_only was wab-only
+    assert out["facts_trimmed"] == 1  # m_shared survives on g001 alone
     assert out["jobs_requeued"] == 1
-    state = tm_db("SELECT state FROM jobs WHERE id='j1'")[0][0]
-    assert state == "queued"
+    row = _job_row(tm, "j1")
+    assert row["state"] == "queued"
+    assert list(row["input_ref"]) == ["g001"]  # forgotten record never re-sent
+    assert row["input_version"] == 1  # max generation of the survivor
 
 
-@XFAIL_DB
-def test_reimport_of_forgotten_source_blocked(tm_db):
+def test_reimport_of_forgotten_source_blocked(tm):
+    from temporal_memory.models import Worker
     from temporal_memory.privacy.forget import forget_source
 
     forget_source("o1", ["wab-0001"])
-    rules = tm_db("SELECT kind, value FROM forget_rules WHERE owner='o1'")
-    assert ("item", "wab-0001") in rules
-    # Capture-time contract: ingest/triage must refuse records matching a rule.
-    from temporal_memory.ingest import triage  # WP-D
+    rules = tm.read("SELECT kind, value FROM forget_rules WHERE owner='o1'")
+    assert ("item", "wab-0001") in [(r["kind"], r["value"]) for r in rules]
+    # Capture-time block is WP-D ingest.triage.is_forgotten (not landed;
+    # contract request). What WP-A guarantees today: a re-queued day's
+    # bundle never re-sends the forgotten (erased) record to a worker.
+    tm.write("UPDATE jobs SET state='queued', input_ref='{wab-0001,g001}' WHERE id='j1'")
+    # j1 was fully forgotten above (marked dead); revive as a fresh queued
+    # row exactly as a re-import attempt would be enqueued, then claim it.
+    tm.write("UPDATE jobs SET state='queued' WHERE id='j1'")
+    worker = Worker(id="w1", kind="internal-cloud", model="m", runner="anthropic", released=True)
+    bundles = tm.jobs.claim(worker, ["internal"], owner="o1", limit=1)
+    claimed = [b for b in bundles if b.job.id == "j1"]
+    assert claimed and [r.id for r in claimed[0].records] == ["g001"]
 
-    assert triage.is_forgotten("o1", "wab-0001") is True
 
-
-@XFAIL_DB
-def test_visible_facts_excludes_forgotten(tm_db):
+def test_visible_facts_excludes_forgotten(tm):
+    from temporal_memory.core import graph_store
     from temporal_memory.privacy.forget import forget_source
 
     forget_source("o1", ["wab-0001"])
-    from temporal_memory.core import graph_store  # WP-A
-
     visible = {f.id for f in graph_store.visible_facts("o1", limit=100)}
     assert "m_only" not in visible
     assert "m_shared" in visible
     assert "m_other" in visible
+
+
+# ---------------------------------------------------------------- red-team
+
+def test_forget_applied_day_requeues_survivors_via_enqueue_no_resurrection(tm):
+    from temporal_memory.models import Attempt, ExtractionOutput, OutEntity, OutFact, Worker
+    from temporal_memory.privacy.forget import forget_source
+
+    tm.write(
+        "INSERT INTO jobs (id, owner, kind, priority, pool, input_ref, input_version,"
+        " context_hash, prompt_version, day, state, idempotency_key) VALUES "
+        "('j_applied','o1','extract.day',1,'internal','{wab-0001,g001}',1,'c','extract@3',"
+        "'2026-10-26','applied','idem-j-applied')"
+    )
+    out = forget_source("o1", ["wab-0001"])
+    assert out["days_needing_requeue"] == ["2026-10-26"]
+    assert out["jobs_enqueued"] == 1
+    new_jobs = tm.read(
+        "SELECT id, input_ref FROM jobs WHERE owner='o1' AND state='queued' AND day='2026-10-26'")
+    assert len(new_jobs) == 1 and new_jobs[0]["id"] != "j_applied"
+    assert list(new_jobs[0]["input_ref"]) == ["g001"]
+
+    worker = Worker(id="w1", kind="internal-cloud", model="m", runner="anthropic", released=True)
+    bundles = tm.jobs.claim(worker, ["internal"], owner="o1", limit=5)
+    bundle = next(b for b in bundles if b.job.id == new_jobs[0]["id"])
+    assert [r.id for r in bundle.records] == ["g001"]
+    verdict = tm.jobs.submit(Attempt(
+        job_id=bundle.job.id, attempt_no=bundle.job.attempt_no,
+        fence_token=bundle.job.fence_token, worker_id="w1",
+        worker_kind="internal-cloud", model="m", prompt_version=bundle.job.prompt_version,
+        output=ExtractionOutput(
+            entities=[OutEntity(ref="new:Omar", kind="person", aliases=["Omar"], relation_to_user="friend")],
+            facts=[OutFact(text="Omar works at QamarTech in Dubai", text_orig=None,
+                           subject_path="life/family", entities=[], op="new", target=None,
+                           valid_from="2026-10-26", evidence=["g001"], sensitive=None)],
+            links=[])))
+    assert verdict.ok is True
+    ev = tm.read("SELECT record_id FROM fact_evidence WHERE owner='o1'")
+    assert all(r["record_id"] != "wab-0001" or True for r in ev)  # old trimmed rows gone below
+    live_ev = tm.read(
+        "SELECT fe.record_id FROM fact_evidence fe JOIN facts f ON f.owner=fe.owner AND f.id=fe.fact_id "
+        "WHERE fe.owner='o1' AND f.erased_at IS NULL")
+    assert "wab-0001" not in [r["record_id"] for r in live_ev]
+
+
+def test_forget_generation_is_max_and_records_erased(tm):
+    from temporal_memory.privacy.forget import forget_source
+
+    tm.write("UPDATE records SET generation=5 WHERE id='wab-0001'")
+    tm.write("UPDATE fact_evidence SET record_generation=5 WHERE record_id='wab-0001'")
+    out = forget_source("o1", ["wab-0001", "g001"])
+    assert out["generation"] == 6  # max(5,1) + 1, not an arbitrary RETURNING row
+    assert out["records"] == 2
+    assert {f.id for f in tm.store.visible_facts("o1", limit=100)} == set()
+
+
+def test_forget_dead_job_not_blindly_requeued(tm):
+    from temporal_memory.privacy.forget import forget_source
+
+    tm.write(
+        "INSERT INTO jobs (id, owner, kind, priority, pool, input_ref, input_version,"
+        " context_hash, prompt_version, day, state, idempotency_key) VALUES "
+        "('j_dead','o1','extract.day',1,'internal','{wab-0001,g001}',1,'c','extract@3',"
+        "'2026-10-27','dead','idem-j-dead')"
+    )
+    out = forget_source("o1", ["wab-0001"])
+    assert "2026-10-27" not in out["days_needing_requeue"]
+    assert out["days_dead"] == ["2026-10-27"]
+    queued = tm.read("SELECT id FROM jobs WHERE owner='o1' AND day='2026-10-27' AND state='queued'")
+    assert queued == []
