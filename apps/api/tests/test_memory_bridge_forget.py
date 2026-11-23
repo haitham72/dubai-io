@@ -1,0 +1,569 @@
+"""MB-10 tests for CS-B4 ForgetCoordinator: cascade, generation fence, idempotency, outage reconciliation, and isolation."""
+from __future__ import annotations
+
+import json
+import pytest
+
+from app.identity.models import APP_CAPABILITIES, VerifiedPrincipal
+from app.memory_bridge.audit import AuditStore
+from app.memory_bridge.fake_client import FakeTemporalMemoryClient
+from app.memory_bridge.forget import ForgetCoordinator
+from app.memory_bridge.models import (
+    ConsentDeniedError,
+    ForgetReceipt,
+    MemoryBridgeError,
+    MemoryBridgeUnavailable,
+)
+from tests.fixtures.contest_shared.memory_fixtures import (
+    SYNTH_OWNER_A,
+    SYNTH_OWNER_B,
+    make_sqlite_db,
+)
+
+
+def _principal(user_id: str, app_id: str = "messenger") -> VerifiedPrincipal:
+    return VerifiedPrincipal(
+        user_id=user_id,
+        app_id=app_id,  # type: ignore[arg-type]
+        capabilities=APP_CAPABILITIES[app_id],  # type: ignore[index]
+        auth_mode="verified_app_session",
+        age_band="adult_18_plus",
+    )
+
+
+def _seed_consent(
+    db,
+    *,
+    owner_id: str,
+    scope_kind: str,
+    scope_id: str,
+    enabled: int = 1,
+    read_enabled: int = 1,
+    write_enabled: int = 1,
+    ai_mode: str = "save",
+    allow_interest_export: int = 1,
+    generation: int = 1,
+) -> None:
+    db.execute(
+        """
+        INSERT INTO cs_consent_grants (
+            owner_id, scope_kind, scope_id, enabled, read_enabled, write_enabled,
+            ai_mode, allow_interest_export, allow_cross_source_recall,
+            generation, updated_at, updated_by
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?, '2026-11-23T10:00:00Z', ?)
+        ON CONFLICT(owner_id, scope_kind, scope_id) DO UPDATE SET
+            enabled = excluded.enabled,
+            read_enabled = excluded.read_enabled,
+            write_enabled = excluded.write_enabled,
+            ai_mode = excluded.ai_mode,
+            allow_interest_export = excluded.allow_interest_export,
+            generation = excluded.generation
+        """.strip(),
+        (
+            owner_id,
+            scope_kind,
+            scope_id,
+            enabled,
+            read_enabled,
+            write_enabled,
+            ai_mode,
+            allow_interest_export,
+            generation,
+            owner_id,
+        ),
+    )
+    db.commit()
+
+
+def _seed_ref(
+    db,
+    *,
+    owner_id: str,
+    record_id: str,
+    source_kind: str,
+    source_id: str,
+    host_app: str,
+    consent_generation: int = 1,
+) -> None:
+    db.execute(
+        """
+        INSERT INTO cs_memory_record_refs (
+            owner_id, record_id, source_kind, source_id, host_app,
+            author_is_owner, consent_generation, created_at, erased_at
+        ) VALUES (?, ?, ?, ?, ?, 1, ?, '2026-11-23T10:00:00Z', NULL)
+        """.strip(),
+        (owner_id, record_id, source_kind, source_id, host_app, consent_generation),
+    )
+    db.commit()
+
+
+def _seed_projection_cache(db, owner_id: str) -> None:
+    db.execute(
+        """
+        INSERT INTO cs_interest_projection_cache (
+            owner_id, consent_generation_sig, facts_version, features_json, computed_at
+        ) VALUES (?, 'sig-1', 3, ?, '2026-11-23T10:05:00Z')
+        ON CONFLICT(owner_id) DO UPDATE SET facts_version = excluded.facts_version
+        """.strip(),
+        (owner_id, json.dumps([{"topic_slug": "dubai-chambers"}])),
+    )
+    db.commit()
+
+
+def _seed_two_visit_signal(
+    db,
+    *,
+    sig_id: str,
+    owner_id: str,
+    source_kind: str,
+    source_id: str,
+    promoted_fact_id: str | None = None,
+) -> None:
+    db.execute(
+        """
+        INSERT INTO cs_two_visit_signals (
+            id, owner_id, source_kind, source_id, topic_slug, option_key,
+            visit_at, weight, promoted_fact_id, erased_at
+        ) VALUES (?, ?, ?, ?, 'urban-cycling', 'opt-1', '2026-11-23T09:00:00Z', 1.0, ?, NULL)
+        """.strip(),
+        (sig_id, owner_id, source_kind, source_id, promoted_fact_id),
+    )
+    db.commit()
+
+
+class _SpyTemporalClient:
+    """Proxy counting forget_source/forget_fact calls and optionally injecting transient failures."""
+
+    def __init__(self, inner: FakeTemporalMemoryClient) -> None:
+        self.inner = inner
+        self.forget_source_calls: list[tuple[str, list[str]]] = []
+        self.forget_fact_calls: list[tuple[str, str]] = []
+        self.fail_next_forget_source: Exception | None = None
+        self.fail_next_forget_fact: Exception | None = None
+
+    def __getattr__(self, name: str):
+        return getattr(self.inner, name)
+
+    def forget_source(self, owner_id: str, record_ids: list[str]):
+        self.forget_source_calls.append((owner_id, list(record_ids)))
+        if self.fail_next_forget_source is not None:
+            exc = self.fail_next_forget_source
+            self.fail_next_forget_source = None
+            raise exc
+        return self.inner.forget_source(owner_id, record_ids)
+
+    def forget_fact(self, owner_id: str, fact_id: str):
+        self.forget_fact_calls.append((owner_id, fact_id))
+        if self.fail_next_forget_fact is not None:
+            exc = self.fail_next_forget_fact
+            self.fail_next_forget_fact = None
+            raise exc
+        return self.inner.forget_fact(owner_id, fact_id)
+
+
+def _setup_mb10_fixture(tmp_path):
+    db = make_sqlite_db(tmp_path, "mb10_forget.db")
+    # Simulate entry-owned Messenger and Community source tables (must remain untouched by Forget)
+    db.execute("CREATE TABLE IF NOT EXISTS mg_messages (id TEXT PRIMARY KEY, conv_id TEXT, body TEXT)")
+    db.execute("CREATE TABLE IF NOT EXISTS cm_posts (id TEXT PRIMARY KEY, author_id TEXT, body TEXT)")
+    db.execute("INSERT INTO mg_messages (id, conv_id, body) VALUES ('m-a1', 'conv-a', 'Shipped chat milestone for conv-a.')")
+    db.execute("INSERT INTO cm_posts (id, author_id, body) VALUES ('post-1', ?, 'Community post stays intact.')", (SYNTH_OWNER_A,))
+    db.commit()
+
+    fake = FakeTemporalMemoryClient()
+    fake.ensure_owner(SYNTH_OWNER_A, label="Synth Alpha")
+    fake.ensure_owner(SYNTH_OWNER_B, label="Synth Beta")
+
+    # 1. Quest record (survives Messenger forget)
+    fake.upsert_record_and_enqueue(
+        SYNTH_OWNER_A,
+        record_id="qmsg:q-1",
+        source="quest:thread-1",
+        at="2026-11-20T09:00:00Z",
+        author=SYNTH_OWNER_A,
+        text="Alpha works on Dubai Chambers sprints.",
+        enqueue="none",
+        direct_fact={
+            "id": "fact-quest-only",
+            "text": "Alpha works on Dubai Chambers sprints.",
+            "subject_path": "career/dubai-chambers",
+            "evidence": ["qmsg:q-1"],
+        },
+    )
+    # 2. Messenger conv-a record with:
+    #    - an only-evidence fact (fact-conv-a-only)
+    #    - a multi-source fact evidenced by BOTH qmsg:q-1 and mgmsg:m-a1 (fact-multi-source)
+    #    - an open extract.live job (input_version=1) to test the generation fence
+    up_conv_a = fake.upsert_record_and_enqueue(
+        SYNTH_OWNER_A,
+        record_id="mgmsg:m-a1",
+        source="messenger:conv-a",
+        at="2026-11-21T10:00:00Z",
+        author=SYNTH_OWNER_A,
+        text="Secret launch phrase conv-a-alpha-991",
+        enqueue="extract.live",
+        direct_fact={
+            "id": "fact-conv-a-only",
+            "text": "Secret launch phrase conv-a-alpha-991",
+            "subject_path": "projects/conv-a",
+            "evidence": ["mgmsg:m-a1"],
+        },
+    )
+    fake.upsert_record_and_enqueue(
+        SYNTH_OWNER_A,
+        record_id="mgmsg:m-a2",
+        source="messenger:conv-a",
+        at="2026-11-21T10:05:00Z",
+        author=SYNTH_OWNER_A,
+        text="Confirmed sprint schedule in conv-a.",
+        enqueue="none",
+        direct_fact={
+            "id": "fact-multi-source",
+            "text": "Alpha leads the backend sprint cadence.",
+            "subject_path": "career/sprint-cadence",
+            "evidence": ["qmsg:q-1", "mgmsg:m-a2"],
+        },
+    )
+    # 3. Messenger conv-b record (must stay untouched by conv-a forget)
+    fake.upsert_record_and_enqueue(
+        SYNTH_OWNER_A,
+        record_id="mgmsg:m-b1",
+        source="messenger:conv-b",
+        at="2026-11-21T11:00:00Z",
+        author=SYNTH_OWNER_A,
+        text="Reviewed conv-b budget plan.",
+        enqueue="none",
+        direct_fact={
+            "id": "fact-conv-b-only",
+            "text": "Reviewed conv-b budget plan.",
+            "subject_path": "projects/conv-b",
+            "evidence": ["mgmsg:m-b1"],
+        },
+    )
+    # 4. Community record (for forget_source test)
+    fake.upsert_record_and_enqueue(
+        SYNTH_OWNER_A,
+        record_id="cmpost:post-1",
+        source="community:post:post-1",
+        at="2026-11-22T09:00:00Z",
+        author=SYNTH_OWNER_A,
+        text="Community post topic signal.",
+        enqueue="none",
+        direct_fact={
+            "id": "fact-community-1",
+            "text": "Interested in urban cycling meetups.",
+            "subject_path": "interests/cycling",
+            "evidence": ["cmpost:post-1"],
+        },
+    )
+    # 5. Owner B record (must never be touched by Owner A)
+    fake.upsert_record_and_enqueue(
+        SYNTH_OWNER_B,
+        record_id="mgmsg:b-a1",
+        source="messenger:conv-a",
+        at="2026-11-22T12:00:00Z",
+        author=SYNTH_OWNER_B,
+        text="Beta private chat note.",
+        enqueue="none",
+        direct_fact={
+            "id": "fact-beta-conv-a",
+            "text": "Beta private chat note.",
+            "subject_path": "projects/beta",
+            "evidence": ["mgmsg:b-a1"],
+        },
+    )
+
+    # Local cs_* state
+    _seed_consent(db, owner_id=SYNTH_OWNER_A, scope_kind="conversation", scope_id="messenger:conv-a", generation=1)
+    _seed_consent(db, owner_id=SYNTH_OWNER_A, scope_kind="conversation", scope_id="messenger:conv-b", generation=1)
+    _seed_consent(db, owner_id=SYNTH_OWNER_A, scope_kind="source", scope_id="community", generation=1)
+    _seed_consent(db, owner_id=SYNTH_OWNER_B, scope_kind="conversation", scope_id="messenger:conv-a", generation=1)
+
+    _seed_ref(db, owner_id=SYNTH_OWNER_A, record_id="qmsg:q-1", source_kind="quest", source_id="quest:thread-1", host_app="quest")
+    _seed_ref(db, owner_id=SYNTH_OWNER_A, record_id="mgmsg:m-a1", source_kind="messenger", source_id="messenger:conv-a", host_app="messenger")
+    _seed_ref(db, owner_id=SYNTH_OWNER_A, record_id="mgmsg:m-a2", source_kind="messenger", source_id="messenger:conv-a", host_app="messenger")
+    _seed_ref(db, owner_id=SYNTH_OWNER_A, record_id="mgmsg:m-b1", source_kind="messenger", source_id="messenger:conv-b", host_app="messenger")
+    _seed_ref(db, owner_id=SYNTH_OWNER_A, record_id="cmpost:post-1", source_kind="community", source_id="community:post:post-1", host_app="community")
+    _seed_ref(db, owner_id=SYNTH_OWNER_B, record_id="mgmsg:b-a1", source_kind="messenger", source_id="messenger:conv-a", host_app="messenger")
+
+    _seed_projection_cache(db, SYNTH_OWNER_A)
+    _seed_projection_cache(db, SYNTH_OWNER_B)
+
+    _seed_two_visit_signal(db, sig_id="sig-conv-a", owner_id=SYNTH_OWNER_A, source_kind="messenger", source_id="messenger:conv-a")
+    _seed_two_visit_signal(db, sig_id="sig-conv-b", owner_id=SYNTH_OWNER_A, source_kind="messenger", source_id="messenger:conv-b")
+    _seed_two_visit_signal(db, sig_id="sig-comm", owner_id=SYNTH_OWNER_A, source_kind="community", source_id="community:post:post-1", promoted_fact_id="fact-community-1")
+    _seed_two_visit_signal(db, sig_id="sig-beta", owner_id=SYNTH_OWNER_B, source_kind="messenger", source_id="messenger:conv-a")
+
+    spy = _SpyTemporalClient(fake)
+    audit = AuditStore(db)
+    coord = ForgetCoordinator(db, spy, audit)
+    return db, fake, spy, audit, coord, up_conv_a
+
+
+def test_mb10_forget_conversation_cascade_trim_fence_and_idempotency(tmp_path):
+    db, fake, spy, audit, coord, _up = _setup_mb10_fixture(tmp_path)
+    pa = _principal(SYNTH_OWNER_A, "messenger")
+
+    receipt = coord.forget_conversation(pa, "conv-a", idempotency_key="mb10-conv-a-1")
+    assert isinstance(receipt, ForgetReceipt)
+    assert receipt.status == "completed"
+    assert receipt.owner_id == SYNTH_OWNER_A
+    assert receipt.scope_kind == "conversation"
+    assert receipt.scope_id == "messenger:conv-a"
+    assert receipt.consent_generation == 2
+    assert receipt.temporal_generation is not None and receipt.temporal_generation >= 2
+    assert receipt.records_forgotten == 2
+    assert receipt.facts_erased == 1
+    assert receipt.facts_trimmed == 1
+    assert receipt.projections_invalidated is True
+
+    # Step 1: conversation consent grant closed & generation bumped (conv-b & Owner B untouched)
+    row_a = db.execute(
+        "SELECT enabled, read_enabled, write_enabled, ai_mode, allow_interest_export, generation "
+        "FROM cs_consent_grants WHERE owner_id = ? AND scope_kind = 'conversation' AND scope_id = 'messenger:conv-a'",
+        (SYNTH_OWNER_A,),
+    ).fetchone()
+    assert row_a == (0, 0, 0, "off", 0, 2)
+    row_b_conv = db.execute(
+        "SELECT enabled, ai_mode, generation FROM cs_consent_grants "
+        "WHERE owner_id = ? AND scope_kind = 'conversation' AND scope_id = 'messenger:conv-b'",
+        (SYNTH_OWNER_A,),
+    ).fetchone()
+    assert row_b_conv == (1, "save", 1)
+
+    # Step 2: cs_interest_projection_cache wiped synchronously for Owner A only
+    assert db.execute("SELECT COUNT(*) FROM cs_interest_projection_cache WHERE owner_id = ?", (SYNTH_OWNER_A,)).fetchone()[0] == 0
+    assert db.execute("SELECT COUNT(*) FROM cs_interest_projection_cache WHERE owner_id = ?", (SYNTH_OWNER_B,)).fetchone()[0] == 1
+
+    # cs_two_visit_signals and cs_memory_record_refs marked erased_at only for conv-a
+    sig_a = db.execute("SELECT erased_at FROM cs_two_visit_signals WHERE id = 'sig-conv-a'").fetchone()[0]
+    sig_b = db.execute("SELECT erased_at FROM cs_two_visit_signals WHERE id = 'sig-conv-b'").fetchone()[0]
+    assert sig_a is not None
+    assert sig_b is None
+
+    erased_refs = db.execute(
+        "SELECT record_id, erased_at FROM cs_memory_record_refs WHERE owner_id = ? AND source_id = 'messenger:conv-a'",
+        (SYNTH_OWNER_A,),
+    ).fetchall()
+    assert all(r[1] is not None for r in erased_refs)
+
+    # Messenger mg_messages table untouched
+    assert db.execute("SELECT body FROM mg_messages WHERE id = 'm-a1'").fetchone()[0] == "Shipped chat milestone for conv-a."
+
+    # Step 3: only-evidence erased, multi-source trimmed (surviving fact visible via qmsg:q-1)
+    assert fake.search_facts(SYNTH_OWNER_A, "conv-a-alpha-991") == []
+    with pytest.raises(MemoryBridgeError):
+        fake.get_why_fact(SYNTH_OWNER_A, "fact-conv-a-only")
+
+    multi_why = fake.get_why_fact(SYNTH_OWNER_A, "fact-multi-source")
+    assert [ev["id"] for ev in multi_why["evidence"]] == ["qmsg:q-1"]
+    assert fake.search_facts(SYNTH_OWNER_A, "sprint cadence") != []
+
+    # conv-b and Owner B facts remain visible
+    assert fake.search_facts(SYNTH_OWNER_A, "budget plan") != []
+    assert fake.search_facts(SYNTH_OWNER_B, "Beta private") != []
+
+    # Generation fence blocks late in-flight worker (input_version=1) -> zero resurrection
+    late = fake.simulate_worker_submit(
+        SYNTH_OWNER_A,
+        "mgmsg:m-a1",
+        input_version=1,
+        fact_text="Late extracted fact should be rejected.",
+    )
+    assert late["ok"] is False
+    assert late["verdict"] == "fence_stale"
+    assert late["reason"] == "generation_stale"
+    assert fake.search_facts(SYNTH_OWNER_A, "Late extracted fact") == []
+
+    # Re-upserting forgotten record_id blocked by forget_rules
+    with pytest.raises(ConsentDeniedError):
+        fake.upsert_record_and_enqueue(
+            SYNTH_OWNER_A,
+            record_id="mgmsg:m-a1",
+            source="messenger:conv-a",
+            at="2026-11-23T12:00:00Z",
+            author=SYNTH_OWNER_A,
+            text="Resurrection attempt",
+        )
+
+    # Step 4: Idempotent replay returns identical ForgetReceipt without calling forget_source twice
+    assert len(spy.forget_source_calls) == 1
+    replay = coord.forget_conversation(pa, "messenger:conv-a", idempotency_key="mb10-conv-a-1")
+    assert replay == receipt
+    assert len(spy.forget_source_calls) == 1
+
+    # Rule 9: cs_memory_audit never stores the secret phrase or raw message text
+    raw_audit = json.dumps(audit.list_events(SYNTH_OWNER_A))
+    assert "conv-a-alpha-991" not in raw_audit
+    assert "Secret launch phrase" not in raw_audit
+
+
+def test_mb10_transient_outage_commits_local_wipe_and_reconciles_on_retry(tmp_path):
+    db, fake, spy, audit, coord, _up = _setup_mb10_fixture(tmp_path)
+    pa = _principal(SYNTH_OWNER_A, "messenger")
+
+    # Inject transient outage on first forget_source call
+    spy.fail_next_forget_source = MemoryBridgeUnavailable("temporal_memory upstream returned 503", status_code=503)
+
+    pending = coord.forget_conversation(pa, "conv-a", idempotency_key="mb10-outage-1")
+    assert pending.status == "pending_reconciliation"
+    assert pending.temporal_generation is None
+    assert pending.consent_generation == 2
+    assert pending.projections_invalidated is True
+
+    # Local consent closure + cache/signal/ref wipe STILL committed immediately despite HTTP outage
+    row_a = db.execute(
+        "SELECT enabled, ai_mode, generation FROM cs_consent_grants "
+        "WHERE owner_id = ? AND scope_kind = 'conversation' AND scope_id = 'messenger:conv-a'",
+        (SYNTH_OWNER_A,),
+    ).fetchone()
+    assert row_a == (0, "off", 2)
+    assert db.execute("SELECT COUNT(*) FROM cs_interest_projection_cache WHERE owner_id = ?", (SYNTH_OWNER_A,)).fetchone()[0] == 0
+    assert db.execute("SELECT erased_at FROM cs_two_visit_signals WHERE id = 'sig-conv-a'").fetchone()[0] is not None
+    assert len(spy.forget_source_calls) == 1
+
+    # Retry with the same idempotency_key once backend recovers -> reconciles cleanly
+    reconciled = coord.forget_conversation(pa, "conv-a", idempotency_key="mb10-outage-1")
+    assert reconciled.status == "completed"
+    assert reconciled.temporal_generation is not None
+    assert reconciled.records_forgotten == 2
+    assert reconciled.facts_erased == 1
+    assert reconciled.facts_trimmed == 1
+    assert len(spy.forget_source_calls) == 2
+    assert sorted(spy.forget_source_calls[1][1]) == ["mgmsg:m-a1", "mgmsg:m-a2"]
+    assert fake.search_facts(SYNTH_OWNER_A, "conv-a-alpha-991") == []
+
+    # Audit idempotency pointer now resolves to completed, while preserving partial attempt in history
+    stored = audit.get_by_idempotency_key(SYNTH_OWNER_A, "mb10-outage-1")
+    assert stored is not None
+    assert stored["receipt"]["status"] == "completed"
+    assert [ev["outcome"] for ev in audit.list_events(SYNTH_OWNER_A)] == ["ok", "partial"]
+
+    # 3rd replay returns completed receipt immediately without calling forget_source again
+    replay = coord.forget_conversation(pa, "conv-a", idempotency_key="mb10-outage-1")
+    assert replay == reconciled
+    assert len(spy.forget_source_calls) == 2
+
+
+def test_forget_source_community_keeps_posts_and_wipes_signals(tmp_path):
+    db, fake, _spy, _audit, coord, _up = _setup_mb10_fixture(tmp_path)
+    pa = _principal(SYNTH_OWNER_A, "community")
+
+    receipt = coord.forget_source(pa, "community", host_app="community", idempotency_key="mb10-comm-1")
+    assert receipt.status == "completed"
+    assert receipt.scope_kind == "source"
+    assert receipt.scope_id == "community"
+    assert receipt.records_forgotten == 1
+    assert receipt.facts_erased == 1
+    assert receipt.consent_generation == 2
+
+    # Community consent grant closed; cache & two-visit signals wiped; social post intact
+    grant = db.execute(
+        "SELECT enabled, allow_interest_export, generation FROM cs_consent_grants "
+        "WHERE owner_id = ? AND scope_kind = 'source' AND scope_id = 'community'",
+        (SYNTH_OWNER_A,),
+    ).fetchone()
+    assert grant == (0, 0, 2)
+    assert db.execute("SELECT erased_at FROM cs_two_visit_signals WHERE id = 'sig-comm'").fetchone()[0] is not None
+    assert db.execute("SELECT COUNT(*) FROM cs_interest_projection_cache WHERE owner_id = ?", (SYNTH_OWNER_A,)).fetchone()[0] == 0
+    assert db.execute("SELECT body FROM cm_posts WHERE id = 'post-1'").fetchone()[0] == "Community post stays intact."
+    assert fake.search_facts(SYNTH_OWNER_A, "urban cycling") == []
+
+
+def test_forget_records_and_forget_fact_with_outage_reconciliation(tmp_path):
+    db, fake, spy, _audit, coord, _up = _setup_mb10_fixture(tmp_path)
+    pa = _principal(SYNTH_OWNER_A, "quest")
+
+    # forget_records on qmsg:q-1 erases fact-quest-only and trims fact-multi-source
+    rec_receipt = coord.forget_records(pa, ["qmsg:q-1"], host_app="quest", idempotency_key="mb10-recs-1")
+    assert rec_receipt.status == "completed"
+    assert rec_receipt.scope_kind == "record"
+    assert rec_receipt.records_forgotten == 1
+    assert rec_receipt.facts_erased == 1
+    assert rec_receipt.facts_trimmed == 1
+    assert fake.search_facts(SYNTH_OWNER_A, "Dubai Chambers") == []
+    assert fake.search_facts(SYNTH_OWNER_A, "sprint cadence") != []
+
+    # forget_fact with transient outage -> pending_reconciliation -> retry completes
+    _seed_projection_cache(db, SYNTH_OWNER_A)
+    spy.fail_next_forget_fact = RuntimeError("transient socket timeout")
+    pending_fact = coord.forget_fact(pa, "fact-community-1", host_app="community", idempotency_key="mb10-fact-1")
+    assert pending_fact.status == "pending_reconciliation"
+    assert pending_fact.temporal_generation is None
+    assert db.execute("SELECT COUNT(*) FROM cs_interest_projection_cache WHERE owner_id = ?", (SYNTH_OWNER_A,)).fetchone()[0] == 0
+    assert db.execute("SELECT erased_at FROM cs_two_visit_signals WHERE id = 'sig-comm'").fetchone()[0] is not None
+
+    done_fact = coord.forget_fact(pa, "fact-community-1", host_app="community", idempotency_key="mb10-fact-1")
+    assert done_fact.status == "completed"
+    assert done_fact.facts_erased == 1
+    assert fake.search_facts(SYNTH_OWNER_A, "urban cycling") == []
+
+    # Replay does not call forget_fact a 3rd time
+    assert len(spy.forget_fact_calls) == 2
+    assert coord.forget_fact(pa, "fact-community-1", host_app="community", idempotency_key="mb10-fact-1") == done_fact
+    assert len(spy.forget_fact_calls) == 2
+
+
+def test_revoke_consent_and_forget_both_modes_and_security_failures(tmp_path):
+    db, fake, spy, audit, coord, _up = _setup_mb10_fixture(tmp_path)
+    pa = _principal(SYNTH_OWNER_A, "community")
+    pb = _principal(SYNTH_OWNER_B, "messenger")
+
+    # 1. forget_derived=False: closes consent & wipes cache, leaves facts intact, returns None
+    res_none = coord.revoke_consent_and_forget(
+        pa,
+        scope_kind="source",
+        scope_id="community",
+        host_app="community",
+        forget_derived=False,
+        idempotency_key="revoke-no-forget-1",
+    )
+    assert res_none is None
+    assert db.execute("SELECT COUNT(*) FROM cs_interest_projection_cache WHERE owner_id = ?", (SYNTH_OWNER_A,)).fetchone()[0] == 0
+    assert fake.search_facts(SYNTH_OWNER_A, "urban cycling") != []
+    assert audit.get_by_idempotency_key(SYNTH_OWNER_A, "revoke-no-forget-1")["action"] == "consent.revoke"
+
+    # 2. forget_derived=True: cascades and forgets derived facts
+    res_forget = coord.revoke_consent_and_forget(
+        pa,
+        scope_kind="conversation",
+        scope_id="conv-a",
+        host_app="messenger",
+        forget_derived=True,
+        idempotency_key="revoke-and-forget-1",
+    )
+    assert res_forget is not None
+    assert res_forget.status == "completed"
+    assert res_forget.records_forgotten == 2
+
+    # 3. Failure: Owner B cannot reuse Owner A's idempotency_key (fails closed before mutating Owner B's data)
+    with pytest.raises(ConsentDeniedError) as cross_exc:
+        coord.forget_conversation(pb, "conv-a", idempotency_key="revoke-and-forget-1")
+    assert cross_exc.value.status_code == 403
+    assert db.execute(
+        "SELECT enabled, generation FROM cs_consent_grants "
+        "WHERE owner_id = ? AND scope_kind = 'conversation' AND scope_id = 'messenger:conv-a'",
+        (SYNTH_OWNER_B,),
+    ).fetchone() == (1, 1)
+
+    # 4. Failure: unverified principal, missing idempotency_key, invalid scope/app fail closed
+    unverified = VerifiedPrincipal(
+        user_id=SYNTH_OWNER_A,
+        app_id="quest",
+        capabilities=APP_CAPABILITIES["quest"],
+        auth_mode="verified_app_session",
+        is_verified=False,  # type: ignore[arg-type]
+    )
+    with pytest.raises(ConsentDeniedError):
+        coord.forget_records(unverified, ["qmsg:q-1"], host_app="quest", idempotency_key="unv-1")
+    with pytest.raises(MemoryBridgeError):
+        coord.forget_records(pa, ["qmsg:q-1"], host_app="quest", idempotency_key="  ")
+    with pytest.raises(MemoryBridgeError):
+        coord.forget_source(pa, "invalid_source", host_app="quest", idempotency_key="bad-src")  # type: ignore[arg-type]
+    with pytest.raises(MemoryBridgeError):
+        coord.forget_fact(pa, "", host_app="quest", idempotency_key="bad-fact")
+
+    # 5. Auth errors from client (e.g. ConsentDeniedError 401/403) propagate instead of masking as outage
+    spy.fail_next_forget_fact = ConsentDeniedError("revoked token", status_code=403)
+    with pytest.raises(ConsentDeniedError):
+        coord.forget_fact(pa, "fact-conv-b-only", host_app="messenger", idempotency_key="auth-err-1")

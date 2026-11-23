@@ -112,13 +112,16 @@ The redesign's latest design is current: commit `6b45ba4`, "AI workspace replace
   - Teens are admitted only after UAE legal advice **and** an approved age-verification method; that is a new founder decision.
 - **Name:** build under the working name **Messenger**. The founder picks the final name and mark before the deck and video (MG-B7/MG-B8).
 
+## D12 — Clarifications (23 Nov, later)
+
+- **"Prototype" means the founder's own pre-existing code, not an application.** No application has ever been submitted. The open point is only the contest rule that an entry "must not be copied or taken from an existing repository": the Messenger imports the founder's own redesign repo, whose first commit is 4 Oct 2026, before the 7 Oct launch. Codex researches the official wording (research R1). Writing to the organisers is optional and the founder's call.
+- **temporal_note (amends D5):** the other team is **rebuilding temporal_note to replace Hindsight, Honcho, mem0 and GraphRAG**, so the interface on `origin/memory` may change. `memory_bridge/` stays a thin client behind one interface, and all contract tests run against `FakeTemporalMemoryClient`. Re-check the interface when the rebuild is pushed.
+- **Supabase (amends D10):** **local Supabase in Docker first** (the Supabase CLI with the repo's existing `supabase/` config, which is not edited), **then a hosted project** later. Each entry's Auth and RLS SQL is applied by script from its own folder, into its own schema. `supabase/migrations/` stays frozen.
+- **Hand-off (amends D10):** the founder has no access to the other PC for now, so the hand-off happens from here. `docs/submissions/shared/handoff-temporal-note.md` is on GitHub (`origin/contest-shared`), and the founder shares that path. No `pc2-main` snapshot is possible yet: gate 5 is skipped until one exists, and the zero-conflict rule (add files only) is the protection.
+- **Name:** parked. Build as "Messenger"; no name work until the founder raises it.
+
 ## Founder to-dos (not agent work)
 
-- Email the organisers (createaiagents@dubaichamber.com) asking whether a founder's own earlier prototype may be reused in an entry.
-- Send `docs/submissions/shared/handoff-temporal-note.md` to the other PC's memory team.
-- Provision the separate Supabase **staging** project (D10) before the live pilot tests.
-- Push a snapshot of the other PC's `main` as `pc2-main` (never as `main`), so that gate 5 can test-merge against it.
-
-## Still open
-
-- **O2** The Messenger's final name and mark (before MG-B7).
+- Share `docs/submissions/shared/handoff-temporal-note.md` (on GitHub) with the memory team.
+- Start local Supabase in Docker when B0 needs it. A hosted project comes later.
+- Optional: email the organisers about reusing one's own pre-contest code, after Codex's research R1.
