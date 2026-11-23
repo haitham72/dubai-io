@@ -1,0 +1,25 @@
+{
+  "expo": {
+    "name": "Dubai-io",
+    "slug": "dubai-io",
+    "scheme": "dubaiio",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "io.dubai.companion"
+    },
+    "android": {
+      "package": "io.dubai.companion"
+    },
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": false
+    },
+    "extra": {
+      "owner": "karim"
+    }
+  }
+}

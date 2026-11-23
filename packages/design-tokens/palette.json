@@ -1,0 +1,59 @@
+{
+  "mode": "light",
+  "shadow": "none",
+  "colors": {
+    "canvas": "#FFFFFF",
+    "surface": "#FAF8F5",
+    "card": "#FFFFFF",
+    "ink": "#1E2022",
+    "userBubble": "#1E2022",
+    "onUserBubble": "#FFFFFF",
+    "muted": "#6B6560",
+    "border": "#E8E8EC",
+    "borderHairline": "rgba(0, 0, 0, 0.06)",
+    "actionBox": "#FFFFFF",
+    "repairSurface": "#FDF8EE",
+    "ingested": "#27AE60",
+    "gold": {
+      "primary": "#C5A059",
+      "metallic": "#D4AF37",
+      "surface": "#FDF8EE",
+      "border": "#E8D5A3"
+    },
+    "themes": {
+      "career": "#2F80ED",
+      "projects": "#9B51E0",
+      "learning": "#F2994A",
+      "gaming": "#EB5757",
+      "travel": "#00B4D8",
+      "health": "#27AE60"
+    }
+  },
+  "radii": {
+    "card": 20,
+    "dock": 28,
+    "pill": 999,
+    "chip": 10,
+    "orb": 28
+  },
+  "spacing": {
+    "xs": 4,
+    "sm": 8,
+    "md": 12,
+    "lg": 16,
+    "xl": 24,
+    "xxl": 32
+  },
+  "typography": {
+    "serif": "Georgia",
+    "sans": "System",
+    "display": 32,
+    "title": 22,
+    "body": 16,
+    "caption": 13,
+    "brand": 22
+  },
+  "cardAspectRatio": 0.75,
+  "cardViewportWidth": 0.78,
+  "cardPeekWidth": 0.18
+}
