@@ -12,8 +12,10 @@ from .email import (
     parse_notes,
     to_record,
 )
+from .ai_exports import chatgpt_records
 from .export_cli import export_owner_tree, find_repo_root
 from .gmail_json import parse_gmail_json
+from .takeout import TakeoutError, takeout_records
 from .temporal_note import (
     import_temporal_note,
     parse_entity_aliases_md,
@@ -34,6 +36,9 @@ __all__ = [
     "Message",
     "Parsed",
     "SECRET_PATTERNS",
+    "TakeoutError",
+    "chatgpt_records",
+    "takeout_records",
     "clean_body",
     "email_to_records",
     "export_owner_tree",
