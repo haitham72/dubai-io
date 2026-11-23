@@ -12,6 +12,7 @@ import uuid
 from temporal_memory.core.graph_store import PostgresGraphStore
 from temporal_memory.db.db import Database, get_database
 from temporal_memory.models import Owner, Record
+from .desktop import BrowserProfileError, agent_session_records, browser_records, preview as browser_preview
 from .dev_sessions import parse_dev_sessions
 from .email import (
     email_to_records,
@@ -27,6 +28,12 @@ from .temporal_note import import_temporal_note
 from .triage import ingest_records, is_noise_email, is_noise_whatsapp
 from .whatsapp import parse_whatsapp_file
 from .youtube import parse_youtube_history
+
+_AGENT_TOOLS = ("claude-code", "codex")
+_AGENT_DEFAULT_ROOTS = {
+    "claude-code": Path.home() / ".claude" / "projects",
+    "codex": Path.home() / ".codex" / "sessions",
+}
 
 
 def _slugify(value: str) -> str:
@@ -103,10 +110,94 @@ def _load_and_triage(
     raise ValueError(f"Unsupported import kind: {kind}")
 
 
+def _agent_roots(path: str | None, tool: str | None) -> dict[str, Path] | None:
+    """Resolve agent-session roots. None means use library defaults."""
+    if path is None and tool is None:
+        return None
+    if path is None:
+        assert tool is not None
+        default = _AGENT_DEFAULT_ROOTS.get(tool)
+        if default is None:
+            raise ValueError(f"Unknown agent tool (no default root): {tool}")
+        return {tool: default}
+    root = Path(path)
+    if not root.exists():
+        raise FileNotFoundError(f"Import path does not exist: {root}")
+    if tool is None:
+        raise ValueError("Specify --tool when providing an agent-sessions ROOT")
+    return {tool: root}
+
+
+def _cmd_import_agent_sessions(args: argparse.Namespace, db: Database) -> dict[str, Any]:
+    roots = _agent_roots(args.path, args.tool)
+    records = agent_session_records(args.owner, roots=roots, since=args.since)
+    summary = ingest_records(
+        db,
+        args.owner,
+        records,
+        split=not args.no_split,
+        apply_triage=False,
+    )
+    summary["kind"] = "agent-sessions"
+    summary["dropped_triage"] = int(summary.get("dropped_triage", 0))
+    return summary
+
+
+def _cmd_import_browser(args: argparse.Namespace, db: Database) -> dict[str, Any]:
+    if not args.path:
+        raise ValueError("browser import requires a PROFILE_DIR path")
+    profile = Path(args.path)
+    if not profile.exists():
+        raise FileNotFoundError(f"Browser profile directory does not exist: {profile}")
+    if not profile.is_dir():
+        raise FileNotFoundError(f"Browser profile path is not a directory: {profile}")
+
+    if args.preview:
+        try:
+            counts = browser_preview(profile)
+        except BrowserProfileError as exc:
+            raise ValueError(str(exc)) from exc
+        return {
+            "kind": "browser",
+            "preview": True,
+            "imported": 0,
+            "deduped": 0,
+            "blocked_forgotten": 0,
+            "dropped_triage": 0,
+            "jobs_enqueued": 0,
+            "domain_counts": counts,
+        }
+
+    try:
+        records = browser_records(args.owner, profile, since=args.since)
+    except BrowserProfileError as exc:
+        raise ValueError(str(exc)) from exc
+
+    summary = ingest_records(
+        db,
+        args.owner,
+        records,
+        split=not args.no_split,
+        apply_triage=False,
+    )
+    summary["kind"] = "browser"
+    summary["dropped_triage"] = int(summary.get("dropped_triage", 0))
+    return summary
+
+
 def _cmd_import(args: argparse.Namespace, db: Database) -> dict[str, Any]:
     store = PostgresGraphStore(db)
     if store.get_owner(args.owner) is None:
         raise ValueError(f"Owner not found: {args.owner}")
+
+    if args.kind == "agent-sessions":
+        return _cmd_import_agent_sessions(args, db)
+
+    if args.kind == "browser":
+        return _cmd_import_browser(args, db)
+
+    if not args.path:
+        raise ValueError(f"Import kind {args.kind!r} requires a path")
 
     target_path = Path(args.path)
     if not target_path.exists():
@@ -167,12 +258,35 @@ def build_parser() -> argparse.ArgumentParser:
             "gmail-json",
             "dev-sessions",
             "temporal-note",
+            "agent-sessions",
+            "browser",
         ],
     )
-    imp_p.add_argument("path", help="External path to export file or temporal_note directory")
+    imp_p.add_argument(
+        "path",
+        nargs="?",
+        default=None,
+        help="Source path; optional for agent-sessions (defaults), required for other kinds",
+    )
     imp_p.add_argument("--owner", required=True, help="Target owner ID")
     imp_p.add_argument("--source-name", default=None, help="Optional chat/source label for WhatsApp")
     imp_p.add_argument("--no-split", action="store_true", help="Insert records without enqueueing day jobs")
+    imp_p.add_argument(
+        "--since",
+        default=None,
+        help="Inclusive cutoff date/time (YYYY-MM-DD or ISO) for agent-sessions and browser",
+    )
+    imp_p.add_argument(
+        "--tool",
+        choices=list(_AGENT_TOOLS),
+        default=None,
+        help="Agent-sessions tool filter (claude-code, codex, …)",
+    )
+    imp_p.add_argument(
+        "--preview",
+        action="store_true",
+        help="Browser only: print domain visit counts and create no records",
+    )
 
     exp_p = sub.add_parser("export", help="Render owner Quest-style Markdown tree to an external folder")
     exp_p.add_argument("--owner", required=True, help="Target owner ID")
