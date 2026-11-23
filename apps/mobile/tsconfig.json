@@ -1,0 +1,13 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "resolveJsonModule": true,
+    "jsx": "react-jsx",
+    "types": ["jest"],
+    "paths": {
+      "@dubai-io/design-tokens": ["../../packages/design-tokens/src/index.ts"]
+    }
+  },
+  "include": ["app", "src", "__tests__", "../../packages/design-tokens/src/index.ts", "../../packages/design-tokens/palette.json"]
+}
