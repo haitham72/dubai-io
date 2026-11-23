@@ -2,37 +2,39 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, test } from "vitest";
 import DemoPill from "@/components/DemoPill";
 import PostCard from "@/components/PostCard";
-import type { Post } from "@/lib/types";
+import { phonePosts } from "@/lib/feedFixture";
 
-const demoPost: Post = {
-  id: "1", text: "Hello neighbours", author: { handle: "sara_m", display_name: "Sara M." },
-  group_name: "Weekend Walks", provenance: "demo_fixture", as_of: "2026-11-23T00:00:00Z",
-  reactions: 3, comments: 2, why: "You follow Sara.",
+const post = {
+  ...phonePosts[0],
+  media_url: "/demo/jlt.jpg",
 };
 
 describe("PostCard", () => {
-  test("renders author, context, text, media order and actions", () => {
-    const html = renderToStaticMarkup(<PostCard post={{ ...demoPost, media_label: "Sunrise (demo image)" }} />);
-    expect(html).toContain("Sara M.");
-    expect(html).toContain("@sara_m");
-    expect(html).toContain("in Weekend Walks");
-    expect(html).toContain("Hello neighbours");
-    expect(html.indexOf("Hello neighbours")).toBeLessThan(html.indexOf("Sunrise (demo image)"));
-    expect(html).toContain("Like");
-    expect(html).toContain("Comment");
-    expect(html).toContain("Save");
+  test("renders a photo, title, relative time and icon actions", () => {
+    const html = renderToStaticMarkup(<PostCard post={post} />);
+    expect(html).toContain("Sara Khalid");
+    expect(html).toContain("@sara_k");
+    expect(html).toContain("2h");
+    expect(html).not.toContain("2026-11-23");
+    expect(html).toContain("Which nursery near Cluster D has space for January?");
+    expect(html.indexOf("Which nursery")).toBeLessThan(html.indexOf("Demo photo attached"));
+    expect(html).toContain("Upvote");
+    expect(html).toContain("Downvote");
+    expect(html).toContain("Comments");
+    expect(html).not.toContain("Like");
   });
 
-  test("shows Demo data pill and subordinate Why this? chip for demo posts", () => {
-    const html = renderToStaticMarkup(<PostCard post={demoPost} />);
+  test("shows a Demo data pill on fixture posts", () => {
+    const html = renderToStaticMarkup(<PostCard post={phonePosts[0]} />);
     expect(html).toContain("Demo data");
-    expect(html).toContain("Why this?");
-    expect(html).toContain("You follow Sara.");
   });
 
-  test("omits demo pill for user-supplied posts", () => {
-    const html = renderToStaticMarkup(<PostCard post={{ ...demoPost, provenance: "user_supplied" }} />);
+  test("omits the demo pill for a user-supplied post and shows the AI reply", () => {
+    const html = renderToStaticMarkup(<PostCard post={{ ...phonePosts[0], provenance: "user_supplied", reply: { name: "Dubai-io", text: "Taxi fare is about AED 110.", estimate: true, source: "RTA taxi fares, as of Oct 2026" } }} />);
     expect(html).not.toContain("Demo data");
+    expect(html).toContain(">AI<");
+    expect(html).toContain("Estimate");
+    expect(html).toContain("RTA taxi fares, as of Oct 2026");
   });
 });
 

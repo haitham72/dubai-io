@@ -1,5 +1,16 @@
 # Dubai-io Community — log
 
+## Founder visual review — pending (Feed v2)
+
+24 Nov 2026. D14 is on `societal`. Only the Feed was rebuilt (phone 390×844, desktop 1440×900). Other screens were not restyled. The API was up on :8060 (`/health` ok). No service-unavailable banner.
+
+- `docs/submissions/community/review/v2/feed-phone.png`
+- `docs/submissions/community/review/v2/feed-desktop.png`
+- `docs/submissions/community/review/v2/feed-phone-vs-ref.png`
+- `docs/submissions/community/review/v2/feed-desktop-vs-ref.png`
+
+CM-B10R (the remaining screens) waits for approval of this Feed.
+
 ## 24 Nov 2026 — CM-B5, CM-B8, remove-hides, staged preview (Cursor)
 
 **Baseline** on `cf2be98` before these slices: 567 passed, 13 skipped, 3 failed (`test_filesystem_is_scoped`, `test_tryon_requires_adult_confirm`, `test_tryon_fixture_preview`).
