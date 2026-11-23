@@ -104,7 +104,21 @@ The redesign's latest design is current: commit `6b45ba4`, "AI workspace replace
 - **Memory team hand-off:** the temporal_note change requests (CR-TM-1…4: records, forget, resolve, context/search routes, plus the two fixes) go to the other team as **one hand-off file**, `docs/submissions/shared/handoff-temporal-note.md`. Our builds use a clearly named `FakeTemporalMemoryClient` until theirs lands.
 - **Recommended founder action:** ask the organisers in writing (createaiagents@dubaichamber.com) whether a founder's own earlier prototype may be reused in an entry.
 
-## Still open (raise at the founder gate after P2)
+## D11 — Approval gate (23 Nov)
 
-- **O2** The Messenger's new product name.
-- **O3** Anything the planners still list as blocking in their `open-questions.md`.
+- **Approved:** the shared contract and B0 slices (`shared-slices.md`), the Community roadmap, and the Messenger's remaining slices MG-B3…MG-B9. Builds may start. UI slices still need the founder's visual review of a staged preview.
+- **Ages (supersedes D9's all-ages ruling, after Community's N1):** **adults only (18+)** for the demo and the launch. Under-15s may not hold social-media accounts even with parental consent, and self-declared age is not enough verification. That is Community's finding on u.ae (Cabinet Resolution 106 of 2026), to be confirmed with legal advice.
+  - D9's under-18 protections stay in the plan, and B0 keeps a fail-closed `is_minor_protected` flag.
+  - Teens are admitted only after UAE legal advice **and** an approved age-verification method; that is a new founder decision.
+- **Name:** build under the working name **Messenger**. The founder picks the final name and mark before the deck and video (MG-B7/MG-B8).
+
+## Founder to-dos (not agent work)
+
+- Email the organisers (createaiagents@dubaichamber.com) asking whether a founder's own earlier prototype may be reused in an entry.
+- Send `docs/submissions/shared/handoff-temporal-note.md` to the other PC's memory team.
+- Provision the separate Supabase **staging** project (D10) before the live pilot tests.
+- Push a snapshot of the other PC's `main` as `pc2-main` (never as `main`), so that gate 5 can test-merge against it.
+
+## Still open
+
+- **O2** The Messenger's final name and mark (before MG-B7).

@@ -1,6 +1,6 @@
 # Shared B0 Build Slices (`contest-shared`)
 
-**Status:** `ready for founder approval`
+**Status:** `approved — 23 Nov 2026 (founder, D11)`
 **Date:** 2026-11-23
 **Branch:** `contest-shared` (lane branches: `cs/<slice-id>`, cut from `contest-shared`)
 **Note on execution:** B0 (`docs/submissions/shared/briefs/3-build-shared.md`) starts **only after** the founder sets this document's status line to `approved — <date>`.
