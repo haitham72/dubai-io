@@ -1,11 +1,10 @@
 // Messenger Studio feed: every generated image/video full-screen, swiped vertically like TikTok/Reels.
 // Right rail: like · report · share · use in chat. Bottom: the prompt + (images only) a floating "Prompt your edits…"
-// composer — Nano Banana 2 edits the image for real (Higgsfield) and the result arrives as a new notification/feed item.
+// Feed slides. Image edits are not part of this app.
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { ArrowUp, Flag, Heart, MessageCircle, Share, Sparkles, Volume2, VolumeX, X } from "lucide-react";
+import { Flag, Heart, MessageCircle, Share, Volume2, VolumeX, X } from "lucide-react";
 import { actions, useStore } from "../store";
 import type { MessengerTask } from "../types";
-import { editImage } from "../ai/runAction";
 import { relativeTime } from "../updates/common";
 import { feed, useFeed } from "./feedState";
 import { ORB } from "./parts";
@@ -84,8 +83,6 @@ function Slide({ task, active, muted, onReport, notify }: {
   const r = task.result as Extract<NonNullable<MessengerTask["result"]>, { type: "image" | "video" }>;
   const liked = useFeed((f) => !!f.liked[task.id]);
   const video = useRef<HTMLVideoElement>(null);
-  const [edit, setEdit] = useState("");
-  const [sending, setSending] = useState(false);
 
   useEffect(() => {
     const v = video.current; if (!v) return;
@@ -93,16 +90,6 @@ function Slide({ task, active, muted, onReport, notify }: {
   }, [active]);
 
   const url = r.type === "image" ? r.imageUrl : r.videoUrl;
-  const send = async () => {
-    if (!edit.trim() || sending) return;
-    setSending(true);
-    try {
-      const { fake } = await editImage(task, edit);
-      setEdit("");
-      notify(fake ? "Demo edit (Higgsfield isn't connected here) — watch the island." : "Nano Banana 2 is editing — watch the island.");
-    } catch (err) { notify(err instanceof Error && err.message.length < 60 ? err.message : "Couldn't start that edit — try again."); }
-    finally { setSending(false); }
-  };
 
   return (
     <section className={s.slide}>
@@ -127,14 +114,8 @@ function Slide({ task, active, muted, onReport, notify }: {
       </div>
 
       <div className={s.bottom}>
-        <p className={s.meta}><Sparkles size={14} strokeWidth={2} />{r.type === "image" ? "Nano Banana 2" : "Kling 3.0 · 5s"} · {relativeTime(task.completedAt ?? task.startedAt, Date.now())}</p>
+        <p className={s.meta}>{relativeTime(task.completedAt ?? task.startedAt, Date.now())}</p>
         <p className={s.prompt}>{r.prompt}</p>
-        {r.type === "image" && (
-          <form className={s.composer} onSubmit={(e) => { e.preventDefault(); void send(); }}>
-            <input value={edit} onChange={(e) => setEdit(e.target.value)} placeholder="Prompt your edits…" aria-label="Prompt your edits" />
-            <button type="submit" aria-label="Send edit" disabled={!edit.trim() || sending}><ArrowUp size={20} strokeWidth={2.2} /></button>
-          </form>
-        )}
       </div>
     </section>
   );

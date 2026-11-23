@@ -1,5 +1,5 @@
 // Mock video generation — owned by the lead session.
-// The pool is media/videos/ (committed Kling demo clips) plus Slides/vids/ (git-ignored, local). Drop an .mp4 there and Vite picks it up
+// The pool is media/videos/ (committed clips) plus Slides/vids/ (git-ignored, local). Drop an .mp4 there and Vite picks it up
 // (the page reloads); a video is "new" until it has been opened once in AI Chat (remembered per browser).
 import type { MessengerTask } from "./types";
 

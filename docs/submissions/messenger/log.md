@@ -41,3 +41,7 @@ Concept sheets and screen frames were removed after the opened frames showed the
 ## 23 Nov 2026 — founder confirmation (Cursor)
 
 The founder confirmed M0 and approved MG-B1 and MG-B2 only. Concept sheets, the named screen frames, the video clips, and the motion-graphics audio and photos are kept, except images that show the old name or logo, and except the dynamic-island scrapes. The Diwan connector, the Nadi connector, and watermark removal are dropped. User stickers, when that later slice is approved, use U²-Net (Apache-2.0, official repository, checked 23 Nov 2026) for any subject. MediaPipe selfie segmentation is only a fallback. Transport and the final name stay open.
+
+## 23 Nov 2026 — D8 (Cursor)
+
+Founder addition: there is no Higgsfield at all. `lib/higgsCli.ts` was already gone. This slice also drops the HTTP client, the CLI job, the `HF_CREDENTIALS` and `HIGGS_*` keys, and every UI hook and test that called or named that provider. Recorded as an exclude row in `ip-and-baseline.md`.

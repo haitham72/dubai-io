@@ -24,7 +24,7 @@ const tabOf = (screen: ScreenId): Tab => (screen === "chats" ? "chats" : screen 
 
 const settingsCells = [
   [
-    { tone: s.toneCyan, icon: Sparkles, label: "Messenger AI", value: "Nano Banana 2" },
+    { tone: s.toneCyan, icon: Sparkles, label: "Messenger AI", value: "Chat" },
     { tone: s.toneBlue, icon: UserRound, label: "Account" },
     { tone: s.toneGreen, icon: MessageCircle, label: "Chats" },
     { tone: s.toneRed, icon: Bell, label: "Notifications" },

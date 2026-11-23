@@ -1,6 +1,6 @@
 // Turns an AI reply's `action` into real work + Messenger tasks. Exported so Chats can reuse it later.
 import { actions, getState } from "../store";
-import { askAi, getImageJob, getVideoJob, getWeather, runResearch, searchFlights, startImage, startVideo, type AiReply } from "../api";
+import { askAi, getVideoJob, getWeather, runResearch, searchFlights, startVideo, type AiReply } from "../api";
 import type { AiMessage, MessengerTask } from "../types";
 import { MOCK_VIDEO_MS, MOCK_VIDEO_TICK_MS, pickMockVideo } from "../videos";
 import { cabinLabel, flightDate } from "../screens/flights/format";
@@ -9,29 +9,7 @@ import { ai } from "./state";
 type Action = NonNullable<AiReply["action"]>;
 const uid = () => Math.random().toString(36).slice(2, 10);
 
-/** Poll a server image job until done; retries update the original Messenger task id. */
-async function pollImage(jobId: string, prompt: string, taskId = jobId) {
-  for (let i = 0; i < 90; i++) {
-    await new Promise((r) => setTimeout(r, 2000));
-    try {
-      const job = await getImageJob(jobId);
-      if (job.status === "completed" && job.imageUrl) {
-        actions.updateTask(taskId, {
-          title: "Image ready", subtitle: prompt, status: "completed", completedAt: Date.now(),
-          unread: true, result: { type: "image", imageUrl: job.imageUrl, prompt },
-        });
-        return;
-      }
-      if (job.status === "failed") {
-        actions.updateTask(taskId, { title: "Image failed", status: "failed", error: job.error ?? "Image generation failed" });
-        return;
-      }
-    } catch { /* transient: keep polling */ }
-  }
-  actions.updateTask(taskId, { title: "Image failed", status: "failed", error: "Timed out" });
-}
-
-/** Fake video generation: ease-out progress ticks, then a ready-made clip. Never Higgs. */
+/** A ready-made clip plays here. This app does not generate video. */
 async function mockVideo(taskId: string, prompt: string) {
   const video = pickMockVideo();
   const started = Date.now();
@@ -50,7 +28,7 @@ async function mockVideo(taskId: string, prompt: string) {
   }
 }
 
-/** Kling 3.0 through the server when it's configured; otherwise the bundled demo clips. */
+/** Bundled clips play here. This app does not generate video. */
 async function liveOrMockVideo(taskId: string, prompt: string) {
   let start;
   try { start = await startVideo(prompt); } catch { start = { mode: "mock" as const }; }
@@ -58,7 +36,7 @@ async function liveOrMockVideo(taskId: string, prompt: string) {
   const began = Date.now();
   for (let i = 0; i < 120; i++) {
     await new Promise((r) => setTimeout(r, 4000));
-    // Kling 5s usually takes 1-3 minutes: elapsed-based progress, held below 100 until it's really done
+    // Bundled playback only. This app does not generate video.
     actions.updateTask(taskId, { progress: Math.min(95, Math.round(((Date.now() - began) / 150_000) * 100)) });
     let job;
     try { job = await getVideoJob(start.id); } catch { continue; /* transient: keep polling */ }
@@ -74,13 +52,16 @@ async function liveOrMockVideo(taskId: string, prompt: string) {
   throw new Error("Timed out");
 }
 
-/** Start/poll image jobs while retaining an existing task id on retry. */
-async function imageTask(prompt: string, existingId?: string) {
-  const job = await startImage(prompt);
-  const taskId = existingId ?? job.id;
-  if (!existingId) actions.addTask({ id: taskId, type: "image", title: "Generating image", subtitle: prompt, status: "running" });
-  void pollImage(job.id, prompt, taskId);
-  return taskId;
+/** Image generation is not part of this app. */
+async function imageTask(prompt: string, existingId?: string): Promise<string> {
+  const taskId = existingId ?? uid();
+  if (!existingId) {
+    actions.addTask({
+      id: taskId, type: "image", title: "Image failed", subtitle: prompt, status: "failed",
+      error: "Image generation is not part of this app",
+    });
+  }
+  throw new Error("Image generation is not part of this app");
 }
 function videoTask(prompt: string, existingId?: string) {
   const taskId = existingId ?? uid();
@@ -91,16 +72,9 @@ function videoTask(prompt: string, existingId?: string) {
   return taskId;
 }
 
-/** "Prompt your edits" in Messenger Studio — images only: Nano Banana 2 edits the original image with the instruction
- *  (real Higgsfield on the dev server via the CLI, or via the API when keys are set). The edit lands as a new task. */
-export async function editImage(task: MessengerTask, instruction: string): Promise<{ taskId: string; fake: boolean }> {
-  const r = task.result;
-  if (r?.type !== "image") throw new Error("Only images can be edited.");
-  const job = await startImage(instruction.trim(), r.imageUrl);
-  const label = `${r.prompt} · ${instruction.trim()}`;
-  actions.addTask({ id: job.id, type: "image", title: "Editing image", subtitle: instruction.trim(), status: "running" });
-  void pollImage(job.id, label, job.id);
-  return { taskId: job.id, fake: !!job.fake };
+/** Image edits are not part of this app. */
+export async function editImage(_task: MessengerTask, _instruction: string): Promise<{ taskId: string; fake: boolean }> {
+  throw new Error("Image edits are not part of this app");
 }
 
 /** Retry only failed generation tasks. The original task id keeps inline replies linked. */
@@ -128,8 +102,7 @@ export async function retryTask(task: MessengerTask): Promise<boolean> {
 /** Run an action; returns the assistant message to show. */
 export async function runAction(action: Action, serverText: string): Promise<AiMessage> {
   if (action.type === "image") {
-    const taskId = await imageTask(action.prompt);
-    return { id: uid(), role: "assistant", text: serverText, taskId };
+    return { id: uid(), role: "assistant", text: "Image generation is not part of this app." };
   }
 
   if (action.type === "flight") {

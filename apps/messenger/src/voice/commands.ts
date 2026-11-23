@@ -211,7 +211,7 @@ async function runPaid(p: PendingCommand) {
   const action = p.action === "generate_image" ? { type: "image" as const, prompt: a.prompt }
     : p.action === "generate_video" ? { type: "video" as const, prompt: a.prompt }
     : { type: "research" as const, topic: a.topic };
-  const text = action.type === "research" ? "" : action.type === "image" ? `Creating “${a.prompt}”.` : `Making a video of “${a.prompt}”.`;
+  const text = action.type === "research" ? "" : action.type === "image" ? "Image generation is not part of this app." : `Making a video of “${a.prompt}”.`;
   try { ai.push(await runAction(action, text)); } catch { note("That didn't start — please try again"); }
 }
 

@@ -2,8 +2,8 @@
 // clicks, the camera pushing in on every click and pulling out on every reveal, lists and messages revealing row
 // by row, soft transitions between workspaces (rise, glass push, blur dissolve, match dissolve, depth pull).
 // The screens are the real redesign (../../Messenger-redesign.md, the 15 references) drawn in code: Lucide icons
-// (icons.ts), the app's own photos, avatars and sample data (app/public/photos/, fetched once), four weather
-// scenes made with Higgsfield (weather-*.jpg). Will's lines are placed by analysis/film_mix.py at VO below.
+// (icons.ts), the app's own photos, avatars and sample data (app/public/photos/, fetched once), and the
+// weather stills (weather-*.jpg). Will's lines are placed by analysis/film_mix.py at VO below.
 import type * as THREE from 'three';
 import { Scene, type Frame, type PostOverrides } from '../engine/scene';
 import { Layer2D, clearRT } from '../engine/gl';
@@ -104,7 +104,7 @@ interface Cursor { path: PKey[]; clicks: number[]; show: [number, number] }
 type Into = 'none' | 'rise' | 'glass' | 'blur' | 'match' | 'depth';
 interface Shot { id: string; t0: number; into: Into; dur: number; draw: (c: X, t: number) => void }
 
-// weather states (the Higgsfield scenes)
+// weather states (the stills in app/public/photos/)
 const WX = [
   { id: 'summer', tab: 'Summer', temp: 41, cond: 'Sunny', feels: 'Feels like 44°', icon: 'sun', iconCol: '#F59E0B', hum: '38%', wind: '14 km/h NE' },
   { id: 'winter', tab: 'Winter', temp: 14, cond: 'Light snow', feels: 'Feels like 11°', icon: 'snowflake', iconCol: '#60A5FA', hum: '71%', wind: '9 km/h N' },

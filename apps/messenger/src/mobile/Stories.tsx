@@ -285,8 +285,8 @@ function TaskPage({ task, onClose, onOpenUpdates }: { task: MessengerTask; onClo
       {!media && r?.type !== "esign" && r?.type !== "event" && <div className={`${s.live} ${tone[task.type]}`}><Activity task={task} now={Date.now()} big /></div>}
 
       <div className={s.details}>
-        {r?.type === "image" && <><p className={s.prompt}>{r.prompt}</p><p className={s.meta}>Generated with Nano Banana 2</p></>}
-        {r?.type === "video" && <><p className={s.prompt}>{task.subtitle}</p><p className={s.meta}>Kling 3.0 · 5s · 1080p</p></>}
+        {r?.type === "image" && <p className={s.prompt}>{r.prompt}</p>}
+        {r?.type === "video" && <p className={s.prompt}>{task.subtitle}</p>}
         {r?.type === "flight" && r.flights.map((f) => (
           <div key={f.id} className={s.fareRow}>
             <span><b>{f.fromTime} → {f.toTime}</b><small>{f.airline} · {f.flightNo} · {f.duration} · {f.stops ? `${f.stops} stop` : "Nonstop"}</small></span>

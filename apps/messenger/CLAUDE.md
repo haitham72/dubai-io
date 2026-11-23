@@ -85,7 +85,7 @@ iPhone — tabs **Chats · Messenger AI · Apps · Settings**; workspaces open f
 | `src/profile/` | Profile/Settings modals |
 | `api/*.ts`, `lib/http.ts` | Web-standard API handlers (Vercel functions; the Vite dev server runs the same files). `server/` = retired Python |
 | `agents/` | Phase-two agents service (Python + Docker + Redis, local first, approved 2026-10-08): streaming voice commands (14 actions, fast path, meeting drafts), @messenger chat skills (fact check on text and photos, stickers, image choices, trip plan with leave email draft, `clean`), Messenger Builder Library stickers (read in place), deep research + weekly watch, Gmail, memory, spend cap, single-GPU Clean AI Detection backend (`ai_cleaner.py` + `ai_cleaner_engine.py`, needs the sibling CUDA env). Run: `npm run agents`. Browser reaches it only via `src/api.ts` at `/agents/*` (Vite proxy); everything falls back when it is off. See `agents/README.md` and `docs/ai-image-cleaner.md`; current verification is offline, cloud connectivity remains unverified |
-| `media/videos/` | Kling 3.0 demo clips (generated once; played instead of live video) |
+| `media/videos/` | Bundled clips, played in place of live video generation |
 
 No new npm dependencies without asking first.
 
@@ -103,8 +103,8 @@ Current checks (2026-10-08): 169 tests passed, 1 skipped; offline voice dev 113/
 8. **Minimal AI.** Status lines like `Searched 8 sources · 12s`, never step-by-step reasoning.
 9. **Overlays never resize the chat.** Sheets and the island float over the conversation.
 10. **Phone layout:** each module adapts with `@media (max-width: 820px)`; iOS rule — glass only on controls/navigation, never on content cards.
-11. **Real things:** AI chat + voice (OpenAI), weather (Open-Meteo), flights (SerpAPI), stocks (Finnhub), research (Tavily + OpenAI). Images/video are fake/bundled until Higgs API keys are set. Everything else is fake but clickable (UAE PASS is a mock).
-12. **Secrets** only in `.env` / Vercel env (never committed). Never print Higgs tokens (`higgsfield auth token` is forbidden). Every Higgs generation costs credits — tests and dev loops must not spam it.
+11. **Real things:** AI chat + voice (OpenAI), weather (Open-Meteo), flights (SerpAPI), stocks (Finnhub), research (Tavily + OpenAI). Image and video generation are not part of this app. Everything else is fake but clickable (UAE PASS is a mock).
+12. **Secrets** only in `.env` / Vercel env (never committed).
 13. **Vercel Hobby = max 12 functions:** add routes as methods/`?id=` on an existing `api/*.ts` (see the rewrite in `vercel.json`), not new files, when near the limit.
 14. **Agents service env:** `.env` may have `AGENTS_LIVE=1`: live OpenAI/Tavily calls cost money, metered against `AGENTS_BUDGET_USD` (default $1). Tests and evals never spend. Ask the owner before any live run you start yourself.
 15. **Files:** read and write text files as UTF-8 explicitly (Windows defaults to cp1252).

@@ -47,7 +47,7 @@ curl http://localhost:8787/agents/ai-cleaner/capabilities  # cleaner modes + eng
   it at `localhost:6379` on its own; without it, memory is kept in-process.
 - **Live AI in the agents service** costs money and is off by default. Turn it on with `AGENTS_LIVE=1` in `.env`;
   the hard cap is `AGENTS_BUDGET_USD` (default `1.00`).
-- **Images/video** stay fake while `MESSENGER_FAKE_IMAGES=1` / `MESSENGER_FAKE_VIDEOS=1` (real generation costs credits).
+- **Image and video generation** are not part of this app. Bundled clips in `media/videos/` still play.
 - **Clean AI Detection (local GPU):** run terminal 2 from the sibling env instead of `agents/.venv` — from `agents/`:
   `G:\Haitham\VsCode\remove-ai-watermarks\venv\Scripts\python.exe -m uvicorn messenger_agents.app:app --port 8787`
   (or pip-install CUDA torch + Pillow + `remove-ai-watermarks==0.45.1` into `agents/.venv`, several GB).

@@ -16,7 +16,7 @@ const SYSTEM_PROMPT = (today: Date) =>
   "Always reply in the language of the user's latest message: English in, English out; Arabic in, Arabic out.";
 
 const TOOLS = [
-  { type: "function", function: { name: "generate_image", description: "Generate an image with the Higgs image model.", parameters: { type: "object", properties: { prompt: { type: "string" } }, required: ["prompt"] } } },
+  { type: "function", function: { name: "generate_image", description: "Image generation is not part of this app.", parameters: { type: "object", properties: { prompt: { type: "string" } }, required: ["prompt"] } } },
   { type: "function", function: { name: "generate_video", description: "Create a short video, reel or clip from a text description. Use this for any request to make, create or generate a video, reel or clip — never generate_image for those.", parameters: { type: "object", properties: { prompt: { type: "string" } }, required: ["prompt"] } } },
   {
     type: "function", function: {
@@ -55,7 +55,7 @@ export const POST = route(async (req) => {
     let args: Record<string, unknown> = {};
     try { args = JSON.parse(call.function.arguments || "{}"); } catch { /* unusable args → text */ }
     const name = call.function.name;
-    if (name === "generate_image" && args.prompt) return json({ text: "On it — generating your image. I'll post it in Messenger Updates.", action: { type: "image", prompt: String(args.prompt) } });
+    if (name === "generate_image") return json({ text: "Image generation is not part of this app." });
     if (name === "generate_video" && args.prompt) return json({ text: "On it — creating your video. I'll post it in Messenger Updates.", action: { type: "video", prompt: String(args.prompt) } });
     if (name === "search_flights" && args.from && args.to && args.depart) {
       const cabin = ["economy", "business", "first"].includes(String(args.cabin)) ? String(args.cabin) : "economy";

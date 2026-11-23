@@ -93,32 +93,3 @@ export const stripFences = (raw: string | null | undefined) =>
 export interface ChatCompletion {
   choices: { message: { content: string | null; tool_calls?: { function: { name: string; arguments: string } }[] } }[];
 }
-
-/* ---------- Higgsfield (HTTP API — the CLI can't run on Vercel) ---------- */
-const HIGGS = "https://api.higgsfield.ai";
-export function higgsAuth(): string | null {
-  const creds = env("HF_CREDENTIALS") || (env("HF_API_KEY_ID") && env("HF_API_KEY_SECRET") ? `${env("HF_API_KEY_ID")}:${env("HF_API_KEY_SECRET")}` : "");
-  return creds ? `Key ${creds}` : null;
-}
-
-/** Submit a generation; returns Higgs' request id. */
-export async function higgsSubmit(endpoint: string, input: Record<string, unknown>): Promise<string> {
-  const auth = higgsAuth();
-  if (!auth) throw fail(503, "Higgs credentials missing");
-  const res = await fetch(`${HIGGS}/${endpoint.replace(/^\//, "")}`, {
-    method: "POST", headers: { Authorization: auth, "Content-Type": "application/json" }, body: JSON.stringify(input),
-  });
-  if (!res.ok) { console.error("[higgs submit]", res.status, (await res.text()).slice(0, 300)); throw fail(502, res.status === 403 ? "Not enough Higgs credits" : "Higgs request failed"); }
-  const data = (await res.json()) as { request_id?: string };
-  if (!data.request_id) throw fail(502, "Higgs returned no request id");
-  return data.request_id;
-}
-
-export interface HiggsStatus { status: "queued" | "in_progress" | "completed" | "failed" | "nsfw"; images?: { url: string }[]; video?: { url: string } }
-export async function higgsStatus(requestId: string): Promise<HiggsStatus> {
-  const auth = higgsAuth();
-  if (!auth) throw fail(503, "Higgs credentials missing");
-  const res = await fetch(`${HIGGS}/requests/${encodeURIComponent(requestId)}/status`, { headers: { Authorization: auth } });
-  if (!res.ok) throw fail(502, "Higgs status failed");
-  return res.json() as Promise<HiggsStatus>;
-}

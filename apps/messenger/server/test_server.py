@@ -1,7 +1,6 @@
-"""T02-server tests: flights mock, fake image job, chat-without-key. No real network."""
+"""T02-server tests: flights mock, image route refuses generation, chat-without-key. No real network."""
 
 import json
-import time
 
 import pytest
 from types import SimpleNamespace
@@ -58,23 +57,13 @@ def test_flights_mock_deterministic(monkeypatch):
     assert a == b
 
 
-def test_fake_image_job(monkeypatch):
-    monkeypatch.setenv("MESSENGER_FAKE_IMAGES", "1")
+def test_image_route_does_not_generate():
     r = client.post("/api/images", json={"prompt": "a Dubai beach at sunset"})
     assert r.status_code == 200, r.text
-    job_id = r.json()["id"]
-    assert r.json()["status"] == "running"
-    done = None
-    for _ in range(20):  # fake job takes ~4s
-        time.sleep(0.5)
-        g = client.get(f"/api/images/{job_id}")
-        assert g.status_code == 200
-        if g.json()["status"] != "running":
-            done = g.json()
-            break
-    assert done is not None, "fake image job never finished"
-    assert done["status"] == "completed"
-    assert done["imageUrl"].startswith("http")
+    body = r.json()
+    assert body["status"] == "failed"
+    assert body["error"] == "Image generation is not part of this app"
+    assert client.get(f"/api/images/{body['id']}").json()["status"] == "failed"
 
 
 def test_image_unknown_job():
@@ -90,7 +79,7 @@ def test_chat_without_key(monkeypatch):
 
 
 def test_chat_tools_include_video():
-    """The mock video path needs a generate_video tool (never Higgs for video)."""
+    """Chat tools include video and image names. Neither starts an outside generator."""
     tools = {t["function"]["name"]: t["function"] for t in srv.TOOLS}
     assert set(tools) >= {"generate_image", "generate_video", "search_flights", "get_weather"}
     params = tools["generate_video"]["parameters"]
@@ -148,32 +137,9 @@ def test_serpapi_cabin_display(monkeypatch, cabin, label):
         assert received[0]["travel_class"] == label
 
 
-def test_failed_fake_image_can_be_started_again(monkeypatch):
-    """Controlled failure/success uses no Higgs subprocess or image credits."""
-    monkeypatch.setenv("MESSENGER_FAKE_IMAGES", "1")
-    calls = []
-
-    def fake_worker(job_id):
-        calls.append(job_id)
-        if len(calls) == 1:
-            srv._set_job(job_id, {"status": "failed", "error": "Controlled fake failure"})
-        else:
-            srv._set_job(job_id, {"status": "completed", "imageUrl": srv.FAKE_IMAGE_URL})
-
-    monkeypatch.setattr(srv, "_run_fake_job", fake_worker)
-    def forbid_higgs(*args, **kwargs):
-        raise AssertionError("Fake recovery must not invoke Higgs")
-    monkeypatch.setattr(srv.subprocess, "run", forbid_higgs)
+def test_image_route_rejects_a_second_call():
     body = {"prompt": "retry the same Dubai beach prompt"}
-    first = client.post("/api/images", json=body).json()["id"]
-    second = client.post("/api/images", json=body).json()["id"]
-    deadline = time.monotonic() + 2
-    while time.monotonic() < deadline:
-        a = client.get(f"/api/images/{first}").json()
-        b = client.get(f"/api/images/{second}").json()
-        if a["status"] != "running" and b["status"] != "running":
-            break
-        time.sleep(0.01)
-    assert a["status"] == "failed"
-    assert b["status"] == "completed"
-    assert first != second
+    first = client.post("/api/images", json=body).json()
+    second = client.post("/api/images", json=body).json()
+    assert first["status"] == "failed" and second["status"] == "failed"
+    assert first["id"] != second["id"]

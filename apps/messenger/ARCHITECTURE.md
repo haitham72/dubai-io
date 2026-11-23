@@ -52,7 +52,7 @@ Run it all: `npm run agents:test` (169 passed, 1 skipped without Redis; offline)
 | GIFs | none without a key (panel says "not connected") | GIPHY search/trending | `GIPHY_API_KEY` → `GET /agents/gifs` | **live** when the key is set |
 | Emoji | 9 categories, ~384 curated in `src/chats/data.ts`, system emoji font | — | — | **built** (media panel Emoji tab: search, recents, category strip). Noto Animated set not downloaded yet |
 | Mail | fake inbox `src/screens/mail/data.ts` | Gmail API, OAuth (read/search; send only from the compose button) | `agents/.secrets/gmail_client.json`, sign-in at `/agents/mail/oauth/start` | **built, OAuth ready**, waiting for the Gmail test account |
-| Images / video | fake jobs + 3 Kling clips in `media/videos/`; 3 demo pictures for "@messenger create image" in `src/chats/data.ts` | Higgs (Nano Banana 2, Kling 3.0) | `HF_CREDENTIALS`, `HIGGS_IMAGE_ENDPOINT`, `MESSENGER_FAKE_*=0` | fakes by default (credits) |
+| Images / video | bundled clips in `media/videos/`. Image and video generation are not part of this app | — | — | playback of bundled clips only |
 | Memory | in-process when Redis is off | Redis (`docker compose up redis`) | `REDIS_URL` | **built** |
 | AI image cleaning | none — jobs live under `agents/.data/ai-cleaner/<job_id>/` (git-ignored) | local GPU: CUDA torch + Pillow in the sibling env, `remove-ai-watermarks==0.45.1`; provenance check via the OpenAI key | `OPENAI_API_KEY` (verify only; no new keys) | **built on `app-ai-removal`**; GPU run and verify call unverified |
 

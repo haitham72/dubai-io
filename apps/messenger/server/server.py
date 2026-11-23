@@ -3,7 +3,7 @@
 Contract (must match src/api.ts exactly):
   GET  /api/health                 -> {"ok": true}
   GET  /api/flights?from&to&depart&return?&passengers&cabin -> Flight[]   (mock, or SerpAPI if SERPAPI_KEY)
-  POST /api/images {"prompt"}      -> {"id","status":"running"}           (starts Higgs CLI in background)
+  POST /api/images {"prompt"}      -> {"id","status":"failed"}             (image generation is not part of this app)
   GET  /api/images/{id}            -> {"id","status","imageUrl"?,"error"?}
   POST /api/chat {"messages":[{role,text}]} -> {"text","action"?}          (OpenAI, intent routing)
 
@@ -15,9 +15,7 @@ import json
 import os
 import random
 import re
-import subprocess
 import threading
-import time
 import uuid
 from datetime import date, datetime
 from typing import Any, Optional
@@ -44,17 +42,6 @@ def _openai_model() -> str:
 def _serpapi_key() -> str:
     return os.getenv("SERPAPI_KEY", "")
 
-
-def _higgs_model() -> str:
-    return os.getenv("HIGGS_IMAGE_MODEL", "nano_banana_flash") or "nano_banana_flash"
-
-
-def _fake_images() -> bool:
-    return os.getenv("MESSENGER_FAKE_IMAGES", "") == "1"
-
-
-# Verified to load (curl → 200): classic beach photo used only for fake dev jobs.
-FAKE_IMAGE_URL = ""
 
 SYSTEM_PROMPT = (
     "You are Messenger AI, a concise and friendly assistant inside the Messenger chat app. "
@@ -95,70 +82,16 @@ def _set_job(job_id: str, patch: dict[str, Any]) -> None:
         _jobs[job_id] = job
 
 
-def _run_fake_job(job_id: str) -> None:
-    time.sleep(4)
-    _set_job(job_id, {"status": "completed", "imageUrl": FAKE_IMAGE_URL})
-
-
-def _run_higgs_job(job_id: str, prompt: str) -> None:
-    """Run the Higgs CLI with --wait in a background thread; store result_url or error."""
-    model = _higgs_model()
-    cmd = [
-        "higgsfield",
-        "generate",
-        "create",
-        model,
-        "--prompt",
-        prompt,
-        "--resolution",
-        "2k",
-        "--wait",
-        "--wait-timeout",
-        "5m",
-        "--json",
-    ]
-    try:
-        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=330, shell=False)
-    except FileNotFoundError:
-        _set_job(job_id, {"status": "failed", "error": "Higgs CLI not found"})
-        return
-    except subprocess.TimeoutExpired:
-        _set_job(job_id, {"status": "failed", "error": "Image generation timed out"})
-        return
-    if proc.returncode != 0:
-        err = (proc.stderr or proc.stdout or "Higgs generation failed").strip()
-        _set_job(job_id, {"status": "failed", "error": err[:200]})
-        return
-    try:
-        data = json.loads(proc.stdout)
-    except json.JSONDecodeError:
-        _set_job(job_id, {"status": "failed", "error": "Higgs returned invalid JSON"})
-        return
-    jobs = data if isinstance(data, list) else [data]
-    url: Optional[str] = None
-    for j in jobs:
-        if isinstance(j, dict) and j.get("result_url"):
-            url = j["result_url"]
-            break
-    if url:
-        _set_job(job_id, {"status": "completed", "imageUrl": url})
-    else:
-        _set_job(job_id, {"status": "failed", "error": "Higgs finished without a result URL"})
-
-
 @app.post("/api/images")
 def start_image(body: ImageBody):
     prompt = (body.prompt or "").strip()
     if not prompt:
         raise HTTPException(400, "prompt is required")
     job_id = uuid.uuid4().hex[:12]
+    job = {"id": job_id, "status": "failed", "error": "Image generation is not part of this app"}
     with _jobs_lock:
-        _jobs[job_id] = {"id": job_id, "status": "running"}
-    worker = _run_fake_job if _fake_images() else _run_higgs_job
-    args = (job_id,) if _fake_images() else (job_id, prompt)
-    t = threading.Thread(target=worker, args=args, daemon=True)
-    t.start()
-    return {"id": job_id, "status": "running"}
+        _jobs[job_id] = job
+    return job
 
 
 @app.get("/api/images/{job_id}")
@@ -319,7 +252,7 @@ TOOLS: list[dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "generate_image",
-            "description": "Generate an image with the Higgs image model.",
+            "description": "Image generation is not part of this app.",
             "parameters": {
                 "type": "object",
                 "properties": {"prompt": {"type": "string"}},
@@ -410,12 +343,8 @@ def chat(body: ChatBody):
             args = json.loads(call.function.arguments or "{}")
         except json.JSONDecodeError:
             args = {}
-        if name == "generate_image" and args.get("prompt"):
-            prompt = str(args["prompt"])
-            return {
-                "text": "On it — generating your image. I'll post it in Messenger Updates.",
-                "action": {"type": "image", "prompt": prompt},
-            }
+        if name == "generate_image":
+            return {"text": "Image generation is not part of this app."}
         if name == "generate_video" and args.get("prompt"):
             prompt = str(args["prompt"])
             return {

@@ -26,6 +26,7 @@ The founder confirmed M0 and changed these rows. Where this section and the tabl
 - The Diwan connector: `agents/mirsal_agents/diwan.py`, `agents/mirsal_agents/routes/diwan.py`, `src/updates/diwan.ts`, `agents/mirsal_agents/diwan_demo.json`, and their UI hooks and tests.
 - The Nadi connector: `agents/mirsal_agents/skills/nadi.py`, `agents/mirsal_agents/routes/nadi.py`, and their UI hooks and tests.
 - The cleaner’s `remove-ai-watermarks` dependency, and any feature that removes an AI watermark or a provenance mark. That conflicts with the provenance rules.
+- There is no Higgsfield at all (D8, 23 Nov 2026). Exclude `lib/higgsCli.ts` and every Higgsfield API call, CLI call, UI hook, and test. That includes the HTTP client in `lib/http.ts`, the CLI job in `server/server.py`, and the `HF_CREDENTIALS` and `HIGGS_*` keys.
 
 **Rebuild, and fix in the rebrand**
 
@@ -76,7 +77,8 @@ Paths below are the redesign repo’s own paths, so a builder can find the files
 | Sticker packs | `public/stickers/` (`nile-days`, `yalla`, `wheels-up`, `office-mood`, plus `index.json`) | Claude commit `d5b6607`, “Four demo packs” | exclude | D6 and D7. Builder stand-in packs are not imported. Founder-made packs are new files under `apps/messenger/public/packs/`. |
 | Sticker generation | `agents/mirsal_agents/sticker_builder.py`, `routes/stickers.py`, `skills/stickers.py` (`BuilderLibrary`), `agents/tools/demo_stickers.py`, and the generate calls in `src/apiclient/agents.ts` and `src/chats/skills.ts` | `sticker_builder.py` calls an external pack service or returns demo mode | exclude | Nothing from the Builder service. User stickers are a photo plus background removal, planned separately. |
 | UI | `src/` (shell, chats, screens, mobile, store, ui kit, voice) | Foundation `7f580a8` | keep | Founder-authored UI. Logo tags and sticker-generation calls are the rows above, not this keep. |
-| HTTP API | `api/*.ts` and `lib/http.ts`, `lib/higgsCli.ts` | Photo route stores metadata. The 97 JPGs stay excluded | keep | Founder API. Image and video generation endpoints are dropped in the sticker re-plan even though this tree is kept, because D7 forbids AI image and video generation. |
+| HTTP API | `api/*.ts` and `lib/http.ts` | Photo route stores metadata. The 97 JPGs stay excluded | keep | Founder API. The Higgsfield client is the exclude row below. Image and video generation endpoints are dropped because D7 forbids them. |
+| Higgsfield | `lib/higgsCli.ts`, the HTTP client in `lib/http.ts`, the CLI job in `server/server.py`, `HF_CREDENTIALS`, `HIGGS_*`, and every UI hook and test that calls or names that provider | D8, 23 Nov 2026: there is no Higgsfield at all | exclude | The snapshot must not call, configure, or offer that provider. |
 | Agents | `agents/` except the Diwan, Nadi, and sticker-generation files already rowed | Voice, research, mail, memory, meeting, cleaner, MCP client | keep | Founder agent service. Diwan client and Nadi stay. Sticker generation stays out. |
 | Retired server | `server/` | The repo guide calls it the retired Python API | keep | Founder code, later retired. It is not the office app. |
 | iPhone samples | `design/ios/*.html`, `ios.css`, `ios.js` | `d77dea6` | keep | Founder samples. Unsplash and Google Font links are the rows below. |

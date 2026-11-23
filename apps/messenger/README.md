@@ -56,13 +56,11 @@ npm run agents         # optional, second terminal: the Python agents service on
 | `SERPAPI_KEY` | Live flights; empty → deterministic mock |
 | `FINNHUB_API_KEY` | Live stock quotes; empty → demo prices |
 | `TVLY_API_KEY` | Live research (Tavily); empty → demo brief |
-| `MESSENGER_FAKE_IMAGES` | `1` = stock fakes (no credits). Real Nano Banana 2 needs `HF_CREDENTIALS` + `HIGGS_IMAGE_ENDPOINT` |
-| `MESSENGER_FAKE_VIDEOS` | `1` = the bundled Kling clips in `media/videos/`. Real Kling needs `HF_CREDENTIALS` |
 | `PHOTOS_TOKEN` | Worker/admin token for `/api/photos` (seed/claim/complete/embed/import/export) |
 | `DATABASE_URL` | Postgres for `/api/photos`: local Docker (`messenger-pg`) in dev, Supabase pooler in production |
 | `DEMO_KEY` | Production only: private link gate (`/?key=…`, remembered 30 days) |
 
-Every Higgs generation costs credits — keep the fake flags on while iterating.
+Image and video generation are not part of this app. `media/videos/` holds the bundled clips the film plays.
 
 ---
 
@@ -103,8 +101,8 @@ Env vars live in the Vercel project (Production). `vercel.json` rewrites `/api/:
 
 | Real | Mock |
 |---|---|
-| OpenAI chat + intent routing, contact replies | Image generation (fake mode until Higgs API keys) |
-| Voice mode (OpenAI transcribe + TTS) | Video generation (bundled Kling 3.0 clips) |
+| OpenAI chat + intent routing, contact replies | Image generation (not part of this app) |
+| Voice mode (OpenAI transcribe + TTS) | Video generation (bundled clips in `media/videos/`) |
 | Flights (SerpAPI) · Stocks (Finnhub) · Research (Tavily + OpenAI) | UAE PASS e-sign, mail, history |
 | Files photo search (hybrid keyword + pgvector, Supabase in prod) | Booking / share affordances |
 | Weather (Open-Meteo) | |
