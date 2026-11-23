@@ -49,3 +49,18 @@ Founder addition: there is no Higgsfield at all. `lib/higgsCli.ts` was already g
 ## 23 Nov 2026 — D11 gate (Cursor)
 
 Merged `contest-shared` (`f19db5c`) into `business`. D11 approves MG-B3 through MG-B9. Transport is the shared-contract WebSocket on `:8070`, bound to the B0 `user_id`. `apps/api/app/identity/` is not on `contest-shared` or `business`, so Gate S is not merged. `MG-B3` and `MG-B5` wait. UI slices wait for a staged visual review. The working name stays Messenger until the final name, before MG-B7.
+
+## 23 Nov 2026 — D12 and MG-B4 (Cursor)
+
+Merged `contest-shared` (`f7465a5`). D12: local Supabase first, temporal_note is being rebuilt, the name stays parked.
+
+MG-B4, without voice-on-real-messages. One placeholder pack, `demo-dot`, labelled Demo data, read from `apps/messenger/public/packs/manifest.json`. No Builder call. User cut-out primary is BiRefNet general, MIT, official ONNX not vendored; the phone path keeps the photo until a smaller official weight exists. MediaPipe selfie is the person-only fallback. Sticker tests: 6 passed. Agents suite: 158 passed, 1 skipped. Typecheck and `npm run build` passed. The old-name grep printed nothing.
+
+## Founder visual review — pending
+
+Staged at `http://127.0.0.1:5173/` on 23 Nov 2026. The UI was not changed for these frames. Desktop is the 1440×900 window. Phone is the layout at 390×844.
+
+- `docs/submissions/messenger/review/founder-review-desktop-chats.png` — desktop Chats
+- `docs/submissions/messenger/review/founder-review-desktop-ai.png` — desktop Messenger AI
+- `docs/submissions/messenger/review/founder-review-phone-chats.png` — phone Chats
+- `docs/submissions/messenger/review/founder-review-phone-ai.png` — phone Messenger AI

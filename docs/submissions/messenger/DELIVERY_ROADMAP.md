@@ -91,13 +91,13 @@ D6 and D7. Nothing from the Builder service: no code, prompts, design, emoji-ban
 
 Built-in packs: the founder supplies finished files. The client reads `apps/messenger/public/packs/manifest.json` when the tray opens. A tap sends `{ kind: "sticker", packId, stickerId }`. Limits: PNG, WebP, or SVG; longest edge 512 px; PNG/WebP at most 512 KB; SVG at most 100 KB with no script and no external reference; at most 50 stickers in a pack and 20 packs.
 
-User stickers: any subject, not people only. The user adds a photo. The primary model is U²-Net (the official project at `github.com/xuebinqin/U-2-Net`, Apache License 2.0, licence file read 23 Nov 2026). It runs locally. It returns a matte for the foreground, and the saved PNG keeps the photo’s RGB with that matte as alpha. It does not paint new pixels. Do not use an ONNX conversion whose weight provenance is unrecorded. MediaPipe Selfie Segmentation (Apache-2.0) is only the fallback when the U²-Net weight is missing, and only then it can cut a person. A non-person photo on that fallback fails closed. Success stores one `mg_stickers` row. Failure (`model_missing`, `timeout`, `low_contrast`, `subject_not_detected`) leaves the photo unchanged, shows the error, and writes nothing. This slice is not approved yet.
+User stickers: any subject, not people only. The user adds a photo. The primary model is BiRefNet general (MIT, official ONNX `BiRefNet-general-bb_swin_v1_tiny-epoch_232.onnx` from the same repository, recorded in `ip-and-baseline.md` on 23 Nov 2026). The weight is not vendored. The phone path refuses it because it does not fit the 256 MiB minimum WebGPU buffer, and the photo stays unchanged until a smaller official weight is supplied. It returns a matte for the foreground, and the saved PNG keeps the photo’s RGB with that matte as alpha. It does not paint new pixels. Do not use an ONNX conversion whose weight provenance is unrecorded. MediaPipe Selfie Segmentation (Apache-2.0) is only the fallback when the BiRefNet weight is missing, and only then it can cut a person. A non-person photo on that fallback fails closed. Success stores one `mg_stickers` row once Gate S can name the owner. Failure (`model_missing`, `timeout`, `low_contrast`, `subject_not_detected`) leaves the photo unchanged, shows the error, and writes nothing.
 
-Voice policy from the offline suite (a send waits for the person) is wired to `mg_messages` and the registered capability. It does not generate images.
+Voice-on-real-messages waits for `MG-B3`. The offline rule (a send waits for the person) is not wired in this slice.
 
 | | |
 |---|---|
-| Happy path | `test_messenger_pack_sends_file_from_manifest`. `test_messenger_cutout_any_subject_png_has_alpha` on a committed object fixture, using U²-Net. |
+| Happy path | `test_messenger_pack_sends_file_from_manifest`. `test_messenger_cutout_any_subject_png_has_alpha` on a committed object fixture. The official BiRefNet weight is not in the repo; the test supplies a matte and checks that the photo RGB is unchanged and the alpha is attached. |
 | Failure path | `test_messenger_cutout_missing_model_keeps_original`. `test_messenger_selfie_fallback_rejects_non_person`. `test_messenger_no_image_generation_route`. `test_messenger_voice_does_not_send_unconfirmed`. |
 | Demo beat | Optional. The business case does not depend on a sticker. |
 
