@@ -1,6 +1,6 @@
 # Dubai-io Community — Delivery roadmap
 
-**Status:** planned (revised to D1-D10) — awaiting founder approval
+**Status:** approved — 23 Nov 2026 (founder, D11). Adults only (18+) per D11; under-18 slices wait for legal advice and an approved age-verification method.
 
 Build slices `CM-B1…CM-B12` in the spec's §8 order (A audit → B social core → C memory integration → D agentic demo → E polish). Owned files only: `apps/community/**`, `apps/api/app/community/**`, `apps/api/tests/test_community_*.py`, `apps/api/tests/fixtures/community/**`, `docs/submissions/community/**`. Parked `communities.py`/`social_generation.py` may be imported, never edited. Lane branches `cm/<slice-id>` from latest `societal`; lead merges after re-running gates. Slices marked **[waits: B0]** must not start until Gate S passes and `contest-shared` is merged into `societal` (check `docs/submissions/shared/log.md`). Every slice ships synthetic fixtures plus a happy-path and a failure-path test.
 
