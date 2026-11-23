@@ -1,6 +1,6 @@
 # Dubai-io Community — Sources and outcome metrics
 
-**Status:** planned — awaiting founder approval (23 Nov 2026, Muse). Every number carries publisher, URL and as-of date (root `CLAUDE.md` rule 2). Lane D fetched each URL below; the lead independently re-fetched the Government of Dubai Media Office survey and confirmed the 84% figure. Anything not official is labelled **reported**; arithmetic on official counts is labelled **derived**.
+**Status:** planned (revised to D1-D10) — awaiting founder approval. Every number carries publisher, URL and as-of date (root `CLAUDE.md` rule 2). Lane D fetched each URL below; the lead independently re-fetched the Government of Dubai Media Office survey and confirmed the 84% figure. Anything not official is labelled **reported**; arithmetic on official counts is labelled **derived**.
 
 ## The newcomer story must be measurable
 

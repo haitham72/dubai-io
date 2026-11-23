@@ -1,5 +1,13 @@
 # Dubai-io Community — log
 
+## 23 Nov 2026 — P1 revision to D1-D10 (Muse)
+
+**Founder answers applied (D9/D10 on `contest-shared`):** Q1 visual authority = layout/content from Higgsfield v3 frames `l01/l05/l08/l09` + `m02/m04/m08/m09`, style from `design/20-11-2026/`, no Higgsfield inside the product. Q2 = **all ages with an age gate** (P1's adults-only recommendation superseded), with D9's under-18 protections re-planned into CM-B3/CM-B7/CM-B8 and a new pre-CM-B3 slice CM-B2C. Q3/Q4 = P1 recommendations accepted. Q5 = tunnel from the founder's PC, ≥ 5 consenting adults (D10), plus separate Supabase staging (`apps/community/supabase/`) and `FakeTemporalMemoryClient` naming. All docs' status lines now read `planned (revised to D1-D10) — awaiting founder approval`; Q1–Q5 marked answered in `open-questions.md`.
+
+**Lane E (new, read-only): UAE child digital-safety sourcing.** Fetched official sources (u.ae, uaelegislation.gov.ae) for the Child Digital Safety Law (Decree-Law 26/2025), Cabinet Resolution 106/2026, Wadeema (3/2016), PDPL (45/2021) and reporting channels; full requirement map + proposed under-13 policy in `child-safety.md`. **Top finding: stop-and-ask.** Under-15s may not hold personal social-media accounts and parental consent cannot override it; self-declaration is not sufficient age verification. The lead independently re-fetched the u.ae Children's digital safety page and confirmed the under-15/under-13 wording. Adopted reading (flagged in `open-questions.md` as new blocking item **N1**, under D9's own "stop and ask" clause): the 18 Dec demo gates to verified 18+ adult testers — already D9/D10's tester ruling — and under-18 admission is deferred pending the founder's confirmations and legal advice on platform classification. No under-18 slice of CM-B3/CM-B7/CM-B8 may start until N1 is answered.
+
+**Scope note:** the founder's D9/D10 answers were recorded in these Community docs (decision + what changed + blocked slices). `docs/request-backlog.md` was **not** edited: `docs/submissions/CLAUDE.md` forbids editing it from this branch.
+
 ## 23 Nov 2026 — P1 (Muse)
 
 **What I checked**

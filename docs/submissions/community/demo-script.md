@@ -1,6 +1,6 @@
 # Dubai-io Community — Demo script (Scenes A–D, ≤ 4 minutes)
 
-**Status:** planned — awaiting founder approval (23 Nov 2026, Muse). Source: spec §6 (`docs/submissions/shared/founder-inputs/02_DUBAI_IO_COMMUNITY_PLAN.md:79`). Persona throughout: one newcomer test account, the same verified `user_id` in Quest and Community. On stage, seeded feed filler carries a visible `Demo data` pill and any jump the user did not cause is labelled `Demo trigger` (root `CLAUDE.md` rules 2 and 8). No Meta affiliation, no civic-integration claim: Scene C retrieves public information; it does not execute a government transaction.
+**Status:** planned (revised to D1-D10) — awaiting founder approval. Source: spec §6 (`docs/submissions/shared/founder-inputs/02_DUBAI_IO_COMMUNITY_PLAN.md:79`). Persona throughout: one newcomer test account, the same verified `user_id` in Quest and Community. On stage, seeded feed filler carries a visible `Demo data` pill and any jump the user did not cause is labelled `Demo trigger` (root `CLAUDE.md` rules 2 and 8). No Meta affiliation, no civic-integration claim: Scene C retrieves public information; it does not execute a government transaction.
 
 | Time | Scene | On-screen action | Narration gist | Evidence shown |
 |---|---|---|---|---|

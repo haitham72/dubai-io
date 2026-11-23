@@ -1,6 +1,6 @@
 # Dubai-io Community — P1 audit (what actually exists)
 
-**Status:** planned — awaiting founder approval (23 Nov 2026, Muse). Branch `societal`. Docs only; no code built.
+**Status:** planned (revised to D1-D10) — awaiting founder approval. Branch `societal`. Docs only; no code built.
 **Method:** four read-only subagent lanes (A code, B design/UX, C trust/safety, D evidence/demo) + lead verification. Every claim carries `file:line` or a URL. Founder decisions D1–D7 override the brief and spec wherever they disagree.
 
 ## Governing facts (re-verified, not trusted blindly)
@@ -70,7 +70,7 @@ Seeded personas/communities/posts/comments are `provenance: demo_fixture` (`comm
 
 ## Lane B — design authority (summary; detail in gap matrix)
 
-- **"The last four social mockups" (spec conflict c): no file carries that name.** The phrase exists only as prose in the spec (`02_…_PLAN.md:42`). The closest defensible set, inspected frame by frame, is the four desktop community frames of the Higgsfield v3 light-mode set — hub `l01`, post/Q&A `l05`, for-you feed `l08`, private handoff `l09` (`design/29-10-2026/INDEX.md:20,24,27,28`) with phone mirrors `m02/m04/m08/m09` (`INDEX.md:11,13,17,18`). **Founder confirmation required** before asserting equivalence (see `open-questions.md` Q1).
+- **"The last four social mockups" (spec conflict c) — ANSWERED (D9, 23 Nov).** No file carried that name; the phrase was prose in the spec (`02_…_PLAN.md:42`). The founder confirmed Lane B's inspected set: **layout/content** from the Higgsfield v3 frames — desktop `l01/l05/l08/l09`, phone `m02/m04/m08/m09` (`design/29-10-2026/INDEX.md:20,24,27,28,11,13,17,18`; `r/dubai` naming stripped, Stories dropped, `m04` = Messenger hand-off) — and **visual style** from `design/20-11-2026/` (canvas `#FFFFFF`/`#FAF8F5`, `INDEX.md:158-165`). Higgsfield is never used inside the product; the frames are references only. The earlier `apps/site` token fallback below is superseded as authority.
 - Frozen reference `apps/web` has a working feed (`feed.js:13,27–32,68,124,189`, `social-ui.js:3,25,47`, `community.css:15,45,52,58` "Flat: borders, no shadows") — Reddit-like with stories and AI-persona replies. Community P0 defers Stories (spec `:37`) and never presents seeded personas as real activity.
 - Reusable token values (copy values, note source): `apps/site/app/globals.css:4–15,21,56` (`--background:#fbfcfc`, `--foreground:#0b1b21`, `--accent:#0a9cc2`, `--line:#d8e4e9`, `--radius:14px`, `color-scheme: light`, "no shadows" `:1`); patterns `DemoPill`/`Provenance`/`SectionCard` (`apps/site/components/chrome.tsx:107,202`). Do not copy `apps/web/stage.css:21` `--shadow-card` (violates no-shadows).
 - Must be original: branding, wordmark, icons, copy, tab iconography, Connected Memory page (no mockup found), group/search/empty/error/moderation surfaces. Strip `r/dubai` naming (phone frame `m08`). Light mode first; no shadows; no Meta/Facebook/Reddit marks.

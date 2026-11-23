@@ -1,49 +1,55 @@
 # Dubai-io Community — Founder questions
 
-**Status:** planned — awaiting founder approval (23 Nov 2026, Muse). At most 5 blocking; each with a recommended answer, what it blocks, and a deadline. P2 (shared contract) also needs these answered at the founder gate.
+**Status:** planned (revised to D1-D10) — awaiting founder approval
 
-## Already answered — not re-asked
+Q1–Q5 were answered by the founder on 23 Nov 2026 in D9/D10 (`docs/submissions/shared/founder-decisions.md`, on `contest-shared`, merged into `societal` with this revision). They are recorded here as answered; nothing below blocks CM-B3/CM-B7/CM-B9/CM-B11 any more, except the under-13 sourcing duty in Answered Q2, which must complete **before CM-B3**.
+
+## Already answered before P1 — not re-asked
 
 - **Persocial:** Community replaces Persocial; nothing to import (D2).
 - **Inbox boundary:** notifications only; Community builds no messenger; "message this person" hands off to the Messenger once shared identity exists; parked `chat_*` tables are not extended (D3).
 - **Memory engine:** temporal_note via `memory_bridge/`; Hindsight/Honcho and their AC-1/MEM-01 gates do not apply (D5).
-- **Cross-app memory shape:** interest features only, never raw text; writes scoped and attributable; Forget propagates (`identity-memory-needs.md` — for P2 to fold into the one contract, not a founder question).
 
-## Blocking (5)
+## Answered 23 Nov (D9/D10)
 
-### Q1 — Are the "last four social mockups" the Higgsfield v3 community frames?
+### Q1 — Visual authority — ANSWERED (D9)
 
-No file carries that name; the phrase is prose in the spec. Lane B's inspected candidate set is the four desktop frames `l01` (hub), `l05` (post/Q&A), `l08` (for-you feed), `l09` (private handoff) plus phone mirrors `m02/m04/m08/m09` in `design/references/v3-higgsfield/`.
-**Recommendation:** confirm this set as the visual authority (with `r/dubai` naming stripped, Stories rail dropped per spec P2 deferral). If a different set was meant, point us at it.
-**Blocks:** CM-B10 web app fidelity and the founder visual-review gate. **Deadline:** before CM-B10 starts.
+**Layout and content:** the Higgsfield v3 Community frames in `design/references/v3-higgsfield/` — desktop `l01`, `l05`, `l08`, `l09`; phone `m02`, `m04`, `m08`, `m09`. Strip `r/dubai`-style naming; drop the Stories rail; `m04`'s private chat is a hand-off to the Messenger (D3).
+**Visual style:** `design/20-11-2026/` (warm luxury white canvas `#FFFFFF`/`#FAF8F5`, `design/20-11-2026/INDEX.md:158-165`), the look the founder has moved the iOS app to, so Community reads as part of the Dubai-io family.
+**Boundary:** Higgsfield is never used inside any product — the frames are design references only; no Higgsfield API, CLI, or generated asset ships in the app.
+This supersedes the P1 assumption that token values come from `apps/site/app/globals.css`; those values remain a fallback note in `audit.md`, not the authority.
 
-### Q2 — Minors policy: age gate, or adults-only at launch?
+### Q2 — Ages — ANSWERED (D9): all ages, with an age gate (not adults-only)
 
-Lane C found zero age/minor handling in the spec or parked code, while rule 9 forbids inferring third parties' and minors' details. Community cannot safely design groups, discovery ranking, or moderation without a ruling.
-**Recommendation:** launch adults-only (18+ self-declaration at sign-up, no age inference, no profiling of anyone age-unknown beyond the declaration), synthetic fixtures for all test users; revisit a supervised-teen model only as a separate, later decision.
-**Blocks:** CM-B3 (groups), CM-B7 (moderation/minors tests), CM-B12 multi-user test eligibility. **Deadline:** founder gate, before CM-B3.
+- Age band is **self-declared at sign-up and never inferred**.
+- **Under-18 protections by default:** no cross-app personalisation, no memory writes, private-by-default profiles, not discoverable or searchable by adults outside shared groups, moderation priority on reports involving them.
+- **Duty before CM-B3:** source the UAE's official child digital-safety and child-data requirements (parental consent, any minimum age) and propose the under-13 policy — see Lane E findings in `child-safety.md`. If a requirement cannot be met by 18 Dec, stop and ask.
+- Multi-user testers are consenting adults (also D10).
+The P1 recommendation of adults-only launch is **superseded**.
 
-### Q3 — Private groups: who may invite, and who moderates?
+### Q3 — Private groups — ANSWERED (D9, P1 recommendation accepted)
 
-Parked groups have open join and no roles, so the invite/approval and moderator model is a fresh product decision, not an audit finding.
-**Recommendation:** private = invisible to non-members; join by member invite + moderator approval; one owner, named moderators with pin/remove powers; every moderator action logged in `cm_moderation_events` and reversible by the owner.
-**Blocks:** CM-B3 design and its failure-path tests. **Deadline:** founder gate, before CM-B3.
+Private groups are invisible to non-members. Members invite; a moderator approves. One owner, named moderators (pin, remove); every moderator action is logged and reversible by the owner. Planned in CM-B3/CM-B7.
 
-### Q4 — Scene C topic and source allowlist for the Community Answer demo
+### Q4 — Scene C topic — ANSWERED (D9, P1 recommendation accepted)
 
-The demo needs a civic-flavoured question whose answer is retrievable from live public sources at record time, with no implication of a civic integration (none exists).
-**Recommendation:** pick one topic from official public information pages (e.g. a Dubai government service-guide question answered from the authority's own public pages), allowlist those publishers in the agent, and keep a non-civic fallback topic rehearsed. Sources are cited, never presented as an executed transaction.
-**Blocks:** CM-B9 Community Answer scope and the 100% sourced-answer integrity metric. **Deadline:** before CM-B9; re-confirm at CM-B12 recording.
+One official public-information topic, answered only from that authority's own public pages (allowlisted publishers), with no claim of any integration. A non-civic fallback topic is rehearsed too.
 
-### Q5 — Packaging surface for 18 Dec: hosted, tunnelled, or local-only?
+### Q5 — Packaging surface — ANSWERED (D10)
 
-The internal target (Fri 18 Dec 2026) needs deck + video + hosting-or-tunnel + a multi-user test, but no deployment or budget is currently authorised for this entry.
-**Recommendation:** tunnelled demo from the founder's machine for the video and the n ≥ 5 multi-user test (consenting adults, synthetic fixtures), with a hosted stub only if you approve spend; either way the multi-user test runs against the real `cm_` backend, not the parked demo.
-**Blocks:** CM-B11/CM-B12 planning and the multi-user test write-up. **Deadline:** at approval of CM-B11.
+Demo and tests by 18 Dec run through a **secure tunnel from the founder's PC** (no spend), used for the videos and for a test with **≥ 5 consenting adults** per entry. Accounts: a separate Supabase **staging** project (sign-up disabled, test users only); its Auth/RLS SQL is applied by a script from `apps/community/supabase/`; `supabase/migrations/` stays frozen. Memory builds use a clearly named `FakeTemporalMemoryClient` until the temporal_note hand-off lands.
 
-## Non-blocking (listed, defaults proceed)
+## New blocking item from Lane E (D9's stop-and-ask clause, triggered)
 
-- Group size caps, reaction set (beyond the parked ±1 vote), and bookmark/share mechanics: builder's choice within the gap matrix; revisit after the multi-user test.
-- Whether Discover also becomes a search destination tab later: spec says feed lane; keep it a lane for P1.
+### N1 — Under-18 admission cannot be built as D9 describes, on official evidence fetched 23 Nov
+
+Lane E (`child-safety.md`) found, and the lead corroborated on u.ae: under-15s may not hold personal social-media accounts (Cabinet Resolution No. 106 of 2026; parental consent cannot override), and self-declared age is not sufficient verification. That conflicts directly with "all ages, self-declared" for any under-18 account.
+**Planner's adopted reading (flagged, not silent):** the 18 Dec demo gates to verified 18+ consenting adult testers only — exactly D9/D10's tester ruling — and D9's under-18 protections are planned in full for a post-demo launch. Under-15 accounts, the 15–<16 restricted tier, and compliant age verification are deferred.
+**Asks of the founder:** (1) confirm the adults-only demo gate; (2) decide whether to take UAE legal advice on whether Community is a Resolution 106 "social media platform" per surface; (3) confirm the all-ages ambition is post-demo, pending an approved verification method. **Blocks:** any under-18 slice of CM-B3/CM-B7/CM-B8. Adult slices are not blocked. **Deadline:** before CM-B3.
+
+## Still open (non-blocking; defaults proceed)
+- Group size caps, reaction set (beyond the parked ±1 vote), bookmark/share mechanics: builder's choice within the gap matrix; revisit after the multi-user test.
+- Whether Discover also becomes a search destination later: spec says feed lane; keep it a lane for P1.
 - Member-count display while seeded: always `Demo data` pill; real counts only from `cm_` membership rows.
-- Final product name/branding for Community beyond "Dubai-io Community": working name stands until you say otherwise; no Meta-like marks either way.
+- Final product branding beyond "Dubai-io Community": working name stands; no Meta-like marks either way.
+- D10 recommended founder action (not a planner question): ask the organisers in writing (createaiagents@dubaichamber.com) whether a founder's own earlier prototype may be reused in an entry.
