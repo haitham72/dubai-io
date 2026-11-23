@@ -28,10 +28,10 @@ CATEGORIES: dict[str, str] = {
     "health": r"\b(health\w*|medic\w*|wellness|stress\w*|mental|sick|ill(ness)?|cancer|diagnos\w*|kidney|surgery|hospital|clinic|pregnan\w*|therapy|therapist|depress\w*|anxiety|disease|symptom\w*|doctor|dr\.|radiolog\w*|blood|lab test|pain|injur\w*|fever|diet|dieting|pharmacy|prescription)\b|مرض|سرطان|مستشفى|دكتور|عملية|علاج|تحليل|صحة|صحي|ضغط|السكر|السكري|سكر الدم",
     "religion": r"\b(relig\w*|muslim|christian|jewish|hindu|allah|god|quran|koran|bible|church|mosque|umrah|3omra|hajj|ramadan|fasting|fast|prayer|pray\w*|halal|haram|eid|sheikh)\b|صلاة|قرآن|عمرة|حج\b|رمضان|صيام|دين\b|كنيسة|مسجد|عيد",
     "ethnicity_nationality": r"\b(ethnic\w*|race|racial|nationality|egyptian|indian|pakistani|filipino|emirati|arab|african|asian|visa|citizenship)\b|جنسية|مصري|هندي|باكستاني",
-    "gender_sexuality": r"\b(gay|lesbian|bisexual|transgender|trans|sexual\w*|sexuality|lgbt\w*|gender|dating|girlfriend|boyfriend|marriage|divorce|wedding)\b|جنس\b|مثلي|جواز|طلاق|خطوبة",
+    "gender_sexuality": r"\b(gay|lesbian|bisexual|transgender|trans|sexual\w*|sexuality|lgbt\w*|gender|dating|girlfriend|boyfriend|divorce)\b|جنس\b|مثلي|طلاق",
     "politics": r"\b(politic\w*|election|vote|voting|government|party leader|president|parliament|protest|regime)\b|سياس\w*|انتخاب\w*|حكومة",
     "third_party_private": r"\b(affair|cheat\w*|abus\w*|arrest\w*|debt|bankrupt\w*|rehab|court|lawsuit|legal|police|theft|steal\w*|stol\w*|evasion|fraud|crime|criminal|conflict|drama|gossip|fight)\b|خيانة|محكمة|سرقة|شرطة|مشكلة مع|قضية",
-    "credential": r"\b(password|passcode|pin code|otp|cvv|iban|card number|passport number|emirates id)\b|كلمة السر|كلمة المرور",
+    "credential": r"\b(password|passcode|pin code|otp|cvv|iban|card number|passport number|emirates id|verification code|security code|login code|one-time (?:code|password|passcode)|one time (?:code|password))\b|كلمة السر|كلمة المرور|باسورد|رمز التحقق|كود التفعيل",
 }
 CATEGORY_LIST: tuple[str, ...] = ("family_third_party", *CATEGORIES)
 
@@ -85,10 +85,10 @@ FAMILY_ACTOR = re.compile(
     re.I,
 )
 PRIVATE = re.compile(
-    r"\b(?:divorc\w*|breakup|broke up|separated|married|marriage|engaged|dating|"
+    r"\b(?:divorc\w*|breakup|broke up|separated|dating|"
     r"loan|salary|wages|income|earns|mortgage|bank balance|paycheck|layoff|fired|meds|medication|"
     r"operation|legal case|verdict|court case|diagnosis)\b|"
-    r"(?<!\w)(?:طلاق|جواز|مرتب|معاش|عملية|تشخيص|قضية|محكمة|دكتور|دين|ميراث)(?!\w)",
+    r"(?<!\w)(?:طلاق|طلق|يطلق|مرتب|معاش|عملية|تشخيص|قضية|محكمة|دكتور|دين|ميراث)(?!\w)",
     re.I,
 )
 # First-person logistics the user stated ("I …", "my …", "أنا …") are ordinary
@@ -109,6 +109,34 @@ def _normalise(text: str) -> str:
     return AR_MARKS.sub("", text)
 
 
+# Wi-Fi secrets need the network word AND a secret word nearby (or a colon form):
+# "the Wi-Fi was slow" must pass, "Wi-Fi key for the flat" must not.
+_WIFI_SECRET = re.compile(
+    r"\b(?:wi-?fi|wlan)\b[^\n:?]{0,24}\b(?:key|passw?\w*|password)\b"
+    r"|\b(?:key|passw?\w*|password)\b[^\n:?]{0,24}\b(?:wi-?fi|wlan)\b"
+    r"|\b(?:wi-?fi|wlan)\s*:\s*\S{4,}",
+    re.I,
+)
+# Guarded secret-token heuristic: a single whitespace-delimited token of >= 8
+# chars mixing upper, lower, digit and symbol, right after `:`, `is` or `هو`.
+# Ordinary text after a colon ("milestone: beta ready", "Time: 12:30") or `is`
+# ("the key is in the drawer") never satisfies all four classes at once.
+_SECRET_TOKEN = re.compile(
+    r"(?::|\bis\b|\bهو\b)\s*"
+    r"(?=\S*[A-Z])(?=\S*[a-z])(?=\S*\d)(?=\S*[^A-Za-z0-9\s:])"
+    r"\S{8,}",
+)
+
+
+def _credential_hit(norm: str) -> bool:
+    """Keyword credential hit, Wi-Fi-secret proximity, or secret-looking token."""
+    return bool(
+        _COMPILED["credential"].search(norm)
+        or _WIFI_SECRET.search(norm)
+        or _SECRET_TOKEN.search(norm)
+    )
+
+
 def categories_hit(text: str) -> list[str]:
     """Layer 1 primitive: raw category hits on normalised text, in CATEGORIES order."""
     norm = _normalise(text)
@@ -122,9 +150,10 @@ def filter_statement(text: str, *, model_says_sensitive: bool = False) -> str | 
     """
     if model_says_sensitive:
         return "model_flagged"
-    hits = categories_hit(text)
-    if "credential" in hits:
+    norm = _normalise(text)
+    if _credential_hit(norm):
         return "credential"
+    hits = [k for k, rx in _COMPILED.items() if rx.search(norm)]
     return hits[0] if hits else None
 
 
@@ -138,9 +167,9 @@ def pre_write(text: str, *, known_people: tuple[str, ...] = ()) -> str | None:
     Credentials are always blocked.
     """
     norm = _normalise(text)
-    hits = {k for k, rx in _COMPILED.items() if rx.search(norm)}
-    if "credential" in hits:
+    if _credential_hit(norm):
         return "credential"
+    hits = {k for k, rx in _COMPILED.items() if rx.search(norm)}
     person = bool(FAMILY_ACTOR.search(norm) or LEADING_NAME.search(norm))
     if not person and not SELF_PREFIX.search(norm):
         person = any(
