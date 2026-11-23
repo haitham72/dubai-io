@@ -9,6 +9,7 @@ from typing import Iterator
 import uuid
 
 import psycopg
+from psycopg.pq import TransactionStatus
 from psycopg.rows import dict_row
 
 from temporal_memory.config import settings
@@ -75,6 +76,10 @@ class Database:
         finally:
             if conn and not conn.closed:
                 try:
+                    # Never pool a connection that still has an implicit transaction open: the next
+                    # `transaction()` would become a SAVEPOINT inside it and its writes would never commit.
+                    if conn.info.transaction_status != TransactionStatus.IDLE:
+                        conn.rollback()
                     self._pool.put_nowait(conn)
                 except Exception:
                     conn.close()
