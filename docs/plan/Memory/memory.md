@@ -123,10 +123,12 @@ YouTube activity feeds into the **User Tower** of the Dubai-io candidate generat
 
 | Feed | Volume Target | Source / Transport | Strategic Role in Memory |
 |---|---|---|---|
-| **1. Watch History** | Up to 500 titles | Google Takeout (`watch-history.json`) | **Actual Consumption:** Primary truth of what the user deeply watches (AI engineering, motion graphics, tutorials). |
-| **2. Playlists + Watch Later** | Up to 500 titles | Live YouTube Data API (`v3/playlists`) | **Aspirational Intent:** What the user plans to learn or projects they want to build. |
+| **1. Watch History** | Up to 500 titles | **Production/Mobile:** Google Data Portability API (`dataportability.myactivity.youtube`, EEA/UK/CH only) OR Google Takeout (`watch-history.json`, manual or scheduled "Add to Drive" every 2 months globally/UAE) + Share Sheet. **Desktop Dev Only:** Chrome/Edge local SQLite (`extract_youtube_history.py`). | **Actual Consumption (Interest Counts Only):** Aggregated topic/channel signals feeding User Tower (sensitive categories held back). |
+| **2. Subscriptions & User Playlists** | Up to 500 titles | Live YouTube Data API v3 (`v3/subscriptions`, `v3/playlists`) — *note: Watch Later (`WL`) is restricted/empty in API v3* | **Aspirational Intent:** Channels followed and user-curated playlists. |
 | **3. Liked Videos** | Up to 500 titles | Live YouTube Data API (`v3/playlistItems?playlistId=LL`) | **High-Resonance Signals:** High-affinity topics, favorite creators (e.g. PyTorch LLMs, 3D motion design). |
 | **4. Uploads** | Up to 500 titles | Live YouTube Data API (channel uploads playlist) | **Active Craft & Output:** Direct reflection of current creative or technical work (e.g. channel `iHisam`). |
+
+*Note on Watch History Portability:* YouTube Data API v3 removed watch history in 2016 and restricts Watch Later (`WL`). Google's **Data Portability API** (`dataportability.myactivity.youtube`) restores official OAuth watch history with 30/180-day refreshes, **but only for users in the EEA, UK, and Switzerland** (requires restricted-scope verification). Globally (including UAE/Dubai and mobile users), the low-friction mobile path is a one-time Google Takeout schedule (`Export every 2 months for 1 year` → `Add to Drive`) auto-synced via the Google Drive connector, plus manual Takeout upload or Share Sheet; local Chrome SQLite (`scripts/extract_youtube_history.py`) is desktop-only.
 
 ---
 
@@ -236,7 +238,7 @@ flowchart TD
 * [ ] **AC-3:** Orchestrator query rewriter (`phone` $\to$ `tech/devices/phone` + aliases).
 * [ ] **Proposed AC-4:** Cross-agent continuity test across restarts with stable `user_id` resolution.
 * [ ] **TreeSetter AST implementation:** Rule-based regex/grammar parser for devices and amounts in `apps/api/app/lab/`.
-* [ ] **YouTube Watch History Takeout import:** Ingest `watch-history.json` (500 titles) into `04-learning-and-ideas/`.
+* [ ] **YouTube Watch History import:** Ingest Takeout `watch-history.json` (manual or scheduled "Add to Drive" every 2 months; desktop Chrome SQLite fallback in dev) as aggregated daily interest counts into `04-learning-and-ideas/`.
 
 ### Phase 3: Postgres Data Layer & Recommender Wiring (UPCOMING)
 * [ ] Thin Postgres schema deployment: `memories`, `topics`, `entities`, `links` with `actor_id` & `session_id`.
