@@ -418,7 +418,7 @@ def test_job_claim_heartbeat_result_roundtrip(
                 ('j_karim_od', 'karim', 'extract.day', 1, 'owner-device', %s, 0, 'ctx1', 'extract@3', '2026-04-01', 'ik_1'),
                 ('j_nora_od', 'nora', 'extract.day', 1, 'owner-device', %s, 0, 'ctx2', 'extract@3', '2026-04-01', 'ik_2')
             """,
-            (Jsonb(["r1"]), Jsonb(["r2"])),
+            (["r1"], ["r2"]),
         )
 
     jobs_impl = _SeededPostgresJobs(isolated_db)

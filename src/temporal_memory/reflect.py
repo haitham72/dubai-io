@@ -16,7 +16,9 @@ import uuid
 from json_repair import loads as repair_json_loads
 
 from temporal_memory.api.vault import call_opt
-from temporal_memory.models import Attempt, ExtractionOutput, GraphStore, Job, JobBundle, Milestone, Record, Verdict
+from temporal_memory.models import Attempt, ExtractionOutput, GraphStore, Job, JobBundle, Milestone, OutFact, Record, Verdict
+from temporal_memory.privacy.policy import gate_fact
+from temporal_memory.privacy.sensitive import pre_write
 
 SECTIONS = ("Identity", "Personality", "Values", "Strengths & Tensions", "Interests", "Drive", "Relationships")
 _TRIVIA_RE = re.compile(
@@ -24,25 +26,6 @@ _TRIVIA_RE = re.compile(
     r"subscription|newsletter|account link|linked account|delivery|parcel|shipment|tracking|winback|promo)\b",
     re.I,
 )
-# Fail-closed fallback Rule 9 regexes when WP-C privacy.sensitive is not yet merged
-_SENSITIVE_FALLBACK: dict[str, re.Pattern[str]] = {
-    "health": re.compile(
-        r"\b(health\w*|medic\w*|sick|illness|cancer|diagnos\w*|diabetes|surgery|hospital|clinic|pregnan\w*|"
-        r"therapy|therapist|anxiety|depress\w*|symptom\w*|doctor|blood|prescription|thyroid)\b|"
-        r"مرض|مستشفى|دكتور|علاج|تحليل|صحة|حمل",
-        re.I,
-    ),
-    "religion": re.compile(
-        r"\b(relig\w*|muslim|christian|jewish|hindu|allah|god|quran|bible|church|mosque|umrah|3omra|hajj|"
-        r"ramadan|fasting|prayer|pray\w*|halal|haram)\b|صلاة|قرآن|عمرة|حج|رمضان|صيام|مسجد",
-        re.I,
-    ),
-    "ethnicity_nationality": re.compile(r"\b(ethnic\w*|nationality|citizenship|visa)\b|جنسية", re.I),
-    "gender_sexuality": re.compile(r"\b(gay|lesbian|bisexual|transgender|lgbt\w*|sexuality|divorce)\b|طلاق", re.I),
-    "politics": re.compile(r"\b(politic\w*|election|parliament|regime)\b|سياس\w*", re.I),
-    "third_party_private": re.compile(r"\b(affair|arrest\w*|bankrupt\w*|lawsuit|court case|personal loan|debt)\b|محكمة|شرطة", re.I),
-    "credential": re.compile(r"\b(password|passcode|pin code|otp|cvv|iban|emirates id)\b|كلمة السر|كلمة المرور", re.I),
-}
 
 _REFLECT_SYSTEM = (
     "You maintain a Quest-style user profile and milestone hypothesis tracker. Return STRICT JSON only: "
@@ -71,19 +54,23 @@ def set_default_store(store: GraphStore | None) -> None:
     _DEFAULT_STORE = store
 
 
-def _check_sensitive(text: str) -> str | None:
-    """Use canonical WP-C privacy.sensitive if present; otherwise fail-closed fallback regexes."""
+def _check_sensitive(text: str, *, valid_from: str = "", evidence: list[str] | None = None, subject_path: str = "profile/general") -> str | None:
+    """Run canonical Rule 9 gate with Layer 2 enabled (owner-hook worker_kind), failing closed."""
+    out_fact = OutFact(
+        text=text,
+        text_orig=None,
+        subject_path=subject_path,
+        entities=[],
+        op="new",
+        target=None,
+        valid_from=valid_from,
+        evidence=list(evidence or []),
+        sensitive=None,
+    )
     try:
-        from temporal_memory.privacy import sensitive as wp_c_sensitive  # type: ignore
-        hit = wp_c_sensitive.filter_statement(text)
-        if hit:
-            return hit
-    except ImportError:
-        pass
-    for cat, rx in _SENSITIVE_FALLBACK.items():
-        if rx.search(text or ""):
-            return cat
-    return None
+        return gate_fact(out_fact, "owner-hook")
+    except Exception:
+        return "unscreened"
 
 
 def _parse_json(raw: Any) -> dict[str, Any]:
@@ -131,7 +118,7 @@ def reflect_week(
     non_sens = [
         f
         for f in all_visible
-        if f.status != "history" and f.status != "hypothesis" and not _check_sensitive(f.text)
+        if f.status != "history" and f.status != "hypothesis" and not pre_write(f.text)
     ]
     fact_by_id = {f.id: f for f in non_sens}
     week_facts = [
@@ -186,18 +173,24 @@ def reflect_week(
             continue
         text = str(item["text"]).strip()
         ev_ids, days = _distinct_days(item.get("evidence") or [], fact_by_id)
-        sens_cat = _check_sensitive(text)
+        subj_path = f"profile/{str(item.get('section', 'general')).lower().replace(' ', '-')}"
+        l1_hit = pre_write(text)
+        if l1_hit:
+            quarantined[l1_hit] = quarantined.get(l1_hit, 0) + 1
+            reasons.append("sensitive_never_inferred")
+            continue
+        if len(ev_ids) < 2 or len(days) < 2:
+            reasons.append("insufficient_distinct_days")
+            continue
+        sens_cat = _check_sensitive(text, valid_from=min(days), evidence=ev_ids, subject_path=subj_path)
         if not sens_cat:
             for fid in ev_ids:
-                sens_cat = _check_sensitive(fact_by_id[fid].text)
+                sens_cat = _check_sensitive(fact_by_id[fid].text, valid_from=fact_by_id[fid].valid_from, evidence=[fid], subject_path=subj_path)
                 if sens_cat:
                     break
         if sens_cat:
             quarantined[sens_cat] = quarantined.get(sens_cat, 0) + 1
             reasons.append("sensitive_never_inferred")
-            continue
-        if len(ev_ids) < 2 or len(days) < 2:
-            reasons.append("insufficient_distinct_days")
             continue
         hyp_text = text if text.startswith("I noticed") else f"I noticed {text}"
         accepted_claims.append({**item, "text": hyp_text, "evidence": ev_ids, "days": sorted(days)})
@@ -206,7 +199,7 @@ def reflect_week(
             "add_hypothesis_fact",
             owner,
             text=hyp_text,
-            subject_path=f"profile/{str(item.get('section', 'general')).lower().replace(' ', '-')}",
+            subject_path=subj_path,
             valid_from=min(days),
             evidence=ev_ids,
             default=None,
@@ -221,16 +214,17 @@ def reflect_week(
         title = str(ms["title"]).strip()
         ev_ids, days = _distinct_days(ms.get("evidence") or [], fact_by_id)
         blob = " ".join([title, *[fact_by_id[fid].text for fid in ev_ids]])
-        sens_cat = _check_sensitive(blob)
-        if sens_cat:
-            quarantined[sens_cat] = quarantined.get(sens_cat, 0) + 1
-            reasons.append("sensitive_never_inferred")
-            continue
         if _TRIVIA_RE.search(blob):
             reasons.append("trivia_milestone_rejected")
             continue
         if len(ev_ids) < 2 or len(days) < 2:
             reasons.append("insufficient_distinct_days")
+            continue
+        subj_path = str(ms.get("subject_path") or "quests/general")
+        sens_cat = _check_sensitive(blob, valid_from=min(days), evidence=ev_ids, subject_path=subj_path)
+        if sens_cat:
+            quarantined[sens_cat] = quarantined.get(sens_cat, 0) + 1
+            reasons.append("sensitive_never_inferred")
             continue
         state = ms.get("state") if ms.get("state") in ("done", "in_progress", "planned") else "in_progress"
         call_opt(

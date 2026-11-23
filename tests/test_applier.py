@@ -95,6 +95,7 @@ def test_gold_day_apply_with_role_and_entity_subjects(db_env):
                 text_orig=None,
                 subject_path="career/job-search/interview-prep",
                 entities=[
+                    FactEntity(entity_id="new:Karim Haddad", role="candidate"),
                     FactEntity(entity_id="new:Nadia Mansour", role="interviewer"),
                     FactEntity(entity_id="new:Falcon Tech", role="prospective_employer"),
                 ],
@@ -118,31 +119,65 @@ def test_gold_day_apply_with_role_and_entity_subjects(db_env):
     assert len(facts) == 1
     assert facts[0].text == "Nadia Mansour interviewed Karim at Falcon Tech"
     assert facts[0].evidence == ["wa-1"]
-    assert {fe.role for fe in facts[0].entities} == {"interviewer", "prospective_employer"}
+    assert {fe.role for fe in facts[0].entities} == {"candidate", "interviewer", "prospective_employer"}
 
     entities = {e.name: e for e in store.list_entities("karim")}
-    assert entities["Karim Haddad"].status == "active"
-    assert entities["Nadia Mansour"].status == "candidate"  # third-party stays candidate
+    # Policy rule (WP-C): 1-day self stays candidate until seen across >= 2 distinct days;
+    # third-party people always stay candidate without explicit user confirmation.
+    assert entities["Karim Haddad"].status == "candidate"
+    assert entities["Nadia Mansour"].status == "candidate"
     assert entities["Falcon Tech"].status == "candidate"
 
+    # Seeing self + org on a 2nd distinct day promotes self & org via policy.may_promote, never third-party Nadia
+    store.upsert_records(
+        "karim",
+        [Record(id="wa-2", owner="karim", source="whatsapp:work", at="2026-10-06T09:00:00Z", author="Karim", text="Follow-up at Falcon Tech.", generation=0)],
+    )
+    out_day2 = ExtractionOutput(
+        entities=[],
+        facts=[
+            OutFact(
+                text="Karim followed up with Falcon Tech",
+                text_orig=None,
+                subject_path="career/job-search/interview-prep",
+                entities=[
+                    FactEntity(entity_id="Karim Haddad", role="candidate"),
+                    FactEntity(entity_id="Falcon Tech", role="prospective_employer"),
+                    FactEntity(entity_id="Nadia Mansour", role="interviewer"),
+                ],
+                op="new",
+                target=None,
+                valid_from="2026-10-06",
+                evidence=["wa-2"],
+                sensitive=None,
+            )
+        ],
+        links=[],
+    )
+    v2 = apply("karim", _job("j-2", ["wa-2"]), _attempt("j-2", out_day2), db=db)
+    assert v2.ok is True
+    entities_d2 = {e.name: e for e in store.list_entities("karim")}
+    assert entities_d2["Karim Haddad"].status == "active"
+    assert entities_d2["Falcon Tech"].status == "active"
+    assert entities_d2["Nadia Mansour"].status == "candidate"
+
     es = store.list_entity_subjects("karim")
-    assert len(es) == 2
     by_role = {row.role: row for row in es}
-    assert by_role["interviewer"].fact_count == 1
-    assert by_role["interviewer"].weight == 1.0
+    assert by_role["interviewer"].fact_count == 2
+    assert by_role["interviewer"].weight == 2.0
     assert by_role["interviewer"].first_seen == "2026-10-05"
-    assert by_role["interviewer"].last_seen == "2026-10-05"
+    assert by_role["interviewer"].last_seen == "2026-10-06"
 
     subjects = {s.path: s for s in store.list_subjects("karim")}
     assert set(subjects) == {"career", "career/job-search", "career/job-search/interview-prep"}
-    assert subjects["career/job-search/interview-prep"].fact_count == 1
+    assert subjects["career/job-search/interview-prep"].fact_count == 2
 
     links = store.list_links("karim")
     assert len(links) == 1 and links[0].rel == "WORKS_AT"
 
     with db.connection() as conn:
         fv = conn.execute("SELECT facts_version FROM owners WHERE id = 'karim'").fetchone()["facts_version"]
-    assert fv == 1
+    assert fv == 2
 
 
 def test_late_evidence_never_overwrites_newer(db_env):
@@ -366,8 +401,8 @@ def test_sensitive_quarantine_and_forget_rules(db_env):
     verdict = apply("karim", _job("j-priv", ["wa-s1", "wa-s2", "wa-s3"]), _attempt("j-priv", out), db=db)
     assert verdict.ok is True
     assert verdict.applied_fact_ids == []
-    assert verdict.quarantined == {"health": 1}
-    assert store.get_quarantine_counts("karim") == {"health": 1}
+    assert verdict.quarantined == {"family_third_party": 1}
+    assert store.get_quarantine_counts("karim") == {"family_third_party": 1}
     assert store.visible_facts("karim") == []
 
     # Verify sensitive text is never stored in facts or quarantine
@@ -376,5 +411,5 @@ def test_sensitive_quarantine_and_forget_rules(db_env):
         q_rows = conn.execute("SELECT category, record_ids FROM quarantine WHERE owner = 'karim'").fetchall()
     assert fact_count == 0
     assert len(q_rows) == 1
-    assert q_rows[0]["category"] == "health"
+    assert q_rows[0]["category"] == "family_third_party"
     assert q_rows[0]["record_ids"] == ["wa-s1"]

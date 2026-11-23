@@ -265,7 +265,18 @@ def _call_configure(fn: Callable[..., Any], **kwargs: Any) -> None:
 
 
 def _mount_optional_routers(app: FastAPI, db: Database, store: Any, auth_verifier: Callable[[str | None], AuthInfo]) -> None:
-    for mod_name in ("temporal_memory.api.vault", "temporal_memory.api.export_md", "temporal_memory.api.ops"):
+    try:
+        from temporal_memory.api.vault import AuthContext
+
+        def _vault_verifier(token: str | None) -> AuthContext | None:
+            if not token:
+                return None
+            info = auth_verifier(token)
+            return AuthContext(role=info.role, owner=info.owner, token_id=info.id)
+    except ImportError:
+        _vault_verifier = auth_verifier  # type: ignore[assignment]
+
+    for mod_name in ("temporal_memory.api.vault", "temporal_memory.api.export_md", "temporal_memory.api.ops", "temporal_memory.reflect"):
         try:
             mod = __import__(mod_name, fromlist=["*"])
         except ImportError:
@@ -273,7 +284,7 @@ def _mount_optional_routers(app: FastAPI, db: Database, store: Any, auth_verifie
         if hasattr(mod, "set_default_store"):
             mod.set_default_store(store)
         if hasattr(mod, "configure"):
-            _call_configure(mod.configure, db=db, store=store, auth_verifier=auth_verifier)
+            _call_configure(mod.configure, db=db, store=store, auth_verifier=_vault_verifier)
         if hasattr(mod, "router"):
             app.include_router(mod.router)
 

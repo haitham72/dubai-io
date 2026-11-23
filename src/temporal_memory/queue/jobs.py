@@ -221,7 +221,7 @@ class PostgresJobs:
                     id, owner, kind, priority, pool, input_ref, input_version,
                     context_hash, prompt_version, day, sensitive_flag, fallback_at, idempotency_key
                 )
-                VALUES (%s, %s, %s, %s, %s, %s::jsonb, %s, %s, %s, %s, %s, %s, %s)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ON CONFLICT (idempotency_key) DO NOTHING
                 RETURNING *
                 """,
@@ -231,7 +231,7 @@ class PostgresJobs:
                     kind,
                     int(priority),
                     pool,
-                    json.dumps(sorted_ids),
+                    sorted_ids,
                     input_version,
                     "",
                     prompt_version,

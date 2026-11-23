@@ -187,7 +187,8 @@ CREATE TABLE IF NOT EXISTS forget_rules (
     owner TEXT NOT NULL REFERENCES owners(id) ON DELETE CASCADE,
     kind TEXT NOT NULL,
     value TEXT NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    UNIQUE (owner, kind, value)
 );
 CREATE INDEX IF NOT EXISTS idx_forget_rules_owner ON forget_rules(owner, kind);
 
@@ -222,7 +223,7 @@ CREATE TABLE IF NOT EXISTS jobs (
     kind TEXT NOT NULL,
     priority INTEGER NOT NULL DEFAULT 1,
     pool TEXT NOT NULL DEFAULT 'internal',
-    input_ref JSONB NOT NULL DEFAULT '[]'::jsonb,
+    input_ref TEXT[] NOT NULL DEFAULT '{}',
     input_version INTEGER NOT NULL DEFAULT 0,
     context_hash TEXT NOT NULL DEFAULT '',
     prompt_version TEXT NOT NULL DEFAULT 'extract@3',

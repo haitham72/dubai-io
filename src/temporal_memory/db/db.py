@@ -131,3 +131,13 @@ def get_database(dsn: str | None = None) -> Database:
     if _DEFAULT_DB is None or (dsn and _DEFAULT_DB.dsn != dsn):
         _DEFAULT_DB = Database(dsn or settings.database_url)
     return _DEFAULT_DB
+
+
+def connect(dsn: str | None = None) -> psycopg.Connection:
+    """Open a direct tuple-row psycopg3 connection (used by privacy.forget_source)."""
+    url = dsn or (_DEFAULT_DB.dsn if _DEFAULT_DB is not None else settings.database_url)
+    conn = psycopg.connect(url, autocommit=False)
+    if _DEFAULT_DB is not None and _DEFAULT_DB.schema:
+        conn.execute(f"SET search_path TO {_DEFAULT_DB.schema}, public")
+        conn.commit()
+    return conn

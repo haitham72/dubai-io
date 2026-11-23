@@ -5,9 +5,11 @@ from datetime import datetime
 import hashlib
 import json
 from typing import Any
+import uuid
 
-from temporal_memory.db.db import Database, fold_text
+from temporal_memory.db.db import Database, fold_text, get_database
 from temporal_memory.models import (
+    Attempt,
     Entity,
     EntitySubject,
     Fact,
@@ -543,7 +545,7 @@ class PostgresGraphStore:
             for r in rows
         ]
 
-    def get_attempt(self, attempt_id: str) -> dict | None:
+    def get_attempt(self, attempt_id: str) -> Attempt | None:
         with self.db.connection() as conn:
             row = conn.execute(
                 """
@@ -555,7 +557,129 @@ class PostgresGraphStore:
                 """,
                 (attempt_id,),
             ).fetchone()
-        return self._row_to_attempt_dict(row) if row else None
+        return self._row_to_attempt(row) if row else None
+
+    def alias_version(self, owner: str) -> int:
+        with self.db.connection() as conn:
+            row = conn.execute("SELECT alias_version FROM owners WHERE id = %s", (owner,)).fetchone()
+        return int(row["alias_version"]) if row else 0
+
+    def facts_version(self, owner: str) -> int:
+        with self.db.connection() as conn:
+            row = conn.execute("SELECT facts_version FROM owners WHERE id = %s", (owner,)).fetchone()
+        return int(row["facts_version"]) if row else 0
+
+    def owner_generation(self, owner: str) -> int:
+        with self.db.connection() as conn:
+            row = conn.execute(
+                "SELECT COALESCE(MAX(generation), 0) AS g FROM records WHERE owner = %s",
+                (owner,),
+            ).fetchone()
+        return int(row["g"]) if row else 0
+
+    def add_alias(self, owner: str, entity_id: str, alias: str) -> None:
+        af = fold_text(alias)
+        if not af:
+            return
+        with self.db.transaction() as conn:
+            conn.execute(
+                """
+                INSERT INTO entity_aliases (owner, entity_id, alias, alias_folded, source)
+                VALUES (%s, %s, %s, %s, 'user')
+                ON CONFLICT (owner, alias_folded, entity_id) DO NOTHING
+                """,
+                (owner, entity_id, alias.strip(), af),
+            )
+            conn.execute("UPDATE owners SET alias_version = alias_version + 1 WHERE id = %s", (owner,))
+
+    def _ensure_subject_path(self, conn: Any, owner: str, subject_path: str, kind_leaf: str = "topic", label_override: str | None = None) -> str:
+        parts = [p.strip() for p in subject_path.strip("/").split("/") if p.strip()] or ["general"]
+        parent_id: str | None = None
+        cur_id = ""
+        for idx, part in enumerate(parts):
+            seg = "/".join(parts[: idx + 1])
+            row = conn.execute("SELECT id FROM subjects WHERE owner = %s AND path = %s", (owner, seg)).fetchone()
+            if row is not None:
+                cur_id = row["id"]
+            else:
+                cur_id = f"s_{uuid.uuid4().hex[:12]}"
+                is_last = idx == len(parts) - 1
+                skind = kind_leaf if is_last else ("theme" if idx == 0 else "topic")
+                slabel = (label_override or part) if is_last else part.replace("-", " ").title()
+                conn.execute(
+                    """
+                    INSERT INTO subjects (id, owner, parent_id, path, label, kind, status)
+                    VALUES (%s, %s, %s, %s, %s, %s, 'candidate')
+                    ON CONFLICT (owner, path) DO NOTHING
+                    """,
+                    (cur_id, owner, parent_id, seg, slabel, skind),
+                )
+                row2 = conn.execute("SELECT id FROM subjects WHERE owner = %s AND path = %s", (owner, seg)).fetchone()
+                cur_id = row2["id"]
+            parent_id = cur_id
+        return cur_id
+
+    def add_hypothesis_fact(
+        self,
+        owner: str,
+        *,
+        text: str,
+        subject_path: str,
+        valid_from: str,
+        evidence: list[str],
+    ) -> str:
+        fid = f"hyp_{uuid.uuid4().hex[:12]}"
+        tf = fold_text(text)
+        with self.db.transaction() as conn:
+            sid = self._ensure_subject_path(conn, owner, subject_path)
+            chash = hashlib.sha256(f"{sid}|{tf}".encode("utf-8")).hexdigest()
+            conn.execute(
+                """
+                INSERT INTO facts (
+                    id, owner, text, text_folded, subject_id, valid_from, status, provenance, content_hash
+                )
+                VALUES (%s, %s, %s, %s, %s, %s, 'hypothesis', 'inferred', %s)
+                """,
+                (fid, owner, text, tf, sid, valid_from, chash),
+            )
+            for rid in dict.fromkeys(evidence):
+                exists = conn.execute("SELECT generation FROM records WHERE owner = %s AND id = %s", (owner, rid)).fetchone()
+                if exists is not None:
+                    conn.execute(
+                        """
+                        INSERT INTO fact_evidence (owner, fact_id, record_id, record_generation)
+                        VALUES (%s, %s, %s, %s) ON CONFLICT DO NOTHING
+                        """,
+                        (owner, fid, rid, int(exists["generation"])),
+                    )
+            conn.execute("UPDATE owners SET facts_version = facts_version + 1 WHERE id = %s", (owner,))
+        return fid
+
+    def add_hypothesis_milestone(
+        self,
+        owner: str,
+        *,
+        title: str,
+        subject_path: str,
+        state: str,
+        evidence_fact_ids: list[str],
+    ) -> str:
+        mid = f"ms_{uuid.uuid4().hex[:12]}"
+        with self.db.transaction() as conn:
+            sid = self._ensure_subject_path(conn, owner, subject_path, kind_leaf="goal", label_override=title)
+            conn.execute(
+                """
+                INSERT INTO milestones (id, owner, subject_id, title, state, evidence_fact_ids)
+                VALUES (%s, %s, %s, %s, %s, %s::jsonb)
+                """,
+                (mid, owner, sid, title, state, json.dumps(list(evidence_fact_ids))),
+            )
+        return mid
+
+    def job_created_at(self, job_id: str) -> str | None:
+        with self.db.connection() as conn:
+            row = conn.execute("SELECT created_at FROM jobs WHERE id = %s", (job_id,)).fetchone()
+        return _as_iso(row["created_at"]) if row else None
 
     def get_quarantine_counts(self, owner: str) -> dict[str, int]:
         with self.db.connection() as conn:
@@ -632,7 +756,7 @@ class PostgresGraphStore:
             for r in rows
         ]
 
-    def list_attempts(self, job_id: str | None = None, owner: str | None = None, limit: int = 200) -> list[dict]:
+    def list_attempts(self, job_id: str | None = None, owner: str | None = None, limit: int = 200) -> list[Attempt]:
         clauses: list[str] = []
         params: list[Any] = []
         if job_id is not None:
@@ -656,7 +780,7 @@ class PostgresGraphStore:
                 """,
                 params,
             ).fetchall()
-        return [self._row_to_attempt_dict(r) for r in rows]
+        return [self._row_to_attempt(r) for r in rows]
 
     # ---------------------------------------------------------------- row mappers
     @staticmethod
@@ -671,25 +795,38 @@ class PostgresGraphStore:
         )
 
     @staticmethod
-    def _row_to_attempt_dict(row: dict[str, Any]) -> dict[str, Any]:
-        return {
-            "id": row["id"],
-            "job_id": row["job_id"],
-            "owner": row["owner"],
-            "attempt_no": int(row["attempt_no"]),
-            "fence_token": row["fence_token"],
-            "worker_id": row["worker_id"],
-            "worker_kind": row["worker_kind"],
-            "model": row["model"],
-            "prompt_version": row["prompt_version"],
-            "started_at": _as_iso(row["started_at"]),
-            "finished_at": _as_iso(row["finished_at"]),
-            "tokens_in": int(row["tokens_in"]),
-            "tokens_out": int(row["tokens_out"]),
-            "cost_usd": float(row["cost_usd"]),
-            "output_json": row["output_json"],
-            "verdict": row["verdict"],
-        }
+    def _row_to_attempt(row: dict[str, Any]) -> Attempt:
+        att = Attempt(
+            job_id=row["job_id"],
+            attempt_no=int(row["attempt_no"]),
+            fence_token=row["fence_token"],
+            worker_id=row["worker_id"],
+            worker_kind=row["worker_kind"],
+            model=row["model"],
+            prompt_version=row["prompt_version"],
+            output=row["output_json"],
+            tokens_in=int(row["tokens_in"]),
+            tokens_out=int(row["tokens_out"]),
+            cost_usd=float(row["cost_usd"]),
+            started_at=_as_iso(row["started_at"]),
+            finished_at=_as_iso(row["finished_at"]),
+        )
+        setattr(att, "verdict", row["verdict"])
+        return att
+
+
+def visible_facts(
+    owner: str,
+    *,
+    entity_ids: list[str] | None = None,
+    subject_ids: list[str] | None = None,
+    limit: int = 50,
+    db: Database | None = None,
+) -> list[Fact]:
+    """Module-level convenience wrapper used by privacy.forget tests."""
+    return PostgresGraphStore(db or get_database()).visible_facts(
+        owner, entity_ids=entity_ids, subject_ids=subject_ids, limit=limit
+    )
 
 
 def _pack_within_budget(

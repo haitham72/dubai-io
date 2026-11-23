@@ -17,18 +17,7 @@ from temporal_memory.models import (
     OutFact,
     Verdict,
 )
-
-try:
-    from temporal_memory.privacy.policy import may_promote as _policy_may_promote
-except ImportError:  # pragma: no cover - WP-C not yet merged
-    _policy_may_promote = None  # type: ignore[assignment]
-
-
-def _may_promote(entity: Entity, distinct_days: int, user_confirmed: bool) -> bool:
-    if _policy_may_promote is not None:
-        return _policy_may_promote(entity, distinct_days, user_confirmed)
-    # TODO WP-C: keep third-party entities as candidate until privacy.policy.may_promote is wired.
-    return entity.relation_to_user == "self"
+from temporal_memory.privacy.policy import may_promote as _may_promote
 
 
 def _strip_new(ref: str) -> str:
@@ -362,13 +351,39 @@ def apply(
                     last_s = ent_row["last_seen"]
                     new_first = fact.valid_from if not first_s or fact.valid_from < first_s else first_s
                     new_last = fact.valid_from if not last_s or fact.valid_from > last_s else last_s
-                    if new_first != first_s or new_last != last_s:
+                    days_rows = conn.execute(
+                        """
+                        SELECT COUNT(DISTINCT substr(f.valid_from, 1, 10))::int AS dcnt
+                        FROM facts f
+                        JOIN fact_entities fe ON fe.owner = f.owner AND fe.fact_id = f.id
+                        WHERE f.owner = %s AND fe.entity_id = %s AND f.erased_at IS NULL AND f.valid_from <> ''
+                        """,
+                        (owner, eid),
+                    ).fetchone()
+                    dcnt = int(days_rows["dcnt"]) if days_rows else 1
+                    cur_status = ent_row["status"]
+                    if cur_status == "candidate":
+                        ent_obj = Entity(
+                            id=eid,
+                            owner=owner,
+                            kind=ent_row["kind"],
+                            name=ent_row["name"],
+                            relation_to_user=ent_row["relation_to_user"],
+                        )
+                        if _may_promote(ent_obj, distinct_days=dcnt, user_confirmed=False):
+                            cur_status = "active"
+                    if new_first != first_s or new_last != last_s or cur_status != ent_row["status"] or dcnt > 1:
                         conn.execute(
-                            "UPDATE entities SET first_seen = %s, last_seen = %s WHERE owner = %s AND id = %s",
-                            (new_first, new_last, owner, eid),
+                            """
+                            UPDATE entities
+                            SET first_seen = %s, last_seen = %s, status = %s, distinct_days = GREATEST(distinct_days, %s)
+                            WHERE owner = %s AND id = %s
+                            """,
+                            (new_first, new_last, cur_status, dcnt, owner, eid),
                         )
                         ent_row["first_seen"] = new_first
                         ent_row["last_seen"] = new_last
+                        ent_row["status"] = cur_status
 
             for rid in dict.fromkeys(fact.evidence):
                 conn.execute(

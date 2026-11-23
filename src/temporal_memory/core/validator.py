@@ -19,62 +19,7 @@ from temporal_memory.models import (
     WorkerKind,
 )
 
-try:
-    from temporal_memory.privacy.policy import gate_fact as _policy_gate_fact
-except ImportError:  # pragma: no cover - WP-C not yet merged
-    _policy_gate_fact = None  # type: ignore[assignment]
-
-# TODO WP-C: remove local Layer-1 regex shim once temporal_memory.privacy.policy is available.
-_SENSITIVE_CATEGORIES: dict[str, str] = {
-    "health": (
-        r"\b(health\w*|medic\w*|wellness|stress\w*|mental|sick|ill(ness)?|cancer|diagnos\w*|kidney|"
-        r"surgery|hospital|clinic|pregnan\w*|therapy|therapist|depress\w*|anxiety|disease|symptom\w*|"
-        r"doctor|dr\.|radiolog\w*|blood|lab test|pain|injur\w*|fever|diet|dieting|pharmacy|prescription)\b"
-        r"|مرض|سرطان|مستشفى|دكتور|عملية|علاج|حمل\b|تحليل|صحة|صحي|ضغط"
-    ),
-    "religion": (
-        r"\b(relig\w*|muslim|christian|jewish|hindu|allah|god|quran|koran|bible|church|mosque|"
-        r"umrah|3omra|hajj|ramadan|fasting|fast|prayer|pray\w*|halal|haram|eid|sheikh)\b"
-        r"|صلاة|قرآن|عمرة|حج\b|رمضان|صيام|دين\b|كنيسة|مسجد|عيد"
-    ),
-    "ethnicity_nationality": (
-        r"\b(ethnic\w*|race|racial|nationality|egyptian|indian|pakistani|filipino|emirati|"
-        r"arab|african|asian|visa|citizenship)\b|جنسية|مصري|هندي|باكستاني"
-    ),
-    "gender_sexuality": (
-        r"\b(gay|lesbian|bisexual|transgender|trans|sexual\w*|sexuality|lgbt\w*|gender|"
-        r"dating|girlfriend|boyfriend|marriage|divorce|wedding)\b|جنس\b|مثلي|جواز|طلاق|خطوبة"
-    ),
-    "politics": (
-        r"\b(politic\w*|election|vote|voting|government|party leader|president|parliament|protest|regime)\b"
-        r"|سياس\w*|انتخاب\w*|حكومة"
-    ),
-    "third_party_private": (
-        r"\b(affair|cheat\w*|abus\w*|arrest\w*|debt|bankrupt\w*|rehab|court|lawsuit|legal|"
-        r"police|theft|steal|stolen|evasion|fraud|crime|criminal|conflict|drama|gossip|fight)\b"
-        r"|خيانة|محكمة|سرقة|شرطة|مشكلة مع"
-    ),
-    "credential": (
-        r"\b(password|passcode|pin code|otp|cvv|iban|card number|passport number|emirates id)\b"
-        r"|كلمة السر|كلمة المرور"
-    ),
-}
-_SENSITIVE_COMPILED = {k: re.compile(v, re.I) for k, v in _SENSITIVE_CATEGORIES.items()}
-
-
-def _shim_gate_fact(fact: OutFact, worker_kind: WorkerKind) -> Optional[str]:
-    # TODO WP-C: fallback Layer-1 regex gate until privacy.policy.gate_fact exists.
-    combined = " ".join(filter(None, [fact.text, fact.text_orig, fact.subject_path]))
-    for cat, rx in _SENSITIVE_COMPILED.items():
-        if rx.search(combined):
-            return cat
-    return fact.sensitive
-
-
-def _gate_fact(fact: OutFact, worker_kind: WorkerKind) -> Optional[str]:
-    if _policy_gate_fact is not None:
-        return _policy_gate_fact(fact, worker_kind)
-    return _shim_gate_fact(fact, worker_kind)
+from temporal_memory.privacy.policy import gate_fact as _gate_fact
 
 
 VALID_ENTITY_KINDS = frozenset({"person", "place", "org", "project", "event"})
