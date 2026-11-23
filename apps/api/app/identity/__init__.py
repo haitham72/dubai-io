@@ -10,6 +10,7 @@ from .deps import (
     require_ws_principal,
 )
 from .jwt import JWTVerificationError, JWTVerifier
+from .memory_tokens import MemoryTokenService
 from .models import (
     APP_CAPABILITIES,
     AgeBand,
@@ -37,6 +38,7 @@ __all__ = [
     "IdentityStore",
     "JWTVerificationError",
     "JWTVerifier",
+    "MemoryTokenService",
     "VerifiedClaims",
     "VerifiedPrincipal",
     "WsTicketOut",
