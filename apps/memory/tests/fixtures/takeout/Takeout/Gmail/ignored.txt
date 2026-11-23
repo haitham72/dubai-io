@@ -1,0 +1,1 @@
+IGNORED_FOLDER_CANARY must never be read or emitted.
