@@ -1,6 +1,6 @@
 # Shared Memory & Cross-App Contract
 
-**Status:** `ready for founder approval`
+**Status:** `approved — 23 Nov 2026 (founder, D11)`
 **Date:** 2026-11-23
 **Branch:** `contest-shared`
 **Authoritative baselines:** `docs/submissions/shared/founder-decisions.md` (D1–D10) · `docs/submissions/CLAUDE.md` · `origin/memory` @ `fc2e24a` (`apps/memory/`, package `temporal_memory`) · `societal` @ `317de4d` · `business` @ `4f7c675`
