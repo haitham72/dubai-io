@@ -1,0 +1,10 @@
+{"timestamp":"2026-11-17T15:00:00Z","type":"session_meta","payload":{"id":"synthetic-codex","cwd":"C:/fictional-project"}}
+{"timestamp":"2026-11-17T15:05:00Z","type":"turn_context","payload":{"sandbox_policy":{"fixture":"discard non-message context"}}}
+{"timestamp":"2026-11-17T15:06:00Z","type":"response_item","payload":{"type":"message","role":"developer","content":[{"type":"input_text","text":"discard developer instructions"}]}}
+{"timestamp":"2026-11-17T15:07:00Z","type":"event_msg","payload":{"type":"user_message","message":"I want to learn about coastal birds."}}
+{"timestamp":"2026-11-17T15:07:00Z","type":"response_item","payload":{"type":"message","role":"user","content":[{"type":"input_text","text":"I want to learn about coastal birds."}]}}
+{"timestamp":"2026-11-17T15:08:00Z","type":"response_item","payload":{"type":"function_call_output","output":"discard command output"}}
+{"timestamp":"2026-11-17T15:09:00Z","type":"event_msg","payload":{"type":"patch_apply_end","changes":{"fictional.txt":{"unified_diff":"discard diff payload"}}}}
+{"timestamp":"2026-11-17T15:10:00Z","type":"response_item","payload":{"type":"message","role":"assistant","phase":"commentary","content":[{"type":"output_text","text":"discard progress chatter"}]}}
+{"timestamp":"2026-11-17T15:11:00Z","type":"response_item","payload":{"type":"message","role":"assistant","phase":"final_answer","content":[{"type":"output_text","text":"Start with a guide to shorebirds."}]}}
+{"timestamp":"2026-11-17T15:11:00Z","type":"event_msg","payload":{"type":"agent_message","phase":"final_answer","message":"Start with a guide to shorebirds."}}
