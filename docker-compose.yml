@@ -29,7 +29,7 @@ services:
   api:
     build: .
     command: ["uvicorn", "temporal_memory.api.app:create_app", "--factory", "--host", "0.0.0.0", "--port", "8040"]
-    env_file: [.env]
+    env_file: [{path: .env, required: false}]
     environment: &tm_env
       TM_DATABASE_URL: postgresql://tm:tm@postgres:5432/tm
       TM_BROKER_URL: amqp://guest:guest@rabbitmq:5672//
@@ -41,21 +41,21 @@ services:
   worker-p0:   # reserved for live (P0) jobs so imports can never starve the chat badge
     build: .
     command: ["celery", "-A", "temporal_memory.queue.celery_app", "worker", "-Q", "mem.p0", "--concurrency=1", "-n", "p0@%h"]
-    env_file: [.env]
+    env_file: [{path: .env, required: false}]
     environment: *tm_env
     depends_on: [api]
 
   worker-p1:   # imports, nightly, reflect
     build: .
     command: ["celery", "-A", "temporal_memory.queue.celery_app", "worker", "-Q", "mem.p1,mem.p3", "--concurrency=2", "-n", "p1@%h"]
-    env_file: [.env]
+    env_file: [{path: .env, required: false}]
     environment: *tm_env
     depends_on: [api]
 
   beat:        # outbox publisher + reconciler (expired leases, unpublished jobs)
     build: .
     command: ["celery", "-A", "temporal_memory.queue.celery_app", "beat"]
-    env_file: [.env]
+    env_file: [{path: .env, required: false}]
     environment: *tm_env
     depends_on: [api]
 
