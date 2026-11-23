@@ -73,9 +73,8 @@
 +- **Permanently excluded (23 Nov, D6/D7):** Contested sticker Builder service / Builder MCP (`D:\Vscode\mirsal-builder-io`) and AI image/sticker generation in Messenger.
  - Native iOS STOPPED (23 Oct).
  
- ## Hosting
- 
- Recommended, not set up (23 Oct, from docs/archive/root/handoff.md): Supabase (Postgres/Auth/Storage) + FastAPI as a container (Fly/Railway/Render/Cloud Run) + Vercel for the site; no Edge Functions rewrite. See `apps/api/CLAUDE.md`.
+-Recommended, not set up (23 Oct, from docs/archive/root/handoff.md): Supabase (Postgres/Auth/Storage) + FastAPI as a container (Fly/Railway/Render/Cloud Run) + Vercel for the site; no Edge Functions rewrite. See `apps/api/CLAUDE.md`.
++Recommended, not set up for production (23 Oct); **contest staging (23 Nov, D10):** separate staging Supabase project for Entries 2 & 3 (sign-up disabled, test users only; Auth/RLS scripted from `apps/community/supabase/` and `apps/messenger/supabase/`, keeping `supabase/migrations/` frozen), plus secure tunnel from founder's PC for 18 Dec demo & adult tester runs. See `apps/api/CLAUDE.md`.
  
  ## Branches
  
