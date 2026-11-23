@@ -5,7 +5,7 @@ import {
   CheckCheck, BellOff, ListFilter, MoreHorizontal, Mic, Paperclip, Phone, Play, Search, Send, Smile,
   SquarePen, Video, Plane, FileText, Mail, Sparkles, Reply, X,
 } from "lucide-react";
-import { actions, useStore } from "../store";
+import { actions, getState, useStore } from "../store";
 import { Avatar, Badge, IconButton, ICON, ListRow, SearchField, SidebarHeader, Spinner } from "../ui";
 import type { Message, MessengerTask } from "../types";
 import { MessengerAiRow } from "../updates";
@@ -215,7 +215,7 @@ function Conversation() {
     const quoted = replyTo ? quoteOf(replyTo) : undefined;
     const id = actions.sendToChat({ kind: "text", text }, activeId, quoted);
     if (isMessenger) askMessenger(activeId, requestText, id, quoted);
-    else scheduleContactReply(activeId, chat.contact.name, text);
+    else if (getState().mode === "demo") scheduleContactReply(activeId, chat.contact.name, text);
     setDraft(""); setCaret(0); setDismissed(true); setReplyTo(null);
   };
 

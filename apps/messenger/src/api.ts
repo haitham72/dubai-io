@@ -25,3 +25,39 @@ export {
 } from "./apiclient/agents";
 export type { FactCheck, ImageIdeas, CommandWireEvent, LookAnswer } from "./apiclient/messenger";
 export { messengerFactCheck, messengerImageIdeas, messengerStickers, messengerPlan, messengerCommand, messengerLook, photoForCheck } from "./apiclient/messenger";
+export type {
+  AgeBand,
+  SocketConnectionState,
+  SupabaseUser,
+  SupabaseSignInResult,
+  IdentitySession,
+  IdentityMe,
+  WsTicket,
+  ChatMessageRow,
+  ConversationRow,
+  ClientOptions,
+  OpenIdentitySessionOptions,
+  WsTicketOptions,
+  WebSocketLike,
+  WebSocketFactory,
+  WebSocketConstructor,
+  ChatCoreSocketOptions,
+} from "./apiclient/chatCore";
+export {
+  ChatApiError,
+  resolveApiBase,
+  resolveWsUrl,
+  resolveSupabaseConfig,
+  signInSupabasePassword,
+  openIdentitySession,
+  getIdentityMe,
+  issueWsTicket,
+  listConversations,
+  createConversation,
+  fetchMessages,
+  sendMessageRest,
+  editMessageRest,
+  deleteMessageRest,
+  sendReceiptRest,
+  ChatCoreSocket,
+} from "./apiclient/chatCore";

@@ -69,6 +69,13 @@ Staged at `http://127.0.0.1:5173/` on 23 Nov 2026. The UI was not changed for th
 - `docs/submissions/messenger/review/founder-review-phone-chats.png` — phone Chats
 - `docs/submissions/messenger/review/founder-review-phone-ai.png` — phone Messenger AI
 
+Real-mode wired frames captured 24 Nov 2026 against local Supabase GoTrue (`http://127.0.0.1:15421`) and `:8070` (zero seeded chats, wiring only):
+
+- `docs/submissions/messenger/review/wired-desktop-chats.png` — real-mode desktop Chats (1440×900)
+- `docs/submissions/messenger/review/wired-desktop-ai.png` — real-mode desktop Messenger AI (1440×900)
+- `docs/submissions/messenger/review/wired-phone-chats.png` — real-mode phone Chats (390×844)
+- `docs/submissions/messenger/review/wired-phone-ai.png` — real-mode phone Messenger AI (390×844)
+
 ## 24 Nov 2026 — MG-B7 (Antigravity)
 
 Merged `contest-shared` (`272fd9e`) into `business` via `--no-ff`, bringing `docs/submissions/shared/local-supabase/` and `apps/api/tests/fixtures/contest_shared/db_fixtures.py`.
@@ -106,3 +113,45 @@ Exact commands and outputs:
    - `python agents/run.py test` → `158 passed, 1 skipped in 5.41s`.
 
 6. Old-name grep gate: `git grep -n -i -e "m[i]rsal" -- apps/messenger apps/api/app/messenger apps/api/tests/test_messenger_e2e.py` → zero matches (exit `1`).
+
+## 24 Nov 2026 — MG-B7b (Antigravity)
+
+Merged `contest-shared` (`baf7e9f`, D13) into `business` via `--no-ff`, folding in the self-hosted + Cloudflare Tunnel architecture rules.
+
+Wired `apps/messenger` to the real chat core (`app.messenger.server:app` on `:8070` / `app.identity`) with zero visual/DOM/CSS changes:
+
+- **Backend (`apps/api/app/messenger/`):** Added `hub.py` (`ChatHub` member-verified WS fan-out + `MESSENGER_ALLOWED_ORIGINS` env parser per D13), `ChatStore.members_of` & `list_conversations` in `store.py`, `GET /api/messenger/conversations` + live WS `message`/`edit`/`delete` broadcast + `MESSENGER_ALLOWED_ORIGINS` WS handshake check in `routes_chat.py`, and deduplicated routes + env-driven CORS origins & lazy runtime initialization from `SUPABASE_LOCAL_URL` / `IDENTITY_JWT_*` env vars in `server.py`.
+- **Frontend (`apps/messenger/`):** Added `src/apiclient/chatCore.ts` (GoTrue password sign-in, `/api/identity/{sessions,age-band,me,ws-ticket}`, `/api/messenger/*` REST + reconnecting `ChatCoreSocket` with `last_seq` replay and idempotent `client_msg_id` outbox; env-driven `VITE_MESSENGER_API_URL` / same-origin WS derivation per D13), replaced default `seedMessages` in `src/store.ts` with `"real"` mode (empty inbox/messages until signed in) + explicit `"demo"` mode (`enterDemoMode` / `?demo=1` with `Demo data` labels), updated `vite.config.ts` proxy (`MESSENGER_API_URL`, `MESSENGER_TUNNEL_HOST`), `src/chats/list.ts`, `src/chats/index.tsx`, `src/shell/Nav.tsx`, `src/main.tsx` (`window.__messenger`), `tests/photo-window/run.mjs`, and added `tests/store-wiring/` (`npm run test:store`).
+- **Tests:** Added `apps/api/tests/test_messenger_web_e2e.py` (offline conversation list + WS broadcast + D13 `MESSENGER_ALLOWED_ORIGINS` 403/200 enforcement, plus live two-browser Playwright E2E with 3rd denied browser against local Supabase GoTrue, skipping cleanly when `SUPABASE_LOCAL_URL` is unset).
+
+Exact commands and outputs:
+
+1. Messenger frontend gates (`apps/messenger`):
+   - `npm.cmd run typecheck` (`tsc -b --noEmit && tsc -p tsconfig.api.json`) → exit `0`.
+   - `npm.cmd run build` (`tsc -b && vite build`) → `✓ 1710 modules transformed.`, `✓ built in 5.97s`.
+   - `npm.cmd run test:photo-window` → `ALL PHOTO-WINDOW CHECKS PASSED` (exit `0`).
+   - `npm.cmd run test:store` → 7/7 checks `(a)`–`(g)` passed (`ALL STORE-WIRING CHECKS PASSED`, exit `0`).
+   - `python agents/run.py test` → `158 passed, 1 skipped in 5.13s`.
+
+2. Messenger offline API suite (`tests/test_messenger_*.py`, `SUPABASE_LOCAL_URL=""`, `TEST_DATABASE_URL=""`, `DATABASE_URL=" "`):
+   ```powershell
+   $files = Get-ChildItem tests\test_messenger_*.py | ForEach-Object { $_.FullName }
+   D:\Vscode\dubai-io\apps\api\.venv\Scripts\python.exe -m pytest -q @files -rs
+   ```
+   Output: `28 passed, 2 skipped in 3.77s` (live Supabase tests skipped cleanly when `SUPABASE_LOCAL_URL` unset).
+
+3. Live local Supabase GoTrue + Playwright two-browser E2E (`tests/test_messenger_e2e.py` + `tests/test_messenger_web_e2e.py` with live env from `npx.cmd --yes supabase@2.121.0 status -o json`):
+   ```powershell
+   D:\Vscode\dubai-io\apps\api\.venv\Scripts\python.exe -m pytest -q tests\test_messenger_e2e.py tests\test_messenger_web_e2e.py -v
+   ```
+   Output: `6 passed in 8.73s` (`0 failed, 0 skipped`; Browser A ↔ Browser B live WS delivery + reload persistence + Browser C denied `not_found`).
+
+4. Gate 1 — Whole API suite (`apps/api`, `DATABASE_URL=" "`):
+   ```powershell
+   D:\Vscode\dubai-io\apps\api\.venv\Scripts\python.exe -m pytest -q tests
+   ```
+   Output: `1 failed, 546 passed, 15 skipped, 1 warning in 188.07s (0:03:08)` (only the pre-existing Windows symlink privilege failure `test_connectors.py::test_filesystem_is_scoped`).
+
+5. Gate 2 (`apps/web` untouched): `git diff --quiet mobile-pwa-baseline-2026-10-23 HEAD -- apps/web` → exit `0`.
+
+6. Old-name grep gate: `git grep -n -i -e "m[i]rsal" -- apps/messenger apps/api/app/messenger apps/api/tests/test_messenger_e2e.py apps/api/tests/test_messenger_web_e2e.py` → zero matches (exit `1`).

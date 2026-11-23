@@ -12,6 +12,14 @@ function apiRoutes(): Plugin {
       server.middlewares.use(async (req, res, next) => {
         if (!req.url?.startsWith("/api/")) return next();
         const url = new URL(req.url, "http://localhost");
+        if (
+          url.pathname === "/api/identity" ||
+          url.pathname.startsWith("/api/identity/") ||
+          url.pathname === "/api/messenger" ||
+          url.pathname.startsWith("/api/messenger/")
+        ) {
+          return next();
+        }
         const [name, id] = url.pathname.slice(5).split("/").filter(Boolean);
         const file = `api/${name}.ts`;
         if (id) url.searchParams.set("id", decodeURIComponent(id));
@@ -42,15 +50,25 @@ function apiRoutes(): Plugin {
 export default defineConfig(({ mode }) => {
   // API handlers read process.env (as on Vercel): load every .env key, not only VITE_*. Never exposed to the browser.
   Object.assign(process.env, loadEnv(mode, process.cwd(), ""));
+  const messengerApiTarget = process.env.MESSENGER_API_URL || "http://127.0.0.1:8070";
+  const tunnelHosts = (process.env.MESSENGER_TUNNEL_HOST || "")
+    .split(",")
+    .map((h) => h.trim())
+    .filter(Boolean);
+  const allowedHosts = Array.from(new Set([".trycloudflare.com", ...tunnelHosts]));
   return {
     plugins: [react(), apiRoutes()],
     server: {
       port: 5173,
       // Optional Python agents service (agents/, local first). When it is not running the app falls back to its
       // existing paths; the browser only ever calls /agents/* through src/api.ts.
-      proxy: { "/agents": { target: process.env.AGENTS_URL || "http://127.0.0.1:8787", ws: true, changeOrigin: true } },
+      proxy: {
+        "/agents": { target: process.env.AGENTS_URL || "http://127.0.0.1:8787", ws: true, changeOrigin: true },
+        "/api/identity": { target: messengerApiTarget, ws: true, changeOrigin: false },
+        "/api/messenger": { target: messengerApiTarget, ws: true, changeOrigin: false },
+      },
       // cloud annotation workers reach the local queue through a Cloudflare quick tunnel (scripts/photos.mjs)
-      allowedHosts: [".trycloudflare.com"],
+      allowedHosts,
       // Watch only the app. Other files in the repo (reference images, agents' scratch JSON, screenshots) are written
       // while the dev server runs, and a locked file there (EBUSY) used to crash it.
       watch: {

@@ -8,6 +8,9 @@ const { photoQuestionUrl, actions, getState } = mod;
 const fail = (m) => { console.log("FAIL:", m); process.exit(1); };
 const text = (t) => ({ kind: "text", text: t });
 
+// Real mode now boots empty; enter demo mode to inspect the seeded Arif photo.
+actions.enterDemoMode();
+
 // Scenario: the seeded Arif photo sits several messages back (the reported repro).
 const before = getState().messages.filter((m) => m.chatId === "arif");
 const seedPhoto = [...before].reverse().find((m) => m.body.kind === "image");

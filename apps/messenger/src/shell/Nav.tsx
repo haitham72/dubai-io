@@ -23,8 +23,12 @@ const main: { id: ScreenId; label: string; icon: ComponentType<LucideProps> }[] 
 
 export function Nav() {
   const screen = useStore((st) => st.screen);
+  const mode = useStore((st) => st.mode);
+  const auth = useStore((st) => st.auth);
   const unreadTasks = useStore((st) => st.tasks.filter((t) => t.unread).length);
   const [collapsed, setCollapsed] = useState(false);
+  const userName = mode === "demo" ? me.name : auth.displayName || "Signed out";
+  const userStatus = mode === "demo" || auth.status === "signed_in" ? "Online" : "Sign in";
 
   const item = (id: ScreenId, label: string, I: ComponentType<LucideProps>, badge?: number) => {
     const on = screen === id || (id === "chats" && screen === "ai"); // Messenger AI opens from Chats
@@ -59,10 +63,10 @@ export function Nav() {
       </div>
       <div className={s.spacer} />
       <button className={s.me} onClick={() => actions.openModal("profile")}>
-        <Avatar src={me.avatar} size={36} online />
+        <Avatar src={me.avatar} size={36} online={mode === "demo" || auth.status === "signed_in"} />
         <span className={s.meText}>
-          <span className={s.meName}>{me.name}</span>
-          <span className={s.meStatus}>Online</span>
+          <span className={s.meName}>{userName}</span>
+          <span className={s.meStatus}>{userStatus}</span>
         </span>
       </button>
     </nav>

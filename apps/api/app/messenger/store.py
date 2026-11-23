@@ -122,6 +122,86 @@ class ChatStore:
         if conv is None or not self.is_member(conversation_id, user_id):
             raise ChatError("not_found", 404)
 
+    def members_of(self, conversation_id: str) -> list[str]:
+        """Return member user_ids for a conversation in membership order."""
+        with self.lock:
+            rows = self.db.execute(
+                "SELECT user_id FROM mg_memberships WHERE conversation_id=? ORDER BY rowid",
+                (conversation_id,),
+            ).fetchall()
+        return [row["user_id"] for row in rows]
+
+    def list_conversations(self, user_id: str) -> list[dict]:
+        """Return conversations where user_id is a member, ordered by latest activity descending."""
+        with self.lock:
+            conv_rows = self.db.execute(
+                """
+                SELECT c.id, c.kind, c.title, c.created_at
+                FROM mg_conversations c
+                INNER JOIN mg_memberships mem
+                    ON mem.conversation_id = c.id AND mem.user_id = ?
+                LEFT JOIN (
+                    SELECT conversation_id, MAX(created_at) AS last_msg_created_at
+                    FROM mg_messages
+                    GROUP BY conversation_id
+                ) act ON act.conversation_id = c.id
+                ORDER BY COALESCE(act.last_msg_created_at, c.created_at) DESC, c.rowid DESC
+                """,
+                (user_id,),
+            ).fetchall()
+            if not conv_rows:
+                return []
+
+            member_rows = self.db.execute(
+                """
+                SELECT m.conversation_id, m.user_id
+                FROM mg_memberships m
+                INNER JOIN mg_memberships me
+                    ON me.conversation_id = m.conversation_id AND me.user_id = ?
+                ORDER BY m.rowid
+                """,
+                (user_id,),
+            ).fetchall()
+            members_map: dict[str, list[str]] = {row["id"]: [] for row in conv_rows}
+            for mrow in member_rows:
+                cid = mrow["conversation_id"]
+                if cid in members_map:
+                    members_map[cid].append(mrow["user_id"])
+
+            last_msg_rows = self.db.execute(
+                """
+                SELECT msg.*
+                FROM mg_messages msg
+                INNER JOIN (
+                    SELECT m.conversation_id, MAX(m.seq) AS max_seq
+                    FROM mg_messages m
+                    INNER JOIN mg_memberships me
+                        ON me.conversation_id = m.conversation_id AND me.user_id = ?
+                    GROUP BY m.conversation_id
+                ) latest
+                    ON latest.conversation_id = msg.conversation_id AND latest.max_seq = msg.seq
+                """,
+                (user_id,),
+            ).fetchall()
+            last_msg_map = {mrow["conversation_id"]: self._message(mrow) for mrow in last_msg_rows}
+
+        conversations: list[dict] = []
+        for row in conv_rows:
+            cid = row["id"]
+            last_msg = last_msg_map.get(cid)
+            conversations.append(
+                {
+                    "id": cid,
+                    "kind": row["kind"],
+                    "title": row["title"],
+                    "member_ids": members_map.get(cid, []),
+                    "created_at": row["created_at"],
+                    "last_seq": last_msg["seq"] if last_msg is not None else 0,
+                    "last_message": last_msg,
+                }
+            )
+        return conversations
+
     def ai_modes(self, conversation_id: str) -> dict[str, str]:
         with self.lock:
             rows = self.db.execute(

@@ -16,6 +16,8 @@ Slides/vids
 
 # Photo-window regression check: generated bundle (rebuilt by the test script)
 tests/photo-window/bundle.*
+# Store-wiring regression check: generated bundle (rebuilt by the test script)
+tests/store-wiring/bundle.*
 # AI Image Cleaner: local model weights + job uploads (never committed)
 agents/messenger_agents/models/
 agents/models/

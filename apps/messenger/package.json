@@ -10,7 +10,8 @@
     "agents": "python3 agents/run.py || python agents/run.py",
     "agents:test": "python3 agents/run.py test || python agents/run.py test",
     "agents:eval": "python3 agents/run.py eval || python agents/run.py eval",
-    "test:photo-window": "node tests/photo-window/build.mjs && node tests/photo-window/run.mjs"
+    "test:photo-window": "node tests/photo-window/build.mjs && node tests/photo-window/run.mjs",
+    "test:store": "node tests/store-wiring/build.mjs && node tests/store-wiring/run.mjs"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",

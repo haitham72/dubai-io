@@ -5,7 +5,9 @@ from __future__ import annotations
 from fastapi import APIRouter, Body, Depends, HTTPException, Request, WebSocket, WebSocketDisconnect
 
 from app.identity.deps import require_app_principal, require_ws_principal
-from app.identity.models import VerifiedPrincipal
+from app.identity.models import IdentityError, VerifiedPrincipal
+from app.identity.service import normalize_origin
+from app.messenger.hub import get_allowed_origins, get_chat_hub
 from app.messenger.store import ChatError, ChatStore
 
 router = APIRouter()
@@ -18,6 +20,11 @@ def _chat(request: Request) -> ChatStore:
 
 def _http(exc: ChatError) -> HTTPException:
     return HTTPException(exc.status, exc.code)
+
+
+@router.get("/api/messenger/conversations")
+def list_conversations(request: Request, principal: VerifiedPrincipal = Depends(_member)):
+    return {"conversations": _chat(request).list_conversations(principal.user_id)}
 
 
 @router.post("/api/messenger/conversations")
@@ -46,30 +53,38 @@ def list_messages(conversation_id: str, request: Request, after: int = 0, princi
 
 
 @router.post("/api/messenger/conversations/{conversation_id}/messages")
-def post_message(conversation_id: str, request: Request, body: dict = Body(...), principal: VerifiedPrincipal = Depends(_member)):
+async def post_message(conversation_id: str, request: Request, body: dict = Body(...), principal: VerifiedPrincipal = Depends(_member)):
     if "recipients" in body:
         raise HTTPException(422, "no_bulk")
+    chat = _chat(request)
     try:
-        message = _chat(request).send(conversation_id, principal.user_id, str(body.get("client_msg_id") or ""), str(body.get("text") or ""))
+        message = chat.send(conversation_id, principal.user_id, str(body.get("client_msg_id") or ""), str(body.get("text") or ""))
     except ChatError as exc:
         raise _http(exc) from exc
+    await get_chat_hub(request.app).broadcast_conversation(chat, conversation_id, {"op": "message", "message": message})
     return message
 
 
 @router.post("/api/messenger/conversations/{conversation_id}/messages/{message_id}/edit")
-def edit_message(conversation_id: str, message_id: str, request: Request, body: dict = Body(...), principal: VerifiedPrincipal = Depends(_member)):
+async def edit_message(conversation_id: str, message_id: str, request: Request, body: dict = Body(...), principal: VerifiedPrincipal = Depends(_member)):
+    chat = _chat(request)
     try:
-        return _chat(request).edit(conversation_id, principal.user_id, message_id, str(body.get("text") or ""))
+        message = chat.edit(conversation_id, principal.user_id, message_id, str(body.get("text") or ""))
     except ChatError as exc:
         raise _http(exc) from exc
+    await get_chat_hub(request.app).broadcast_conversation(chat, conversation_id, {"op": "edit", "message": message})
+    return message
 
 
 @router.post("/api/messenger/conversations/{conversation_id}/messages/{message_id}/delete")
-def delete_message(conversation_id: str, message_id: str, request: Request, principal: VerifiedPrincipal = Depends(_member)):
+async def delete_message(conversation_id: str, message_id: str, request: Request, principal: VerifiedPrincipal = Depends(_member)):
+    chat = _chat(request)
     try:
-        return _chat(request).delete(conversation_id, principal.user_id, message_id)
+        message = chat.delete(conversation_id, principal.user_id, message_id)
     except ChatError as exc:
         raise _http(exc) from exc
+    await get_chat_hub(request.app).broadcast_conversation(chat, conversation_id, {"op": "delete", "message": message})
+    return message
 
 
 @router.post("/api/messenger/conversations/{conversation_id}/receipts")
@@ -83,6 +98,18 @@ def receipt(conversation_id: str, request: Request, body: dict = Body(...), prin
 
 @router.websocket("/api/messenger/ws")
 async def socket(websocket: WebSocket):
+    allowed_origins = get_allowed_origins()
+    if allowed_origins:
+        raw_origin = websocket.headers.get("origin", "")
+        try:
+            norm_origin = normalize_origin(raw_origin)
+        except IdentityError as exc:
+            raise HTTPException(status_code=403, detail={"code": exc.code, "message": exc.message}) from exc
+        if norm_origin not in allowed_origins:
+            raise HTTPException(
+                status_code=403,
+                detail={"code": "origin_not_allowed", "message": "WebSocket Origin is not allowed"},
+            )
     principal = require_ws_principal(
         websocket,
         app_id="messenger",
@@ -90,9 +117,11 @@ async def socket(websocket: WebSocket):
     )
     await websocket.accept()
     chat: ChatStore = websocket.app.state.chat_store
+    hub = get_chat_hub(websocket.app)
     chat.link_user(principal.user_id)
-    await websocket.send_json({"op": "ready", "user_id": principal.user_id})
+    hub.register(principal.user_id, websocket)
     try:
+        await websocket.send_json({"op": "ready", "user_id": principal.user_id})
         while True:
             data = await websocket.receive_json()
             op = data.get("op")
@@ -107,16 +136,25 @@ async def socket(websocket: WebSocket):
                     if "recipients" in data:
                         await websocket.send_json({"op": "error", "code": "no_bulk"})
                         continue
+                    conv_id = str(data.get("conversation_id") or "")
                     message = chat.send(
-                        str(data.get("conversation_id") or ""),
+                        conv_id,
                         principal.user_id,
                         str(data.get("client_msg_id") or ""),
                         str(data.get("text") or ""),
                     )
                     await websocket.send_json({"op": "ack", "message": message})
+                    await hub.broadcast_conversation(
+                        chat,
+                        conv_id,
+                        {"op": "message", "message": message},
+                        exclude_ws=websocket,
+                    )
                 else:
                     await websocket.send_json({"op": "error", "code": "unknown_op"})
             except ChatError as exc:
                 await websocket.send_json({"op": "error", "code": exc.code})
     except WebSocketDisconnect:
         return
+    finally:
+        hub.unregister(principal.user_id, websocket)
