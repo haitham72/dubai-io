@@ -2,7 +2,7 @@
 
 **Status:** approved — 23 Nov 2026 (founder, D11)
 
-Order follows spec §9, revised by founder decisions D1–D11. MG-B3 through MG-B9 are approved. UI slices stop for the founder's visual review of a staged preview. Live multi-user chat (`MG-B3`) and memory (`MG-B5`) wait until Gate S is merged into `business`. Transport is the shared-contract WebSocket on `:8070`, bound to the B0 `user_id`. The working name is Messenger until the final name, which comes before MG-B7.
+Order follows spec §9, revised by founder decisions D1–D11. MG-B3 through MG-B9 are approved. UI slices stop for the founder's visual review of a staged preview. Gate S is on `business`, so live chat and memory use the shared identity and the memory bridge. Transport is the shared-contract WebSocket on `:8070`, bound to the B0 `user_id`. The working name is Messenger until the final name, which comes before MG-B7.
 
 **Zero-conflict.** Every slice adds files only. Owned paths: `apps/messenger/**`, `apps/api/app/messenger/**`, `apps/api/tests/test_messenger_*.py`, `fixtures/messenger/**`, `docs/submissions/messenger/**`. RLS notes live in `apps/messenger/supabase/`. No new file under `supabase/migrations/`. No slice edits `actions.py`, `main.py`, `communities.py`, or any other existing file. Capabilities are registered by `apps/api/app/messenger/capabilities.py` inserting into `actions.CAPABILITIES` at import time. Settings come from env inside that package. Entrypoint: `app.messenger.server:app` on port 8070. There is no `shared-changes.md` entry.
 
@@ -69,7 +69,7 @@ Diwan is a different word. Keep `diwan.py` and `diwan_demo.json` basenames when 
 
 ## MG-B3 — Real chat core
 
-**Depends on:** `MG-B2` and Gate S. The shared contract prohibits an anonymous lab-session cookie for live multi-user chat, so this slice does not start until `apps/api/app/identity/` is on `business`.  
+**Depends on:** `MG-B2` and Gate S (`720d0a4` on `business`). Live chat uses `require_app_principal` and an Origin-bound WebSocket ticket. Live Supabase waits for local Docker (D12).  
 **Owns:** new files under `apps/messenger/` and `apps/api/app/messenger/` for transport, `apps/api/tests/test_messenger_chat.py`, `fixtures/messenger/chat/`.
 
 Transport, settled by the shared contract: a FastAPI WebSocket on `app.messenger.server:app` (`:8070`), bound to the B0 verified `user_id`. The client exchanges a messenger-app session for an HttpOnly `cs_session_messenger` cookie or a single-use, 60-second Origin-bound WebSocket ticket. Handshake checks `Origin` and the session or ticket. Subscribe, send, and replay recheck the session and `mg_memberships`. Revoking a session or removing a member disconnects the socket. Durable store: `mg_*` tables in schema `dubaiio`, created with `CREATE TABLE IF NOT EXISTS` from Messenger code. Idempotent `client_msg_id`. Reconnect by `last_seq`. Media in object storage; a signed URL only after the membership check. RLS SQL is written under `apps/messenger/supabase/` and is not described as live until it is applied. Demo fixtures wear a Demo data pill. Browser Supabase Realtime against `dubaiio` is prohibited.
@@ -91,14 +91,14 @@ D6 and D7. Nothing from the Builder service: no code, prompts, design, emoji-ban
 
 Built-in packs: the founder supplies finished files. The client reads `apps/messenger/public/packs/manifest.json` when the tray opens. A tap sends `{ kind: "sticker", packId, stickerId }`. Limits: PNG, WebP, or SVG; longest edge 512 px; PNG/WebP at most 512 KB; SVG at most 100 KB with no script and no external reference; at most 50 stickers in a pack and 20 packs.
 
-User stickers: any subject, not people only. The user adds a photo. The primary model is BiRefNet general (MIT, official ONNX `BiRefNet-general-bb_swin_v1_tiny-epoch_232.onnx` from the same repository, recorded in `ip-and-baseline.md` on 23 Nov 2026). The weight is not vendored. The phone path refuses it because it does not fit the 256 MiB minimum WebGPU buffer, and the photo stays unchanged until a smaller official weight is supplied. It returns a matte for the foreground, and the saved PNG keeps the photo’s RGB with that matte as alpha. It does not paint new pixels. Do not use an ONNX conversion whose weight provenance is unrecorded. MediaPipe Selfie Segmentation (Apache-2.0) is only the fallback when the BiRefNet weight is missing, and only then it can cut a person. A non-person photo on that fallback fails closed. Success stores one `mg_stickers` row once Gate S can name the owner. Failure (`model_missing`, `timeout`, `low_contrast`, `subject_not_detected`) leaves the photo unchanged, shows the error, and writes nothing.
+User stickers: any subject, not people only. The user adds a photo. The primary model is BiRefNet general (MIT, official ONNX `BiRefNet-general-bb_swin_v1_tiny-epoch_232.onnx` from the same repository, recorded in `ip-and-baseline.md` on 23 Nov 2026). The weight is not vendored. The phone path refuses it because it does not fit the 256 MiB minimum WebGPU buffer, and the photo stays unchanged until a smaller official weight is supplied. It returns a matte for the foreground, and the saved PNG keeps the photo’s RGB with that matte as alpha. It does not paint new pixels. Do not use an ONNX conversion whose weight provenance is unrecorded. Because that BiRefNet file does not run in the phone browser, the fallback is U²-Net-P (Apache-2.0, official `u2netp.pth`, about 4.7 MB, not vendored). It cuts any subject. A missing weight keeps the original photo. Failure (`model_missing`, `timeout`, `low_contrast`) leaves the photo unchanged, shows the error, and writes nothing.
 
-Voice-on-real-messages waits for `MG-B3`. The offline rule (a send waits for the person) is not wired in this slice.
+The offline rule is in the chat store: a voice transcript is a draft until the person confirms, and only then is an `mg_messages` row inserted.
 
 | | |
 |---|---|
 | Happy path | `test_messenger_pack_sends_file_from_manifest`. `test_messenger_cutout_any_subject_png_has_alpha` on a committed object fixture. The official BiRefNet weight is not in the repo; the test supplies a matte and checks that the photo RGB is unchanged and the alpha is attached. |
-| Failure path | `test_messenger_cutout_missing_model_keeps_original`. `test_messenger_selfie_fallback_rejects_non_person`. `test_messenger_no_image_generation_route`. `test_messenger_voice_does_not_send_unconfirmed`. |
+| Failure path | `test_messenger_cutout_missing_model_keeps_original`. `test_messenger_u2net_p_fallback_keeps_original_when_missing`. `test_messenger_no_image_generation_route`. `test_messenger_voice_does_not_send_unconfirmed`. |
 | Demo beat | Optional. The business case does not depend on a sticker. |
 
 ## MG-B5 — Scoped memory

@@ -1,6 +1,6 @@
 # Messenger — founder questions
 
-**Status:** M0 and transport answered — 23 Nov 2026 (founder, D11). O2 stays open. MG-B3 and MG-B5 wait until Gate S is merged into `business`. UI slices stop for a staged visual review.
+**Status:** M0 and transport answered — 23 Nov 2026 (founder, D11). O2 stays open. Gate S is on `business`. UI slices stop for a staged visual review.
 
 ## Answered (23 Nov)
 
@@ -26,7 +26,7 @@ The old product name is retired. The working name is Messenger. The orb logo is 
 
 Messenger uses a FastAPI WebSocket on `app.messenger.server:app` (`:8070`), bound to the B0 verified `user_id`. The client exchanges `POST /api/identity/sessions` with `app_id="messenger"` for an HttpOnly `cs_session_messenger` cookie, or `POST /api/identity/ws-ticket` for a single-use, 60-second Origin-bound ticket. An anonymous `dubaiio_lab_session` is prohibited for live multi-user chat. Browser Supabase Realtime against `dubaiio` is prohibited.
 
-**Blocks:** `MG-B3` until Gate S (`apps/api/app/identity/`) is merged into `business`. The question of which transport to use is closed.
+**Blocks:** nothing further on transport. Gate S is on `business` (`720d0a4`). Live Supabase still waits for local Docker (D12).
 
 ### O2 — the product name
 

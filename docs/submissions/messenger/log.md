@@ -56,6 +56,10 @@ Merged `contest-shared` (`f7465a5`). D12: local Supabase first, temporal_note is
 
 MG-B4, without voice-on-real-messages. One placeholder pack, `demo-dot`, labelled Demo data, read from `apps/messenger/public/packs/manifest.json`. No Builder call. User cut-out primary is BiRefNet general, MIT, official ONNX not vendored; the phone path keeps the photo until a smaller official weight exists. MediaPipe selfie is the person-only fallback. Sticker tests: 6 passed. Agents suite: 158 passed, 1 skipped. Typecheck and `npm run build` passed. The old-name grep printed nothing.
 
+## 23 Nov 2026 — MG-B3, MG-B6, MG-B5, voice, U²-Net-P (Cursor)
+
+Gate S is on `business` (`720d0a4`). MG-B3 stores `mg_*` chat for two verified users and serves the WebSocket on `:8070` with an Origin-bound ticket. MG-B6 prepares `workspace.task.create` and leaves it blocked without an adapter. MG-B5 writes through the memory bridge and `FakeTemporalMemoryClient`. A voice draft is not inserted until the person confirms. The phone cut-out fallback is U²-Net-P (Apache-2.0, `u2netp.pth` not vendored) because BiRefNet does not fit the phone WebGPU buffer. UI slices still wait for the founder's visual review. Live Supabase still waits for local Docker (D12).
+
 ## Founder visual review — pending
 
 Staged at `http://127.0.0.1:5173/` on 23 Nov 2026. The UI was not changed for these frames. Desktop is the 1440×900 window. Phone is the layout at 390×844.

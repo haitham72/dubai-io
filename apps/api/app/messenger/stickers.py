@@ -7,8 +7,10 @@ The cut-out primary is BiRefNet general (MIT), official ONNX
 BiRefNet-general-bb_swin_v1_tiny-epoch_232.onnx. That file is not vendored.
 A phone cannot run it: the graph plus a 1024 square pass does not fit the
 256 MiB minimum WebGPU buffer. Until the official weight is present and a
-runtime can load it, the photo is unchanged. MediaPipe Selfie Segmentation
-is only the person fallback. This module does not generate images.
+runtime can load it, the photo is unchanged. The phone fallback is U²-Net-P
+(Apache-2.0, official weight u2netp.pth, about 4.7 MB, not vendored). It cuts
+any subject. A missing weight keeps the original photo. This module does not
+generate images.
 """
 
 from __future__ import annotations
@@ -19,6 +21,7 @@ from pathlib import Path
 from app.messenger.png import apply_matte, decode_png
 
 OFFICIAL_ONNX = "BiRefNet-general-bb_swin_v1_tiny-epoch_232.onnx"
+U2NET_P = "u2netp.pth"
 # Minimum WebGPU device GPUBuffer (256 MiB). The official tiny general ONNX is 213.6 MB,
 # which leaves no room for the default 1024 square pass, so the browser path refuses it.
 PHONE_BUFFER_CAP = 268_435_456
@@ -109,8 +112,11 @@ def cutout_any_subject(image: bytes, *, weight: Path | None = None, runner=None)
     return {"png": apply_matte(image, alpha), "error": None, "stored": True}
 
 
-def selfie_fallback(image: bytes, *, person_detected: bool) -> dict:
-    """Person-only fallback. A non-person photo is kept and nothing is stored."""
-    if not person_detected:
-        return {"png": image, "error": "subject_not_detected", "stored": False}
-    return {"png": image, "error": "model_missing", "stored": False}
+def u2net_p_fallback(image: bytes, *, weight: Path | None = None, runner=None) -> dict:
+    """Any-subject fallback. The official u2netp.pth is not vendored."""
+    if runner is None:
+        if weight is None or not weight.is_file() or weight.name != U2NET_P:
+            return {"png": image, "error": "model_missing", "stored": False}
+        return {"png": image, "error": "model_missing", "stored": False}
+    decode_png(image)
+    return {"png": apply_matte(image, runner(image)), "error": None, "stored": True}

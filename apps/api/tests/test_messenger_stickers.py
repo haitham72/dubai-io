@@ -11,7 +11,7 @@ from app.messenger.stickers import (
     PackError,
     cutout_any_subject,
     resolve_sticker,
-    selfie_fallback,
+    u2net_p_fallback,
 )
 
 ROOT = Path(__file__).resolve().parents[2] / "messenger" / "public" / "packs"
@@ -74,12 +74,16 @@ def test_messenger_cutout_missing_model_keeps_original():
     assert result["png"] == image
 
 
-def test_messenger_selfie_fallback_rejects_non_person():
+def test_messenger_u2net_p_fallback_keeps_original_when_missing():
     image = FIXTURE.read_bytes()
-    result = selfie_fallback(image, person_detected=False)
-    assert result["error"] == "subject_not_detected"
-    assert result["stored"] is False
-    assert result["png"] == image
+    missing = u2net_p_fallback(image, weight=None)
+    assert missing["error"] == "model_missing"
+    assert missing["stored"] is False
+    assert missing["png"] == image
+    cut = u2net_p_fallback(image, runner=lambda _raw: bytes([255]) * 16)
+    assert cut["error"] is None and cut["stored"] is True
+    _w, _h, channels, samples = decode_png(cut["png"])
+    assert channels == 4 and samples[3] == 255
 
 
 def test_messenger_no_image_generation_route():
