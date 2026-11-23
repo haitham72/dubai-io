@@ -137,16 +137,15 @@ def test_community_discovery_why_chip_and_leakage_canaries(tmp_path, monkeypatch
     found = client.get("/api/community/discovery")
     assert found.status_code == 200, found.text
     body = found.json()
-    assert body["source"] == "interest_feature"
+    assert body["source"] == "local_cm_profile+interest_feature"
     assert body["why_chip"] == "Why this?"
     dumped = str(body).lower()
     assert CANARY.lower() not in dumped
     assert "diabetes" not in dumped
     assert "minor" not in dumped
-    if body["items"]:
-        assert body["items"][0]["why_this"]
-        assert "Why this?" == body["items"][0]["why_chip"]
-    assert owner not in fake.records or CANARY not in str(body)
+    marina = [item for item in body["items"] if "marina" in (item.get("text") or "").lower()]
+    assert marina and all("with consent" in item["why_this"] for item in marina)
+    assert all(item["why_chip"] == "Why this?" for item in marina)
 
 
 def test_community_forget_source_propagates(tmp_path, monkeypatch):

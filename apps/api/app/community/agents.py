@@ -16,10 +16,9 @@ Hard rules:
   first result and never creates a second post.
 - Group Organizer proposes only, never contacts/invites (D14): a proposal
   creates zero notifications for other members.
-- No raw private text in ranking. When a memory bridge is configured, Discovery
-  reads only InterestFeature values from read_community_interest_features and
-  shows that DTO's why_this_text. With no bridge, it still uses the adult's
-  own Community profile interests and follows.
+- No raw private text in ranking. Discovery always uses the adult's own
+  Community profile interests and follows. Consented InterestFeature values
+  are added afterwards. A denied or failed bridge adds nothing.
 - No messenger: no DM endpoints, no outbound contact of any kind.
 """
 import hashlib
@@ -196,26 +195,43 @@ def _destination(group_id, destination):
 
 
 # ---------------------------------------------------------------- Discovery
-def _discovery_from_bridge(request, store, owner, limit):
-    from app.memory_bridge.models import ConsentDeniedError
+_CROSS_WHY = "From interests you share from Dubai-io, with consent"
+_COLD_WHY = "Popular public community. Cold start, not based on your interests."
 
+
+def _why_chip(item):
+    item["why_chip"] = "Why this?"
+    return item
+
+
+def _local_why(matched, follow_handle):
+    parts = []
+    if matched:
+        parts.append(f"You picked {matched[0]} when you joined")
+    if follow_handle:
+        parts.append(f"You follow @{follow_handle}")
+    return ". ".join(parts)
+
+
+def _bridge_post_items(request, store, owner):
+    """InterestFeature posts only. Consent denied, empty, or any bridge error adds nothing."""
     from .memory import bridge_of
 
     bridge = bridge_of(request)
     principal = getattr(request.state, "community_principal", None)
     if bridge is None or principal is None:
-        return None
+        return []
     try:
         features = list(bridge.read_community_interest_features(principal))
-    except ConsentDeniedError:
-        features = []
-    items = []
+    except Exception:
+        return []
+    by_id = {}
+    rows = store.db.execute("SELECT id,owner,group_id,text FROM cm_posts WHERE deleted=0").fetchall()
     for feature in features:
         needle = (feature.topic_slug or "").lower()
         label = (feature.topic_label or "").lower()
-        rows = store.db.execute(
-            "SELECT id,owner,group_id,text FROM cm_posts WHERE deleted=0"
-        ).fetchall()
+        if not needle and not label:
+            continue
         for row in rows:
             if row[1] == owner:
                 continue
@@ -226,25 +242,51 @@ def _discovery_from_bridge(request, store, owner, limit):
                 group = store.db.execute("SELECT visibility FROM cm_groups WHERE id=?", (row[2],)).fetchone()
                 if group and group[0] == "private":
                     continue
-            items.append({
-                "kind": "post",
-                "id": row[0],
-                "why_this": feature.why_this_text,
-                "features_used": [feature.feature_id],
-                "why_chip": "Why this?",
-                "demo_data": feature.demo_data,
-            })
-            if len(items) >= limit:
-                break
-    return {
-        "items": items[:limit],
-        "candidates": items[:limit],
-        "reason": "" if items else "No consented interest features are available for Discover.",
-        "empty": len(items) == 0,
-        "features_used": [feature.feature_id for feature in features],
-        "source": "interest_feature",
-        "why_chip": "Why this?",
-    }
+            item = by_id.get(row[0])
+            if item is None:
+                item = _why_chip({
+                    "kind": "post", "type": "post", "id": row[0], "post_id": row[0],
+                    "group_id": row[2], "text": row[3], "score": 1,
+                    "features_used": [], "why_this": _CROSS_WHY,
+                    "origin": "interest_feature", "demo_data": bool(feature.demo_data),
+                })
+                by_id[row[0]] = item
+            if feature.feature_id not in item["features_used"]:
+                item["features_used"].append(feature.feature_id)
+            item["demo_data"] = item["demo_data"] or bool(feature.demo_data)
+    return list(by_id.values())
+
+
+def _cold_start_groups(store, limit):
+    rows = store.db.execute(
+        "SELECT id,name,handle,description,visibility,owner,provenance,created_at FROM cm_groups WHERE visibility='public'"
+    ).fetchall()
+    ranked = []
+    for g in rows:
+        if g[4] != "public":
+            continue
+        count = store.db.execute(
+            "SELECT COUNT(*) FROM cm_group_members WHERE group_id=? AND status='active'", (g[0],)
+        ).fetchone()[0]
+        ranked.append((count, g))
+    ranked.sort(key=lambda pair: (-pair[0], pair[1][7] or "", pair[1][0]))
+    items = []
+    for count, g in ranked[:limit]:
+        items.append(_why_chip({
+            "kind": "group", "type": "group", "id": g[0], "group_id": g[0],
+            "name": g[1], "handle": g[2], "description": g[3], "score": count,
+            "features_used": [], "why_this": _COLD_WHY, "why_chip": "Why this?",
+            "provenance": g[6], "as_of": g[7], "members": count, "origin": "cold_start",
+        }))
+    return items
+
+
+def _discovery_source(local_marked, bridge_marked):
+    if local_marked and bridge_marked:
+        return "local_cm_profile+interest_feature"
+    if bridge_marked:
+        return "interest_feature"
+    return "local_cm_profile"
 
 
 @router.get("/api/community/discovery")
@@ -264,44 +306,32 @@ def discovery(request: Request, limit: int = Query(default=20, ge=1, le=100)):
             (owner,)).fetchall()
         follow_owners = {r[0] for r in follows}
         follow_handles = {r[0]: r[1] for r in follows}
-        bridged = _discovery_from_bridge(request, store, owner, limit)
-        if bridged is not None:
-            return bridged
 
         def log(candidate_type, candidate_id, features, why, reason=""):
             store.db.execute(
                 "INSERT INTO cm_recommendation_events (id,owner,candidate_type,candidate_id,features,why_this,reason,created_at) VALUES (?,?,?,?,?,?,?,?)",
                 (uuid4().hex, owner, candidate_type, candidate_id, json.dumps(features), why, reason, cm.now()))
 
-        if not interests and not follow_owners:
-            reason = ("No consented local interest features yet: add interests to your "
-                      "Community profile to get personalised discovery. Cross-app interests wait for B0.")
-            log(None, None, [], "", reason)
-            store.db.commit()
-            return {"items": [], "candidates": [], "reason": reason, "empty": True,
-                    "features_used": [], "source": "local_cm_profile"}
-
         items = []
-        # Public groups only.
         for g in store.db.execute(
                 "SELECT id,name,handle,description,visibility,owner,provenance,created_at FROM cm_groups WHERE visibility='public' ORDER BY created_at").fetchall():
+            if g[4] != "public":
+                continue
             hay = f"{g[1]} {g[2]} {g[3]}".lower()
             matched = [i for i in interests if i in hay]
             features = [f"interest:{i}" for i in matched]
-            why = ""
-            if matched:
-                why = f"Because you told us you are interested in '{matched[0]}' (Community profile interest: {matched[0]})"
-            if g[5] in follow_owners:
-                features.append(f"follow:{follow_handles.get(g[5]) or g[5]}")
-                why = why or f"Because you follow @{follow_handles.get(g[5]) or g[5]}"
+            follow_handle = follow_handles.get(g[5]) if g[5] in follow_owners else None
+            if follow_handle:
+                features.append(f"follow:{follow_handle}")
             if not features:
                 continue
-            items.append({"kind": "group", "type": "group", "id": g[0], "group_id": g[0],
-                          "name": g[1], "handle": g[2], "description": g[3],
-                          "score": len(matched) * 2 + (1 if g[5] in follow_owners else 0),
-                          "features_used": features, "why_this": why,
-                          "provenance": g[6], "as_of": g[7]})
-        # Public posts only: no group, or public group; never deleted, never own.
+            items.append(_why_chip({
+                "kind": "group", "type": "group", "id": g[0], "group_id": g[0],
+                "name": g[1], "handle": g[2], "description": g[3],
+                "score": len(matched) * 2 + (1 if follow_handle else 0),
+                "features_used": features, "why_this": _local_why(matched, follow_handle),
+                "provenance": g[6], "as_of": g[7], "origin": "local",
+            }))
         for p in store.db.execute(
                 "SELECT id,owner,group_id,text,revision,pinned,deleted,provenance,created_at,updated_at FROM cm_posts WHERE deleted=0 ORDER BY created_at DESC").fetchall():
             if p[1] == owner:
@@ -313,36 +343,55 @@ def discovery(request: Request, limit: int = Query(default=20, ge=1, le=100)):
             hay = (p[3] or "").lower()
             matched = [i for i in interests if i in hay]
             features = [f"interest:{i}" for i in matched]
-            why = ""
-            if matched:
-                why = f"Because you told us you are interested in '{matched[0]}' (Community profile interest: {matched[0]})"
-            if p[1] in follow_owners:
-                features.append(f"follow:{follow_handles.get(p[1]) or p[1]}")
-                why = why or f"Because you follow @{follow_handles.get(p[1]) or p[1]}"
-                if matched:
-                    why = why + f"; also because you follow @{follow_handles.get(p[1]) or p[1]}"
+            follow_handle = follow_handles.get(p[1]) if p[1] in follow_owners else None
+            if follow_handle:
+                features.append(f"follow:{follow_handle}")
             if not features:
                 continue
-            items.append({"kind": "post", "type": "post", "id": p[0], "post_id": p[0],
-                          "group_id": p[2], "text": p[3],
-                          "score": len(matched) * 2 + (2 if p[1] in follow_owners else 0),
-                          "features_used": features, "why_this": why,
-                          "provenance": p[7], "as_of": p[9]})
-
+            items.append(_why_chip({
+                "kind": "post", "type": "post", "id": p[0], "post_id": p[0],
+                "group_id": p[2], "text": p[3],
+                "score": len(matched) * 2 + (2 if follow_handle else 0),
+                "features_used": features, "why_this": _local_why(matched, follow_handle),
+                "provenance": p[7], "as_of": p[9], "origin": "local",
+            }))
         items.sort(key=lambda x: (-x["score"], x["kind"], x["id"]))
+
+        by_post = {item["id"]: item for item in items if item["kind"] == "post"}
+        for extra in _bridge_post_items(request, store, owner):
+            if extra["id"] not in by_post:
+                items.append(extra)
+                by_post[extra["id"]] = extra
+                continue
+            existing = by_post[extra["id"]]
+            for feat in extra["features_used"]:
+                if feat not in existing["features_used"]:
+                    existing["features_used"].append(feat)
+            if _CROSS_WHY not in (existing.get("why_this") or ""):
+                existing["why_this"] = f"{existing['why_this']}. {_CROSS_WHY}"
+            existing["also_interest_feature"] = True
+
+        local_marked = any(item.get("origin") == "local" for item in items)
+        bridge_marked = any(item.get("origin") == "interest_feature" or item.get("also_interest_feature") for item in items)
         items = items[:limit]
         if not items:
-            reason = "No public groups or posts match your Community profile interests or follows yet."
-            log(None, None, [f"interest:{i}" for i in interests], "", reason)
+            items = _cold_start_groups(store, limit)
+            reason = "Cold start: public communities, not personalised." if items else "Cold start: no public communities yet."
+            for it in items:
+                log(it["kind"], it["id"], [], it["why_this"], reason)
+            if not items:
+                log(None, None, [], "", reason)
             store.db.commit()
-            return {"items": [], "candidates": [], "reason": reason, "empty": True,
-                    "features_used": [f"interest:{i}" for i in interests], "source": "local_cm_profile"}
+            return {"items": items, "candidates": items, "reason": reason, "empty": len(items) == 0,
+                    "features_used": [], "source": "local_cm_profile", "why_chip": "Why this?"}
+
+        source = _discovery_source(local_marked, bridge_marked)
+        used = sorted({f for it in items for f in it.get("features_used") or []})
         for it in items:
-            log(it["kind"], it["id"], it["features_used"], it["why_this"])
+            log(it["kind"], it["id"], it.get("features_used") or [], it.get("why_this") or "")
         store.db.commit()
         return {"items": items, "candidates": items, "reason": None, "empty": False,
-                "features_used": sorted({f for it in items for f in it["features_used"]}),
-                "source": "local_cm_profile"}
+                "features_used": used, "source": source, "why_chip": "Why this?"}
 
 
 # ---------------------------------------------------------------- Community Answer

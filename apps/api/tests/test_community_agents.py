@@ -65,14 +65,20 @@ def test_discovery_happy_why_and_log(client):
     assert any("food" in (e[1] or "") for e in ev)
 
 
-def test_discovery_no_interests_honest_empty(client):
-    c, store = client
+def test_discovery_no_interests_cold_start_public_only(client):
+    c, _store = client
     profile(c, "alice_dxb", interests=[])
+    secret = c.post("/api/community/groups", json={"name": "Secret Circle", "handle": "secret-circle", "visibility": "private"})
+    assert secret.status_code == 200, secret.text
     r = c.get("/api/community/discovery")
     assert r.status_code == 200
     j = r.json()
-    assert j["items"] == [] and j["empty"] is True and j["reason"]
-    assert "B0" in j["reason"]
+    assert j["empty"] is False and j["items"]
+    assert j["source"] == "local_cm_profile"
+    assert "Cold start" in j["reason"]
+    assert all("Cold start" in item["why_this"] for item in j["items"])
+    assert secret.json()["group"]["id"] not in [item["id"] for item in j["items"]]
+    assert j["features_used"] == []
 
 
 def test_discovery_excludes_private_and_no_cross_app(client):
