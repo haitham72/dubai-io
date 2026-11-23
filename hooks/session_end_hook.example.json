@@ -1,0 +1,16 @@
+{
+  "_comment": "Example Claude Code SessionEnd hook that drains owner-device jobs via /dubaiio-work. Alternative CLI templates: 'codex exec --model {model} -' or 'gemini -m {model} -p -'.",
+  "hooks": {
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "claude -p \"Run /dubaiio-work to drain any pending temporal-memory jobs for this device.\" --allowedTools \"mcp__temporal-memory__*\"",
+            "timeout": 300
+          }
+        ]
+      }
+    ]
+  }
+}
