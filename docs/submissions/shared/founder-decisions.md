@@ -61,8 +61,15 @@ The redesign's latest design is current: commit `6b45ba4`, "AI workspace replace
 
 - The sticker Builder service (`D:\Vscode\mirsal-builder-io`) began as an office-assigned task, and its ownership is **contested**.
 - The Messenger uses **nothing** from it: no code, prompts, system design, emoji-bank data or MCP adapter.
-- The Messenger's stickers and images are built fresh, from the founder's own redesign features plus licensed generation providers.
-- This supersedes the old O1.
+- This supersedes the old O1. The sticker rules themselves are in D7.
+
+## D7 — Stickers: founder-made packs, and image-plus-background-removal only
+
+> "stickers will only be manually created 'by mirsal-builder' to populate the emojis, but will be allowed to create 'stickers' by adding images and removing background not ai higgsfield"
+
+- **Built-in emoji and sticker packs** are made **manually by the founder** with the Builder and supplied as finished asset files (for example under `apps/messenger/public/packs/`). Agents never run, call, copy or integrate the Builder.
+- **User-made stickers:** the user adds an image, the app removes its background, and the result is saved as a sticker. Background removal runs locally where possible, with a licence-checked model; failures are honest.
+- **No AI image or sticker generation** in the Messenger: no Higgsfield-style text-to-image or sticker generation.
 
 ## Still open (raise at the founder gate after P2)
 
