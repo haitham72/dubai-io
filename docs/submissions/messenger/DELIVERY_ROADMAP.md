@@ -138,6 +138,19 @@ Source string: `messenger:<conversation_id>`. Record id: `mgmsg:<message_id>`. O
 | Failure path | A third session, an injection message, and Save flipped to Off mid-flight. |
 | Demo beat | Only tests that were actually run, with the command and the output in the log. |
 
+## MG-B7b — Wire web app to real chat core (UI slice)
+
+**Status:** proposed next slice — **waits for founder review** (UI slice; requires staged visual review before marking done).  
+**Audit finding (24 Nov 2026):** `apps/messenger/src/store.ts` still boots on `seedMessages` from `apps/messenger/src/chats/data.ts`, with zero references to `:8070`, `/api/messenger`, `/api/identity`, or `ws-ticket` across `apps/messenger/src/` (the only `WebSocket` usage is `/voice` streaming).  
+**Depends on:** `MG-B3`, `MG-B7`, and founder visual review of a staged preview.  
+**Owns:** `apps/messenger/src/**` (API client + store wiring to `/api/identity/*`, `/api/messenger/*`, and Origin-bound `/api/messenger/ws`, preserving `Demo data` pills when running seeded demo fixtures vs authenticated live sessions).
+
+| | |
+|---|---|
+| Happy path | Authenticated user signs in, exchanges `messenger` session + WS ticket, sends and receives live messages via `:8070` with reload persistence, and clearly distinguishes live verified threads from `Demo data` threads. |
+| Failure path | Unauthenticated, wrong-Origin, or non-member access fails closed cleanly without falling back silently to unlabelled seeded data or asserting E2EE. |
+| Demo beat | Staged browser preview with two live user sessions approved in founder visual review. |
+
 ## MG-B8 — Deck, video, hosting
 
 **Depends on:** `MG-B6` green on a staged build, or the deck says the task step is still blocked. O2 if the visible name is still the working title. The excluded logo is not on the deck.  

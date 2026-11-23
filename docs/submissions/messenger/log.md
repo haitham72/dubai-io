@@ -68,3 +68,41 @@ Staged at `http://127.0.0.1:5173/` on 23 Nov 2026. The UI was not changed for th
 - `docs/submissions/messenger/review/founder-review-desktop-ai.png` — desktop Messenger AI
 - `docs/submissions/messenger/review/founder-review-phone-chats.png` — phone Chats
 - `docs/submissions/messenger/review/founder-review-phone-ai.png` — phone Messenger AI
+
+## 24 Nov 2026 — MG-B7 (Antigravity)
+
+Merged `contest-shared` (`272fd9e`) into `business` via `--no-ff`, bringing `docs/submissions/shared/local-supabase/` and `apps/api/tests/fixtures/contest_shared/db_fixtures.py`.
+
+Added `apps/api/tests/test_messenger_e2e.py` covering two verified users exchanging messages over the Origin-bound `/api/messenger/ws` (`:8070`), third-user/session denial (`404` on HTTP, `not_found` on WS), wrong-Origin WS handshake denial (`403`), single-use WS ticket replay denial (`401`), session revocation denial (`401`), process restart persistence across reopened `IdentityStore` and `ChatStore`, inert prompt-injection messages (zero `ActionStore` rows, `status=None`), and mid-flight Save→Off consent switches writing zero records (including stale `consent_generation` rejection), plus a live local Supabase GoTrue two-user verification test (`test_messenger_e2e_live_supabase_two_users`, skipping cleanly when `SUPABASE_LOCAL_URL` is unset).
+
+**UI wiring audit (no changes to `apps/messenger/`):** `apps/messenger/src/store.ts` still initializes `messages` from `seedMessages` (`apps/messenger/src/chats/data.ts`), and `apps/messenger/src/` has zero references to `:8070`, `/api/messenger`, `/api/identity`, or `ws-ticket` (the only `WebSocket` is `/voice` streaming). Added `MG-B7b — Wire web app to real chat core (UI slice)` to `docs/submissions/messenger/DELIVERY_ROADMAP.md`, gated on founder visual review.
+
+Exact commands and outputs:
+
+1. Messenger offline suite (`tests/test_messenger_*.py`, `SUPABASE_LOCAL_URL=""`, `TEST_DATABASE_URL=""`, `DATABASE_URL=" "`):
+   ```powershell
+   $files = Get-ChildItem tests\test_messenger_*.py | ForEach-Object { $_.FullName }
+   D:\Vscode\dubai-io\apps\api\.venv\Scripts\python.exe -m pytest -q @files -rs
+   ```
+   Output: `26 passed, 1 skipped in 3.82s` (skipped: `test_messenger_e2e_live_supabase_two_users` when `SUPABASE_LOCAL_URL` unset).
+
+2. Live local Supabase GoTrue + Postgres 17 two-user run (`tests/test_messenger_e2e.py` with env vars from `npx.cmd --yes supabase@2.121.0 status -o json` targeting `http://127.0.0.1:15421` and `postgresql://postgres:***@127.0.0.1:15422/postgres`):
+   ```powershell
+   D:\Vscode\dubai-io\apps\api\.venv\Scripts\python.exe -m pytest -q tests\test_messenger_e2e.py -v
+   ```
+   Output: `3 passed in 3.65s` (synthetic GoTrue `ES256` users created via `/auth/v1/admin/users` and deleted cleanly in `finally:`).
+
+3. Gate 1 — Whole API suite (`apps/api`, `DATABASE_URL=" "`):
+   ```powershell
+   D:\Vscode\dubai-io\apps\api\.venv\Scripts\python.exe -m pytest -q tests
+   ```
+   Output: `3 failed, 542 passed, 14 skipped, 1 warning in 214.60s (0:03:34)` (exact 3 pre-existing Windows `.venv` failures only: `test_filesystem_is_scoped`, `test_tryon_requires_adult_confirm`, `test_tryon_fixture_preview`).
+
+4. Gate 2 (`apps/web` untouched): `git diff --quiet mobile-pwa-baseline-2026-10-23 HEAD -- apps/web` → exit `0`.
+
+5. Gate 4 (`apps/messenger` & `apps/messenger/agents`, unmodified):
+   - `npx.cmd tsc -b --noEmit` & `npx.cmd tsc -p tsconfig.api.json --noEmit` → exit `0` (`tsc_exit=0`).
+   - `npm.cmd run build` (`tsc -b && vite build`) → `✓ 1709 modules transformed.`, `✓ built in 7.91s`.
+   - `python agents/run.py test` → `158 passed, 1 skipped in 5.41s`.
+
+6. Old-name grep gate: `git grep -n -i -e "m[i]rsal" -- apps/messenger apps/api/app/messenger apps/api/tests/test_messenger_e2e.py` → zero matches (exit `1`).
