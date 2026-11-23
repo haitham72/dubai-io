@@ -76,6 +76,6 @@ design/            Screen references (founder files), locked Quest references (`
 |---|---|---|---|
 | Shared base: identity, memory bridge, cross-app contract | — | `contest-shared` | `docs/submissions/shared/` |
 | Best Societal AI Agent | Dubai-io Community | `societal` | `docs/submissions/community/` |
-| Best Business AI Agent | Mirsal AI Messenger | `business` | `docs/submissions/mirsal/` |
+| Best Business AI Agent | Messenger (WhatsApp-like; name pending) | `business` | `docs/submissions/messenger/` |
 
-On those branches, read `docs/submissions/CLAUDE.md` first: the branch and merge protocol, owned vs read-only paths, phase gates, and the Mirsal IP gate. **Never commit to or push `main` from these branches, and never merge them into `main`.** The other PC's `main` is ahead of `origin/main`, so it comes in by merge (into `contest-shared` first) only after it is pushed. Rules 1–10 apply to every entry.
+On those branches, read `docs/submissions/CLAUDE.md` first: the branch and merge protocol, owned vs read-only paths, phase gates, and the Messenger's IP and naming gate. Founder answers of 23 Nov: `docs/submissions/shared/founder-decisions.md`. **Never commit to or push `main` from these branches, and never merge them into `main`.** The other PC's `main` is ahead of `origin/main`, so it comes in by merge (into `contest-shared` first) only after it is pushed. Rules 1–10 apply to every entry.

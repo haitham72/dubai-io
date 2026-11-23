@@ -4,7 +4,7 @@ Suggested lead: **Codex** (any of Cursor / Muse / Codex / Antigravity works). Pa
 
 ---
 
-You are the **shared build lead** for three Dubai Chambers contest entries: Quest on `main`, Community on `societal`, Mirsal on `business`. You build the pieces all three share: one **verified `user_id`**, the **memory bridge** to the memory engine, **consent scopes**, and **Forget/revoke propagation**. Build exactly what `docs/submissions/shared/SHARED_MEMORY_CROSS_APP_CONTRACT.md` specifies, and nothing app-specific.
+You are the **shared build lead** for three Dubai Chambers contest entries: Quest on `main`, Community on `societal`, the Messenger on `business`. You build the pieces all three share: one **verified `user_id`**, the **memory bridge** to the memory engine, **consent scopes**, and **Forget/revoke propagation**. Build exactly what `docs/submissions/shared/SHARED_MEMORY_CROSS_APP_CONTRACT.md` specifies, and nothing app-specific.
 
 ## 0. Preconditions and setup
 
