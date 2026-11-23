@@ -129,6 +129,34 @@ The redesign's latest design is current: commit `6b45ba4`, "AI workspace replace
 - The packaging slices (Community CM-B12, Messenger MG-B8) write the tunnel runbook and scripts in their own folders. The shared part goes under `docs/submissions/shared/tunnel/`. No secrets or tunnel credentials go into the repo.
 - WebSockets (the Messenger's :8070) must work through the tunnel. The Origin-bound WS tickets must accept the tunnel hostname as an allowed Origin, set through env and never hard-coded.
 
+## D14 — Community visual direction: a native social app, not a website (24 Nov)
+
+> Founder on the first Community build: "they look awfull, almost like claude basic website, instead of threads/x.com/reddit/facebook/instagram/ios style"
+
+- **Bar:** Community must look and feel like a top social app: the interaction patterns of Threads, X, Reddit, Facebook groups and Instagram, with iOS conventions. It must use original branding and assets, with no marks or logos of those products.
+- **Visual authority for both layout and look:** the v3 Community frames in `design/references/v3-higgsfield/`, desktop `l01`, `l05`, `l08`, `l09` and phone `m02`, `m04`, `m08`, `m09`. This **supersedes D9's "style from design/20-11-2026"** for Community: the serif headings, cream background and gold accents it produced read as an editorial website.
+- **Banned in Community UI:**
+  - serif display type; cream or beige page backgrounds; gold accent chrome;
+  - website-style page titles with subtitles ("Feed / People and communities you follow");
+  - boxed text buttons for actions ("Like · 12");
+  - letter-only avatars where an image is expected; grey placeholder boxes standing in for images;
+  - ISO dates in the feed;
+  - text-only tab bars;
+  - full-width warning banners as layout.
+- **Required:**
+  - a system sans font (SF Pro on Apple, Inter elsewhere);
+  - an icon-led action row (vote or like, comment, share, overflow);
+  - relative times;
+  - community headers with image, member count and Join/Joined;
+  - New / Top / Hot sort pills;
+  - post cards with a bold title, a body preview and media;
+  - AI answers as nested replies with source chips and an `Estimate` pill where relevant;
+  - a floating iOS-style tab bar with icons on the phone;
+  - three columns on desktop (left nav with a Post button; feed with For you / Following; right rail with "Ask Dubai-io privately" and "Communities for you");
+  - `Demo data` as a small pill, never a banner.
+- **Demo imagery:** licensed photos (for example under the Unsplash licence) stored locally with a `CREDITS.md`, labelled Demo data. No hotlinks, no AI-generated images, no real identifiable private people.
+- **Process:** design-first. Rebuild the Feed screen (phone and desktop) first, capture it side by side with `m02` and `l08`, and **stop for the founder's approval** before restyling the other screens.
+
 ## Founder to-dos (not agent work)
 
 - Share `docs/submissions/shared/handoff-temporal-note.md` (on GitHub) with the memory team.
