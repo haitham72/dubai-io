@@ -71,7 +71,54 @@ The redesign's latest design is current: commit `6b45ba4`, "AI workspace replace
 - **User-made stickers:** the user adds an image, the app removes its background, and the result is saved as a sticker. Background removal runs locally where possible, with a licence-checked model; failures are honest.
 - **No AI image or sticker generation** in the Messenger: no Higgsfield-style text-to-image or sticker generation.
 
-## Still open (raise at the founder gate after P2)
+## D8 — Messenger M0 confirmed; import and rebrand may start (23 Nov)
 
-- **O2** The Messenger's new product name.
-- **O3** Anything the planners list as blocking in their `open-questions.md`.
+- **Keep (the founder's own):**
+  - concept sheets (`Slides/*.jpg`, output grid);
+  - screen frames (`screens/`: 4 screens, Layer 0–10, GPT design/01), but **not** the dynamic-island reference scrapes, which stay excluded;
+  - video clips (`media/videos/`);
+  - motion-graphics audio and photos.
+- **But** any image or frame that visibly shows the old name or logo is excluded from the shipped app, because a text grep cannot find it.
+- **Drop:** the Diwan connector and the Nadi connector (code, UI hooks, tests, demo data); the cleaner's `remove-ai-watermarks` dependency and any feature that removes AI watermarks or provenance marks; `lib/higgsCli.ts` and any Higgsfield API or CLI use ("there is no higgsfield at all").
+- **User stickers:** any subject, not people only. Use a general background-removal model (U²-Net class, licence recorded, local where possible), with MediaPipe Selfie Segmentation only as a fallback.
+- **Early start:** MG-B1 (snapshot import) and MG-B2 (rebrand) are approved now. Every other Messenger slice waits for the full gate.
+
+## D9 — Community product rulings (23 Nov)
+
+- **Visual authority:**
+  - **Layout and content:** the Higgsfield v3 Community frames in `design/references/v3-higgsfield/`: desktop `l01`, `l05`, `l08`, `l09`, and phone `m02`, `m04`, `m08`, `m09`. Strip any "r/dubai"-style naming and drop the Stories rail. `m04`'s private chat is a hand-off to the Messenger (D3).
+  - **Visual style:** `design/20-11-2026/`, the look the founder has moved the iOS app to, so Community reads as part of the Dubai-io family.
+  - Higgsfield is never used inside any product.
+- **Ages: all ages, with an age gate.**
+  - The age band is self-declared at sign-up and never inferred.
+  - Under-18 accounts get protections by default: no cross-app personalisation, no memory writes, private-by-default profiles, not discoverable or searchable by adults outside shared groups, and moderation priority on reports involving them.
+  - Before CM-B3 the planner sources the UAE's official child digital-safety and child-data requirements (for example parental consent, and any minimum age) and proposes the under-13 policy. If a requirement cannot be met by 18 Dec, it stops and asks.
+  - Testers in the multi-user test are consenting adults.
+- **Private groups:** invisible to non-members. Members invite and a moderator approves. There is one owner, with named moderators (pin, remove), and every moderator action is logged and reversible by the owner.
+- **Demo Scene C:** one official public-information topic, answered only from that authority's own public pages (allowlisted publishers), with no claim of any integration. A non-civic fallback topic is rehearsed too.
+
+## D10 — Operations (23 Nov)
+
+- **Demo and tests by 18 Dec:** through a secure tunnel from the founder's PC (no spend). It is used for the videos and for a test with at least 5 consenting adults per entry.
+- **Accounts:** a separate Supabase **staging** project for both entries (sign-up disabled, test users only). Its Auth and RLS SQL is applied by a script from each app's own folder (`apps/community/supabase/`, `apps/messenger/supabase/`). `supabase/migrations/` stays frozen.
+- **Memory team hand-off:** the temporal_note change requests (CR-TM-1…4: records, forget, resolve, context/search routes, plus the two fixes) go to the other team as **one hand-off file**, `docs/submissions/shared/handoff-temporal-note.md`. Our builds use a clearly named `FakeTemporalMemoryClient` until theirs lands.
+- **Recommended founder action:** ask the organisers in writing (createaiagents@dubaichamber.com) whether a founder's own earlier prototype may be reused in an entry.
+
+## D11 — Approval gate (23 Nov)
+
+- **Approved:** the shared contract and B0 slices (`shared-slices.md`), the Community roadmap, and the Messenger's remaining slices MG-B3…MG-B9. Builds may start. UI slices still need the founder's visual review of a staged preview.
+- **Ages (supersedes D9's all-ages ruling, after Community's N1):** **adults only (18+)** for the demo and the launch. Under-15s may not hold social-media accounts even with parental consent, and self-declared age is not enough verification. That is Community's finding on u.ae (Cabinet Resolution 106 of 2026), to be confirmed with legal advice.
+  - D9's under-18 protections stay in the plan, and B0 keeps a fail-closed `is_minor_protected` flag.
+  - Teens are admitted only after UAE legal advice **and** an approved age-verification method; that is a new founder decision.
+- **Name:** build under the working name **Messenger**. The founder picks the final name and mark before the deck and video (MG-B7/MG-B8).
+
+## Founder to-dos (not agent work)
+
+- Email the organisers (createaiagents@dubaichamber.com) asking whether a founder's own earlier prototype may be reused in an entry.
+- Send `docs/submissions/shared/handoff-temporal-note.md` to the other PC's memory team.
+- Provision the separate Supabase **staging** project (D10) before the live pilot tests.
+- Push a snapshot of the other PC's `main` as `pc2-main` (never as `main`), so that gate 5 can test-merge against it.
+
+## Still open
+
+- **O2** The Messenger's final name and mark (before MG-B7).
