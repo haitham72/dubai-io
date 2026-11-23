@@ -14,6 +14,7 @@ from app.memory_bridge.models import (
     MemoryBridgeError,
     MemoryBridgeUnavailable,
 )
+from tests.fixtures.contest_shared.db_fixtures import cs_postgres_isolation  # noqa: F401
 from tests.fixtures.contest_shared.memory_fixtures import (
     SYNTH_OWNER_A,
     SYNTH_OWNER_B,

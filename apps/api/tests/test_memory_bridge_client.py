@@ -19,6 +19,7 @@ from app.memory_bridge import (
     build_temporal_memory_client,
     ensure_memory_bridge_schema,
 )
+from tests.fixtures.contest_shared.db_fixtures import cs_postgres_isolation  # noqa: F401
 from tests.fixtures.contest_shared.memory_fixtures import (
     SYNTH_OWNER_A,
     SYNTH_OWNER_B,
@@ -81,12 +82,32 @@ def test_schema_creates_all_cs_tables_idempotently(tmp_path):
     db = make_sqlite_db(tmp_path)
     ensure_memory_bridge_schema(db)  # idempotent second call
 
-    tables = {
-        row[0]
-        for row in db.execute(
-            "SELECT name FROM sqlite_master WHERE type='table'"
-        ).fetchall()
-    }
+    if getattr(db, "dialect", "sqlite") == "postgres":
+        tables = {
+            row[0]
+            for row in db.execute(
+                "SELECT table_name FROM information_schema.tables WHERE table_schema = current_schema()"
+            ).fetchall()
+        }
+        indexes = {
+            row[0]
+            for row in db.execute(
+                "SELECT indexname FROM pg_indexes WHERE schemaname = current_schema()"
+            ).fetchall()
+        }
+    else:
+        tables = {
+            row[0]
+            for row in db.execute(
+                "SELECT name FROM sqlite_master WHERE type='table'"
+            ).fetchall()
+        }
+        indexes = {
+            row[0]
+            for row in db.execute(
+                "SELECT name FROM sqlite_master WHERE type='index'"
+            ).fetchall()
+        }
     assert {
         "cs_consent_grants",
         "cs_memory_record_refs",
@@ -94,13 +115,6 @@ def test_schema_creates_all_cs_tables_idempotently(tmp_path):
         "cs_interest_projection_cache",
         "cs_memory_audit",
     } <= tables
-
-    indexes = {
-        row[0]
-        for row in db.execute(
-            "SELECT name FROM sqlite_master WHERE type='index'"
-        ).fetchall()
-    }
     assert "cs_memory_audit_owner_at" in indexes
 
     # Verify PostgresDB.translate converts JSON -> JSONB cleanly for every DDL statement

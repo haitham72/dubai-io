@@ -9,6 +9,7 @@ import httpx
 import pytest
 
 from app.identity import IdentityConfig, IdentityService, IdentityStore, JWTVerificationError, JWTVerifier
+from tests.fixtures.contest_shared.db_fixtures import cs_postgres_isolation  # noqa: F401
 from tests.fixtures.contest_shared.identity_fixtures import (
     TEST_AUDIENCE,
     TEST_HS256_SECRET,
