@@ -1,0 +1,368 @@
+"""Validator v2: 8-stage deterministic safety, fence, schema, and privacy gate (WP-A)."""
+from __future__ import annotations
+
+from datetime import datetime, timezone
+import hashlib
+import re
+from typing import Optional
+
+from temporal_memory.db.db import fold_text
+from temporal_memory.models import (
+    Attempt,
+    ExtractionOutput,
+    Job,
+    JobBundle,
+    OutFact,
+    Owner,
+    Record,
+    Verdict,
+    WorkerKind,
+)
+
+try:
+    from temporal_memory.privacy.policy import gate_fact as _policy_gate_fact
+except ImportError:  # pragma: no cover - WP-C not yet merged
+    _policy_gate_fact = None  # type: ignore[assignment]
+
+# TODO WP-C: remove local Layer-1 regex shim once temporal_memory.privacy.policy is available.
+_SENSITIVE_CATEGORIES: dict[str, str] = {
+    "health": (
+        r"\b(health\w*|medic\w*|wellness|stress\w*|mental|sick|ill(ness)?|cancer|diagnos\w*|kidney|"
+        r"surgery|hospital|clinic|pregnan\w*|therapy|therapist|depress\w*|anxiety|disease|symptom\w*|"
+        r"doctor|dr\.|radiolog\w*|blood|lab test|pain|injur\w*|fever|diet|dieting|pharmacy|prescription)\b"
+        r"|مرض|سرطان|مستشفى|دكتور|عملية|علاج|حمل\b|تحليل|صحة|صحي|ضغط"
+    ),
+    "religion": (
+        r"\b(relig\w*|muslim|christian|jewish|hindu|allah|god|quran|koran|bible|church|mosque|"
+        r"umrah|3omra|hajj|ramadan|fasting|fast|prayer|pray\w*|halal|haram|eid|sheikh)\b"
+        r"|صلاة|قرآن|عمرة|حج\b|رمضان|صيام|دين\b|كنيسة|مسجد|عيد"
+    ),
+    "ethnicity_nationality": (
+        r"\b(ethnic\w*|race|racial|nationality|egyptian|indian|pakistani|filipino|emirati|"
+        r"arab|african|asian|visa|citizenship)\b|جنسية|مصري|هندي|باكستاني"
+    ),
+    "gender_sexuality": (
+        r"\b(gay|lesbian|bisexual|transgender|trans|sexual\w*|sexuality|lgbt\w*|gender|"
+        r"dating|girlfriend|boyfriend|marriage|divorce|wedding)\b|جنس\b|مثلي|جواز|طلاق|خطوبة"
+    ),
+    "politics": (
+        r"\b(politic\w*|election|vote|voting|government|party leader|president|parliament|protest|regime)\b"
+        r"|سياس\w*|انتخاب\w*|حكومة"
+    ),
+    "third_party_private": (
+        r"\b(affair|cheat\w*|abus\w*|arrest\w*|debt|bankrupt\w*|rehab|court|lawsuit|legal|"
+        r"police|theft|steal|stolen|evasion|fraud|crime|criminal|conflict|drama|gossip|fight)\b"
+        r"|خيانة|محكمة|سرقة|شرطة|مشكلة مع"
+    ),
+    "credential": (
+        r"\b(password|passcode|pin code|otp|cvv|iban|card number|passport number|emirates id)\b"
+        r"|كلمة السر|كلمة المرور"
+    ),
+}
+_SENSITIVE_COMPILED = {k: re.compile(v, re.I) for k, v in _SENSITIVE_CATEGORIES.items()}
+
+
+def _shim_gate_fact(fact: OutFact, worker_kind: WorkerKind) -> Optional[str]:
+    # TODO WP-C: fallback Layer-1 regex gate until privacy.policy.gate_fact exists.
+    combined = " ".join(filter(None, [fact.text, fact.text_orig, fact.subject_path]))
+    for cat, rx in _SENSITIVE_COMPILED.items():
+        if rx.search(combined):
+            return cat
+    return fact.sensitive
+
+
+def _gate_fact(fact: OutFact, worker_kind: WorkerKind) -> Optional[str]:
+    if _policy_gate_fact is not None:
+        return _policy_gate_fact(fact, worker_kind)
+    return _shim_gate_fact(fact, worker_kind)
+
+
+VALID_ENTITY_KINDS = frozenset({"person", "place", "org", "project", "event"})
+VALID_RELATIONS = frozenset({"self", "friend", "colleague", "family", "null", None})
+VALID_FACT_OPS = frozenset({"new", "update", "end"})
+VALID_LINK_RELS = frozenset(
+    {
+        "WORKS_AT",
+        "WORKS_ON",
+        "FRIEND_OF",
+        "FAMILY_OF",
+        "COLLEAGUE_OF",
+        "MANAGES",
+        "LIVES_IN",
+        "LOCATED_IN",
+        "APPLIED_TO",
+        "INTERVIEWS_WITH",
+        "MEMBER_OF",
+        "STUDIES",
+        "OWNS",
+        "PART_OF",
+        "ATTENDS",
+        "RELATED_TO",
+    }
+)
+
+_RECORD_ID_RE = re.compile(r"^(g|n|wa[bgf]?)-?\d+$", re.I)
+_RAW_ENTITY_RE = re.compile(r"^e\d+\|")
+_INJECTION_RE = re.compile(
+    r"(ignore\s+(?:all\s+)?previous|system\s*:|you\s+are\s+now|https?://|```)",
+    re.I,
+)
+_STOPWORDS = frozenset(
+    {
+        "the", "and", "for", "with", "that", "this", "from", "into", "about",
+        "has", "have", "had", "was", "were", "are", "been", "being", "will",
+        "would", "could", "should", "can", "may", "might", "not", "but", "his",
+        "her", "their", "our", "your", "she", "him", "them", "they", "you",
+        "who", "what", "when", "where", "which", "how", "why", "all", "any",
+        "some", "one", "two", "new", "old", "now", "still", "also", "very",
+    }
+)
+
+
+def _parse_iso(ts: str) -> datetime | None:
+    try:
+        dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt
+
+
+def _strip_new_prefix(ref: str) -> str:
+    s = ref.strip()
+    return s[4:].strip() if s.startswith("new:") else s
+
+
+def _fact_hashes(subject_path: str, text: str) -> tuple[str, str, str]:
+    folded = fold_text(text)
+    norm_subj = subject_path.strip().lower()
+    h_folded = hashlib.sha256(folded.encode("utf-8")).hexdigest()
+    h_raw = hashlib.sha256(text.strip().encode("utf-8")).hexdigest()
+    h_subj = hashlib.sha256(f"{norm_subj}|{folded}".encode("utf-8")).hexdigest()
+    return h_folded, h_raw, h_subj
+
+
+def _check_evidence_span(
+    fact: OutFact,
+    cited_records: list[Record],
+    out_entities_by_ref: dict[str, list[str]],
+    ctx_entities_by_id: dict[str, list[str]],
+) -> bool:
+    cited_folded = fold_text(" ".join(f"{r.author} {r.text}" for r in cited_records))
+    cited_tokens = set(cited_folded.split())
+
+    token_sources: list[str] = [fact.text]
+    if fact.text_orig:
+        token_sources.append(fact.text_orig)
+    for fe in fact.entities:
+        token_sources.extend(out_entities_by_ref.get(fe.entity_id, []))
+        token_sources.extend(ctx_entities_by_id.get(fe.entity_id, []))
+
+    candidates: list[str] = []
+    for src in token_sources:
+        for tok in fold_text(src).split():
+            if len(tok) >= 3 and (tok not in _STOPWORDS or tok.isdigit()):
+                candidates.append(tok)
+
+    if not candidates:
+        return True
+    return any(
+        tok in cited_tokens or (len(tok) >= 4 and tok in cited_folded)
+        for tok in candidates
+    )
+
+
+def validate(
+    job: Job,
+    bundle: JobBundle,
+    attempt: Attempt,
+    *,
+    existing_hashes: set[str] | None = None,
+    existing_norm_subjects: set[tuple[str, str]] | None = None,
+    current_generation: int | None = None,
+    now: datetime | None = None,
+    owner_obj: Owner | None = None,
+) -> Verdict:
+    """Run all 8 Validator v2 checks in order and return a Verdict."""
+    reasons: list[str] = []
+    quarantined: dict[str, int] = {}
+
+    # 1) Fence / lease / generation
+    if job.state != "leased":
+        reasons.append("job_not_leased")
+    if not job.fence_token or job.fence_token != attempt.fence_token:
+        reasons.append("fence_stale")
+    if job.lease_expires_at:
+        now_dt = now or datetime.now(timezone.utc)
+        if now_dt.tzinfo is None:
+            now_dt = now_dt.replace(tzinfo=timezone.utc)
+        exp_dt = _parse_iso(job.lease_expires_at)
+        if exp_dt is None or exp_dt <= now_dt:
+            reasons.append("lease_expired")
+    if current_generation is not None and current_generation > job.input_version:
+        reasons.append("generation_stale")
+
+    # 2) Strict schema / output presence & size caps
+    out = attempt.output
+    if (
+        out is None
+        or not isinstance(out, ExtractionOutput)
+        or not isinstance(out.entities, list)
+        or not isinstance(out.facts, list)
+        or not isinstance(out.links, list)
+    ):
+        reasons.append("schema_invalid")
+        return Verdict(ok=False, reasons=list(dict.fromkeys(reasons)), quarantined=quarantined)
+
+    if len(out.facts) > 100:
+        reasons.append("size_cap_exceeded")
+    for fact in out.facts:
+        if not fact.text or not fact.text.strip() or not fact.subject_path or not fact.subject_path.strip():
+            reasons.append("schema_invalid")
+        if len(fact.text or "") > 500 or (fact.text_orig and len(fact.text_orig) > 500):
+            reasons.append("size_cap_exceeded")
+
+    # Lookup helpers for checks 3–5
+    allowed_input = set(job.input_ref)
+    records_by_id = {r.id: r for r in bundle.records}
+    out_entities_by_ref: dict[str, list[str]] = {}
+    for ent in out.entities:
+        out_entities_by_ref[ent.ref] = [_strip_new_prefix(ent.ref), *ent.aliases]
+
+    ctx_entities_raw = bundle.context.get("entities", [])
+    ctx_entities_by_id: dict[str, list[str]] = {}
+    ctx_self_ids: set[str] = set()
+    self_folded: set[str] = set()
+    for ce in ctx_entities_raw:
+        if not isinstance(ce, dict) or "id" not in ce:
+            continue
+        names = [ce.get("name", ""), *(ce.get("aliases") or [])]
+        ctx_entities_by_id[ce["id"]] = [n for n in names if n]
+        if ce.get("relation_to_user") == "self":
+            ctx_self_ids.add(ce["id"])
+            for n in names:
+                f = fold_text(n)
+                if f:
+                    self_folded.add(f)
+    if owner_obj is not None:
+        for s in [owner_obj.display_name, *owner_obj.self_aliases]:
+            f = fold_text(s)
+            if f:
+                self_folded.add(f)
+
+    # 3) Evidence check (subset of input_ref + key-token span check)
+    for fact in out.facts:
+        if not fact.evidence or not set(fact.evidence).issubset(allowed_input):
+            reasons.append("evidence_outside_input")
+        elif bundle.records:
+            cited = [records_by_id[rid] for rid in fact.evidence if rid in records_by_id]
+            if cited and not _check_evidence_span(
+                fact, cited, out_entities_by_ref, ctx_entities_by_id
+            ):
+                reasons.append("evidence_span_mismatch")
+
+    for lnk in out.links:
+        if not lnk.evidence or not set(lnk.evidence).issubset(allowed_input):
+            reasons.append("evidence_outside_input")
+
+    # 4) Target check for update / end
+    context_fact_ids = {
+        f["id"] for f in bundle.context.get("facts", []) if isinstance(f, dict) and "id" in f
+    }
+    for fact in out.facts:
+        if fact.op in ("update", "end"):
+            if not fact.target or fact.target not in context_fact_ids:
+                reasons.append("target_outside_context")
+
+    # 5) Entity guards & enum validation
+    for ent in out.entities:
+        ref = (ent.ref or "").strip()
+        name = _strip_new_prefix(ref)
+        if (
+            _RECORD_ID_RE.match(ref)
+            or _RECORD_ID_RE.match(name)
+            or _RAW_ENTITY_RE.match(ref)
+            or any(_RECORD_ID_RE.match(a.strip()) or _RAW_ENTITY_RE.match(a.strip()) for a in ent.aliases)
+        ):
+            reasons.append("entity_is_record_id")
+        if (
+            not name
+            or len(name) > 80
+            or any(ord(c) < 32 for c in name)
+            or any(len(a) > 80 or any(ord(c) < 32 for c in a) for a in ent.aliases)
+        ):
+            reasons.append("entity_name_invalid")
+        if ent.relation_to_user not in (None, "self"):
+            ent_folded = {fold_text(name), *(fold_text(a) for a in ent.aliases)}
+            if ref in ctx_self_ids or (ent_folded & self_folded):
+                reasons.append("entity_self_as_third_party")
+        if ent.kind not in VALID_ENTITY_KINDS or ent.relation_to_user not in VALID_RELATIONS:
+            reasons.append("schema_invalid")
+
+    for fact in out.facts:
+        if fact.op not in VALID_FACT_OPS:
+            reasons.append("schema_invalid")
+        for fe in fact.entities:
+            cname = _strip_new_prefix(fe.entity_id)
+            if _RECORD_ID_RE.match(cname) or _RAW_ENTITY_RE.match(fe.entity_id):
+                reasons.append("entity_is_record_id")
+            if not cname or len(cname) > 80:
+                reasons.append("entity_name_invalid")
+
+    for lnk in out.links:
+        if lnk.rel not in VALID_LINK_RELS:
+            reasons.append("schema_invalid")
+        for endpoint in (lnk.src, lnk.dst):
+            cname = _strip_new_prefix(endpoint)
+            if _RECORD_ID_RE.match(cname) or _RAW_ENTITY_RE.match(endpoint):
+                reasons.append("entity_is_record_id")
+            if not cname or len(cname) > 80:
+                reasons.append("entity_name_invalid")
+
+    # 6) Privacy gate
+    for fact in out.facts:
+        cat = _gate_fact(fact, attempt.worker_kind)
+        if cat == "credential" or fact.sensitive == "credential":
+            reasons.append("credential_in_fact")
+        elif cat and not fact.sensitive:
+            fact.sensitive = cat
+            quarantined[cat] = quarantined.get(cat, 0) + 1
+        elif fact.sensitive:
+            quarantined[fact.sensitive] = quarantined.get(fact.sensitive, 0) + 1
+
+    # 7) Injection guard
+    inspected_strings: list[str] = []
+    for fact in out.facts:
+        inspected_strings.append(fact.text or "")
+        if fact.text_orig:
+            inspected_strings.append(fact.text_orig)
+        for fe in fact.entities:
+            if fe.role:
+                inspected_strings.append(fe.role)
+    for ent in out.entities:
+        inspected_strings.append(ent.ref or "")
+        inspected_strings.extend(ent.aliases)
+    if any(_INJECTION_RE.search(s) for s in inspected_strings if s):
+        reasons.append("prompt_injection_detected")
+
+    # 8) Dedupe (within attempt and against existing store)
+    seen_hashes: set[str] = set(existing_hashes or ())
+    seen_norm_subjects: set[tuple[str, str]] = {
+        (s.strip().lower(), fold_text(t)) for s, t in (existing_norm_subjects or ())
+    }
+    for fact in out.facts:
+        norm_key = (fact.subject_path.strip().lower(), fold_text(fact.text))
+        hashes = _fact_hashes(fact.subject_path, fact.text)
+        if norm_key in seen_norm_subjects or any(h in seen_hashes for h in hashes):
+            reasons.append("duplicate_fact")
+        else:
+            seen_norm_subjects.add(norm_key)
+            seen_hashes.update(hashes)
+
+    unique_reasons = list(dict.fromkeys(reasons))
+    return Verdict(
+        ok=(len(unique_reasons) == 0),
+        reasons=unique_reasons,
+        quarantined=quarantined,
+    )
