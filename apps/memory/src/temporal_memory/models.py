@@ -227,14 +227,16 @@ class Attempt:
     fence_token: str
     worker_id: str
     worker_kind: WorkerKind
-    model: str
+    model: str                        # DECLARED by the worker at registration/claim; stamped by the SERVER, never by the LLM
     prompt_version: str
-    output: Optional[ExtractionOutput]
+    output: Optional[ExtractionOutput]  # the LLM output schema has NO model field (self-report is untrusted)
     tokens_in: int = 0
     tokens_out: int = 0
     cost_usd: float = 0.0             # 0 for owner-hook (user's own model); tokens still recorded
     started_at: Optional[str] = None
     finished_at: Optional[str] = None
+    model_observed: Optional[str] = None  # contract v1.2: model reported by the runner's own metadata
+                                          # (e.g. `claude -p` JSON modelUsage keys); mismatch vs `model` is flagged
 
 
 @dataclass
