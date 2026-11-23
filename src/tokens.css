@@ -1,0 +1,233 @@
+/* Mirsal design tokens — owned by the lead session. Every screen uses these; no screen defines its own colors/sizes. */
+/* Angle for the rotating Mirsal AI border (animated per element). */
+@property --ai-angle { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
+
+:root {
+  --z-viewer: calc(var(--z-modal) + 10);
+  /* layout */
+  --nav-width: 208px;
+  --sidebar-width: 380px;
+  --header-height: 76px;
+  --composer-height: 64px;
+  --gutter: 24px;
+
+  /* spacing */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-8: 32px;
+
+  /* radius */
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 20px;
+  --r-pill: 999px;
+
+  /* type */
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Inter, sans-serif;
+  --fs-xs: 11px;
+  --fs-sm: 13px;
+  --fs-md: 14px;
+  --fs-lg: 16px;
+  --fs-xl: 20px;
+  --fs-title: 28px;
+
+  /* color */
+  --bg: #eef3fa;
+  --surface: rgba(255, 255, 255, 0.94);
+  --surface-solid: #ffffff;
+  --glass: rgba(255, 255, 255, 0.72);
+  --glass-strong: rgba(255, 255, 255, 0.86);
+  --frost: rgba(255, 255, 255, 0.66);            /* iOS sidebar material: frost white (tunable in Settings → Appearance) */
+  --frost-blur: blur(20px) saturate(180%);
+  /* Mac desktop wallpapers (.desktop carries data-wallpaper; default = aurora) */
+  --wall-base: #1e3a8a;
+  --wall-1: #38bdf8;
+  --wall-2: #a78bfa;
+  --wall-3: #f472b6;
+  --wall-4: #22d3ee;
+  --wp-aurora: linear-gradient(135deg, #38bdf8, #a78bfa 55%, #f472b6);
+  --wp-desert: linear-gradient(135deg, #fdba74, #fb7185 55%, #f59e0b);
+  --wp-ocean: linear-gradient(135deg, #22d3ee, #38bdf8 55%, #2dd4bf);
+  --wp-mono: linear-gradient(135deg, #9ca3af, #4b5563 60%, #d1d5db);
+  --border: rgba(50, 80, 130, 0.1);
+  --border-strong: rgba(50, 80, 130, 0.18);
+  --text: #101828;
+  --text-2: #667085;
+  --text-3: #98a2b3;
+  --blue: #1677ff;
+  --blue-soft: rgba(22, 119, 255, 0.1);
+  /* Mirsal AI accent: the app blue (token names kept from the old purple). */
+  --purple: #1677ff;
+  --lavender: rgba(22, 119, 255, 0.08);
+  --lavender-glass: rgba(255, 255, 255, 0.86);
+  /* Rotating Mirsal AI halo (Antigravity-style): blue/cyan stops for a conic ring + blurred glow. */
+  --ai-cyan: rgba(34, 211, 238, 0.95);
+  --ai-blue: rgba(22, 119, 255, 0.95);
+  --ai-faint: rgba(147, 197, 253, 0.3);
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --bubble-in: #f2f4f7;
+  --bubble-out: #e3efff;
+
+  /* interaction + form surfaces (replace raw rgba/hex in modules) */
+  --on-accent: #ffffff;               /* text/icons on blue or other solid fills */
+  --hover: rgba(50, 80, 130, 0.07);
+  --active: rgba(50, 80, 130, 0.12);
+  --input-bg: rgba(118, 130, 160, 0.1);
+  --surface-hover: #f8faff;
+  --track: #dde6f3;                    /* progress/slider tracks, empty bars */
+  --scrollbar: rgba(50, 80, 130, 0.15);
+  --media-bg: #000000;                 /* behind video */
+  --photo-shade: rgba(0, 0, 0, 0.55);  /* gradient over photos; text on it stays white */
+  --bg-tint-1: #dfe9ff;
+  --bg-tint-2: #e6f0ff;
+  --nav-bg: var(--glass);              /* far-left nav */
+
+  /* effects */
+  --blur: blur(24px) saturate(140%);
+  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.05);
+  --shadow-md: 0 12px 40px rgba(30, 60, 110, 0.08);
+  --shadow-lg: 0 24px 64px rgba(30, 60, 110, 0.16);
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* mobile (iOS) — the phone layout in src/mobile; breakpoint is 820px in every @media */
+  --m-tabbar-h: 64px;
+  --m-navbar-h: 52px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --sep: rgba(60, 60, 67, 0.12);
+  --glass-edge: inset 0 0 0 0.5px rgba(255, 255, 255, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  --sheet-dim: rgba(16, 24, 40, 0.28);
+  /* iPhone 17 Pro Max hardware Dynamic Island (points); Mirsal's island grows out of it */
+  --hw-island-w: 126px;
+  --hw-island-h: 37px;
+  --hw-island-top: 11px;
+  /* e-sign documents: body text that renders Arabic and English, handwritten signatures per script */
+  --font-doc: "IBM Plex Sans Arabic", var(--font);
+  --font-sign-ar: "Aref Ruqaa", "IBM Plex Sans Arabic", serif;
+  --font-sign-en: "Great Vibes", cursive;
+  --brand-eand: #e00800;              /* e& wordmark (brand colour) */
+  --brand-uaepass: #00a37d;           /* UAE PASS accent (brand colour) */
+  /* Mirsal's island: light glass with a colourful AI halo (the hardware island in ?device stays black) */
+  --island: rgba(255, 255, 255, 0.9);
+  --on-island: var(--text);
+  --on-island-2: var(--text-2);
+  --hw-island: #000000;
+  --ai-violet: #8b5cf6;
+  --ai-pink: #ec4899;
+  --ai-amber: #f59e0b;
+
+  /* desktop: the macOS-style frame around the app (src/shell/MacDesktop) */
+  --mac-menubar-h: 30px;
+  --mac-titlebar-h: 38px;
+  --mac-dock-h: 76px;
+  --mac-window-r: 12px;
+  /* Mac desktop wallpapers (chosen in Settings → Appearance; .desktop carries data-wallpaper) */
+  --mac-menubar-bg: rgba(255, 255, 255, 0.22);
+  --mac-menubar-text: #ffffff;
+  --mac-titlebar-bg: var(--glass-strong);
+  --mac-dock-bg: rgba(255, 255, 255, 0.28);
+  --mac-window-edge: rgba(0, 0, 0, 0.18);
+  --mac-window-shadow: rgba(10, 20, 60, 0.35);
+  --mac-red: #ff5f57;
+  --mac-yellow: #febc2e;
+  --mac-green: #28c840;
+  --mac-light-edge: rgba(0, 0, 0, 0.18);
+  --mac-light-glyph: rgba(0, 0, 0, 0.55);
+
+/* wallpaper overrides (selected in the Dock; applied where data-wallpaper sits) */
+[data-wallpaper="desert"] {
+  --wall-base: #7c2d12;
+  --wall-1: #fdba74;
+  --wall-2: #fb7185;
+  --wall-3: #f59e0b;
+  --wall-4: #ef4444;
+}
+[data-wallpaper="ocean"] {
+  --wall-base: #0c4a6e;
+  --wall-1: #22d3ee;
+  --wall-2: #38bdf8;
+  --wall-3: #2dd4bf;
+  --wall-4: #818cf8;
+}
+[data-wallpaper="mono"] {
+  --wall-base: #1f2937;
+  --wall-1: #9ca3af;
+  --wall-2: #6b7280;
+  --wall-3: #d1d5db;
+  --wall-4: #4b5563;
+}
+
+  /* layering */
+  --z-vertical: 40;
+  --z-tray: 50;
+  --z-detail: 60;
+  --z-modal: 90;
+}
+
+/* ---------- Dark theme: <html data-theme="dark"> (set by actions.setTheme) ---------- */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0b0f17;
+  --surface: rgba(17, 24, 39, 0.94);
+  --surface-solid: #111827;
+  --glass: rgba(22, 29, 43, 0.72);
+  --glass-strong: rgba(22, 29, 43, 0.9);
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.14);
+  --text: #e6e9ef;
+  --text-2: #9aa3b2;
+  --text-3: #6b7385;
+  --blue: #3b8bff;
+  --blue-soft: rgba(59, 139, 255, 0.16);
+  --purple: #4c9aff;
+  --lavender: rgba(59, 139, 255, 0.14);
+  --lavender-glass: rgba(22, 29, 43, 0.88);
+  --ai-faint: rgba(59, 130, 246, 0.25);
+  --success: #34d399;
+  --warning: #fbbf24;
+  --danger: #f87171;
+  --bubble-in: #1c2333;
+  --bubble-out: #163a6b;
+  --hover: rgba(255, 255, 255, 0.06);
+  --active: rgba(255, 255, 255, 0.1);
+  --input-bg: rgba(255, 255, 255, 0.06);
+  --surface-hover: #161d2b;
+  --track: rgba(255, 255, 255, 0.1);
+  --scrollbar: rgba(255, 255, 255, 0.14);
+  --bg-tint-1: rgba(22, 119, 255, 0.05);
+  --nav-bg: var(--surface);
+  --bg-tint-2: rgba(34, 211, 238, 0.06);
+  --shadow-sm: 0 0 0 1px rgba(255, 255, 255, 0.04);
+  --shadow-md: 0 12px 40px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  --shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  --sep: rgba(255, 255, 255, 0.1);
+  --glass-edge: inset 0 0 0 0.5px rgba(255, 255, 255, 0.08);
+  --sheet-dim: rgba(0, 0, 0, 0.5);
+  --island: rgba(22, 29, 43, 0.9);
+}
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; margin: 0; }
+body {
+  font-family: var(--font);
+  font-size: var(--fs-md);
+  color: var(--text);
+  background:
+    radial-gradient(1200px 700px at 10% -10%, var(--bg-tint-1) 0%, transparent 60%),
+    radial-gradient(900px 600px at 100% 110%, var(--bg-tint-2) 0%, transparent 55%),
+    var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+button { font: inherit; color: inherit; cursor: pointer; border: 0; background: none; padding: 0; }
+input, textarea { font: inherit; color: inherit; }
+img { display: block; max-width: 100%; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 8px; }
+:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }

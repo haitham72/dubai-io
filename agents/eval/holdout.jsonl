@@ -1,0 +1,32 @@
+{"id": "x01", "cat": "in_app", "said": "can you open my email", "trigger": "email", "expect": [{"type": "act", "action": "open_screen", "args": {"screen": "mail"}}]}
+{"id": "x02", "cat": "in_app", "said": "show my schedule", "trigger": "schedule", "expect": [{"type": "act", "action": "open_screen", "args": {"screen": "calendar"}}]}
+{"id": "x03", "cat": "in_app", "said": "open my chat with Hana", "trigger": "Hana", "expect": [{"type": "act", "action": "open_chat", "args": {"contactId": "hana"}}]}
+{"id": "x04", "cat": "in_app", "said": "what's the forecast for Riyadh tomorrow", "trigger": "Riyadh", "expect": [{"type": "act", "action": "get_weather", "args": {"city": "Riyadh"}}]}
+{"id": "x05", "cat": "in_app", "said": "go to the Gaming Squad chat", "trigger": "Squad", "expect": [{"type": "act", "action": "open_chat", "args": {"contactId": "gaming"}}]}
+{"id": "x06", "cat": "send", "said": "text Arif Khan the meeting is cancelled", "expect": [{"type": "undo", "action": "send_message", "args": {"contactId": "arif", "text": "The meeting is cancelled"}}]}
+{"id": "x07", "cat": "send", "said": "tell Family I'll be home by seven", "expect": [{"type": "undo", "action": "send_message", "args": {"contactId": "family", "text": "I'll be home by seven"}}]}
+{"id": "x08", "cat": "send", "said": "send Mazen a message saying good luck today", "expect": [{"type": "undo", "action": "send_message", "args": {"contactId": "mazen", "text": "Good luck today"}}]}
+{"id": "x09", "cat": "send", "said": "please let the Gaming Squad know I can't play tonight", "expect": [{"type": "undo", "action": "send_message", "args": {"contactId": "gaming", "text": "I can't play tonight"}}]}
+{"id": "x10", "cat": "names", "said": "text Lina I'm downstairs", "expect": [{"type": "ask", "action": "send_message"}]}
+{"id": "x11", "cat": "names", "said": "message Sarah Malik thanks for the deck", "expect": [{"type": "undo", "action": "send_message", "args": {"contactId": "sarah", "text": "Thanks for the deck"}}]}
+{"id": "x12", "cat": "names", "said": "tell Arif Kahn I'm here", "heard": "tell Arif Kahn I'm here", "expect": [{"type": "ask", "action": "send_message"}]}
+{"id": "x13", "cat": "names", "said": "text Khalid see you soon", "expect": [{"type": "ask", "action": "send_message"}]}
+{"id": "x14", "cat": "correction", "said": "open stocks, no, files", "trigger": "files", "expect": [{"type": "act", "action": "open_screen", "args": {"screen": "files"}}]}
+{"id": "x15", "cat": "correction", "said": "text Mazen, sorry, Arif Khan, the car is outside", "expect": [{"type": "undo", "action": "send_message", "args": {"contactId": "arif", "text": "The car is outside"}}]}
+{"id": "x16", "cat": "correction", "said": "make a video of camels, actually make an image of camels", "expect": [{"type": "confirm", "action": "generate_image", "args": {"prompt": "camels"}}]}
+{"id": "x17", "cat": "multi", "said": "open calendar and then tell Hana the meeting is at ten", "trigger": "calendar", "expect": [{"type": "act", "action": "open_screen", "args": {"screen": "calendar"}}, {"type": "undo", "action": "send_message", "args": {"contactId": "hana", "text": "The meeting is at ten"}}]}
+{"id": "x18", "cat": "multi", "said": "open the chat with Mazen and tell him I'm on the way", "trigger": "Mazen", "expect": [{"type": "act", "action": "open_chat", "args": {"contactId": "mazen"}}, {"type": "undo", "action": "send_message", "args": {"contactId": "mazen", "text": "I'm on the way"}}]}
+{"id": "x19", "cat": "paid", "said": "create a picture of a futuristic Dubai skyline", "expect": [{"type": "confirm", "action": "generate_image", "args": {"prompt": "a futuristic Dubai skyline"}}]}
+{"id": "x20", "cat": "paid", "said": "do some research on the best electric SUVs in 2026", "expect": [{"type": "confirm", "action": "research_topic", "args": {"topic": "the best electric SUVs in 2026"}}]}
+{"id": "x21", "cat": "paid", "said": "search flights to Cairo next Thursday", "expect": [{"type": "confirm", "action": "search_flights", "args": {"to": "Cairo"}}]}
+{"id": "x22", "cat": "send", "said": "send her the file", "expect": [{"type": "undo", "action": "send_message", "args": {"contactId": "arif", "text": "The file"}}]}
+{"id": "x23", "cat": "chat", "said": "who won the world cup in 2022", "expect": [{"type": "chat"}]}
+{"id": "x24", "cat": "chat", "said": "cancel", "expect": []}
+{"id": "y01", "cat": "fast", "said": "any new notifications", "trigger": "notifications", "expect": [{"type": "act", "action": "check_notifications"}]}
+{"id": "y02", "cat": "fast", "said": "read me my new messages", "trigger": "messages", "expect": [{"type": "act", "action": "read_messages"}]}
+{"id": "y03", "cat": "fast", "said": "what did Omar say", "trigger": "Omar", "expect": [{"type": "act", "action": "read_messages", "args": {"contactId": "omar"}}]}
+{"id": "y04", "cat": "fast", "said": "check my email", "trigger": "email", "expect": [{"type": "act", "action": "open_screen", "args": {"screen": "mail"}}]}
+{"id": "y05", "cat": "fast", "said": "plan a holiday to Jordan in March with Hana", "trigger": "Hana", "expect": [{"type": "confirm", "action": "plan_trip", "args": {"contactId": "hana"}}]}
+{"id": "y06", "cat": "fast", "said": "show me my research", "trigger": "research", "expect": [{"type": "act", "action": "open_screen", "args": {"screen": "research"}}]}
+{"id": "y07", "cat": "fast", "said": "open the latest chat", "trigger": "chat", "expect": [{"type": "act", "action": "open_chat", "args": {"contactId": "arif"}}]}
+{"id": "y08", "cat": "fast", "said": "write an email to Omar about the trip budget", "trigger": "budget", "expect": [{"type": "act", "action": "compose_email"}]}

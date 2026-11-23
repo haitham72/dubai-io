@@ -1,0 +1,11 @@
+/* An agent result in the Mirsal AI workspace: room for media at its natural size. */
+.view { position: relative; display: flex; flex-direction: column; height: 100%; min-height: 0; background: var(--surface-solid); container-type: size; }
+.header { display: flex; align-items: center; gap: var(--s-3); height: var(--header-height); padding: 0 var(--gutter); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.heading { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.heading strong { font-size: var(--fs-lg); }
+.heading span { font-size: var(--fs-sm); color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.body { flex: 1; min-height: 0; overflow-y: auto; padding: var(--s-6) var(--gutter) var(--s-8); }
+.content { max-width: 1100px; margin: 0 auto; animation: rise 0.2s var(--ease); }
+@keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.toast { position: absolute; bottom: var(--s-6); left: 50%; transform: translateX(-50%); padding: var(--s-3) var(--s-4); background: var(--surface-solid); border: 1px solid var(--border-strong); border-radius: var(--r-sm); box-shadow: var(--shadow-md); font-size: var(--fs-sm); z-index: var(--z-modal); }
+@media (prefers-reduced-motion: reduce) { .content { animation: none; } }

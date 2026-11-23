@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Mirsal · Settings</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../src/tokens.css">
+<link rel="stylesheet" href="ios.css">
+<style>
+  .me { display: flex; align-items: center; gap: var(--s-4); padding: var(--s-4); }
+  .me img { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; }
+  .me b { display: block; font-size: 22px; font-weight: 600; }
+  .me span { font-size: var(--fs-sub); color: var(--text-2); }
+  .phone { padding: var(--s-4); }
+  .phone b { display: block; font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+  .phone span { font-size: var(--fs-sub); color: var(--text-2); line-height: 1.4; }
+</style>
+</head>
+<body data-tab="settings">
+<div class="screen">
+  <div class="top-fade"></div>
+  <div class="scroll">
+    <div class="head"><h1 class="large-title">Settings</h1></div>
+    <div class="search"><i data-lucide="search"></i>Search</div>
+
+    <div class="group">
+      <div class="me">
+        <img src="https://i.pravatar.cc/150?img=12" alt="">
+        <div style="flex:1"><b>Haitham</b><span>At work</span></div>
+        <span class="chev"><i data-lucide="qr-code"></i></span>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="cell"><span class="cell-ic t-blue"><i data-lucide="palette"></i></span><div class="cell-body"><span class="cell-label">Appearance</span><span class="cell-value">Light</span><span class="chev"><i data-lucide="chevron-right"></i></span></div></div>
+      <div class="cell"><span class="cell-ic t-grey"><i data-lucide="monitor"></i></span><div class="cell-body"><span class="cell-label">Mirsal Web/Desktop</span><span class="chev"><i data-lucide="chevron-right"></i></span></div></div>
+    </div>
+
+    <div class="group phone">
+      <b>+971 50 370 6142</b>
+      <span>Changing your phone number will migrate your account info, groups and settings.</span>
+    </div>
+
+    <div class="group">
+      <div class="cell"><span class="cell-ic t-cyan"><i data-lucide="sparkles"></i></span><div class="cell-body"><span class="cell-label">Mirsal AI</span><span class="cell-value">Nano Banana 2</span><span class="chev"><i data-lucide="chevron-right"></i></span></div></div>
+      <div class="cell"><span class="cell-ic t-blue"><i data-lucide="user-round"></i></span><div class="cell-body"><span class="cell-label">Account</span><span class="chev"><i data-lucide="chevron-right"></i></span></div></div>
+      <div class="cell"><span class="cell-ic t-green"><i data-lucide="message-circle"></i></span><div class="cell-body"><span class="cell-label">Chats</span><span class="chev"><i data-lucide="chevron-right"></i></span></div></div>
+      <div class="cell"><span class="cell-ic t-red"><i data-lucide="bell"></i></span><div class="cell-body"><span class="cell-label">Notifications</span><span class="chev"><i data-lucide="chevron-right"></i></span></div></div>
+      <div class="cell"><span class="cell-ic t-blue"><i data-lucide="shield-check"></i></span><div class="cell-body"><span class="cell-label">Privacy</span><span class="chev"><i data-lucide="chevron-right"></i></span></div></div>
+      <div class="cell"><span class="cell-ic t-green"><i data-lucide="arrow-down-up"></i></span><div class="cell-body"><span class="cell-label">Data Usage</span><span class="chev"><i data-lucide="chevron-right"></i></span></div></div>
+      <div class="cell"><span class="cell-ic t-orange"><i data-lucide="hard-drive"></i></span><div class="cell-body"><span class="cell-label">Storage Usage</span><span class="cell-value">2.4 GB</span><span class="chev"><i data-lucide="chevron-right"></i></span></div></div>
+    </div>
+
+    <div class="group">
+      <div class="cell"><span class="cell-ic t-grey"><i data-lucide="download"></i></span><div class="cell-body"><span class="cell-label">Save media to Camera Roll</span><span class="toggle"></span></div></div>
+    </div>
+  </div>
+</div>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="ios.js"></script>
+</body>
+</html>

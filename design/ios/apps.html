@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Mirsal · Apps</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../src/tokens.css">
+<link rel="stylesheet" href="ios.css">
+</head>
+<body data-tab="apps">
+<div class="screen">
+  <div class="top-fade"></div>
+  <div class="scroll">
+    <div class="head">
+      <h1 class="large-title">Apps</h1>
+      <div class="head-actions"><button class="gbtn"><i data-lucide="search"></i></button></div>
+    </div>
+
+    <div class="widgets">
+      <div class="widget sky">
+        <span class="w-label">Dubai <i data-lucide="navigation"></i></span>
+        <span class="w-big">31°</span>
+        <span class="w-small"><i data-lucide="sun" style="width:18px;height:18px"></i><b>Sunny</b>H:34° L:27°</span>
+      </div>
+      <div class="widget">
+        <span class="cal-day">TUESDAY</span>
+        <span class="cal-num">6</span>
+        <div class="ev"><b>Board demo</b><span>11:00 AM – 12:00 PM</span></div>
+        <div class="ev alt"><b>Kite Beach · Arif</b><span>Sat 5:30 PM</span></div>
+      </div>
+      <div class="widget wide">
+        <span class="w-label" style="color:var(--text-2)"><i data-lucide="trending-up"></i>Watchlist</span>
+        <div class="tick"><b>AAPL</b>
+          <svg class="spark" viewBox="0 0 100 26" preserveAspectRatio="none"><polyline class="up-line" fill="none" stroke-width="1.75" points="0,20 12,18 24,21 36,14 48,15 60,10 72,12 84,6 100,4"/></svg>
+          <span class="px">232.14</span><span class="chg up">+1.24%</span></div>
+        <div class="tick"><b>NVDA</b>
+          <svg class="spark" viewBox="0 0 100 26" preserveAspectRatio="none"><polyline class="up-line" fill="none" stroke-width="1.75" points="0,22 12,16 24,18 36,12 48,13 60,8 72,9 84,5 100,3"/></svg>
+          <span class="px">138.07</span><span class="chg up">+2.81%</span></div>
+        <div class="tick"><b>TSLA</b>
+          <svg class="spark" viewBox="0 0 100 26" preserveAspectRatio="none"><polyline class="down-line" fill="none" stroke-width="1.75" points="0,5 12,8 24,6 36,12 48,11 60,16 72,14 84,19 100,22"/></svg>
+          <span class="px">249.83</span><span class="chg down">−0.92%</span></div>
+      </div>
+    </div>
+
+    <h2 class="section-title">All apps</h2>
+    <div class="appgrid">
+      <a class="app"><span class="app-ic t-blue"><i data-lucide="plane"></i></span>Flights</a>
+      <a class="app"><span class="app-ic t-cyan"><i data-lucide="cloud-sun"></i></span>Weather</a>
+      <a class="app"><span class="app-ic t-red"><i data-lucide="calendar"></i></span>Calendar</a>
+      <a class="app"><span class="app-ic t-green"><i data-lucide="chart-candlestick"></i></span>Stocks</a>
+      <a class="app"><span class="app-ic t-blue"><i data-lucide="mail"></i></span>Mail<span class="badge">3</span></a>
+      <a class="app"><span class="app-ic t-orange"><i data-lucide="folder"></i></span>Files</a>
+      <a class="app"><span class="app-ic t-cyan"><i data-lucide="file-search"></i></span>Research</a>
+      <a class="app"><span class="app-ic t-grey"><i data-lucide="history"></i></span>History</a>
+    </div>
+  </div>
+</div>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="ios.js"></script>
+</body>
+</html>
