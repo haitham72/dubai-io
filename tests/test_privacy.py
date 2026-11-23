@@ -55,6 +55,24 @@ MATRIX = [
     ("OTP 482910 for login", (), "credential"),
     ("كلمة السر بتاعة الحساب", (), "credential"),
     ("My Emirates ID number is 784-1990-1234567-1", (), "credential"),
+    # --- credentials without the literal word "password" --------------------
+    ("wifi: BarshaL0bby!2026", (), "credential"),
+    ("Wi-Fi key for the flat is BarshaL0bby!2026", (), "credential"),
+    ("Your verification code is 482913", (), "credential"),
+    ("الباسورد بتاع الواي فاي BarshaL0bby!2026", (), "credential"),
+    # --- lookalike negatives: no secret, no block ---------------------------
+    ("the Wi-Fi was slow", (), None),
+    ("code review on Thursday", (), None),
+    ("flight code EK 384", (), None),
+    # --- weddings/engagements are social events: allowed --------------------
+    ("best man at Omar's wedding", ("Omar",), None),
+    ("Omar is getting engaged", ("Omar",), None),
+    ("خطوبة", (), None),
+    ("فرح", (), None),
+    # --- third-party dating/divorce/affair: still blocked -------------------
+    ("Omar is dating Sara", ("Omar", "Sara"), "family_third_party"),
+    ("Omar cheated on his wife", ("Omar",), "family_third_party"),
+    ("طلق مراته", (), "family_third_party"),
     # --- first-person logistics the user stated: persist ------------------
     ("Mom visits 1 Dec", (), None),
     ("I'm running a half marathon", (), None),
