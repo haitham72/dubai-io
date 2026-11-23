@@ -1,14 +1,18 @@
-import type { ComponentType } from "react";
+import React, { type ComponentType } from "react";
+import { ConnectScreen } from "../features/connect/ConnectScreen";
+import { QuestsScreen } from "../features/quests/QuestsScreen";
+import { VaultScreen } from "../features/vault/VaultScreen";
 import type { ConnectScreenProps, QuestsScreenProps, VaultScreenProps } from "./types";
 
-/**
- * I-B drop-in slots. Leave null until `src/features/{vault,quests,connect}` exists.
- * Then assign the exported screens (do not recreate those folders on this branch):
- *
- * import { VaultScreen } from "../features/vault";
- * import { QuestsScreen } from "../features/quests";
- * import { ConnectScreen } from "../features/connect";
- */
-export const vaultScreen: ComponentType<VaultScreenProps> | null = null;
-export const questsScreen: ComponentType<QuestsScreenProps> | null = null;
-export const connectScreen: ComponentType<ConnectScreenProps> | null = null;
+const MountedVaultScreen: ComponentType<VaultScreenProps> = ({ ownerId, apiBaseUrl }) =>
+  React.createElement(VaultScreen, { owner: ownerId, apiBaseUrl });
+
+const MountedQuestsScreen: ComponentType<QuestsScreenProps> = ({ ownerId, apiBaseUrl }) =>
+  React.createElement(QuestsScreen, { owner: ownerId, apiBaseUrl });
+
+const MountedConnectScreen: ComponentType<ConnectScreenProps> = ({ ownerId, apiBaseUrl }) =>
+  React.createElement(ConnectScreen, { owner: ownerId, apiBaseUrl });
+
+export const vaultScreen: ComponentType<VaultScreenProps> | null = MountedVaultScreen;
+export const questsScreen: ComponentType<QuestsScreenProps> | null = MountedQuestsScreen;
+export const connectScreen: ComponentType<ConnectScreenProps> | null = MountedConnectScreen;
