@@ -1,4 +1,4 @@
-# Mirsal log
+# Messenger log
 
 ## 23 Nov 2026 — P1 (Cursor)
 
@@ -19,3 +19,13 @@ Top risks:
 ## 23 Nov 2026 — P1 verification (Codex)
 
 Cross-checked Cursor’s nine-file P1 commit and preserved its slice order. Reproduced 200 agent passes with one Redis skip, all 145 offline routing eval items, 40 provider-mock server tests, TypeScript and four photo-window cases. The sandbox prevented a Vite build. Verified the source SHA on GitHub and added the organizer’s originality constraint to M0. Reconciled chat ownership with verified B0 identity and source deletion with memory revocation. The demo calendar now agrees with the approval payload.
+
+## 23 Nov 2026 — P1b (Cursor)
+
+Revised the plan to founder decisions D1–D7. M0 is a rebranded snapshot of the founder-authored code: keep 12, exclude 8, rebuild 16. The old product name is retired. The working name is Messenger.
+
+Rename inventory at `6b45ba4`: 908 matching lines in 172 files (285 identifiers, 193 paths, 430 strings) plus 2 image filenames. The rebrand slice is `MG-B2`. Its gate is a grep that prints nothing under `apps/messenger` and `apps/api/app/messenger`.
+
+D4 keeps the 19 Nov AI workspace. D3 leaves Community’s `chat_*` tables parked. D5 points memory at temporal_note (`api/app.py`, `mcp/server.py`, `models.py`, `privacy/forget.py`), not Hindsight, Honcho, or the Redis store. D6 and D7 drop the Builder and all AI image, video, and sticker generation. Packs are finished files. A user sticker is a photo plus on-device MediaPipe Selfie Segmentation (Apache-2.0).
+
+Transport stays open for P2: a cookie-authenticated FastAPI WebSocket until B0 identity exists. O2, the final name, stays open. No application code. No file outside `docs/submissions/messenger/` was edited.

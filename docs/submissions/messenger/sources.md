@@ -1,7 +1,9 @@
-# Mirsal — sources for the business deck
+# Messenger — sources for the business deck
+
+**Status:** planned (revised to D1–D6) — awaiting founder approval (23 Nov 2026, Cursor).
 
 **As-of for this file:** 23 Nov 2026.  
-Nothing here is a measured Mirsal result. Stage 2 blanks live in `demo-script.md`. A number is quoted on a slide only with the label in its row.
+Nothing here is a measured Messenger result. Stage 2 blanks live in `demo-script.md`. A number is quoted on a slide only with the label in its row.
 
 The personal-entry taxi figure in `PLAN.md` §7 (104,000+ items lost in Dubai taxis) stays off this deck.
 
@@ -16,7 +18,7 @@ Lead re-read the primary page on 23 Nov 2026. The abstract and the chapter body 
 - Publisher: OECD, *OECD Compendium of Productivity Indicators 2026*, “Labour productivity patterns across firm sizes”.
 - URL: https://www.oecd.org/en/publications/oecd-compendium-of-productivity-indicators-2026_734a5e68-en/full-report/labour-productivity-patterns-across-firm-sizes_7edc4fb8.html
 - `as_of`: data year 2024; page re-read 23 Nov 2026.
-- Slide use: context that smaller firms produce less turnover per person than large firms. The slide does not say Mirsal closes this gap.
+- Slide use: context that smaller firms produce less turnover per person than large firms. The slide does not say Messenger closes this gap.
 
 ### McKinsey Global Institute — time split (`estimate`, 2012)
 
@@ -80,7 +82,7 @@ Safe to quote only if the spoken line says “Microsoft, reported”:
 | HBR “executives spend nearly 23 hours a week in meetings” | July–August 2017 article attributes it to unnamed research. https://hbr.org/2017/07/stop-the-meeting-madness |
 | “65% / 71% / 64% of managers…” and n=182 | Not on the HBR page the lane opened. |
 | Microsoft 57% vs 60% ad hoc calls; “every 2 minutes”; “up 35% since 2021” vs “+8 percentage points” | The article body and its method note disagree. Drop both sides. |
-| McKinsey 20–25% and USD 900 billion–1.3 trillion as a Mirsal result | On the 2012 page as potential from social technologies. |
+| McKinsey 20–25% and USD 900 billion–1.3 trillion as a Messenger result | On the 2012 page as potential from social technologies. |
 | Gallup USD 438 billion beside USD 10 trillion | Different year and different page. Prefer to omit dollars. |
 | “63.5% of GDP” with an unqualified denominator, or “53% of GDP” | The opened Ministry series reports 63.5% of non-oil GDP in 2020. |
 | POC “169 tests” or “113 / 32 holdout” as proof of this chain | Spec §0: historical documentation. The independent reruns are documented in [audit.md](audit.md) as offline routing evidence. |

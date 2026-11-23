@@ -1,57 +1,53 @@
-# Mirsal — founder questions
+# Messenger — founder questions
 
-**Status:** planned — awaiting founder approval (23 Nov 2026, Cursor).  
-P2 cross-checks this list. Mirsal code does not start until these five are answered and Gate S has passed.
+**Status:** planned (revised to D1–D6) — awaiting founder approval (23 Nov 2026, Cursor).
 
-## Blocking
+P2 cross-checks what is still open. The import does not run until the keep/exclude list is signed. Chat that needs a verified `user_id` waits for Gate S.
 
-### 1. M0 — reuse, clean-room, or no-go
+## Answered (23 Nov)
 
-**Recommendation: clean-room.**  
-The POC at `6b45ba4` has no project licence. Concept sheets are “supplied”. Diwan pictures are “supplied by Haitham” and `ARCHITECTURE.md` says a separate project, formerly Diwan Hamdan, already holds them. Personal git emails (`ihisam@outlook.com`, `system722@gmail.com`) do not settle title. Nothing in the README or the commit messages says the work was made for an employer, so this is not a no-go on the evidence we have.
+### M0 — D1
 
-**Blocks:** every code slice (`MS-B2` onward), the subtree import, and any use of the logo, screens, or slides.  
-**Deadline:** the P2 founder gate, before Gate S is treated as permission to start Mirsal. Package target is Fri 18 Dec 2026.
+The office owns the old product and its brand. The redesign repo is the founder’s own app. Every feature the founder added there is the founder’s, and the office app never implemented those features. M0 is **reuse that code as a rebranded snapshot**, not clean-room and not a history-keeping subtree. The list is `ip-and-baseline.md`: keep 12, exclude 8, rebuild 16. The logo, the Diwan pictures, the 97 photos, the four sticker packs, and the Builder generator are excluded.
 
-Reuse requires written rights covering the proposed import and its history plus organizer clarification on whether the prior prototype can support the newly authored agent. See [the M0 evidence](ip-and-baseline.md).
+Import still waits on the signed sentence in that file. That signature is the rest of D1, not a new question.
 
-### 2. Updates tray
+### Updates tray — D4
 
-The spec (§0, §3) says: keep the compact Mirsal Updates tray, and do not reflow chat when it opens. Master does the other thing. `openUpdates()` sets `screen: "ai"` (`src/store.ts:147-148`), and the desktop row (`src/updates/index.tsx`) calls it. Commit `6b45ba4` is titled “Mirsal AI workspace replaces Updates tray”.
+The 19 Nov AI workspace (commit `6b45ba4`) is current. `openUpdates()` sets `screen: "ai"` (`src/store.ts:147-148`). The spec’s compact-tray line is outdated. `MG-B2` keeps the workspace and renames the visible product string.
 
-**Recommendation:** under clean-room, follow the spec. Chat stays mounted. AI is a compact surface on top of it. Under reuse, keep master’s workspace only if you explicitly override those two spec sentences.  
-**Blocks:** the first UI slice.  
-**Deadline:** same gate as M0. A reuse decision without this answer leaves the layout unspecified.
+### Messaging boundary — D3
 
-### 3. Messaging boundary with Community
+Messenger owns all person-to-person messaging: 1:1, groups, media, and stickers, plus the chat-to-action business agents. Community builds no messenger. Its Inbox is notifications only. A “message this person” action deep-links here once shared identity exists. The parked `chat_*` tables in `communities.py` are not extended, and this branch does not edit that file.
 
-`communities.py` already has `chat_threads`, `chat_messages`, `chat_reads`, `chat_archived`, and `contacts`, each scoped by `owner`. The module’s own comments say demo groups have no other real members. The Community spec says the Inbox is a placeholder or a minimal DM, and that two full messaging stacks should not be built. That file is owned by `societal`. This branch does not edit it.
+### Old name, logo, and the Builder — D1 and D6
 
-**Recommendation:** Mirsal owns 1:1 and small-group person-to-person messaging. Community Inbox stays the placeholder it is. When Mirsal transport and B0 identity exist, Community may deep-link “Open in Mirsal”. That is a route, not a second write into `chat_threads`.  
-**Blocks:** the P2 shared contract, and both teams’ chat designs.  
-**Deadline:** P2, before either team creates another message table.
+The old product name is retired. The working name is Messenger. The orb logo is excluded. The Builder service is excluded entirely: no code, prompts, design, emoji-bank data, or MCP adapter. Built-in packs are finished files the founder supplies. User stickers are a photo plus background removal (D7).
 
-### 4. Transport
+## Open
 
-The spec allows Supabase Realtime plus Postgres RLS, or a justified WebSocket service. Schema `dubaiio` is revoked from `anon`, `authenticated`, and `service_role` (`supabase/migrations/20261021000100_backend.sql`). The live session is an anonymous cookie. Browser Realtime would need a grant that schema does not have, and a JWT that B0 has not built.
+### Transport — for P2
 
-**Recommendation:** a FastAPI WebSocket bound to the B0 verified principal, with a short-lived same-origin session established after JWT verification. Keep the Postgres schema backend-only. Apply and test entry-owned RLS SQL from `apps/mirsal/supabase/` using a non-bypass database role before live pilot traffic. The API rechecks membership on subscribe, send and replay and removes revoked subscribers. Confirm how the entry SQL is applied before MS-B2 merges.
-**Blocks:** `MS-B2`.  
+The spec allows Supabase Realtime plus Postgres RLS, or a justified WebSocket. Schema `dubaiio` is revoked from `anon`, `authenticated`, and `service_role`. There is no verified JWT yet.
+
+**Recommendation:** a cookie-authenticated FastAPI WebSocket until B0 identity exists. Durable rows are `mg_*` in `dubaiio`. RLS SQL is written under `apps/messenger/supabase/` and is not called live until it is applied. The API membership check is the fence until then.
+
+**Blocks:** the live two-user claim in `MG-B3`. Local UI work in `MG-B2` does not wait on this.  
 **Deadline:** P2, so the shared contract does not assume browser Realtime.
 
-### 5. The name and the logo
+### O2 — the product name
 
-Clean-room covers code and assets. The word Mirsal is already the spec’s name, and the orb logo is a file in the POC (`public/mirsal-logo.png`, commit `fb13b2fa`) with no assignment.
+Messenger is the working name. The final name is not chosen.
 
-**Recommendation:** use the name Mirsal as the working title only if you confirm in writing that the name is yours (item 4 in `ip-and-baseline.md`). Do not ship the orb, the concept sheets, or the Diwan pictures in the entry until that same writing covers them. If the name is not yours, the deck uses a placeholder and the folder stays `apps/mirsal/` as the repo path already chosen.  
-**Blocks:** the deck, the video, and any chrome that draws a logo.  
-**Deadline:** before `MS-B7` (packaging). Earlier is better, because slide 1 will otherwise hedge the name.
+**Recommendation:** ship the working name in the UI and the deck until you pick one. Do not put the retired name or the excluded logo on either.  
+**Blocks:** the chrome and `MG-B8` only in the sense that the title string is still provisional. It does not block the snapshot.  
+**Deadline:** before the deck is recorded.
 
 ## Not blocking
 
-- Group size cap of 8. Change it when the first pilot needs a different number.
-- Phone overlay versus desktop workspace. The spec rule (chat stays put) covers both once question 2 is answered.
-- The independent verification reproduced the voice evals, typecheck, photo-window harness and 40 server tests. The sandbox build attempt was blocked and Redis skipped. See [test evidence](audit.md).
+- Group size cap of 8. Change it when a pilot needs a different number.
 - Voice and video calling stays P1. The business demo does not use it.
-- Stage 1 (family and friends) is a usability test. It is not a business-user claim, and family content is not inferred into memory (rule 9).
-- `workspace.task.create` is proposed in `demo-script.md` and is not in `CAPABILITIES` today. Registering it is build work on `MS-B5`, through `apps/api/app/mirsal/`, not a second approval policy.
+- Stage 1 (family and friends) is a usability test. Family content is not inferred into memory (rule 9).
+- `workspace.task.create` is not in `CAPABILITIES` today. `MG-B6` registers it from `apps/api/app/messenger/capabilities.py` at import time and does not edit `actions.py`.
+- How `apps/messenger/supabase/` SQL is applied waits until the two `main`s merge. Until then the API checks membership.
+- Concept sheets, Kling clips, and fonts without notices stay on the rebuild rows until the signed list says keep or drop.

@@ -1,6 +1,6 @@
-# Mirsal POC audit
+# Messenger POC audit
 
-**Status:** planned — awaiting founder approval (23 Nov 2026, Cursor).  
+**Status:** planned (revised to D1–D6) — awaiting founder approval (23 Nov 2026, Cursor).  
 **Commit audited:** `6b45ba48874a60174c728eecedc6c94c0b818231` (2026-11-19 20:20 +0400), branch `master`, throwaway clone `D:\Vscode\_scratch\mirsal-p1-tests`.  
 **What this repo is:** a clickable investor demo plus an offline Python agent suite. It is not a multi-user messenger.
 
@@ -55,7 +55,7 @@ The Vite build attempt in the sandbox hit an esbuild directory-access error. Bro
 
 Chat is client state. `src/store.ts:106` sets `messages: seedMessages`. `src/chats/data.ts` exports `seedMessages`. `sendToChat` and `receiveMessage` (`store.ts:162-172`) append to that array. There is no server chat table.
 
-Memory is Redis or process memory. Routes: `agents/mirsal_agents/routes/memory.py` GET/PUT facts and tasks. The in-process contract passed. The Redis parameter skipped. This is not Hindsight.
+Memory in this repo is Redis or process memory. Routes: `agents/mirsal_agents/routes/memory.py` GET/PUT facts and tasks. The in-process contract passed. The Redis parameter skipped. D5: the entry’s memory is temporal_note, not this store, and not Hindsight or Honcho.
 
 pgvector is photo search. `api/photos.ts` enables `vector` and searches `photo_jobs`. No message table uses it. This audit did not connect Postgres.
 
@@ -63,7 +63,7 @@ Auth is a demo-link cookie. `middleware.ts:1-2`: “a private-link gate for the 
 
 ## Updates tray
 
-The spec and master disagree. Spec §0 and §3: preserve the compact Mirsal Updates tray, and do not reflow or crop chat when it opens.
+D4 closes this. The 19 Nov AI workspace is current, and the spec’s tray line is outdated. The evidence of the disagreement, kept from the audit: spec §0 and §3 said preserve the compact tray and do not reflow chat when it opens.
 
 Commit `6b45ba4` subject: “Mirsal AI workspace replaces Updates tray; collapsible nav; white chat header.”
 

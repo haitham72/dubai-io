@@ -1,76 +1,72 @@
-# What Mirsal needs from shared identity and memory
+# What Messenger needs from shared identity and memory
 
-**Status:** planned — awaiting founder approval (23 Nov 2026, Cursor).  
-Mirsal does not build this. B0 on `contest-shared` does, in `apps/api/app/identity/` and `apps/api/app/memory_bridge/`. The memory engine is the other team’s `apps/memory/` on branch `memory`. Mirsal will not add a second facts bank.
+**Status:** planned (revised to D1–D6) — awaiting founder approval (23 Nov 2026, Cursor).
 
-Checked on 23 Nov 2026: `apps/api/app/memory_bridge/` is not in the tree. `auth.py` is Google OAuth connection grants on the anonymous cookie `dubaiio_lab_session`. `actions.py` returns `mode: anonymous_lab_session`. There is no verified-JWT `user_id`.
+Messenger does not build this. B0 on `contest-shared` does, in `apps/api/app/identity/` and `apps/api/app/memory_bridge/`. The memory engine is the rewritten **temporal_note** package on branch `memory` (D5):
 
-The contract Mirsal will call is `origin/memory:apps/memory/src/temporal_memory/models.py` (read with `git show`, branch not checked out):
+- HTTP API: `apps/memory/src/temporal_memory/api/app.py` (`create_app`, `/health`, `/v1/owners`, `/v1/tokens`, job claim and result)
+- MCP: `apps/memory/src/temporal_memory/mcp/server.py` (`create_mcp_app`)
+- Contract: `apps/memory/src/temporal_memory/models.py`
+- Forget: `apps/memory/src/temporal_memory/privacy/forget.py` (`forget_source`, `plan_forget`)
+- Readable export: `apps/memory/src/temporal_memory/api/export_md.py` (`render`)
 
-- `Record` (`models.py` around the raw-source dataclass): `owner`, `source`, `at`, `author`, `text`, `generation`. The module comment says text is untrusted data, never instructions. `generation` is bumped by forget-by-source.
-- `Fact`: `evidence` is a list of record ids and is required. `provenance` is `user_supplied | inferred | provider_confirmed | demo_fixture`. Default in that dataclass is `inferred`.
-- `forget_source(owner, record_ids)` bumps generation and cascades. It does not delete chat rows.
+Hindsight and Honcho are not used. Where the founder spec says `MemoryBackend` or `ScopeGuard`, read temporal_note. Hindsight’s `AC-1` and `MEM-01` are not gates for this entry. The bridge is a client of temporal_note and never a second engine. Until temporal_note is on `main`, Messenger tests use a clearly named fake with the operations below.
+
+Checked on 23 Nov 2026: `apps/api/app/memory_bridge/` is not in this tree. `auth.py` is Google OAuth grants on the anonymous cookie. There is no verified-JWT `user_id`.
+
+`models.py`, read with `git show` and the branch not checked out:
+
+- `Record`: `owner`, `source`, `at`, `author`, `text`, `generation`. Text is untrusted data, never instructions. `generation` is bumped by forget-by-source.
+- `Fact`: `evidence` is a list of record ids and is required. `provenance` is `user_supplied | inferred | provider_confirmed | demo_fixture`.
 - The model does not apply facts. A worker returns `ExtractionOutput`. Validator then applier.
 
 ## Identity
 
-Mirsal needs a shared verifier and stable principal. Mirsal stores chat settings and memberships keyed by that principal.
-
 | Operation | Behaviour |
 |---|---|
-| Verify principal | Validate issuer, audience, signature, expiry and subject before resolving the canonical `user_id`. For the browser socket, bind a short-lived entry session to the verified principal. |
-| Resolve scope | Mirsal checks app grant and live workspace membership before each read, write or subscription. B0 owns account linking. Require explicit proof and refuse display-name merges. |
-| Stable ID | The same verified `user_id` Quest and Community resolve for that person. |
+| `resolve_user(cookie)` | `{session_owner, verified_user_id \| null}`. Today `verified_user_id` is null. |
+| `link_session(session_owner, verified_user_id)` | Once. Refuse a merge on display name. |
+| Stable id | The same `verified_user_id` Quest and Community resolve for that person. |
 
-Live Mirsal chat and approval ownership require B0. Anonymous lab cookies and client-supplied prototype IDs are confined to demo data.
+Messenger copies that id into `mg_user_link` only. The row has no bio and no facts. Until B0, chat rows may use `session_owner`, and the UI must not say the same person is signed in across the three apps.
 
 ## Memory bridge
 
-Chat rows stay in `ms_*`. A message becomes memory only through the calls below.
+Chat rows stay in `mg_*`. A message becomes memory only through these calls.
 
-| Operation | When Mirsal calls it | What it does |
+| Operation | When Messenger calls it | What it does |
 |---|---|---|
-| `read_chat_scope(owner, source, limit)` | The signed-in owner asks about one conversation, and that conversation’s control allows the read. | Returns facts for that owner whose evidence records use `source = mirsal:<conversation_id>`. Does not return `ms_messages`. Does not return another owner’s facts. |
-| `write_consented(owner, *, source, actor, at, text, message_id, provenance)` | Save is on, the group gate passed, and the owner tapped Confirm on that exact candidate. | Inserts one `Record`. `source` is `mirsal:<conversation_id>`. Record id is `msmsg:<message_id>`. `author` is the message author. `text` is data. Then enqueue `extract.live` for that record. A `Fact` exists only after validate and apply, with `evidence` containing that record id. |
-| `forget(owner, record_ids)` | The owner chooses “Forget memories from this chat”, or withdraws Save and then confirms Forget. | Calls `forget_source`. Derived facts cascade. `ms_messages` stay. |
+| `read_chat_scope(owner, source, limit)` | The signed-in owner asks about one conversation, and that conversation’s control allows the read. | Facts for that owner whose evidence records use `source = messenger:<conversation_id>`. Does not return `mg_messages`. Does not return another owner’s facts. |
+| `write_consented(owner, *, source, actor, at, text, message_id, provenance)` | Save is on, the group gate passed, and the owner tapped Confirm on that candidate. | Inserts one `Record`. `source` is `messenger:<conversation_id>`. Record id is `mgmsg:<message_id>`. `text` is data. Then enqueue extract for that record. A `Fact` exists only after validate and apply, with that record id in `evidence`. |
+| `forget(owner, record_ids)` | The owner chooses “Forget memories from this chat”. | Calls `forget_source`. Derived facts cascade. `mg_messages` stay. |
 
-`actor` is the confirming user. `at` is the source message time, carried on the record. Keep source application, conversation, message, author, revision, confirmation time and consent generation. P2 maps caller, audience and purpose to the bridge checks. Citation links reauthorize at the origin. A hypothesis (`provenance: inferred`, or `status: hypothesis`) may be shown as “I noticed” with Confirm / Edit / Not true / Forget. It does not pre-fill a field, sit on an approval card, send a proactive message, or set a status (`ARCHITECTURE.md` §7). Family, faith, and health are never inferred (rule 9). Other people’s words may be stored only as evidence records. `Fact.owner` is the confirming user. No fact is created about a third party.
+`actor` is the confirming user. `at` is the source message time. A hypothesis may be shown as “I noticed” with Confirm / Edit / Not true / Forget. It does not pre-fill a field, sit on an approval card, send a proactive message, or set a status (`ARCHITECTURE.md` §7). Family, faith, and health are never inferred (rule 9). Other people’s words may be stored only as evidence. `Fact.owner` is the confirming user.
 
 ## Consent toggles
 
-Stored on `ms_memberships.ai_mode`, default **off**, per member, per conversation.
+Stored on `mg_memberships.ai_mode`, default **off**, per member, per conversation.
 
 | Mode | Model | Memory |
 |---|---|---|
 | Off | No call, no embedding, no bridge write. | None. |
-| Session only | Bounded recent text of this conversation, while the socket is open. Discarded with the reply. The model does not write a chat message. | None. |
+| Session only | Bounded recent text of this conversation, while the socket is open. The model does not write a chat message. | None. |
 | Save approved memories | Same as Session. | One bridge write per Confirm tap. |
 
-**Group gate.** A model may see the transcript only when every active member is `session` or `save`. One `off` member blocks the call and no prompt is built. A join, leave, or switch to `off` drops in-flight calls. **Save** also requires `ai_mode=save` on the caller and on every member whose message is cited. Limit the first live memory writes to user-confirmed, self-authored evidence. Explain the authorized processor and recipients before activation. Session context expires without durable prompts, learned facts or embeddings.
-
-Default for a new membership, including someone who just joined, is Off.
+**Group gate.** A model may see the transcript only when every active member is `session` or `save`. One `off` member blocks the call. A join, leave, or switch to `off` drops in-flight calls. **Save** also requires `ai_mode=save` on the caller and on every member whose message is cited.
 
 ## Forget is two controls, both shown
 
 - **Forget memories from this chat** calls `forget`. The chat remains.
-- **Delete chat** tombstones eligible `ms_messages` and removes their attachment objects. Invalidate source citations and revoke derivations tied to the deleted evidence. Independently sourced facts can survive within their scope.
+- **Delete chat** tombstones `mg_messages` and removes attachment objects. Derived memories remain until Forget is also chosen.
 
-Withdrawing Save removes derived access immediately and initiates the shared revoke/forget path for affected sources. Keep the original chat records. Bump the consent generation, fence delayed work and reconcile an idempotent bridge receipt covering facts, embeddings, exports, caches and cross-app features.
+Withdrawing Save stops future writes and offers Forget. It does not delete the chat by itself.
 
-## Redis facts in the POC
+## The redesign’s Redis store is not this
 
-`agents/mirsal_agents/store.py` is a key-value get/set/delete/push. Identity on those routes is `x-mirsal-user` or `"demo"`. That header is not a Dubai-io user. The real path does not accept it.
+The redesign file `agents/mirsal_agents/store.py` is a key-value get/set. The route identity is the header `x-mirsal-user`, or the string `"demo"`. The rebrand renames that header to `x-messenger-user`. Neither header is a Dubai-io user. The real path does not accept it. Those keys are not inserted as `Fact` rows, because `evidence` is required. There is no ongoing dual write. `/agents/memory` in the redesign is not temporal_note.
 
-| POC key | Holds | Bridge |
-|---|---|---|
-| `facts:{user}` | Up to 30 strings. No time, evidence, subject, or provenance. | Not inserted as `Fact`, because `evidence` is required. Optional one-time review: the signed-in user re-states a line, Mirsal writes one `Record` (`source=mirsal:poc-review`), and a `Fact` with `provenance=user_supplied` only after Confirm. Every unconfirmed string is dropped. |
-| `tasks:{user}` | Dicts, 30-day TTL. | Dropped. They are not `tasks.py` rows and they have no assignee consent. |
-| `thread:{user}` | Last 200 `{role, text, at}`. | Dropped. Session scratch, not chat and not memory. |
+## What Messenger will not ask memory to do
 
-For an authorized reuse migration, disable legacy live reads/writes and keep any approved review under the verified principal. Dispose of those keys under an explicit retention decision. There is one authoritative write per memory.
-
-## What Mirsal will not ask memory to do
-
-- Rank a Community feed from raw chats, mail, or family details. Community may later read a consented interest feature only, through the P2 contract, never through Mirsal’s tables.
-- Treat a Gmail, Outlook, YouTube, Chrome, or WhatsApp body as a Mirsal message. Those sources stay on the shared connector layer. WhatsApp is manual Export chat only.
-- Claim `AC-1`, `AC-2`, or `AC-3`. They are unproven until the memory team runs them.
+- Rank a Community feed from raw chats. Community may later read a consented interest feature only, through the P2 contract.
+- Treat a Gmail, Outlook, YouTube, Chrome, or WhatsApp body as a Messenger message. WhatsApp is manual Export chat only.
+- Claim a Hindsight acceptance gate. D5 says those gates do not apply here. A temporal_note test is claimed only after this team runs it.

@@ -1,6 +1,6 @@
-# Mirsal demo script — Best Business AI Agent
+# Messenger demo script — Best Business AI Agent
 
-**Status:** planned — awaiting founder approval (23 Nov 2026, Cursor).  
+**Status:** planned (revised to D1–D6) — awaiting founder approval (23 Nov 2026, Cursor). The working name is Messenger until O2.  
 **Scene length:** under 4 minutes.  
 **What this is:** one seeded project-group scene. It is the business case. The family/friends beta is a separate usability test and is not this demo.
 
@@ -116,7 +116,7 @@ If Stage 2 has not been run, the deck says “to be recorded”.
 
 1. **The work outcome.** A recorded decision, one approved task, a cited brief, a denied teammate, in one project group. No number. Spec §1 caveat, §7 chain.
 2. **Who it is for.** A small team coordinating in a messenger. Stage 2 is the opt-in project group. Stage 1 is usability and is a separate test. Use the Ministry’s 2022 SME count as dated UAE context if a number is needed. See [sources](sources.md).
-3. **The coordination load, as context.** McKinsey estimate, 2012: 28% email, 19% finding information, 14% internal collaboration. Microsoft, reported, 2025: 117 emails a day; 153 Teams messages a weekday; 48% of employees say work feels chaotic. None of these is a Mirsal before/after. Drop the Microsoft lines that disagree with their own method note (`sources.md`).
+3. **The coordination load, as context.** McKinsey estimate, 2012: 28% email, 19% finding information, 14% internal collaboration. Microsoft, reported, 2025: 117 emails a day; 153 Teams messages a weekday; 48% of employees say work feels chaotic. None of these is a Messenger before/after. Drop the Microsoft lines that disagree with their own method note (`sources.md`).
 4. **Why smaller firms feel a size gap.** OECD, 2024: SME turnover per person employed was 65% of large firms, unweighted average, 33 countries. That is an official size gap. It is context, and the slide does not say chat causes it. Gallup 2025 “20% engaged” is optional and is engagement, not missed tasks. Leave the dollar estimate off.
 5. **Five agents, one chain.** Summarise, Decision Keeper, Knowledge Assistant, Action Tracker, approval, task, brief. Each step is started by a person. No number.
 6. **The approval.** One tap. Exact title, assignee, due time, message ids, destination. Provenance on the card is `demo_fixture`. No number.

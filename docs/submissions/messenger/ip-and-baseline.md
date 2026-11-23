@@ -1,78 +1,80 @@
-# Mirsal IP evidence and M0 recommendation
+# Messenger IP list and M0 recommendation
 
-**Status:** planned — awaiting founder approval (23 Nov 2026, Cursor).  
-**Gate:** M0. The founder decides. This file copies nothing.  
-**Recommendation: clean-room.**
+**Status:** planned (revised to D1–D6) — awaiting founder approval (23 Nov 2026, Cursor).  
+**Gate:** M0. The founder confirms the table. This file copies nothing.  
+**Recommendation: reuse the founder-authored code as a rebranded snapshot.** This replaces the 23 Nov clean-room recommendation. D1 is the decision.
 
-A personal git author is not title. The POC has no project licence. Concept sheets and Diwan pictures are described as supplied. A separate project, formerly Diwan Hamdan, is the stated home of the events backend and of pictures Mirsal “never makes”. Nothing in the README, `CLAUDE.md`, `ARCHITECTURE.md`, `Mirsal-redesign.md`, or the commit messages says the POC was made for an employer, under an NDA, or as client work. Nadi is documented as a demo that calls no real HR system. The founder spec §1 (line 44) reports that the idea/design was discussed in connection with an office app. Keep the office link in the evidence record and obtain path-specific rights evidence.
+The office owns the old product and its brand. The redesign repo is the founder’s own separate app. Every feature the founder added there is the founder’s, and the office app never implemented those features. The import, after this list is confirmed, is:
 
-Build agents for a clean-room `apps/mirsal/` do not open `D:\Vscode\Mirsal-redesign`, its screens, its slides, or its brand files. The idea in the founder spec may be used. The repo’s code, layout, name, logo, and assets may not, until the written confirmations below exist.
+```
+git subtree add --prefix=apps/messenger https://github.com/haitham72/Mirsal-redesign master --squash
+```
 
-## Repo identity (re-checked 23 Nov 2026)
+A rebrand commit follows immediately. The old repo’s history stays in the source repo. Nothing in this plan runs that command.
+
+**Counts: keep 12, exclude 8, rebuild 16.**
+
+The sentence the founder signs: **I confirm this keep/exclude/rebuild list.**
+
+## Keep / exclude / rebuild
+
+Paths below are the redesign repo’s own paths, so a builder can find the files. They are not the Messenger product name.
+
+| Group | Path or asset | Origin evidence | Decision | Reason |
+|---|---|---|---|---|
+| Brand | `public/mirsal-logo.png` | `fb13b2fa` (2026-10-05): cut-out of `Slides/mirsal-logo.png`, which is not in HEAD | exclude | Office brand graphic. |
+| Brand | `public/favicon.png` | Same commit. `index.html` uses it as the favicon | exclude | Same cut-out. |
+| Brand | `public/manifest.webmanifest` | Product name and the logo path | rebuild | Retired name, and the icon points at the excluded logo. The founder supplies the Messenger name and a new mark. |
+| Brand | `index.html` title, apple title, touch icon, favicon | Those tags | rebuild | Same retired name and the same two excluded images. |
+| Brand | Logo `<img>` and menu name in `src/shell/Nav.tsx` and `src/shell/MacDesktop.tsx` | Those tags load the excluded logo | rebuild | The shell stays in the `src/` keep row. These tags point at a new mark. The visible name is renamed in the rebrand. |
+| Concept sheets | `Slides/*.jpg`, including `Slides/Mirsal.jpg` and `Slides/output_grid/output_grid_1.jpg`–`4.jpg` (19 images) | Design doc lines 8 and 1321 call them supplied. Added in foundation `7f580a8` | rebuild | Founder confirms each sheet is founder-authored and contains no office logo or office-app screenshot. A sheet that fails that check moves to exclude. |
+| Concept sheets | `Slides/output_grid/combine_slides.py` | Grids `Slides/*.jpg` | rebuild | Tooling for those sheets. It stays only if the sheets stay. |
+| Screen frames | `screens/GPT design/01.jpg` | `d77dea6` (2026-10-06) | rebuild | No licence. Founder confirms it is founder-made and is not an office screen. |
+| Screen frames | `screens/dynamic island/` (6 files, including `flighty-dynamic-island.webp`, `sddefault.jpg`, `81ChrBjnuEL.png`) | `d77dea6` | exclude | Reference scrapes with no licence. Filenames are a third-party island, a video thumbnail, and a marketplace-style id. |
+| Screen frames | `screens/4 screens.jpg`, `Layer 0.jpg`, `Layer 2.jpg`–`Layer 10.jpg`, `calender.jpg`, `files.jpg`, `research.jpg` | `d77dea6` and `3145409` | rebuild | Founder-added frames, no licence. Founder confirms they are not office-app screenshots. |
+| Diwan pictures | `public/diwan/rashid-bin-saeed-anniversary/` (6 JPGs) | `diwan_demo.json` line 2: supplied commemoration posts, and variations Diwan already holds. `ARCHITECTURE.md` line 156: the app never makes these pictures | exclude | Client assets. |
+| Diwan client | `agents/mirsal_agents/diwan.py`, `routes/diwan.py`, `src/updates/diwan.ts`, and the event calls in `src/apiclient/agents.ts` | `ARCHITECTURE.md` lines 87–88: the events backend is the separate Diwan project, formerly Diwan Hamdan | keep | Founder-authored client. It asks Diwan for events and for pictures Diwan already has. The rebrand renames the product string. The excluded pictures are not imported with it. |
+| Diwan demo copy | `agents/mirsal_agents/diwan_demo.json` | Paths point at the excluded pictures | rebuild | Replace with a non-client demo before import. |
+| Nadi | `agents/mirsal_agents/skills/nadi.py`, `routes/nadi.py` | The module says connector `"demo"`. `ARCHITECTURE.md`: no real HR system is called | keep | Founder-authored demo connector. A live Nadi URL is not part of this import. |
+| Photos | `public/photos/` (97 JPGs) | Commit `9fecf2f`. No licence file | exclude | Unlicensed photographs, not app code. |
+| Video clips | `media/videos/desert-highway-dusk.mp4`, `dubai-beach-sunset.mp4`, `dubai-skyline-golden-hour.mp4` | Design notes call them bundled Kling clips. Added in `d77dea6` | rebuild | No licence. Founder confirms redistribution or replaces them. Playback code stays in `src/`. |
+| Sticker packs | `public/stickers/` (`nile-days`, `yalla`, `wheels-up`, `office-mood`, plus `index.json`) | Claude commit `d5b6607`, “Four demo packs” | exclude | D6 and D7. Builder stand-in packs are not imported. Founder-made packs are new files under `apps/messenger/public/packs/`. |
+| Sticker generation | `agents/mirsal_agents/sticker_builder.py`, `routes/stickers.py`, `skills/stickers.py` (`BuilderLibrary`), `agents/tools/demo_stickers.py`, and the generate calls in `src/apiclient/agents.ts` and `src/chats/skills.ts` | `sticker_builder.py` calls an external pack service or returns demo mode | exclude | Nothing from the Builder service. User stickers are a photo plus background removal, planned separately. |
+| UI | `src/` (shell, chats, screens, mobile, store, ui kit, voice) | Foundation `7f580a8` | keep | Founder-authored UI. Logo tags and sticker-generation calls are the rows above, not this keep. |
+| HTTP API | `api/*.ts` and `lib/http.ts`, `lib/higgsCli.ts` | Photo route stores metadata. The 97 JPGs stay excluded | keep | Founder API. Image and video generation endpoints are dropped in the sticker re-plan even though this tree is kept, because D7 forbids AI image and video generation. |
+| Agents | `agents/` except the Diwan, Nadi, and sticker-generation files already rowed | Voice, research, mail, memory, meeting, cleaner, MCP client | keep | Founder agent service. Diwan client and Nadi stay. Sticker generation stays out. |
+| Retired server | `server/` | The repo guide calls it the retired Python API | keep | Founder code, later retired. It is not the office app. |
+| iPhone samples | `design/ios/*.html`, `ios.css`, `ios.js` | `d77dea6` | keep | Founder samples. Unsplash and Google Font links are the rows below. |
+| Unsplash and Pravatar | Hotlinks in `design/ios/*.html` and `src/ui/index.tsx` | No licence in the repo | rebuild | Replace the hotlinks or add the notices. They are not owned assets. |
+| Lucide | `lucide-react` 0.460.0 | Lockfile licence ISC | keep | The ISC notice stays with the package. |
+| OFL fonts | Inter and Archivo under `motion graphics/app/public/fonts/`, with `OFL.txt` | SIL OFL 1.1 notices are in the tree | keep | The notices ship with the files. |
+| Fonts without notices | Cormorant, IBM Plex Mono, and `motion graphics/app/public/fonts/stroke/` | No matching notice in HEAD | rebuild | Attach each licence or drop the files. |
+| Google Fonts links | `index.html` and `design/ios/index.html` | Hotlinked families with no OFL file in the repo | rebuild | Self-host with notices, or keep the link and add the notices. |
+| Cleaner dependency | `remove-ai-watermarks==0.45.1`, named in the cleaner docs, not vendored | No licence file in this repo | rebuild | Record that package’s licence or drop the dependency. The founder wrappers `ai_cleaner.py` and `ai_cleaner_engine.py` stay in the agents keep. |
+| Motion engine | `motion graphics/LICENSE.pdoom-engine` and `motion graphics/app/src/` | MIT, Copyright (c) 2026 Giacomo Magnanini | keep | The MIT notice travels with the engine. |
+| Motion audio | `motion graphics/audio/` (`music.mp3`, `sfx/`, `vo/`) | No licence for the mp3s | rebuild | Founder confirms who made the audio and that Messenger may ship it, or replaces it. |
+| Motion photos | `motion graphics/app/public/photos/` | No licence in that folder | rebuild | Founder confirms rights or replaces the files. |
+| Pytest dump | `pytest-of-h.ibrahim/` | Commit `cce429a`. Pytest basetemp plus cleaner JPEGs | exclude | Accidental test output. `h.ibrahim` is only a directory segment. The commit author is `haitham72`. |
+| Project licence | Repo root | `package.json` is `"private": true` and has no `license` field | rebuild | The snapshot needs a founder licence statement. The pdoom MIT file and the two OFL notices do not licence the app. |
+| Founder docs | `README.md`, `ARCHITECTURE.md`, `CLAUDE.md`, the design doc, `PRESENTATION_GUIDE.md`, `prompt.md`, `run.md`, `docs/` | Diwan and Nadi contracts live in `ARCHITECTURE.md` | keep | Founder design and build docs. The rebrand renames the product string. |
+| Founder tests | `tests/` and `agents/tests/` | Photo-window script in `package.json`. The pytest dump is the exclude row | keep | Tests travel with the kept code. Drop or rewrite tests that only cover excluded sticker generation or excluded images. |
+
+## Repo identity (kept from the 23 Nov audit)
 
 | Item | Evidence |
 |---|---|
 | Local clone | `D:\Vscode\Mirsal-redesign`, branch `master`, not switched |
 | Remote | `https://github.com/haitham72/Mirsal-redesign.git` |
-| HEAD | `6b45ba48874a60174c728eecedc6c94c0b818231` — 2026-11-19 20:20 +0400 — Haitham Mohamed `<ihisam@outlook.com>` — “Mirsal AI workspace replaces Updates tray; collapsible nav; white chat header” |
+| HEAD | `6b45ba48874a60174c728eecedc6c94c0b818231` — 2026-11-19 20:20 +0400 — Haitham Mohamed `<ihisam@outlook.com>` — AI workspace replaces the Updates tray |
 | First commit | `7f580a816933cd34a3f31ce7f7b0f94a2c322ab5` — 2026-10-04 — Haitham `<system722@gmail.com>` — foundation |
 | Commits on HEAD | 142 |
-| Project licence | None. `package.json` has `"private": true` and no `license` or `author` field. The only licence files in the tree are `motion graphics/LICENSE.pdoom-engine` (MIT, Copyright (c) 2026 Giacomo Magnanini) and SIL OFL notices for Inter and Archivo |
-| GitHub visibility | Not stated in the local docs. `README.md` and `CLAUDE.md` call the Vercel demo link private. That is not a statement about the GitHub repo |
+| Project licence | None at the repo root. The only licence files in the tree are `motion graphics/LICENSE.pdoom-engine` and the two SIL OFL notices |
+| GitHub visibility | Not stated in the local docs. The README calls the Vercel demo link private. That is not a statement about the GitHub repo |
 
-Git identities on `--all` (shortlog, lane A): `haitham72 <ihisam@outlook.com>` 74, `haitham72 <ihisam@Outlook.com>` 26, `Haitham <system722@gmail.com>` 25, `Claude <noreply@anthropic.com>` 8 (author and committer), `haitham72 <59456439+haitham72@users.noreply.github.com>` 5, `Haitham Mohamed <ihisam@outlook.com>` 3, `Vercel <vercel[bot]@users.noreply.github.com>` 1. Trailers: 45 `Co-Authored-By: Claude Opus 5.5`, and one Cursor trailer on `3145409d532a2c4026abf79c17df7e7b0a3f8d94`.
+Git identities on `--all`: `haitham72 <ihisam@outlook.com>` 74, `haitham72 <ihisam@Outlook.com>` 26, `Haitham <system722@gmail.com>` 25, `Claude <noreply@anthropic.com>` 8, `haitham72 <59456439+haitham72@users.noreply.github.com>` 5, `Haitham Mohamed <ihisam@outlook.com>` 3, `Vercel <vercel[bot]@users.noreply.github.com>` 1. Trailers: 45 Claude co-author lines, and one Cursor trailer on `3145409d`. A personal git email is not title. D1 is what settles the keep rows: the founder states that the features added in this repo are the founder’s, and that the office app never implemented them.
 
-No commit message in the four named docs uses the words employer, NDA, or work-product. “client” in those docs means API client.
-
-## Evidence per area
-
-“Git author” means only who the commit records.
-
-| Area | What the history shows | Still open |
-|---|---|---|
-| `src/` (138 files) | Earliest foundation commit, Haitham `<system722@gmail.com>`. Latest is HEAD, Haitham Mohamed `<ihisam@outlook.com>`. 76 commits. Authors are the personal identities above, plus 3 Claude and 1 Vercel | Whether `system722@gmail.com` is the founder’s personal account. Diwan/Nadi UI is wired from here (`CLAUDE.md`) |
-| `api/` (11) | 8 commits, 2026-10-06 to 2026-10-11, only `haitham72` outlook addresses | Legal title |
-| `agents/` (78) | Earliest `662217265b804b68ad723a178aa85fc7ac67fd85` 2026-10-08, authored by Claude `<noreply@anthropic.com>`. Latest 2026-10-15, `haitham72`. 13 commits: personal accounts plus 3 Claude | No grant for the Claude-authored first version. Diwan and Nadi connectors live here. `ARCHITECTURE.md:87`: the events backend is the separate Diwan project, formerly Diwan Hamdan. `agents/README.md`: Nadi is a demo HR connector and “no real HR system is called”. `ai_cleaner_engine.py` cites `remove-ai-watermarks v0.45.1` and has no copyright header |
-| `server/` (5) | Foundation commit through 2026-10-11. `CLAUDE.md` calls `server/` the retired Python API. Authors: `haitham72` and `system722@gmail.com` | Same `system722` question |
-| `design/` (9) | One commit, 2026-10-06, `haitham72 <ihisam@Outlook.com>`, `design/ios/*` | HTML hotlinks Unsplash. Unsplash is not founder-owned |
-| `media/` (3) | Same 2026-10-06 commit. Three mp4s: desert highway, beach, skyline. Docs call them bundled Kling clips, generated once | Which account generated them, and whether they may be copied |
-| `Slides/` (20) | Foundation commit only, Haitham `<system722@gmail.com>`. JPGs plus `output_grid/output_grid_1..4.jpg` | `Mirsal-redesign.md:8`: “15 selected concept images supplied in the final contact sheets.” `:1321`: “The supplied four contact sheets.” Supplier is unnamed |
-| `screens/` (21) | Added 2026-10-06 by `haitham72`, Cursor co-author on `3145409d`, message “add run notes plus reference screens” | Filenames include `GPT design/`, `Layer *.jpg`, `dynamic island/`, `flighty-dynamic-island.webp`. Docs do not say who made them |
-| `public/` (143) | Logo commit `fb13b2fa` 2026-10-05, `haitham72`, “Use the Mirsal orb logo”. Latest 2026-10-08 | See brand, Diwan images, photos, stickers |
-| Brand | Product name from the foundation commit (`package.json` `"name": "mirsal-poc"`). `public/mirsal-logo.png` and `public/favicon.png` added only in `fb13b2fa`. The message says they are cut-outs of `Slides/mirsal-logo.png`. That path is not in HEAD | No trademark or assignment file. The named source PNG is not in git |
-| Diwan images | Six JPGs under `public/diwan/rashid-bin-saeed-anniversary/`, commit `930a69d6`. `diwan_demo.json:2`: “2026 commemoration posts supplied by Haitham” and “variations Diwan already holds”. `ARCHITECTURE.md:156`: “Mirsal never makes pictures: it asks Diwan for the ones it already has.” | Who holds the pictures, and a yes or no on copying them |
-| Photos | 97 JPGs in `public/photos/`, one commit `9fecf2fe` 2026-10-06, message “97 images in public/photos (Vercel CDN)” | No source and no licence |
-| Stickers | 32 SVGs and four packs (`nile-days`, `office-mood`, `wheels-up`, `yalla`), only commit `d5b66074`, authored by Claude. `office-mood` is a pack title. `ARCHITECTURE.md` also points at a separate Mirsal Builder library | Whether the SVGs are original, Builder exports, or generated |
-| `pytest-of-h.ibrahim/` | One commit, 2026-10-15, `haitham72`. Pytest temp images. The string `h.ibrahim` appears as that directory name only | Whose machine account that is |
-
-## What the founder must confirm in writing
-
-A git email is not enough. Each line is a separate confirmation.
-
-1. `haitham72`, Haitham Mohamed, `<ihisam@outlook.com>`, and the 25 commits by Haitham `<system722@gmail.com>` are the founder’s own personal work.
-2. The 8 commits authored by Claude, the 45 Claude co-author trailers, and the Cursor trailer on `3145409d` were made at the founder’s direction on the founder’s own project, and the founder has the rights to reuse that output.
-3. The Vercel bot commit is the founder’s own Vercel project.
-4. No employer, client, Diwan project, or Nadi system owns the POC code, the name Mirsal, or the orb logo.
-5. Who supplied the 15 concept images, the four contact sheets, and the `screens/` files, and that they are not a client’s, a designer’s, or another third party’s.
-6. Who supplied the six Diwan commemoration images, and a clear yes or no on copying them.
-7. Source and redistribution rights for the 97 `public/photos/` files.
-8. The three Kling clips were generated on the founder’s own account and may be copied.
-9. The four sticker packs are original, and are not Mirsal Builder or other third-party artwork.
-10. `pytest-of-h.ibrahim` is the founder’s own machine account, or a written explanation of whose it is.
-11. Diwan (formerly Diwan Hamdan) and Nadi are outside systems the founder may name, and the demo fixtures are not confidential client or workplace data.
-12. The founder is allowed to copy from `github.com/haitham72/Mirsal-redesign` into another repository, and under which licence. There is no project licence today.
-
-Third-party notices stay under their own terms and are not founder-original: Unsplash hotlinks, Lucide, the OFL fonts, `remove-ai-watermarks`, and the pdoom MIT file.
-
-## Contest eligibility
-
-The organizer requires an original AI agent and restricts taking it from an existing repository. Existing businesses may propose a new capability. The public wording leaves the eligibility of this exact prototype-reuse path open. Ask the founder to obtain written organizer clarification before an import is approved. Any history-preserving import also needs rights clearance for historical material, including assets deleted at HEAD. [Official Participation rules](https://www.dubaichambers.com/en/web/dubai-chamber-of-digital-economy/create-ai-agents)
-
-## What would change the recommendation
-
-- **To reuse:** a written assignment or licence covering the code, the name, the logo, and every asset class above, plus a statement that `system722@gmail.com` and `h.ibrahim` are the founder’s own accounts and that Diwan and Nadi material is cleared or excluded. The import, if the founder then says reuse, is `git subtree add --prefix=apps/mirsal https://github.com/haitham72/Mirsal-redesign master`, keeping history. This plan does not run that command.
-- **To no-go:** neither authorized reuse nor a separately authored, eligible clean-room submission is possible. If documentary evidence identifies an employer- or client-owned area, exclude it from the clean-room brief and require written rights for any proposed reuse.
+No commit message in the four named docs uses the words employer, NDA, or work-product. “client” in those docs means API client, except the Diwan pictures, which the architecture describes as pictures Diwan already holds.
 
 ## What this file does not decide
 
-The test rerun and the working/mock classification are `audit.md`. They do not change M0. Public visibility on GitHub, if the repo is public, would still not prove ownership.
+The test rerun and the working/mock classification stay in `audit.md`. They do not change this list. Public visibility on GitHub would still not prove ownership. The rename inventory and the sticker re-plan are separate sections of the revised plan.
