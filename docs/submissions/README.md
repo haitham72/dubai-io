@@ -22,7 +22,7 @@ The branch rules are in `docs/submissions/CLAUDE.md` on each of those branches. 
    ```
    Never force-push `main`.
 2. **Do not merge `contest-shared`, `societal` or `business` into `main`.** Once your `main` is on GitHub, they are reconciled deliberately from the founder's PC (see below).
-3. **The memory team (temporal_note rebuild):** the shared memory bridge needs 4 small HTTP routes and 2 fixes. See `git show origin/contest-shared:docs/submissions/shared/handoff-temporal-note.md`. Please reply with whether the rebuild exposes them, or what its interface will be. Until then the bridge runs against a fake with the same interface.
+3. **The memory team: the companion's new memory (the temporal_note rebuild) is expected to implement the hand-off.** That is 4 HTTP routes (`CR-TM-1` … `CR-TM-4`) and 2 fixes, in `git show origin/contest-shared:docs/submissions/shared/handoff-temporal-note.md` (§0 Expectation). It is the single memory service for all three entries. Acceptance: the bridge contract suite (`apps/api/tests/test_memory_bridge_*.py` on `contest-shared`) passes against the rebuilt service. If its interface differs, reply with it, and the bridge adapts. Until then the entries run on a fake with the same interface.
 4. **Security:** the Community app's Next.js had a known advisory. `apps/site` also uses Next.js; run `npm audit` there.
 5. **Old branches** are archived as tags (`archive/*`). To restore one: `git switch -c <name> archive/<tag>`.
 
