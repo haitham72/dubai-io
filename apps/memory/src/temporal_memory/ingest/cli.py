@@ -22,8 +22,10 @@ from .email import (
     parse_mailbox,
     parse_notes,
 )
+from .ai_exports import chatgpt_records
 from .export_cli import export_owner_tree
 from .gmail_json import parse_gmail_json
+from .takeout import TakeoutError, takeout_records
 from .temporal_note import import_temporal_note
 from .triage import ingest_records, is_noise_email, is_noise_whatsapp
 from .whatsapp import parse_whatsapp_file
@@ -185,6 +187,50 @@ def _cmd_import_browser(args: argparse.Namespace, db: Database) -> dict[str, Any
     return summary
 
 
+def _cmd_import_takeout(args: argparse.Namespace, db: Database) -> dict[str, Any]:
+    if not args.path:
+        raise ValueError("takeout import requires a ZIP_OR_DIR path")
+    target_path = Path(args.path)
+    if not target_path.exists():
+        raise FileNotFoundError(f"Import path does not exist: {target_path}")
+    try:
+        records = takeout_records(args.owner, target_path, since=args.since)
+    except TakeoutError as exc:
+        raise ValueError(str(exc)) from exc
+    summary = ingest_records(
+        db,
+        args.owner,
+        records,
+        split=not args.no_split,
+        apply_triage=False,
+    )
+    summary["kind"] = "takeout"
+    summary["dropped_triage"] = int(summary.get("dropped_triage", 0))
+    return summary
+
+
+def _cmd_import_chatgpt(args: argparse.Namespace, db: Database) -> dict[str, Any]:
+    if not args.path:
+        raise ValueError("chatgpt import requires a ZIP_OR_JSON path")
+    target_path = Path(args.path)
+    if not target_path.exists():
+        raise FileNotFoundError(f"Import path does not exist: {target_path}")
+    try:
+        records = chatgpt_records(args.owner, target_path, since=args.since)
+    except ValueError as exc:
+        raise ValueError(str(exc)) from exc
+    summary = ingest_records(
+        db,
+        args.owner,
+        records,
+        split=not args.no_split,
+        apply_triage=False,
+    )
+    summary["kind"] = "chatgpt"
+    summary["dropped_triage"] = int(summary.get("dropped_triage", 0))
+    return summary
+
+
 def _cmd_import(args: argparse.Namespace, db: Database) -> dict[str, Any]:
     store = PostgresGraphStore(db)
     if store.get_owner(args.owner) is None:
@@ -195,6 +241,12 @@ def _cmd_import(args: argparse.Namespace, db: Database) -> dict[str, Any]:
 
     if args.kind == "browser":
         return _cmd_import_browser(args, db)
+
+    if args.kind == "takeout":
+        return _cmd_import_takeout(args, db)
+
+    if args.kind == "chatgpt":
+        return _cmd_import_chatgpt(args, db)
 
     if not args.path:
         raise ValueError(f"Import kind {args.kind!r} requires a path")
@@ -260,6 +312,8 @@ def build_parser() -> argparse.ArgumentParser:
             "temporal-note",
             "agent-sessions",
             "browser",
+            "takeout",
+            "chatgpt",
         ],
     )
     imp_p.add_argument(
@@ -274,7 +328,7 @@ def build_parser() -> argparse.ArgumentParser:
     imp_p.add_argument(
         "--since",
         default=None,
-        help="Inclusive cutoff date/time (YYYY-MM-DD or ISO) for agent-sessions and browser",
+        help="Inclusive cutoff date/time (YYYY-MM-DD or ISO) for agent-sessions, browser, takeout and chatgpt",
     )
     imp_p.add_argument(
         "--tool",
