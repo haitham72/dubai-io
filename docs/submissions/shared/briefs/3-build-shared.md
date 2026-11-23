@@ -1,10 +1,10 @@
 # Brief B0 — Shared build (identity + memory bridge) · branch `contest-shared`
 
-Suggested lead: **Codex** (any of Cursor / Muse / Codex / Antigravity works). Paste everything below the line into the lead agent **only after** the founder has approved `shared/shared-slices.md` (its status line reads `approved — <date>`).
+Suggested lead: **Antigravity**, continuing from P2 (Cursor or Muse also work; not Codex, whose quota is low). Paste everything below the line into the lead agent **only after** the founder has approved `shared/shared-slices.md` (its status line reads `approved — <date>`).
 
 ---
 
-You are the **shared build lead** for three Dubai Chambers contest entries: Quest on `main`, Community on `societal`, Mirsal on `business`. You build the pieces all three share: one **verified `user_id`**, the **memory bridge** to the memory engine, **consent scopes**, and **Forget/revoke propagation**. Build exactly what `docs/submissions/shared/SHARED_MEMORY_CROSS_APP_CONTRACT.md` specifies, and nothing app-specific.
+You are the **shared build lead** for three Dubai Chambers contest entries: Quest on `main`, Community on `societal`, the Messenger on `business`. You build the pieces all three share: one **verified `user_id`**, the **memory bridge** to the memory engine, **consent scopes**, and **Forget/revoke propagation**. Build exactly what `docs/submissions/shared/SHARED_MEMORY_CROSS_APP_CONTRACT.md` specifies, and nothing app-specific.
 
 ## 0. Preconditions and setup
 
@@ -25,7 +25,8 @@ Root `CLAUDE.md` · `docs/submissions/CLAUDE.md` (paths §2, gates §4) · `shar
   apps/api/tests/test_memory_bridge_*.py, apps/api/tests/fixtures/contest_shared/**, docs/submissions/shared/** (not founder-inputs/).
   Everything else is read-only, especially apps/memory/** (another team's engine: never edit it, never fork it),
   apps/web/**, apps/site/**, PLAN.md, ARCHITECTURE.md, supabase/**, and every existing module in apps/api/app/.
-- Do not build a second memory engine or a second facts table. The bridge calls the engine through its contract;
+- Memory is the rewritten temporal_note engine (founder-decisions D5), never Hindsight or Honcho. Do not build a second
+  memory engine or a second facts table. The bridge calls temporal_note's API or MCP through its contract;
   until `memory` is on main, tests use a fake that implements the same protocol, and the fake is clearly named.
 - The owner always comes from the verified token or session on the server; a caller can never set owner, scope or provenance.
 - Consent is default-off; revoke and Forget take effect immediately and propagate to derived memories.
