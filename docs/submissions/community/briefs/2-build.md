@@ -1,6 +1,6 @@
 # Brief B — Build · Dubai-io Community (Entry 2) · branch `societal`
 
-Suggested lead: **Antigravity** (any of Cursor / Muse / Codex / Antigravity works). Paste everything below the line into the lead agent **only after** the founder has approved `docs/submissions/community/DELIVERY_ROADMAP.md` (its status line reads `approved — <date>`).
+Suggested lead: **Muse** (it planned this entry; not Codex, whose quota is low). Paste everything below the line into the lead agent **only after** the founder has approved `docs/submissions/community/DELIVERY_ROADMAP.md` (its status line reads `approved — <date>`).
 
 ---
 
@@ -22,15 +22,16 @@ Root `CLAUDE.md` · `docs/submissions/CLAUDE.md` (paths §2, gates §4, rules §
 
 ```
 - Work only on your lane branch cm/<slice-id>, cut from societal. Never touch main.
-- Write only your slice's files, all inside: apps/community/**, apps/api/app/community/**,
-  apps/api/app/communities.py, apps/api/app/social_generation.py, apps/api/tests/test_community_*.py,
-  apps/api/tests/test_communities.py, apps/api/tests/test_social_generation.py,
-  apps/api/tests/fixtures/community/**, docs/submissions/community/**.
-  Everything else is read-only: apps/web/** (frozen), apps/site/**, apps/memory/**, PLAN.md, ARCHITECTURE.md,
-  supabase/**, packages/**, docs/submissions/shared/**, apps/api/app/identity/**, apps/api/app/memory_bridge/**,
-  and every other module in apps/api/app/.
-- Memory only through apps/api/app/memory_bridge (never a new facts table); identity only through apps/api/app/identity.
-- Feed ranking reads consented interest features only. Never raw Quest chat, Gmail, Outlook or Mirsal text,
+- ADD files only, inside: apps/community/**, apps/api/app/community/**, apps/api/tests/test_community_*.py,
+  apps/api/tests/fixtures/community/**, docs/submissions/community/**. Never edit an existing file: the other PC's
+  main (Dubai-io iOS + desktop) is far ahead, and any edit risks a merge conflict. Read-only includes the parked
+  apps/api/app/communities.py and social_generation.py (import them, never edit them) and their tests, apps/web/** (frozen),
+  apps/site/**, apps/memory/**, PLAN.md, ARCHITECTURE.md, supabase/**, packages/**, docs/submissions/shared/**,
+  apps/api/app/identity/**, apps/api/app/memory_bridge/**, and every other module in apps/api/app/. Settings come from env.
+- Memory only through apps/api/app/memory_bridge (a client of the temporal_note engine; never Hindsight or Honcho,
+  never a new facts table); identity only through apps/api/app/identity.
+- Community builds no messenger (founder D3): the Inbox is notifications only; person-to-person chat is the Messenger's.
+- Feed ranking reads consented interest features only. Never raw Quest chat, Gmail, Outlook or Messenger text,
   sensitive facts, family details or third parties' data.
 - AI drafts publish only after the user approves the exact revision and destination (a registered capability
   plus an approval card). Moderation flags only; a human resolves.
@@ -43,7 +44,7 @@ Root `CLAUDE.md` · `docs/submissions/CLAUDE.md` (paths §2, gates §4, rules §
 ## 3. Use subagents
 
 At most 4 lanes in parallel, following `DELIVERY_ROADMAP.md`; parallel slices never share a file. Typical lanes:
-- **Social core API:** profiles, follows, posts, comments, reactions, groups, notifications, moderation events, built on `communities.py`.
+- **Social core API:** profiles, follows, posts, comments, reactions, groups, notifications, moderation events, in `apps/api/app/community/` with `cm_` tables (reading the parked `communities.py` where useful, never editing it).
 - **Media and storage:** signed URLs and quotas.
 - **Agents** in `apps/api/app/community/`:
   - Discovery with "Why this?"
