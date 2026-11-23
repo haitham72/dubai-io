@@ -76,6 +76,14 @@ Real-mode wired frames captured 24 Nov 2026 against local Supabase GoTrue (`http
 - `docs/submissions/messenger/review/wired-phone-chats.png` — real-mode phone Chats (390×844)
 - `docs/submissions/messenger/review/wired-phone-ai.png` — real-mode phone Messenger AI (390×844)
 
+MG-B7c v2 frames (local licensed assets, single sidebar wordmark, `"Ask Messenger"` story icon, zero broken images, exact uncropped viewports):
+
+- `docs/submissions/messenger/review/v2/desktop-chats.png` — real-mode desktop Chats (1440×900)
+- `docs/submissions/messenger/review/v2/desktop-ai.png` — real-mode desktop Messenger AI (1440×900)
+- `docs/submissions/messenger/review/v2/phone-chats.png` — real-mode phone Chats (390×844)
+- `docs/submissions/messenger/review/v2/phone-ai.png` — real-mode phone Messenger AI (390×844)
+- `docs/submissions/messenger/review/v2/phone-chats-demo.png` — explicit `?demo=1` phone Chats (`Demo data`, 390×844)
+
 ## 24 Nov 2026 — MG-B7 (Antigravity)
 
 Merged `contest-shared` (`272fd9e`) into `business` via `--no-ff`, bringing `docs/submissions/shared/local-supabase/` and `apps/api/tests/fixtures/contest_shared/db_fixtures.py`.
@@ -151,6 +159,33 @@ Exact commands and outputs:
    D:\Vscode\dubai-io\apps\api\.venv\Scripts\python.exe -m pytest -q tests
    ```
    Output: `1 failed, 546 passed, 15 skipped, 1 warning in 188.07s (0:03:08)` (only the pre-existing Windows symlink privilege failure `test_connectors.py::test_filesystem_is_scoped`).
+
+5. Gate 2 (`apps/web` untouched): `git diff --quiet mobile-pwa-baseline-2026-10-23 HEAD -- apps/web` → exit `0`.
+
+6. Old-name grep gate: `git grep -n -i -e "m[i]rsal" -- apps/messenger apps/api/app/messenger apps/api/tests/test_messenger_e2e.py apps/api/tests/test_messenger_web_e2e.py` → zero matches (exit `1`).
+
+## 24 Nov 2026 — MG-B7c (Antigravity)
+
+Fixed the broken demo/profile assets, duplicate desktop wordmarks, and missing story/AI orb icons without hotlinks, AI-generated images, or unrelated visual changes:
+
+- **Local assets (`apps/messenger/public/demo/`):** Stored 22 Unsplash-licensed scene JPEGs (`scenes/photo-*.jpg`), 10 Unsplash-licensed portrait avatars (`avatars/avatar-01..10.jpg`), one original geometric SVG icon (`messenger-orb.svg`), and `CREDITS.md` labelled `Demo data`.
+- **Wiring & wordmark fixes (`apps/messenger/src/`):** Resolved `img()` and `avatar()` to `/demo/scenes/*` and `/demo/avatars/*` in `ui/index.tsx`; set `ORB = "/demo/messenger-orb.svg"` in `mobile/parts.tsx`; rendered `ORB` in `updates/index.tsx` for the `Messenger AI` row; removed the duplicate `<span className={s.logo}>Messenger</span>` in `shell/Nav.tsx`; replaced bare duplicate `"Messenger"` tile text in `shell/MacDesktop.tsx` with `MessageCircle` icons matching the other tiles; extended `tests/store-wiring/` with local `/demo/` + zero-hotlink checks `(h)`.
+- **V2 captures (`docs/submissions/messenger/review/v2/*.png`):** Re-captured all views at exact `1440×900` desktop and `390×844` phone viewports with the live API + local Supabase GoTrue running (`naturalWidth === 0` count = `0` on every page).
+
+Exact commands and outputs:
+
+1. Messenger frontend gates (`apps/messenger`):
+   - `npm.cmd run typecheck` (`tsc -b --noEmit && tsc -p tsconfig.api.json`) → exit `0`.
+   - `npm.cmd run test:photo-window` → `ALL PHOTO-WINDOW CHECKS PASSED` (exit `0`).
+   - `npm.cmd run test:store` → 8/8 checks `(a)`–`(h)` passed (`ALL STORE-WIRING CHECKS PASSED`, exit `0`).
+   - `npm.cmd run build` → `✓ 1710 modules transformed.`, `✓ built in 5.73s`.
+   - `python agents/run.py test` → `158 passed, 1 skipped in 4.97s`.
+
+2. Messenger offline API suite (`tests/test_messenger_*.py`, `SUPABASE_LOCAL_URL=""`, `TEST_DATABASE_URL=""`, `DATABASE_URL=" "`): `28 passed, 2 skipped in 3.77s`.
+
+3. Live local Supabase GoTrue + Playwright two-browser E2E (`tests/test_messenger_e2e.py` + `tests/test_messenger_web_e2e.py`): `6 passed in 8.94s`.
+
+4. Gate 1 — Whole API suite (`apps/api`, `DATABASE_URL=" "`): `1 failed, 546 passed, 15 skipped, 1 warning in 194.52s (0:03:14)` (only pre-existing Windows symlink privilege failure `test_connectors.py::test_filesystem_is_scoped`).
 
 5. Gate 2 (`apps/web` untouched): `git diff --quiet mobile-pwa-baseline-2026-10-23 HEAD -- apps/web` → exit `0`.
 

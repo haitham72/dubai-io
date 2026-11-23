@@ -43,7 +43,6 @@ export function Nav() {
   return (
     <nav className={`${s.nav} ${collapsed ? s.navCollapsed : ""}`} aria-label="Main">
       <div className={s.brand}>
-        <span className={s.logo}>Messenger</span>
         <span className={s.brandName}>Messenger</span>
         <button className={s.collapseBtn} onClick={() => setCollapsed((c) => !c)}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"} title={collapsed ? "Expand" : "Collapse"}>

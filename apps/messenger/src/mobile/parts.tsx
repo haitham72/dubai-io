@@ -5,7 +5,7 @@ import { useStore } from "../store";
 import { ICON } from "../ui";
 import s from "./mobile.module.css";
 
-export const ORB = "";
+export const ORB = "/demo/messenger-orb.svg";
 
 /** Round Liquid Glass control (toolbar button). */
 export function GlassButton({ icon: I, label, onClick, primary }: {

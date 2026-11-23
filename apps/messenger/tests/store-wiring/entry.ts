@@ -3,6 +3,8 @@ import { useChatList, useChat } from "../../src/chats/list";
 import type { Chat } from "../../src/types";
 
 export { actions, getState, subscribe } from "../../src/store";
+export { img, avatar } from "../../src/ui";
+export { ORB } from "../../src/mobile/parts";
 export {
   ChatApiError,
   ChatCoreSocket,

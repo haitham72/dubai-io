@@ -17,6 +17,9 @@ const {
   fetchMessages,
   sendMessageRest,
   resolveWsUrl,
+  img,
+  avatar,
+  ORB,
 } = mod;
 
 const fail = (msg) => {
@@ -625,6 +628,57 @@ let activeConvId = "";
   assert(getState().auth.status === "signed_out", "expired restoreSession should reset to signed_out");
   assert(globalThis.sessionStorage.getItem("messenger.session") === null, "expired session must be cleared");
   console.log("PASS (g): restoreSession re-hydrates valid session and clears 401 session cleanly");
+}
+
+/* ---------- (h) Local /demo/ asset paths & zero hotlinks ---------- */
+{
+  const isLocalDemoAsset = (v) =>
+    typeof v === "string" &&
+    v.length > 0 &&
+    v.startsWith("/demo/") &&
+    !/^https?:\/\//i.test(v);
+
+  const sceneIds = [
+    "photo-1512453979798-5ea266f8880c",
+    "photo-1507525428034-b723cf961d3e",
+    "photo-1511895426328-dc8714191300",
+    "photo-1542751371-adc38448a05e",
+    "photo-1522202176988-66273c2fd55f",
+    "photo-1436491865332-7a61a109cc05",
+    "photo-1537996194471-e657df975ab4",
+    "photo-1498837167922-ddd27525d352",
+    "photo-1486406146926-c627a92ad1ab",
+    "photo-1495616811223-4d98c6e9c869",
+    "photo-1555400038-63f5ba517a47",
+    "photo-1504674900247-0877df9cc836",
+    "photo-1511512578047-dfb367046420",
+    "photo-1519046904884-53103b34b206",
+    "photo-1434030216411-0b793f4b4173",
+    "photo-1556909114-f6e7ad7d3136",
+    "photo-1586724237569-f3d0c1dee8c6",
+    "photo-1503177119275-0aa32b3a9368",
+    "photo-1513635269975-59663e0ac1ad",
+    "photo-1497366754035-f200968a6e72",
+    "photo-1516321318423-f06f85e504b3",
+    "photo-1519389950473-47ba0277781c",
+  ];
+  for (const id of sceneIds) {
+    const out = img(id);
+    assert(isLocalDemoAsset(out) && out === `/demo/scenes/${id}.jpg`, `unexpected img("${id}"): ${out}`);
+  }
+  const fallbackImg = img("unknown-scene-id");
+  assert(
+    isLocalDemoAsset(fallbackImg) && fallbackImg === "/demo/scenes/photo-1512453979798-5ea266f8880c.jpg",
+    `unexpected fallback img(): ${fallbackImg}`,
+  );
+
+  for (const n of [-3, 0, 1, 9, 10, 14, 2.7]) {
+    const out = avatar(n);
+    assert(isLocalDemoAsset(out) && /^\/demo\/avatars\/avatar-(?:0[1-9]|10)\.jpg$/.test(out), `unexpected avatar(${n}): ${out}`);
+  }
+
+  assert(isLocalDemoAsset(ORB) && ORB === "/demo/messenger-orb.svg", `unexpected ORB: ${ORB}`);
+  console.log("PASS (h): img(), avatar(), and ORB return local /demo/ asset paths with zero hotlinks");
 }
 
 actions.signOut();

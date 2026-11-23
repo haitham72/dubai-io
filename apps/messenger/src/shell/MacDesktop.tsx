@@ -4,7 +4,7 @@
 // macOS style — no Apple artwork); clicking one opens/restores the window on that screen.
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import {
-  BatteryFull, Calendar, CandlestickChart, CloudSun, FileSearch, Folder, History, Mail, Plane, Search, Sparkles, Wifi, type LucideIcon,
+  BatteryFull, Calendar, CandlestickChart, CloudSun, FileSearch, Folder, History, Mail, MessageCircle, Plane, Search, Sparkles, Wifi, type LucideIcon,
 } from "lucide-react";
 import { actions, useStore } from "../store";
 import type { ScreenId } from "../types";
@@ -221,7 +221,7 @@ export function MacDesktop({ children }: { children: ReactNode }) {
       {win !== "zoomed" && (
         <div className={s.deskIcons} aria-label="Desktop shortcuts">
           <button className={s.deskIcon} onClick={() => go("chats")}>
-            Messenger
+            <span className={`${s.dockIcon} ${s.tBlue}`}><MessageCircle size={26} strokeWidth={1.8} /></span>
             <span>Messenger</span>
           </button>
           {DOCK.map(({ id, label, icon: I, tone }) => (
@@ -235,7 +235,7 @@ export function MacDesktop({ children }: { children: ReactNode }) {
 
       <nav className={`${s.dock} ${win === "zoomed" ? s.dockHidden : ""}`} aria-label="Dock">
         <button className={s.dockApp} aria-label="Messenger" onClick={() => go("chats")}>
-          Messenger
+          <span className={`${s.dockIcon} ${s.tBlue}`}><MessageCircle size={26} strokeWidth={1.8} /></span>
           <span className={s.dockLabel}>Messenger</span>
           {win !== "closed" && <i className={s.running} />}
         </button>

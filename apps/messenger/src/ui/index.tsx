@@ -180,7 +180,34 @@ export function Placeholder({ title, owner }: { title: string; owner: string }) 
   );
 }
 
-/** Placeholder. Remote photo hosts are not used. */
-export const img = (_id: string, _w = 800) => "";
-/** Placeholder. Remote portrait hosts are not used. */
-export const avatar = (_n: number) => "";
+const DEMO_SCENES = new Set([
+  "photo-1512453979798-5ea266f8880c",
+  "photo-1507525428034-b723cf961d3e",
+  "photo-1511895426328-dc8714191300",
+  "photo-1542751371-adc38448a05e",
+  "photo-1522202176988-66273c2fd55f",
+  "photo-1436491865332-7a61a109cc05",
+  "photo-1537996194471-e657df975ab4",
+  "photo-1498837167922-ddd27525d352",
+  "photo-1486406146926-c627a92ad1ab",
+  "photo-1495616811223-4d98c6e9c869",
+  "photo-1555400038-63f5ba517a47",
+  "photo-1504674900247-0877df9cc836",
+  "photo-1511512578047-dfb367046420",
+  "photo-1519046904884-53103b34b206",
+  "photo-1434030216411-0b793f4b4173",
+  "photo-1556909114-f6e7ad7d3136",
+  "photo-1586724237569-f3d0c1dee8c6",
+  "photo-1503177119275-0aa32b3a9368",
+  "photo-1513635269975-59663e0ac1ad",
+  "photo-1497366754035-f200968a6e72",
+  "photo-1516321318423-f06f85e504b3",
+  "photo-1519389950473-47ba0277781c",
+]);
+
+/** Local demo scene photo path. Unknown IDs fall back to a local scene; remote hosts are not used. */
+export const img = (id: string, _w = 800) =>
+  `/demo/scenes/${DEMO_SCENES.has(id) ? id : "photo-1512453979798-5ea266f8880c"}.jpg`;
+/** Local demo avatar path. Remote portrait hosts are not used. */
+export const avatar = (n: number) =>
+  `/demo/avatars/avatar-${String((Math.abs(Math.floor(n || 0)) % 10) + 1).padStart(2, "0")}.jpg`;

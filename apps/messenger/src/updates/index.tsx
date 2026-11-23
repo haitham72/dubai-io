@@ -3,6 +3,7 @@ import { useEffect, useMemo } from "react";
 import { actions, useStore } from "../store";
 import { Badge, ListRow } from "../ui";
 import { ai } from "../ai/state";
+import { ORB } from "../mobile/parts";
 import { relativeTime } from "./common";
 import s from "./updates.module.css";
 
@@ -10,6 +11,7 @@ import s from "./updates.module.css";
 function Orb({ running, progress }: { running: boolean; progress: number | null }) {
   const r = 22, c = 2 * Math.PI * r;
   return <span className={s.orb}>
+    <img src={ORB} alt="" />
     {running && <svg className={`${s.ring} ${progress == null ? s.ringSpin : ""}`} viewBox="0 0 48 48" aria-hidden>
       <circle cx="24" cy="24" r={r} className={s.ringTrack} />
       <circle cx="24" cy="24" r={r} className={s.ringFill} strokeDasharray={c}
