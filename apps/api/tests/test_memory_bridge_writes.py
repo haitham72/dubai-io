@@ -12,6 +12,7 @@ if str(API_ROOT) not in sys.path:
     sys.path.insert(0, str(API_ROOT))
 
 from app import db as db_mod
+from tests.fixtures.contest_shared.db_fixtures import cs_postgres_isolation  # noqa: F401
 from app.identity.models import AgeBand, AppId, VerifiedPrincipal
 from app.memory_bridge.bridge import MemoryBridge
 from app.memory_bridge.fake_client import FakeTemporalMemoryClient
@@ -136,7 +137,16 @@ def test_mb_no_owner_or_provenance_spoof(tmp_path: Path) -> None:
         assert r_demo.trust_tier == "T3_demo_fixture"
 
         # Verify metadata-only cs_memory_record_refs (no text column / no text stored).
-        ref_cols = [r[1] for r in db.execute("PRAGMA table_info(cs_memory_record_refs)").fetchall()]
+        if getattr(db, "dialect", "sqlite") == "postgres":
+            ref_cols = [
+                r[0]
+                for r in db.execute(
+                    "SELECT column_name FROM information_schema.columns "
+                    "WHERE table_schema = current_schema() AND table_name = 'cs_memory_record_refs'"
+                ).fetchall()
+            ]
+        else:
+            ref_cols = [r[1] for r in db.execute("PRAGMA table_info(cs_memory_record_refs)").fetchall()]
         assert "text" not in ref_cols
 
         # Failure: caller attempting to override owner or provenance via subclass attributes.

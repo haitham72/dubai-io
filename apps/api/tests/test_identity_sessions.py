@@ -9,6 +9,7 @@ from starlette.testclient import WebSocketDenialResponse
 
 from app import actions
 from app.identity import IdentityConfig, IdentityError, IdentityService, IdentityStore, JWTVerifier
+from tests.fixtures.contest_shared.db_fixtures import cs_postgres_isolation  # noqa: F401
 from tests.fixtures.contest_shared.identity_fixtures import (
     TEST_AUDIENCE,
     TEST_HS256_SECRET,

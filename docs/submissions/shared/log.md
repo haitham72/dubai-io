@@ -73,3 +73,23 @@
 ### What is real vs faked
 - **Real:** JWT HS256/RS256/ES256/EdDSA verification, `(issuer, subject)` user provisioning, D11 `is_minor_protected`, `adopt_session_owner`, per-app sessions/capabilities, `Origin`-bound WS tickets, default-off `ConsentStore`, Rule 9 sensitive filter, two-visit tracker, Community `InterestFeature` projection, Messenger chat-scope + `GroupConsentSnapshot` gate, immutable `AuditStore`, `ForgetCoordinator` local cascade, Fernet `cs_memory_tokens`, FastAPI routers (`/api/identity/*`, `/api/v1/memory-bridge/*`), and `HttpTemporalMemoryClient` (tested over mock HTTP transport).
 - **Faked until `temporal_note` rebuild (`CR-TM-1..4`) lands:** `FakeTemporalMemoryClient` in `apps/api/app/memory_bridge/fake_client.py` (selected when `MEMORY_BRIDGE_BACKEND=fake`, default while `TM_BASE_URL` is unset). Tests ran on SQLite (`DATABASE_URL=' '`); Postgres (`TEST_DATABASE_URL`) & live `temporal_memory` integration remain pending.
+
+## 2026-11-23 — Local Supabase Postgres 17 + Auth Verification (Antigravity)
+
+### Research lane merge
+- Merged `origin/cs/research` (`73be0bc`) into `contest-shared` at **`7570ebc`** (`docs/submissions/shared/research/2026-11-23-codex.md` only) and pushed.
+
+### Real-infrastructure verification (`supabase@2.121.0` in Docker, `supabase/` unedited)
+- Started local Supabase stack (`supabase/config.toml` untouched, 11 base migrations applied cleanly in `dubaiio`): Postgres 17 (`127.0.0.1:15422`) and GoTrue `v2.197.0` (`http://127.0.0.1:15421/auth/v1`, signing real user JWTs with `ES256` via `/.well-known/jwks.json`).
+- **B0 contract suite on local Supabase Postgres 17 + live GoTrue Auth:** **`108 passed in 18.32s`** (`0 failed`), using `tests/fixtures/contest_shared/db_fixtures.py` (`cs_postgres_isolation` per-test schema `t_cs_<hex>`) and `tests/test_identity_supabase_live.py` (provisions 2 GoTrue admin users despite `enable_signup = false`, verifies real `ES256` JWKS JWTs through `JWTVerifier`, `/api/identity/*`, `/api/v1/memory-bridge/*`, and Postgres 17 `JSONB`/`BYTEA`, then deletes both users).
+- **B0 contract suite on SQLite (offline parity):** **`107 passed, 1 skipped in 7.79s`** (`test_identity_supabase_live.py` skips cleanly when `SUPABASE_LOCAL_URL` is unset).
+- **Entry SQL helper smoke test:** `docs/submissions/shared/local-supabase/apply-entry-sql.ps1` tested against temporary schema `scratch_cs_probe` on `supabase_db_dubai-io` (`CREATE SCHEMA` + `SET search_path` + `CREATE TABLE` verified via `psql`, then dropped).
+
+### Changes (strictly inside `contest-shared` owned paths; zero `supabase/` edits)
+- Added `apps/api/tests/fixtures/contest_shared/db_fixtures.py` and `apps/api/tests/test_identity_supabase_live.py`; updated `memory_fixtures.py` and B0 test modules for dialect-neutral Postgres schema isolation (`information_schema.columns` / `pg_indexes` checks instead of SQLite-only `PRAGMA`/`sqlite_master`).
+- Added `docs/submissions/shared/local-supabase/{README.md,start.ps1,stop.ps1,apply-entry-sql.ps1}`.
+
+### External findings (outside `contest-shared` owned paths — left read-only)
+1. `apps/api/tests/conftest.py:27`: `postgres_schema` monkeypatches `actions.connect` only, not `app.db.connect` or `app.db.SQLiteDB`; worked around inside `tests/fixtures/contest_shared/db_fixtures.py` without editing `conftest.py`.
+2. Global Scoop `supabase.exe` (`v2.33.9`) on PATH rejects `supabase/config.toml` keys (`auto_expose_new_tables`, `health_timeout`, `[local_smtp]`); scripts pin `npx.cmd --yes supabase@2.121.0`.
+3. Running `supabase start` leaves nothing modified in git (`git status --short -- supabase` clean).
