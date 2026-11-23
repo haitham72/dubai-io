@@ -1,0 +1,12 @@
+{
+  "roots": {
+    "bookmark_bar": {
+      "children": [
+        {"type": "url", "id": "987654321", "name": "RAW_BOOKMARK_TITLE_FIXTURE", "url": "https://bookmarks.example/RAW_BOOKMARK_PATH_FIXTURE", "date_added": "13444675200000000"},
+        {"type": "url", "id": "987654322", "name": "Python tutorial RAW_BOOKMARK_WATCH_TITLE_FIXTURE", "url": "https://youtube.com/watch?v=SAFE_ID_001", "date_added": "13444675200000000"}
+      ],
+      "type": "folder"
+    }
+  },
+  "version": 1
+}
