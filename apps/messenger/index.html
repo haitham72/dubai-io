@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- iPhone: "Add to Home Screen" opens Mirsal full-screen like an app -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Mirsal" />
+    <meta name="theme-color" content="#eef3fa" />
+    <link rel="apple-touch-icon" href="/mirsal-logo.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <!-- e-sign documents: Arabic + English body, handwritten signatures -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Great+Vibes&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <title>Mirsal</title>
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <!-- Apply the saved theme before first paint (no white flash in dark mode). Mirrors src/store.ts. -->
+    <script>
+      try {
+        var t = localStorage.getItem("mirsal.theme");
+        var dark = t === "dark" || (t === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
+        document.documentElement.dataset.theme = dark ? "dark" : "light";
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

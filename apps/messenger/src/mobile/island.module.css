@@ -1,0 +1,172 @@
+/* Mirsal Dynamic Island: light glass + colourful AI halo (geometry from tokens); one accent per activity type. */
+.island {
+  --accent: var(--blue);
+  position: fixed; z-index: var(--island-z, calc(var(--z-modal) + 5)); left: 50%; transform: translateX(-50%);
+  /* Phones: just under the status bar. ?device frame: grows out of the camera pill (vars set on .device). */
+  top: var(--island-top, calc(var(--safe-top) + 6px));
+  display: flex; flex-direction: column; color: var(--on-island); background: transparent; text-align: start;
+  -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
+  transform-origin: 50% 0; touch-action: none; isolation: isolate;
+}
+/* the AI halo: a soft rotating rainbow behind every island state; stronger when a result is ready (.glow) */
+.island::before {
+  content: ""; position: absolute; inset: -3px; z-index: -1; border-radius: inherit; pointer-events: none;
+  background: conic-gradient(from var(--ai-angle), var(--ai-cyan), var(--ai-blue), var(--ai-violet), var(--ai-pink), var(--ai-amber), var(--ai-cyan));
+  filter: blur(12px); opacity: 0.55; animation: aiSpin 5s linear infinite;
+}
+.island::after { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; background: var(--island); box-shadow: inset 0 0 0 1px var(--border); }
+.tFlight { --accent: var(--success); }
+.tVideo { --accent: var(--warning); }
+.tImage, .tResearch { --accent: var(--blue); }
+.tSign { --accent: var(--brand-uaepass); }
+.accent { color: var(--accent); }
+.bad { color: var(--danger); }
+.top { height: var(--island-head, var(--s-4)); flex-shrink: 0; } /* clears the camera pill when anchored on it */
+
+/* ---------- compact: leading · camera · trailing ---------- */
+.compact {
+  flex-direction: row; align-items: center; height: var(--hw-island-h); padding: 0 var(--s-3) 0 5px; border-radius: var(--r-pill);
+  animation: grow 0.5s cubic-bezier(0.25, 1.35, 0.45, 1) both;
+}
+@keyframes grow { from { transform: translateX(-50%) scale(0.6, 0.8); opacity: 0; } }
+.lead { position: relative; display: grid; place-items: center; color: var(--accent); }
+.lead > * { grid-area: 1 / 1; }
+.camera { width: var(--island-camera-w, var(--s-6)); flex-shrink: 0; align-self: stretch; }
+.trail { min-width: 0; max-width: 140px; overflow: hidden; text-overflow: ellipsis; font-size: var(--fs-md); font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* ---------- shared header row (like "AA 1001 … FLIGHTY") ---------- */
+.header { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); margin-bottom: var(--s-2); }
+.what { display: inline-flex; align-items: center; gap: 6px; min-width: 0; font-size: var(--fs-sm); font-weight: 600; color: var(--on-island-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.what svg { color: var(--accent); flex-shrink: 0; }
+.brand { display: inline-flex; align-items: center; gap: 5px; font-size: var(--fs-xs); font-weight: 700; letter-spacing: 0.08em; color: var(--on-island-2); }
+.brand img { width: 16px; height: 16px; border-radius: 50%; }
+
+/* ---------- expanded Live Activity ---------- */
+.banner {
+  width: min(calc(100vw - var(--s-3)), 424px); padding: 0 var(--s-5) var(--s-5); border-radius: 46px; box-shadow: var(--shadow-lg);
+  animation: drop 0.6s cubic-bezier(0.22, 1.3, 0.4, 1) both;
+}
+@keyframes drop { from { transform: translateX(-50%) scale(0.3, 0.25); border-radius: var(--r-pill); } }
+.banner > *, .large > *, .sheet > * { animation: fade 0.35s 0.18s both; }
+@keyframes fade { from { opacity: 0; transform: translateY(-6px); } }
+.row { display: flex; align-items: center; gap: var(--s-3); }
+.stack { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.stack b { font-size: var(--fs-lg); font-weight: 600; }
+.stack small { font-size: var(--fs-md); color: var(--on-island-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.thumb { display: grid; place-items: center; width: 60px; height: 60px; flex-shrink: 0; border-radius: 18px; color: var(--accent); background: color-mix(in srgb, var(--accent) 18%, transparent); overflow: hidden; }
+.thumbPhoto { width: 72px; height: 72px; }
+.thumb img, .thumb video { width: 100%; height: 100%; object-fit: cover; }
+.view { padding: 9px 18px; border-radius: var(--r-pill); background: var(--accent); color: var(--on-accent); font-size: var(--fs-md); font-weight: 700; flex-shrink: 0; }
+.bigNum { font-size: 52px; font-weight: 700; line-height: 1; letter-spacing: -0.03em; }
+.bigValue { font-size: 40px; font-weight: 700; line-height: 1; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.caption { font-size: var(--fs-md); color: var(--on-island-2); margin-bottom: var(--s-3); }
+
+/* flight: SFO ✈ JFK arc (Flighty) */
+.flight { display: grid; grid-template-columns: auto 1fr auto; align-items: end; gap: 0 var(--s-2); }
+.leg { display: flex; flex-direction: column; }
+.leg b { font-size: 34px; font-weight: 700; line-height: 1; letter-spacing: -0.02em; }
+.leg i { font-style: normal; font-size: var(--fs-md); font-weight: 600; color: var(--accent); margin-top: 4px; }
+.legEnd { align-items: flex-end; }
+.arcWrap { position: relative; height: 46px; align-self: center; }
+.arc { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.arcDone { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.arcTodo { fill: none; stroke: var(--on-island-2); stroke-width: 2.5; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.plane { position: absolute; left: 50%; top: 2px; transform: translateX(-50%) rotate(45deg); color: var(--on-island); }
+.flightFoot { grid-column: 1 / -1; display: flex; justify-content: space-between; gap: var(--s-3); margin-top: var(--s-3); font-size: var(--fs-md); color: var(--on-island-2); font-weight: 600; }
+
+/* running: espresso-style tick bar */
+.working { display: flex; flex-direction: column; gap: var(--s-3); }
+.ticks { display: flex; align-items: flex-end; gap: 4px; height: 26px; }
+.ticks i { flex: 1; height: 60%; border-radius: 2px; background: var(--on-island-2); opacity: 0.35; }
+.ticks i:nth-child(7n + 1) { height: 100%; }
+.ticks i.tickOn { background: var(--accent); opacity: 1; }
+.ticksWave i { animation: wave 1.4s ease-in-out infinite; }
+@keyframes wave { 0%, 100% { opacity: 0.25; } 50% { opacity: 1; background: var(--accent); } }
+
+/* finished results: a brighter, wider halo (Apple's "Introducing Dynamic Island" outline) */
+.glow::before { inset: -5px; filter: blur(16px); opacity: 0.95; animation-duration: 3.5s; }
+@keyframes aiSpin { to { --ai-angle: 360deg; } }
+
+/* ---------- large ---------- */
+.backdrop {
+  position: fixed; z-index: calc(var(--z-modal) + 4); inset: 0; width: 100%;
+  background: var(--sheet-dim); -webkit-backdrop-filter: blur(14px) saturate(120%); backdrop-filter: blur(14px) saturate(120%);
+  animation: fadeIn 0.3s var(--ease) both;
+}
+@keyframes fadeIn { from { opacity: 0; } }
+.large {
+  width: min(calc(100vw - var(--s-3)), 424px); max-height: calc(100dvh - var(--s-8)); overflow-y: auto; scrollbar-width: none;
+  padding: 0 var(--s-5) var(--s-5); border-radius: 48px; box-shadow: var(--shadow-lg);
+  animation: bloom 0.65s cubic-bezier(0.2, 1.25, 0.35, 1) both;
+}
+@keyframes bloom { from { transform: translateX(-50%) scale(0.32, 0.12); border-radius: var(--r-pill); } }
+.large .working, .large .flight, .large > .row { margin-bottom: var(--s-4); }
+.media { display: block; width: 100%; height: auto; max-height: 52dvh; object-fit: cover; border-radius: 28px; background: var(--media-bg); }
+.rows { display: flex; flex-direction: column; gap: var(--s-2); }
+.fare { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); padding: var(--s-3) var(--s-4); border-radius: 20px; background: color-mix(in srgb, var(--on-island) 10%, transparent); }
+.fare span { display: flex; flex-direction: column; min-width: 0; }
+.fare small { font-size: var(--fs-sm); color: var(--on-island-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.findings { margin: 0; padding-inline-start: var(--s-5); display: flex; flex-direction: column; gap: var(--s-2); font-size: var(--fs-md); line-height: 1.45; }
+.shimmer {
+  width: 100%; aspect-ratio: 16 / 9; border-radius: 28px;
+  background: linear-gradient(110deg, var(--bubble-in) 30%, color-mix(in srgb, var(--accent) 25%, var(--surface-solid)) 50%, var(--bubble-in) 70%);
+  background-size: 250% 100%; animation: shimmer 1.8s linear infinite;
+}
+@keyframes shimmer { from { background-position: 120% 0; } to { background-position: -120% 0; } }
+.actions { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-top: var(--s-4); }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 var(--s-4); border-radius: var(--r-pill);
+  font-size: var(--fs-md); font-weight: 600; color: var(--on-island); background: color-mix(in srgb, var(--on-island) 14%, transparent); text-decoration: none;
+}
+.chipPrimary { background: var(--blue); color: var(--on-accent); }
+
+/* ---------- voice: Siri-style pill ---------- */
+.voice {
+  flex-direction: row; align-items: center; gap: var(--s-4); width: min(calc(100vw - var(--s-3)), 424px); min-height: 96px;
+  padding: var(--island-head, var(--s-4)) var(--s-6) var(--s-4) var(--s-4); border-radius: 48px; box-shadow: var(--shadow-lg);
+  animation: drop 0.55s cubic-bezier(0.22, 1.3, 0.4, 1) both;
+}
+.voiceOrb { --level: 0; position: relative; display: grid; place-items: center; width: 64px; height: 64px; flex-shrink: 0; }
+.voiceOrb::before {
+  content: ""; position: absolute; inset: -6px; border-radius: 50%;
+  background: conic-gradient(from var(--ai-angle), var(--ai-cyan), var(--ai-blue), var(--ai-violet), var(--ai-pink), var(--ai-amber), var(--ai-cyan));
+  filter: blur(10px); opacity: calc(0.5 + var(--level) * 0.5); transform: scale(calc(0.9 + var(--level) * 0.45));
+  animation: aiSpin 3s linear infinite; transition: transform 80ms linear;
+}
+.voiceOrb img { position: relative; width: 64px; height: 64px; border-radius: 50%; transform: scale(calc(1 + var(--level) * 0.18)); transition: transform 80ms linear; }
+.voiceText { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; padding-top: var(--s-4); }
+.voiceText small { font-size: var(--fs-xs); font-weight: 600; letter-spacing: 0.04em; color: var(--on-island-2); text-transform: uppercase; }
+.voiceText > span { font-size: var(--fs-lg); font-weight: 500; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.dim { color: var(--on-island-2); }
+.dots { display: inline-flex; gap: 4px; margin-top: 4px; }
+.dots b { width: 6px; height: 6px; border-radius: 50%; background: var(--blue); animation: wave 1s ease-in-out infinite; }
+.dots b:nth-child(2) { animation-delay: 0.15s; }
+.dots b:nth-child(3) { animation-delay: 0.3s; }
+
+/* ---------- UAE PASS confirm: Apple-Pay-style sheet ---------- */
+.sheet {
+  width: min(calc(100vw - var(--s-3)), 424px); padding: 0 var(--s-4) var(--s-5); border-radius: 48px; box-shadow: var(--shadow-lg); gap: var(--s-2);
+  animation: bloom 0.6s cubic-bezier(0.2, 1.25, 0.35, 1) both;
+}
+.sheetHead { display: flex; align-items: center; justify-content: space-between; padding: 0 var(--s-2) var(--s-2); }
+.uaepass { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-xl); font-weight: 700; color: var(--brand-uaepass); }
+.cancel { font-size: var(--fs-lg); color: var(--on-island); }
+.payRow {
+  display: flex; align-items: center; gap: var(--s-3); padding: var(--s-3) var(--s-4); border-radius: 22px;
+  background: color-mix(in srgb, var(--on-island) 14%, transparent); color: var(--on-island-2);
+}
+.payRow > span { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.payRow small { font-size: var(--fs-sm); }
+.payRow b { font-size: var(--fs-lg); font-weight: 500; color: var(--on-island); }
+.paySig { color: var(--on-island); font-size: 34px; }
+.confirm { display: flex; align-items: center; justify-content: center; gap: var(--s-3); height: 60px; margin-top: var(--s-2); font-size: var(--fs-lg); font-weight: 600; color: var(--blue); }
+.scanning svg { animation: wave 0.9s ease-in-out infinite; }
+.doneOk { color: var(--success); font-weight: 700; }
+
+/* ---------- progress ring ---------- */
+.ring { flex-shrink: 0; transform: rotate(-90deg); }
+.track { fill: none; stroke: var(--on-island-2); stroke-width: 2.5; opacity: 0.35; }
+.bar { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linecap: round; transition: stroke-dashoffset 0.4s var(--ease); }
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { from { transform: rotate(-90deg); } to { transform: rotate(270deg); } }
+@media (prefers-reduced-motion: reduce) { .island::before, .spin, .shimmer, .ticksWave i, .voiceOrb::before { animation: none; } }

@@ -1,0 +1,63 @@
+/* Settings modal — extends ../profile.module.css (shell, rows, pills). Tokens only. */
+.pane { display: flex; flex-direction: column; gap: var(--s-4); }
+.pane[hidden] { display: none; }
+
+.danger { color: var(--danger); font-weight: 550; }
+
+/* ---- Account summary ---- */
+.summary { display: flex; align-items: center; gap: var(--s-4); padding: var(--s-4) var(--s-5); background: var(--surface-solid); border: 1px solid var(--border); border-radius: var(--r-md); }
+.summaryName { font-size: var(--fs-lg); font-weight: 650; }
+
+/* ---- Theme cards with mini UI previews ---- */
+.themes { padding: var(--s-4); }
+.themeCard { box-shadow: none; border-color: var(--border); border-width: 2px; transition: border-color 120ms var(--ease); }
+.themeCard:hover { border-color: var(--border-strong); }
+.themeCard[aria-pressed="true"] { border-color: var(--blue); }
+.themeFoot { display: flex; align-items: center; justify-content: space-between; padding-inline-end: var(--s-1); }
+.radio { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--border-strong); flex-shrink: 0; }
+.radioOn { border: 5px solid var(--blue); }
+
+/* The previews depict fixed themes, so they use the literal light/dark palette (same values as tokens.css), not the live tokens. */
+.mini { --m-bg: #eef3fa; --m-nav: #ffffff; --m-in: #dfe5ee; --m-out: #1677ff; --m-line: rgba(50, 80, 130, 0.12); --m-dot: #98a2b3;
+  display: grid; grid-template-columns: 26% 1fr; height: 92px; border-radius: var(--r-sm); overflow: hidden; border: 1px solid var(--m-line); background: var(--m-bg); }
+.miniDark { --m-bg: #0b0f17; --m-nav: #111827; --m-in: #1c2333; --m-out: #3b8bff; --m-line: rgba(255, 255, 255, 0.1); --m-dot: #6b7385; }
+.miniNav { display: flex; flex-direction: column; gap: 6px; padding: 10px 8px; background: var(--m-nav); border-inline-end: 1px solid var(--m-line); }
+.miniNav i { display: block; height: 5px; border-radius: var(--r-pill); background: var(--m-dot); }
+.miniNav i:first-child { background: var(--blue); width: 70%; }
+.miniMain { display: flex; flex-direction: column; gap: 6px; padding: 10px; }
+.miniIn, .miniOut { display: block; height: 10px; width: 62%; border-radius: var(--r-pill); background: var(--m-in); }
+.miniOut { align-self: flex-end; width: 50%; background: var(--m-out); }
+.miniShort { width: 40%; }
+.miniBar { display: block; margin-top: auto; height: 10px; border-radius: var(--r-pill); background: var(--m-nav); border: 1px solid var(--m-line); }
+.split { position: relative; display: block; height: 92px; }
+.split > span { position: absolute; inset: 0; }
+.split > span:last-child { clip-path: polygon(100% 0, 100% 100%, 0 100%); }
+
+/* ---- Wallpaper + preview ---- */
+.wpBlock { display: flex; flex-direction: column; gap: var(--s-3); padding: var(--s-3) var(--s-4) var(--s-4); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); font-size: var(--fs-md); }
+.swatches { display: flex; gap: var(--s-3); }
+/* frost sliders: label · range · value */
+.frostRow { display: flex; align-items: center; gap: var(--s-3); padding: var(--s-2) 0; }
+.frostRow > span:first-child { flex-shrink: 0; width: 96px; font-size: var(--fs-sm); color: var(--text-2); }
+.frostRow input[type="range"] { flex: 1; min-width: 0; accent-color: var(--blue); }
+.frostVal { flex-shrink: 0; min-width: 52px; text-align: end; font-size: var(--fs-sm); color: var(--text-2); }
+.swatch { width: 44px; height: 44px; border-radius: var(--r-sm); border: 1px solid var(--border-strong); outline: 2px solid transparent; outline-offset: 2px; transition: outline-color 120ms var(--ease); }
+.swatch[aria-pressed="true"] { outline-color: var(--blue); }
+.wpPlain { background: var(--bubble-in); }
+.wpSky { background: linear-gradient(160deg, var(--bubble-out), var(--bg)); }
+.wpLavender { background: linear-gradient(160deg, var(--lavender-glass), var(--surface-solid)); }
+.wpMist { background: linear-gradient(135deg, var(--bg), var(--lavender-glass) 60%, var(--bubble-out)); }
+.wpDots { background: radial-gradient(var(--border-strong) 1.5px, transparent 1.6px) 0 0 / 10px 10px, var(--surface-solid); }
+.wpDusk { background: linear-gradient(160deg, color-mix(in srgb, var(--purple) 22%, var(--surface-solid)), color-mix(in srgb, var(--blue) 18%, var(--surface-solid))); }
+
+.preview { display: flex; flex-direction: column; gap: var(--s-2); padding: var(--s-4); border-radius: var(--r-md); border: 1px solid var(--border); }
+.bubbleIn, .bubbleOut { max-width: 70%; padding: var(--s-2) var(--s-3); border-radius: var(--r-md); line-height: 1.35; }
+.bubbleIn { align-self: flex-start; background: var(--surface-solid); border-bottom-left-radius: var(--s-1); }
+.bubbleOut { align-self: flex-end; background: var(--blue); color: var(--surface-solid); border-bottom-right-radius: var(--s-1); }
+.small { font-size: var(--fs-sm); }
+.default { font-size: var(--fs-md); }
+.large { font-size: var(--fs-lg); }
+
+/* ---- Quiet hours ---- */
+.timeRange { display: inline-flex; align-items: center; gap: var(--s-2); }
+.to { font-size: var(--fs-sm); color: var(--text-2); }

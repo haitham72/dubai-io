@@ -1,0 +1,122 @@
+/* macOS-style desktop around the desktop app (wallpaper, menu bar, window chrome, Dock). Tokens: --mac-* in tokens.css. */
+.desktop {
+  position: relative; height: 100vh; overflow: hidden; display: flex; flex-direction: column; font-family: var(--font);
+  background:
+    radial-gradient(900px 700px at 12% 18%, var(--wall-1), transparent 62%),
+    radial-gradient(1000px 800px at 88% 12%, var(--wall-2), transparent 60%),
+    radial-gradient(1100px 900px at 75% 95%, var(--wall-3), transparent 62%),
+    radial-gradient(900px 700px at 8% 100%, var(--wall-4), transparent 60%),
+    var(--wall-base);
+}
+
+/* ---- menu bar ---- */
+.menubar {
+  position: relative; z-index: 3; display: flex; align-items: center; gap: 20px; height: var(--mac-menubar-h); padding: 0 16px; flex-shrink: 0;
+  font-size: var(--fs-md); color: var(--mac-menubar-text);
+  background: var(--mac-menubar-bg); -webkit-backdrop-filter: blur(30px) saturate(180%); backdrop-filter: blur(30px) saturate(180%);
+}
+.menuApp { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; }
+.menuApp img { width: 16px; height: 16px; border-radius: 50%; }
+.menuItem { font-weight: 500; opacity: 0.92; }
+.menuRight { margin-inline-start: auto; display: inline-flex; align-items: center; gap: 16px; font-weight: 500; }
+
+/* ---- window ---- */
+.stage { position: relative; z-index: 1; flex: 1; min-height: 0; display: grid; place-items: center; padding: 28px 48px calc(var(--mac-dock-h) + 24px); }
+.window {
+  position: relative; display: flex; flex-direction: column; width: min(1680px, 100%); height: 100%; max-height: 1000px;
+  border-radius: var(--mac-window-r); overflow: hidden; background: transparent;
+  box-shadow: 0 0 0 0.5px var(--mac-window-edge), 0 30px 80px var(--mac-window-shadow), 0 8px 24px var(--mac-window-shadow);
+  transform: translateZ(0); /* fixed-position overlays (modals, Mirsal Updates) stay inside the window */
+  transition: all 0.42s cubic-bezier(0.2, 0.9, 0.25, 1);
+  animation: open 0.4s cubic-bezier(0.2, 0.9, 0.25, 1);
+}
+@keyframes open { from { opacity: 0; transform: translateZ(0) scale(0.92); } }
+.zoomed { position: fixed; inset: 0; width: 100%; max-height: none; border-radius: 0; z-index: 5; }
+.minimized { transform: translateY(45vh) scale(0.08); opacity: 0; pointer-events: none; }
+/* free-floating frame (set inline from React): absolute inside the stage, no grid centring */
+.free { position: absolute; margin: 0; width: auto; height: auto; max-height: none; }
+/* Only transitions pause while dragging; toggling `animation` here would replay the open fade on release (flash). */
+.interacting { transition: none; }
+
+/* resize handles: 4 edges + 4 corners (only rendered in the normal free state) */
+.handle { position: absolute; z-index: 6; touch-action: none; }
+.h_n { top: -5px; left: 10px; right: 10px; height: 10px; cursor: ns-resize; }
+.h_s { bottom: -5px; left: 10px; right: 10px; height: 10px; cursor: ns-resize; }
+.h_e { right: -5px; top: 10px; bottom: 10px; width: 10px; cursor: ew-resize; }
+.h_w { left: -5px; top: 10px; bottom: 10px; width: 10px; cursor: ew-resize; }
+.h_ne { top: -7px; right: -7px; width: 16px; height: 16px; cursor: nesw-resize; }
+.h_sw { bottom: -7px; left: -7px; width: 16px; height: 16px; cursor: nesw-resize; }
+.h_nw { top: -7px; left: -7px; width: 16px; height: 16px; cursor: nwse-resize; }
+.h_se { bottom: -7px; right: -7px; width: 16px; height: 16px; cursor: nwse-resize; }
+
+.titlebar {
+  position: relative; display: flex; align-items: center; justify-content: center; height: var(--mac-titlebar-h); flex-shrink: 0; user-select: none;
+  background: var(--mac-titlebar-bg); border-bottom: 1px solid var(--border);
+  cursor: default; touch-action: none;
+}
+.lights { position: absolute; left: 14px; display: flex; gap: 8px; }
+.lights button { display: grid; place-items: center; width: 13px; height: 13px; border-radius: 50%; box-shadow: inset 0 0 0 0.5px var(--mac-light-edge); }
+.lights i { font-style: normal; font-size: 10px; line-height: 1; font-weight: 700; color: var(--mac-light-glyph); opacity: 0; transition: opacity 0.12s; }
+.lights:hover i { opacity: 1; }
+.red { background: var(--mac-red); }
+.yellow { background: var(--mac-yellow); }
+.green { background: var(--mac-green); }
+.title { font-size: var(--fs-md); font-weight: 600; color: var(--text-2); }
+/* Size container: overlays inside (Mirsal Updates tray) size to the window via cqw/cqh, not the screen. */
+.content { position: relative; flex: 1; min-height: 0; }
+/* the shell's box; MacDesktop zooms it down (inline zoom + design-size width/height) when the window is small */
+.fit { position: relative; width: 100%; height: 100%; container-type: size; }
+
+/* ---- Windows-style desktop icons (left side, iOS tiles) ---- */
+.deskIcons {
+  position: absolute; z-index: 0; left: 14px; top: calc(var(--mac-menubar-h) + 14px);
+  display: flex; flex-direction: column; flex-wrap: wrap; gap: 14px; align-content: flex-start;
+  max-height: calc(100% - var(--mac-menubar-h) - var(--mac-dock-h) - 40px);
+}
+.deskIcon { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 76px; }
+.deskIcon img { width: 48px; height: 48px; border-radius: 12px; background: var(--surface-solid); padding: 3px; box-shadow: var(--shadow-md); }
+.deskIcon > span:last-child {
+  font-size: 12px; font-weight: 500; color: #fff; text-align: center; line-height: 1.25;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.55); max-width: 100%;
+}
+.deskIcon:hover img, .deskIcon:hover .dockIcon { filter: brightness(1.08); }
+.deskIcon .dockIcon { width: 48px; height: 48px; border-radius: 12px; }
+.deskIcon .dockIcon svg { width: 26px; height: 26px; }
+
+/* ---- Dock ---- */
+.dock {
+  position: absolute; z-index: 4; left: 50%; bottom: 8px; transform: translateX(-50%); display: flex; align-items: flex-end; gap: 8px; padding: 6px 10px;
+  border-radius: 22px; background: var(--mac-dock-bg); -webkit-backdrop-filter: blur(30px) saturate(180%); backdrop-filter: blur(30px) saturate(180%);
+  box-shadow: 0 0 0 0.5px var(--mac-window-edge), 0 10px 30px var(--mac-window-shadow); transition: transform 0.3s var(--ease), opacity 0.3s;
+}
+.dockHidden { transform: translate(-50%, 140%); opacity: 0; }
+.dockApp { position: relative; display: grid; place-items: center; width: 58px; height: 58px; transition: transform 0.18s var(--ease); transform-origin: 50% 100%; }
+/* macOS-style magnification: the hovered icon grows, its neighbours a little */
+.dockApp:hover { transform: translateY(-10px) scale(1.25); }
+.dockApp:hover + .dockApp, .dockApp:has(+ .dockApp:hover) { transform: translateY(-4px) scale(1.1); }
+.dockIcon {
+  display: grid; place-items: center; width: 52px; height: 52px; border-radius: 13px; color: var(--on-accent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--tone) 70%, var(--on-accent)) 0%, var(--tone) 55%, color-mix(in srgb, var(--tone) 85%, var(--text)) 100%);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--on-accent) 45%, transparent), var(--shadow-md);
+}
+.dockIcon svg { filter: drop-shadow(0 1px 1px color-mix(in srgb, var(--text) 25%, transparent)); }
+.tViolet { --tone: var(--ai-violet); }
+.tBlue { --tone: var(--blue); }
+.tSky { --tone: var(--ai-cyan); }
+.tRed { --tone: var(--danger); }
+.tGraphite { --tone: var(--text); }
+.tAmber { --tone: var(--warning); }
+.tTeal { --tone: var(--success); }
+.tGrey { --tone: var(--text-3); }
+.dockDivider { width: 1px; margin: 8px 2px; background: var(--mac-window-edge); }
+.dockApp img { width: 52px; height: 52px; border-radius: 14px; background: var(--surface-solid); padding: 4px; box-shadow: var(--shadow-md); }
+.dockLabel {
+  position: absolute; bottom: calc(100% + 10px); padding: 3px 10px; border-radius: 8px; font-size: var(--fs-sm); white-space: nowrap;
+  color: var(--text); background: var(--glass-strong); box-shadow: var(--shadow-md); opacity: 0; pointer-events: none; transition: opacity 0.15s;
+}
+.wpApp { width: 46px; height: 58px; }
+.wpSwatch { width: 40px; height: 40px; border-radius: 11px; box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 45%, transparent), var(--shadow-md); }
+.wpApp[aria-pressed="true"] .wpSwatch { outline: 2px solid #fff; outline-offset: 2px; }
+.dockApp:hover .dockLabel { opacity: 1; }
+.running { position: absolute; bottom: -4px; width: 4px; height: 4px; border-radius: 50%; background: var(--mac-menubar-text); }
+@media (prefers-reduced-motion: reduce) { .window, .dock, .dockApp { transition: none; animation: none; } }

@@ -1,0 +1,29 @@
+{
+  "name": "mirsal-poc",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "typecheck": "tsc -b --noEmit && tsc -p tsconfig.api.json",
+    "agents": "python3 agents/run.py || python agents/run.py",
+    "agents:test": "python3 agents/run.py test || python agents/run.py test",
+    "agents:eval": "python3 agents/run.py eval || python agents/run.py eval",
+    "test:photo-window": "node tests/photo-window/build.mjs && node tests/photo-window/run.mjs"
+  },
+  "dependencies": {
+    "@vercel/analytics": "^2.0.1",
+    "lucide-react": "^0.460.0",
+    "postgres": "^3.4.9",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11"
+  }
+}

@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Mirsal · Updates</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../src/tokens.css">
+<link rel="stylesheet" href="ios.css">
+<style>html.framed .status { color: var(--on-accent); }
+.behind { border: 0; width: 100%; height: 100%; pointer-events: none; }</style>
+</head>
+<body>
+<div class="screen" style="background:var(--text)">
+  <iframe class="behind" src="chats.html?behind" title=""></iframe>
+  <a class="dim" href="chats.html"></a>
+
+  <section class="sheet">
+    <div class="grabber"></div>
+    <div class="sheet-head">
+      <img class="orb" src="/mirsal-logo.png" alt="">
+      <h2>Mirsal Updates<small>4 new · 1 running</small></h2>
+      <a class="gbtn" href="chats.html" style="width:36px;height:36px"><i data-lucide="x"></i></a>
+    </div>
+    <div class="seg"><span class="on">All</span><span>Running</span><span>Done</span></div>
+
+    <div class="card">
+      <div class="task">
+        <div class="task-ic"><i data-lucide="image"></i></div>
+        <div class="txt"><b><span class="new-dot"></span>Image ready</b><span>Dubai beach at golden hour</span></div>
+        <span class="when">2m</span>
+      </div>
+      <img class="hero" src="https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=900&q=80&auto=format&fit=crop" alt="">
+      <div class="ai-status"><i data-lucide="sparkles"></i>Nano Banana 2 · 14s</div>
+      <div class="actions">
+        <span class="btn primary"><i data-lucide="message-circle"></i>Use in chat</span>
+        <span class="btn"><i data-lucide="download"></i>Save</span>
+        <span class="btn"><i data-lucide="share"></i></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="task">
+        <div class="task-ic"><i data-lucide="clapperboard"></i></div>
+        <div class="txt"><b>Making video</b><span>Dubai sunset · Kling 3.0 · 5s · 1080p</span></div>
+        <span class="when">38%</span>
+      </div>
+      <div class="progress"><i></i></div>
+    </div>
+
+    <div class="card">
+      <div class="task">
+        <div class="task-ic"><i data-lucide="plane"></i></div>
+        <div class="txt"><b><span class="new-dot"></span>Flight found</b><span>JED → DXB · 3 flights from AED 1,240</span></div>
+        <span class="chev"><i data-lucide="chevron-right"></i></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="task">
+        <div class="task-ic"><i data-lucide="file-search"></i></div>
+        <div class="txt"><b><span class="new-dot"></span>Research ready</b><span>5 key insights on market trends</span></div>
+        <span class="chev"><i data-lucide="chevron-right"></i></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="task">
+        <div class="task-ic"><i data-lucide="calendar-check"></i></div>
+        <div class="txt"><b><span class="new-dot"></span>Added to calendar</b><span>Kite Beach with Arif · Sat 5:30 PM</span></div>
+        <span class="chev"><i data-lucide="chevron-right"></i></span>
+      </div>
+    </div>
+  </section>
+</div>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="ios.js"></script>
+</body>
+</html>
