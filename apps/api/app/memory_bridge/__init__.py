@@ -1,11 +1,15 @@
 """Shared memory bridge package (`temporal_note` client, Rule 9 gate, schema)."""
+from .audit import AuditStore
+from .bridge import MemoryBridge
 from .client import HttpTemporalMemoryClient
 from .config import (
     MemoryBridgeSettings,
     build_temporal_memory_client,
     get_memory_bridge_settings,
 )
+from .consent import ConsentStore
 from .fake_client import FakeTemporalMemoryClient
+from .forget import ForgetCoordinator
 from .models import (
     APP_IDS,
     CONSENT_SCOPE_KINDS,
@@ -41,6 +45,7 @@ from .models import (
     TrustTier,
     WriteReceipt,
 )
+from .router import create_memory_bridge_router
 from .schema import ensure_memory_bridge_schema
 from .sensitive import (
     CATEGORIES,
@@ -68,18 +73,22 @@ __all__ = [
     "SOURCE_KINDS",
     "TRUST_TIERS",
     "AppId",
+    "AuditStore",
     "ConsentDeniedError",
     "ConsentGrant",
     "ConsentScopeKind",
+    "ConsentStore",
     "ConversationAIMode",
     "FactResolutionAction",
     "FactStatus",
     "FakeTemporalMemoryClient",
+    "ForgetCoordinator",
     "ForgetReceipt",
     "GroupConsentSnapshot",
     "HostApp",
     "HttpTemporalMemoryClient",
     "InterestFeature",
+    "MemoryBridge",
     "MemoryBridgeError",
     "MemoryBridgeSettings",
     "MemoryBridgeUnavailable",
@@ -97,6 +106,7 @@ __all__ = [
     "WriteReceipt",
     "build_temporal_memory_client",
     "categories_hit",
+    "create_memory_bridge_router",
     "ensure_memory_bridge_schema",
     "filter_statement",
     "gate_record",

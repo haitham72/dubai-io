@@ -12,7 +12,9 @@ import uuid
 
 from app.identity.models import VerifiedPrincipal
 
+from .audit import AuditStore
 from .consent import ConsentStore, canonical_conversation_scope_id
+from .forget import ForgetCoordinator
 from .models import (
     APP_IDS,
     FACT_RESOLUTION_ACTIONS,
@@ -158,8 +160,14 @@ class MemoryBridge:
         self._lock = threading.RLock()
         ensure_memory_bridge_schema(self._db, lock=self._lock)
         self.consent_store = consent_store or ConsentStore(self._db, lock=self._lock)
-        self._audit_store = audit_store
-        self._forget_coordinator = forget_coordinator
+        self.audit_store = audit_store if audit_store is not None else AuditStore(self._db, lock=self._lock)
+        self._audit_store = self.audit_store
+        self.forget_coordinator = (
+            forget_coordinator
+            if forget_coordinator is not None
+            else ForgetCoordinator(self._db, self.client, self.audit_store, lock=self._lock)
+        )
+        self._forget_coordinator = self.forget_coordinator
 
     # ------------------------------------------------------------------ audit
     def _record_audit(
@@ -334,6 +342,7 @@ class MemoryBridge:
                 host_app=host_app,
                 idempotency_key=idem,
             )
+            grant = self.consent_store.get_consent(owner_id, "source", source_kind)
         return (grant, receipt)
 
     def set_app_consent(
@@ -412,6 +421,7 @@ class MemoryBridge:
                 conv_id,
                 idempotency_key=idem,
             )
+            grant = self.consent_store.get_consent(owner_id, "conversation", grant.scope_id)
         return (grant, receipt)
 
     # ---------------------------------------------------------------- writes
@@ -1392,6 +1402,17 @@ class MemoryBridge:
         )
         return views
 
+    def _fact_hidden_by_revoked_source(self, owner_id: str, fact_id: str) -> bool:
+        """Return True if owner_id previously wrote fact_id under a source whose consent is now revoked."""
+        events = self.audit_store.list_events(owner_id, limit=500)
+        for ev in events:
+            if ev.get("action") == "write_consented" and fact_id in (ev.get("target_ids") or []):
+                src_kind = ev.get("scope_id")
+                if isinstance(src_kind, str) and src_kind in SOURCE_KINDS:
+                    if not self.consent_store.get_consent(owner_id, "source", src_kind).enabled:
+                        return True
+        return False
+
     def read_why_fact(
         self,
         principal: VerifiedPrincipal,
@@ -1405,7 +1426,12 @@ class MemoryBridge:
         if not app_grant.read_enabled:
             raise ConsentDeniedError(f"{host_app} read consent required")
 
-        why = self.client.get_why_fact(owner_id, fact_id)
+        try:
+            why = self.client.get_why_fact(owner_id, fact_id)
+        except MemoryBridgeError as exc:
+            if exc.status_code == 404 and self._fact_hidden_by_revoked_source(owner_id, fact_id):
+                raise ConsentDeniedError("fact evidence source consent is revoked or denied") from exc
+            raise
         source_cache: dict[str, ConsentGrant] = {}
         conv_cache: dict[str, ConsentGrant] = {}
         raw_evidence = list(why.get("evidence") or [])
@@ -1882,7 +1908,13 @@ class MemoryBridge:
         *,
         idempotency_key: str,
     ) -> ForgetReceipt:
-        _require_app_principal(principal, "messenger")
+        _require_verified_principal(principal)
+        if principal.app_id not in (None, "messenger", "quest"):
+            raise ConsentDeniedError(
+                f"app session {principal.app_id!r} cannot forget messenger conversation",
+                code="app_scope_mismatch",
+                status_code=403,
+            )
         return self._require_forget_coordinator().forget_conversation(
             principal,
             conversation_id,
@@ -1901,6 +1933,22 @@ class MemoryBridge:
         return self._require_forget_coordinator().forget_source(
             principal,
             source_kind,
+            host_app=host_app,
+            idempotency_key=idempotency_key,
+        )
+
+    def forget_fact(
+        self,
+        principal: VerifiedPrincipal,
+        fact_id: str,
+        *,
+        host_app: AppId,
+        idempotency_key: str,
+    ) -> ForgetReceipt:
+        _require_app_principal(principal, host_app)
+        return self._require_forget_coordinator().forget_fact(
+            principal,
+            fact_id,
             host_app=host_app,
             idempotency_key=idempotency_key,
         )

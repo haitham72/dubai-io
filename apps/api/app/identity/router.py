@@ -351,20 +351,56 @@ def create_identity_router(
         except IdentityError as exc:
             raise _http_from_identity_error(exc) from exc
 
-    # Extension hook for CS-B5 temporal_memory owner-device token routes.
+    # CS-B5 temporal_memory owner-device token routes.
+    def _resolve_memory_token_handler(request: Request) -> Any:
+        handler = (
+            memory_token_handler
+            or getattr(request.app.state, "memory_token_handler", None)
+            or getattr(request.app.state, "memory_token_service", None)
+        )
+        if handler is None:
+            raise HTTPException(
+                status_code=501,
+                detail={"code": "not_implemented", "message": "Memory device token service is not mounted"},
+            )
+        return handler
+
+    def _require_memory_device_token_cap(principal: VerifiedPrincipal) -> None:
+        if principal.app_id != "quest" or "memory:device_token" not in principal.capabilities:
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "code": "missing_capability",
+                    "message": "Quest session with memory:device_token capability is required",
+                },
+            )
+
+    @router.get("/memory-device-token")
+    def list_memory_device_tokens(
+        request: Request,
+        principal: VerifiedPrincipal = Depends(_require_verified_any),
+    ) -> Any:
+        handler = _resolve_memory_token_handler(request)
+        _require_memory_device_token_cap(principal)
+        try:
+            if callable(getattr(handler, "list_tokens", None)):
+                return {"tokens": handler.list_tokens(principal)}
+            return handler.list(principal)
+        except IdentityError as exc:
+            raise _http_from_identity_error(exc) from exc
+
     @router.post("/memory-device-token")
     def mint_memory_device_token(
         request: Request,
         body: Optional[dict[str, Any]] = Body(default=None),
         principal: VerifiedPrincipal = Depends(_require_verified_any),
     ) -> Any:
-        handler = memory_token_handler or getattr(request.app.state, "memory_token_handler", None)
-        if handler is None:
-            raise HTTPException(
-                status_code=501,
-                detail={"code": "not_implemented", "message": "Memory device token service is not mounted"},
-            )
-        return handler.mint(principal, body or {})
+        handler = _resolve_memory_token_handler(request)
+        _require_memory_device_token_cap(principal)
+        try:
+            return handler.mint(principal, body or {})
+        except IdentityError as exc:
+            raise _http_from_identity_error(exc) from exc
 
     @router.delete("/memory-device-token/{tm_token_id}")
     def revoke_memory_device_token(
@@ -372,12 +408,11 @@ def create_identity_router(
         request: Request,
         principal: VerifiedPrincipal = Depends(_require_verified_any),
     ) -> Any:
-        handler = memory_token_handler or getattr(request.app.state, "memory_token_handler", None)
-        if handler is None:
-            raise HTTPException(
-                status_code=501,
-                detail={"code": "not_implemented", "message": "Memory device token service is not mounted"},
-            )
-        return handler.revoke(principal, tm_token_id)
+        handler = _resolve_memory_token_handler(request)
+        _require_memory_device_token_cap(principal)
+        try:
+            return handler.revoke(principal, tm_token_id)
+        except IdentityError as exc:
+            raise _http_from_identity_error(exc) from exc
 
     return router
