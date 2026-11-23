@@ -45,3 +45,7 @@ The founder confirmed M0 and approved MG-B1 and MG-B2 only. Concept sheets, the 
 ## 23 Nov 2026 — D8 (Cursor)
 
 Founder addition: there is no Higgsfield at all. `lib/higgsCli.ts` was already gone. This slice also drops the HTTP client, the CLI job, the `HF_CREDENTIALS` and `HIGGS_*` keys, and every UI hook and test that called or named that provider. Recorded as an exclude row in `ip-and-baseline.md`.
+
+## 23 Nov 2026 — D11 gate (Cursor)
+
+Merged `contest-shared` (`f19db5c`) into `business`. D11 approves MG-B3 through MG-B9. Transport is the shared-contract WebSocket on `:8070`, bound to the B0 `user_id`. `apps/api/app/identity/` is not on `contest-shared` or `business`, so Gate S is not merged. `MG-B3` and `MG-B5` wait. UI slices wait for a staged visual review. The working name stays Messenger until the final name, before MG-B7.

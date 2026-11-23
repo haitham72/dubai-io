@@ -1,6 +1,6 @@
 # Messenger — founder questions
 
-**Status:** M0 answered — 23 Nov 2026 (founder). Transport and O2 stay open. Later slices wait for the full gate after P2.
+**Status:** M0 and transport answered — 23 Nov 2026 (founder, D11). O2 stays open. MG-B3 and MG-B5 wait until Gate S is merged into `business`. UI slices stop for a staged visual review.
 
 ## Answered (23 Nov)
 
@@ -22,22 +22,19 @@ The old product name is retired. The working name is Messenger. The orb logo is 
 
 ## Open
 
-### Transport — for P2
+### Transport — answered 23 Nov 2026 (shared contract, D11)
 
-The spec allows Supabase Realtime plus Postgres RLS, or a justified WebSocket. Schema `dubaiio` is revoked from `anon`, `authenticated`, and `service_role`. There is no verified JWT yet.
+Messenger uses a FastAPI WebSocket on `app.messenger.server:app` (`:8070`), bound to the B0 verified `user_id`. The client exchanges `POST /api/identity/sessions` with `app_id="messenger"` for an HttpOnly `cs_session_messenger` cookie, or `POST /api/identity/ws-ticket` for a single-use, 60-second Origin-bound ticket. An anonymous `dubaiio_lab_session` is prohibited for live multi-user chat. Browser Supabase Realtime against `dubaiio` is prohibited.
 
-**Recommendation:** a cookie-authenticated FastAPI WebSocket until B0 identity exists. Durable rows are `mg_*` in `dubaiio`. RLS SQL is written under `apps/messenger/supabase/` and is not called live until it is applied. The API membership check is the fence until then.
-
-**Blocks:** the live two-user claim in `MG-B3`. Local UI work in `MG-B2` does not wait on this.  
-**Deadline:** P2, so the shared contract does not assume browser Realtime.
+**Blocks:** `MG-B3` until Gate S (`apps/api/app/identity/`) is merged into `business`. The question of which transport to use is closed.
 
 ### O2 — the product name
 
 Messenger is the working name. The final name is not chosen.
 
 **Recommendation:** ship the working name in the UI and the deck until you pick one. Do not put the retired name or the excluded logo on either.  
-**Blocks:** the chrome and `MG-B8` only in the sense that the title string is still provisional. It does not block the snapshot.  
-**Deadline:** before the deck is recorded.
+**Blocks:** the chrome and `MG-B7` / `MG-B8`. It does not block slices before the deck and video.  
+**Deadline:** before MG-B7.
 
 ## Not blocking
 

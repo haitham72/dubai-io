@@ -1,8 +1,8 @@
 # Messenger delivery roadmap
 
-**Status:** approved for MG-B1 and MG-B2 only — 23 Nov 2026 (founder). Every later slice waits for the full gate after P2.
+**Status:** approved — 23 Nov 2026 (founder, D11)
 
-Order follows spec §9, revised by founder decisions D1–D7. MG-B1 and MG-B2 are approved. Every later slice waits for the full gate after P2. Slices that need a verified `user_id` or temporal_note also wait for Gate S.
+Order follows spec §9, revised by founder decisions D1–D11. MG-B3 through MG-B9 are approved. UI slices stop for the founder's visual review of a staged preview. Live multi-user chat (`MG-B3`) and memory (`MG-B5`) wait until Gate S is merged into `business`. Transport is the shared-contract WebSocket on `:8070`, bound to the B0 `user_id`. The working name is Messenger until the final name, which comes before MG-B7.
 
 **Zero-conflict.** Every slice adds files only. Owned paths: `apps/messenger/**`, `apps/api/app/messenger/**`, `apps/api/tests/test_messenger_*.py`, `fixtures/messenger/**`, `docs/submissions/messenger/**`. RLS notes live in `apps/messenger/supabase/`. No new file under `supabase/migrations/`. No slice edits `actions.py`, `main.py`, `communities.py`, or any other existing file. Capabilities are registered by `apps/api/app/messenger/capabilities.py` inserting into `actions.CAPABILITIES` at import time. Settings come from env inside that package. Entrypoint: `app.messenger.server:app` on port 8070. There is no `shared-changes.md` entry.
 
@@ -27,7 +27,7 @@ Internal package target: Fri 18 Dec 2026 (`PLAN.md` §5). That date is a deck, a
 **Depends on:** `MG-B1`.  
 **Owns:** renames and string replacements inside `apps/messenger/**` only, plus `apps/messenger/NOTICE.md`.  
 **Does not edit** any file that existed before the snapshot.  
-**Approved:** 23 Nov 2026. Later slices are not approved.
+**Approved:** 23 Nov 2026. D11 then approved MG-B3 through MG-B9.
 
 The import command, run in MG-B1:
 
@@ -69,10 +69,10 @@ Diwan is a different word. Keep `diwan.py` and `diwan_demo.json` basenames when 
 
 ## MG-B3 — Real chat core
 
-**Depends on:** `MG-B2`. Verified `user_id` waits for Gate S. Until then, rows use the cookie session owner and the UI does not say the same person is in Quest or Community.  
+**Depends on:** `MG-B2` and Gate S. The shared contract prohibits an anonymous lab-session cookie for live multi-user chat, so this slice does not start until `apps/api/app/identity/` is on `business`.  
 **Owns:** new files under `apps/messenger/` and `apps/api/app/messenger/` for transport, `apps/api/tests/test_messenger_chat.py`, `fixtures/messenger/chat/`.
 
-Transport recommendation, still open for P2: a cookie-authenticated FastAPI WebSocket until B0 identity exists. Durable store: `mg_*` tables in schema `dubaiio`, created with `CREATE TABLE IF NOT EXISTS` from Messenger code. Idempotent `client_msg_id`. Reconnect by `last_seq`. Media in object storage; a signed URL only after the membership check. RLS SQL is written under `apps/messenger/supabase/` and is not described as live until it is applied. Demo fixtures wear a Demo data pill.
+Transport, settled by the shared contract: a FastAPI WebSocket on `app.messenger.server:app` (`:8070`), bound to the B0 verified `user_id`. The client exchanges a messenger-app session for an HttpOnly `cs_session_messenger` cookie or a single-use, 60-second Origin-bound WebSocket ticket. Handshake checks `Origin` and the session or ticket. Subscribe, send, and replay recheck the session and `mg_memberships`. Revoking a session or removing a member disconnects the socket. Durable store: `mg_*` tables in schema `dubaiio`, created with `CREATE TABLE IF NOT EXISTS` from Messenger code. Idempotent `client_msg_id`. Reconnect by `last_seq`. Media in object storage; a signed URL only after the membership check. RLS SQL is written under `apps/messenger/supabase/` and is not described as live until it is applied. Demo fixtures wear a Demo data pill. Browser Supabase Realtime against `dubaiio` is prohibited.
 
 D4: the 19 Nov AI workspace is the current design. `openUpdates()` sets `screen: "ai"`. The spec’s compact-tray line is outdated. The snapshot keeps that workspace. The rebrand renames the visible product string on it.
 
