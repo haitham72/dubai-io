@@ -14,15 +14,15 @@ The contract Mirsal will call is `origin/memory:apps/memory/src/temporal_memory/
 
 ## Identity
 
-Mirsal needs three operations. It copies the result into `ms_user_link` and nowhere else. That row has no bio, no interests, and no facts.
+Mirsal needs a shared verifier and stable principal. Mirsal stores chat settings and memberships keyed by that principal.
 
 | Operation | Behaviour |
 |---|---|
-| `resolve_user(cookie)` | `{session_owner, verified_user_id \| null}`. Today `session_owner` is `sessions.owner` and `verified_user_id` is null. |
-| `link_session(session_owner, verified_user_id)` | Once. Refuse a merge on display name (`ARCHITECTURE.md` §9.2). |
-| Stable id | The same `verified_user_id` Quest and Community resolve for that person. |
+| Verify principal | Validate issuer, audience, signature, expiry and subject before resolving the canonical `user_id`. For the browser socket, bind a short-lived entry session to the verified principal. |
+| Resolve scope | Mirsal checks app grant and live workspace membership before each read, write or subscription. B0 owns account linking. Require explicit proof and refuse display-name merges. |
+| Stable ID | The same verified `user_id` Quest and Community resolve for that person. |
 
-Until B0, Mirsal can key rows by `session_owner` and must not claim the same person is signed in across the three apps.
+Live Mirsal chat and approval ownership require B0. Anonymous lab cookies and client-supplied prototype IDs are confined to demo data.
 
 ## Memory bridge
 
@@ -34,7 +34,7 @@ Chat rows stay in `ms_*`. A message becomes memory only through the calls below.
 | `write_consented(owner, *, source, actor, at, text, message_id, provenance)` | Save is on, the group gate passed, and the owner tapped Confirm on that exact candidate. | Inserts one `Record`. `source` is `mirsal:<conversation_id>`. Record id is `msmsg:<message_id>`. `author` is the message author. `text` is data. Then enqueue `extract.live` for that record. A `Fact` exists only after validate and apply, with `evidence` containing that record id. |
 | `forget(owner, record_ids)` | The owner chooses “Forget memories from this chat”, or withdraws Save and then confirms Forget. | Calls `forget_source`. Derived facts cascade. `ms_messages` stay. |
 
-`actor` is the confirming user. `at` is the source message time, carried on the record. A hypothesis (`provenance: inferred`, or `status: hypothesis`) may be shown as “I noticed” with Confirm / Edit / Not true / Forget. It does not pre-fill a field, sit on an approval card, send a proactive message, or set a status (`ARCHITECTURE.md` §7). Family, faith, and health are never inferred (rule 9). Other people’s words may be stored only as evidence records. `Fact.owner` is the confirming user. No fact is created about a third party.
+`actor` is the confirming user. `at` is the source message time, carried on the record. Keep source application, conversation, message, author, revision, confirmation time and consent generation. P2 maps caller, audience and purpose to the bridge checks. Citation links reauthorize at the origin. A hypothesis (`provenance: inferred`, or `status: hypothesis`) may be shown as “I noticed” with Confirm / Edit / Not true / Forget. It does not pre-fill a field, sit on an approval card, send a proactive message, or set a status (`ARCHITECTURE.md` §7). Family, faith, and health are never inferred (rule 9). Other people’s words may be stored only as evidence records. `Fact.owner` is the confirming user. No fact is created about a third party.
 
 ## Consent toggles
 
@@ -46,16 +46,16 @@ Stored on `ms_memberships.ai_mode`, default **off**, per member, per conversatio
 | Session only | Bounded recent text of this conversation, while the socket is open. Discarded with the reply. The model does not write a chat message. | None. |
 | Save approved memories | Same as Session. | One bridge write per Confirm tap. |
 
-**Group gate.** A model may see the transcript only when every active member is `session` or `save`. One `off` member blocks the call and no prompt is built. A join, leave, or switch to `off` drops in-flight calls. **Save** also requires `ai_mode=save` on the caller and on every member whose message is cited.
+**Group gate.** A model may see the transcript only when every active member is `session` or `save`. One `off` member blocks the call and no prompt is built. A join, leave, or switch to `off` drops in-flight calls. **Save** also requires `ai_mode=save` on the caller and on every member whose message is cited. Limit the first live memory writes to user-confirmed, self-authored evidence. Explain the authorized processor and recipients before activation. Session context expires without durable prompts, learned facts or embeddings.
 
 Default for a new membership, including someone who just joined, is Off.
 
 ## Forget is two controls, both shown
 
 - **Forget memories from this chat** calls `forget`. The chat remains.
-- **Delete chat** tombstones `ms_messages` and removes attachment objects. Derived memories remain until Forget is also chosen.
+- **Delete chat** tombstones eligible `ms_messages` and removes their attachment objects. Invalidate source citations and revoke derivations tied to the deleted evidence. Independently sourced facts can survive within their scope.
 
-Withdrawing Save stops future writes and offers Forget. It does not delete the chat by itself.
+Withdrawing Save removes derived access immediately and initiates the shared revoke/forget path for affected sources. Keep the original chat records. Bump the consent generation, fence delayed work and reconcile an idempotent bridge receipt covering facts, embeddings, exports, caches and cross-app features.
 
 ## Redis facts in the POC
 
@@ -67,7 +67,7 @@ Withdrawing Save stops future writes and offers Forget. It does not delete the c
 | `tasks:{user}` | Dicts, 30-day TTL. | Dropped. They are not `tasks.py` rows and they have no assignee consent. |
 | `thread:{user}` | Last 200 `{role, text, at}`. | Dropped. Session scratch, not chat and not memory. |
 
-After the user finishes or skips the review, those three keys are deleted. There is no ongoing dual write.
+For an authorized reuse migration, disable legacy live reads/writes and keep any approved review under the verified principal. Dispose of those keys under an explicit retention decision. There is one authoritative write per memory.
 
 ## What Mirsal will not ask memory to do
 

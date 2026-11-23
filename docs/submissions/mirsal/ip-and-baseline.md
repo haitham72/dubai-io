@@ -4,7 +4,7 @@
 **Gate:** M0. The founder decides. This file copies nothing.  
 **Recommendation: clean-room.**
 
-A personal git author is not title. The POC has no project licence. Concept sheets and Diwan pictures are described as supplied. A separate project, formerly Diwan Hamdan, is the stated home of the events backend and of pictures Mirsal “never makes”. Nothing in the README, `CLAUDE.md`, `ARCHITECTURE.md`, `Mirsal-redesign.md`, or the commit messages says the POC was made for an employer, under an NDA, or as client work. Nadi is documented as a demo that calls no real HR system. That is why this is clean-room rather than no-go, and why reuse is not available yet.
+A personal git author is not title. The POC has no project licence. Concept sheets and Diwan pictures are described as supplied. A separate project, formerly Diwan Hamdan, is the stated home of the events backend and of pictures Mirsal “never makes”. Nothing in the README, `CLAUDE.md`, `ARCHITECTURE.md`, `Mirsal-redesign.md`, or the commit messages says the POC was made for an employer, under an NDA, or as client work. Nadi is documented as a demo that calls no real HR system. The founder spec §1 (line 44) reports that the idea/design was discussed in connection with an office app. Keep the office link in the evidence record and obtain path-specific rights evidence.
 
 Build agents for a clean-room `apps/mirsal/` do not open `D:\Vscode\Mirsal-redesign`, its screens, its slides, or its brand files. The idea in the founder spec may be used. The repo’s code, layout, name, logo, and assets may not, until the written confirmations below exist.
 
@@ -64,10 +64,14 @@ A git email is not enough. Each line is a separate confirmation.
 
 Third-party notices stay under their own terms and are not founder-original: Unsplash hotlinks, Lucide, the OFL fonts, `remove-ai-watermarks`, and the pdoom MIT file.
 
+## Contest eligibility
+
+The organizer requires an original AI agent and restricts taking it from an existing repository. Existing businesses may propose a new capability. The public wording leaves the eligibility of this exact prototype-reuse path open. Ask the founder to obtain written organizer clarification before an import is approved. Any history-preserving import also needs rights clearance for historical material, including assets deleted at HEAD. [Official Participation rules](https://www.dubaichambers.com/en/web/dubai-chamber-of-digital-economy/create-ai-agents)
+
 ## What would change the recommendation
 
 - **To reuse:** a written assignment or licence covering the code, the name, the logo, and every asset class above, plus a statement that `system722@gmail.com` and `h.ibrahim` are the founder’s own accounts and that Diwan and Nadi material is cleared or excluded. The import, if the founder then says reuse, is `git subtree add --prefix=apps/mirsal https://github.com/haitham72/Mirsal-redesign master`, keeping history. This plan does not run that command.
-- **To no-go:** any written or documentary statement that the POC, the concept sheets, the logo, or the Diwan images were made in employment, for a client, or under an NDA, or that Diwan Hamdan or Nadi owns them.
+- **To no-go:** neither authorized reuse nor a separately authored, eligible clean-room submission is possible. If documentary evidence identifies an employer- or client-owned area, exclude it from the clean-room brief and require written rights for any proposed reuse.
 
 ## What this file does not decide
 

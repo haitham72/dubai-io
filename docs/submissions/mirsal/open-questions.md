@@ -13,7 +13,7 @@ The POC at `6b45ba4` has no project licence. Concept sheets are “supplied”. 
 **Blocks:** every code slice (`MS-B2` onward), the subtree import, and any use of the logo, screens, or slides.  
 **Deadline:** the P2 founder gate, before Gate S is treated as permission to start Mirsal. Package target is Fri 18 Dec 2026.
 
-Written confirmations that would flip this to reuse are listed in `ip-and-baseline.md`.
+Reuse requires written rights covering the proposed import and its history plus organizer clarification on whether the prior prototype can support the newly authored agent. See [the M0 evidence](ip-and-baseline.md).
 
 ### 2. Updates tray
 
@@ -35,7 +35,7 @@ The spec (§0, §3) says: keep the compact Mirsal Updates tray, and do not reflo
 
 The spec allows Supabase Realtime plus Postgres RLS, or a justified WebSocket service. Schema `dubaiio` is revoked from `anon`, `authenticated`, and `service_role` (`supabase/migrations/20261021000100_backend.sql`). The live session is an anonymous cookie. Browser Realtime would need a grant that schema does not have, and a JWT that B0 has not built.
 
-**Recommendation:** a cookie-authenticated FastAPI WebSocket. The durable store is `ms_*` tables in `dubaiio`, created with `CREATE TABLE IF NOT EXISTS` from Mirsal code (the `tasks.py` pattern). RLS SQL lives in `apps/mirsal/supabase/` and is not added to `supabase/migrations/` until the mains merge. Until that SQL is applied, the fence is the API membership check, and the docs must not call RLS live.  
+**Recommendation:** a FastAPI WebSocket bound to the B0 verified principal, with a short-lived same-origin session established after JWT verification. Keep the Postgres schema backend-only. Apply and test entry-owned RLS SQL from `apps/mirsal/supabase/` using a non-bypass database role before live pilot traffic. The API rechecks membership on subscribe, send and replay and removes revoked subscribers. Confirm how the entry SQL is applied before MS-B2 merges.
 **Blocks:** `MS-B2`.  
 **Deadline:** P2, so the shared contract does not assume browser Realtime.
 
@@ -51,8 +51,7 @@ Clean-room covers code and assets. The word Mirsal is already the spec’s name,
 
 - Group size cap of 8. Change it when the first pilot needs a different number.
 - Phone overlay versus desktop workspace. The spec rule (chat stays put) covers both once question 2 is answered.
-- Photo-window, typecheck, Vite build, and the retired `server/` tests were not rerun. They do not gate M0.
-- README totals 169 and 10, and the voice counts 113 and 32, are stale. The rerun number is 200 passed, 1 Redis skip.
+- The independent verification reproduced the voice evals, typecheck, photo-window harness and 40 server tests. The sandbox build attempt was blocked and Redis skipped. See [test evidence](audit.md).
 - Voice and video calling stays P1. The business demo does not use it.
 - Stage 1 (family and friends) is a usability test. It is not a business-user claim, and family content is not inferred into memory (rule 9).
 - `workspace.task.create` is proposed in `demo-script.md` and is not in `CAPABILITIES` today. Registering it is build work on `MS-B5`, through `apps/api/app/mirsal/`, not a second approval policy.

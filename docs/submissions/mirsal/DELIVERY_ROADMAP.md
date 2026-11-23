@@ -2,7 +2,7 @@
 
 **Status:** planned — awaiting founder approval (23 Nov 2026, Cursor).
 
-Order follows spec §9. Mirsal code starts only after the founder decides **M0** and **Gate S** has passed (`docs/submissions/CLAUDE.md` §3). A clean-room decision means the people who build `apps/mirsal/` do not open `D:\Vscode\Mirsal-redesign`.
+Order follows spec §9. Mirsal code starts after the founder approves the roadmap, decides **M0**, and **Gate S** has passed and the B0 work is merged into `business` (`docs/submissions/CLAUDE.md` §3). Under reuse, include written organizer clarification on eligibility for the exact planned import. A clean-room decision means the people who build `apps/mirsal/` do not open `D:\Vscode\Mirsal-redesign`.
 
 Owned paths on `business`, and only these: `apps/mirsal/**`, `apps/api/app/mirsal/`, `apps/api/tests/test_mirsal_*.py`, `fixtures/mirsal/`, `docs/submissions/mirsal/**`. RLS notes live in `apps/mirsal/supabase/`. No new file under `supabase/migrations/`. `communities.py`, `actions.py`, and `main.py` stay untouched; capabilities are registered from the Mirsal package. Entrypoint, when a server is needed: `app.mirsal.server:app` on port 8070.
 
@@ -17,15 +17,15 @@ Internal package target: Fri 18 Dec 2026 (`PLAN.md` §5). That date is a deck, a
 | | |
 |---|---|
 | Happy path | A reader can see the POC class for every spec §0 row and every spec §6 module, with the rerun command and the 200 / 1 result, and can see why M0 is clean-room. |
-| Failure path | A path that is only a filename is not marked working. Redis skip, unread typecheck, and unread Vercel handlers stay unverified. |
+| Failure path | A path that is only a filename is not marked working. Redis and deployed Vercel handlers remain unverified. See the separate typecheck and offline test results in [audit.md](audit.md). |
 | Demo beat | None. It unlocks the founder’s M0 answer. |
 
 ## MS-B2 — Real chat core
 
-**Depends on:** M0 decided, Gate S passed. B0 identity for a non-null `verified_user_id`. Until that link exists, rows use `session_owner` and the UI does not say the same person is in Quest or Community.  
+**Depends on:** M0 decided, Gate S passed. Merged B0 identity for a verified `user_id`. Keep local demo fixtures isolated until that identity is available.
 **Owns:** `apps/mirsal/` client and `apps/mirsal/supabase/` notes, `apps/api/app/mirsal/` transport, `apps/api/tests/test_mirsal_chat.py`, `fixtures/mirsal/chat/`.
 
-Transport: cookie-authenticated WebSocket, `ms_*` tables in schema `dubaiio`, idempotent `client_msg_id`, reconnect by `last_seq`. Media in object storage with a signed URL after the membership check. Demo fixtures wear a Demo data pill and are not the two-user test.
+Use a FastAPI WebSocket with a short-lived same-origin session established from verified B0 identity. Check Origin and expiry on handshake; recheck current role and membership on subscribe, send and replay, and stop payloads on revoke. Postgres `ms_*` tables in backend-only `dubaiio` cover users/settings, contact requests, conversations, memberships, messages, receipts, attachment metadata, decisions, tasks, approval linkage and audit. Apply entry-owned RLS with a caller-bound non-bypass role. Commit sequence and unique sender/conversation/`client_msg_id` together. Reject a replay key with modified text. Reconnect by change cursor including edits and tombstones; let recipient device acks advance delivery/read. Verify pending media type and size, then issue short-lived signed object access after member checks. Use an authorized proxy where immediate cutoff is required. Demo fixtures keep their Demo data label.
 
 | | |
 |---|---|
@@ -52,7 +52,7 @@ Transport: cookie-authenticated WebSocket, `ms_*` tables in schema `dubaiio`, id
 | | |
 |---|---|
 | Happy path | `test_ms_save_writes_record_with_evidence` — Confirm writes one record whose evidence id is the message, source `mirsal:<conversation_id>`. |
-| Failure path | `test_ms_ai_default_off` and `test_ms_group_off_blocks_model`. `test_ms_forget_keeps_messages`. `test_ms_delete_keeps_facts`. `test_ms_unconfirmed_redis_fact_dropped` only if a migration runs. |
+| Failure path | `test_ms_ai_default_off` and `test_ms_group_off_blocks_model`. `test_ms_forget_keeps_messages`. `test_ms_delete_revokes_source_derivations`. `test_ms_unconfirmed_redis_fact_dropped` only if a migration runs. |
 | Demo beat | Privacy walkthrough: Off, then Save, then Forget. Not the jury’s work outcome. |
 
 ## MS-B5 — Business agent
@@ -60,13 +60,13 @@ Transport: cookie-authenticated WebSocket, `ms_*` tables in schema `dubaiio`, id
 **Depends on:** `MS-B2`. Memory (`MS-B4`) is not required for the chain. The chain uses message ids in the chat tables.  
 **Owns:** `apps/api/app/mirsal/capabilities.py` (registers `workspace.task.create` into the existing registry from this package), `apps/api/app/mirsal/business.py`, `apps/api/tests/test_mirsal_business.py`, `fixtures/mirsal/marina/`.
 
-The card lists the exact fields in `demo-script.md`. One tap. State after a real adapter is `open`. No adapter: the card shows the blocker and the draft remains. Model text never sets Completed, Confirmed, or Paid.
+The card lists the exact fields in `demo-script.md`. The JWT-bound Mirsal wrapper invokes the existing ActionEngine with the canonical actor and binds the capability, snapshot hash, revision and idempotency key (`actions.py:232–266,308–346`). In the same transaction as task creation, recheck the source revision, active membership, approver role and assignee consent. The adapter deduplicates on action ID and returns the durable task ID as evidence. Missing adapter leaves the draft blocked; ambiguous dispatch stays unknown pending reconciliation. Count the decision confirmation separately from the one task approval.
 
 | | |
 |---|---|
 | Happy path | `test_ms_demo_chain_and_denial` — summarise cites the three fixture ids, Record is a tap, one approval creates one task, the brief cites those ids, the non-member is refused. |
 | Failure path | `test_ms_ai_side_effect_needs_approval` (unknown capability, and a missing adapter). `test_ms_joke_is_not_an_obligation`. `test_ms_no_reminder_for_another_member`. `test_ms_decision_stays_candidate_until_tap`. |
-| Demo beat | The four-minute script. Every seeded line is Demo data. Every operator-started step is Demo trigger. |
+| Demo beat | The four-minute script. Every seeded line is Demo data. An unprompted staged trigger shows Demo trigger. |
 
 ## MS-B6 — Cross-account verification
 
@@ -75,8 +75,8 @@ The card lists the exact fields in `demo-script.md`. One tap. State after a real
 
 | | |
 |---|---|
-| Happy path | The two-user test, the denial test, and a restart of the API process with the thread still there. |
-| Failure path | A third session, an injection message, and a Save toggle flipped to Off mid-flight. |
+| Happy path | The two-user test, the denial test, and a restart with the thread and task still there. Verify exactly one task on approval retry and zero on stale revision. Exercise Mirsal → Quest scoped recall, Quest → Community consented interest, revocation/Forget and cross-app account isolation. Live claims require the actual bridge/backend. |
+| Failure path | A third verified session, revocation during an active connection, an injection message, an unapproved task/send, and Save switched Off mid-flight. Assert denial on search, media, citation and pending jobs. |
 | Demo beat | The recording may include this only for tests that were actually run. The log cites the command and the output. |
 
 ## MS-B7 — Deck, video, hosting
@@ -87,7 +87,7 @@ The card lists the exact fields in `demo-script.md`. One tap. State after a real
 
 | | |
 |---|---|
-| Happy path | A reviewer plays the video and sees the tap, the open task, the citations, and the refusal, with both pills visible. |
+| Happy path | A reviewer plays the video and sees the tap, the durable task, citations and denial. Label every synthetic input Demo data and each unprompted staged action Demo trigger. Record three consecutive successful demo runs and founder visual approval for the staged UI. |
 | Failure path | If `workspace.task.create` is not registered, the video shows the blocker and the draft. It does not cut to a success. |
 
 ## MS-B8 — Stage 2 pilot

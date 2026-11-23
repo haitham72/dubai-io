@@ -15,3 +15,7 @@ Top risks:
 3. The spec’s compact Updates tray and commit `6b45ba4` disagree. A later reuse decision is blocked until the founder picks one.
 4. Community already has per-owner `chat_*` tables. A second full messenger on that side would split the product.
 5. `workspace.task.create` is not registered. The business tap has nowhere to go until `MS-B5`, and a seeded thread is not the two-user test.
+
+## 23 Nov 2026 — P1 verification (Codex)
+
+Cross-checked Cursor’s nine-file P1 commit and preserved its slice order. Reproduced 200 agent passes with one Redis skip, all 145 offline routing eval items, 40 provider-mock server tests, TypeScript and four photo-window cases. The sandbox prevented a Vite build. Verified the source SHA on GitHub and added the organizer’s originality constraint to M0. Reconciled chat ownership with verified B0 identity and source deletion with memory revocation. The demo calendar now agrees with the approval payload.

@@ -56,6 +56,13 @@ Safe to quote only if the spoken line says “Microsoft, reported”:
 - 1 in 3 employees say the pace of work over the past five years makes it impossible to keep up (survey).
 - Meetings starting after 8 pm are up 16% year over year.
 
+## UAE SME context and OECD AI survey — checked 23 Nov 2026
+
+- The UAE Ministry of Economy & Tourism lists **558,000** micro, small and medium enterprises for 2022 and **63.5%** of UAE non-oil GDP from SMEs for 2020. Use the year with each number and preserve the non-oil denominator. `official`. [Ministry Entrepreneurship data](https://www.moet.gov.ae/en/entrepreneurs-and-smes)
+- Dubai International Chamber reports attracting **309 SMEs** to Dubai in 2025. This measures the chamber’s own attracted firms. `official`. [Dubai International Chamber 2025 results](https://www.dubaichambers.com/en/w/dubai-international-chamber-attracted-64-multinational-companies-to-dubai-during-2025-achieving-annual-growth-of-25.5-)
+- In the late-2024 OECD survey of seven countries, **65.1%** of generative-AI-using SMEs reported that it helped employee performance. The survey did not estimate the magnitude of their improvement. Published 5 Nov 2025, `official` source, **respondent-reported** outcome. [OECD Figure 2.7](https://www.oecd.org/en/publications/generative-ai-and-the-sme-workforce_2d08b99d-en/full-report/component-4.html) · [Survey scope](https://www.oecd.org/en/publications/generative-ai-and-the-sme-workforce_2d08b99d-en/full-report/component-2.html)
+- The organizer confirms the Best Business AI Agent category, the January 2027 registration close, English submission materials and an originality requirement. Check the portal for a specific cutoff before submission. The originality rule is material to [M0](ip-and-baseline.md). [Official category, timeline and Participation rules](https://www.dubaichambers.com/en/web/dubai-chamber-of-digital-economy/create-ai-agents)
+
 ## Held — page not re-opened by the lead
 
 **UAE Ministry of Economy and Tourism, 19 June 2023.** The research lane reports: undersecretary Abdulla Ahmed Al Saleh, more than 557,000 SMEs, and 63.5% of non-oil GDP in 2022; Federal Law No. 2 of 2014; a stated aim that 10% of federal-entity procurement go to National Program SMEs.
@@ -75,6 +82,6 @@ Safe to quote only if the spoken line says “Microsoft, reported”:
 | Microsoft 57% vs 60% ad hoc calls; “every 2 minutes”; “up 35% since 2021” vs “+8 percentage points” | The article body and its method note disagree. Drop both sides. |
 | McKinsey 20–25% and USD 900 billion–1.3 trillion as a Mirsal result | On the 2012 page as potential from social technologies. |
 | Gallup USD 438 billion beside USD 10 trillion | Different year and different page. Prefer to omit dollars. |
-| “63.5% in 2020” or “53% of GDP” | Different base or year from the ministry line above. |
-| POC “169 tests” or “113 / 32 holdout” as proof of this chain | Spec §0: historical documentation. The rerun, if any, belongs in `audit.md`, not on a productivity slide. |
+| “63.5% of GDP” with an unqualified denominator, or “53% of GDP” | The opened Ministry series reports 63.5% of non-oil GDP in 2020. |
+| POC “169 tests” or “113 / 32 holdout” as proof of this chain | Spec §0: historical documentation. The independent reruns are documented in [audit.md](audit.md) as offline routing evidence. |
 | 104,000 items lost in Dubai taxis | `PLAN.md` §7, personal entry. |
