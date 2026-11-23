@@ -1,0 +1,64 @@
+# temporal-memory stack. Usage:
+#   docker compose up -d postgres rabbitmq redis          # infra only (tests, local dev)
+#   docker compose up -d api worker-p0 worker-p1 beat     # service + workers
+# Agent-CLI and owner-hook workers run on the host and claim through the API/MCP (planaudit §6, §9).
+name: temporal-memory
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_USER: tm
+      POSTGRES_PASSWORD: tm
+      POSTGRES_DB: tm
+    ports: ["5442:5432"]
+    volumes: [pg-data:/var/lib/postgresql/data]
+    healthcheck: {test: ["CMD-SHELL", "pg_isready -U tm"], interval: 5s, timeout: 5s, retries: 10}
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    ports: ["5682:5672", "15682:15672"]
+    volumes: [rabbitmq-data:/var/lib/rabbitmq]
+    healthcheck: {test: ["CMD", "rabbitmq-diagnostics", "ping"], interval: 10s, timeout: 5s, retries: 5}
+
+  redis:
+    image: redis:7-alpine
+    ports: ["6390:6379"]
+    healthcheck: {test: ["CMD", "redis-cli", "ping"], interval: 10s, timeout: 5s, retries: 5}
+
+  api:
+    build: .
+    command: ["uvicorn", "temporal_memory.api.app:create_app", "--factory", "--host", "0.0.0.0", "--port", "8040"]
+    env_file: [{path: .env, required: false}]
+    environment: &tm_env
+      TM_DATABASE_URL: postgresql://tm:tm@postgres:5432/tm
+      TM_BROKER_URL: amqp://guest:guest@rabbitmq:5672//
+      TM_REDIS_URL: redis://redis:6379/0
+      TM_LMSTUDIO_URL: http://host.docker.internal:1234/v1
+    ports: ["8040:8040"]
+    depends_on: {postgres: {condition: service_healthy}, rabbitmq: {condition: service_healthy}, redis: {condition: service_healthy}}
+
+  worker-p0:   # reserved for live (P0) jobs so imports can never starve the chat badge
+    build: .
+    command: ["celery", "-A", "temporal_memory.queue.celery_app", "worker", "-Q", "mem.p0", "--concurrency=1", "-n", "p0@%h"]
+    env_file: [{path: .env, required: false}]
+    environment: *tm_env
+    depends_on: [api]
+
+  worker-p1:   # imports, nightly, reflect
+    build: .
+    command: ["celery", "-A", "temporal_memory.queue.celery_app", "worker", "-Q", "mem.p1,mem.p3", "--concurrency=2", "-n", "p1@%h"]
+    env_file: [{path: .env, required: false}]
+    environment: *tm_env
+    depends_on: [api]
+
+  beat:        # outbox publisher + reconciler (expired leases, unpublished jobs)
+    build: .
+    command: ["celery", "-A", "temporal_memory.queue.celery_app", "beat"]
+    env_file: [{path: .env, required: false}]
+    environment: *tm_env
+    depends_on: [api]
+
+volumes:
+  pg-data:
+  rabbitmq-data:
