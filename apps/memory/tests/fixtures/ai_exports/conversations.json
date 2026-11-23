@@ -1,0 +1,69 @@
+[
+  {
+    "id": "synthetic-pottery-conversation",
+    "title": "Karim's pottery project",
+    "create_time": 1794943800.0,
+    "current_node": "interrupted",
+    "mapping": {
+      "root": {"id": "root", "parent": null, "children": ["system"], "message": null},
+      "system": {
+        "parent": "root",
+        "children": ["prompt", "abandoned"],
+        "message": {"author": {"role": "system"}, "create_time": 1794943800, "content": {"content_type": "text", "parts": ["SYNTHETIC_SYSTEM_TEXT"]}}
+      },
+      "prompt": {
+        "parent": "system",
+        "children": ["first-reply"],
+        "message": {"author": {"role": "user"}, "create_time": 1794944700, "content": {"content_type": "text", "parts": ["I want to learn how to glaze a ceramic bowl. My api_key = \"fixture-private-value\"."]}}
+      },
+      "first-reply": {
+        "parent": "prompt",
+        "children": ["tool"],
+        "message": {"author": {"role": "assistant"}, "create_time": 1794944760, "end_turn": true, "content": {"content_type": "text", "parts": ["SYNTHETIC_EARLIER_REPLY"]}}
+      },
+      "tool": {
+        "parent": "first-reply",
+        "children": ["hidden-user"],
+        "message": {"author": {"role": "tool"}, "create_time": 1794944820, "content": {"content_type": "execution_output", "parts": ["SYNTHETIC_TOOL_OUTPUT"]}}
+      },
+      "hidden-user": {
+        "parent": "tool",
+        "children": ["next-prompt"],
+        "message": {"author": {"role": "user"}, "create_time": 1794944880, "metadata": {"is_user_system_message": true}, "content": {"content_type": "text", "parts": ["SYNTHETIC_HIDDEN_PROMPT"]}}
+      },
+      "next-prompt": {
+        "parent": "hidden-user",
+        "children": ["final"],
+        "message": {
+          "author": {"role": "user"},
+          "create_time": 1794945720,
+          "content": {"content_type": "multimodal_text", "parts": [{"content_type": "image_asset_pointer", "asset_pointer": "SYNTHETIC_ATTACHMENT"}, "Please suggest a weekend outline.\n```python\nSYNTHETIC_CODE_DUMP\n```\nI have two hours on Saturday."]}
+        }
+      },
+      "final": {
+        "parent": "next-prompt",
+        "children": ["interrupted"],
+        "message": {"author": {"role": "assistant"}, "create_time": 1794945780, "channel": "final", "end_turn": true, "status": "finished_successfully", "content": {"content_type": "text", "parts": ["Test one glaze on a small tile before coating the bowl."]}}
+      },
+      "interrupted": {
+        "parent": "final",
+        "children": [],
+        "message": {"author": {"role": "assistant"}, "create_time": 1794945840, "channel": "commentary", "end_turn": false, "status": "in_progress", "content": {"content_type": "text", "parts": ["SYNTHETIC_UNFINISHED_TEXT"]}}
+      },
+      "abandoned": {
+        "parent": "system",
+        "children": [],
+        "message": {"author": {"role": "user"}, "create_time": 1794945900, "content": {"content_type": "text", "parts": ["SYNTHETIC_ABANDONED_PROMPT"]}}
+      }
+    }
+  },
+  {
+    "conversation_id": "synthetic-birds-conversation",
+    "title": "Karim's birdwatching list",
+    "create_time": 1794999600,
+    "mapping": {
+      "prompt": {"message": {"author": {"role": "user"}, "create_time": 1794999600, "content": {"parts": ["Which shorebirds should I look for from the boardwalk? Include `sandpipers`."]}}},
+      "answer": {"message": {"author": {"role": "assistant"}, "create_time": 1794999660, "content": {"parts": ["Bring a shorebird field guide."]}}}
+    }
+  }
+]
