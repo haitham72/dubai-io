@@ -1,3 +1,5 @@
+> **History (run by Cursor on 23 Nov).** This brief predates the founder's decisions D1–D7 and uses the product's retired name. It is superseded by `1b-revise.md` and `docs/submissions/shared/founder-decisions.md`; do not run it again.
+
 # Brief P1 — Plan · Mirsal AI Messenger (Entry 3, Best Business AI Agent) · branch `business`
 
 Suggested lead: **Cursor** (any of Cursor / Muse / Codex / Antigravity works). It runs in parallel with the Community planner on `societal`. Paste everything below the line into the lead agent.
