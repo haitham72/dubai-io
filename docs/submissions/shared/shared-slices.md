@@ -1,24 +1,24 @@
 # Shared B0 Build Slices (`contest-shared`)
 
-**Status:** `draft — awaiting Community needs (P2 Part B)`
+**Status:** `ready for founder approval`
 **Date:** 2026-11-23
 **Branch:** `contest-shared` (lane branches: `cs/<slice-id>`, cut from `contest-shared`)
-**Note on execution:** B0 (`docs/submissions/shared/briefs/3-build-shared.md`) starts **only after** P2 Part B folds in Community's needs and the founder sets this document's status line to `approved — <date>`.
+**Note on execution:** B0 (`docs/submissions/shared/briefs/3-build-shared.md`) starts **only after** the founder sets this document's status line to `approved — <date>`.
 
 ---
 
 ## Dependency & Parallelism Map
 
 ```text
-  [CS-B1: Identity Core, JWT, App Sessions & WS Tickets]
+  [CS-B1: Identity Core, JWT, Age Gate, Session Adoption, App Sessions & WS Tickets]
          │
          ▼
   [CS-B2: temporal_note Client, FakeClient & Rule 9 Sensitive Gate]
          │
          ├──────────────────────────────────────┐
          ▼                                      ▼
-  [CS-B3: Consent Store, Writes,         [CS-B4: Forget/Revoke Cascade,
-   Two-Visit & Per-App Reads]             Audit Log & HTTP Router]
+  [CS-B3: Consent Store, Minor Fence,    [CS-B4: Forget/Revoke Cascade,
+   Writes, Two-Visit & Per-App Reads]     Audit Log & HTTP Router]
          │                                      │
          └──────────────────┬───────────────────┘
                             ▼
@@ -29,15 +29,15 @@ All slices touch **only** `contest-shared` owned paths (`apps/api/app/identity/*
 
 ---
 
-## `CS-B1` — Identity Core, JWT Verifier, Per-App Sessions & WS Tickets
+## `CS-B1` — Identity Core, JWT Verifier, D9 Age Gate, App Sessions & WS Tickets
 
-- **Goal:** Deliver the single verified `user_id` across Quest, Community, and Messenger with cryptographic Bearer JWT verification (HS256 + RS256/ES256/EdDSA via `cryptography`, zero new packages), `(issuer, subject)` identity linking (no display-name auto-merge), per-app sessions + closed capability allowlists, single-use `Origin`-bound WebSocket tickets, anti-spoofing dependency guards, and strict isolation from anonymous `dubaiio_lab_session` cookies.
+- **Goal:** Deliver the single verified `user_id` across Quest, Community, and Messenger with cryptographic Bearer JWT verification (HS256 + RS256/ES256/EdDSA via `cryptography`, zero new packages), `(issuer, subject)` identity linking (no display-name auto-merge), D9 self-declared `age_band` (`cs_users.age_band`, `VerifiedPrincipal.is_minor_protected`, never inferred), one-time proof-based `adopt_session_owner`, per-app sessions + closed capability allowlists, single-use `Origin`-bound WebSocket tickets, anti-spoofing dependency guards, and strict isolation from anonymous `dubaiio_lab_session` cookies.
 - **Owned files (no overlap):**
   - `apps/api/app/identity/__init__.py`
   - `apps/api/app/identity/config.py`
   - `apps/api/app/identity/models.py`
   - `apps/api/app/identity/jwt.py`
-  - `apps/api/app/identity/store.py` (`cs_users`, `cs_identity_links`, `cs_link_challenges`, `cs_app_sessions`, `cs_revoked_jtis`, `cs_ws_tickets`, `cs_identity_audit`)
+  - `apps/api/app/identity/store.py` (`cs_users`, `cs_identity_links`, `cs_session_adoptions`, `cs_link_challenges`, `cs_app_sessions`, `cs_revoked_jtis`, `cs_ws_tickets`, `cs_identity_audit`)
   - `apps/api/app/identity/service.py`
   - `apps/api/app/identity/deps.py`
   - `apps/api/app/identity/router.py` (`/api/identity/*`)
@@ -49,17 +49,18 @@ All slices touch **only** `contest-shared` owned paths (`apps/api/app/identity/*
 - **Happy-path tests:**
   - Valid HS256 and RS256/EdDSA JWTs resolve identically across `quest`, `community`, and `messenger` to one canonical `user_id` (ID-01, ID-03).
   - Minting and authenticating per-app sessions + capability subset checks pass for matching app (ID-05).
-  - Explicit `start_identity_link` + `complete_identity_link` links a second `(issuer, subject)` via valid challenge proof (ID-06).
+  - Explicit `start_identity_link` + `complete_identity_link` binds a second `(issuer, subject)` via valid challenge proof (ID-06).
   - Minting and consuming a single-use WS ticket with matching `Origin` returns verified principal (ID-04).
+  - `POST /api/identity/age-band` records self-declared `adult_18_plus` / `teen_13_17` / `under_13`; `POST /api/identity/adopt-session` adopts a valid `dubaiio_lab_session` owner once (ID-10, ID-11).
 - **Failure-path tests:**
   - Two-user cross-session/ticket access fails `403`/`404` (ID-01).
   - Expired JWT/session/WS ticket, future `nbf`, missing `exp`, `alg="none"`, HS256/RSA confusion, tampered sig, wrong `iss`/`aud`/empty `sub`/unknown `kid` fail `401` (ID-02, ID-03).
   - `revoke_session`, `revoke_all_sessions` (`session_version` bump), `cs_revoked_jtis`, WS ticket replay, and wrong `Origin` fail `401`/`403` (ID-04).
   - Cross-app session use and out-of-allowlist capability requests fail `403`/`422` (ID-05).
-  - Identical `display_name` + unverified email never merge; replayed/expired link challenges fail (ID-06).
+  - Identical `display_name` + unverified email never merge; replayed/expired link challenges fail; second adoption of `session_owner` fails `409` (ID-06, ID-11).
   - `dubaiio_lab_session` cookie rejected `401` on all verified routes while legacy `/api/session` & `/api/actions` pass untouched (ID-07).
-  - Spoof headers (`X-User-Id`, `X-Owner`, `X-Owner-Id`, `X-Dubaiio-User`, `X-Principal`, legacy POC header) fail `400`; mismatched body/query `owner`/`user_id` fails `403`/`422` (ID-08).
-- **Unblocks:** `CS-B2`..`CS-B5`; Messenger `MG-B2` (live WebSocket chat on `:8070`) & `MG-B5` (`ActionEngine` approvals); Community social core auth/profiles/moderation.
+  - Spoof headers (`X-User-Id`, `X-Owner`, `X-Owner-Id`, `X-Dubaiio-User`, `X-Principal`, legacy POC header) fail `400`; mismatched body/query `owner`/`user_id` and invalid/inferred `age_band` overrides fail `400`/`403`/`422` (ID-08, ID-10).
+- **Unblocks:** `CS-B2`..`CS-B5`; Community `CM-B5` (identity hookup); Messenger `MG-B3` (live WebSocket chat on `:8070`) & `MG-B6` (`ActionEngine` approvals under verified `user_id`).
 
 ---
 
@@ -88,9 +89,9 @@ All slices touch **only** `contest-shared` owned paths (`apps/api/app/identity/*
 
 ---
 
-## `CS-B3` — Consent Store, Write Path, Two-Visit Qualification & Per-App Read Projections
+## `CS-B3` — Consent Store, D9 Minor Fence, Write Path, Two-Visit & Per-App Read Projections
 
-- **Goal:** Build default-off `ConsentStore` (`cs_consent_grants` with monotonic `generation`) and `MemoryBridge` write/read orchestration: consent gates, `GroupConsentSnapshot` enforcement, third-party message rule, `cs_two_visit_signals` (`>= 2` signals `>= 6h` apart or `>= 2` distinct days), fact confirmation/supersession/rejection, Quest owner reads, Community strict allowlist `InterestFeature` projection, and Messenger chat-scoped + opt-in private owner recall.
+- **Goal:** Build default-off `ConsentStore` (`cs_consent_grants` with monotonic `generation`) and `MemoryBridge` write/read orchestration: D9 under-18 fail-closed fence (`MinorProtectionError` on writes, behavioral signals, and cross-app personalisation), consent gates, `GroupConsentSnapshot`, third-party message/post rule, `cs_two_visit_signals`, fact resolution/supersession, Community canonical source namespaces (`community:post:*`, `community:group:*`) + strict `InterestFeature` projection + `read_community_own_activity`, Quest owner reads, and Messenger chat-scoped + opt-in private owner recall.
 - **Owned files (no overlap with `CS-B4`):**
   - `apps/api/app/memory_bridge/consent.py`
   - `apps/api/app/memory_bridge/bridge.py`
@@ -99,19 +100,20 @@ All slices touch **only** `contest-shared` owned paths (`apps/api/app/identity/*
   - `apps/api/tests/test_memory_bridge_reads.py`
 - **Depends on:** `CS-B1`, `CS-B2`.
 - **Happy-path tests:**
-  - Explicit source + app/conversation grant unlocks write/read (MB-01).
+  - Explicit source + app/conversation grant unlocks write/read for `adult_18_plus` (MB-01).
   - Owner confirmed statement writes `user_supplied` fact (MB-05); `>= 2` signals `>= 6h` apart promote to `"I noticed …"` `hypothesis` (MB-06).
   - `confirm` / `edit` / `supersede` updates lifecycle and invalidates Community projection (MB-09).
-  - Community `read_community_interest_features` returns `InterestFeature` DTOs only when dual opt-in is active (MB-07).
+  - Community `read_community_interest_features` returns `InterestFeature` DTOs only when dual opt-in is active; `read_community_own_activity` lists owner's Community-origin signals only (MB-07, MB-12).
   - Messenger `read_messenger_chat_scope` returns facts scoped strictly to `messenger:<conversation_id>` (MB-08).
 - **Failure-path tests:**
   - Fresh default-off user fails closed (`ConsentDeniedError`, MB-01); caller cannot spoof `owner` or `provenance` (MB-03).
+  - `under_13`, `teen_13_17`, and `unknown` users fail closed (`MinorProtectionError` / `403`) on `write_consented`, `record_behavioral_signal`, and `allow_interest_export_to_community`, and `read_community_interest_features` returns `[]` (MB-11).
   - Two-user cross-read isolation returns empty/`403`/`404` (MB-02).
-  - Third-party `author_id != owner_id` never writes a confirmed owner fact or auto-promotes third-party people (MB-05).
+  - Third-party `author_id != owner_id` (and scraped Community comments / other users' posts) never writes a confirmed owner fact or auto-promotes third-party people (MB-05).
   - Single click or `< 6h` signals never create a hypothesis or `InterestFeature` (MB-06).
   - Community payload asserts zero raw Quest/Gmail/Outlook/Messenger text, zero `conversation_id`, zero sensitive/family/people names; toggling export OFF returns `[]` immediately (MB-07).
   - Messenger `ai_mode="off"`/`"session"`, any `off` group member, or cross-chat query (`conv-A` vs `conv-B`) is blocked/isolated (MB-08); `reject` hides facts immediately (MB-09).
-- **Unblocks:** Community Discovery Agent (`InterestFeature` reads) & Community→Quest memory writes; Messenger `MG-B4` chat-scoped recall & business-agent memory.
+- **Unblocks:** Community `CM-B8` (memory bridge integration) & `CM-B9` (cross-app Discovery Agent); Messenger `MG-B5` (scoped memory).
 
 ---
 
@@ -124,15 +126,15 @@ All slices touch **only** `contest-shared` owned paths (`apps/api/app/identity/*
   - `apps/api/app/memory_bridge/router.py`
   - `apps/api/tests/test_memory_bridge_forget.py`
   - `apps/api/tests/test_memory_bridge_audit.py`
-- **Depends on:** `CS-B2`, `CS-B3` (can develop `audit.py`/`forget.py` interfaces against `CS-B2` models in parallel with `CS-B3`, integrating `bridge.py` calls cleanly).
+- **Depends on:** `CS-B2`, `CS-B3`.
 - **Happy-path tests:**
-  - `forget_conversation` / `forget_source` / `revoke_consent(forget_derived=True)` erases only-evidence facts, trims shared-evidence facts (keeping multi-source facts visible), clears `cs_interest_projection_cache` & `cs_two_visit_signals`, leaves `mg_messages` untouched on memory-only forget, and writes `ForgetReceipt` (MB-10).
+  - `forget_conversation` / `forget_source` / `revoke_consent(forget_derived=True)` erases only-evidence facts, trims shared-evidence facts (keeping multi-source facts visible), clears `cs_interest_projection_cache` & `cs_two_visit_signals`, leaves Messenger `mg_messages` and Community social posts intact on memory-only forget, and writes `ForgetReceipt` (MB-10, MB-12).
   - Idempotent replay with same `idempotency_key` returns prior receipt without re-erasing (MB-10).
 - **Failure-path tests:**
-  - Simulated stale-generation in-flight extraction worker attempting commit post-Forget is rejected (`generation_stale`/`fence_stale`) with zero resurrection (MB-10).
+  - Simulated stale-generation in-flight extraction worker attempting commit post-Forget is rejected (`generation_stale`/`fence_stale`) with zero resurrection (MB-10, MB-12).
   - Transient `temporal_memory` HTTP outage still closes local consent & wipes local projections immediately and records `status="pending_reconciliation"` (MB-10).
   - Audit endpoints enforce owner isolation and never leak quarantined secret text (MB-02, MB-10).
-- **Unblocks:** Messenger "Forget memories from this chat" & "Delete chat" (`MG-B4`), Community delete/revoke propagation, Quest Forget auditability.
+- **Unblocks:** Community `CM-B8` (delete/revoke propagation) & `CM-B11` demo hardening; Messenger `MG-B5` ("Forget memories from this chat" & "Delete chat"); Quest Forget auditability.
 
 ---
 
@@ -146,8 +148,8 @@ All slices touch **only** `contest-shared` owned paths (`apps/api/app/identity/*
 - **Depends on:** `CS-B1`, `CS-B2`, `CS-B3`, `CS-B4`.
 - **Happy-path tests:**
   - Per-user `owner-device` token binds `owner == principal.user_id` and unlocks owner Vault/bridge calls (ID-09).
-  - Cross-app E2E (`E2E-01`): verified `user_id` signs into Quest, Community, and Messenger → Quest confirms interest → Community reads `InterestFeature` → Messenger saves business decision → Quest recalls within scope → Messenger forgets chat → Quest & Community lose derived memory immediately.
+  - Cross-app E2E (`E2E-01`): verified `adult_18_plus` `user_id` signs into Quest, Community, and Messenger → Quest confirms interest → Community reads `InterestFeature` → Community saves discussion → Messenger saves business decision → Quest recalls both within scope → Forget removes derived memories immediately across all 3 apps while social posts & `mg_messages` stay intact.
 - **Failure-path tests:**
   - Revoking `tm_token_id` immediately blocks subsequent calls; User A's `owner-device` token fails `403` on User B's owner path (ID-09).
-  - User B sees zero memories, interests, or audit events from User A across all three app facades; legacy `/api/session` & `apps/web` remain untouched (E2E-01).
-- **Unblocks:** **Gate S** — merge `contest-shared` into `societal` and `business`, unblocking all identity/memory-gated entry slices.
+  - Minor-protected account (`under_13` / `teen_13_17` / `unknown`) writes nothing and sees zero cross-app personalisation; User B sees zero memories, interests, or audit events from User A across all three app facades; legacy `/api/session` & `apps/web` remain untouched (E2E-01).
+- **Unblocks:** **Gate S** — merge `contest-shared` into `societal` (`CM-B5`, `CM-B8`, `CM-B9`) and `business` (`MG-B3`, `MG-B5`, `MG-B6`, `MG-B7`).

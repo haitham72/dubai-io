@@ -26,3 +26,25 @@
 3. **Desktop & iOS have no JWT auth:** Both `origin/desktop` (`d07ee53`) and `origin/ios` (`3b12997`) hardcode/default owner `"karim"` without `Authorization` headers; unpushed PC2 `main` may add further drift when reconciled.
 4. **Live Postgres / Supabase Auth readiness:** `supabase/config.toml:42` sets `enable_signup = false`, `dubaiio` schema is backend-only (`supabase/migrations/` frozen), and staging RLS SQL apply for `apps/messenger/supabase/` and `apps/community/supabase/` needs an explicit founder ops step before live pilot traffic.
 5. **Founder gate items pending:** O2 (Messenger new product name), M0 keep/exclude/rebuild file list confirmation + organizer prototype-reuse check (`PLAN.md:174`), and Community P1 plan (`societal`) before P2 Part B + B0.
+
+## 2026-11-23 — P2 Part B (Antigravity)
+
+### What was checked
+- **Branches & commits audited:**
+  - `contest-shared` (`f03d15f`): read new Founder Decisions **D8** (Messenger M0 confirmed + U²-Net any-subject cut-out stickers + drop Diwan/Nadi/watermark-cleaner/Higgsfield + `MG-B1`/`MG-B2` approved), **D9** (Community `v3-higgsfield` layout + `design/20-11-2026/` style, all-ages self-declared age gate with under-18 protections + pre-`CM-B3` UAE child-safety check, invisible private groups, Scene C allowlisted public-info + non-civic fallback), and **D10** (18 Dec secure tunnel + `>= 5` adult testers, separate staging Supabase project with entry-folder RLS scripts, `handoff-temporal-note.md`, founder prototype-reuse inquiry).
+  - `business` (`4f7c675`, including P1b `2523d3d`, `faeaff7`, `e7638e4`): re-checked all 11 Part A `XC-M` findings — 9 resolved (including `XC-M01`..`M07`, `M10`, `M11`), 2 still open for build slices (`XC-M08` WS auth waiting on Gate S; `XC-M09` `demo-script.md` list/provenance payload shape for `MG-B6`), plus minor doc sync `XC-M12` (`DELIVERY_ROADMAP.md:117` Diwan basename note). Noted active `MG-B2` worktree edits in `D:\Vscode\dubai-io-business`.
+  - `societal` (`317de4d`): audited full Community P1 pack (`identity-memory-needs.md`, `open-questions.md`, `DELIVERY_ROADMAP.md`, `audit.md`, `IMPLEMENTATION_GAP_MATRIX.md`, `demo-script.md`, `sources.md`, `log.md`, and `28 passed in 11.17s` parked baseline).
+  - `origin/memory` (`fc2e24a`): verified exact `api/vault.py:55-58` and `privacy/forget.py:147` lines for the D10 hand-off doc.
+
+### What changed (under `docs/submissions/shared/`)
+- Created `handoff-temporal-note.md` (`CR-TM-1..4` + 2 upstream fixes for PC2 `temporal_memory` team, D10).
+- Updated `SHARED_MEMORY_CROSS_APP_CONTRACT.md`: set status to `ready for founder approval`; folded Community `identity-memory-needs.md` (canonical `community:post:*`/`group:*` writes, `read_community_own_activity`, separate Forget-memory vs Delete-post controls, `adopt_session_owner`) + D9 self-declared `age_band` (`cs_users.age_band`, `is_minor_protected`, `MinorProtectionError` blocking writes & cross-app personalisation) + tests `ID-10`, `ID-11`, `MB-11`, `MB-12`.
+- Updated `shared-slices.md`: set status to `ready for founder approval`; added D9 age gate, `adopt_session_owner`, and Community needs across `CS-B1`, `CS-B3`, `CS-B4`, `CS-B5`.
+- Updated `cross-check.md`: marked Part B status on `XC-M01`..`XC-M12` and added Community P1 rows `XC-CP01`..`XC-CP07`.
+- Updated `THREE_ENTRIES_OVERVIEW.md`, `canon-patches/{PLAN,ARCHITECTURE,docs-status}.patch.md` for D8–D10.
+
+### Remaining risks & founder gate items
+- **D9 UAE child-safety / under-13 policy:** Community must source official UAE child digital-safety & child-data rules before `CM-B3` (stop and ask founder if unmet by 18 Dec).
+- **O2 & prototype-reuse inquiry:** Founder still to pick Messenger's final name/mark (**O2**) before `MG-B8` and email `createaiagents@dubaichamber.com` on prototype reuse (D10).
+- **Upstream `temporal_memory` handoff:** `CR-TM-1..4` + 2 fixes await PC2 memory team delivery (`FakeTemporalMemoryClient` covers B0 until landed).
+- **Cursor `MG-B2` active in `D:\Vscode\dubai-io-business`:** Dirty worktree cannot be merged into automatically in Part B; Messenger lead merges `contest-shared` after `MG-B2` commits/cleanliness.
