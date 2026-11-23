@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from celery import Celery
-from kombu import Queue
+from kombu import Exchange, Queue
 
 from temporal_memory.config import get_settings
 
@@ -19,14 +19,11 @@ celery_app.conf.update(
     task_acks_late=True,
     worker_prefetch_multiplier=1,
     task_default_queue="mem.p1",
-    task_queues=(
-        Queue("mem.p0"),
-        Queue("mem.p1"),
-        Queue("mem.p3"),
-    ),
+    task_queues=tuple(Queue(name, Exchange(name), routing_key=name) for name in ("mem.p0", "mem.p1", "mem.p3")),
     task_routes={
         "memory.run_job": {"queue": "mem.p1"},
-        "memory.reconcile": {"queue": "mem.p3"},
+        # Publishing P0 and recovering P1 must work with every import slot busy or offline.
+        "memory.reconcile": {"queue": "mem.p0"},
     },
     beat_schedule={
         "memory-reconcile-60s": {

@@ -8,6 +8,7 @@ import inspect
 import json
 from typing import Any
 import uuid
+from zoneinfo import ZoneInfo
 
 from temporal_memory.config import get_settings
 from temporal_memory.core.extract import OUTPUT_SCHEMA, PROMPT_VERSION, build_system_prompt
@@ -24,6 +25,7 @@ from temporal_memory.models import (
     Verdict,
     Worker,
 )
+from temporal_memory.privacy.sensitive import pre_write
 from temporal_memory.queue.outbox import enqueue_outbox_row
 
 
@@ -185,73 +187,119 @@ class PostgresJobs:
         *,
         sensitive_flag: bool = False,
     ) -> Job:
+        with self.db.transaction() as conn:
+            return self._enqueue(conn, owner, kind, record_ids, priority, pool, day, sensitive_flag)
+
+    def _enqueue(
+        self,
+        conn: Any,
+        owner: str,
+        kind: JobKind,
+        record_ids: list[str],
+        priority: Priority,
+        pool: Pool,
+        day: str | None,
+        sensitive_flag: bool,
+    ) -> Job:
         sorted_ids = sorted(record_ids)
         prompt_version = PROMPT_VERSION
         cfg = get_settings()
 
-        with self.db.transaction() as conn:
-            if sorted_ids:
-                row = conn.execute(
-                    """
-                    SELECT COALESCE(MAX(generation), 0) AS max_gen
-                    FROM records
-                    WHERE owner = %s AND id = ANY(%s)
-                    """,
-                    (owner, sorted_ids),
-                ).fetchone()
-                input_version = int(row["max_gen"]) if row else 0
-            else:
-                input_version = 0
-
-            key_payload = json.dumps(
-                [owner, kind, sorted_ids, input_version, prompt_version],
-                separators=(",", ":"),
-            )
-            idempotency_key = hashlib.sha256(key_payload.encode("utf-8")).hexdigest()
-
-            fallback_at: datetime | None = None
-            if pool == "owner-device":
-                delay = cfg.p0_fallback_seconds if priority == 0 else cfg.p1_fallback_seconds
-                fallback_at = datetime.now(timezone.utc) + timedelta(seconds=delay)
-
-            job_id = f"job_{uuid.uuid4().hex[:16]}"
-            inserted = conn.execute(
+        if sorted_ids:
+            row = conn.execute(
                 """
-                INSERT INTO jobs (
-                    id, owner, kind, priority, pool, input_ref, input_version,
-                    context_hash, prompt_version, day, sensitive_flag, fallback_at, idempotency_key
-                )
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                ON CONFLICT (idempotency_key) DO NOTHING
-                RETURNING *
+                SELECT COALESCE(MAX(generation), 0) AS max_gen
+                FROM records
+                WHERE owner = %s AND id = ANY(%s)
                 """,
-                (
-                    job_id,
-                    owner,
-                    kind,
-                    int(priority),
-                    pool,
-                    sorted_ids,
-                    input_version,
-                    "",
-                    prompt_version,
-                    day,
-                    sensitive_flag,
-                    fallback_at,
-                    idempotency_key,
-                ),
+                (owner, sorted_ids),
             ).fetchone()
+            input_version = int(row["max_gen"]) if row else 0
+        else:
+            input_version = 0
 
-            if inserted is not None:
-                enqueue_outbox_row(conn, inserted["id"], int(priority))
-                return _row_to_job(inserted)
+        key_payload = json.dumps(
+            [owner, kind, sorted_ids, input_version, prompt_version],
+            separators=(",", ":"),
+        )
+        idempotency_key = hashlib.sha256(key_payload.encode("utf-8")).hexdigest()
 
-            existing = conn.execute(
-                "SELECT * FROM jobs WHERE idempotency_key = %s",
-                (idempotency_key,),
+        fallback_at: datetime | None = None
+        if pool == "owner-device":
+            delay = cfg.p0_fallback_seconds if priority == 0 else cfg.p1_fallback_seconds
+            fallback_at = datetime.now(timezone.utc) + timedelta(seconds=delay)
+
+        job_id = f"job_{uuid.uuid4().hex[:16]}"
+        inserted = conn.execute(
+            """
+            INSERT INTO jobs (
+                id, owner, kind, priority, pool, input_ref, input_version,
+                context_hash, prompt_version, day, sensitive_flag, fallback_at, idempotency_key
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ON CONFLICT (idempotency_key) DO NOTHING
+            RETURNING *
+            """,
+            (
+                job_id,
+                owner,
+                kind,
+                int(priority),
+                pool,
+                sorted_ids,
+                input_version,
+                "",
+                prompt_version,
+                day,
+                sensitive_flag,
+                fallback_at,
+                idempotency_key,
+            ),
+        ).fetchone()
+
+        if inserted is not None:
+            enqueue_outbox_row(conn, inserted["id"], int(priority))
+            return _row_to_job(inserted)
+
+        existing = conn.execute(
+            "SELECT * FROM jobs WHERE idempotency_key = %s",
+            (idempotency_key,),
+        ).fetchone()
+        assert existing is not None
+        return _row_to_job(existing)
+
+    def split_import(self, job: Job) -> int | None:
+        """Create one extraction job per local day and complete the fenced import atomically."""
+        with self.db.transaction() as conn:
+            parent = conn.execute(
+                """
+                SELECT id FROM jobs
+                WHERE id = %s AND kind = 'import.split' AND state = 'leased'
+                  AND fence_token = %s AND lease_expires_at > clock_timestamp()
+                FOR UPDATE
+                """,
+                (job.id, job.fence_token),
             ).fetchone()
-            assert existing is not None
-            return _row_to_job(existing)
+            if parent is None:
+                return None
+
+            owner, records = self._fetch_bundle_inputs(conn, job)
+            assert owner is not None  # jobs.owner references owners.id
+            zone = ZoneInfo(owner.timezone)
+            packets: dict[str, list[Record]] = {}
+            for record in records:
+                stamp = datetime.fromisoformat(record.at)
+                if stamp.tzinfo is not None:
+                    stamp = stamp.astimezone(zone)
+                packets.setdefault(stamp.date().isoformat(), []).append(record)
+
+            for day, packet in sorted(packets.items()):
+                ids = [record.id for record in packet]
+                sensitive = any(pre_write(record.text) is not None for record in packet)
+                self._enqueue(conn, job.owner, "extract.day", ids, 1, "internal", day, sensitive)
+
+            conn.execute("UPDATE jobs SET state = 'applied', updated_at = now() WHERE id = %s", (job.id,))
+            return len(packets)
 
     def claim(
         self,
