@@ -40,6 +40,12 @@ hooks/                 owner-hook prompt + example Claude Code / Codex hook conf
 tests/                 synthetic fixtures only
 ```
 
+## Branches
+
+- `memory`: integration branch for the memory engine; all work lands here.
+- `wp<X>`: one branch + worktree per work package (`../temporal-memory-wp<X>`), merged into `memory` by the integrator.
+- `main`: owned by the project orchestrator; never committed to directly.
+
 ## Data rule
 
 **No real personal data in this repo, ever.** Real exports and runs live outside it (e.g. `G:\Haitham\lab-data\`) and come in through `tm import … --owner <id>`. Tests use the synthetic "Karim" corpus only.
