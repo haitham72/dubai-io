@@ -5,6 +5,8 @@ import os
 import socket
 from typing import Any
 
+import httpx
+
 from temporal_memory.config import get_settings
 from temporal_memory.core import extract
 from temporal_memory.db.db import Database, get_database
@@ -50,6 +52,13 @@ def run_job(
         runner=used_runner,
     )
     jobs_svc = jobs or PostgresJobs(db or get_database())
+    with jobs_svc.db.connection() as conn:
+        pending = conn.execute(
+            "SELECT pool,attempt_no FROM jobs WHERE id=%s AND kind='extract.session' AND state='queued'",
+            (job_id,),
+        ).fetchone()
+    if pending and pending["pool"] == "owner-device" and pending["attempt_no"]:
+        return {"status": "deferred", "job_id": job_id}
     bundle = jobs_svc.claim_by_id(job_id, worker)
     if bundle is None:
         return {"status": "skipped", "job_id": job_id}
@@ -66,9 +75,36 @@ def run_job(
         stats = embed_pending_facts(jobs_svc.db, owner=bundle.job.owner)
         return {"status": "applied", "job_id": job_id, **stats}
 
-    attempt = extract.run(bundle, used_runner, used_model)
+    is_session = bundle.job.kind == "extract.session"
+    if is_session:
+        cfg = get_settings()
+        if bundle.job.pool == "owner-device":
+            used_runner, used_model, worker_kind = "lmstudio", cfg.lmstudio_model, "internal-local"
+        else:
+            used_runner, used_model, worker_kind = "anthropic", cfg.cloud_model, "internal-cloud"
+    try:
+        attempt = extract.run(bundle, used_runner, used_model)
+    except (httpx.HTTPError, ValueError):
+        if not is_session or used_runner != "lmstudio":
+            raise
+        # Release this lease. The existing P1 fallback will publish the same job
+        # for Haiku at fallback_at; preserve the fence against any stale submit.
+        with jobs_svc.db.transaction() as conn:
+            conn.execute(
+                """
+                UPDATE jobs SET state='queued',fence_token=NULL,worker_id=NULL,
+                                lease_expires_at=NULL,updated_at=now()
+                WHERE id=%s AND state='leased' AND fence_token=%s
+                """,
+                (job_id, bundle.job.fence_token),
+            )
+        return {"status": "deferred", "job_id": job_id}
     attempt.worker_id = worker.id
-    attempt.worker_kind = worker.kind
+    attempt.worker_kind = worker_kind
+    if bundle.job.kind in ("extract.session", "extract.day"):
+        from temporal_memory.queue.session import remove_duplicate_triples
+
+        remove_duplicate_triples(jobs_svc.db, bundle, attempt)
     verdict = jobs_svc.submit(attempt)
     return {
         "status": "applied" if verdict.ok else "rejected",
@@ -80,7 +116,11 @@ def run_job(
 @celery_app.task(name="memory.reconcile")
 def reconcile(db: Database | None = None) -> dict[str, int]:
     """Republish pending outbox rows, trigger fallback, and requeue/dead-letter expired leases."""
-    return reconcile_outbox(db or get_database())
+    from temporal_memory.queue.session import flush_idle_sessions
+
+    database = db or get_database()
+    closed = flush_idle_sessions(database)
+    return {**reconcile_outbox(database), "sessions_closed": closed}
 
 
 @celery_app.task(name="memory.embed_backfill")
