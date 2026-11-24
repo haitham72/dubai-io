@@ -1,0 +1,7 @@
+{
+  "description": "Synthetic CM-B6 media fixture - small base64 payload, no real user data",
+  "filename": "hello.txt",
+  "content_type": "text/plain",
+  "content_plain": "hello cm-b6",
+  "content_base64": "aGVsbG8gY20tYjY="
+}
