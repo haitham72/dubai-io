@@ -1,5 +1,6 @@
+import fs from "fs";
 import path from "path";
-import { app, ipcMain, safeStorage } from "electron";
+import { app, BrowserWindow, ipcMain, Menu, safeStorage, shell, type MenuItemConstructorOptions } from "electron";
 import {
   IPC,
   parseBrowser,
@@ -22,7 +23,8 @@ import { DesktopAuthManager } from "./auth";
 import { runDesktopSync } from "./desktopSync";
 import { OwnerHook, TokenStore } from "./ownerHook";
 import { ContinuousSync, filesystemPacketReader, type SyncSource } from "./continuousSync";
-import { createMainWindow } from "./window";
+import { createMainWindow, createSettingsWindow, type AppWindow } from "./window";
+import { resolveAppUrl, resolveRendererIndex } from "./security";
 
 const roots = defaultRoots();
 const hookLog = { info: (line: string) => console.info(line) };
@@ -114,11 +116,73 @@ export function registerIpc(): void {
   ipcMain.handle(IPC.authSignOut, async () => auth.signOut({ apiBaseUrl: apiBaseUrl() }));
 }
 
+let mainWindow: AppWindow | null = null;
+let settingsWindow: BrowserWindow | null = null;
+
+function openSettings(): void {
+  if (settingsWindow && !settingsWindow.isDestroyed()) {
+    settingsWindow.show();
+    settingsWindow.focus();
+    return;
+  }
+  const index = resolveRendererIndex(process.env, __dirname, fs.existsSync, path.join);
+  if (!index) {
+    console.error("Settings renderer is not built: run `npm run build` in apps/desktop/renderer");
+    return;
+  }
+  settingsWindow = createSettingsWindow(path.join(__dirname, "../preload/index.js"), index);
+  settingsWindow.on("closed", () => {
+    settingsWindow = null;
+  });
+}
+
+function buildAppMenu(appUrl: string): Menu {
+  const template: MenuItemConstructorOptions[] = [
+    {
+      label: "Dubai-io",
+      submenu: [
+        { label: "Settings and Sign in...", accelerator: "CmdOrCtrl+,", click: () => openSettings() },
+        { label: "Reload", accelerator: "CmdOrCtrl+R", click: () => mainWindow?.reloadApp() },
+        { label: "Open in Browser", click: () => void shell.openExternal(appUrl) },
+        { type: "separator" },
+        { role: "quit" },
+      ],
+    },
+    {
+      label: "Edit",
+      submenu: [
+        { role: "undo" },
+        { role: "redo" },
+        { type: "separator" },
+        { role: "cut" },
+        { role: "copy" },
+        { role: "paste" },
+        { role: "selectAll" },
+      ],
+    },
+    {
+      label: "View",
+      submenu: [{ role: "resetZoom" }, { role: "zoomIn" }, { role: "zoomOut" }, { type: "separator" }, { role: "togglefullscreen" }],
+    },
+  ];
+  return Menu.buildFromTemplate(template);
+}
+
 export function boot(): void {
   tokens.loadFromDisk();
   registerIpc();
-  createMainWindow(path.join(__dirname, "../preload/index.js"));
+  const appUrl = resolveAppUrl();
+  Menu.setApplicationMenu(buildAppMenu(appUrl));
+  mainWindow = createMainWindow(appUrl);
+  mainWindow.on("closed", () => {
+    mainWindow = null;
+  });
+  if (process.env.DUBAI_DESKTOP_OPEN_SETTINGS === "1") openSettings();
 }
+
+app.on("window-all-closed", () => {
+  if (process.env.DUBAI_DESKTOP_BOOT === "1" && process.platform !== "darwin") app.quit();
+});
 
 if (process.env.DUBAI_DESKTOP_BOOT === "1") {
   void app.whenReady().then(boot);
