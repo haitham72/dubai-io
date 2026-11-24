@@ -367,3 +367,43 @@ def embed_pending_facts(
         batches += 1
 
     return {"embedded": embedded, "batches": batches}
+
+
+_BACKFILLED_AT: dict[str, int] = {}
+
+
+def status() -> dict[str, Any]:
+    """Cheap health signal (no model load): is semantic recall configured, installed and loaded in this process."""
+    import importlib.util
+
+    cfg = get_settings()
+    deps = all(importlib.util.find_spec(m) is not None for m in ("onnxruntime", "tokenizers", "huggingface_hub", "numpy"))
+    return {"enabled": bool(cfg.semantic_enabled), "deps_installed": deps, "loaded": _SESSION is not None,
+            "model": cfg.semantic_model}
+
+
+def ensure_embeddings(db: Database, owner: str, *, limit: int = 64, once_per_version: bool = True) -> str | None:
+    """Best-effort: embed visible facts of `owner` that have no vector yet (live-extracted facts never got one).
+
+    Never raises. Returns None when fine, else "disabled" / "embedder_unavailable". With `once_per_version`
+    the sweep runs once per owner facts_version per process, so the query path stays cheap.
+    """
+    cfg = get_settings()
+    if not cfg.semantic_enabled:
+        return "disabled"
+    try:
+        if once_per_version:
+            with db.connection() as conn:
+                row = conn.execute("SELECT facts_version FROM owners WHERE id = %s", (owner,)).fetchone()
+            ver = int(row["facts_version"]) if row else 0
+            if _BACKFILLED_AT.get(owner) == ver and _SESSION is not None:
+                return None
+        if not is_available():
+            return "embedder_unavailable"
+        embed_pending_facts(db, owner=owner, limit=limit)
+        if once_per_version:
+            _BACKFILLED_AT[owner] = ver
+        return None
+    except Exception as exc:  # embedding must never break extraction or retrieval
+        log.warning("ensure_embeddings failed: %s", exc)
+        return "embedder_unavailable"

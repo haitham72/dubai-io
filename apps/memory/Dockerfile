@@ -3,6 +3,6 @@ WORKDIR /app
 COPY pyproject.toml README.md ./
 COPY src ./src
 # Keep the schema SQL beside the Python module that loads it at startup.
-RUN pip install --no-cache-dir --editable ".[cloud,mcp]" \
+RUN pip install --no-cache-dir --editable ".[cloud,mcp,semantic]" \
     && useradd --create-home --shell /usr/sbin/nologin tm
 USER tm

@@ -356,7 +356,9 @@ def create_app(db: Database | None = None, *, admin_token: str | None = None) ->
                 conn.execute("SELECT 1").fetchone()
         except Exception as exc:
             raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="database unavailable") from exc
-        return {"ok": True, "db": "ok"}
+        from temporal_memory.core import embed as _embed
+
+        return {"ok": True, "db": "ok", "semantic": _embed.status()}
 
     @app.post("/v1/owners")
     def create_owner(body: OwnerCreateIn, _: AuthInfo = Depends(require_admin)) -> dict[str, Any]:

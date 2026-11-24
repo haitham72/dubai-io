@@ -212,7 +212,8 @@ class _SeededPostgresJobs:
 def test_health_unauthenticated(client: TestClient) -> None:
     resp = client.get("/health")
     assert resp.status_code == 200
-    assert resp.json() == {"ok": True, "db": "ok"}
+    body = resp.json()
+    assert body["ok"] is True and body["db"] == "ok" and "semantic" in body
 
 
 def test_auth_failures_401(client: TestClient) -> None:
