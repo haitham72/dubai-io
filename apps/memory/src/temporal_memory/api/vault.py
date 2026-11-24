@@ -4,6 +4,7 @@ from __future__ import annotations
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime, timezone
+import os
 from typing import Any, Callable, Literal
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Path as FPath, Query
@@ -323,6 +324,256 @@ def timeline(
     }
 
 
+# ---------------------------------------------------------------------------
+# Onboarding status & user analytics (D-C)
+# Canonical completeness weights (gamified-onboarding-and-analytics.md §3):
+# gmail 14 + calendar 10 + youtube_api 12 = 36% mobile base.
+SOURCE_WEIGHTS: dict[str, int] = {
+    "gmail": 14, "calendar": 10, "youtube_api": 12,
+    "whatsapp": 15, "youtube_history": 12, "browser": 18, "agent_sessions": 19,
+}
+LIFE_SPINES = ["Career", "Learning", "Projects", "People & family",
+               "Events", "Home & money", "Travel"]
+_SPINE_BY_ROOT = {
+    "career": "Career", "work": "Career", "learning": "Learning",
+    "education": "Learning", "projects": "Projects", "project": "Projects",
+    "family": "People & family", "people": "People & family",
+    "relationships": "People & family", "lifestyle": "Events",
+    "events": "Events", "social": "Events", "life": "Events",
+    "money": "Home & money", "finance": "Home & money", "home": "Home & money",
+    "travel": "Travel", "places": "Travel",
+}
+
+
+def _canonical_source(source: str) -> str | None:
+    s = (source or "").strip().lower()
+    if s == "gmail" or s.startswith("gmail:"):
+        return "gmail"
+    if s.startswith(("calendar", "gcal", "google:calendar")):
+        return "calendar"
+    if s.startswith(("youtube:api", "youtube_api", "youtube-api")):
+        return "youtube_api"
+    if s.startswith("whatsapp"):
+        return "whatsapp"
+    if s in ("youtube:interests", "takeout:youtube"):
+        return "youtube_history"
+    if s in ("browser", "takeout:chrome"):
+        return "browser"
+    if s.startswith(("agent:", "ai:chatgpt")) or s in ("dev_sessions", "takeout:gemini-apps"):
+        return "agent_sessions"
+    return None
+
+
+def _source_bucket(source: str) -> str:
+    s = (source or "").strip()
+    if s.lower().startswith("whatsapp"):
+        return "whatsapp"
+    return s
+
+
+def _list_opt(store: Any, name: str) -> list:
+    fn = getattr(store, name, None)
+    if not callable(fn):
+        return []
+    try:
+        return list(fn())
+    except TypeError:
+        return []
+
+
+def _owner_records(store: Any, owner: str, facts: list) -> list:
+    """Raw records for by_source counts: portable across Fake and Postgres stores."""
+    fn = getattr(store, "list_records", None)
+    if callable(fn):
+        try:
+            return list(fn(owner))
+        except TypeError:
+            pass
+    records_attr = getattr(store, "records", None)
+    if isinstance(records_attr, dict):  # FakeGraphStore
+        return list(records_attr.get(owner, {}).values())
+    db = getattr(store, "db", None)
+    if db is not None:  # PostgresGraphStore
+        try:
+            with db.connection() as conn:
+                rows = conn.execute(
+                    "SELECT id, source FROM records WHERE owner = %s AND erased_at IS NULL",
+                    (owner,),
+                ).fetchall()
+            return [{"id": r["id"], "source": r["source"]} for r in rows]
+        except Exception:
+            pass
+    # Fallback: records referenced by visible facts (extracted evidence only).
+    ids = sorted({rid for f in facts for rid in (f.evidence or [])})
+    return call_opt(store, "get_records", owner, ids, default=[]) if ids else []
+
+
+def _record_source(record: Any) -> str:
+    return record["source"] if isinstance(record, dict) else getattr(record, "source", "")
+
+
+def _record_id(record: Any) -> str:
+    return record["id"] if isinstance(record, dict) else getattr(record, "id", "")
+
+
+@router.get("/onboarding-status")
+def onboarding_status(
+    owner: str,
+    as_of: str | None = Query(default=None),
+    _: AuthContext = Depends(require_owner_access),
+    store: GraphStore = Depends(get_store),
+) -> dict[str, Any]:
+    now_iso, is_demo = _meta(store, owner)
+    # Verified facts only: history and unconfirmed hypotheses never count here.
+    facts = [f for f in store.visible_facts(owner, limit=10_000) if f.status == "active"]
+    subjects = call_opt(store, "list_subjects", owner, default=[])
+    subj_by_id = {s.id: s for s in subjects}
+
+    def spine_for(subject_id: str) -> str:
+        node = subj_by_id.get(subject_id)
+        seen: set[str] = set()
+        while node is not None and node.parent_id and node.parent_id not in seen:
+            seen.add(node.id)
+            node = subj_by_id.get(node.parent_id)
+        if node is None:
+            return "Other"
+        root_key = (node.path or node.label or "").split("/")[0].strip().lower()
+        return _SPINE_BY_ROOT.get(root_key, "Other")
+
+    records = _owner_records(store, owner, facts)
+    rec_by_id = {_record_id(r): r for r in records}
+
+    # --- completeness (deterministic, presence-based, counted once per source)
+    present = sorted(
+        {c for c in (_canonical_source(_record_source(r)) for r in records) if c},
+        key=lambda c: list(SOURCE_WEIGHTS).index(c),
+    )
+    completeness = min(100, sum(SOURCE_WEIGHTS[c] for c in present))
+    breakdown = {k: (w if k in present else 0) for k, w in SOURCE_WEIGHTS.items()}
+    desktop_present = [c for c in ("browser", "agent_sessions") if c in present]
+    if completeness >= 100:
+        next_action: str | None = "complete"
+    elif len(desktop_present) == 1:
+        next_action = "enable_browser_or_sessions"
+    elif not desktop_present:
+        next_action = "install_desktop_and_sync"
+    else:
+        next_action = "add_whatsapp_or_youtube_history"
+
+    # --- by_source: record counts (raw) + fact counts (via evidence)
+    by_source: dict[str, dict[str, int]] = defaultdict(lambda: {"records": 0, "facts": 0})
+    for r in records:
+        by_source[_source_bucket(_record_source(r))]["records"] += 1
+    fact_sources: dict[str, set[str]] = defaultdict(set)
+    for f in facts:
+        for rid in f.evidence or []:
+            rec = rec_by_id.get(rid)
+            if rec is not None:
+                fact_sources[_source_bucket(_record_source(rec))].add(f.id)
+    for bucket, fids in fact_sources.items():
+        by_source[bucket]["facts"] = len(fids)
+
+    # --- known_so_far: top verified (active) facts grouped by life spine
+    grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for f in facts:
+        if f.status != "active":
+            continue
+        grouped[spine_for(f.subject_id)].append({
+            "id": f.id, "text": f.text, "subject_id": f.subject_id,
+            "valid_from": f.valid_from, "evidence": list(f.evidence or []),
+            "provenance": f.provenance, "as_of": f.valid_from or now_iso,
+        })
+    known_so_far = {
+        theme: sorted(items, key=lambda x: (x["valid_from"] or "", x["id"]), reverse=True)[:5]
+        for theme, items in sorted(grouped.items()) if items
+    }
+
+    # --- by_theme + rising_21d (anchored at latest fact date or ?as_of=)
+    def _parse_day(value: str | None):
+        try:
+            return datetime.fromisoformat(str(value)[:10]).date()
+        except (ValueError, TypeError):
+            return None
+
+    anchor = _parse_day(as_of) or max(
+        (d for d in (_parse_day(f.valid_from) for f in facts) if d), default=None)
+    by_theme: dict[str, dict[str, Any]] = {
+        spine: {"facts": 0, "recent_21d": 0, "baseline_21d": 0, "delta": 0, "rising_21d": False}
+        for spine in LIFE_SPINES
+    }
+    for f in facts:
+        spine = spine_for(f.subject_id)
+        if spine not in by_theme:
+            continue
+        by_theme[spine]["facts"] += 1
+        day = _parse_day(f.valid_from)
+        if anchor is not None and day is not None:
+            age = (anchor - day).days
+            if 0 <= age < 21:
+                by_theme[spine]["recent_21d"] += 1
+            elif 21 <= age < 42:
+                by_theme[spine]["baseline_21d"] += 1
+    rising = []
+    for spine, stats in by_theme.items():
+        stats["delta"] = stats["recent_21d"] - stats["baseline_21d"]
+        stats["rising_21d"] = stats["recent_21d"] > stats["baseline_21d"]
+        if stats["rising_21d"]:
+            rising.append(spine)
+
+    # --- privacy shield: quarantine counts only, never raw text
+    quarantine: dict[str, int] = call_opt(store, "get_quarantine_counts", owner, default={}) or {}
+
+    # --- compute saved (owner-hook / agent-cli, scoped to this owner's jobs)
+    jobs = _list_opt(store, "list_jobs")
+    attempts = _list_opt(store, "list_attempts")
+    owner_job_ids = {j.id for j in jobs if getattr(j, "owner", owner) == owner}
+    rate_in = float(os.environ.get("TM_CLOUD_RATE_IN_PER_1M", "1.00"))
+    rate_out = float(os.environ.get("TM_CLOUD_RATE_OUT_PER_1M", "5.00"))
+    tokens_in = tokens_out = 0
+    saved_usd = 0.0
+    for a in attempts:
+        if owner_job_ids and a.job_id not in owner_job_ids:
+            continue
+        if a.worker_kind in ("owner-hook", "agent-cli"):
+            tokens_in += a.tokens_in or 0
+            tokens_out += a.tokens_out or 0
+            saved_usd += (a.tokens_in / 1_000_000.0) * rate_in + (a.tokens_out / 1_000_000.0) * rate_out
+    owner_hook_facts = 0
+    for f in facts:
+        if not f.attempt_id:
+            continue
+        attempt = call_opt(store, "get_attempt", f.attempt_id, default=None)
+        if attempt is not None and attempt.worker_kind == "owner-hook":
+            owner_hook_facts += 1
+
+    return {
+        "owner": owner,
+        "completeness_pct": completeness,
+        "breakdown": breakdown,
+        "sources_present": present,
+        "next_recommended_action": next_action,
+        "known_so_far": known_so_far,
+        "analytics": {
+            "by_source": {k: dict(v) for k, v in sorted(by_source.items())},
+            "by_theme": by_theme,
+            "rising_21d": rising,
+            "privacy_shield": {
+                "held_back_total": sum(int(v) for v in quarantine.values()),
+                "by_category": {k: int(v) for k, v in sorted(quarantine.items())},
+            },
+            "compute_saved": {
+                "owner_hook_facts": owner_hook_facts,
+                "tokens_in": tokens_in,
+                "tokens_out": tokens_out,
+                "demo_cost_saved_usd": round(saved_usd, 6),
+            },
+        },
+        "provenance": "user_supplied",
+        "as_of": as_of or now_iso,
+        "demo_data": is_demo,
+    }
+
+
 @router.get("/why/{fact_id}")
 def why_fact(
     owner: str,
@@ -368,3 +619,4 @@ def why_fact(
         "as_of": fact.valid_from or now_iso,
         "demo_data": is_demo or fact.provenance == "demo_fixture",
     }
+
