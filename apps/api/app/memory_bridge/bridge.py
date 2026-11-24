@@ -1103,8 +1103,12 @@ class MemoryBridge:
             new_text=new_text,
             valid_from=valid_from,
         ))
-        if action in ("edit", "supersede") and res.get("new_fact_id"):
-            # The live engine reports the NEW fact's status ("active") next to the OLD fact_id; the contract (and the
+        old_fact = res.get("old_fact")
+        if isinstance(old_fact, dict) and old_fact.get("status"):
+            # Newer engines return the resolved fact's own status explicitly (old_fact / new_fact).
+            res["status"] = old_fact["status"]
+        elif action in ("edit", "supersede") and res.get("new_fact_id"):
+            # Older engines report the NEW fact's status ("active") next to the OLD fact_id; the contract (and the
             # fake) report the status of the fact_id that was resolved: superseded.
             res["status"] = "superseded"
         now_iso = _now_iso()

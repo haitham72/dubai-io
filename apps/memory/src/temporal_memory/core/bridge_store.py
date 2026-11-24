@@ -321,11 +321,14 @@ def resolve_fact(store: Any, owner: str, fact_id: str, body: Any) -> dict[str, A
     from temporal_memory.live.context import invalidate_alias_cache
 
     invalidate_alias_cache(owner)
+    old_status = "superseded" if new_id else status
     return {
         "ok": True,
         "fact_id": fact_id,
         "new_fact_id": new_id,
-        "status": status,
+        "status": status,  # legacy: status of the NEW fact for edit/supersede (kept for old clients)
+        "old_fact": {"id": fact_id, "status": old_status},
+        "new_fact": {"id": new_id, "status": "active"} if new_id else None,
         "facts_version": int(version_row["facts_version"]) if version_row else 0,
     }
 

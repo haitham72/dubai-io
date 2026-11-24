@@ -219,8 +219,8 @@ if (-not (Test-Path $MemEnv) -and (Test-Path $MemEnvExample)) {
 }
 $memMap = Read-EnvMap $MemEnv
 $memUpdates = @{
-    "TM_AGENT_CLI_CMD" = 'claude -p --model {model} --effort medium --output-format json --tools "" --disable-slash-commands'
-    "TM_CLOUD_MODEL"   = "claude-haiku-4-5-20251001"
+    "TM_AGENT_CLI_CMD" = 'claude'
+    "TM_CLOUD_MODEL"   = "claude-haiku-5-5"
 }
 if (-not $memMap["TM_ADMIN_TOKEN"] -or -not $memMap["TM_ADMIN_TOKEN"].Trim()) {
     $memUpdates["TM_ADMIN_TOKEN"] = New-SecretToken
@@ -286,9 +286,9 @@ function Start-HostCelery([string]$Name, [string[]]$CeleryArgs) {
     $vars = @{
         "PYTHONPATH" = (Join-Path $MemDir "src")
         "TM_WORKER_RUNNER" = $workerRunner
-        "TM_WORKER_MODEL" = "claude-haiku-4-5-20251001"
-        "TM_CLOUD_MODEL" = "claude-haiku-4-5-20251001"
-        "TM_AGENT_CLI_CMD" = 'claude -p --model {model} --effort medium --output-format json --tools "" --disable-slash-commands'
+        "TM_WORKER_MODEL" = "claude-haiku-5-5"
+        "TM_CLOUD_MODEL" = "claude-haiku-5-5"
+        "TM_AGENT_CLI_CMD" = 'claude'
         "TM_DATABASE_URL" = "postgresql://tm:tm@localhost:5442/tm"
         "TM_BROKER_URL" = "amqp://guest:guest@localhost:5682//"
         "TM_REDIS_URL" = "redis://localhost:6390/0"

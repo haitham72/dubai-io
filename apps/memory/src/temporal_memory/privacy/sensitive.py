@@ -266,18 +266,20 @@ def _agent_cli_classifier(labels: list[str]) -> dict[str, str]:
     mislabels comes back "unscreened" (blocking). It never returns "none" for something it did not classify.
     """
     import json as _json
-    import shlex as _shlex
     import subprocess as _subprocess
 
     from temporal_memory.config import get_settings
+    from temporal_memory.core.extract import agent_cli_argv, neutral_cwd
 
     cfg = get_settings()
-    cmd = _shlex.split(cfg.agent_cli_cmd.format(model=os.environ.get("TM_CLASSIFIER_CLI_MODEL", cfg.cloud_model)))
-    user = (SCREEN_SYSTEM + "\n\nLabels (return the category for each number):\n"
+    user = ("Labels (return the category for each number):\n"
             + "\n".join(f"{k}. {x}" for k, x in enumerate(labels, 1))
             + '\n\nReturn only a JSON object {"items":[{"n":1,"category":"none"}, ...]}.')
     try:
-        proc = _subprocess.run(cmd, input=user, capture_output=True, text=True, encoding="utf-8",
+        cmd, prefix = agent_cli_argv(os.environ.get("TM_CLASSIFIER_CLI_MODEL", cfg.cloud_model), SCREEN_SYSTEM,
+                                     cfg.agent_cli_cmd)
+        proc = _subprocess.run(cmd, cwd=neutral_cwd(), input=prefix + user, capture_output=True, text=True,
+                               encoding="utf-8",
                                timeout=float(os.environ.get("TM_CLASSIFIER_TIMEOUT_S", "120")), check=False)
         env = _json.loads((proc.stdout or "").strip())
         if env.get("is_error"):
