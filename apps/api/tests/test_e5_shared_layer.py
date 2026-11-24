@@ -279,3 +279,33 @@ def test_two_accounts_never_see_each_others_memory_interests_or_messages(world):
     assert {f.topic_slug for f in bridge.read_community_interest_features(cf)} == {"falconry", "chess", "sailing"}
     bridge.forget_source(qt, "quest", host_app="quest", idempotency_key="e5-tester-forget")   # tester forgets everything ...
     assert "FOUNDER_ONLY" in " ".join(f["text"] for f in bridge.read_quest_context(qf, query)["facts"])  # ... founder intact
+
+
+def test_google_auth_code_redeemed_once_cannot_be_redeemed_in_another_app(trio):
+    api, entries = trio
+    client = TestClient(api, follow_redirects=False)
+    hosts = {"quest": client, "community": TestClient(entries["community"]), "messenger": TestClient(entries["messenger"])}
+    for first, others in (("community", ("messenger", "quest")), ("messenger", ("community", "quest")), ("quest", ("community", "messenger"))):
+        code = _google_code(client, "code-a", "http://localhost:3060/signin")
+        ok = hosts[first].post("/api/identity/google/exchange", json={"auth_code": code, "app_id": first})
+        assert ok.status_code == 200, ok.text
+        for other in (first,) + others:
+            again = hosts[other].post("/api/identity/google/exchange", json={"auth_code": code, "app_id": other})
+            assert again.status_code in (400, 401, 403, 409), again.text
+            assert "session_token" not in again.text
+
+
+def test_pairing_code_redeemed_once_cannot_be_redeemed_in_another_app(trio):
+    api, entries = trio
+    client = TestClient(api, follow_redirects=False)
+    quest = client.post("/api/identity/google/exchange",
+                        json={"auth_code": _google_code(client, "code-a", "http://localhost:8081/connect")}).json()
+    hosts = {"quest": client, "community": TestClient(entries["community"]), "messenger": TestClient(entries["messenger"])}
+    for first, others in (("community", ("messenger", "quest")), ("messenger", ("community", "quest"))):
+        code = client.post("/api/identity/pair/start", headers={"X-App-Session": quest["session_token"]}).json()["code"]
+        ok = hosts[first].post("/api/identity/pair/complete", json={"code": code, "app_id": first})
+        assert ok.status_code == 200, ok.text
+        for other in (first,) + others:
+            again = hosts[other].post("/api/identity/pair/complete", json={"code": code, "app_id": other})
+            assert again.status_code in (400, 401, 403, 409, 429), again.text
+            assert "session_token" not in again.text

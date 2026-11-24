@@ -17,6 +17,7 @@ import { openResearchCard, ReportDoc } from "./ReportDoc";
 import { plainText } from "./skills";
 import { StickerMedia } from "./StickerMedia";
 import { askMessenger, chatMentions, mentionAt, retryMessenger, useMessengerRequests, type Mention } from "./messenger";
+import SaveToMemory from "./SaveToMemory";
 import { scheduleContactReply, useContactTyping } from "./autoReply";
 import s from "./chats.module.css";
 
@@ -66,6 +67,7 @@ function mentionText(text: string, people: Mention[]) {
 }
 function Bubble({ m, showAvatar, people, onMediaLoad, onReply, focusRequest }: { m: Message; showAvatar: boolean; people: Mention[]; onMediaLoad: () => void; onReply: (m: Message) => void; focusRequest?: number }) {
   const contact = useChat(m.chatId).contact;
+  const memoryToken = useStore((st) => (st.mode === "real" && st.auth.status === "signed_in" ? st.auth.sessionToken : null));
   const b = m.body;
   const row = useRef<HTMLDivElement>(null);
   const [preview, setPreview] = useState(false);
@@ -149,6 +151,7 @@ function Bubble({ m, showAvatar, people, onMediaLoad, onReply, focusRequest }: {
         ? <span className={s.messengerTile} aria-label="Messenger"><Sparkles {...ICON} /></span>
         : showAvatar && contact && <Avatar src={contact.avatar} size={32} />}</span>}
       {content}
+      {memoryToken && b.kind === "text" && m.by !== "messenger" && <SaveToMemory sessionToken={memoryToken} conversationId={m.chatId} messageId={m.id} />}
       {m.by !== "messenger" && <button className={s.replyBtn} aria-label="Reply" title="Reply" onClick={() => onReply(m)}><Reply size={16} /></button>}
     </div>
   );

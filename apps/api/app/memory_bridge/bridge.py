@@ -1891,6 +1891,21 @@ class MemoryBridge:
             raise MemoryBridgeUnavailable("forget coordinator is not configured")
         return self._forget_coordinator
 
+    def list_record_refs(self, principal: VerifiedPrincipal, source_kind: SourceKind) -> list[dict[str, Any]]:
+        """The owner's live (not erased) records of one source, newest first. Metadata only, never raw text."""
+        owner_id = _require_verified_principal(principal)
+        with self._lock:
+            rows = self._db.execute(
+                """SELECT record_id, source_id, host_app, author_is_owner, created_at
+                   FROM cs_memory_record_refs WHERE owner_id = ? AND source_kind = ? AND erased_at IS NULL
+                   ORDER BY created_at DESC LIMIT 200""",
+                (owner_id, source_kind),
+            ).fetchall()
+        return [
+            {"record_id": r[0], "source_id": r[1], "host_app": r[2], "author_is_owner": bool(r[3]), "saved_at": r[4]}
+            for r in rows
+        ]
+
     def forget_records(
         self,
         principal: VerifiedPrincipal,

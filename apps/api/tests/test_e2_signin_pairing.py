@@ -342,3 +342,20 @@ def test_paired_phone_cannot_start_pairing(env):
     r = client.post("/api/identity/pair/start", headers=phone_h)
     assert r.status_code == 403 and r.json()["detail"]["code"] == "pairing_from_paired_device"
     assert client.post("/api/identity/pair/start", headers=pc_h).status_code == 200
+
+
+def test_pair_failure_stores_prune_expired_and_stay_bounded(env, monkeypatch):
+    from datetime import timedelta
+    from app.identity import service as svc_mod
+    from app.identity.service import PAIR_STORE_MAX_ENTRIES, PAIR_WINDOW_SECONDS
+    svc = env[0]
+    for i in range(PAIR_STORE_MAX_ENTRIES + 50):
+        svc._pair_record_failure(f"10.{i // 250}.{i % 250}.1", f"hash{i}")
+    assert len(svc._pair_ip_failures) <= PAIR_STORE_MAX_ENTRIES
+    assert len(svc._pair_code_failures) <= PAIR_STORE_MAX_ENTRIES
+    assert "hash0" not in svc._pair_code_failures  # oldest evicted
+    assert f"hash{PAIR_STORE_MAX_ENTRIES + 49}" in svc._pair_code_failures
+    later = svc_mod.utcnow() + timedelta(seconds=PAIR_WINDOW_SECONDS + 5)
+    monkeypatch.setattr(svc_mod, "utcnow", lambda: later)
+    svc._pair_throttle_check("1.2.3.4")  # access prunes everything expired
+    assert svc._pair_ip_failures == {} and svc._pair_code_failures == {}

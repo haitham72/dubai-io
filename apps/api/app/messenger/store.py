@@ -252,6 +252,14 @@ class ChatStore:
             row = self.db.execute("SELECT * FROM mg_messages WHERE id=?", (message_id,)).fetchone()
         return self._message(row)
 
+    def get_message(self, conversation_id: str, user_id: str, message_id: str) -> dict | None:
+        self.require_member(conversation_id, user_id)
+        with self.lock:
+            row = self.db.execute(
+                "SELECT * FROM mg_messages WHERE id=? AND conversation_id=?", (message_id, conversation_id)
+            ).fetchone()
+        return self._message(row) if row else None
+
     def since(self, conversation_id: str, user_id: str, last_seq: int) -> list[dict]:
         self.require_member(conversation_id, user_id)
         with self.lock:

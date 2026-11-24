@@ -1,7 +1,7 @@
 // The six Settings tabs. Each holds its own state (initialised from ../data) and reports actions through `say` (toast).
 import { useState } from "react";
 import {
-  Ban, BrainCircuit, ChevronDown, Cpu, Download, Globe, KeyRound, Languages, LogOut, Mail, MapPin, Moon, ShieldCheck, Trash2, Fingerprint,
+  Ban, ChevronDown, Cpu, Download, Globe, KeyRound, Languages, LogOut, Mail, MapPin, Moon, ShieldCheck, Trash2, Fingerprint,
   type LucideIcon,
 } from "lucide-react";
 import { Avatar, Button, ICON, Segmented } from "../../ui";
@@ -9,6 +9,7 @@ import { actions, useStore } from "../../store";
 import { googleSignInStartUrl } from "../../apiclient/chatCore";
 import { applyFrost, loadFrost } from "../../frost";
 import { Group, Row, ToggleRow } from "../shared";
+import MemorySettings from "./MemorySettings";
 import { apps, me, responseStyles, sessions, toggleGroups } from "../data";
 import p from "../profile.module.css";
 import st from "./settings.module.css";
@@ -289,7 +290,6 @@ type Style = (typeof responseStyles)[number];
 
 export function AiTab({ say }: TabProps) {
   const [style, setStyle] = useState<Style>("Balanced");
-  const [memories, setMemories] = useState(12);
 
   return <>
     <Group title="Capabilities & permissions">
@@ -300,10 +300,8 @@ export function AiTab({ say }: TabProps) {
         <Segmented options={responseStyles.map((r) => ({ value: r, label: r }))} value={style}
           onChange={(v) => { setStyle(v); say(`Messenger will answer in a ${v.toLowerCase()} style`); }} />
       </Row>
-      <Row icon={BrainCircuit} label="Memory" value={memories ? `${memories} saved memories` : "No saved memories"}
-        action={memories ? "Clear" : undefined}
-        onClick={() => { if (memories) { setMemories(0); say("All memories cleared"); } else say("Nothing to clear yet"); }} />
       <Row icon={Cpu} label="Model" value="GPT-5 · Messenger default" onClick={() => say("Messenger picks the best model for each task")} />
     </Group>
+    <MemorySettings />
   </>;
 }
