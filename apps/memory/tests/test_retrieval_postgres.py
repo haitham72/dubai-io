@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import gc
 import hashlib
 import random
 import statistics
@@ -176,45 +177,46 @@ def test_20k_facts_needle_and_p95_under_150ms_inproc_and_http(pg_db: Database):
     assert inproc_p95 < 150.0, f"In-process 20k context_pack cold-query p95={inproc_p95:.2f}ms >= 150ms"
 
     # HTTP route checks (context, search, graph subjects, graph people, 2015 needle)
+    gc.collect()
     app = create_app(pg_db, admin_token="adm")
-    client = TestClient(app)
-    tok = client.post("/v1/tokens", headers={"Authorization": "Bearer adm"}, json={"role": "owner-device", "owner": "k20", "label": "bench"}).json()["token"]
-    hdrs = {"Authorization": f"Bearer {tok}"}
+    with TestClient(app) as client:
+        tok = client.post("/v1/tokens", headers={"Authorization": "Bearer adm"}, json={"role": "owner-device", "owner": "k20", "label": "bench"}).json()["token"]
+        hdrs = {"Authorization": f"Bearer {tok}"}
 
-    srch_needle = client.get("/v1/owners/k20/search", headers=hdrs, params={"q": "zanzibarite", "limit": 10})
-    ctx_needle = client.post("/v1/owners/k20/context", headers=hdrs, json={"text": "zanzibarite dentist"})
-    assert srch_needle.status_code == 200 and any(f["id"] == "f_needle" for f in srch_needle.json()["facts"])
-    assert ctx_needle.status_code == 200 and any(f["id"] == "f_needle" for f in ctx_needle.json()["facts"])
+        srch_needle = client.get("/v1/owners/k20/search", headers=hdrs, params={"q": "zanzibarite", "limit": 10})
+        ctx_needle = client.post("/v1/owners/k20/context", headers=hdrs, json={"text": "zanzibarite dentist"})
+        assert srch_needle.status_code == 200 and any(f["id"] == "f_needle" for f in srch_needle.json()["facts"])
+        assert ctx_needle.status_code == 200 and any(f["id"] == "f_needle" for f in ctx_needle.json()["facts"])
 
-    http_ctx, http_srch, http_gs, http_gp = [], [], [], []
-    base_queries = ["Where does Omar work?", "What did Layla say about Careem?", "Who visited DIFC?", "Tell me about Sara at Etisalat", "Rami Noon Marina"]
-    for i in range(100):
-        q = base_queries[i % len(base_queries)]
-        t0 = time.perf_counter()
-        assert client.post("/v1/owners/k20/context", headers=hdrs, json={"text": q}).status_code == 200
-        http_ctx.append((time.perf_counter() - t0) * 1000.0)
+        http_ctx, http_srch, http_gs, http_gp = [], [], [], []
+        base_queries = ["Where does Omar work?", "What did Layla say about Careem?", "Who visited DIFC?", "Tell me about Sara at Etisalat", "Rami Noon Marina"]
+        for i in range(100):
+            q = base_queries[i % len(base_queries)]
+            t0 = time.perf_counter()
+            assert client.post("/v1/owners/k20/context", headers=hdrs, json={"text": q}).status_code == 200
+            http_ctx.append((time.perf_counter() - t0) * 1000.0)
 
-        t0 = time.perf_counter()
-        assert client.get("/v1/owners/k20/search", headers=hdrs, params={"q": "Careem", "limit": 20}).status_code == 200
-        http_srch.append((time.perf_counter() - t0) * 1000.0)
+            t0 = time.perf_counter()
+            assert client.get("/v1/owners/k20/search", headers=hdrs, params={"q": "Careem", "limit": 20}).status_code == 200
+            http_srch.append((time.perf_counter() - t0) * 1000.0)
 
-        t0 = time.perf_counter()
-        assert client.get("/v1/owners/k20/vault/graph", headers=hdrs, params={"view": "subjects"}).status_code == 200
-        http_gs.append((time.perf_counter() - t0) * 1000.0)
+            t0 = time.perf_counter()
+            assert client.get("/v1/owners/k20/vault/graph", headers=hdrs, params={"view": "subjects"}).status_code == 200
+            http_gs.append((time.perf_counter() - t0) * 1000.0)
 
-        t0 = time.perf_counter()
-        assert client.get("/v1/owners/k20/vault/graph", headers=hdrs, params={"view": "people"}).status_code == 200
-        http_gp.append((time.perf_counter() - t0) * 1000.0)
+            t0 = time.perf_counter()
+            assert client.get("/v1/owners/k20/vault/graph", headers=hdrs, params={"view": "people"}).status_code == 200
+            http_gp.append((time.perf_counter() - t0) * 1000.0)
 
-    for label, samples in [("context", http_ctx), ("search", http_srch), ("graph_subjects", http_gs), ("graph_people", http_gp)]:
-        p95 = statistics.quantiles(samples, n=20)[18]
-        assert p95 < 150.0, f"HTTP 20k {label} p95={p95:.2f}ms exceeded 150ms"
+        for label, samples in [("context", http_ctx), ("search", http_srch), ("graph_subjects", http_gs), ("graph_people", http_gp)]:
+            p95 = statistics.quantiles(samples, n=20)[18]
+            assert p95 < 150.0, f"HTTP 20k {label} p95={p95:.2f}ms exceeded 150ms"
 
-    # Privacy revision bump alone invalidates cached context_pack across processes
-    warm1 = client.post("/v1/owners/k20/context", headers=hdrs, json={"text": "zanzibarite dentist"}).json()
-    assert any(f["id"] == "f_needle" for f in warm1["facts"])
-    with pg_db.transaction() as conn:
-        conn.execute("UPDATE facts SET erased_at = now() WHERE owner = 'k20' AND id = 'f_needle'")
-        conn.execute("UPDATE owners SET privacy_revision = privacy_revision + 1 WHERE id = 'k20'")
-    warm2 = client.post("/v1/owners/k20/context", headers=hdrs, json={"text": "zanzibarite dentist"}).json()
-    assert all(f["id"] != "f_needle" for f in warm2["facts"])
+        # Privacy revision bump alone invalidates cached context_pack across processes
+        warm1 = client.post("/v1/owners/k20/context", headers=hdrs, json={"text": "zanzibarite dentist"}).json()
+        assert any(f["id"] == "f_needle" for f in warm1["facts"])
+        with pg_db.transaction() as conn:
+            conn.execute("UPDATE facts SET erased_at = now() WHERE owner = 'k20' AND id = 'f_needle'")
+            conn.execute("UPDATE owners SET privacy_revision = privacy_revision + 1 WHERE id = 'k20'")
+        warm2 = client.post("/v1/owners/k20/context", headers=hdrs, json={"text": "zanzibarite dentist"}).json()
+        assert all(f["id"] != "f_needle" for f in warm2["facts"])
