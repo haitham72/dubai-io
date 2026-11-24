@@ -1,0 +1,25 @@
+{
+  "_note": "20 synthetic paraphrase probes (EN/Arabic/Arabizi) sharing zero keywords with target gold facts for U4 hybrid search ablation.",
+  "probes": [
+    {"turn_id": "u4_p01", "bucket": "paraphrase_en", "lang": "en", "text": "What is my monthly accommodation charge following the autumn revision?", "gold_context_fact_ids": ["f004", "f003", "f005"], "must_not_contain": []},
+    {"turn_id": "u4_p02", "bucket": "paraphrase_en", "lang": "en", "text": "When does my travel document run out and when am I refreshing it?", "gold_context_fact_ids": ["f049"], "must_not_contain": []},
+    {"turn_id": "u4_p03", "bucket": "paraphrase_en", "lang": "en", "text": "What running footwear did I purchase to replace the worn-out sneakers?", "gold_context_fact_ids": ["f099"], "must_not_contain": []},
+    {"turn_id": "u4_p04", "bucket": "paraphrase_en", "lang": "en", "text": "Where are the newlyweds heading on their post-wedding getaway?", "gold_context_fact_ids": ["f095", "f008", "f010"], "must_not_contain": []},
+    {"turn_id": "u4_p05", "bucket": "paraphrase_en", "lang": "en", "text": "How did my oral hygiene checkup turn out and when is the follow-up?", "gold_context_fact_ids": ["f107", "f065"], "must_not_contain": []},
+    {"turn_id": "u4_p06", "bucket": "paraphrase_en", "lang": "en", "text": "Which video entertainment membership did I terminate?", "gold_context_fact_ids": ["f045"], "must_not_contain": []},
+    {"turn_id": "u4_p07", "bucket": "paraphrase_en", "lang": "en", "text": "Which home-cooked parcel does my mother ship each month by courier?", "gold_context_fact_ids": ["f091", "f071"], "must_not_contain": []},
+    {"turn_id": "u4_p08", "bucket": "paraphrase_ar", "lang": "ar", "text": "متى ينتهي جواز سفري وموعد التجديد؟", "gold_context_fact_ids": ["f049"], "must_not_contain": []},
+    {"turn_id": "u4_p09", "bucket": "paraphrase_ar", "lang": "ar", "text": "فين هيسافر العرسان في شهر العسل؟", "gold_context_fact_ids": ["f095", "f008"], "must_not_contain": []},
+    {"turn_id": "u4_p10", "bucket": "paraphrase_ar", "lang": "ar", "text": "اي اشتراك الترفيه اللي لغيته قريب؟", "gold_context_fact_ids": ["f045"], "must_not_contain": []},
+    {"turn_id": "u4_p11", "bucket": "paraphrase_ar", "lang": "ar", "text": "بكام اشتريت أول سبيكة دهب ومنين؟", "gold_context_fact_ids": ["f104", "f060"], "must_not_contain": []},
+    {"turn_id": "u4_p12", "bucket": "paraphrase_ar", "lang": "ar", "text": "تطبيق تقسيم المصاريف وصل لنسخة كام وايه الميزات الجاية؟", "gold_context_fact_ids": ["f082", "f016", "f015"], "must_not_contain": []},
+    {"turn_id": "u4_p13", "bucket": "paraphrase_ar", "lang": "ar", "text": "ايه شروط الوظيفة الجديدة والحد الأدنى للراتب؟", "gold_context_fact_ids": ["f076", "f026"], "must_not_contain": []},
+    {"turn_id": "u4_p14", "bucket": "paraphrase_ar", "lang": "ar", "text": "قناتي التقنية وصلت كام مشترك واخر حلقة كانت عن ايه؟", "gold_context_fact_ids": ["f061", "f062"], "must_not_contain": []},
+    {"turn_id": "u4_p15", "bucket": "paraphrase_arz", "lang": "arz", "text": "emta gawaz el safar hayekhlas w ma3ad el tagdeed?", "gold_context_fact_ids": ["f049"], "must_not_contain": []},
+    {"turn_id": "u4_p16", "bucket": "paraphrase_arz", "lang": "arz", "text": "eshteret awel dahab menen w kan bekam?", "gold_context_fact_ids": ["f104", "f060"], "must_not_contain": []},
+    {"turn_id": "u4_p17", "bucket": "paraphrase_arz", "lang": "arz", "text": "el 3ersan mesaferin fein fe shahr el 3asal?", "gold_context_fact_ids": ["f095", "f008"], "must_not_contain": []},
+    {"turn_id": "u4_p18", "bucket": "paraphrase_arz", "lang": "arz", "text": "eyh el eshterak elli lagheto a5er el shahr?", "gold_context_fact_ids": ["f045"], "must_not_contain": []},
+    {"turn_id": "u4_p19", "bucket": "paraphrase_arz", "lang": "arz", "text": "kashf el asnan kan emta w eh el natega?", "gold_context_fact_ids": ["f107", "f065"], "must_not_contain": []},
+    {"turn_id": "u4_p20", "bucket": "paraphrase_arz", "lang": "arz", "text": "ana estqarret 3ala anhy model ba3d el tagroba?", "gold_context_fact_ids": ["f035", "f034"], "must_not_contain": []}
+  ]
+}

@@ -1,0 +1,310 @@
+[10/20/2026, 8:57:51 AM] Daniel Okoro: Reviewing the mobile PRs after lunch
+[10/20/2026, 12:14:29 PM] Salma Nasser: Reminder: log your hours before Thursday
+[10/20/2026, 1:04:28 PM] Salma Nasser: Standup in 10, thread your updates please
+[10/20/2026, 2:24:54 PM] Priya Raman: GPU queue is long today, training delayed a bit
+[10/20/2026, 4:29:16 PM] Youssef Adel: Restarted it, try now
+[10/20/2026, 7:37:19 PM] Youssef Adel: Staging deploy done, smoke tests green
+[10/20/2026, 9:44:16 PM] Omar El-Sayed: Works 👍
+[10/20/2026, 10:54:19 PM] Priya Raman: Eval job finished, numbers look sane
+[10/20/2026, 10:57:18 PM] Karim Haddad: On it
+[10/20/2026, 11:58:37 PM] Omar El-Sayed: Billing sandbox is down again?
+[10/21/2026, 8:53:42 AM] Karim Haddad: Morning all, heads down on the Atlas API today. Ping me after standup if the staging deploy breaks.
+[10/21/2026, 9:19:50 AM] Priya Raman: Dataset refresh done
+[10/21/2026, 9:58:38 AM] Youssef Adel: Known issue, fix in the next build
+[10/21/2026, 12:40:06 PM] Salma Nasser: Welcome Omar El-Sayed to the Atlas squad 🎉 he owns the billing module now
+[10/21/2026, 2:39:16 PM] Salma Nasser: Client moved the sync to 2pm
+[10/21/2026, 3:38:51 PM] Karim Haddad: Noted
+[10/21/2026, 5:49:51 PM] Priya Raman: Atlas ranking model v2 is training, ETA tomorrow morning. I'll post eval numbers here.
+[10/21/2026, 7:14:40 PM] Karim Haddad: Docs updated in the drive
+[10/21/2026, 8:17:00 PM] Salma Nasser: Great sprint team, velocity is up 🙌
+[10/21/2026, 11:53:57 PM] Daniel Okoro: Anyone else seeing flaky push notifications on staging?
+[10/22/2026, 1:12:08 PM] Salma Nasser: Standup in 10, thread your updates please
+[10/22/2026, 3:55:43 PM] Youssef Adel: Staging deploy done, smoke tests green
+[10/22/2026, 4:53:10 PM] Priya Raman: Eval job finished, numbers look sane
+[10/22/2026, 4:58:52 PM] Daniel Okoro: Taking lunch, back in 30
+[10/22/2026, 6:51:07 PM] Omar El-Sayed: ok
+[10/22/2026, 7:05:50 PM] Daniel Okoro: Reviewing the mobile PRs after lunch
+[10/22/2026, 7:33:32 PM] Youssef Adel: VPN is slow for anyone else?
+[10/22/2026, 8:54:51 PM] Daniel Okoro: Atlas iOS build 114 is on TestFlight. Android following tonight.
+[10/22/2026, 10:04:09 PM] Salma Nasser: Reminder: log your hours before Thursday
+[10/22/2026, 11:51:18 PM] Karim Haddad: On it
+[10/23/2026, 9:19:31 AM] Youssef Adel: Billing webhook retries are fixed, staging is green again ✅
+[10/23/2026, 11:06:15 AM] Karim Haddad: Noted
+[10/23/2026, 11:08:02 AM] Priya Raman: GPU queue is long today, training delayed a bit
+[10/23/2026, 3:30:01 PM] Priya Raman: Dataset refresh done
+[10/23/2026, 3:41:04 PM] Omar El-Sayed: Works 👍
+[10/23/2026, 5:41:26 PM] Daniel Okoro: Anyone else seeing flaky push notifications on staging?
+[10/23/2026, 6:58:39 PM] Youssef Adel: Restarted it, try now
+[10/23/2026, 7:06:43 PM] Omar El-Sayed: Billing sandbox is down again?
+[10/23/2026, 8:52:40 PM] Salma Nasser: Client moved the sync to 2pm
+[10/23/2026, 10:58:44 PM] Youssef Adel: Known issue, fix in the next build
+[10/24/2026, 4:02:44 PM] Daniel Okoro: Taking lunch, back in 30
+[10/24/2026, 4:12:07 PM] Salma Nasser: Great sprint team, velocity is up 🙌
+[10/24/2026, 7:03:25 PM] Youssef Adel: VPN is slow for anyone else?
+[10/24/2026, 7:06:43 PM] Priya Raman: Eval job finished, numbers look sane
+[10/24/2026, 7:13:28 PM] Salma Nasser: Standup in 10, thread your updates please
+[10/24/2026, 7:34:57 PM] Karim Haddad: Docs updated in the drive
+[10/24/2026, 9:41:06 PM] Sherif Kamal: Last day at QamarTech done 🎬 Monday I start at NexaPay. Atlas billing docs are in the drive, Omar S. has context.
+[10/24/2026, 10:05:42 PM] Youssef Adel: Staging deploy done, smoke tests green
+[10/24/2026, 10:15:54 PM] Omar El-Sayed: ok
+[10/24/2026, 11:39:26 PM] Salma Nasser: Karim, solid demo today. Let's do your mid-year review next week, book 30 min with me.
+[10/25/2026, 8:08:00 AM] Daniel Okoro: Reviewing the mobile PRs after lunch
+[10/25/2026, 8:17:54 AM] Karim Haddad: On it
+[10/25/2026, 10:53:48 AM] Daniel Okoro: Anyone else seeing flaky push notifications on staging?
+[10/25/2026, 11:42:55 AM] Karim Haddad: Noted
+[10/25/2026, 12:08:34 PM] Salma Nasser: Reminder: log your hours before Thursday
+[10/25/2026, 12:50:57 PM] Youssef Adel: Restarted it, try now
+[10/25/2026, 2:37:13 PM] Salma Nasser: Client moved the sync to 2pm
+[10/25/2026, 3:21:49 PM] Omar El-Sayed: Works 👍
+[10/25/2026, 4:51:11 PM] Priya Raman: GPU queue is long today, training delayed a bit
+[10/25/2026, 7:50:50 PM] Omar El-Sayed: Billing sandbox is down again?
+[10/26/2026, 8:03:30 AM] Priya Raman: Dataset refresh done
+[10/26/2026, 11:28:32 AM] Youssef Adel: VPN is slow for anyone else?
+[10/26/2026, 11:31:45 AM] Daniel Okoro: Taking lunch, back in 30
+[10/26/2026, 11:47:04 AM] Omar El-Sayed: ok
+[10/26/2026, 3:39:02 PM] Salma Nasser: Standup in 10, thread your updates please
+[10/26/2026, 5:29:41 PM] Salma Nasser: Great sprint team, velocity is up 🙌
+[10/26/2026, 7:32:37 PM] Youssef Adel: Staging deploy done, smoke tests green
+[10/26/2026, 8:27:43 PM] Youssef Adel: Known issue, fix in the next build
+[10/26/2026, 10:04:57 PM] Karim Haddad: Docs updated in the drive
+[10/26/2026, 11:28:49 PM] Priya Raman: Eval job finished, numbers look sane
+[10/27/2026, 11:20:27 AM] Daniel Okoro: Reviewing the mobile PRs after lunch
+[10/27/2026, 11:54:41 AM] Karim Haddad: Noted
+[10/27/2026, 2:27:28 PM] Youssef Adel: Restarted it, try now
+[10/27/2026, 3:26:21 PM] Salma Nasser: Client moved the sync to 2pm
+[10/27/2026, 6:42:16 PM] Salma Nasser: Reminder: log your hours before Thursday
+[10/27/2026, 7:09:43 PM] Omar El-Sayed: Works 👍
+[10/27/2026, 9:06:50 PM] Omar El-Sayed: Billing sandbox is down again?
+[10/27/2026, 10:25:26 PM] Daniel Okoro: Anyone else seeing flaky push notifications on staging?
+[10/27/2026, 10:32:38 PM] Priya Raman: GPU queue is long today, training delayed a bit
+[10/27/2026, 11:04:05 PM] Karim Haddad: On it
+[10/28/2026, 9:18:38 AM] Salma Nasser: Standup in 10, thread your updates please
+[10/28/2026, 11:22:54 AM] Daniel Okoro: Taking lunch, back in 30
+[10/28/2026, 2:09:42 PM] Omar El-Sayed: ok
+[10/28/2026, 4:36:14 PM] Youssef Adel: Known issue, fix in the next build
+[10/28/2026, 5:22:06 PM] Priya Raman: Dataset refresh done
+[10/28/2026, 6:42:07 PM] Salma Nasser: Great sprint team, velocity is up 🙌
+[10/28/2026, 7:07:48 PM] Youssef Adel: Staging deploy done, smoke tests green
+[10/28/2026, 9:22:55 PM] Youssef Adel: VPN is slow for anyone else?
+[10/28/2026, 9:55:58 PM] Karim Haddad: Docs updated in the drive
+[10/28/2026, 11:14:54 PM] Priya Raman: Ranking v2 eval: +3.1% NDCG over v1 🎉 shipping to staging today
+[10/29/2026, 8:05:47 AM] Karim Haddad: On it
+[10/29/2026, 10:56:03 AM] Omar El-Sayed: Works 👍
+[10/29/2026, 12:36:42 PM] Salma Nasser: Reminder: log your hours before Thursday
+[10/29/2026, 2:24:26 PM] Youssef Adel: Restarted it, try now
+[10/29/2026, 5:58:21 PM] Karim Haddad: Noted
+[10/29/2026, 6:49:36 PM] Salma Nasser: Client moved the sync to 2pm
+[10/29/2026, 7:00:11 PM] Daniel Okoro: Reviewing the mobile PRs after lunch
+[10/29/2026, 7:19:46 PM] Priya Raman: Eval job finished, numbers look sane
+[10/29/2026, 8:04:09 PM] Priya Raman: GPU queue is long today, training delayed a bit
+[10/29/2026, 10:21:10 PM] Omar El-Sayed: Billing sandbox is down again?
+[10/30/2026, 8:13:19 AM] Daniel Okoro: Anyone else seeing flaky push notifications on staging?
+[10/30/2026, 11:18:43 AM] Salma Nasser: Great sprint team, velocity is up 🙌
+[10/30/2026, 11:22:27 AM] Karim Haddad: Docs updated in the drive
+[10/30/2026, 2:49:08 PM] Youssef Adel: Staging deploy done, smoke tests green
+[10/30/2026, 4:18:20 PM] Priya Raman: Dataset refresh done
+[10/30/2026, 5:02:14 PM] Youssef Adel: VPN is slow for anyone else?
+[10/30/2026, 8:38:03 PM] Omar El-Sayed: ok
+[10/30/2026, 9:17:13 PM] Youssef Adel: Known issue, fix in the next build
+[10/30/2026, 11:33:42 PM] Salma Nasser: Standup in 10, thread your updates please
+[10/30/2026, 11:38:28 PM] Daniel Okoro: Taking lunch, back in 30
+[10/31/2026, 9:27:01 AM] Salma Nasser: Client moved the sync to 2pm
+[10/31/2026, 1:51:39 PM] Priya Raman: GPU queue is long today, training delayed a bit
+[10/31/2026, 6:36:27 PM] Omar El-Sayed: Billing sandbox is down again?
+[10/31/2026, 7:04:25 PM] Karim Haddad: On it
+[10/31/2026, 7:05:27 PM] Daniel Okoro: Reviewing the mobile PRs after lunch
+[10/31/2026, 8:01:20 PM] Youssef Adel: Restarted it, try now
+[10/31/2026, 8:45:40 PM] Karim Haddad: Noted
+[10/31/2026, 9:18:07 PM] Salma Nasser: Reminder: log your hours before Thursday
+[10/31/2026, 10:53:44 PM] Priya Raman: Eval job finished, numbers look sane
+[10/31/2026, 10:58:04 PM] Omar El-Sayed: Works 👍
+[11/1/2026, 10:11:49 AM] Salma Nasser: Great sprint team, velocity is up 🙌
+[11/1/2026, 11:33:32 AM] Youssef Adel: Staging deploy done, smoke tests green
+[11/1/2026, 12:15:06 PM] Salma Nasser: Standup in 10, thread your updates please
+[11/1/2026, 12:16:12 PM] Karim Haddad: Docs updated in the drive
+[11/1/2026, 1:04:32 PM] Priya Raman: Dataset refresh done
+[11/1/2026, 1:38:09 PM] Daniel Okoro: Taking lunch, back in 30
+[11/1/2026, 2:57:49 PM] Daniel Okoro: Anyone else seeing flaky push notifications on staging?
+[11/1/2026, 6:14:21 PM] Omar El-Sayed: ok
+[11/1/2026, 7:22:46 PM] Youssef Adel: VPN is slow for anyone else?
+[11/1/2026, 11:29:48 PM] Youssef Adel: Known issue, fix in the next build
+[11/2/2026, 9:22:32 AM] Daniel Okoro: Reviewing the mobile PRs after lunch
+[11/2/2026, 9:28:58 AM] Priya Raman: GPU queue is long today, training delayed a bit
+[11/2/2026, 10:19:29 AM] Youssef Adel: I'm on-call this week, page me if staging billing acts up
+[11/2/2026, 10:39:38 AM] Salma Nasser: Reminder: log your hours before Thursday
+[11/2/2026, 10:41:55 AM] Omar El-Sayed: Billing sandbox is down again?
+[11/2/2026, 5:50:17 PM] Omar El-Sayed: Sorry I have been quiet... going through a divorce filing this month, may need a few mornings off
+[11/2/2026, 7:53:18 PM] Omar El-Sayed: Works 👍
+[11/2/2026, 8:29:37 PM] Youssef Adel: Restarted it, try now
+[11/2/2026, 10:02:03 PM] Priya Raman: Eval job finished, numbers look sane
+[11/2/2026, 11:28:40 PM] Karim Haddad: On it
+[11/3/2026, 9:50:40 AM] Priya Raman: Dataset refresh done
+[11/3/2026, 11:35:43 AM] Daniel Okoro: Taking lunch, back in 30
+[11/3/2026, 11:51:57 AM] Karim Haddad: Noted
+[11/3/2026, 1:02:15 PM] Youssef Adel: Guys quick one, anyone dealt with consolidating a personal loan? Mine from last year is eating half my salary 😅
+[11/3/2026, 1:23:23 PM] Salma Nasser: Great sprint team, velocity is up 🙌
+[11/3/2026, 5:24:26 PM] Omar El-Sayed: ok
+[11/3/2026, 6:04:21 PM] Daniel Okoro: Anyone else seeing flaky push notifications on staging?
+[11/3/2026, 6:43:38 PM] Youssef Adel: Known issue, fix in the next build
+[11/3/2026, 6:45:05 PM] Karim Haddad: Docs updated in the drive
+[11/3/2026, 10:28:33 PM] Salma Nasser: Client moved the sync to 2pm
+[11/4/2026, 8:23:19 AM] Daniel Okoro: Reviewing the mobile PRs after lunch
+[11/4/2026, 10:19:35 AM] Salma Nasser: Standup in 10, thread your updates please
+[11/4/2026, 10:41:42 AM] Karim Haddad: On it
+[11/4/2026, 12:58:22 PM] Youssef Adel: Staging deploy done, smoke tests green
+[11/4/2026, 1:13:21 PM] Salma Nasser: Reminder: log your hours before Thursday
+[11/4/2026, 5:41:44 PM] Youssef Adel: VPN is slow for anyone else?
+[11/4/2026, 6:52:08 PM] Omar El-Sayed: Works 👍
+[11/4/2026, 8:08:38 PM] Priya Raman: Eval job finished, numbers look sane
+[11/4/2026, 8:41:50 PM] Omar El-Sayed: Billing sandbox is down again?
+[11/4/2026, 9:32:23 PM] Youssef Adel: Restarted it, try now
+[11/5/2026, 9:26:23 AM] Priya Raman: GPU queue is long today, training delayed a bit
+[11/5/2026, 12:10:11 PM] Youssef Adel: Known issue, fix in the next build
+[11/5/2026, 12:38:24 PM] Daniel Okoro: Taking lunch, back in 30
+[11/5/2026, 1:46:28 PM] Karim Haddad: Noted
+[11/5/2026, 3:19:51 PM] Daniel Okoro: Anyone else seeing flaky push notifications on staging?
+[11/5/2026, 3:28:39 PM] Salma Nasser: Great sprint team, velocity is up 🙌
+[11/5/2026, 5:48:47 PM] Salma Nasser: Client moved the sync to 2pm
+[11/5/2026, 6:56:49 PM] Priya Raman: Dataset refresh done
+[11/5/2026, 10:14:34 PM] Omar El-Sayed: ok
+[11/5/2026, 11:57:53 PM] Karim Haddad: Docs updated in the drive
+[11/6/2026, 8:26:03 AM] Priya Raman: Eval job finished, numbers look sane
+[11/6/2026, 9:41:30 AM] Youssef Adel: Restarted it, try now
+[11/6/2026, 10:58:14 AM] Omar El-Sayed: Billing sandbox is down again?
+[11/6/2026, 11:18:05 AM] Salma Nasser: Reminder: log your hours before Thursday
+[11/6/2026, 11:45:54 AM] Daniel Okoro: Reviewing the mobile PRs after lunch
+[11/6/2026, 12:53:27 PM] Omar El-Sayed: Works 👍
+[11/6/2026, 12:55:16 PM] Salma Nasser: Standup in 10, thread your updates please
+[11/6/2026, 1:17:28 PM] Youssef Adel: Staging deploy done, smoke tests green
+[11/6/2026, 7:35:59 PM] Youssef Adel: VPN is slow for anyone else?
+[11/6/2026, 10:56:22 PM] Karim Haddad: On it
+[11/7/2026, 8:16:13 AM] Priya Raman: Dataset refresh done
+[11/7/2026, 8:57:05 AM] Salma Nasser: Client moved the sync to 2pm
+[11/7/2026, 12:02:18 PM] Youssef Adel: Known issue, fix in the next build
+[11/7/2026, 12:35:46 PM] Omar El-Sayed: ok
+[11/7/2026, 12:48:45 PM] Priya Raman: GPU queue is long today, training delayed a bit
+[11/7/2026, 6:50:09 PM] Karim Haddad: Docs updated in the drive
+[11/7/2026, 6:59:06 PM] Daniel Okoro: Taking lunch, back in 30
+[11/7/2026, 9:07:49 PM] Salma Nasser: Great sprint team, velocity is up 🙌
+[11/7/2026, 11:28:39 PM] Daniel Okoro: Anyone else seeing flaky push notifications on staging?
+[11/7/2026, 11:44:53 PM] Karim Haddad: Noted
+[11/8/2026, 8:24:55 AM] Daniel Okoro: Reviewing the mobile PRs after lunch
+[11/8/2026, 8:40:32 AM] Youssef Adel: Staging deploy done, smoke tests green
+[11/8/2026, 10:07:53 AM] Karim Haddad: On it
+[11/8/2026, 10:33:23 AM] Omar El-Sayed: Works 👍
+[11/8/2026, 10:33:34 AM] Priya Raman: Eval job finished, numbers look sane
+[11/8/2026, 3:45:09 PM] Youssef Adel: Restarted it, try now
+[11/8/2026, 5:27:00 PM] Salma Nasser: Standup in 10, thread your updates please
+[11/8/2026, 7:15:36 PM] Salma Nasser: Reminder: log your hours before Thursday
+[11/8/2026, 9:11:42 PM] Youssef Adel: VPN is slow for anyone else?
+[11/8/2026, 11:38:34 PM] Omar El-Sayed: Billing sandbox is down again?
+[11/9/2026, 10:45:49 AM] Priya Raman: Dataset refresh done
+[11/9/2026, 11:49:37 AM] Priya Raman: GPU queue is long today, training delayed a bit
+[11/9/2026, 1:51:08 PM] Salma Nasser: Client moved the sync to 2pm
+[11/9/2026, 1:53:49 PM] Karim Haddad: Docs updated in the drive
+[11/9/2026, 2:02:50 PM] Salma Nasser: Great sprint team, velocity is up 🙌
+[11/9/2026, 3:46:42 PM] Karim Haddad: Noted
+[11/9/2026, 6:08:02 PM] Daniel Okoro: Anyone else seeing flaky push notifications on staging?
+[11/9/2026, 7:34:21 PM] Youssef Adel: Known issue, fix in the next build
+[11/9/2026, 10:02:18 PM] Karim Haddad: Priya, Youssef: ranking API + webhook contract review tomorrow 11am? I'll book the room.
+[11/9/2026, 10:44:30 PM] Omar El-Sayed: ok
+[11/10/2026, 9:55:41 AM] Salma Nasser: Reminder: log your hours before Thursday
+[11/10/2026, 2:18:22 PM] Daniel Okoro: Reviewing the mobile PRs after lunch
+[11/10/2026, 4:51:05 PM] Salma Nasser: Atlas v1 launches Dec 1, client confirmed. Code freeze Nov 24, no exceptions.
+[11/10/2026, 6:17:07 PM] Daniel Okoro: Taking lunch, back in 30
+[11/10/2026, 7:27:56 PM] Karim Haddad: On it
+[11/10/2026, 7:59:51 PM] Priya Raman: Eval job finished, numbers look sane
+[11/10/2026, 8:21:11 PM] Youssef Adel: Staging deploy done, smoke tests green
+[11/10/2026, 8:47:28 PM] Omar El-Sayed: Billing sandbox is down again?
+[11/10/2026, 9:05:27 PM] Salma Nasser: Standup in 10, thread your updates please
+[11/10/2026, 11:44:31 PM] Youssef Adel: VPN is slow for anyone else?
+[11/11/2026, 9:04:42 AM] Priya Raman: Dataset refresh done
+[11/11/2026, 9:46:55 AM] Daniel Okoro: Anyone else seeing flaky push notifications on staging?
+[11/11/2026, 1:01:09 PM] Omar El-Sayed: Works 👍
+[11/11/2026, 4:40:50 PM] Salma Nasser: Client demo moved up: Nov 25, full Atlas flow. Karim you present the API part.
+[11/11/2026, 5:28:38 PM] Youssef Adel: Known issue, fix in the next build
+[11/11/2026, 7:39:27 PM] Karim Haddad: Noted
+[11/11/2026, 8:23:32 PM] Salma Nasser: Client moved the sync to 2pm
+[11/11/2026, 9:10:44 PM] Youssef Adel: Restarted it, try now
+[11/11/2026, 10:02:08 PM] Salma Nasser: Great sprint team, velocity is up 🙌
+[11/11/2026, 10:22:28 PM] Priya Raman: GPU queue is long today, training delayed a bit
+[11/12/2026, 8:47:11 AM] Karim Haddad: On it
+[11/12/2026, 11:16:49 AM] Youssef Adel: Staging deploy done, smoke tests green
+[11/12/2026, 12:33:23 PM] Priya Raman: Eval job finished, numbers look sane
+[11/12/2026, 2:39:18 PM] Omar El-Sayed: ok
+[11/12/2026, 4:15:07 PM] Salma Nasser: Standup in 10, thread your updates please
+[11/12/2026, 4:45:28 PM] Youssef Adel: VPN is slow for anyone else?
+[11/12/2026, 8:20:41 PM] Karim Haddad: Docs updated in the drive
+[11/12/2026, 10:23:23 PM] Salma Nasser: Reminder: log your hours before Thursday
+[11/12/2026, 10:48:04 PM] Daniel Okoro: Reviewing the mobile PRs after lunch
+[11/12/2026, 11:33:24 PM] Daniel Okoro: Taking lunch, back in 30
+[11/13/2026, 10:35:34 AM] Youssef Adel: Restarted it, try now
+[11/13/2026, 10:51:43 AM] Salma Nasser: Client moved the sync to 2pm
+[11/13/2026, 12:15:50 PM] Omar El-Sayed: Billing sandbox is down again?
+[11/13/2026, 1:45:45 PM] Youssef Adel: Known issue, fix in the next build
+[11/13/2026, 1:50:23 PM] Daniel Okoro: Android build delayed to Monday, Play review flagged the billing permission 😑
+[11/13/2026, 3:07:12 PM] Priya Raman: Dataset refresh done
+[11/13/2026, 5:57:19 PM] Karim Haddad: Noted
+[11/13/2026, 6:42:22 PM] Priya Raman: GPU queue is long today, training delayed a bit
+[11/13/2026, 7:29:51 PM] Daniel Okoro: Anyone else seeing flaky push notifications on staging?
+[11/13/2026, 11:01:23 PM] Omar El-Sayed: Works 👍
+[11/14/2026, 9:53:07 AM] Salma Nasser: Great sprint team, velocity is up 🙌
+[11/14/2026, 10:08:20 AM] Priya Raman: Eval job finished, numbers look sane
+[11/14/2026, 10:28:29 AM] Salma Nasser: Standup in 10, thread your updates please
+[11/14/2026, 12:19:10 PM] Karim Haddad: Docs updated in the drive
+[11/14/2026, 1:20:59 PM] Omar El-Sayed: ok
+[11/14/2026, 1:49:08 PM] Daniel Okoro: Taking lunch, back in 30
+[11/14/2026, 3:22:33 PM] Daniel Okoro: Reviewing the mobile PRs after lunch
+[11/14/2026, 7:08:56 PM] Youssef Adel: VPN is slow for anyone else?
+[11/14/2026, 9:32:58 PM] Karim Haddad: On it
+[11/14/2026, 9:52:36 PM] Youssef Adel: Staging deploy done, smoke tests green
+[11/15/2026, 8:05:02 AM] Salma Nasser: Client moved the sync to 2pm
+[11/15/2026, 8:31:56 AM] Omar El-Sayed: Billing sandbox is down again?
+[11/15/2026, 9:52:55 AM] Daniel Okoro: Anyone else seeing flaky push notifications on staging?
+[11/15/2026, 10:32:41 AM] Omar El-Sayed: Works 👍
+[11/15/2026, 12:10:42 PM] Salma Nasser: Reminder: log your hours before Thursday
+[11/15/2026, 1:37:37 PM] Karim Haddad: Noted
+[11/15/2026, 4:41:13 PM] Youssef Adel: Known issue, fix in the next build
+[11/15/2026, 5:41:19 PM] Priya Raman: GPU queue is long today, training delayed a bit
+[11/15/2026, 6:53:59 PM] Youssef Adel: Restarted it, try now
+[11/15/2026, 9:39:40 PM] Priya Raman: Dataset refresh done
+[11/16/2026, 11:03:18 AM] Priya Raman: Eval job finished, numbers look sane
+[11/16/2026, 11:20:15 AM] Omar El-Sayed: ok
+[11/16/2026, 12:20:55 PM] Salma Nasser: Standup in 10, thread your updates please
+[11/16/2026, 2:21:38 PM] Karim Haddad: Docs updated in the drive
+[11/16/2026, 6:46:55 PM] Youssef Adel: VPN is slow for anyone else?
+[11/16/2026, 7:25:08 PM] Salma Nasser: Great sprint team, velocity is up 🙌
+[11/16/2026, 7:32:35 PM] Daniel Okoro: Reviewing the mobile PRs after lunch
+[11/16/2026, 9:30:29 PM] Karim Haddad: On it
+[11/16/2026, 10:07:17 PM] Youssef Adel: Staging deploy done, smoke tests green
+[11/16/2026, 10:15:09 PM] Daniel Okoro: Taking lunch, back in 30
+[11/17/2026, 8:54:06 AM] Priya Raman: Dataset refresh done
+[11/17/2026, 3:13:37 PM] Youssef Adel: Restarted it, try now
+[11/17/2026, 5:31:38 PM] Youssef Adel: Known issue, fix in the next build
+[11/17/2026, 7:03:03 PM] Omar El-Sayed: Billing sandbox is down again?
+[11/17/2026, 8:32:29 PM] Priya Raman: GPU queue is long today, training delayed a bit
+[11/17/2026, 9:08:56 PM] Karim Haddad: Noted
+[11/17/2026, 11:01:05 PM] Salma Nasser: Reminder: log your hours before Thursday
+[11/17/2026, 11:18:34 PM] Omar El-Sayed: Works 👍
+[11/17/2026, 11:32:29 PM] Salma Nasser: Client moved the sync to 2pm
+[11/17/2026, 11:56:19 PM] Daniel Okoro: Anyone else seeing flaky push notifications on staging?
+[11/18/2026, 9:02:08 AM] Youssef Adel: VPN is slow for anyone else?
+[11/18/2026, 10:24:32 AM] Karim Haddad: On it
+[11/18/2026, 11:08:06 AM] Daniel Okoro: Taking lunch, back in 30
+[11/18/2026, 12:12:38 PM] Youssef Adel: Staging deploy done, smoke tests green
+[11/18/2026, 4:52:39 PM] Daniel Okoro: Reviewing the mobile PRs after lunch
+[11/18/2026, 6:35:23 PM] Omar El-Sayed: ok
+[11/18/2026, 7:35:18 PM] Karim Haddad: Docs updated in the drive
+[11/18/2026, 8:23:50 PM] Salma Nasser: Great sprint team, velocity is up 🙌
+[11/18/2026, 8:32:02 PM] Salma Nasser: Standup in 10, thread your updates please
+[11/18/2026, 10:48:35 PM] Priya Raman: Eval job finished, numbers look sane
+[11/19/2026, 8:23:21 AM] Youssef Adel: Known issue, fix in the next build
+[11/19/2026, 8:38:30 AM] Daniel Okoro: Anyone else seeing flaky push notifications on staging?
+[11/19/2026, 11:26:37 AM] Omar El-Sayed: Works 👍
+[11/19/2026, 1:25:39 PM] Omar El-Sayed: Billing module code review done, merging to staging. Thanks Karim for the fast review 🙏
+[11/19/2026, 3:46:03 PM] Priya Raman: GPU queue is long today, training delayed a bit
+[11/19/2026, 4:41:50 PM] Karim Haddad: Noted
+[11/19/2026, 5:30:52 PM] Salma Nasser: Client moved the sync to 2pm
+[11/19/2026, 5:37:21 PM] Omar El-Sayed: Billing sandbox is down again?
+[11/19/2026, 5:50:57 PM] Salma Nasser: Reminder: log your hours before Thursday
+[11/19/2026, 11:45:36 PM] Youssef Adel: Restarted it, try now
