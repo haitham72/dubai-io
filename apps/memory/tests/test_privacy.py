@@ -264,3 +264,27 @@ def test_screen_default_classifier_needs_model_env(monkeypatch):
     monkeypatch.delenv("TM_CLASSIFIER_MODEL", raising=False)
     with pytest.raises(ScreenUnavailable):
         sensitive.screen(["anything"])
+
+
+# E9b: narrowed layer-1 patterns, both ways. Narrowing must never let a genuinely sensitive text through.
+NARROWED = [
+    # now allowed: Arabic given names ending in -ud-Din, language names
+    ("Nour El-Din (written نور الدين in chat) is building the Raseef reports screen.", None),
+    ("صلاح الدين بيشتغل معايا", None),
+    ("episode 3 covers RAG in Egyptian Arabic", None),
+    ("The podcast is in Gulf Arabic", None),
+    # still blocked: the word "religion", other nationality uses, faith words
+    ("بنتكلم عن الدين", "religion"),
+    ("أمور الدين", "religion"),
+    ("Karim is Egyptian", "ethnicity_nationality"),
+    ("He speaks Egyptian Arabic and he is Egyptian", "ethnicity_nationality"),
+    ("Karim's Egyptian passport expires March 2027", "ethnicity_nationality"),
+    ("an Arab family moved in", "ethnicity_nationality"),
+    ("Tarek fixed the old kitchen radio; it plays Quran all day.", "religion"),
+    ("نور الدين and الدين", "religion"),
+]
+
+
+@pytest.mark.parametrize("text,expected", NARROWED, ids=[f"narrow{i:02d}" for i in range(len(NARROWED))])
+def test_narrowed_patterns_both_ways(text, expected):
+    assert pre_write(text) == expected

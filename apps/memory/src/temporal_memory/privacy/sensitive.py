@@ -70,6 +70,19 @@ _EID_SURNAME = re.compile(
     r"\b([A-Z][a-z'-]{1,20})\s+Eid\b(?!\s+(?:Mubarak|al[- ]?(?:Fitr|Adha)))"
 )
 
+# E9b: "<name>-ud-Din" Arabic given names (نور الدين) are personal names, not the word "religion" (دين).
+# Only the closed list of name stems is exempt; a bare "الدين" / "أمور الدين" still fires. Applied after mark stripping.
+_AR_DIN_NAME = re.compile(
+    r"(?<!\w)(?:نور|علاء|صلاح|زين|سيف|شمس|بهاء|جمال|كمال|محيي|محي|عماد|ضياء|ناصر|تقي|فخر|سعد|عز)\s+الدين(?!\w)"
+)
+
+# E9b: a language name is not an ethnicity/nationality claim ("RAG in Egyptian Arabic"). Exact variants only;
+# "Egyptian" or "Arab" anywhere else in the text still fires.
+_LANGUAGE_NAME = re.compile(
+    r"\b(?:Egyptian|Gulf|Khaleeji|Levantine|Lebanese|Syrian|Saudi|Moroccan|Sudanese|Iraqi|Modern Standard)\s+Arabic\b",
+    re.I,
+)
+
 # Dubai allowlist: religious honorifics, visa/provider names and government
 # entities as *providers* are ordinary civic text, not faith/politics signals.
 # (Shape from harness/gate.py ALLOW.)
@@ -112,7 +125,8 @@ def _normalise(text: str) -> str:
     text = ALLOW.sub(" ", text)
     text = WORK_PRESSURE.sub(" ", text)
     text = _EID_SURNAME.sub(r"\1", text)
-    return AR_MARKS.sub("", text)
+    text = _LANGUAGE_NAME.sub(" ", text)
+    return _AR_DIN_NAME.sub(" ", AR_MARKS.sub("", text))
 
 
 # Wi-Fi secrets need the network word AND a secret word nearby (or a colon form):
