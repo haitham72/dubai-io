@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "Dubai-io Community",
+    "slug": "dubai-io-community",
+    "scheme": "dubai-community",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#128C9B"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "io.dubai.community",
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": false,
+          "NSAllowsLocalNetworking": true
+        }
+      }
+    },
+    "extra": {
+      "communityUrl": "http://localhost:3060"
+    }
+  }
+}

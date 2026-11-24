@@ -1,0 +1,21 @@
+{
+  "name": "@dubai-io/community-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Dubai-io Community desktop shell (Electron wrapper around the Community web app).",
+  "main": "dist-electron/main.js",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "tsc",
+    "start": "npm run build && electron .",
+    "test": "vitest run",
+    "pack:win": "npm run build && electron-builder --win --x64 --config electron-builder.yml"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.0",
+    "electron": "^39.2.0",
+    "electron-builder": "^26.18.0",
+    "typescript": "~5.9.3",
+    "vitest": "^4.0.0"
+  }
+}
