@@ -314,6 +314,30 @@ export async function openIdentitySession(
   };
 }
 
+/** Where the Google sign-in starts: apps/api (:8000) holds the Google client; this app only redeems the code. */
+export function googleSignInStartUrl(returnTo: string, dubaiApi?: string): string {
+  const base = (dubaiApi ?? getEnv("VITE_DUBAI_API_URL") ?? "http://localhost:8000").trim().replace(/\/+$/, "");
+  const q = new URLSearchParams({ client: "web", return_to: returnTo });
+  return `${base}/api/identity/google/start?${q.toString()}`;
+}
+
+/** Redeem the one-time auth_code (from the Google redirect) at THIS app's API for a messenger session of the same user. */
+export async function exchangeGoogleAuthCode(
+  authCode: string,
+  opts: ClientOptions = {},
+): Promise<{ session_token: string; user_id: string; display_name?: string }> {
+  const base = resolveApiBase(opts.apiBase);
+  return requestJson(
+    `${base}/api/identity/google/exchange`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ auth_code: authCode, app_id: "messenger", device_label: "Messenger web" }),
+    },
+    opts.fetchImpl,
+  );
+}
+
 /** Fetch the current identity session principal via GET /api/identity/me. */
 export async function getIdentityMe(
   sessionToken: string,

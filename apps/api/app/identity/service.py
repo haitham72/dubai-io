@@ -762,10 +762,11 @@ class IdentityService:
         *,
         device_label: Optional[str] = None,
         client_ip: str = "unknown",
+        app_id: AppId = "quest",
     ) -> AppSessionOut:
         self._pair_throttle_check(client_ip)
         try:
-            return self._complete_pairing(code, device_label=device_label, client_ip=client_ip)
+            return self._complete_pairing(code, device_label=device_label, client_ip=client_ip, app_id=app_id)
         except IdentityError as exc:
             if exc.status_code in (400, 409, 410):
                 code_hash = _sha256_hex((code or "").strip().upper()[:128])
@@ -784,7 +785,10 @@ class IdentityService:
         *,
         device_label: Optional[str] = None,
         client_ip: str = "unknown",
+        app_id: AppId = "quest",
     ) -> AppSessionOut:
+        if app_id not in VALID_APP_IDS:
+            raise IdentityError("invalid_app_id", f"Unsupported app_id: {app_id}", 422)
         normalized = (code or "").strip().upper()
         if not normalized or len(normalized) > 128:
             raise IdentityError("invalid_code", "Invalid pairing code", 400)
@@ -800,7 +804,7 @@ class IdentityService:
 
         session_out = self.issue_user_session(
             record["user_id"],
-            app_id="quest",
+            app_id=app_id,
             device_label=device_label or "iPhone",
         )
         now_str = iso_utc()

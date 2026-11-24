@@ -139,6 +139,15 @@ Add-Row "website:$ExpoPort" $webOk "http://localhost:$ExpoPort"
 $expoOk = Test-Port $ExpoPort
 Add-Row "expo-lan:$ExpoPort" $expoOk "exp://${lanIp}:$ExpoPort"
 
+# 2b. Community + Messenger (E5): API up, shared identity, real http memory backend; website up
+foreach ($e in @(@{n="community"; api=8060; web=3060}, @{n="messenger"; api=8070; web=5173})) {
+    $st = $null
+    try { $st = Invoke-RestMethod -Uri "http://127.0.0.1:$($e.api)/api/shared/status" -TimeoutSec 3 } catch {}
+    Add-Row "$($e.n)-api:$($e.api)" ($null -ne $st) $(if ($st) { "http://localhost:$($e.api)" } else { "not answering" })
+    Add-Row "$($e.n)-memory" ($null -ne $st -and $st.memory_backend -eq "http" -and $st.identity_shared -and $st.memory_bridge) $(if ($st) { "backend=$($st.memory_backend) identity_shared=$($st.identity_shared) bridge=$($st.memory_bridge)" } else { "n/a" })
+    Add-Row "$($e.n)-website:$($e.web)" (Test-Http "http://127.0.0.1:$($e.web)/") "http://localhost:$($e.web)  (LAN http://${lanIp}:$($e.web))"
+}
+
 $lanOk = ($lanIp -ne "127.0.0.1")
 Add-Row "lan-ip" $lanOk $lanIp
 

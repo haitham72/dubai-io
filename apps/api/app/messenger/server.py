@@ -22,6 +22,8 @@ from app.identity.router import create_identity_router
 from app.identity.service import IdentityService
 from app.identity.store import IdentityStore
 import app.messenger.capabilities  # noqa: F401  registers workspace.task.create
+from app.memory_bridge.router import create_memory_bridge_router
+from app.shared_runtime import create_shared_status_router, init_shared_runtime, shared_runtime_enabled
 from app.messenger.hub import DEFAULT_DEV_ORIGINS, ChatHub, get_allowed_origins
 from app.messenger.routes_chat import router as chat_router
 from app.messenger.stickers import PackError, load_manifest, packs_root, resolve_sticker
@@ -84,7 +86,8 @@ def ensure_runtime_state(target_app: FastAPI) -> list[tuple[str, Any]]:
 
 @asynccontextmanager
 async def lifespan(target_app: FastAPI):
-    created = ensure_runtime_state(target_app)
+    shared = init_shared_runtime(target_app)  # E5: shared identity + memory bridge (env-gated)
+    created = ensure_runtime_state(target_app) + [("shared_store", st) for st in shared]
     try:
         yield
     finally:
@@ -111,6 +114,9 @@ app.add_middleware(
 )
 app.include_router(create_identity_router())
 app.include_router(chat_router)
+app.include_router(create_shared_status_router())
+if shared_runtime_enabled():
+    app.include_router(create_memory_bridge_router())
 
 
 @app.get("/api/messenger/health")

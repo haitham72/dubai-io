@@ -15,7 +15,7 @@ import httpx
 
 from ..config import settings
 from ..oauth import AUTH_URL, TOKEN_URL, USERINFO_URL, local_key
-from .models import AppSessionOut, IdentityError
+from .models import VALID_APP_IDS, AppId, AppSessionOut, IdentityError
 from .service import IdentityService
 from .store import iso_utc, parse_iso, utcnow
 
@@ -255,7 +255,10 @@ class GoogleSignInService:
         auth_code: str,
         *,
         device_label: Optional[str] = None,
+        app_id: AppId = "quest",
     ) -> AppSessionOut:
+        if app_id not in VALID_APP_IDS:
+            raise IdentityError("invalid_app_id", f"Unsupported app_id: {app_id}", 422)
         clean_code = (auth_code or "").strip()
         if not clean_code or len(clean_code) > 512:
             raise IdentityError("invalid_auth_code", "Invalid auth_code", 401)
@@ -275,12 +278,12 @@ class GoogleSignInService:
         default_label = "Desktop" if row["client_kind"] == "desktop" else "Web"
         session_out = self.identity.issue_user_session(
             row["user_id"],
-            app_id="quest",
+            app_id=app_id,
             device_label=device_label or default_label,
         )
         self.store.record_audit(
             user_id=row["user_id"],
-            app_id="quest",
+            app_id=app_id,
             session_id=session_out.session_id,
             event_kind="google_auth_code_exchanged",
             detail={"client_kind": row["client_kind"], "device_label": session_out.device_label},

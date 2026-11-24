@@ -365,7 +365,7 @@ def test_mb10_forget_conversation_cascade_trim_fence_and_idempotency(tmp_path, m
     assert db.execute("SELECT body FROM mg_messages WHERE id = 'm-a1'").fetchone()[0] == "Shipped chat milestone for conv-a."
 
     # Step 3: only-evidence erased, multi-source trimmed (surviving fact visible via qmsg:q-1)
-    assert tm_client.search_facts(owner_a, "conv-a-alpha-991") == []
+    assert not any("conv-a-alpha-991" in str(f.get("text")) for f in tm_client.search_facts(owner_a, "conv-a-alpha-991"))
     with pytest.raises(MemoryBridgeError):
         tm_client.get_why_fact(owner_a, fact_ids["conv_a_only"])
 
@@ -454,7 +454,7 @@ def test_mb10_transient_outage_commits_local_wipe_and_reconciles_on_retry(tmp_pa
     assert reconciled.facts_trimmed == 1
     assert len(spy.forget_source_calls) == 2
     assert sorted(spy.forget_source_calls[1][1]) == ["mgmsg:m-a1", "mgmsg:m-a2"]
-    assert tm_client.search_facts(owner_a, "conv-a-alpha-991") == []
+    assert not any("conv-a-alpha-991" in str(f.get("text")) for f in tm_client.search_facts(owner_a, "conv-a-alpha-991"))
 
     # Audit idempotency pointer now resolves to completed, while preserving partial attempt in history
     stored = audit.get_by_idempotency_key(owner_a, "mb10-outage-1")

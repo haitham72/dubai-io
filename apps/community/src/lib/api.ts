@@ -1,4 +1,5 @@
 import type { Group, Notification, Post, Profile } from "./types";
+import { authHeaders, getSessionToken } from "./session";
 
 export const API_BASE =
   process.env.NEXT_PUBLIC_CM_API ?? "http://localhost:8060";
@@ -16,7 +17,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   try {
     res = await fetch(`${API_BASE}${path}`, {
       credentials: "include",
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", ...authHeaders(typeof window === "undefined" ? null : getSessionToken()) },
       ...init,
     });
   } catch {

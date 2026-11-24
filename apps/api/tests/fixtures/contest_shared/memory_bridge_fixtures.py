@@ -102,7 +102,7 @@ def memory_bridge_env(monkeypatch: pytest.MonkeyPatch) -> Iterator[MemoryBridgeT
                 owner_id,
                 label=owner_id,
                 display_name=owner_id,
-                kind="demo",
+                kind="simulated",
             )
             minted = active_client.mint_owner_device_token(owner_id, label="cs-live-test")
             raw_token = str(minted["token"])
@@ -120,7 +120,7 @@ def memory_bridge_env(monkeypatch: pytest.MonkeyPatch) -> Iterator[MemoryBridgeT
             primary_owner,
             label=primary_owner,
             display_name=primary_owner,
-            kind="demo",
+            kind="simulated",
         )
         _resolve_owner_token(primary_owner)
 

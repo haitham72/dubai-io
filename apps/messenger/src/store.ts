@@ -655,6 +655,36 @@ export const actions = {
       throw err;
     }
   },
+  /** Sign in with a messenger session token that apps/api's Google flow already produced (one account across apps). */
+  async signInWithSessionToken(sessionToken: string, opts: SignInWithJwtOptions = {}): Promise<void> {
+    setTransport(opts);
+    set({ mode: "real", auth: { ...getState().auth, status: "signing_in", error: undefined }, lastError: null });
+    try {
+      const me = await getIdentityMe(sessionToken, clientOpts());
+      set({
+        mode: "real",
+        messages: [],
+        extraChats: [],
+        outbox: [],
+        auth: {
+          status: "signed_in",
+          userId: me.user_id,
+          displayName: opts.displayName || me.user_id,
+          sessionToken,
+        },
+      });
+      persistActiveSession();
+      await actions.refreshConversations();
+      connectSocket(sessionToken);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      set({
+        auth: { status: "error", userId: null, displayName: "", sessionToken: null, error: msg },
+        lastError: err instanceof ChatApiError ? err.code : msg,
+      });
+      throw err;
+    }
+  },
   async restoreSession(opts: TransportOptions = {}): Promise<boolean> {
     if (getState().mode !== "real") return false;
     const saved = loadSessionStorage();
