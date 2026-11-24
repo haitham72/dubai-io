@@ -661,11 +661,7 @@ def test_main_app_routes_chat_turn_and_today_feed(
     assert today_json["empty_reason"] == "no_confirmed_interests"
 
 
-def test_chat_citations_for_own_facts_when_question_shares_no_words(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """E9a / E6 FAIL 7: "which sport do I do?" shares no word with "joined the surf school". Each account
-    still gets citations for its own facts, and never for the other's."""
+def _two_owner_chat(tmp_path, monkeypatch):
     import re
 
     app, _id_svc, tm_client, client = _build_harness(tmp_path, monkeypatch)
@@ -681,32 +677,34 @@ def test_chat_citations_for_own_facts_when_question_shares_no_words(
             direct_fact={"id": fid, "text": text, "subject_path": subj, "valid_from": "2026-11-24T06:00:00Z",
                          "provenance": "user_supplied", "status": "active", "evidence": [f"rec:{fid}"]},
         )
+    prompts: list[str] = []
 
     def _runner(prompt: str) -> dict:
+        prompts.append(prompt)
         ids = re.findall(r'"fact_id": "([^"]+)"', prompt)
-        return {"text": json.dumps({"reply": "From your memory.", "cited_fact_ids": ids}),
-                "runner": "claude-cli", "model": "m"}
+        return {"text": json.dumps({"reply": "Reply.", "cited_fact_ids": ids}), "runner": "claude-cli", "model": "m"}
 
     app.state.chat_runner = _runner
-    ask = {"text": "Which activity am I into lately?"}
-    ra = client.post("/api/chat/turn", headers={"X-App-Session": sess_a}, json=ask).json()
-    rb = client.post("/api/chat/turn", headers={"X-App-Session": sess_b}, json=ask).json()
-    assert ra["applied_fact_ids"] == ["fact_a_padel"]
-    assert rb["applied_fact_ids"] == ["fact_b_surf"]
-    assert "surf" in rb["citations"][0]["text"] and "surf" not in ra["citations"][0]["text"]
+    return client, sess_a, sess_b, prompts
 
 
-def test_chat_fallback_stays_empty_for_account_without_facts(
+def test_chat_each_account_cites_only_its_own_retrieved_facts(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    client, sess_a, sess_b, prompts = _two_owner_chat(tmp_path, monkeypatch)
+    ra = client.post("/api/chat/turn", headers={"X-App-Session": sess_a}, json={"text": "Where do I play padel?"}).json()
+    rb = client.post("/api/chat/turn", headers={"X-App-Session": sess_b}, json={"text": "Which surf school did I join?"}).json()
+    assert ra["applied_fact_ids"] == ["fact_a_padel"] and ra["memory_used"] is True
+    assert rb["applied_fact_ids"] == ["fact_b_surf"] and rb["memory_used"] is True
+    assert "surf" not in prompts[0] and "padel" not in prompts[1]  # A never sees B's facts, and vice versa
+
+
+def test_chat_empty_pack_answers_without_memory_and_never_sends_unrelated_facts(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    app, _id_svc, _tm, client = _build_harness(tmp_path, monkeypatch)
-    _uid, sess, _ = _login_quest(client, "550e8400-e29b-41d4-a716-446655440403")
-    seen: list[str] = []
-
-    def _runner(prompt: str) -> dict:
-        seen.append(prompt)
-        return {"text": json.dumps({"reply": "Nothing stored yet.", "cited_fact_ids": []}), "runner": "r", "model": "m"}
-
-    app.state.chat_runner = _runner
-    r = client.post("/api/chat/turn", headers={"X-App-Session": sess}, json={"text": "Which sport do I do?"}).json()
-    assert r["citations"] == [] and '"fact_id"' not in seen[0]
+    """A paraphrase with no word overlap ("activity" vs "surf school") retrieves nothing until the engine's hybrid
+    channel lands. Chat then answers without memory: no citations, memory_used=false, and the owner's other facts
+    are NOT put into the prompt."""
+    client, _sess_a, sess_b, prompts = _two_owner_chat(tmp_path, monkeypatch)
+    r = client.post("/api/chat/turn", headers={"X-App-Session": sess_b}, json={"text": "Which activity am I into lately?"}).json()
+    assert r["citations"] == [] and r["applied_fact_ids"] == []
+    assert r["memory_used"] is False
+    assert "surf" not in prompts[0] and '"fact_id"' not in prompts[0]
