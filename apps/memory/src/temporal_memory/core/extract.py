@@ -235,8 +235,12 @@ def format_user_prompt(bundle: JobBundle) -> str:
         safe_text = (r.text or "").replace("</untrusted_records>", "<\\/untrusted_records>")
         rec_lines.append(f"[{r.id}] ({r.at}) {r.source} | {r.author}: {safe_text}")
 
+    from temporal_memory.ingest.receipts import prefilled_from_context, prompt_note
+
+    prefilled_note = prompt_note(prefilled_from_context(ctx))
     return (
-        "KNOWN ENTITIES:\n"
+        prefilled_note
+        + "KNOWN ENTITIES:\n"
         + ("\n".join(ent_lines) or "(none yet)")
         + "\n\nKNOWN SUBJECTS:\n"
         + ("\n".join(subj_lines) or "(none yet)")

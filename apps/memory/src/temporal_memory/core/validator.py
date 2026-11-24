@@ -95,6 +95,7 @@ _FACT_DROPS = frozenset(
         "target_outside_context",
         "credential_in_fact",
         "duplicate_fact",
+        "prefilled_slot_changed",
     }
 )
 
@@ -249,6 +250,15 @@ def validate(
                 fact, cited, out_entities_by_ref, ctx_entities_by_id
             ):
                 _drop(idx, "evidence_span_mismatch")
+
+    # 3b) E7: the LLM may not change or restate a slot the receipt pre-pass filled in.
+    from temporal_memory.ingest.receipts import conflicts_with_prefilled, prefilled_from_context  # lazy: ingest imports queue
+
+    prefilled = prefilled_from_context(bundle.context)
+    if prefilled:
+        for idx, fact in enumerate(out.facts):
+            if idx not in fact_drops and conflicts_with_prefilled(fact, prefilled):
+                _drop(idx, "prefilled_slot_changed")
 
     for lnk in out.links:
         if not lnk.evidence or not set(lnk.evidence).issubset(allowed_input):
