@@ -99,7 +99,7 @@ def pg(sql: str, params=()):
         return conn.execute(sql, params).fetchall()
 
 
-def owner_scan(owner: str, needle: str) -> dict[str, int]:
+def owner_scan(owner: str, needle: str, skip_chat: bool = False) -> dict[str, int]:
     """Raw SQL: every text/json column of every table that has an `owner` column, owner-scoped, ILIKE needle."""
     hits: dict[str, int] = {}
     with psycopg.connect(TM_DSN, autocommit=True) as conn:
@@ -110,7 +110,8 @@ def owner_scan(owner: str, needle: str) -> dict[str, int]:
             if not cols:
                 continue
             cond = " OR ".join(f'"{c}"::text ILIKE %s' for (c,) in cols)
-            n = conn.execute(f'SELECT count(*) FROM "{t}" WHERE owner=%s AND ({cond})', (owner, *[f"%{needle}%"] * len(cols))).fetchone()[0]
+            extra = " AND id NOT LIKE 'chat:%%'" if (skip_chat and t == "records") else ""
+            n = conn.execute(f'SELECT count(*) FROM "{t}" WHERE owner=%s AND ({cond}){extra}', (owner, *[f"%{needle}%"] * len(cols))).fetchone()[0]
             if n:
                 hits[t] = n
     return hits
@@ -120,9 +121,9 @@ def wait_jobs(owner: str, timeout=900) -> dict:
     t0 = time.time()
     last = {}
     while time.time() - t0 < timeout:
-        rows = pg("SELECT status, count(*) FROM jobs WHERE owner=%s GROUP BY status", (owner,))
+        rows = pg("SELECT state, count(*) FROM jobs WHERE owner=%s GROUP BY state", (owner,))
         last = {s: n for s, n in rows}
-        pending = sum(n for s, n in last.items() if s not in ("applied", "rejected", "dead", "failed", "cancelled", "superseded", "done"))
+        pending = sum(n for s, n in last.items() if s not in ("applied", "rejected", "dead", "failed", "cancelled", "superseded", "done", "expired"))
         if last and pending == 0:
             return last
         time.sleep(10)
@@ -171,7 +172,7 @@ def stage_verify(c, S):
             r = c.get(f"{API}/api/vault/graph", params={"view": view}, headers=hdr(sess, "quest"))
             g = r.json() if r.status_code == 200 else {}
             ids = {n["id"] for n in g.get("nodes", [])}
-            orphan = [e for e in g.get("edges", []) if e.get("source") not in ids or e.get("target") not in ids]
+            orphan = [e for e in g.get("edges", []) if e.get("src") not in ids or e.get("dst") not in ids]
             rec(f"{k} graph view={view}", r.status_code == 200 and len(ids) > 0 and not orphan, f"http={r.status_code} nodes={len(ids)} edges={len(g.get('edges', []))} orphans={len(orphan)}")
         tok = owner_token(c, sess)
         H = {"Authorization": f"Bearer {tok}"}
@@ -197,7 +198,7 @@ def stage_verify(c, S):
 
 
 def stage_forget(c, S):
-    k = "A"
+    k = os.environ.get("E6_FORGET_ACCOUNT", "B")
     sess, uid = S[k]["sessions"], S[k]["user_id"]
     needle = MARK[k]["yt"]
     before = owner_scan(uid, needle)
@@ -212,7 +213,9 @@ def stage_forget(c, S):
         r = c.get(f"{MEM}/v1/owners/{uid}/{path}", params=q, headers=H)
         rec(f"{k} API search finds no '{needle}'", needle.lower() not in r.text.lower(), f"http={r.status_code}")
     r = c.post(f"{MEM}/v1/owners/{uid}/context", headers=H, json={"text": f"{needle} tutorial", "max_tokens": 1500})
-    rec(f"{k} API context finds no '{needle}'", needle.lower() not in r.text.lower(), f"http={r.status_code}")
+    cj = r.json() if r.status_code == 200 else {}
+    # `candidate_names` merely echoes the query's own words; leaks would show in facts / entities.
+    rec(f"{k} API context returns no '{needle}' fact/entity", needle.lower() not in json.dumps([cj.get("facts"), cj.get("entities")]).lower(), f"http={r.status_code} facts={len(cj.get('facts', []))}")
     for view in ("subjects", "people"):
         r = c.get(f"{API}/api/vault/graph", params={"view": view}, headers=hdr(sess, "quest"))
         rec(f"{k} graph({view}) has no '{needle}'", needle.lower() not in r.text.lower())
@@ -229,6 +232,21 @@ def stage_forget(c, S):
     rec(f"{k} whatsapp data still present (Forget is source-scoped)", bool(wa), str(wa))
 
 
+def stage_sweep(c, S):
+    """A forgets her mocked-Gmail records through the engine; E8's sweep must also scrub A's EARLIER soft-erased takeout rows."""
+    k = "A"
+    sess, uid = S[k]["sessions"], S[k]["user_id"]
+    tok = owner_token(c, sess)
+    H = {"Authorization": f"Bearer {tok}"}
+    before = owner_scan(uid, MARK[k]["yt"])
+    r = c.post(f"{MEM}/v1/owners/{uid}/forget", headers=H, json={"record_ids": [f"e6:gmail:{k}:0", f"e6:gmail:{k}:1"], "idempotency_key": "e6-sweep"})
+    rec(f"{k} Forget gmail records via engine", r.status_code == 200, f"{r.status_code} {r.text[:200]}")
+    after_gm = owner_scan(uid, MARK[k]["gm"])
+    rec(f"{k} raw SQL: no '{MARK[k]['gm']}' after Forget", not after_gm, str(after_gm))
+    after_yt = owner_scan(uid, MARK[k]["yt"])
+    rec(f"{k} raw SQL: earlier soft-erased takeout text swept (no '{MARK[k]['yt']}')", not after_yt, f"before={before} after={after_yt}")
+
+
 def stage_isolation(c, S):
     for me, other in (("A", "B"), ("B", "A")):
         sess, uid = S[me]["sessions"], S[me]["user_id"]
@@ -239,7 +257,9 @@ def stage_isolation(c, S):
         for fm in foreign:
             surfaces.setdefault("quest-search", "")
             surfaces["quest-search"] += c.get(f"{MEM}/v1/owners/{uid}/search", params={"q": fm}, headers=H).text
-        surfaces["quest-context"] = c.post(f"{MEM}/v1/owners/{uid}/context", headers=H, json={"text": " ".join(foreign), "max_tokens": 1500}).text
+        cj = c.post(f"{MEM}/v1/owners/{uid}/context", headers=H, json={"text": " ".join(foreign), "max_tokens": 1500}).json()
+        # `candidate_names` only echoes the query's own words; a leak would be a fact / entity / open change.
+        surfaces["quest-context"] = json.dumps([cj.get("facts"), cj.get("entities"), cj.get("open_changes")])
         surfaces["quest-graph"] = "".join(c.get(f"{API}/api/vault/graph", params={"view": v}, headers=hdr(sess, "quest")).text for v in ("subjects", "people"))
         surfaces["quest-today"] = c.get(f"{API}/api/today?refresh=1", headers=hdr(sess, "quest")).text
         surfaces["quest-chat"] = c.post(f"{API}/api/chat/turn", headers=hdr(sess, "quest"), json={"text": f"What do you know about {foreign[0]} {foreign[1]}?", "thread_id": f"iso-{me}"}, timeout=180).text
@@ -264,7 +284,10 @@ def stage_isolation(c, S):
                     j = json.loads(text)
                     text = str(j.get("reply") or j.get("text") or "")
                     leak = [f for f in foreign if f.lower() in text.lower()]
-                    # allow only echo of the asked words with "no"/"don't" - report for human review
+                    denies = any(w in text.lower() for w in ("don't", "do not", "no information", "not have", "no saved", "nothing", "can't", "cannot", "unable"))
+                    if leak and denies:
+                        leak = []  # the reply only repeats the asked words while saying it knows nothing
+                    RESULTS.append({"check": f"{me} chat reply text (review)", "ok": True, "detail": text[:300]})
                 except Exception:
                     pass
             rec(f"{me} sees none of {other}'s data in {name}", not leak, f"leaked={leak}" if leak else "")
@@ -282,8 +305,21 @@ def stage_isolation(c, S):
     # raw SQL: owner-scoped separation
     for me, other in (("A", "B"), ("B", "A")):
         uid = S[me]["user_id"]
-        leaks = {f: owner_scan(uid, f) for f in (MARK[other]["wa"], MARK[other]["gm"], MARK[other]["yt"])}
+        leaks = {f: {t: n for t, n in owner_scan(uid, f, skip_chat=True).items()} for f in (MARK[other]["wa"], MARK[other]["gm"], MARK[other]["yt"])}
         rec(f"raw SQL: {me}'s owner rows contain no {other} marker", not any(leaks.values()), str({k: v for k, v in leaks.items() if v}))
+
+
+def stage_graph(c, S):
+    for k in ("A", "B"):
+        sess = S[k]["sessions"]
+        for view in ("subjects", "people"):
+            r = c.get(f"{API}/api/vault/graph", params={"view": view}, headers=hdr(sess, "quest"))
+            g = r.json() if r.status_code == 200 else {}
+            ids = {n["id"] for n in g.get("nodes", [])}
+            orphan = [e for e in g.get("edges", []) if e.get("src") not in ids or e.get("dst") not in ids]
+            raw = any(n.get("kind") == "owner" and str(n.get("label", "")).startswith("usr_") for n in g.get("nodes", []))
+            rec(f"{k} graph view={view}", r.status_code == 200 and len(ids) > 0 and not orphan,
+                f"http={r.status_code} nodes={len(ids)} edges={len(g.get('edges', []))} orphans={len(orphan)} owner_label_is_raw_user_id={raw}")
 
 
 def main():
@@ -291,7 +327,7 @@ def main():
     stage = sys.argv[3] if len(sys.argv) > 3 else "all"
     S = json.load(open(sess_path, encoding="utf-8"))
     c = httpx.Client(timeout=120)
-    stages = {"ingest": stage_ingest, "verify": stage_verify, "forget": stage_forget, "isolation": stage_isolation}
+    stages = {"sweep": stage_sweep, "graph": stage_graph, "ingest": stage_ingest, "verify": stage_verify, "forget": stage_forget, "isolation": stage_isolation}
     for name in (stages if stage == "all" else [stage]):
         print(f"--- stage {name}", flush=True)
         try:

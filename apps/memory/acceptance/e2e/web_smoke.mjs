@@ -27,7 +27,7 @@ for (const site of sites) for (const [sz, vp] of Object.entries(sizes)) {
     const errors = [], failedReqs = [];
     page.on("console", (m) => { if (m.type() === "error") errors.push(m.text().slice(0, 200)); });
     page.on("pageerror", (e) => errors.push("pageerror: " + String(e).slice(0, 200)));
-    page.on("response", (r) => { if (r.status() >= 500) failedReqs.push(`${r.status()} ${r.url().slice(0, 100)}`); });
+    page.on("response", (r) => { if (r.status() >= 400) failedReqs.push(`${r.status()} ${r.url().slice(0, 100)}`); });
     let status = null, ok = true, note = "";
     try {
       const resp = await page.goto(site.base + route, { waitUntil: "load", timeout: 60000 });
