@@ -376,6 +376,31 @@ def _sanitize_reply(text: str) -> str:
     return cleaned or "I noted your message."
 
 
+_FALLBACK_RECENT_FACTS = 12
+
+
+def _collect_safe_facts(
+    raw: Any,
+    out: list[dict[str, Any]],
+    by_id: dict[str, dict[str, Any]],
+    *,
+    cap: int | None = None,
+    active_only: bool = False,
+) -> None:
+    for fact in raw or []:
+        if cap is not None and len(out) >= cap:
+            return
+        if not isinstance(fact, dict) or is_sensitive_memory_item(fact):
+            continue
+        if active_only and fact.get("status") in ("history", "superseded", "ended"):
+            continue
+        fid = str(fact.get("id") or fact.get("fact_id") or "").strip()
+        if not fid or fid in by_id:
+            continue
+        out.append(fact)
+        by_id[fid] = fact
+
+
 @router.post("/api/chat/turn")
 def post_chat_turn(
     body: ChatTurnIn,
@@ -435,16 +460,21 @@ def post_chat_turn(
     raw_facts = pack.get("facts") if isinstance(pack, dict) else []
     safe_facts: list[dict[str, Any]] = []
     safe_facts_by_id: dict[str, dict[str, Any]] = {}
-    for fact in raw_facts or []:
-        if not isinstance(fact, dict):
-            continue
-        if is_sensitive_memory_item(fact):
-            continue
-        fid = str(fact.get("id") or fact.get("fact_id") or "").strip()
-        if not fid or fid in safe_facts_by_id:
-            continue
-        safe_facts.append(fact)
-        safe_facts_by_id[fid] = fact
+    _collect_safe_facts(raw_facts, safe_facts, safe_facts_by_id)
+
+    # The context pack ranks by word overlap (plus entity/subject hints), so a question like "which sport do I do?"
+    # misses "joined the surf school" (E6 FAIL 7: account B got 0 citations although its facts existed). When the
+    # pack yields nothing usable, hand the model the owner's most recent facts (same owner, same Rule-9 filter);
+    # it still has to cite them by id, and an empty store stays empty.
+    if not safe_facts:
+        try:
+            timeline = client.get_timeline(owner, limit=_FALLBACK_RECENT_FACTS * 3)
+        except MemoryBridgeUnavailable as exc:
+            raise HTTPException(status_code=503, detail={"code": exc.code, "message": str(exc)}) from exc
+        except MemoryBridgeError:
+            timeline = {}
+        items = timeline.get("items") if isinstance(timeline, dict) else []
+        _collect_safe_facts(items, safe_facts, safe_facts_by_id, cap=_FALLBACK_RECENT_FACTS, active_only=True)
 
     # Step (c): Synthesize plain-text reply via configured runner with untrusted <memory_data>.
     prompt = _build_synthesis_prompt(clean_text, safe_facts)

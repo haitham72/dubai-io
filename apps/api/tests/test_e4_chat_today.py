@@ -659,3 +659,54 @@ def test_main_app_routes_chat_turn_and_today_feed(
     today_json = today_res.json()
     assert today_json["owner_id"] == uid
     assert today_json["empty_reason"] == "no_confirmed_interests"
+
+
+def test_chat_citations_for_own_facts_when_question_shares_no_words(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """E9a / E6 FAIL 7: "which sport do I do?" shares no word with "joined the surf school". Each account
+    still gets citations for its own facts, and never for the other's."""
+    import re
+
+    app, _id_svc, tm_client, client = _build_harness(tmp_path, monkeypatch)
+    uid_a, sess_a, _ = _login_quest(client, "550e8400-e29b-41d4-a716-446655440401")
+    uid_b, sess_b, _ = _login_quest(client, "550e8400-e29b-41d4-a716-446655440402")
+    for uid, fid, text, subj in (
+        (uid_a, "fact_a_padel", "Karim plays padel in Jumeirah on Thursdays", "hobbies/padel"),
+        (uid_b, "fact_b_surf", "Rui joined the Marmoset surf school in Cascais", "hobbies/surf"),
+    ):
+        tm_client.upsert_record_and_enqueue(
+            uid, record_id=f"rec:{fid}", source="whatsapp", at="2026-11-24T06:00:00Z", author=uid,
+            text=text, enqueue="none",
+            direct_fact={"id": fid, "text": text, "subject_path": subj, "valid_from": "2026-11-24T06:00:00Z",
+                         "provenance": "user_supplied", "status": "active", "evidence": [f"rec:{fid}"]},
+        )
+
+    def _runner(prompt: str) -> dict:
+        ids = re.findall(r'"fact_id": "([^"]+)"', prompt)
+        return {"text": json.dumps({"reply": "From your memory.", "cited_fact_ids": ids}),
+                "runner": "claude-cli", "model": "m"}
+
+    app.state.chat_runner = _runner
+    ask = {"text": "Which activity am I into lately?"}
+    ra = client.post("/api/chat/turn", headers={"X-App-Session": sess_a}, json=ask).json()
+    rb = client.post("/api/chat/turn", headers={"X-App-Session": sess_b}, json=ask).json()
+    assert ra["applied_fact_ids"] == ["fact_a_padel"]
+    assert rb["applied_fact_ids"] == ["fact_b_surf"]
+    assert "surf" in rb["citations"][0]["text"] and "surf" not in ra["citations"][0]["text"]
+
+
+def test_chat_fallback_stays_empty_for_account_without_facts(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    app, _id_svc, _tm, client = _build_harness(tmp_path, monkeypatch)
+    _uid, sess, _ = _login_quest(client, "550e8400-e29b-41d4-a716-446655440403")
+    seen: list[str] = []
+
+    def _runner(prompt: str) -> dict:
+        seen.append(prompt)
+        return {"text": json.dumps({"reply": "Nothing stored yet.", "cited_fact_ids": []}), "runner": "r", "model": "m"}
+
+    app.state.chat_runner = _runner
+    r = client.post("/api/chat/turn", headers={"X-App-Session": sess}, json={"text": "Which sport do I do?"}).json()
+    assert r["citations"] == [] and '"fact_id"' not in seen[0]
