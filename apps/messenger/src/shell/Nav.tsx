@@ -1,0 +1,73 @@
+import {
+  BarChart3, Calendar, CloudSun, FolderClosed, History, Mail, MessageCircle, PanelLeftClose, PanelLeftOpen, Plane,
+  Search, Settings,
+} from "lucide-react";
+import { useState, type ComponentType } from "react";
+import type { LucideProps } from "lucide-react";
+import { actions, useStore } from "../store";
+import { Avatar, ICON } from "../ui";
+import type { ScreenId } from "../types";
+import { me } from "../chats/data";
+import s from "./shell.module.css";
+
+const main: { id: ScreenId; label: string; icon: ComponentType<LucideProps> }[] = [
+  { id: "chats", label: "Chats", icon: MessageCircle },
+  { id: "files", label: "Files", icon: FolderClosed },
+  { id: "flights", label: "Flights", icon: Plane },
+  { id: "stocks", label: "Stocks", icon: BarChart3 },
+  { id: "weather", label: "Weather", icon: CloudSun },
+  { id: "mail", label: "Mail", icon: Mail },
+  { id: "calendar", label: "Calendar", icon: Calendar },
+  { id: "research", label: "Research", icon: Search },
+];
+
+export function Nav() {
+  const screen = useStore((st) => st.screen);
+  const mode = useStore((st) => st.mode);
+  const auth = useStore((st) => st.auth);
+  const unreadTasks = useStore((st) => st.tasks.filter((t) => t.unread).length);
+  const [collapsed, setCollapsed] = useState(false);
+  const userName = mode === "demo" ? me.name : auth.displayName || "Signed out";
+  const userStatus = mode === "demo" || auth.status === "signed_in" ? "Online" : "Sign in";
+
+  const item = (id: ScreenId, label: string, I: ComponentType<LucideProps>, badge?: number) => {
+    const on = screen === id || (id === "chats" && screen === "ai"); // Messenger AI opens from Chats
+    return <button key={id} className={`${s.navItem} ${on ? s.navItemActive : ""}`}
+      onClick={() => actions.navigate(id)} aria-current={on ? "page" : undefined} title={collapsed ? label : undefined}>
+      <I {...ICON} />
+      <span>{label}</span>
+      {!!badge && <span className={s.navBadge}>{badge > 9 ? "9+" : badge}</span>}
+    </button>;
+  };
+
+  return (
+    <nav className={`${s.nav} ${collapsed ? s.navCollapsed : ""}`} aria-label="Main">
+      <div className={s.brand}>
+        <span className={s.brandName}>Messenger</span>
+        <button className={s.collapseBtn} onClick={() => setCollapsed((c) => !c)}
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"} title={collapsed ? "Expand" : "Collapse"}>
+          {collapsed ? <PanelLeftOpen {...ICON} /> : <PanelLeftClose {...ICON} />}
+        </button>
+      </div>
+      <div className={s.navGroup}>
+        {main.map((m) => item(m.id, m.label, m.icon, m.id === "chats" ? unreadTasks : undefined))}
+      </div>
+      <div className={s.navDivider} />
+      <div className={s.navGroup}>
+        {item("history", "History", History)}
+        <button className={s.navItem} onClick={() => actions.openModal("settings")} title={collapsed ? "Settings" : undefined}>
+          <Settings {...ICON} />
+          <span>Settings</span>
+        </button>
+      </div>
+      <div className={s.spacer} />
+      <button className={s.me} onClick={() => actions.openModal("profile")}>
+        <Avatar src={me.avatar} size={36} online={mode === "demo" || auth.status === "signed_in"} />
+        <span className={s.meText}>
+          <span className={s.meName}>{userName}</span>
+          <span className={s.meStatus}>{userStatus}</span>
+        </span>
+      </button>
+    </nav>
+  );
+}

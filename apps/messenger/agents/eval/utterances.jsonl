@@ -1,0 +1,113 @@
+{"id": "a01", "cat": "in_app", "said": "open my messages", "trigger": "messages", "expect": [{"type": "act", "action": "open_screen", "args": {"screen": "chats"}}]}
+{"id": "a02", "cat": "in_app", "said": "show me my chats", "trigger": "chats", "expect": [{"type": "act", "action": "open_screen", "args": {"screen": "chats"}}]}
+{"id": "a03", "cat": "in_app", "said": "go to mail", "trigger": "mail", "expect": [{"type": "act", "action": "open_screen", "args": {"screen": "mail"}}]}
+{"id": "a04", "cat": "in_app", "said": "open my calendar please", "trigger": "calendar", "expect": [{"type": "act", "action": "open_screen", "args": {"screen": "calendar"}}]}
+{"id": "a05", "cat": "in_app", "said": "take me to stocks", "trigger": "stocks", "expect": [{"type": "act", "action": "open_screen", "args": {"screen": "stocks"}}]}
+{"id": "a06", "cat": "in_app", "said": "pull up my files", "trigger": "files", "expect": [{"type": "act", "action": "open_screen", "args": {"screen": "files"}}]}
+{"id": "a07", "cat": "in_app", "said": "open the chat with Arif", "trigger": "Arif", "expect": [{"type": "act", "action": "open_chat", "args": {"contactId": "arif"}}]}
+{"id": "a08", "cat": "in_app", "said": "show me my conversation with Mazen", "trigger": "Mazen", "expect": [{"type": "act", "action": "open_chat", "args": {"contactId": "mazen"}}]}
+{"id": "a09", "cat": "in_app", "said": "open Family", "trigger": "Family", "expect": [{"type": "act", "action": "open_chat", "args": {"contactId": "family"}}]}
+{"id": "a10", "cat": "in_app", "said": "open the Travel Buddies group", "trigger": "Buddies", "expect": [{"type": "act", "action": "open_chat", "args": {"contactId": "travel"}}]}
+{"id": "a11", "cat": "in_app", "said": "what's the weather in Dubai", "trigger": "Dubai", "expect": [{"type": "act", "action": "get_weather", "args": {"city": "Dubai"}}]}
+{"id": "a12", "cat": "in_app", "said": "how hot is it in Abu Dhabi today", "trigger": "Dhabi", "expect": [{"type": "act", "action": "get_weather", "args": {"city": "Abu Dhabi"}}]}
+{"id": "a13", "cat": "in_app", "said": "Paris weather this weekend", "trigger": "weather", "expect": [{"type": "act", "action": "get_weather", "args": {"city": "Paris"}}]}
+{"id": "a14", "cat": "in_app", "said": "is it going to rain in Dubai tomorrow", "trigger": "Dubai", "expect": [{"type": "act", "action": "get_weather", "args": {"city": "Dubai"}}]}
+{"id": "b01", "cat": "send", "said": "text Mazen that I'm running ten minutes late", "expect": [{"type": "undo", "action": "send_message", "args": {"contactId": "mazen", "text": "I'm running ten minutes late"}}]}
+{"id": "b02", "cat": "send", "said": "send a message to Mazen saying the match starts at eight", "expect": [{"type": "undo", "action": "send_message", "args": {"contactId": "mazen", "text": "The match starts at eight"}}]}
+{"id": "b03", "cat": "send", "said": "tell Arif Khan I'll bring the snacks", "expect": [{"type": "undo", "action": "send_message", "args": {"contactId": "arif", "text": "I'll bring the snacks"}}]}
+{"id": "b04", "cat": "send", "said": "message the Family group dinner is on me tonight", "expect": [{"type": "undo", "action": "send_message", "args": {"contactId": "family", "text": "Dinner is on me tonight"}}]}
+{"id": "b05", "cat": "send", "said": "let Hana know I landed safely", "expect": [{"type": "undo", "action": "send_message", "args": {"contactId": "hana", "text": "I landed safely"}}]}
+{"id": "b06", "cat": "send", "said": "send see you at the gym to Arif", "expect": [{"type": "undo", "action": "send_message", "args": {"contactId": "arif", "text": "See you at the gym"}}]}
+{"id": "b07", "cat": "send", "said": "write to Mazen happy birthday bro", "expect": [{"type": "undo", "action": "send_message", "args": {"contactId": "mazen", "text": "Happy birthday bro"}}]}
+{"id": "b08", "cat": "send", "said": "tell the Study Group that the exam moved to Thursday", "expect": [{"type": "undo", "action": "send_message", "args": {"contactId": "study", "text": "The exam moved to Thursday"}}]}
+{"id": "b09", "cat": "send", "said": "text Travel Buddies the villa is booked", "expect": [{"type": "undo", "action": "send_message", "args": {"contactId": "travel", "text": "The villa is booked"}}]}
+{"id": "b10", "cat": "send", "said": "ask Mazen if he's free on Friday", "expect": [{"type": "undo", "action": "send_message", "args": {"contactId": "mazen", "text": "Are you free on Friday?"}}]}
+{"id": "c01", "cat": "names", "said": "tell Sarah Malik the slides look great", "expect": [{"type": "undo", "action": "send_message", "args": {"contactId": "sarah", "text": "The slides look great"}}]}
+{"id": "c02", "cat": "names", "said": "text Sara Ali I'm outside", "expect": [{"type": "undo", "action": "send_message", "args": {"contactId": "sara", "text": "I'm outside"}}]}
+{"id": "c03", "cat": "names", "said": "text Sarah I'm outside", "expect": [{"type": "ask", "action": "send_message"}]}
+{"id": "c04", "cat": "names", "said": "message Sara I'm outside", "expect": [{"type": "ask", "action": "send_message"}]}
+{"id": "c05", "cat": "names", "said": "text Omer I'm outside", "heard": "text Omar I'm outside", "expect": [{"type": "ask", "action": "send_message"}]}
+{"id": "c06", "cat": "names", "said": "text Omer Farooq the court is booked", "expect": [{"type": "undo", "action": "send_message", "args": {"contactId": "omer", "text": "The court is booked"}}]}
+{"id": "c07", "cat": "names", "said": "tell Lena welcome back", "expect": [{"type": "ask", "action": "send_message"}]}
+{"id": "c08", "cat": "names", "said": "tell Lina Haddad welcome back", "expect": [{"type": "ask", "action": "send_message"}]}
+{"id": "c09", "cat": "names", "said": "tell Hannah happy birthday", "expect": [{"type": "ask", "action": "send_message"}]}
+{"id": "c10", "cat": "names", "said": "text Mazin I'm here", "expect": [{"type": "ask", "action": "send_message"}]}
+{"id": "c11", "cat": "names", "said": "send Aref the address", "expect": [{"type": "ask", "action": "send_message"}]}
+{"id": "c12", "cat": "names", "said": "text Zara I'm outside", "expect": [{"type": "ask", "action": "send_message"}]}
+{"id": "c13", "cat": "names", "turns": ["tell Hannah happy birthday", "yes"], "expect": [{"type": "undo", "action": "send_message", "args": {"contactId": "hana", "text": "Happy birthday"}}]}
+{"id": "c14", "cat": "names", "turns": ["text Sarah I'm outside", "Sarah Malik"], "expect": [{"type": "undo", "action": "send_message", "args": {"contactId": "sarah", "text": "I'm outside"}}]}
+{"id": "d01", "cat": "correction", "said": "open mail, actually calendar", "trigger": "calendar", "expect": [{"type": "act", "action": "open_screen", "args": {"screen": "calendar"}}]}
+{"id": "d02", "cat": "correction", "said": "text Lina, no, Mazen, that dinner is at 9", "expect": [{"type": "undo", "action": "send_message", "args": {"contactId": "mazen", "text": "Dinner is at 9"}}]}
+{"id": "d03", "cat": "correction", "said": "text Arif, sorry, Hana, the files are ready", "expect": [{"type": "undo", "action": "send_message", "args": {"contactId": "hana", "text": "The files are ready"}}]}
+{"id": "d04", "cat": "correction", "said": "what's the weather in Dubai, no wait, in Sharjah", "trigger": "Sharjah", "expect": [{"type": "act", "action": "get_weather", "args": {"city": "Sharjah"}}]}
+{"id": "d05", "cat": "correction", "said": "open my calendar, scratch that, open stocks", "trigger": "stocks", "expect": [{"type": "act", "action": "open_screen", "args": {"screen": "stocks"}}]}
+{"id": "d06", "cat": "correction", "said": "generate an image of a red Ferrari, no, a blue Lamborghini", "expect": [{"type": "confirm", "action": "generate_image", "args": {"prompt": "a blue Lamborghini"}}]}
+{"id": "d07", "cat": "correction", "said": "tell Mazen I'll be late, actually never mind", "expect": []}
+{"id": "d08", "cat": "correction", "said": "research electric cars, I mean electric motorbikes in the UAE", "expect": [{"type": "confirm", "action": "research_topic", "args": {"topic": "electric motorbikes in the UAE"}}]}
+{"id": "e01", "cat": "multi", "said": "open my messages and text Mazen I'm on my way", "trigger": "messages", "expect": [{"type": "act", "action": "open_screen", "args": {"screen": "chats"}}, {"type": "undo", "action": "send_message", "args": {"contactId": "mazen", "text": "I'm on my way"}}]}
+{"id": "e02", "cat": "multi", "said": "what's the weather in Abu Dhabi and then text Hana it's sunny", "trigger": "then", "expect": [{"type": "act", "action": "get_weather", "args": {"city": "Abu Dhabi"}}, {"type": "undo", "action": "send_message", "args": {"contactId": "hana", "text": "It's sunny"}}]}
+{"id": "e03", "cat": "multi", "said": "open mail then open calendar", "trigger": "mail", "expect": [{"type": "act", "action": "open_screen", "args": {"screen": "mail"}}, {"type": "act", "action": "open_screen", "args": {"screen": "calendar"}}]}
+{"id": "e04", "cat": "multi", "said": "check the weather in London and search flights from Dubai to London next Friday", "trigger": "search", "expect": [{"type": "act", "action": "get_weather", "args": {"city": "London"}}, {"type": "confirm", "action": "search_flights", "args": {"to": "London"}}]}
+{"id": "e05", "cat": "multi", "said": "research the best new phones this week and then open my files", "trigger": "files", "expect": [{"type": "confirm", "action": "research_topic", "args": {"topic": "best new phones this week"}}, {"type": "act", "action": "open_screen", "args": {"screen": "files"}}]}
+{"id": "e06", "cat": "multi", "said": "text Arif Khan I'm leaving now and tell Mazen to meet us at the gate", "expect": [{"type": "undo", "action": "send_message", "args": {"contactId": "arif", "text": "I'm leaving now"}}, {"type": "undo", "action": "send_message", "args": {"contactId": "mazen", "text": "Meet us at the gate"}}]}
+{"id": "e07", "cat": "multi", "said": "open Travel Buddies and send them the villa photos", "trigger": "Buddies", "expect": [{"type": "act", "action": "open_chat", "args": {"contactId": "travel"}}, {"type": "undo", "action": "send_message", "args": {"contactId": "travel", "text": "The villa photos"}}]}
+{"id": "e08", "cat": "multi", "said": "create a video of a falcon over the desert and then open my files", "trigger": "files", "expect": [{"type": "confirm", "action": "generate_video", "args": {"prompt": "a falcon over the desert"}}, {"type": "act", "action": "open_screen", "args": {"screen": "files"}}]}
+{"id": "f01", "cat": "paid", "said": "generate an image of cherry blossoms in Kyoto", "expect": [{"type": "confirm", "action": "generate_image", "args": {"prompt": "cherry blossoms in Kyoto"}}]}
+{"id": "f02", "cat": "paid", "said": "draw a cartoon camel wearing sunglasses", "expect": [{"type": "confirm", "action": "generate_image", "args": {"prompt": "a cartoon camel wearing sunglasses"}}]}
+{"id": "f03", "cat": "paid", "said": "make a five second video of waves at sunset", "expect": [{"type": "confirm", "action": "generate_video", "args": {"prompt": "waves at sunset"}}]}
+{"id": "f04", "cat": "paid", "said": "research the best new supercars this week", "expect": [{"type": "confirm", "action": "research_topic", "args": {"topic": "best new supercars this week"}}]}
+{"id": "f05", "cat": "paid", "said": "find flights from Dubai to Tokyo next month", "expect": [{"type": "confirm", "action": "search_flights", "args": {"to": "Tokyo"}}]}
+{"id": "f06", "cat": "paid", "said": "look into the UAE electric vehicle market", "expect": [{"type": "confirm", "action": "research_topic", "args": {"topic": "UAE electric vehicle market"}}]}
+{"id": "f07", "cat": "paid", "said": "compare the iPhone 18 Pro and the Galaxy S27 Ultra", "expect": [{"type": "confirm", "action": "research_topic", "args": {"topic": "iPhone 18 Pro and the Galaxy S27 Ultra"}}]}
+{"id": "f08", "cat": "paid", "said": "book a flight to London for tomorrow", "expect": [{"type": "confirm", "action": "search_flights", "args": {"to": "London"}}]}
+{"id": "g01", "cat": "ambiguous", "said": "send it", "expect": [{"type": "ask"}]}
+{"id": "g02", "cat": "ambiguous", "said": "text", "expect": [{"type": "ask"}]}
+{"id": "g03", "cat": "ambiguous", "said": "open", "expect": [{"type": "ask"}]}
+{"id": "g04", "cat": "ambiguous", "said": "make something cool", "expect": [{"type": "ask"}]}
+{"id": "g05", "cat": "send", "said": "tell her I'm coming", "expect": [{"type": "undo", "action": "send_message", "args": {"contactId": "arif", "text": "I'm coming"}}]}
+{"id": "g06", "cat": "ambiguous", "said": "Sara", "expect": [{"type": "ask"}]}
+{"id": "g07", "cat": "ambiguous", "said": "open the thing from yesterday", "expect": [{"type": "ask"}]}
+{"id": "g08", "cat": "ambiguous", "said": "send the photo", "expect": [{"type": "ask"}]}
+{"id": "h01", "cat": "chat", "said": "how are you today", "expect": [{"type": "chat"}]}
+{"id": "h02", "cat": "chat", "said": "what's the capital of Japan", "expect": [{"type": "chat"}]}
+{"id": "h03", "cat": "chat", "said": "explain how compound interest works", "expect": [{"type": "chat"}]}
+{"id": "h04", "cat": "chat", "said": "never mind", "expect": []}
+{"id": "h05", "cat": "chat", "said": "hmm let me think", "expect": [{"type": "chat"}]}
+{"id": "h06", "cat": "chat", "said": "text Ahmed I'm on my way", "expect": [{"type": "ask", "action": "send_message"}]}
+{"id": "n01", "cat": "fast", "said": "check my notifications", "trigger": "notifications", "expect": [{"type": "act", "action": "check_notifications"}]}
+{"id": "n02", "cat": "fast", "said": "what's new", "trigger": "new", "expect": [{"type": "act", "action": "check_notifications"}]}
+{"id": "n03", "cat": "fast", "said": "read my messages", "trigger": "messages", "expect": [{"type": "act", "action": "read_messages"}]}
+{"id": "n04", "cat": "fast", "said": "catch me up on my chats", "trigger": "chats", "expect": [{"type": "act", "action": "read_messages"}]}
+{"id": "n05", "cat": "fast", "said": "read Arif Khan's messages", "trigger": "Khan's", "expect": [{"type": "act", "action": "read_messages", "args": {"contactId": "arif"}}]}
+{"id": "n06", "cat": "fast", "said": "what did Mazen say", "trigger": "Mazen", "expect": [{"type": "act", "action": "read_messages", "args": {"contactId": "mazen"}}]}
+{"id": "n07", "cat": "fast", "said": "open my research", "trigger": "research", "expect": [{"type": "act", "action": "open_screen", "args": {"screen": "research"}}]}
+{"id": "n08", "cat": "fast", "said": "check my inbox", "trigger": "inbox", "expect": [{"type": "act", "action": "open_screen", "args": {"screen": "mail"}}]}
+{"id": "n09", "cat": "fast", "said": "plan a trip to Egypt on 2 January with Arif Khan", "trigger": "Khan", "expect": [{"type": "confirm", "action": "plan_trip", "args": {"contactId": "arif"}}]}
+{"id": "n10", "cat": "fast", "said": "plan our vacation to Bali", "trigger": "Bali", "expect": [{"type": "confirm", "action": "plan_trip"}]}
+{"id": "n11", "cat": "fast", "said": "research the best e-bikes this year", "trigger": "year", "expect": [{"type": "confirm", "action": "research_topic"}]}
+{"id": "n12", "cat": "fast", "said": "open my last chat", "trigger": "chat", "expect": [{"type": "act", "action": "open_chat", "args": {"contactId": "arif"}}]}
+{"id": "n13", "cat": "fast", "said": "reply to the last chat saying I'm on my way", "trigger": "way", "expect": [{"type": "undo", "action": "send_message", "args": {"contactId": "arif", "text": "I'm on my way"}}]}
+{"id": "n14", "cat": "fast", "said": "email Rashid that I'm running late", "trigger": "late", "expect": [{"type": "act", "action": "compose_email", "args": {"to": "Rashid"}}]}
+{"id": "n15", "cat": "fast", "said": "send an email to r.khalfan@nadi.ae saying the leave dates changed", "trigger": "changed", "expect": [{"type": "act", "action": "compose_email", "args": {"to": "r.khalfan@nadi.ae"}}]}
+{"id": "n16", "cat": "fast", "said": "open my email", "trigger": "email", "expect": [{"type": "act", "action": "open_screen", "args": {"screen": "mail"}}]}
+{"id": "o01", "cat": "multi", "said": "open the last chat and reply with I'm on my way", "trigger": "way", "expect": [{"type": "act", "action": "open_chat", "args": {"contactId": "arif"}}, {"type": "undo", "action": "send_message", "args": {"contactId": "arif", "text": "I'm on my way"}}]}
+{"id": "o02", "cat": "multi", "said": "open the last message and reply with hello", "trigger": "hello", "expect": [{"type": "act", "action": "open_chat", "args": {"contactId": "arif"}}, {"type": "undo", "action": "send_message", "args": {"contactId": "arif", "text": "hello"}}]}
+{"id": "o03", "cat": "multi", "said": "read my last message and reply yes", "trigger": "yes", "expect": [{"type": "act", "action": "read_messages", "args": {"contactId": "arif"}}, {"type": "undo", "action": "send_message", "args": {"contactId": "arif", "text": "yes"}}]}
+{"id": "o04", "cat": "in_app", "said": "open chat", "trigger": "chat", "expect": [{"type": "act", "action": "open_screen", "args": {"screen": "chats"}}]}
+{"id": "o05", "cat": "multi", "turns": ["open my last chat", "reply with I'm on my way"], "expect": [{"type": "undo", "action": "send_message", "args": {"contactId": "arif", "text": "I'm on my way"}}]}
+{"id": "o06", "cat": "multi", "said": "reply to Arif that i am free this week and also plan the trip", "trigger": "trip", "expect": [{"type": "undo", "action": "send_message", "args": {"contactId": "arif", "text": "I am free this week"}}, {"type": "confirm", "action": "plan_trip", "args": {"contactId": "arif"}}]}
+{"id": "o07", "cat": "send", "said": "tell Arif i am free but also bring chips", "expect": [{"type": "undo", "action": "send_message", "args": {"contactId": "arif", "text": "I am free but also bring chips"}}]}
+{"id": "o08", "cat": "send", "said": "reply to Omer Farooq saying I will be late", "expect": [{"type": "undo", "action": "send_message", "args": {"contactId": "omer", "text": "I will be late"}}]}
+{"id": "o09", "cat": "multi", "said": "opened the last message and replied yes I'm coming", "trigger": "coming", "expect": [{"type": "act", "action": "open_chat", "args": {"contactId": "arif"}}, {"type": "undo", "action": "send_message", "args": {"contactId": "arif", "text": "Yes I'm coming"}}]}
+{"id": "o10", "cat": "multi", "said": "open my last chat and reply to him saying I'll come and plan the visit", "trigger": "visit", "expect": [{"type": "act", "action": "open_chat", "args": {"contactId": "arif"}}, {"type": "undo", "action": "send_message", "args": {"contactId": "arif", "text": "I'll come"}}, {"type": "ask", "action": "plan_trip"}]}
+{"id": "p01", "cat": "multi", "said": "Open my last chat. and reply to him saying I will see you tomorrow. And plan for the visit in 2nd of January", "trigger": "chat", "expect": [{"type": "act", "action": "open_chat", "args": {"contactId": "arif"}}, {"type": "undo", "action": "send_message", "args": {"contactId": "arif", "text": "I will see you tomorrow"}}, {"type": "ask", "action": "plan_trip"}]}
+{"id": "p02", "cat": "multi", "turns": ["plan the visit in 2nd of January", "yes"], "expect": [{"type": "confirm", "action": "plan_trip", "args": {"request": "plan a trip for the visit in 2nd of January"}}]}
+{"id": "p03", "cat": "multi", "said": "open Study Group and reply to him saying Arif is coming too", "trigger": "Group", "expect": [{"type": "act", "action": "open_chat", "args": {"contactId": "study"}}, {"type": "undo", "action": "send_message", "args": {"contactId": "study", "text": "Arif is coming too"}}]}
+{"id": "p04", "cat": "send", "said": "reply to him saying I will see you in January", "expect": [{"type": "undo", "action": "send_message", "args": {"contactId": "arif", "text": "I will see you in January"}}]}
+{"id": "p05", "cat": "send", "turns": ["reply to him saying", "Mazen is coming in January"], "expect": [{"type": "undo", "action": "send_message", "args": {"contactId": "arif", "text": "Mazen is coming in January"}}]}
+{"id": "p06", "cat": "send", "said": "tell Arif I will go and bring chips", "expect": [{"type": "undo", "action": "send_message", "args": {"contactId": "arif", "text": "I will go and bring chips"}}]}
+{"id": "p07", "cat": "multi", "said": "open mail and read my messages", "trigger": "mail", "expect": [{"type": "act", "action": "open_screen", "args": {"screen": "mail"}}, {"type": "act", "action": "read_messages"}]}
+{"id": "p08", "cat": "multi", "turns": ["plan the visit", "an appointment", "yes"], "expect": [{"type": "act", "action": "open_screen", "args": {"screen": "calendar"}}]}
+{"id": "q01", "cat": "multi", "said": "reply to him that meet tomorrow at On the Wood restaurant and plan for it", "expect": [{"type": "undo", "action": "send_message", "args": {"contactId": "arif", "text": "Meet tomorrow at On the Wood restaurant"}}, {"type": "act", "action": "plan_meeting", "args": {"contactId": "arif", "location": "On the Wood restaurant", "context": "Meet tomorrow at On the Wood restaurant"}}]}
+{"id": "q02", "cat": "multi", "turns": ["reply to him that i will be late tonight but we can meet tomorrow in on the wood restaurant plan for it and send to sara hey do you wanna meet tomorrow in on the wood restaurant then make a plan for this event between us", "Sara Ali"], "expect": [{"type": "undo", "action": "send_message", "args": {"contactId": "sara", "text": "Hey do you wanna meet tomorrow in on the wood restaurant"}}, {"type": "act", "action": "plan_meeting", "args": {"contactId": "sara", "context": "Hey do you wanna meet tomorrow in on the wood restaurant"}}]}
+{"id": "q03", "cat": "multi", "said": "reply to him that i will be late tonight but we can meet tomorrow in on the wood restaurant plan for it and send to sara hey do you wanna meet tomorrow in on the wood restaurant then make a plan for this event between us", "expect": [{"type": "undo", "action": "send_message", "args": {"contactId": "arif", "text": "I will be late tonight but we can meet tomorrow in on the wood restaurant"}}, {"type": "act", "action": "plan_meeting", "args": {"contactId": "arif", "context": "I will be late tonight but we can meet tomorrow in on the wood restaurant"}}, {"type": "ask", "action": "send_message"}]}

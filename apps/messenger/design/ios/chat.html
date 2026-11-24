@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Messenger · Arif Khan</title>
+<link rel="stylesheet" href="../../src/tokens.css">
+<link rel="stylesheet" href="ios.css">
+</head>
+<body>
+<div class="screen wall">
+  <div class="top-fade" style="height:calc(var(--sb-h) + 64px)"></div>
+  <div class="navbar">
+    <a class="gbtn" href="chats.html"><i data-lucide="chevron-left"></i></a>
+    <div class="gpill who">
+      <img src="" alt="">
+      <div><b>Arif Khan</b><small>online</small></div>
+    </div>
+    <div class="gpill"><span class="icon-btn"><i data-lucide="video"></i></span><span class="icon-btn"><i data-lucide="phone"></i></span></div>
+    <!-- Messenger Updates: one glass toolbar button, same orb as the pinned row -->
+    <a class="gbtn orb-btn" href="updates.html"><span>Updates</span><span class="badge">4</span></a>
+  </div>
+
+  <div class="thread">
+    <span class="day">Today</span>
+    <div class="msg in">Sounds great! See you soon.<span class="meta">2:14 PM</span></div>
+    <div class="msg out">Yeah! That sounds perfect. Let's do it! 🏝️<span class="meta">2:18 PM <i data-lucide="check-check"></i></span></div>
+    <div class="msg in photo"><img src="" alt=""><span class="meta">3:03 PM</span></div>
+    <div class="msg in">This place looks amazing 😍<span class="meta">3:03 PM</span></div>
+    <div class="msg out">Wow! That looks incredible. I wish I was there already 😅<span class="meta">3:16 PM <i data-lucide="check-check"></i></span></div>
+    <div class="msg in">Haha same! We should plan it soon.<span class="meta">3:20 PM</span></div>
+    <div class="msg in">
+      <div class="voice">
+        <span class="play"><i data-lucide="play"></i></span>
+        <span class="wave" id="wave"></span>
+        <small>0:18</small>
+      </div>
+      <span class="meta">3:44 PM</span>
+    </div>
+    <div class="msg out">Definitely! I'll check the dates and let you know. 😊<span class="meta">3:47 PM <i data-lucide="check-check"></i></span></div>
+  </div>
+
+  <div class="composer">
+    <button class="gbtn"><i data-lucide="plus"></i></button>
+    <div class="field ai-ring">
+      <span class="ph" style="color:var(--text)"><span class="mention">@messenger</span> research the topics we just discussed</span>
+      <span class="icon-btn"><i data-lucide="camera"></i></span>
+    </div>
+    <button class="gbtn primary"><i data-lucide="send"></i></button>
+  </div>
+</div>
+<script>
+  // static waveform bars
+  document.getElementById("wave").innerHTML = [8,14,20,12,24,18,10,22,16,26,12,18,9,15,22,11,19,8,14,10,6]
+    .map(h => `<i style="height:${h}px"></i>`).join("");
+</script>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="ios.js"></script>
+</body>
+</html>

@@ -1,0 +1,132 @@
+.taskIcon { display: grid; place-items: center; flex-shrink: 0; width: 32px; height: 32px; color: var(--purple); background: var(--lavender); border-radius: var(--r-sm); }
+.status, .failed { display: inline-flex; align-items: center; gap: var(--s-2); color: var(--text-2); font-size: var(--fs-xs); white-space: nowrap; }
+.failed { color: var(--danger); }
+.ready { color: var(--purple); }
+.retry { font-size: var(--fs-xs); color: var(--danger); text-decoration: underline; padding: var(--s-1); }
+.detail { margin-top: var(--s-3); background: var(--glass-strong); border: 1px solid var(--border); border-radius: var(--r-md); padding: var(--s-4); box-shadow: var(--shadow-md); animation: detailIn 180ms var(--ease); }
+@keyframes detailIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+.detailActions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); margin-top: var(--s-4); }
+.imageContent { min-width: 0; }
+/* Natural aspect, as large as the result view allows (cqh = the Messenger AI result pane; the viewport on the phone sheet). */
+.previewImage { display: block; width: auto; height: auto; max-width: 100%; max-height: min(720px, calc(100cqh - 260px)); margin: 0 auto; border-radius: var(--r-lg); background: var(--bg); }
+/* Videos keep their own aspect too (no forced 16:9 box, so nothing letterboxes). */
+.previewVideo { display: block; width: auto; height: auto; max-width: 100%; max-height: min(720px, calc(100cqh - 260px)); margin: 0 auto; border-radius: var(--r-lg); background: var(--media-bg); }
+.imageContent .imageMeta, .imageContent .detailActions { max-width: 720px; margin-inline: auto; }
+.imageMeta { display: flex; align-items: center; justify-content: space-between; gap: var(--s-2); margin-top: var(--s-3); font-size: var(--fs-xs); color: var(--text-2); }
+.readyPill { display: inline-flex; align-items: center; gap: var(--s-1); padding: var(--s-1) var(--s-2); border-radius: var(--r-pill); color: var(--success); background: var(--surface-solid); }
+.splitDetail { display: grid; grid-template-columns: minmax(220px, 0.85fr) minmax(0, 1.65fr); gap: var(--s-4); }
+.resultList { display: flex; flex-direction: column; gap: var(--s-1); max-height: min(420px, 45cqh); overflow: auto; }
+.resultItem { display: grid; grid-template-columns: 1fr auto; gap: var(--s-1) var(--s-2); padding: var(--s-3); text-align: start; border-radius: var(--r-sm); border: 1px solid transparent; }
+.resultItem strong { font-size: var(--fs-sm); }
+.resultItem small { font-size: var(--fs-xs); color: var(--text-3); }
+.resultItem > span { grid-column: 1 / -1; color: var(--text-2); font-size: var(--fs-xs); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.resultItem:hover, .selectedItem { background: var(--lavender); border-color: var(--border-strong); }
+.document { background: var(--surface-solid); border: 1px solid var(--border); border-radius: var(--r-md); padding: var(--s-4); line-height: 1.55; font-size: var(--fs-sm); }
+.documentTitle { display: flex; align-items: baseline; gap: var(--s-3); justify-content: space-between; }
+.documentTitle h3 { margin: 0; font-size: var(--fs-lg); }
+.documentTitle small { color: var(--text-3); white-space: nowrap; font-size: var(--fs-xs); }
+.findings { padding-inline-start: var(--s-6); }
+.findings li { padding-inline-start: var(--s-1); margin-bottom: var(--s-2); }
+.findings li::marker { color: var(--purple); font-weight: 600; }
+.sourceList { color: var(--text-2); font-size: var(--fs-xs); }
+.emailFields { display: grid; grid-template-columns: 56px 1fr; gap: var(--s-2); margin: 0 0 var(--s-4); padding-bottom: var(--s-3); border-bottom: 1px solid var(--border); }
+.emailFields dt { color: var(--text-2); }
+.emailFields dd { margin: 0; overflow-wrap: anywhere; }
+.emailBody { white-space: pre-wrap; }
+.flightRow { display: grid; grid-template-columns: minmax(140px, 1.3fr) minmax(100px, 1fr) minmax(80px, .8fr) minmax(120px, 1fr) minmax(80px, .8fr) minmax(110px, 1fr) 28px; align-items: center; gap: var(--s-3); padding: var(--s-3) 0; border-bottom: 1px solid var(--border); font-size: var(--fs-sm); }
+.airline { display: flex; gap: var(--s-2); align-items: center; }
+.airlineInitial { display: grid; place-items: center; flex-shrink: 0; width: 32px; height: 32px; border-radius: var(--r-sm); background: var(--blue-soft); color: var(--blue); font-weight: 600; }
+.airlineInitial img { width: 100%; height: auto; }
+.airline small, .airport small, .fare small { display: block; color: var(--text-2); font-size: var(--fs-xs); margin-top: var(--s-1); }
+.flightDate, .duration { font-size: var(--fs-xs); color: var(--text-2); }
+.duration { text-align: center; }
+.routeLine { display: flex; justify-content: center; margin-top: var(--s-1); color: var(--text-3); border-bottom: 1px solid var(--border-strong); }
+.fare { display: flex; flex-direction: column; align-items: flex-start; gap: var(--s-1); }
+.flightExpand { color: var(--text-3); }
+.flightCalendar { grid-column: 1 / -1; justify-self: end; }
+.flightNote { grid-column: 1 / -1; color: var(--text-2); margin: 0; font-size: var(--fs-xs); }
+.pending, .empty { padding: var(--s-5); color: var(--text-2); font-size: var(--fs-sm); }
+.toast { position: absolute; top: calc(100% + var(--s-2)); left: 0; min-width: 220px; padding: var(--s-3) var(--s-4); background: var(--surface-solid); border: 1px solid var(--border-strong); border-radius: var(--r-sm); box-shadow: var(--shadow-md); z-index: var(--z-modal); font-size: var(--fs-sm); }
+.lightboxBackdrop { position: fixed; inset: 0; display: grid; place-items: center; background: var(--glass-strong); backdrop-filter: var(--blur); z-index: var(--z-viewer); padding: var(--s-4); }
+.lightbox { max-width: min(1200px, 90vw); background: var(--surface-solid); border: 1px solid var(--border-strong); border-radius: var(--r-lg); padding: var(--s-4); box-shadow: var(--shadow-lg); }
+.lightbox header { display: flex; justify-content: space-between; align-items: center; gap: var(--s-4); margin-bottom: var(--s-3); }
+.lightbox img { width: auto; height: auto; max-width: 100%; max-height: calc(100dvh - 160px); object-fit: contain; border-radius: var(--r-md); }
+.lightboxVideo { width: min(960px, 100%); aspect-ratio: 16 / 9; border-radius: var(--r-md); background: var(--bg); }
+@media (max-width: 1400px) { .flightRow { gap: var(--s-2); grid-template-columns: minmax(120px, 1fr) 90px 70px minmax(100px, 1fr) 70px 100px 24px; } }
+
+/* Diwan event */
+.eventDetail { container-type: inline-size; }
+.eventGrid { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(240px, 300px); grid-template-areas: "media versions text" "dots . text"; column-gap: var(--s-4); row-gap: var(--s-2); align-items: center; }
+.eventText { grid-area: text; display: flex; flex-direction: column; gap: var(--s-2); min-width: 0; }
+/* The carousel's parts join this grid: pictures | that picture's versions (a thin vertical strip, nested beside its
+   parent) | text. The tray is at most 100cqh − 140px; above the pictures sit the tray header + cards (~215px), the
+   detail header and paddings (~90px) and the dots (~20px). The pictures take the rest. */
+.eventGrid .eventMedia { display: contents; --slide-h: clamp(180px, calc(100cqh - 500px), 640px); }
+.eventGrid .eventMedia > :first-child { grid-area: media; min-width: 0; }
+.eventGrid .eventMedia > [role=radiogroup] { grid-area: versions; flex-direction: column; flex-wrap: nowrap; max-height: var(--slide-h); overflow-y: auto; scrollbar-width: none; }
+.eventGrid .eventMedia > [role=radiogroup] > span { display: none; }
+.eventGrid .eventMedia > :last-child:not([role=radiogroup]) { grid-area: dots; }
+@container (max-width: 620px) {
+  .eventGrid { grid-template-columns: 1fr; grid-template-areas: "text" "media" "dots" "versions"; }
+  .eventGrid .eventMedia { --slide-h: 300px; }
+  .eventGrid .eventMedia > [role=radiogroup] { flex-direction: row; flex-wrap: wrap; max-height: none; }
+  .eventGrid .eventMedia > [role=radiogroup] > span { display: block; flex-basis: 100%; }
+}
+
+
+.eventText h3 { margin: 0; font-size: var(--fs-lg); font-weight: 600; color: var(--text); }
+.eventText p { margin: 0; color: var(--text-2); font-size: var(--fs-sm); line-height: 1.5; }
+.eventWhen { font-size: var(--fs-xs); font-weight: 600; color: var(--purple); }
+.eventAr { font-size: var(--fs-md) !important; color: var(--text) !important; }
+/* Event pictures: the current post centred and as tall as the tray allows; neighbours peek in, dimmed. Each keeps its
+   own ratio (posts 4:5, stories 9:16). Height = what's left of the window after the tray's header, cards and text. */
+.carousel { display: flex; flex-direction: column; gap: var(--s-2); --slide-h: clamp(240px, calc(100cqh - 560px), 620px); }
+.carouselStage { position: relative; }
+.carouselTrack { position: relative; display: flex; align-items: center; gap: var(--s-4); padding-inline: 50%; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; outline: none; }
+.carouselTrack::-webkit-scrollbar { display: none; }
+.carouselTrack:focus-visible { box-shadow: 0 0 0 2px var(--purple); border-radius: 18px; }
+.carouselSlide { position: relative; flex: none; height: var(--slide-h); scroll-snap-align: center; scroll-snap-stop: always; cursor: pointer; opacity: 0.35; transform: scale(0.92); transition: opacity 0.25s var(--ease), transform 0.25s var(--ease); }
+.carouselSlide.slideOn { opacity: 1; transform: none; cursor: default; }
+.pictureOpen { display: block; height: 100%; border: 0; padding: 0; background: transparent; cursor: zoom-in; }
+.carouselSlide img { display: block; height: 100%; width: auto; border-radius: 18px; background: var(--media-bg); box-shadow: var(--shadow-md); }
+.carouselArrow { position: absolute; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; color: var(--text); background: var(--glass-strong); backdrop-filter: blur(var(--blur)); box-shadow: var(--shadow-sm); cursor: pointer; opacity: 0; transition: opacity 0.2s var(--ease); }
+.carouselStage:hover .carouselArrow:not(:disabled) { opacity: 1; }
+.carouselArrow:disabled { pointer-events: none; }
+.carouselPrev { left: var(--s-2); }
+.carouselNext { right: var(--s-2); }
+.carouselDots { display: flex; justify-content: center; gap: 6px; min-height: 12px; align-items: center; }
+.carouselDots button { width: 7px; height: 7px; padding: 0; border-radius: var(--r-pill); background: var(--border-strong); cursor: pointer; transition: width 0.2s var(--ease), background 0.2s var(--ease); }
+.carouselDots button.dotOn { width: 20px; background: var(--purple); }
+/* On-picture controls (glass: controls only) and the loading veil */
+.picBusy { filter: saturate(0.6) brightness(0.8); }
+.picSpinner { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--s-2); color: var(--on-accent); font-size: var(--fs-sm); font-weight: 600; }
+.picTools { position: absolute; left: 50%; bottom: var(--s-3); transform: translateX(-50%); display: flex; gap: var(--s-2); }
+.picTool { display: inline-flex; align-items: center; gap: 6px; height: 36px; min-width: 36px; padding: 0 12px; justify-content: center; border-radius: var(--r-pill); font-size: var(--fs-sm); font-weight: 600; white-space: nowrap; color: var(--text); background: var(--glass-strong); backdrop-filter: blur(var(--blur)); box-shadow: var(--shadow-sm); cursor: pointer; }
+.picTool:has(> svg:only-child) { padding: 0; }
+.picFav { color: var(--danger); }
+.picToolOn { color: var(--purple); box-shadow: inset 0 0 0 1.5px var(--purple), var(--shadow-sm); }
+/* Versions nested under the current picture: original first; the selected one is the picture's main image */
+.versions { display: flex; align-items: center; justify-content: center; gap: var(--s-1); flex-wrap: wrap; animation: detailIn 180ms var(--ease); }
+.versionsLabel { margin-inline-end: var(--s-1); font-size: var(--fs-xs); color: var(--text-3); }
+.versions button { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 3px; border-radius: 12px; background: none; cursor: pointer; box-shadow: inset 0 0 0 2px transparent; }
+.versions button.versionOn { box-shadow: inset 0 0 0 2px var(--purple); }
+.versions img { height: 44px; width: auto; border-radius: 9px; background: var(--media-bg); }
+.versions small { font-size: var(--fs-xs); color: var(--text-2); }
+.versionFav { position: absolute; top: 6px; right: 6px; color: var(--danger); }
+.spin { animation: spin 0.9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spin { animation: none; } .carouselSlide { transition: none; } }
+.eventSource { font-size: var(--fs-xs); color: var(--text-3); }
+@media (hover: none) { .carouselArrow { display: none; } }
+
+/* Messenger AI row in the Chats list */
+.entry { padding: 0 var(--s-3) var(--s-1); margin-bottom: var(--s-1); border-bottom: 1px solid var(--border); }
+.orb { position: relative; display: grid; place-items: center; width: 48px; height: 48px; flex-shrink: 0; }
+.orb img { width: 40px; height: 40px; object-fit: contain; }
+.ring { position: absolute; inset: 0; transform: rotate(-90deg); }
+.ringTrack, .ringFill { fill: none; stroke-width: 2.5; }
+.ringTrack { stroke: var(--lavender); }
+.ringFill { stroke: var(--purple); stroke-linecap: round; transition: stroke-dashoffset 0.4s var(--ease); }
+.ringSpin { animation: ringSpin 1.6s linear infinite; }
+@keyframes ringSpin { from { transform: rotate(-90deg); } to { transform: rotate(270deg); } }
+@media (prefers-reduced-motion: reduce) { .ringSpin { animation: none; } }

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Messenger iOS Samples</title>
+<link rel="stylesheet" href="../../src/tokens.css">
+<style>
+  body { margin: 0; font-family: Inter, var(--font); background: var(--bg); color: var(--text); overflow: auto; }
+  header { padding: 32px 48px 8px; }
+  h1 { margin: 0; font-size: 28px; }
+  p { margin: 6px 0 0; color: var(--text-2); }
+  .wall { display: flex; flex-wrap: wrap; gap: 40px; padding: 32px 48px 64px; }
+  figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .device { width: 393px; height: 852px; border-radius: 56px; padding: 0; overflow: hidden;
+    box-shadow: 0 0 0 10px var(--text), 0 0 0 12px var(--text-2), var(--shadow-lg); background: var(--bg); }
+  iframe { width: 393px; height: 852px; border: 0; display: block; }
+  figcaption { font-size: 14px; font-weight: 600; }
+  figcaption a { color: var(--blue); font-weight: 400; margin-left: 6px; text-decoration: none; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Messenger iOS — design samples</h1>
+  <p>Static HTML, iPhone 16 Pro size (393×852). Everything inside the frames is clickable. Open a screen on your phone with the “open” link.</p>
+</header>
+<div class="wall" id="wall"></div>
+<script>
+  const pages = [
+    ["chats.html", "1 · Chats"],
+    ["chat.html", "2 · Conversation"],
+    ["updates.html", "3 · Messenger Updates sheet"],
+    ["ai.html", "4 · Messenger AI"],
+    ["apps.html", "5 · Apps"],
+    ["settings.html", "6 · Settings"],
+  ];
+  document.getElementById("wall").innerHTML = pages.map(([src, label]) =>
+    `<figure><div class="device"><iframe src="${src}?frame" title="${label}"></iframe></div>
+     <figcaption>${label}<a href="${src}" target="_blank">open ↗</a></figcaption></figure>`).join("");
+</script>
+</body>
+</html>

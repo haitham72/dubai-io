@@ -1,0 +1,11 @@
+/server
+/Slides
+/screens
+/design
+/scripts
+/motion graphics
+/.playwright-mcp
+/*.md
+!/README.md
+.env
+.env.*

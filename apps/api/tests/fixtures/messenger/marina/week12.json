@@ -1,0 +1,11 @@
+{
+  "title": "Marina kiosk — week 12",
+  "provenance": "demo_fixture",
+  "members": ["Rana", "Layla", "Omar"],
+  "outsider": "Noor",
+  "messages": [
+    {"client_msg_id": "m-0912", "sender": "Layla", "text": "Kiosk panels agree on a Friday deadline."},
+    {"client_msg_id": "m-0914", "sender": "Omar", "text": "I agree. Friday works."},
+    {"client_msg_id": "m-0916", "sender": "Layla", "text": "Friday it is."}
+  ]
+}

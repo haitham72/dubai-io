@@ -1,0 +1,1334 @@
+{
+ "source": "align_vo.py (wav2vec2-base-960h CTC)",
+ "lines": [
+  {
+   "text": "What if one sentence could become a whole sticker pack… already moving, already in your chat?",
+   "start": 0.08,
+   "end": 4.3,
+   "words": [
+    {
+     "w": "What",
+     "start": 0.08,
+     "end": 0.22
+    },
+    {
+     "w": "if",
+     "start": 0.22,
+     "end": 0.42
+    },
+    {
+     "w": "one",
+     "start": 0.42,
+     "end": 0.6
+    },
+    {
+     "w": "sentence",
+     "start": 0.6,
+     "end": 1.0
+    },
+    {
+     "w": "could",
+     "start": 1.0,
+     "end": 1.14
+    },
+    {
+     "w": "become",
+     "start": 1.14,
+     "end": 1.44
+    },
+    {
+     "w": "a",
+     "start": 1.44,
+     "end": 1.52
+    },
+    {
+     "w": "whole",
+     "start": 1.52,
+     "end": 1.78
+    },
+    {
+     "w": "sticker",
+     "start": 1.78,
+     "end": 2.12
+    },
+    {
+     "w": "pack…",
+     "start": 2.12,
+     "end": 2.38
+    },
+    {
+     "w": "already",
+     "start": 2.75,
+     "end": 3.12
+    },
+    {
+     "w": "moving,",
+     "start": 3.12,
+     "end": 3.5
+    },
+    {
+     "w": "already",
+     "start": 3.5,
+     "end": 3.8
+    },
+    {
+     "w": "in",
+     "start": 3.8,
+     "end": 3.88
+    },
+    {
+     "w": "your",
+     "start": 3.88,
+     "end": 4.04
+    },
+    {
+     "w": "chat?",
+     "start": 4.04,
+     "end": 4.3
+    }
+   ]
+  },
+  {
+   "text": "No designer. No editing app. Just Messenger.",
+   "start": 5.15,
+   "end": 8.07,
+   "words": [
+    {
+     "w": "No",
+     "start": 5.15,
+     "end": 5.42
+    },
+    {
+     "w": "designer.",
+     "start": 5.42,
+     "end": 5.94
+    },
+    {
+     "w": "No",
+     "start": 6.1,
+     "end": 6.3
+    },
+    {
+     "w": "editing",
+     "start": 6.3,
+     "end": 6.7
+    },
+    {
+     "w": "app.",
+     "start": 6.7,
+     "end": 6.83
+    },
+    {
+     "w": "Just",
+     "start": 7.09,
+     "end": 7.28
+    },
+    {
+     "w": "Messenger.",
+     "start": 7.4,
+     "end": 8.07
+    }
+   ]
+  },
+  {
+   "text": "Meet the Messenger Creator.",
+   "start": 9.02,
+   "end": 10.42,
+   "words": [
+    {
+     "w": "Meet",
+     "start": 9.02,
+     "end": 9.25
+    },
+    {
+     "w": "the",
+     "start": 9.43,
+     "end": 9.6
+    },
+    {
+     "w": "Messenger",
+     "start": 9.6,
+     "end": 9.96
+    },
+    {
+     "w": "Creator.",
+     "start": 9.96,
+     "end": 10.42
+    }
+   ]
+  },
+  {
+   "text": "You say what you want, you see the price, and you press one button.",
+   "start": 11.27,
+   "end": 15.18,
+   "words": [
+    {
+     "w": "You",
+     "start": 11.27,
+     "end": 11.48
+    },
+    {
+     "w": "say",
+     "start": 11.48,
+     "end": 11.66
+    },
+    {
+     "w": "what",
+     "start": 11.66,
+     "end": 11.82
+    },
+    {
+     "w": "you",
+     "start": 11.82,
+     "end": 11.98
+    },
+    {
+     "w": "want,",
+     "start": 11.98,
+     "end": 12.32
+    },
+    {
+     "w": "you",
+     "start": 12.67,
+     "end": 12.86
+    },
+    {
+     "w": "see",
+     "start": 12.86,
+     "end": 13.04
+    },
+    {
+     "w": "the",
+     "start": 13.04,
+     "end": 13.13
+    },
+    {
+     "w": "price,",
+     "start": 13.13,
+     "end": 13.56
+    },
+    {
+     "w": "and",
+     "start": 14.14,
+     "end": 14.24
+    },
+    {
+     "w": "you",
+     "start": 14.24,
+     "end": 14.38
+    },
+    {
+     "w": "press",
+     "start": 14.38,
+     "end": 14.61
+    },
+    {
+     "w": "one",
+     "start": 14.61,
+     "end": 14.86
+    },
+    {
+     "w": "button.",
+     "start": 14.86,
+     "end": 15.18
+    }
+   ]
+  },
+  {
+   "text": "Turn on “approve for me”, and that one click runs the whole path: sheet, cut, check, approve, animate, pack — and send.",
+   "start": 15.88,
+   "end": 25.14,
+   "words": [
+    {
+     "w": "Turn",
+     "start": 15.88,
+     "end": 16.22
+    },
+    {
+     "w": "on",
+     "start": 16.22,
+     "end": 16.39
+    },
+    {
+     "w": "“approve",
+     "start": 16.64,
+     "end": 17.08
+    },
+    {
+     "w": "for",
+     "start": 17.08,
+     "end": 17.24
+    },
+    {
+     "w": "me”,",
+     "start": 17.24,
+     "end": 17.48
+    },
+    {
+     "w": "and",
+     "start": 18.0,
+     "end": 18.1
+    },
+    {
+     "w": "that",
+     "start": 18.1,
+     "end": 18.36
+    },
+    {
+     "w": "one",
+     "start": 18.36,
+     "end": 18.51
+    },
+    {
+     "w": "click",
+     "start": 18.51,
+     "end": 18.76
+    },
+    {
+     "w": "runs",
+     "start": 18.76,
+     "end": 19.0
+    },
+    {
+     "w": "the",
+     "start": 19.0,
+     "end": 19.1
+    },
+    {
+     "w": "whole",
+     "start": 19.1,
+     "end": 19.28
+    },
+    {
+     "w": "path:",
+     "start": 19.28,
+     "end": 19.55
+    },
+    {
+     "w": "sheet,",
+     "start": 20.13,
+     "end": 20.43
+    },
+    {
+     "w": "cut,",
+     "start": 20.96,
+     "end": 21.17
+    },
+    {
+     "w": "check,",
+     "start": 21.52,
+     "end": 21.72
+    },
+    {
+     "w": "approve,",
+     "start": 22.22,
+     "end": 22.75
+    },
+    {
+     "w": "animate,",
+     "start": 23.14,
+     "end": 23.56
+    },
+    {
+     "w": "pack",
+     "start": 23.86,
+     "end": 24.08
+    },
+    {
+     "w": "—",
+     "start": 24.08,
+     "end": 24.6
+    },
+    {
+     "w": "and",
+     "start": 24.6,
+     "end": 24.78
+    },
+    {
+     "w": "send.",
+     "start": 24.78,
+     "end": 25.14
+    }
+   ]
+  },
+  {
+   "text": "And it gets to know you.",
+   "start": 26.29,
+   "end": 27.31,
+   "words": [
+    {
+     "w": "And",
+     "start": 26.29,
+     "end": 26.46
+    },
+    {
+     "w": "it",
+     "start": 26.46,
+     "end": 26.58
+    },
+    {
+     "w": "gets",
+     "start": 26.58,
+     "end": 26.83
+    },
+    {
+     "w": "to",
+     "start": 26.83,
+     "end": 26.96
+    },
+    {
+     "w": "know",
+     "start": 26.96,
+     "end": 27.16
+    },
+    {
+     "w": "you.",
+     "start": 27.16,
+     "end": 27.31
+    }
+   ]
+  },
+  {
+   "text": "Tell it your name, where you live, what you love — and it remembers.",
+   "start": 28.24,
+   "end": 32.5,
+   "words": [
+    {
+     "w": "Tell",
+     "start": 28.24,
+     "end": 28.48
+    },
+    {
+     "w": "it",
+     "start": 28.48,
+     "end": 28.58
+    },
+    {
+     "w": "your",
+     "start": 28.58,
+     "end": 28.76
+    },
+    {
+     "w": "name,",
+     "start": 28.76,
+     "end": 29.09
+    },
+    {
+     "w": "where",
+     "start": 29.24,
+     "end": 29.52
+    },
+    {
+     "w": "you",
+     "start": 29.52,
+     "end": 29.68
+    },
+    {
+     "w": "live,",
+     "start": 29.68,
+     "end": 29.99
+    },
+    {
+     "w": "what",
+     "start": 30.39,
+     "end": 30.56
+    },
+    {
+     "w": "you",
+     "start": 30.56,
+     "end": 30.72
+    },
+    {
+     "w": "love",
+     "start": 30.72,
+     "end": 31.0
+    },
+    {
+     "w": "—",
+     "start": 31.0,
+     "end": 31.75
+    },
+    {
+     "w": "and",
+     "start": 31.75,
+     "end": 31.88
+    },
+    {
+     "w": "it",
+     "start": 31.88,
+     "end": 31.96
+    },
+    {
+     "w": "remembers.",
+     "start": 31.96,
+     "end": 32.5
+    }
+   ]
+  },
+  {
+   "text": "Ask for cartoonish twice, and next time it offers it. It never decides for you.",
+   "start": 33.38,
+   "end": 38.38,
+   "words": [
+    {
+     "w": "Ask",
+     "start": 33.38,
+     "end": 33.64
+    },
+    {
+     "w": "for",
+     "start": 33.64,
+     "end": 33.77
+    },
+    {
+     "w": "cartoonish",
+     "start": 33.77,
+     "end": 34.36
+    },
+    {
+     "w": "twice,",
+     "start": 34.36,
+     "end": 34.81
+    },
+    {
+     "w": "and",
+     "start": 35.19,
+     "end": 35.32
+    },
+    {
+     "w": "next",
+     "start": 35.32,
+     "end": 35.53
+    },
+    {
+     "w": "time",
+     "start": 35.53,
+     "end": 35.76
+    },
+    {
+     "w": "it",
+     "start": 35.76,
+     "end": 35.88
+    },
+    {
+     "w": "offers",
+     "start": 35.88,
+     "end": 36.2
+    },
+    {
+     "w": "it.",
+     "start": 36.2,
+     "end": 36.28
+    },
+    {
+     "w": "It",
+     "start": 37.2,
+     "end": 37.38
+    },
+    {
+     "w": "never",
+     "start": 37.38,
+     "end": 37.62
+    },
+    {
+     "w": "decides",
+     "start": 37.62,
+     "end": 38.02
+    },
+    {
+     "w": "for",
+     "start": 38.02,
+     "end": 38.16
+    },
+    {
+     "w": "you.",
+     "start": 38.16,
+     "end": 38.38
+    }
+   ]
+  },
+  {
+   "text": "Need more than one? Ask for three packs of fruit.",
+   "start": 39.32,
+   "end": 42.17,
+   "words": [
+    {
+     "w": "Need",
+     "start": 39.32,
+     "end": 39.56
+    },
+    {
+     "w": "more",
+     "start": 39.56,
+     "end": 39.72
+    },
+    {
+     "w": "than",
+     "start": 39.72,
+     "end": 39.98
+    },
+    {
+     "w": "one?",
+     "start": 39.98,
+     "end": 40.16
+    },
+    {
+     "w": "Ask",
+     "start": 40.89,
+     "end": 41.16
+    },
+    {
+     "w": "for",
+     "start": 41.16,
+     "end": 41.32
+    },
+    {
+     "w": "three",
+     "start": 41.32,
+     "end": 41.54
+    },
+    {
+     "w": "packs",
+     "start": 41.54,
+     "end": 41.84
+    },
+    {
+     "w": "of",
+     "start": 41.84,
+     "end": 41.96
+    },
+    {
+     "w": "fruit.",
+     "start": 41.96,
+     "end": 42.17
+    }
+   ]
+  },
+  {
+   "text": "It picks the subjects, plans each one, shows one price, and runs them all at once.",
+   "start": 43.0,
+   "end": 48.09,
+   "words": [
+    {
+     "w": "It",
+     "start": 43.0,
+     "end": 43.19
+    },
+    {
+     "w": "picks",
+     "start": 43.19,
+     "end": 43.47
+    },
+    {
+     "w": "the",
+     "start": 43.47,
+     "end": 43.6
+    },
+    {
+     "w": "subjects,",
+     "start": 43.6,
+     "end": 44.1
+    },
+    {
+     "w": "plans",
+     "start": 44.36,
+     "end": 44.7
+    },
+    {
+     "w": "each",
+     "start": 44.7,
+     "end": 44.87
+    },
+    {
+     "w": "one,",
+     "start": 45.04,
+     "end": 45.17
+    },
+    {
+     "w": "shows",
+     "start": 45.68,
+     "end": 46.08
+    },
+    {
+     "w": "one",
+     "start": 46.08,
+     "end": 46.23
+    },
+    {
+     "w": "price,",
+     "start": 46.23,
+     "end": 46.58
+    },
+    {
+     "w": "and",
+     "start": 46.92,
+     "end": 47.08
+    },
+    {
+     "w": "runs",
+     "start": 47.08,
+     "end": 47.33
+    },
+    {
+     "w": "them",
+     "start": 47.33,
+     "end": 47.48
+    },
+    {
+     "w": "all",
+     "start": 47.48,
+     "end": 47.62
+    },
+    {
+     "w": "at",
+     "start": 47.62,
+     "end": 47.84
+    },
+    {
+     "w": "once.",
+     "start": 47.84,
+     "end": 48.09
+    }
+   ]
+  },
+  {
+   "text": "Nine stickers a sheet, every frame checked.",
+   "start": 48.88,
+   "end": 51.0,
+   "words": [
+    {
+     "w": "Nine",
+     "start": 48.88,
+     "end": 49.16
+    },
+    {
+     "w": "stickers",
+     "start": 49.16,
+     "end": 49.54
+    },
+    {
+     "w": "a",
+     "start": 49.54,
+     "end": 49.62
+    },
+    {
+     "w": "sheet,",
+     "start": 49.62,
+     "end": 49.86
+    },
+    {
+     "w": "every",
+     "start": 50.17,
+     "end": 50.5
+    },
+    {
+     "w": "frame",
+     "start": 50.5,
+     "end": 50.76
+    },
+    {
+     "w": "checked.",
+     "start": 50.76,
+     "end": 51.0
+    }
+   ]
+  },
+  {
+   "text": "And a rejection is never a dead end.",
+   "start": 51.85,
+   "end": 53.54,
+   "words": [
+    {
+     "w": "And",
+     "start": 51.85,
+     "end": 52.0
+    },
+    {
+     "w": "a",
+     "start": 52.0,
+     "end": 52.08
+    },
+    {
+     "w": "rejection",
+     "start": 52.08,
+     "end": 52.61
+    },
+    {
+     "w": "is",
+     "start": 52.61,
+     "end": 52.82
+    },
+    {
+     "w": "never",
+     "start": 52.82,
+     "end": 53.14
+    },
+    {
+     "w": "a",
+     "start": 53.14,
+     "end": 53.22
+    },
+    {
+     "w": "dead",
+     "start": 53.22,
+     "end": 53.4
+    },
+    {
+     "w": "end.",
+     "start": 53.4,
+     "end": 53.54
+    }
+   ]
+  },
+  {
+   "text": "Every blocked sticker says why, in plain words, and a judgement call gets “Use it anyway” right on the picture.",
+   "start": 54.46,
+   "end": 60.41,
+   "words": [
+    {
+     "w": "Every",
+     "start": 54.46,
+     "end": 54.76
+    },
+    {
+     "w": "blocked",
+     "start": 54.76,
+     "end": 55.08
+    },
+    {
+     "w": "sticker",
+     "start": 55.08,
+     "end": 55.5
+    },
+    {
+     "w": "says",
+     "start": 55.5,
+     "end": 55.76
+    },
+    {
+     "w": "why,",
+     "start": 55.76,
+     "end": 56.12
+    },
+    {
+     "w": "in",
+     "start": 56.12,
+     "end": 56.24
+    },
+    {
+     "w": "plain",
+     "start": 56.24,
+     "end": 56.5
+    },
+    {
+     "w": "words,",
+     "start": 56.5,
+     "end": 56.82
+    },
+    {
+     "w": "and",
+     "start": 57.22,
+     "end": 57.38
+    },
+    {
+     "w": "a",
+     "start": 57.38,
+     "end": 57.46
+    },
+    {
+     "w": "judgement",
+     "start": 57.46,
+     "end": 57.87
+    },
+    {
+     "w": "call",
+     "start": 57.87,
+     "end": 58.14
+    },
+    {
+     "w": "gets",
+     "start": 58.14,
+     "end": 58.4
+    },
+    {
+     "w": "“Use",
+     "start": 58.72,
+     "end": 59.0
+    },
+    {
+     "w": "it",
+     "start": 59.0,
+     "end": 59.1
+    },
+    {
+     "w": "anyway”",
+     "start": 59.1,
+     "end": 59.51
+    },
+    {
+     "w": "right",
+     "start": 59.64,
+     "end": 59.88
+    },
+    {
+     "w": "on",
+     "start": 59.88,
+     "end": 59.96
+    },
+    {
+     "w": "the",
+     "start": 59.96,
+     "end": 60.06
+    },
+    {
+     "w": "picture.",
+     "start": 60.06,
+     "end": 60.41
+    }
+   ]
+  },
+  {
+   "text": "It’s made for the whole team.",
+   "start": 60.9,
+   "end": 61.94,
+   "words": [
+    {
+     "w": "It’s",
+     "start": 60.9,
+     "end": 61.06
+    },
+    {
+     "w": "made",
+     "start": 61.06,
+     "end": 61.28
+    },
+    {
+     "w": "for",
+     "start": 61.28,
+     "end": 61.38
+    },
+    {
+     "w": "the",
+     "start": 61.38,
+     "end": 61.48
+    },
+    {
+     "w": "whole",
+     "start": 61.48,
+     "end": 61.68
+    },
+    {
+     "w": "team.",
+     "start": 61.68,
+     "end": 61.94
+    }
+   ]
+  },
+  {
+   "text": "Everyone signs in, gets approved, and has their own credits and their own work.",
+   "start": 62.75,
+   "end": 66.53,
+   "words": [
+    {
+     "w": "Everyone",
+     "start": 62.75,
+     "end": 63.12
+    },
+    {
+     "w": "signs",
+     "start": 63.12,
+     "end": 63.54
+    },
+    {
+     "w": "in,",
+     "start": 63.54,
+     "end": 63.74
+    },
+    {
+     "w": "gets",
+     "start": 63.74,
+     "end": 63.94
+    },
+    {
+     "w": "approved,",
+     "start": 63.94,
+     "end": 64.46
+    },
+    {
+     "w": "and",
+     "start": 64.46,
+     "end": 64.64
+    },
+    {
+     "w": "has",
+     "start": 64.9,
+     "end": 65.08
+    },
+    {
+     "w": "their",
+     "start": 65.08,
+     "end": 65.26
+    },
+    {
+     "w": "own",
+     "start": 65.26,
+     "end": 65.52
+    },
+    {
+     "w": "credits",
+     "start": 65.52,
+     "end": 65.84
+    },
+    {
+     "w": "and",
+     "start": 65.84,
+     "end": 65.92
+    },
+    {
+     "w": "their",
+     "start": 65.92,
+     "end": 66.11
+    },
+    {
+     "w": "own",
+     "start": 66.11,
+     "end": 66.36
+    },
+    {
+     "w": "work.",
+     "start": 66.36,
+     "end": 66.53
+    }
+   ]
+  },
+  {
+   "text": "The best packs go to Trending — to like, to comment on, to make your own.",
+   "start": 67.46,
+   "end": 72.34,
+   "words": [
+    {
+     "w": "The",
+     "start": 67.46,
+     "end": 67.6
+    },
+    {
+     "w": "best",
+     "start": 67.6,
+     "end": 67.86
+    },
+    {
+     "w": "packs",
+     "start": 67.86,
+     "end": 68.12
+    },
+    {
+     "w": "go",
+     "start": 68.12,
+     "end": 68.28
+    },
+    {
+     "w": "to",
+     "start": 68.28,
+     "end": 68.4
+    },
+    {
+     "w": "Trending",
+     "start": 68.4,
+     "end": 68.74
+    },
+    {
+     "w": "—",
+     "start": 68.74,
+     "end": 69.34
+    },
+    {
+     "w": "to",
+     "start": 69.34,
+     "end": 69.5
+    },
+    {
+     "w": "like,",
+     "start": 69.5,
+     "end": 69.7
+    },
+    {
+     "w": "to",
+     "start": 70.28,
+     "end": 70.44
+    },
+    {
+     "w": "comment",
+     "start": 70.44,
+     "end": 70.9
+    },
+    {
+     "w": "on,",
+     "start": 70.9,
+     "end": 71.07
+    },
+    {
+     "w": "to",
+     "start": 71.58,
+     "end": 71.72
+    },
+    {
+     "w": "make",
+     "start": 71.72,
+     "end": 71.88
+    },
+    {
+     "w": "your",
+     "start": 71.88,
+     "end": 72.1
+    },
+    {
+     "w": "own.",
+     "start": 72.1,
+     "end": 72.34
+    }
+   ]
+  },
+  {
+   "text": "This is the piece Messenger has been waiting for.",
+   "start": 73.38,
+   "end": 75.44,
+   "words": [
+    {
+     "w": "This",
+     "start": 73.38,
+     "end": 73.66
+    },
+    {
+     "w": "is",
+     "start": 73.66,
+     "end": 73.76
+    },
+    {
+     "w": "the",
+     "start": 73.76,
+     "end": 73.88
+    },
+    {
+     "w": "piece",
+     "start": 73.88,
+     "end": 74.16
+    },
+    {
+     "w": "Messenger",
+     "start": 74.16,
+     "end": 74.6
+    },
+    {
+     "w": "has",
+     "start": 74.6,
+     "end": 74.72
+    },
+    {
+     "w": "been",
+     "start": 74.72,
+     "end": 74.88
+    },
+    {
+     "w": "waiting",
+     "start": 74.88,
+     "end": 75.16
+    },
+    {
+     "w": "for.",
+     "start": 75.16,
+     "end": 75.44
+    }
+   ]
+  },
+  {
+   "text": "The Creator is an engine with an API, built to live right inside the Messenger app, next to your chats.",
+   "start": 76.2,
+   "end": 81.94,
+   "words": [
+    {
+     "w": "The",
+     "start": 76.2,
+     "end": 76.36
+    },
+    {
+     "w": "Creator",
+     "start": 76.36,
+     "end": 76.8
+    },
+    {
+     "w": "is",
+     "start": 76.8,
+     "end": 76.92
+    },
+    {
+     "w": "an",
+     "start": 76.92,
+     "end": 77.06
+    },
+    {
+     "w": "engine",
+     "start": 77.06,
+     "end": 77.4
+    },
+    {
+     "w": "with",
+     "start": 77.4,
+     "end": 77.54
+    },
+    {
+     "w": "an",
+     "start": 77.54,
+     "end": 77.67
+    },
+    {
+     "w": "API,",
+     "start": 77.67,
+     "end": 78.37,
+     "syl": [
+      [
+       77.67,
+       77.87
+      ],
+      [
+       77.87,
+       78.18
+      ],
+      [
+       78.18,
+       78.37
+      ]
+     ]
+    },
+    {
+     "w": "built",
+     "start": 78.72,
+     "end": 78.96
+    },
+    {
+     "w": "to",
+     "start": 78.96,
+     "end": 79.1
+    },
+    {
+     "w": "live",
+     "start": 79.1,
+     "end": 79.36
+    },
+    {
+     "w": "right",
+     "start": 79.36,
+     "end": 79.58
+    },
+    {
+     "w": "inside",
+     "start": 79.58,
+     "end": 79.92
+    },
+    {
+     "w": "the",
+     "start": 79.92,
+     "end": 80.04
+    },
+    {
+     "w": "Messenger",
+     "start": 80.04,
+     "end": 80.46
+    },
+    {
+     "w": "app,",
+     "start": 80.46,
+     "end": 80.66
+    },
+    {
+     "w": "next",
+     "start": 81.02,
+     "end": 81.24
+    },
+    {
+     "w": "to",
+     "start": 81.24,
+     "end": 81.34
+    },
+    {
+     "w": "your",
+     "start": 81.34,
+     "end": 81.52
+    },
+    {
+     "w": "chats.",
+     "start": 81.52,
+     "end": 81.94
+    }
+   ]
+  },
+  {
+   "text": "Your words. Your taste. Your stickers.",
+   "start": 82.22,
+   "end": 84.65,
+   "words": [
+    {
+     "w": "Your",
+     "start": 82.22,
+     "end": 82.42
+    },
+    {
+     "w": "words.",
+     "start": 82.42,
+     "end": 82.79
+    },
+    {
+     "w": "Your",
+     "start": 83.12,
+     "end": 83.26
+    },
+    {
+     "w": "taste.",
+     "start": 83.26,
+     "end": 83.57
+    },
+    {
+     "w": "Your",
+     "start": 84.04,
+     "end": 84.2
+    },
+    {
+     "w": "stickers.",
+     "start": 84.2,
+     "end": 84.65
+    }
+   ]
+  },
+  {
+   "text": "Messenger Creator — one click.",
+   "start": 85.21,
+   "end": 86.96,
+   "words": [
+    {
+     "w": "Messenger",
+     "start": 85.21,
+     "end": 85.62
+    },
+    {
+     "w": "Creator",
+     "start": 85.62,
+     "end": 86.06
+    },
+    {
+     "w": "—",
+     "start": 86.06,
+     "end": 86.51
+    },
+    {
+     "w": "one",
+     "start": 86.51,
+     "end": 86.77
+    },
+    {
+     "w": "click.",
+     "start": 86.77,
+     "end": 86.96
+    }
+   ]
+  }
+ ]
+}

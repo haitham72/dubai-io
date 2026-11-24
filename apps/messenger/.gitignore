@@ -1,0 +1,24 @@
+node_modules
+dist/
+.env
+.DS_Store
+__pycache__/
+.venv/
+server/generated/
+opencode.json
+*.tsbuildinfo
+Slides/vids
+.vercel
+.playwright-mcp/
+
+.vercel
+.env*
+
+# Photo-window regression check: generated bundle (rebuilt by the test script)
+tests/photo-window/bundle.*
+# Store-wiring regression check: generated bundle (rebuilt by the test script)
+tests/store-wiring/bundle.*
+# AI Image Cleaner: local model weights + job uploads (never committed)
+agents/messenger_agents/models/
+agents/models/
+agents/.data/

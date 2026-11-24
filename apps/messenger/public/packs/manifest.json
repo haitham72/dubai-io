@@ -1,0 +1,12 @@
+{
+  "packs": [
+    {
+      "id": "demo-dot",
+      "label": "Demo data",
+      "provenance": "demo_fixture",
+      "stickers": [
+        { "id": "dot", "file": "demo/dot.svg" }
+      ]
+    }
+  ]
+}
