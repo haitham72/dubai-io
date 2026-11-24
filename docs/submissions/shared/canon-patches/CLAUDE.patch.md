@@ -3,7 +3,7 @@
 - **Target file:** `CLAUDE.md` (currently 81 lines on `contest-shared` `206b9ff`; 69 lines on `origin/main` `f016856`)
 - **Affected line ranges:** lines `48-61` (`## Repo layout`, reconciling `origin/memory`'s line `53`) and lines `71-81` (`## Contest submissions`, already appended on `contest-shared`)
 - **Status:** **PROPOSAL ONLY — DO NOT APPLY ON `contest-shared`.**
-- **When to apply:** After `memory`, `desktop` and `ios` are merged into `main`. **D15 (24 Nov): `societal` and `business` are never merged into `main`**, so on `main` any entry or shared path below must be described as living on its branch, not listed as a `main` folder.
+- **When to apply:** After `memory`, `desktop` and `ios` are merged into `main`. **D16 (24 Nov): all branches merge into `main` after their gates**, so the entry and shared paths below become normal `main` folders.
 - **Merge-conflict notes:**
   - `origin/memory` (`fc2e24a`) and `origin/desktop` (`d07ee53`) insert `+apps/memory/       temporal-memory engine (own service + Docker stack; branch \`memory\`; guide apps/memory/CLAUDE.md)` at line `53` inside `## Repo layout` (commit `9444421`).
   - `contest-shared` (`206b9ff`) appends `## Contest submissions` at lines `70-81` (18 lines below line `53`, so no hunk overlap).

@@ -3,7 +3,7 @@
 - **Target file:** `PLAN.md` (currently 190 lines at `origin/main` `f016856` / `contest-shared` `206b9ff`)
 - **Affected line ranges:** lines `3`, `7-15` (§1), `17-125` (§2 decision log — insert new 23 Nov entry + non-destructive supersession tags on lines `28`, `30-33`, `39-43`, `54-56`, `62-78`, `80`, `105-107`, `121-124`), `139-157` (§3 Scope), `171` (§5 Contest facts)
 - **Status:** **PROPOSAL ONLY — DO NOT APPLY ON `contest-shared`.**
-- **D15 (24 Nov):** `societal` and `business` are never merged into `main`; describe their paths on `main` as living on their branches.
+- **D16 (24 Nov):** all branches merge into `main` after their gates; describe the paths as `main` folders once merged.
 - **When to apply:** Only after the founder reconciles the other PC's unpushed `main` with `origin/main` and approves merging the three-entry contest portfolio into `main`.
 - **Merge-conflict notes:**
   - `origin/memory` (`fc2e24a`) and `origin/desktop` (`d07ee53`) both edit **`PLAN.md:49`** (commit `33ea030`, expanding the YouTube 4-Feed Signal Engine bullet). This proposal deliberately leaves lines `44-53` untouched so it does not collide with `origin/memory` / `origin/desktop`. Keep `origin/memory`'s line 49 verbatim on merge.
