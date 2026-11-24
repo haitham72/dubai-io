@@ -10,6 +10,8 @@ node_modules/
 __pycache__/
 opencode.json
 package-lock.json
+!apps/mobile/package-lock.json
+!apps/desktop/package-lock.json
 apps/api/.venv/
 apps/api/data/
 .pytest_cache/
