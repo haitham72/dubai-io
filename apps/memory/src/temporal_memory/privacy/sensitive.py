@@ -65,6 +65,11 @@ AR_MARKS = re.compile(r"[\u064b-\u065f\u0670\u0640]")
 # Removed before matching so the health `ضغط` alternative can't fire on it.
 WORK_PRESSURE = re.compile(r"ضغط\s+(الشغل|شغل|العمل|عمل)")
 
+# "Sara Eid" is a surname. "Eid Mubarak" / "Eid al-Fitr" stay faith signals.
+_EID_SURNAME = re.compile(
+    r"\b([A-Z][a-z'-]{1,20})\s+Eid\b(?!\s+(?:Mubarak|al[- ]?(?:Fitr|Adha)))"
+)
+
 # Dubai allowlist: religious honorifics, visa/provider names and government
 # entities as *providers* are ordinary civic text, not faith/politics signals.
 # (Shape from harness/gate.py ALLOW.)
@@ -106,6 +111,7 @@ def _normalise(text: str) -> str:
     text = unicodedata.normalize("NFKC", text or "")
     text = ALLOW.sub(" ", text)
     text = WORK_PRESSURE.sub(" ", text)
+    text = _EID_SURNAME.sub(r"\1", text)
     return AR_MARKS.sub("", text)
 
 

@@ -19,12 +19,11 @@ pytestmark = pytest.mark.e2e
 # Exact IDs keep an unrelated missing fact from fitting within a count tolerance.
 CANONICAL_QUARANTINES = {
     "f017": "family_third_party",
-    "f039": "family_third_party",
     "f049": "ethnicity_nationality",
     "f061": "ethnicity_nationality",
     "f084": "religion",
 }
-TRIAGED_PUBLIC_FACTS = {"f045", "f109"}
+TRIAGED_PUBLIC_FACTS: set[str] = set()
 
 
 def test_gold_month_through_queue(stack):
@@ -34,7 +33,7 @@ def test_gold_month_through_queue(stack):
     store = PostgresGraphStore(stack.db)
     records = import_gold(stack, owner)
     # The five source files contain 1,172 records before deterministic triage.
-    assert len(records) == 1010
+    assert len(records) == 1012
     record_ids_by_day = defaultdict(set)
     days_by_record_id = {}
     for record in records:

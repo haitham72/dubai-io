@@ -21,6 +21,9 @@ MATRIX = [
     ("Raseef milestone: beta ready", (), None),
     ("Omar installed the beta on 26 Oct", ("Omar",), None),
     ("Meeting with Sara about the Atlas API", ("Sara",), None),
+    ("Karim's LLM Agents course cohort was to start Nov 2 with Sara Eid.", ("Sara Eid",), None),
+    ("Eid Mubarak to the whole team", (), "religion"),
+    ("She is celebrating Eid with the family", (), "family_third_party"),
     # --- Dubai allowlist: persist ----------------------------------------
     ("Sheikh Zayed Road is closed", (), None),
     ("My Golden Visa was approved", (), None),
@@ -97,6 +100,31 @@ def test_gate_matrix(text, known, expected):
 
 def test_matrix_size_floor():
     assert len(MATRIX) >= 40
+
+
+def test_transactional_account_mail_is_kept_and_promos_still_drop():
+    from temporal_memory.ingest.triage import is_noise_email
+
+    assert is_noise_email({
+        "from": "StreamFlix <noreply@streamflix.example>",
+        "subject": "Subscription cancelled",
+        "text": "Your StreamFlix subscription ends Nov 30. Sorry to see you go!",
+    }) is False
+    assert is_noise_email({
+        "from": "TechDaily <news@techdaily.example>",
+        "subject": "You are unsubscribed",
+        "text": "You have been unsubscribed from TechDaily AI Brief. Try the weekly digest.",
+    }) is False
+    assert is_noise_email({
+        "from": "Digest <noreply@digest.example>",
+        "subject": "Weekly digest",
+        "text": "Read the full digest in your browser.",
+    }) is True
+    assert is_noise_email({
+        "from": "SkillForge <verify@skillforge.example>",
+        "subject": "Security code",
+        "text": "Your code is 493820. It expires in 10 minutes. Never share it.",
+    }) is True
 
 
 def test_single_categories_list():

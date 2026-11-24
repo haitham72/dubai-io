@@ -81,19 +81,36 @@ def _extract_fields(msg: Any) -> tuple[str, str, str, str, dict[str, Any]]:
     return text, subject, sender, kind, meta_dict
 
 
+# Account-state receipts the user would want kept: a cancellation or an
+# unsubscribe confirmation. Promo mail that merely links to "unsubscribe"
+# does not match.
+_TRANSACTIONAL_ACCOUNT = re.compile(
+    r"(?:"
+    r"\bsubscription cancelled\b"
+    r"|\byour [\w .'-]{0,48}subscription (?:ends|ended|was cancelled|is cancelled|has ended)\b"
+    r"|\byou (?:are|have been) unsubscribed\b"
+    r")",
+    re.I,
+)
+
+
 def is_noise_email(msg: Any) -> bool:
     """Return True if an email message is promo, OTP, newsletter, bulk, or automated alert noise."""
     text, subject, sender, _kind, meta = _extract_fields(msg)
     if not text.strip() and not subject.strip():
         return True
+    combined = f"{subject}\n{text}" if subject else text
+    if _OTP_TEXT.search(combined):
+        return True
+    if _TRANSACTIONAL_ACCOUNT.search(combined):
+        return False
     if meta.get("bulk") or meta.get("list_unsubscribe"):
         return True
     if str(meta.get("precedence") or "").lower() in {"bulk", "list", "junk"}:
         return True
     if sender and _NOISE_SENDER.search(sender):
         return True
-    combined = f"{subject}\n{text}" if subject else text
-    return bool(_OTP_TEXT.search(combined) or _PROMO_NEWSLETTER.search(combined))
+    return bool(_PROMO_NEWSLETTER.search(combined))
 
 
 def is_noise_whatsapp(msg: Any) -> bool:
