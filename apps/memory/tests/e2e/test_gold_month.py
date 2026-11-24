@@ -106,9 +106,19 @@ def test_gold_month_through_queue(stack):
     with ZipFile(BytesIO(response.content)) as archive:
         assert archive.testzip() is None
         index = archive.read("memory/MEMORIES.md").decode("utf-8")
-        assert "## People" in index
-        assert "raseef-side-project-app" in index
-        assert "memory/people/omar-farouk.md" in archive.namelist()
+        names = set(archive.namelist())
+        for root in (
+            "memory/USER.md",
+            "memory/NOW.md",
+            "memory/MEMORIES.md",
+            "memory/SOURCES.md",
+            "memory/MECHANICAL_INDEX.md",
+            "memory/_staging/hypotheses-to-confirm.md",
+            "memory/_staging/proposed-tree-splits.md",
+        ):
+            assert root in names
+        assert "memory/people/omar-farouk.md" not in names
+        assert "## Career" in index or "## Projects" in index or "## People & family" in index
         exported = "\n".join(archive.read(path).decode("utf-8") for path in archive.namelist())
         assert all(fact["text"] not in exported for fact in ledger["facts"] if fact["sensitive"])
 

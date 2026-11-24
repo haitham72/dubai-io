@@ -141,7 +141,8 @@ def test_surfaces_parametrised_fake_vs_postgres(dual_store, monkeypatch):
 
     # 3. Markdown export
     md = export_md.render("karim", store=st)
-    assert "MEMORIES.md" in md and "people/omar-farouk.md" in md
+    assert "MEMORIES.md" in md and "USER.md" in md
+    assert any(path.startswith(("01-", "02-", "03-", "04-", "05-", "06-", "07-")) for path in md)
 
     # 4. reflect_week with Layer-2 privacy.policy.screen mocked offline (never skips Layer 2!)
     screen_calls: list[list[str]] = []
