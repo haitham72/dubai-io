@@ -156,6 +156,7 @@ def forget_source(owner: str, record_ids: list[str]) -> dict[str, Any]:
                     {"owner": owner, "rids": rids},
                 )
                 affected = cur.fetchall()
+                affected_job_ids = [row[0] for row in affected]
                 days_needing: set[str] = set()
                 days_dead: set[str] = set()
                 for job_id, day, state, input_ref in affected:
@@ -212,6 +213,7 @@ def forget_source(owner: str, record_ids: list[str]) -> dict[str, Any]:
                         {"owner": owner, "digest": digest},
                     )
                 _finish_owner(cur, owner)
+                out["text_scrubbed"] = scrub_erased(cur, owner, rids, affected_job_ids)
     finally:
         conn.close()
     _invalidate(owner)
@@ -231,6 +233,81 @@ def forget_source(owner: str, record_ids: list[str]) -> dict[str, Any]:
             jobs.enqueue(owner, "extract.day", survivors, priority=1, day=day)
             out["jobs_enqueued"] += 1
     return out
+
+
+def scrub_erased(cur: Any, owner: str, record_ids: list[str], job_ids: list[str]) -> dict[str, int]:
+    """User-triggered Forget erases content, not just visibility (Rule 9: nothing stored where the user cannot see it).
+
+    Runs inside the Forget transaction. Keeps only a tombstone per row: ids, content hashes, timestamps, status,
+    erased_at and the generation fence. Automatic aging (weight decay) never calls this. Idempotent: a second run
+    finds nothing left to blank. Sweeps every erased row of the owner, so earlier soft-erased rows are scrubbed too.
+    """
+    counts: dict[str, int] = {}
+    p = {"owner": owner, "rids": list(record_ids), "jobs": list(job_ids)}
+
+    # Attempts that carry extracted text/quotes of erased facts or of the affected jobs.
+    cur.execute(
+        "UPDATE job_attempts SET output_json = NULL WHERE owner = %(owner)s AND output_json IS NOT NULL AND ("
+        "job_id = ANY(%(jobs)s) OR id IN (SELECT attempt_id FROM facts WHERE owner = %(owner)s "
+        "AND erased_at IS NOT NULL AND attempt_id IS NOT NULL))", p)
+    counts["job_attempts"] = cur.rowcount
+
+    # Facts: every text-bearing column of an erased fact (tsv is generated from them and follows). Embedding is NULL.
+    cur.execute(
+        "UPDATE facts SET text = '', text_orig = NULL, text_folded = '', object_text = NULL, predicate = NULL, "
+        "reason_text = NULL, span_record_id = NULL, span_start = NULL, span_end = NULL, "
+        "reason_record_id = NULL, reason_start = NULL, reason_end = NULL, "
+        "embedding = NULL, embedding_model = NULL, embedded_at = NULL "
+        "WHERE owner = %(owner)s AND erased_at IS NOT NULL "
+        "AND (text <> '' OR text_orig IS NOT NULL OR object_text IS NOT NULL OR reason_text IS NOT NULL "
+        "OR span_record_id IS NOT NULL OR predicate IS NOT NULL OR embedding IS NOT NULL)", p)
+    counts["facts"] = cur.rowcount
+    # Surviving facts keep their text but drop quotes/spans that point into a forgotten record.
+    if record_ids:
+        cur.execute(
+            "UPDATE facts SET span_record_id = NULL, span_start = NULL, span_end = NULL "
+            "WHERE owner = %(owner)s AND span_record_id = ANY(%(rids)s)", p)
+        cur.execute(
+            "UPDATE facts SET reason_text = NULL, reason_record_id = NULL, reason_start = NULL, reason_end = NULL "
+            "WHERE owner = %(owner)s AND reason_record_id = ANY(%(rids)s)", p)
+
+    # Records: raw payload and metadata (keeps id, source, time, content_hash, generation, erased_at).
+    cur.execute(
+        "UPDATE records SET text = '', author = '', meta = '{}'::jsonb "
+        "WHERE owner = %(owner)s AND erased_at IS NOT NULL "
+        "AND (text <> '' OR author <> '' OR meta <> '{}'::jsonb)", p)
+    counts["records"] = cur.rowcount
+
+    # Entities erased by the Forget: name and relation/closeness evidence (aliases were already deleted).
+    cur.execute(
+        "UPDATE entities SET name = '', relation_to_user = NULL, closeness_suggested = NULL, "
+        "closeness_suggested_evidence = NULL "
+        "WHERE owner = %(owner)s AND erased_at IS NOT NULL "
+        "AND (name <> '' OR relation_to_user IS NOT NULL OR closeness_suggested_evidence IS NOT NULL)", p)
+    counts["entities"] = cur.rowcount
+    cur.execute(
+        "DELETE FROM entity_aliases a USING entities e WHERE a.owner = e.owner AND a.entity_id = e.id "
+        "AND e.owner = %(owner)s AND e.erased_at IS NOT NULL", p)
+    counts["entity_aliases"] = cur.rowcount
+
+    # Milestones that cite an erased fact lose that citation; with none left they go.
+    cur.execute(
+        "UPDATE milestones m SET evidence_fact_ids = COALESCE((SELECT jsonb_agg(x) FROM "
+        "jsonb_array_elements_text(m.evidence_fact_ids) x WHERE x NOT IN (SELECT id FROM facts "
+        "WHERE owner = m.owner AND erased_at IS NOT NULL)), '[]'::jsonb) "
+        "WHERE m.owner = %(owner)s AND EXISTS (SELECT 1 FROM jsonb_array_elements_text(m.evidence_fact_ids) x "
+        "WHERE x IN (SELECT id FROM facts WHERE owner = m.owner AND erased_at IS NOT NULL)) "
+        "RETURNING id", p)
+    trimmed_ms = [r[0] for r in cur.fetchall()]
+    if trimmed_ms:
+        cur.execute("DELETE FROM milestones WHERE owner = %(owner)s AND id = ANY(%(ms)s) "
+                    "AND evidence_fact_ids = '[]'::jsonb", {**p, "ms": trimmed_ms})
+        counts["milestones"] = cur.rowcount
+
+    # Caches that cite content: story/why payloads are rebuilt from live rows on demand.
+    cur.execute("DELETE FROM story_cache WHERE owner = %(owner)s", p)
+    counts["story_cache"] = cur.rowcount
+    return counts
 
 
 def _finish_owner(cur: Any, owner: str) -> None:
@@ -363,6 +440,7 @@ def forget_fact(owner: str, fact_id: str) -> dict[str, Any]:
                 )
                 out["entity_subjects_recomputed"] = cur.rowcount
                 _finish_owner(cur, owner)
+                out["text_scrubbed"] = scrub_erased(cur, owner, [], [])
                 cur.execute(
                     "SELECT coalesce(max(generation), 0) FROM records WHERE owner = %(owner)s",
                     {"owner": owner},

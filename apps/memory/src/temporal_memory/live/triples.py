@@ -175,7 +175,9 @@ def save_postgres_triple(conn, owner: Owner, record: Record, triple: Triple) -> 
         conn.execute(
             """INSERT INTO entities (owner,id,kind,name,status,relation_to_user,provenance)
                VALUES (%s,%s,'person',%s,'active','self','user_supplied')
-               ON CONFLICT (owner,id) DO UPDATE SET erased_at=NULL""",
+               ON CONFLICT (owner,id) DO UPDATE SET erased_at=NULL,
+                 name=CASE WHEN entities.erased_at IS NOT NULL THEN EXCLUDED.name ELSE entities.name END,
+                 relation_to_user=CASE WHEN entities.erased_at IS NOT NULL THEN EXCLUDED.relation_to_user ELSE entities.relation_to_user END""",
             (owner.id, fact.actor_entity_id, owner.display_name or owner.id),
         )
     if triple.place_type is not None and fact.status == "active":
@@ -196,6 +198,7 @@ def save_postgres_triple(conn, owner: Owner, record: Record, triple: Triple) -> 
                 """INSERT INTO entities (owner,id,kind,name,status,provenance,place_type)
                    VALUES (%s,%s,'place',%s,'active','user_supplied',%s)
                    ON CONFLICT (owner,id) DO UPDATE SET erased_at=NULL,
+                     name=CASE WHEN entities.erased_at IS NOT NULL THEN EXCLUDED.name ELSE entities.name END,
                      place_type=CASE WHEN entities.place_type IS NULL OR entities.place_type='other'
                                      THEN EXCLUDED.place_type ELSE entities.place_type END""",
                 (owner.id, fact.object_entity_id, triple.object_text, triple.place_type),
