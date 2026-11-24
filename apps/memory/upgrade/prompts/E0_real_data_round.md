@@ -12,7 +12,7 @@
 2. Sign in with Google on the PC website, then scan the QR with the iPhone (Expo Go). Both show the founder's name; there's no demo user anywhere (E2).
 3. Connect Gmail, Calendar and YouTube with consent; optionally upload Takeout / WhatsApp; the desktop app pulls browser history + Claude / Codex sessions. Backfill progress is visible (E3).
 4. **Today** shows cards from the founder's real interests with live images and source chips. **Chat** answers from his memory with citations. **Memory** shows his real graph. **Forget** removes data everywhere (E2 + E4).
-5. Then the founder adds a tester Gmail. Its data never shows for the founder, and the reverse (E2 isolation test).
+5. **The founder's tester Gmail already exists and works** (Google Testing mode, 24 Nov). Sign in with it on a second browser profile or device. Its data never shows for the founder, and the reverse (E2 isolation test). More users come later.
 
 ## Rules (all E tasks)
 
