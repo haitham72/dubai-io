@@ -14,6 +14,7 @@ from typing import Any
 
 from fastapi import HTTPException
 
+from temporal_memory.core.daytime import local_day
 from temporal_memory.core.graph_store import _record_hash
 from temporal_memory.models import Record
 from temporal_memory.privacy.sensitive import pre_write
@@ -181,7 +182,12 @@ def ingest_records(store: Any, owner: str, body: Any) -> dict[str, Any]:
         from temporal_memory.queue.jobs import PostgresJobs
 
         priority = 0 if body.enqueue == "extract.live" else 1
-        day = records[0].at[:10] if records and len(records[0].at) >= 10 else None
+        owner_tz = "Asia/Dubai"
+        with store.db.connection() as conn:
+            tz_row = conn.execute("SELECT timezone FROM owners WHERE id = %s", (owner,)).fetchone()
+            if tz_row and tz_row["timezone"]:
+                owner_tz = tz_row["timezone"]
+        day = local_day(records[0].at, owner_tz) if records and records[0].at else None
         job = PostgresJobs(store.db, store=store).enqueue(
             owner, body.enqueue, record_ids, priority=priority, day=day,
         )

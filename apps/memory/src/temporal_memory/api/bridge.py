@@ -11,6 +11,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from temporal_memory.api.vault import AuthContext, get_store, require_owner_access
+from temporal_memory.core.daytime import local_day
+from temporal_memory.core.extract import PROMPT_VERSION
 from temporal_memory.live.context import context_pack, invalidate_alias_cache
 from temporal_memory.models import Fact, GraphStore, Job, Record
 from temporal_memory.privacy.sensitive import pre_write
@@ -161,11 +163,13 @@ def upsert_records(
         job_id = f"job-{uuid.uuid4().hex[:8]}"
         jobs = getattr(store, "jobs", None)
         if jobs is not None:
+            owner_obj = store.get_owner(owner) if hasattr(store, "get_owner") else None
+            owner_tz = getattr(owner_obj, "timezone", None) or "Asia/Dubai"
             jobs.append(Job(
                 id=job_id, owner=owner, kind=body.enqueue, priority=0 if body.enqueue == "extract.live" else 1,
                 pool="internal", input_ref=list(record_ids), input_version=int(getattr(store, "generations", {}).get(owner, 0)),
-                context_hash=_hash("job", job_id, ",".join(record_ids)), prompt_version="extract@3",
-                day=body.records[0].at[:10], state="queued",
+                context_hash=_hash("job", job_id, ",".join(record_ids)), prompt_version=PROMPT_VERSION,
+                day=local_day(body.records[0].at, owner_tz), state="queued",
             ))
     return {"ok": True, "record_ids": record_ids, "job_id": job_id, "fact_ids": fact_ids, "quarantined": quarantined}
 

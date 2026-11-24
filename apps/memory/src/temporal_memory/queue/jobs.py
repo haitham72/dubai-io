@@ -8,9 +8,9 @@ import inspect
 import json
 from typing import Any
 import uuid
-from zoneinfo import ZoneInfo
 
 from temporal_memory.config import get_settings
+from temporal_memory.core.daytime import local_day
 from temporal_memory.core.extract import OUTPUT_SCHEMA, PROMPT_VERSION, build_system_prompt
 from temporal_memory.db.db import Database
 from temporal_memory.models import (
@@ -27,6 +27,29 @@ from temporal_memory.models import (
 )
 from temporal_memory.privacy.sensitive import pre_write
 from temporal_memory.queue.outbox import enqueue_outbox_row
+
+
+def _record_tokens(text: str) -> int:
+    return max(1, len(text or "") // 4)
+
+
+def _chunk_records(records: list[Record], budget: int) -> list[list[Record]]:
+    """Split an ordered day packet into chunks that fit the token budget."""
+    limit = max(1, int(budget))
+    chunks: list[list[Record]] = []
+    current: list[Record] = []
+    tokens = 0
+    for record in records:
+        cost = _record_tokens(record.text)
+        if current and tokens + cost > limit:
+            chunks.append(current)
+            current = []
+            tokens = 0
+        current.append(record)
+        tokens += cost
+    if current:
+        chunks.append(current)
+    return chunks
 
 
 def _row_to_job(row: dict[str, Any]) -> Job:
@@ -168,6 +191,7 @@ class PostgresJobs:
         records: list[Record],
     ) -> JobBundle:
         context = self._get_store().scoped_context(job.owner, records)
+        context["facts"] = self._active_facts_for_prompt(job.owner)
         return JobBundle(
             job=job,
             records=records,
@@ -175,6 +199,31 @@ class PostgresJobs:
             system_prompt=build_system_prompt(owner_obj),
             output_schema=OUTPUT_SCHEMA,
         )
+
+    def _active_facts_for_prompt(self, owner: str) -> list[dict[str, Any]]:
+        """Every active fact the model may update or end. No page cap."""
+        with self.db.connection() as conn:
+            rows = conn.execute(
+                """
+                SELECT vf.id, vf.text, vf.valid_from, vf.status,
+                       COALESCE(s.path, '') AS subject_path
+                FROM visible_facts vf
+                LEFT JOIN subjects s ON s.owner = vf.owner AND s.id = vf.subject_id
+                WHERE vf.owner = %s AND vf.status = 'active'
+                ORDER BY vf.valid_from, vf.id
+                """,
+                (owner,),
+            ).fetchall()
+        return [
+            {
+                "id": row["id"],
+                "text": row["text"],
+                "valid_from": row["valid_from"],
+                "status": "active",
+                "subject_path": row["subject_path"],
+            }
+            for row in rows
+        ]
 
     def enqueue(
         self,
@@ -190,6 +239,37 @@ class PostgresJobs:
         with self.db.transaction() as conn:
             return self._enqueue(conn, owner, kind, record_ids, priority, pool, day, sensitive_flag)
 
+    def enqueue_day_packet(
+        self,
+        owner: str,
+        records: list[Record],
+        *,
+        pool: Pool,
+        day: str | None,
+        sensitive_flag: bool,
+        priority: Priority = 1,
+    ) -> list[Job]:
+        """Enqueue one extract.day job, or ordered chunks when the packet exceeds the budget."""
+        ordered = sorted(records, key=lambda record: (record.at, record.id))
+        chunks = _chunk_records(ordered, get_settings().packet_token_budget)
+        created: list[Job] = []
+        with self.db.transaction() as conn:
+            for index, chunk in enumerate(chunks):
+                created.append(
+                    self._enqueue(
+                        conn,
+                        owner,
+                        "extract.day",
+                        [record.id for record in chunk],
+                        priority,
+                        pool,
+                        day,
+                        sensitive_flag,
+                        chunk_index=index if len(chunks) > 1 else None,
+                    )
+                )
+        return created
+
     def _enqueue(
         self,
         conn: Any,
@@ -200,6 +280,7 @@ class PostgresJobs:
         pool: Pool,
         day: str | None,
         sensitive_flag: bool,
+        chunk_index: int | None = None,
     ) -> Job:
         sorted_ids = sorted(record_ids)
         prompt_version = PROMPT_VERSION
@@ -218,10 +299,10 @@ class PostgresJobs:
         else:
             input_version = 0
 
-        key_payload = json.dumps(
-            [owner, kind, sorted_ids, input_version, prompt_version],
-            separators=(",", ":"),
-        )
+        key_body: list[Any] = [owner, kind, sorted_ids, input_version, prompt_version]
+        if chunk_index is not None:
+            key_body.append(f"chunk:{chunk_index}")
+        key_payload = json.dumps(key_body, separators=(",", ":"))
         idempotency_key = hashlib.sha256(key_payload.encode("utf-8")).hexdigest()
 
         fallback_at: datetime | None = None
@@ -285,18 +366,35 @@ class PostgresJobs:
 
             owner, records = self._fetch_bundle_inputs(conn, job)
             assert owner is not None  # jobs.owner references owners.id
-            zone = ZoneInfo(owner.timezone)
+            has_device = conn.execute(
+                """
+                SELECT 1 FROM tokens
+                WHERE owner = %s AND role = 'owner-device' AND revoked_at IS NULL
+                LIMIT 1
+                """,
+                (job.owner,),
+            ).fetchone()
             packets: dict[str, list[Record]] = {}
             for record in records:
-                stamp = datetime.fromisoformat(record.at)
-                if stamp.tzinfo is not None:
-                    stamp = stamp.astimezone(zone)
-                packets.setdefault(stamp.date().isoformat(), []).append(record)
+                packets.setdefault(local_day(record.at, owner.timezone), []).append(record)
 
             for day, packet in sorted(packets.items()):
-                ids = [record.id for record in packet]
                 sensitive = any(pre_write(record.text) is not None for record in packet)
-                self._enqueue(conn, job.owner, "extract.day", ids, 1, "internal", day, sensitive)
+                pool: Pool = "owner-device" if (has_device and not sensitive) else "internal"
+                ordered = sorted(packet, key=lambda record: (record.at, record.id))
+                chunks = _chunk_records(ordered, get_settings().packet_token_budget)
+                for index, chunk in enumerate(chunks):
+                    self._enqueue(
+                        conn,
+                        job.owner,
+                        "extract.day",
+                        [record.id for record in chunk],
+                        1,
+                        pool,
+                        day,
+                        sensitive,
+                        chunk_index=index if len(chunks) > 1 else None,
+                    )
 
             conn.execute("UPDATE jobs SET state = 'applied', updated_at = now() WHERE id = %s", (job.id,))
             return len(packets)
