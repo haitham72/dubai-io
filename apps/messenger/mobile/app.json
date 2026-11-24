@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "Messenger",
+    "slug": "messenger",
+    "scheme": "messenger",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#eef3fa"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "app.messenger.mobile",
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "Messenger uses your microphone for voice notes and voice commands.",
+        "NSPhotoLibraryUsageDescription": "Messenger accesses your photo library to share photos and create stickers.",
+        "NSCameraUsageDescription": "Messenger uses your camera to take photos to share in chats."
+      }
+    },
+    "plugins": [
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Allow Messenger to access your microphone for voice notes."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Messenger to access your photos to share images and stickers."
+        }
+      ]
+    ],
+    "extra": {
+      "messengerDefaultUrl": "http://localhost:5173"
+    }
+  }
+}
