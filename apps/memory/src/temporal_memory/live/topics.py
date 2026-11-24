@@ -145,3 +145,67 @@ class PostgresTopicMentions:
 def topic_fact(owner: str, subject_id: str, label: str, evidence: list[str], at: str) -> Fact:
     return Fact(feature_id("topic", owner, subject_id), owner, f"I noticed you're into {label}",
                 subject_id, at, evidence, status="hypothesis", provenance="inferred")
+
+
+
+def forget_topic_mentions(cur, owner: str, record_ids: list[str]) -> int:
+    """Recheck affected U2 hypotheses inside the source Forget transaction."""
+    cur.execute(
+        """
+        WITH affected AS (
+            SELECT DISTINCT r.meta->>'u2_session' AS session_id, subject.id AS subject_id
+            FROM records r
+            CROSS JOIN LATERAL jsonb_array_elements_text(r.meta->'u2_topics') AS subject(id)
+            WHERE r.owner=%s AND r.id=ANY(%s) AND r.erased_at IS NOT NULL
+        ), pruned AS (
+            DELETE FROM topic_mentions tm USING affected a
+            WHERE tm.owner=%s AND tm.session_id=a.session_id AND tm.subject_id=a.subject_id
+              AND NOT EXISTS (
+                  SELECT 1 FROM records r
+                  WHERE r.owner=tm.owner AND r.erased_at IS NULL
+                    AND r.meta->>'u2_session'=tm.session_id AND r.meta->'u2_topics' ? tm.subject_id
+              )
+        )
+        SELECT DISTINCT subject_id FROM affected
+        """,
+        (owner, record_ids, owner),
+    )
+    erased = 0
+    for (subject_id,) in cur.fetchall():
+        fact_id = feature_id("topic", owner, subject_id)
+        cur.execute(
+            """SELECT 1 FROM facts
+               WHERE owner=%s AND id=%s AND status='hypothesis'
+                 AND provenance='inferred' AND erased_at IS NULL""",
+            (owner, fact_id),
+        )
+        if cur.fetchone() is None:
+            continue
+        cur.execute(
+            """
+            SELECT support.id, support.generation FROM (
+                SELECT DISTINCT ON (tm.session_id) r.id,r.generation,r.at
+                FROM topic_mentions tm JOIN records r
+                  ON r.owner=tm.owner AND r.meta->>'u2_session'=tm.session_id
+                WHERE tm.owner=%s AND tm.subject_id=%s AND r.erased_at IS NULL
+                  AND r.meta->'u2_topics' ? tm.subject_id
+                ORDER BY tm.session_id,r.at,r.id
+            ) support ORDER BY support.at,support.id LIMIT 2
+            """,
+            (owner, subject_id),
+        )
+        surviving = cur.fetchall()
+        cur.execute("DELETE FROM fact_evidence WHERE owner=%s AND fact_id=%s", (owner, fact_id))
+        if len(surviving) < 2:
+            cur.execute(
+                """UPDATE facts SET erased_at=now(), embedding=NULL, embedding_model=NULL, embedded_at=NULL
+                   WHERE owner=%s AND id=%s""",
+                (owner, fact_id),
+            )
+            erased += cur.rowcount
+        else:
+            cur.executemany(
+                "INSERT INTO fact_evidence (owner,fact_id,record_id,record_generation) VALUES (%s,%s,%s,%s)",
+                [(owner, fact_id, record_id, generation) for record_id, generation in surviving],
+            )
+    return erased
