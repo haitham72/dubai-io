@@ -1,0 +1,18 @@
+appId: app.messenger.desktop
+productName: Messenger
+asar: true
+directories:
+  output: dist
+files:
+  - build/electron/**/*
+  - electron/offline.html
+  - assets/**/*
+  - package.json
+win:
+  target:
+    - portable
+  icon: assets/icon.png
+  signAndEditExecutable: false
+portable:
+  artifactName: Messenger-portable-${version}.exe
+# Unsigned Windows build for local / contest verification (no code-signing certificate).

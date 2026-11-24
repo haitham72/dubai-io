@@ -1,0 +1,21 @@
+{
+  "name": "@messenger/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Messenger desktop shell (Electron).",
+  "main": "build/electron/main.js",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build:ts": "tsc -p tsconfig.build.json",
+    "build": "npm run build:ts && electron-builder --win --config electron-builder.yml",
+    "start": "npm run build:ts && electron .",
+    "test": "vitest run --config vitest.config.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.0",
+    "electron": "^39.2.0",
+    "electron-builder": "^26.18.0",
+    "typescript": "~5.9.3",
+    "vitest": "^4.0.0"
+  }
+}

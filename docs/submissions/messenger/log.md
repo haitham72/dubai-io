@@ -190,3 +190,30 @@ Exact commands and outputs:
 5. Gate 2 (`apps/web` untouched): `git diff --quiet mobile-pwa-baseline-2026-10-23 HEAD -- apps/web` → exit `0`.
 
 6. Old-name grep gate: `git grep -n -i -e "m[i]rsal" -- apps/messenger apps/api/app/messenger apps/api/tests/test_messenger_e2e.py apps/api/tests/test_messenger_web_e2e.py` → zero matches (exit `1`).
+
+## 24 Nov 2026 — SH-2 (Antigravity)
+
+Implemented standalone iPhone Expo Go and Windows Electron desktop shells plus the LAN start script and shell docs on lane branch `mg/shells` (no edits to `apps/web`, `main`, or `apps/messenger/src/`):
+
+- **iPhone Expo Go shell (`apps/messenger/mobile/`):** Standalone Expo TypeScript project (`package.json`, `app.json`, `tsconfig.json`, `index.js`, `src/config.ts`, `src/bridge.ts`, `src/App.tsx`, `assets/icon.png`, `assets/splash-icon.png`, `vitest.config.mjs`, `.gitignore`) using `react-native-webview`, `react-native-safe-area-context`, `expo-av`, and `expo-image-picker`. Enforces single-origin navigation + external browser handoff, persists cookies across launches, includes a LAN URL config bar + offline Retry view, and exposes `window.__messengerMobileBridge` (`REQUEST_MIC`, `START_VOICE_RECORDING`, `STOP_VOICE_RECORDING`, `PICK_MEDIA`, `PICK_STICKER`).
+- **Desktop Electron shell (`apps/messenger/desktop/`):** Standalone Electron + TypeScript project (`package.json`, `tsconfig.json`, `tsconfig.build.json`, `electron-builder.yml`, `electron/security.ts`, `electron/preload.ts`, `electron/offline.html`, `electron/main.ts`, `assets/icon.png`, `vitest.config.mjs`, `.gitignore`). Enforces hardened `webPreferences` (`contextIsolation: true`, `nodeIntegration: false`, `sandbox: true`, `webSecurity: true`), single-origin `will-navigate` / `setWindowOpenHandler` external links, window bounds persistence, offline Retry screen, `app.setAppUserModelId("app.messenger.desktop")`, and fail-closed origin-gated `notifications` & `media` permissions (`setPermissionCheckHandler` / `setPermissionRequestHandler`). Built unsigned Windows portable `.exe` (`dist/Messenger-portable-0.1.0.exe`, `93959774` bytes) via `electron-builder` (`signAndEditExecutable: false`).
+- **Start script & docs (`apps/messenger/scripts/start-shells.ps1`, `docs/submissions/messenger/shells.md`):** Auto-detects active LAN IPv4 (`10.5.3.228`), populates `MESSENGER_ALLOWED_ORIGINS` and `MESSENGER_API_URL=http://127.0.0.1:8070`, checks Windows Firewall TCP `5173`/`8070` with exact `netsh` fallback when non-admin, and documents Expo Go + Electron build/run/test commands.
+
+Exact commands and outputs:
+
+1. Mobile shell (`apps/messenger/mobile`):
+   - `npm.cmd run typecheck` (`tsc --noEmit`) → exit `0`.
+   - `npm.cmd test` (`vitest run --config vitest.config.mjs`) → `1 passed (1)`, `8 passed (8)` in `tests/mobile.test.ts`.
+2. Desktop shell (`apps/messenger/desktop`):
+   - `npm.cmd run typecheck` (`tsc -p tsconfig.json --noEmit`) → exit `0`.
+   - `npm.cmd test` (`vitest run --config vitest.config.mjs`) → `1 passed (1)`, `6 passed (6)` in `tests/security.test.ts`.
+   - `npm.cmd run build` (`tsc -p tsconfig.build.json && electron-builder --win --config electron-builder.yml`) → exit `0`, produced `apps/messenger/desktop/dist/Messenger-portable-0.1.0.exe` (`93959774` bytes) and `apps/messenger/desktop/dist/win-unpacked/Messenger.exe` (`210896896` bytes).
+3. Start script preflight:
+   - `powershell -NoProfile -ExecutionPolicy Bypass -File apps\messenger\scripts\start-shells.ps1 -CheckOnly` → exit `0` (`LAN IPv4: 10.5.3.228`).
+4. Messenger web gates (`apps/messenger`, unmodified):
+   - `npm.cmd run typecheck` → exit `0`.
+   - `npm.cmd run build` → `✓ 1710 modules transformed.`, `✓ built in 7.60s`.
+   - `npm.cmd run test:photo-window` → `ALL PHOTO-WINDOW CHECKS PASSED` (exit `0`).
+   - `npm.cmd run test:store` → 8/8 checks `(a)`–`(h)` passed (`ALL STORE-WIRING CHECKS PASSED`, exit `0`).
+5. Old-name grep gate:
+   - `git grep -n -i -e "m[i]rsal" -- apps/messenger apps/api/app/messenger docs/submissions/messenger/shells.md` → zero matches (exit `1`); zero occurrences in the SH-2 `log.md` entry.
