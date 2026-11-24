@@ -1,17 +1,31 @@
-"""FastAPI Vault, Quests, Timeline, Why, and Hypotheses endpoints (WP-B)."""
+"""FastAPI Vault, Quests, Timeline, Why, and Hypotheses endpoints (WP-B + U1c SQL reads)."""
 from __future__ import annotations
 
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime, timezone
 import os
-from typing import Any, Callable, Literal
+from typing import Any, Callable, Iterable, Literal
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Path as FPath, Query
 
-from temporal_memory.models import Attempt, Entity, EntitySubject, Fact, GraphStore, Link, Milestone, Subject
+from temporal_memory.models import (
+    CLUSTER_LABELS,
+    CLUSTERS,
+    HELD_BACK_ROOTS,
+    Attempt,
+    Entity,
+    EntitySubject,
+    Fact,
+    GraphStore,
+    Link,
+    Milestone,
+    Subject,
+)
 
 Role = Literal["admin", "worker", "owner-device"]
+
+_HELD_BACK_ROOTS = frozenset(HELD_BACK_ROOTS)
 
 
 @dataclass
@@ -79,6 +93,58 @@ def _meta(store: Any, owner: str) -> tuple[str, bool]:
     return now_iso, bool(owner_obj and owner_obj.kind == "demo")
 
 
+def _review_state(provenance: str, is_demo: bool) -> str:
+    if is_demo or provenance == "demo_fixture":
+        return "demo"
+    if provenance in ("user_supplied", "provider_confirmed"):
+        return "confirmed"
+    return "pending_review"
+
+
+def _envelope_provenance(values: Iterable[str], *, is_demo: bool, default: str = "inferred") -> str:
+    if is_demo:
+        return "demo_fixture"
+    uniq = {v for v in values if v}
+    if not uniq:
+        return default
+    if uniq <= {"user_supplied", "provider_confirmed"}:
+        return "user_supplied"
+    return "inferred"
+
+
+def _is_sensitive_subject(subj: Subject | None) -> bool:
+    if subj is None:
+        return False
+    root = (subj.path or "").split("/")[0].strip().lower()
+    return subj.sensitive_cat is not None or root in _HELD_BACK_ROOTS
+
+
+def _iter_all_visible(store: Any, owner: str, *, date_from: str | None = None, date_to: str | None = None) -> list[Fact]:
+    iter_fn = getattr(store, "iter_visible_facts", None)
+    if callable(iter_fn):
+        return [f for f in iter_fn(owner, date_from=date_from, date_to=date_to, page_size=500) if f.status != "history"]
+    return [
+        f
+        for f in store.visible_facts(owner, limit=200)
+        if f.status != "history"
+        and (not date_from or (f.valid_from or "")[:10] >= date_from[:10])
+        and (not date_to or (f.valid_from or "")[:10] <= date_to[:10])
+    ]
+
+
+def _visible_id_set(store: Any, owner: str, fact_ids: list[str]) -> set[str]:
+    clean = list(dict.fromkeys(fid for fid in fact_ids if fid))
+    if not clean:
+        return set()
+    sub_fn = getattr(store, "visible_fact_ids_subset", None)
+    if callable(sub_fn):
+        return set(sub_fn(owner, clean))
+    get_fn = getattr(store, "get_facts", None)
+    if callable(get_fn):
+        return {f.id for f in get_fn(owner, clean)}
+    return {f.id for f in _iter_all_visible(store, owner) if f.id in set(clean)}
+
+
 router = APIRouter(prefix="/v1/owners/{owner}", tags=["vault"])
 
 
@@ -89,50 +155,87 @@ def vault_subjects(
     store: GraphStore = Depends(get_store),
 ) -> dict[str, Any]:
     now_iso, is_demo = _meta(store, owner)
-    facts: list[Fact] = store.visible_facts(owner, limit=10_000)
     subjects: list[Subject] = call_opt(store, "list_subjects", owner, default=[])
-
-    direct_counts: dict[str, int] = defaultdict(int)
-    for f in facts:
-        if f.status != "history":
+    counts_fn = getattr(store, "fact_counts_by_subject", None)
+    if callable(counts_fn):
+        direct_counts: dict[str, int] = defaultdict(int, counts_fn(owner))
+    else:
+        direct_counts = defaultdict(int)
+        for f in _iter_all_visible(store, owner):
             direct_counts[f.subject_id] += 1
+
+    conf_fn = getattr(store, "confirmed_fact_counts_by_subject", None)
+    confirmed_counts: dict[str, int] | None = (
+        dict(conf_fn(owner)) if callable(conf_fn) else None
+    )
+    if confirmed_counts is None:
+        confirmed_counts = defaultdict(int)
+        for f in _iter_all_visible(store, owner):
+            if f.provenance in ("user_supplied", "provider_confirmed"):
+                confirmed_counts[f.subject_id] += 1
+
+    sal_map: dict[str, float] = call_opt(store, "subject_salience_map", owner, default={}) or {}
 
     children_map: dict[str | None, list[Subject]] = defaultdict(list)
     by_id: dict[str, Subject] = {s.id: s for s in subjects}
     for s in subjects:
         children_map[s.parent_id].append(s)
 
-    def _build(node: Subject) -> dict[str, Any]:
-        kids = [_build(c) for c in sorted(children_map.get(node.id, []), key=lambda x: x.label)]
-        total = direct_counts[node.id] + sum(k["fact_count"] for k in kids)
+    collected_provs: list[str] = []
+
+    def _build(node: Subject, *, parent_sensitive: bool = False) -> dict[str, Any] | None:
+        is_sens = parent_sensitive or _is_sensitive_subject(node)
+        kids: list[dict[str, Any]] = []
+        for c in sorted(children_map.get(node.id, []), key=lambda x: x.label):
+            built = _build(c, parent_sensitive=is_sens)
+            if built is not None:
+                kids.append(built)
+
+        if is_sens:
+            own_cnt = confirmed_counts.get(node.id, 0)
+            if own_cnt == 0 and not kids:
+                return None
+        else:
+            own_cnt = direct_counts[node.id]
+
+        total = own_cnt + sum(k["fact_count"] for k in kids)
+        prov = getattr(node, "provenance", "inferred") or "inferred"
+        collected_provs.append(prov)
         return {
             "id": node.id,
             "path": node.path,
             "label": node.label,
             "kind": node.kind,
             "status": node.status,
-            "salience": node.salience,
+            "salience": sal_map.get(node.id, node.salience),
             "fact_count": total,
-            "direct_fact_count": direct_counts[node.id],
-            "provenance": "user_supplied" if node.status == "active" else "inferred",
+            "direct_fact_count": own_cnt,
+            "sensitive_cat": node.sensitive_cat,
+            "provenance": prov,
+            "review_state": _review_state(prov, is_demo),
             "as_of": now_iso,
             "demo_data": is_demo,
             "children": kids,
         }
 
-    roots = [_build(s) for s in sorted(children_map.get(None, []), key=lambda x: x.label)]
-    # Fallback for nodes whose parent_id isn't in by_id
+    roots = [
+        item
+        for s in sorted(children_map.get(None, []), key=lambda x: x.label)
+        if (item := _build(s)) is not None
+    ]
     orphan_roots = [
-        _build(s)
+        item
         for s in sorted(subjects, key=lambda x: x.path)
         if s.parent_id is not None and s.parent_id not in by_id
+        if (item := _build(s)) is not None
     ]
     themes = roots + orphan_roots
+    total_facts = sum(t["fact_count"] for t in themes)
     return {
         "owner": owner,
         "themes": themes,
-        "total_facts": sum(direct_counts.values()),
-        "provenance": "user_supplied",
+        "total_facts": total_facts,
+        "provenance": _envelope_provenance(collected_provs, is_demo=is_demo),
         "as_of": now_iso,
         "demo_data": is_demo,
     }
@@ -149,19 +252,45 @@ def vault_people(
     links: list[Link] = call_opt(store, "list_links", owner, default=[])
     ent_subjs: list[EntitySubject] = call_opt(store, "list_entity_subjects", owner, default=[])
     subjects = {s.id: s for s in call_opt(store, "list_subjects", owner, default=[])}
-    visible_fids = {f.id for f in store.visible_facts(owner, limit=10_000)}
+    vis_eids: set[str] | None = call_opt(store, "visible_entity_ids", owner, default=None)
+    sal_map: dict[str, float] = call_opt(store, "entity_salience_map", owner, default={}) or {}
+
+    link_ev_map: dict[str, list[str]] = call_opt(store, "list_link_evidence_map", owner, default={}) or {}
+    all_link_fids: list[str] = []
+    for ln in links:
+        if ln.evidence_fact_id:
+            all_link_fids.append(ln.evidence_fact_id)
+        all_link_fids.extend(link_ev_map.get(ln.id, []))
+    vis_link_fids = _visible_id_set(store, owner, all_link_fids)
+    ev_facts_by_id: dict[str, Fact] = {
+        f.id: f for f in (call_opt(store, "get_facts", owner, list(vis_link_fids), default=[]) or [])
+    }
 
     es_map: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for es in ent_subjs:
+        subj = subjects.get(es.subject_id)
+        if _is_sensitive_subject(subj):
+            continue
         es_map[es.entity_id].append({
             "subject_id": es.subject_id,
-            "subject": subjects[es.subject_id].label if es.subject_id in subjects else es.subject_id,
+            "subject": subj.label if subj else es.subject_id,
             "role": es.role,
             "fact_count": es.fact_count,
             "weight": es.weight,
         })
 
+    def _keep_entity(e: Entity) -> bool:
+        if e.status == "merged":
+            return False
+        prov = getattr(e, "provenance", "inferred") or "inferred"
+        if e.relation_to_user == "self" or prov in ("user_supplied", "provider_confirmed"):
+            return True
+        if vis_eids is not None:
+            return e.id in vis_eids
+        return e.id in es_map or e.status == "active"
+
     def _ser(e: Entity) -> dict[str, Any]:
+        prov = getattr(e, "provenance", "inferred") or "inferred"
         return {
             "id": e.id,
             "kind": e.kind,
@@ -169,35 +298,72 @@ def vault_people(
             "status": e.status,
             "relation_to_user": e.relation_to_user,
             "closeness_tier": e.closeness_tier,
+            "closeness_suggested": getattr(e, "closeness_suggested", None),
+            "closeness_suggested_evidence": getattr(e, "closeness_suggested_evidence", None),
             "aliases": e.aliases,
-            "salience": e.salience,
+            "salience": sal_map.get(e.id, e.salience),
             "first_seen": e.first_seen,
             "last_seen": e.last_seen,
             "subjects": es_map.get(e.id, []),
-            "provenance": "user_supplied" if e.status == "active" else "inferred",
+            "provenance": prov,
+            "review_state": _review_state(prov, is_demo),
             "as_of": e.last_seen or now_iso,
             "demo_data": is_demo,
         }
 
-    people = [_ser(e) for e in entities if e.kind == "person" and e.status != "merged"]
-    places = [_ser(e) for e in entities if e.kind == "place" and e.status != "merged"]
-    orgs = [_ser(e) for e in entities if e.kind == "org" and e.status != "merged"]
-    vis_links = [
-        {
-            "id": ln.id, "src": ln.src, "rel": ln.rel, "dst": ln.dst,
-            "valid_from": ln.valid_from, "valid_to": ln.valid_to,
-            "provenance": "inferred", "as_of": ln.valid_from or now_iso, "demo_data": is_demo,
-        }
-        for ln in links
-        if ln.evidence_fact_id is None or ln.evidence_fact_id in visible_fids
-    ]
+    kept = [e for e in entities if _keep_entity(e)]
+    kept_by_id = {e.id: e for e in kept}
+
+    people = [_ser(e) for e in kept if e.kind == "person"]
+    places = [_ser(e) for e in kept if e.kind == "place"]
+    orgs = [_ser(e) for e in kept if e.kind == "org"]
+    projects = [_ser(e) for e in kept if e.kind == "project"]
+    events = [_ser(e) for e in kept if e.kind == "event"]
+
+    vis_links: list[dict[str, Any]] = []
+    for ln in links:
+        if ln.src not in kept_by_id or ln.dst not in kept_by_id:
+            continue
+        ev_ids = [
+            fid
+            for fid in dict.fromkeys(([ln.evidence_fact_id] if ln.evidence_fact_id else []) + link_ev_map.get(ln.id, []))
+            if fid in vis_link_fids
+        ]
+        if not ev_ids:
+            continue
+        is_family_link = (
+            ln.rel == "FAMILY_OF"
+            or kept_by_id[ln.src].relation_to_user == "family"
+            or kept_by_id[ln.dst].relation_to_user == "family"
+        )
+        ev_provs = [ev_facts_by_id[fid].provenance for fid in ev_ids if fid in ev_facts_by_id]
+        if is_family_link and not any(p in ("user_supplied", "provider_confirmed") for p in ev_provs):
+            continue
+        ln_prov = _envelope_provenance(ev_provs, is_demo=is_demo)
+        vis_links.append({
+            "id": ln.id,
+            "src": ln.src,
+            "rel": ln.rel,
+            "dst": ln.dst,
+            "valid_from": ln.valid_from,
+            "valid_to": ln.valid_to,
+            "evidence_fact_ids": ev_ids,
+            "provenance": ln_prov,
+            "review_state": _review_state(ln_prov, is_demo),
+            "as_of": ln.valid_from or now_iso,
+            "demo_data": is_demo,
+        })
+
+    all_provs = [*(p["provenance"] for p in people + places + orgs), *(ln["provenance"] for ln in vis_links)]
     return {
         "owner": owner,
         "people": people,
         "places": places,
         "orgs": orgs,
+        "projects": projects,
+        "events": events,
         "links": vis_links,
-        "provenance": "user_supplied",
+        "provenance": _envelope_provenance(all_provs, is_demo=is_demo),
         "as_of": now_iso,
         "demo_data": is_demo,
     }
@@ -212,19 +378,21 @@ def quests(
     now_iso, is_demo = _meta(store, owner)
     subjects: list[Subject] = call_opt(store, "list_subjects", owner, default=[])
     milestones: list[Milestone] = call_opt(store, "list_milestones", owner, default=[])
-    visible_ids = {f.id for f in store.visible_facts(owner, limit=10_000)}
+    all_ev_ids = [fid for m in milestones for fid in (m.evidence_fact_ids or [])]
+    visible_ids = _visible_id_set(store, owner, all_ev_ids)
 
     ms_by_subj: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for m in milestones:
         kept_ev = [fid for fid in m.evidence_fact_ids if fid in visible_ids]
         if m.evidence_fact_ids and not kept_ev:
-            continue  # all supporting evidence forgotten
+            continue
         ms_by_subj[m.subject_id].append({
             "id": m.id,
             "title": m.title,
             "state": m.state,
             "evidence_fact_ids": kept_ev,
             "provenance": "inferred",
+            "review_state": _review_state("inferred", is_demo),
             "hypothesis_label": "I noticed…",
             "actions": ["Confirm", "Edit", "Not true", "Forget"],
             "as_of": now_iso,
@@ -233,9 +401,10 @@ def quests(
 
     goal_cards: list[dict[str, Any]] = []
     for s in subjects:
-        if s.kind != "goal":
+        if s.kind != "goal" or _is_sensitive_subject(s):
             continue
         ms_list = ms_by_subj.get(s.id, [])
+        prov = getattr(s, "provenance", "inferred") or "inferred"
         goal_cards.append({
             "id": s.id,
             "path": s.path,
@@ -247,21 +416,39 @@ def quests(
                 st: sum(1 for m in ms_list if m["state"] == st)
                 for st in ("done", "in_progress", "planned")
             },
-            "provenance": "user_supplied" if s.status == "active" else "inferred",
+            "provenance": prov,
+            "review_state": _review_state(prov, is_demo),
             "as_of": now_iso,
             "demo_data": is_demo,
         })
-    return {"owner": owner, "quests": goal_cards, "provenance": "inferred", "as_of": now_iso, "demo_data": is_demo}
+    return {
+        "owner": owner,
+        "quests": goal_cards,
+        "provenance": _envelope_provenance((c["provenance"] for c in goal_cards), is_demo=is_demo),
+        "as_of": now_iso,
+        "demo_data": is_demo,
+    }
 
 
 @router.get("/hypotheses")
 def hypotheses(
     owner: str,
+    limit: int = Query(default=200, ge=1, le=500),
     _: AuthContext = Depends(require_owner_access),
     store: GraphStore = Depends(get_store),
 ) -> dict[str, Any]:
     now_iso, is_demo = _meta(store, owner)
-    hyps = [f for f in store.visible_facts(owner, limit=10_000) if f.status == "hypothesis"]
+    list_fn = getattr(store, "list_hypotheses", None)
+    if callable(list_fn):
+        hyps: list[Fact] = list_fn(owner, limit=limit)
+    else:
+        subjects = {s.id: s for s in call_opt(store, "list_subjects", owner, default=[])}
+        hyps = [
+            f
+            for f in _iter_all_visible(store, owner)
+            if f.status == "hypothesis" and not _is_sensitive_subject(subjects.get(f.subject_id))
+        ][:limit]
+
     return {
         "owner": owner,
         "hypotheses": [
@@ -272,13 +459,14 @@ def hypotheses(
                 "evidence": f.evidence,
                 "valid_from": f.valid_from,
                 "provenance": f.provenance,
+                "review_state": _review_state(f.provenance, is_demo),
                 "as_of": f.valid_from or now_iso,
                 "actions": ["Confirm", "Edit", "Not true", "Forget"],
                 "demo_data": is_demo or f.provenance == "demo_fixture",
             }
             for f in hyps
         ],
-        "provenance": "inferred",
+        "provenance": "demo_fixture" if is_demo else "inferred",
         "as_of": now_iso,
         "demo_data": is_demo,
     }
@@ -294,14 +482,33 @@ def timeline(
     store: GraphStore = Depends(get_store),
 ) -> dict[str, Any]:
     now_iso, is_demo = _meta(store, owner)
-    facts = [
-        f
-        for f in store.visible_facts(owner, limit=10_000)
-        if f.status != "history"
-        and (not date_from or (f.valid_from or "") >= date_from)
-        and (not date_to or (f.valid_from or "") <= date_to)
-    ]
-    facts.sort(key=lambda x: (x.valid_from or "", x.id), reverse=True)
+    subjects = {s.id: s for s in call_opt(store, "list_subjects", owner, default=[])}
+    iter_fn = getattr(store, "iter_visible_facts", None)
+    items_facts: list[Fact] = []
+    if callable(iter_fn):
+        for f in iter_fn(owner, date_from=date_from, date_to=date_to, page_size=min(limit, 500)):
+            if f.status == "history":
+                continue
+            if _is_sensitive_subject(subjects.get(f.subject_id)) and f.provenance not in (
+                "user_supplied",
+                "provider_confirmed",
+            ):
+                continue
+            items_facts.append(f)
+            if len(items_facts) >= limit:
+                break
+    else:
+        items_facts = [
+            f
+            for f in _iter_all_visible(store, owner, date_from=date_from, date_to=date_to)
+            if not (
+                _is_sensitive_subject(subjects.get(f.subject_id))
+                and f.provenance not in ("user_supplied", "provider_confirmed")
+            )
+        ]
+        items_facts.sort(key=lambda x: (x.valid_from or "", x.id), reverse=True)
+        items_facts = items_facts[:limit]
+
     return {
         "owner": owner,
         "items": [
@@ -315,12 +522,13 @@ def timeline(
                 "status": f.status,
                 "superseded_by": f.superseded_by,
                 "provenance": f.provenance,
+                "review_state": _review_state(f.provenance, is_demo),
                 "as_of": f.valid_from or now_iso,
                 "demo_data": is_demo or f.provenance == "demo_fixture",
             }
-            for f in facts[:limit]
+            for f in items_facts
         ],
-        "provenance": "user_supplied",
+        "provenance": _envelope_provenance((f.provenance for f in items_facts), is_demo=is_demo),
         "as_of": now_iso,
         "demo_data": is_demo,
     }
@@ -334,16 +542,28 @@ SOURCE_WEIGHTS: dict[str, int] = {
     "gmail": 14, "calendar": 10, "youtube_api": 12,
     "whatsapp": 15, "youtube_history": 12, "browser": 18, "agent_sessions": 19,
 }
-LIFE_SPINES = ["Career", "Learning", "Projects", "People & family",
-               "Events", "Home & money", "Travel"]
+LIFE_SPINES = [CLUSTER_LABELS[c] for c in CLUSTERS]
 _SPINE_BY_ROOT = {
-    "career": "Career", "work": "Career", "learning": "Learning",
-    "education": "Learning", "projects": "Projects", "project": "Projects",
-    "family": "People & family", "people": "People & family",
-    "relationships": "People & family", "lifestyle": "Events",
-    "events": "Events", "social": "Events", "life": "Events",
-    "money": "Home & money", "finance": "Home & money", "home": "Home & money",
-    "travel": "Travel", "places": "Travel",
+    "career": CLUSTER_LABELS["career"],
+    "work": CLUSTER_LABELS["career"],
+    "learning": CLUSTER_LABELS["learning"],
+    "education": CLUSTER_LABELS["learning"],
+    "projects": CLUSTER_LABELS["projects"],
+    "project": CLUSTER_LABELS["projects"],
+    "family": CLUSTER_LABELS["people-family"],
+    "people": CLUSTER_LABELS["people-family"],
+    "people-family": CLUSTER_LABELS["people-family"],
+    "relationships": CLUSTER_LABELS["people-family"],
+    "lifestyle": CLUSTER_LABELS["events"],
+    "events": CLUSTER_LABELS["events"],
+    "social": CLUSTER_LABELS["events"],
+    "life": CLUSTER_LABELS["events"],
+    "money": CLUSTER_LABELS["home-money"],
+    "finance": CLUSTER_LABELS["home-money"],
+    "home": CLUSTER_LABELS["home-money"],
+    "home-money": CLUSTER_LABELS["home-money"],
+    "travel": CLUSTER_LABELS["travel"],
+    "places": CLUSTER_LABELS["travel"],
 }
 
 
@@ -392,10 +612,10 @@ def _owner_records(store: Any, owner: str, facts: list) -> list:
         except TypeError:
             pass
     records_attr = getattr(store, "records", None)
-    if isinstance(records_attr, dict):  # FakeGraphStore
+    if isinstance(records_attr, dict):
         return list(records_attr.get(owner, {}).values())
     db = getattr(store, "db", None)
-    if db is not None:  # PostgresGraphStore
+    if db is not None:
         try:
             with db.connection() as conn:
                 rows = conn.execute(
@@ -405,7 +625,6 @@ def _owner_records(store: Any, owner: str, facts: list) -> list:
             return [{"id": r["id"], "source": r["source"]} for r in rows]
         except Exception:
             pass
-    # Fallback: records referenced by visible facts (extracted evidence only).
     ids = sorted({rid for f in facts for rid in (f.evidence or [])})
     return call_opt(store, "get_records", owner, ids, default=[]) if ids else []
 
@@ -426,10 +645,18 @@ def onboarding_status(
     store: GraphStore = Depends(get_store),
 ) -> dict[str, Any]:
     now_iso, is_demo = _meta(store, owner)
-    # Verified facts only: history and unconfirmed hypotheses never count here.
-    facts = [f for f in store.visible_facts(owner, limit=10_000) if f.status == "active"]
     subjects = call_opt(store, "list_subjects", owner, default=[])
     subj_by_id = {s.id: s for s in subjects}
+
+    facts = [
+        f
+        for f in _iter_all_visible(store, owner)
+        if f.status == "active"
+        and not (
+            _is_sensitive_subject(subj_by_id.get(f.subject_id))
+            and f.provenance not in ("user_supplied", "provider_confirmed")
+        )
+    ]
 
     def spine_for(subject_id: str) -> str:
         node = subj_by_id.get(subject_id)
@@ -445,7 +672,6 @@ def onboarding_status(
     records = _owner_records(store, owner, facts)
     rec_by_id = {_record_id(r): r for r in records}
 
-    # --- completeness (deterministic, presence-based, counted once per source)
     present = sorted(
         {c for c in (_canonical_source(_record_source(r)) for r in records) if c},
         key=lambda c: list(SOURCE_WEIGHTS).index(c),
@@ -462,7 +688,6 @@ def onboarding_status(
     else:
         next_action = "add_whatsapp_or_youtube_history"
 
-    # --- by_source: record counts (raw) + fact counts (via evidence)
     by_source: dict[str, dict[str, int]] = defaultdict(lambda: {"records": 0, "facts": 0})
     for r in records:
         by_source[_source_bucket(_record_source(r))]["records"] += 1
@@ -475,11 +700,8 @@ def onboarding_status(
     for bucket, fids in fact_sources.items():
         by_source[bucket]["facts"] = len(fids)
 
-    # --- known_so_far: top verified (active) facts grouped by life spine
     grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for f in facts:
-        if f.status != "active":
-            continue
         grouped[spine_for(f.subject_id)].append({
             "id": f.id, "text": f.text, "subject_id": f.subject_id,
             "valid_from": f.valid_from, "evidence": list(f.evidence or []),
@@ -490,7 +712,6 @@ def onboarding_status(
         for theme, items in sorted(grouped.items()) if items
     }
 
-    # --- by_theme + rising_21d (anchored at latest fact date or ?as_of=)
     def _parse_day(value: str | None):
         try:
             return datetime.fromisoformat(str(value)[:10]).date()
@@ -522,10 +743,8 @@ def onboarding_status(
         if stats["rising_21d"]:
             rising.append(spine)
 
-    # --- privacy shield: quarantine counts only, never raw text
     quarantine: dict[str, int] = call_opt(store, "get_quarantine_counts", owner, default={}) or {}
 
-    # --- compute saved (owner-hook / agent-cli, scoped to this owner's jobs)
     jobs = _list_opt(store, "list_jobs")
     attempts = _list_opt(store, "list_attempts")
     owner_job_ids = {j.id for j in jobs if getattr(j, "owner", owner) == owner}
@@ -570,10 +789,68 @@ def onboarding_status(
                 "demo_cost_saved_usd": round(saved_usd, 6),
             },
         },
-        "provenance": "user_supplied",
+        "provenance": _envelope_provenance((f.provenance for f in facts), is_demo=is_demo),
         "as_of": as_of or now_iso,
         "demo_data": is_demo,
     }
+
+
+def _extract_record_span(
+    record_text: str,
+    fact_text: str,
+    fact_text_orig: str | None,
+    *,
+    span_start: int | None = None,
+    span_end: int | None = None,
+    max_chars: int = 220,
+) -> tuple[str, int, int]:
+    """Return a bounded excerpt (span, start, end) from record_text instead of the whole raw record."""
+    raw = record_text or ""
+    if not raw:
+        return "", 0, 0
+    if (
+        span_start is not None
+        and span_end is not None
+        and 0 <= span_start < span_end <= len(raw)
+    ):
+        excerpt = raw[span_start:span_end]
+        if len(excerpt) <= max_chars:
+            return excerpt, span_start, span_end
+        return excerpt[:max_chars].rstrip() + "...", span_start, span_start + max_chars
+
+    if len(raw) <= max_chars:
+        return raw, 0, len(raw)
+
+    # Locate the strongest token overlap window between the fact and long record.
+    terms = [
+        tok
+        for tok in f"{fact_text} {fact_text_orig or ''}".lower().replace(".", " ").split()
+        if len(tok) >= 4
+    ]
+    low = raw.lower()
+    anchor = 0
+    for term in terms:
+        pos = low.find(term)
+        if pos >= 0:
+            anchor = pos
+            break
+    half = max_chars // 2
+    start = max(0, anchor - half // 2)
+    if start > 0:
+        ws = raw.find(" ", start)
+        if 0 < ws < anchor:
+            start = ws + 1
+    end = min(len(raw), start + max_chars)
+    if end < len(raw):
+        ws_end = raw.rfind(" ", start, end)
+        if ws_end > start + half:
+            end = ws_end
+    snippet = raw[start:end].strip()
+    if start > 0:
+        snippet = "..." + snippet
+    if end < len(raw):
+        snippet = snippet + "..."
+    return snippet, start, end
 
 
 @router.get("/why/{fact_id}")
@@ -584,15 +861,106 @@ def why_fact(
     store: GraphStore = Depends(get_store),
 ) -> dict[str, Any]:
     now_iso, is_demo = _meta(store, owner)
-    facts = {f.id: f for f in store.visible_facts(owner, limit=10_000)}
-    fact = facts.get(fact_id)
+    get_fn = getattr(store, "get_facts", None)
+    if callable(get_fn):
+        found = get_fn(owner, [fact_id])
+        fact = found[0] if found else None
+    else:
+        fact = next((f for f in store.visible_facts(owner, limit=200) if f.id == fact_id), None)
     if fact is None:
         raise HTTPException(status_code=404, detail="Fact not found or forgotten")
 
-    records = call_opt(store, "get_records", owner, fact.evidence, default=[])
+    subjects = {s.id: s for s in call_opt(store, "list_subjects", owner, default=[])}
+    if _is_sensitive_subject(subjects.get(fact.subject_id)) and fact.provenance not in (
+        "user_supplied",
+        "provider_confirmed",
+    ):
+        raise HTTPException(status_code=404, detail="Fact not found or forgotten")
+
+    span_record_id = getattr(fact, "span_record_id", None)
+    span_start = getattr(fact, "span_start", None)
+    span_end = getattr(fact, "span_end", None)
+    reason_text = getattr(fact, "reason_text", None)
+    reason_record_id = getattr(fact, "reason_record_id", None)
+    reason_start = getattr(fact, "reason_start", None)
+    reason_end = getattr(fact, "reason_end", None)
+
+    db_obj = getattr(store, "db", None)
+    if db_obj is not None and reason_text is None and span_record_id is None and reason_record_id is None:
+        try:
+            with db_obj.connection() as conn:
+                extra = conn.execute(
+                    """
+                    SELECT span_record_id, span_start, span_end,
+                           reason_text, reason_record_id, reason_start, reason_end
+                    FROM facts
+                    WHERE owner = %s AND id = %s AND (erased_at IS NULL)::int = 1
+                    """,
+                    (owner, fact.id),
+                ).fetchone()
+            if extra:
+                span_record_id = extra["span_record_id"]
+                span_start = extra["span_start"]
+                span_end = extra["span_end"]
+                reason_text = extra["reason_text"]
+                reason_record_id = extra["reason_record_id"]
+                reason_start = extra["reason_start"]
+                reason_end = extra["reason_end"]
+        except Exception:
+            pass
+
+    rec_ids = list(dict.fromkeys([*fact.evidence, *([reason_record_id] if reason_record_id else [])]))
+    records = call_opt(store, "get_records", owner, rec_ids, default=[])
+    rec_by_id = {r.id: r for r in records}
     attempt: Attempt | None = call_opt(store, "get_attempt", fact.attempt_id, default=None) if fact.attempt_id else None
     is_owner_hook = bool(attempt and attempt.worker_kind == "owner-hook")
     model_label = "your Claude" if is_owner_hook else (fact.model or (attempt.model if attempt else None) or "unknown")
+    ev_prov = "demo_fixture" if is_demo else fact.provenance
+
+    evidence_spans: list[dict[str, Any]] = []
+    for rid in fact.evidence:
+        r = rec_by_id.get(rid)
+        if r is None:
+            continue
+        use_exact = span_record_id == r.id
+        span_txt, s_lo, s_hi = _extract_record_span(
+            r.text,
+            fact.text,
+            fact.text_orig,
+            span_start=span_start if use_exact else None,
+            span_end=span_end if use_exact else None,
+        )
+        evidence_spans.append({
+            "id": r.id,
+            "source": r.source,
+            "at": r.at,
+            "author": r.author,
+            "span": span_txt,
+            "text": span_txt,
+            "span_start": s_lo,
+            "span_end": s_hi,
+            "provenance": ev_prov,
+            "as_of": r.at,
+        })
+
+    # Stored cited reason ONLY, kept strictly separate from provenance; never generated.
+    clean_reason = (reason_text or "").strip()
+    reason_span: dict[str, Any] | None = None
+    if not clean_reason and reason_record_id and reason_start is not None and reason_end is not None:
+        r_src = rec_by_id.get(reason_record_id)
+        if r_src is not None and 0 <= reason_start < reason_end <= len(r_src.text):
+            clean_reason = r_src.text[reason_start:reason_end].strip()
+    if clean_reason:
+        reason_value = clean_reason
+        if reason_record_id is not None or reason_start is not None:
+            reason_span = {
+                "record_id": reason_record_id,
+                "start": reason_start,
+                "end": reason_end,
+                "text": clean_reason,
+            }
+    else:
+        reason_value = "reason unknown"
 
     return {
         "owner": owner,
@@ -605,20 +973,11 @@ def why_fact(
         "attempt_id": fact.attempt_id,
         "model": model_label,
         "cost_badge": "processed on your Claude · $0 app cost" if is_owner_hook else None,
-        "evidence": [
-            {
-                "id": r.id,
-                "source": r.source,
-                "at": r.at,
-                "author": r.author,
-                "text": r.text,
-                "provenance": "user_supplied",
-                "as_of": r.at,
-            }
-            for r in records
-        ],
+        "evidence": evidence_spans,
         "provenance": fact.provenance,
+        "reason": reason_value,
+        "reason_span": reason_span,
+        "review_state": _review_state(fact.provenance, is_demo),
         "as_of": fact.valid_from or now_iso,
         "demo_data": is_demo or fact.provenance == "demo_fixture",
     }
-

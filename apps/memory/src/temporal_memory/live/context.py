@@ -8,13 +8,13 @@ Ported from:
 """
 from __future__ import annotations
 
-from collections import Counter, defaultdict
+from collections import defaultdict
+import copy
 from datetime import date, datetime, timedelta, timezone
-from math import log
 import re
-from typing import Any
+from typing import Any, Iterable
 
-from temporal_memory.models import Entity, EntitySubject, Fact, GraphStore, Link, Subject
+from temporal_memory.models import Entity, EntitySubject, Fact, GraphStore, HELD_BACK_ROOTS, Link, Subject
 
 _DIACRITICS = re.compile("[\u064b-\u065f\u0670\u0640]")
 _LETTERS = str.maketrans({"أ": "ا", "إ": "ا", "آ": "ا", "ى": "ي", "ة": "ه"})
@@ -36,10 +36,11 @@ _ALIAS_STOPWORDS = frozenset({
     "hr", "it", "md", "ceo", "cfo", "user", "person", "people", "someone", "flat",
 })
 _MIN_AUTO_ALIAS_LEN = 3
+_HELD_BACK_ROOTS = frozenset(HELD_BACK_ROOTS)
 
 _DEFAULT_STORE: GraphStore | None = None
 _ALIAS_CACHE: dict[str, tuple[Any, dict[str, list[Entity]], dict[str, Entity]]] = {}
-_FTS_CACHE: dict[str, tuple[Any, dict[str, Any]]] = {}
+_PACK_CACHE: dict[str, tuple[Any, dict[tuple[str, int], dict[str, Any]]]] = {}
 
 _MONTHS = {
     "jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6,
@@ -58,13 +59,13 @@ def set_default_store(store: GraphStore | None) -> None:
 
 
 def invalidate_alias_cache(owner: str | None = None) -> None:
-    """Clear cached alias and FTS indexes for one owner or all owners."""
+    """Clear cached alias and context-pack caches for one owner or all owners."""
     if owner is None:
         _ALIAS_CACHE.clear()
-        _FTS_CACHE.clear()
+        _PACK_CACHE.clear()
     else:
         _ALIAS_CACHE.pop(owner, None)
-        _FTS_CACHE.pop(owner, None)
+        _PACK_CACHE.pop(owner, None)
 
 
 def fold(text: str) -> str:
@@ -155,16 +156,26 @@ def _call_optional(store: Any, name: str, *args: Any, default: Any = None, **kwa
     return fn(*args, **kwargs) if callable(fn) else default
 
 
-def _build_alias_index(store: Any, owner: str) -> tuple[dict[str, list[Entity]], dict[str, Entity]]:
+def _version_tuple(store: Any, owner: str) -> tuple[int, int, int]:
+    av = _call_optional(store, "alias_version", owner, default=0)
+    fv = _call_optional(store, "facts_version", owner, default=0)
+    pv = _call_optional(store, "privacy_revision", owner, default=0)
+    return (int(av or 0), int(fv or 0), int(pv or 0))
+
+
+def _build_alias_index(
+    store: Any,
+    owner: str,
+    *,
+    version: tuple[int, int, int] | None = None,
+) -> tuple[dict[str, list[Entity]], dict[str, Entity]]:
     entities: list[Entity] = _call_optional(store, "list_entities", owner, default=[])
-    version = _call_optional(
-        store,
-        "alias_version",
-        owner,
-        default=(len(entities), tuple((e.id, tuple(e.aliases), e.status) for e in entities)),
+    ver_key: Any = version if version is not None else (
+        len(entities),
+        tuple((e.id, tuple(e.aliases), e.status) for e in entities),
     )
     cached = _ALIAS_CACHE.get(owner)
-    if cached and cached[0] == version:
+    if cached and cached[0] == ver_key:
         return cached[1], cached[2]
 
     alias_map: dict[str, list[Entity]] = defaultdict(list)
@@ -185,7 +196,7 @@ def _build_alias_index(store: Any, owner: str) -> tuple[dict[str, list[Entity]],
             if ent not in alias_map[key]:
                 alias_map[key].append(ent)
 
-    _ALIAS_CACHE[owner] = (version, dict(alias_map), by_id)
+    _ALIAS_CACHE[owner] = (ver_key, dict(alias_map), by_id)
     return _ALIAS_CACHE[owner][1], by_id
 
 
@@ -237,7 +248,7 @@ def _resolve_collisions(
     for es in entity_subjects:
         ent_subj_ids[es.entity_id].add(es.subject_id)
         subj = subjects_by_id.get(es.subject_id)
-        if subj:
+        if subj and subj.sensitive_cat is None:
             ent_subj_tokens[es.entity_id].update(fold_tokens(subj.label))
             ent_subj_tokens[es.entity_id].update(fold_tokens(subj.path))
 
@@ -264,20 +275,16 @@ def _resolve_collisions(
             continue
 
         scored: list[tuple[float, str, float, Entity]] = []
-        ctx_signals: list[float] = []
         for e in cands:
             ctx = 0.0
-            # Co-occurring unambiguous entities via links or shared subjects
             for uid in unambiguous_ids:
                 if uid in linked_neighbors.get(e.id, ()):
                     ctx += 3.0
                 if ent_subj_ids.get(e.id, set()) & ent_subj_ids.get(uid, set()):
                     ctx += 2.0
-            # Direct query-token overlap with this entity's subjects/facts (excluding query stopwords)
             meaningful_q = query_tokens - _CTX_STOPWORDS - {phrase}
             overlap = meaningful_q & (ent_subj_tokens.get(e.id, set()) | ent_fact_tokens.get(e.id, set()))
             ctx += 1.5 * len(overlap)
-            ctx_signals.append(ctx)
             scored.append((ctx, _recency_val(e), e.salience, e))
 
         scored.sort(key=lambda item: (item[0], item[1], item[2]), reverse=True)
@@ -286,7 +293,6 @@ def _resolve_collisions(
             winner = scored[0][3]
             chosen.setdefault(winner.id, {"entity": winner, "matched_via": phrase, "ambiguous": False, "confidence": "high"})
         else:
-            # No contextual tie-breaker: keep both ordered by recency, marked low confidence
             for _, _, _, cand in scored:
                 ambiguous_ids.add(cand.id)
                 chosen.setdefault(cand.id, {"entity": cand, "matched_via": phrase, "ambiguous": True, "confidence": "low"})
@@ -296,85 +302,6 @@ def _resolve_collisions(
         key=lambda r: (0 if not r["ambiguous"] else 1, -r["entity"].salience, r["entity"].name),
     )
     return ordered, ambiguous_ids
-
-
-def _build_fts_index(
-    store: Any,
-    owner: str,
-    facts: list[Fact],
-    by_id: dict[str, Entity],
-    subjects_by_id: dict[str, Subject],
-) -> dict[str, Any]:
-    ver = _call_optional(
-        store,
-        "facts_version",
-        owner,
-        default=(len(facts), tuple((f.id, f.status, f.valid_to) for f in facts)),
-    )
-    cached = _FTS_CACHE.get(owner)
-    if cached and cached[0] == ver:
-        return cached[1]
-
-    doc_tokens: dict[str, Counter[str]] = {}
-    doc_len: dict[str, int] = {}
-    postings: dict[str, list[tuple[str, int]]] = defaultdict(list)
-    fact_map: dict[str, Fact] = {}
-
-    for f in facts:
-        fact_map[f.id] = f
-        parts = [f.text, f.text_orig or ""]
-        subj = subjects_by_id.get(f.subject_id)
-        if subj:
-            parts.extend([subj.label, subj.path])
-        for fe in f.entities:
-            if fe.role:
-                parts.append(fe.role)
-            ent = by_id.get(fe.entity_id)
-            if ent:
-                parts.append(ent.name)
-                parts.extend(ent.aliases)
-        counts = Counter(fold_tokens(" ".join(parts)))
-        doc_tokens[f.id] = counts
-        total = sum(counts.values())
-        doc_len[f.id] = total
-        for tok, tf in counts.items():
-            postings[tok].append((f.id, tf))
-
-    n = len(facts)
-    avgdl = (sum(doc_len.values()) / n) if n else 1.0
-    idx = {"n": n, "avgdl": avgdl, "doc_len": doc_len, "postings": dict(postings), "fact_map": fact_map}
-    _FTS_CACHE[owner] = (ver, idx)
-    return idx
-
-
-def _bm25_search(
-    idx: dict[str, Any],
-    q_tokens: list[str],
-    allowed_ids: set[str] | None = None,
-    k1: float = 1.5,
-    b: float = 0.75,
-) -> list[str]:
-    n = idx["n"]
-    if not n or not q_tokens:
-        return []
-    avgdl = idx["avgdl"] or 1.0
-    doc_len = idx["doc_len"]
-    postings = idx["postings"]
-    scores: dict[str, float] = defaultdict(float)
-
-    for q in set(q_tokens):
-        plist = postings.get(q)
-        if not plist:
-            continue
-        df = len(plist)
-        idf = log(1.0 + (n - df + 0.5) / (df + 0.5))
-        for doc_id, tf in plist:
-            if allowed_ids is not None and doc_id not in allowed_ids:
-                continue
-            dl = doc_len[doc_id] or 1
-            denom = tf + k1 * (1.0 - b + b * dl / avgdl)
-            scores[doc_id] += idf * tf * (k1 + 1.0) / denom
-    return [doc_id for doc_id, _ in sorted(scores.items(), key=lambda kv: (-kv[1], kv[0]))]
 
 
 def _extract_candidates(text: str, matched_tokens: set[str], existing_names: set[str]) -> list[str]:
@@ -392,18 +319,54 @@ def _extract_candidates(text: str, matched_tokens: set[str], existing_names: set
     return found
 
 
+def _is_sensitive_hidden(fact: Fact, subjects_by_id: dict[str, Subject]) -> bool:
+    if fact.provenance in ("user_supplied", "provider_confirmed"):
+        return False
+    subj = subjects_by_id.get(fact.subject_id)
+    if subj is None:
+        return False
+    root = (subj.path or "").split("/")[0].strip().lower()
+    return subj.sensitive_cat is not None or root in _HELD_BACK_ROOTS
+
+
+def _review_state(prov: str, is_demo: bool) -> str:
+    if is_demo or prov == "demo_fixture":
+        return "demo"
+    if prov in ("user_supplied", "provider_confirmed"):
+        return "confirmed"
+    return "pending_review"
+
+
+def _envelope_provenance(items: Iterable[str], *, is_demo: bool) -> str:
+    if is_demo:
+        return "demo_fixture"
+    vals = {p for p in items if p}
+    if not vals:
+        return "inferred"
+    if vals <= {"user_supplied", "provider_confirmed"}:
+        return "user_supplied"
+    return "inferred"
+
+
 def context_pack(owner: str, text: str, max_tokens: int = 1500, *, store: GraphStore | None = None) -> dict:
-    """Build deterministic L1 context pack (no LLM, target p95 < 150 ms)."""
+    """Build deterministic L1 context pack using bounded SQL retrieval (no LLM, p95 < 150 ms)."""
     st: Any = store or _DEFAULT_STORE
     if st is None:
         raise RuntimeError("No GraphStore configured for live.context_pack")
 
     now_iso = datetime.now(timezone.utc).isoformat()
+    ver = _version_tuple(st, owner)
+    cache_key = (fold(text), max_tokens)
+    cached_owner = _PACK_CACHE.get(owner)
+    if cached_owner and cached_owner[0] == ver and cache_key in cached_owner[1]:
+        hit_pack = copy.deepcopy(cached_owner[1][cache_key])
+        hit_pack["as_of"] = now_iso
+        return hit_pack
+
     owner_obj = _call_optional(st, "get_owner", owner, default=None)
     is_demo = bool(owner_obj and owner_obj.kind == "demo")
 
-    alias_map, by_id = _build_alias_index(st, owner)
-    facts: list[Fact] = st.visible_facts(owner, limit=10_000)
+    alias_map, by_id = _build_alias_index(st, owner, version=ver)
     subjects: list[Subject] = _call_optional(st, "list_subjects", owner, default=[])
     subjects_by_id = {s.id: s for s in subjects}
     links: list[Link] = _call_optional(st, "list_links", owner, default=[])
@@ -411,76 +374,127 @@ def context_pack(owner: str, text: str, max_tokens: int = 1500, *, store: GraphS
 
     q_tokens = fold_tokens(text)
     alias_hits, matched_toks = _match_aliases(q_tokens, alias_map)
+    ambig_eids = sorted({c.id for _, cands in alias_hits if len(cands) > 1 for c in cands})
+    ambig_facts: list[Fact] = (
+        st.visible_facts(owner, entity_ids=ambig_eids, limit=80) if ambig_eids else []
+    )
     resolved_entities, _ = _resolve_collisions(
-        alias_hits, set(q_tokens), links, entity_subjects, subjects_by_id, facts
+        alias_hits, set(q_tokens), links, entity_subjects, subjects_by_id, ambig_facts
     )
     matched_eids = {item["entity"].id for item in resolved_entities}
 
-    # Subject hints from matched entities + subject label tokens in query
     q_tok_set = set(q_tokens)
     hinted_sids: set[str] = {es.subject_id for es in entity_subjects if es.entity_id in matched_eids}
     for subj in subjects:
-        if q_tok_set & set(fold_tokens(subj.label + " " + subj.path)):
+        if subj.sensitive_cat is None and (q_tok_set & set(fold_tokens(subj.label + " " + subj.path))):
             hinted_sids.add(subj.id)
 
-    scoped_fact_ids: set[str] | None = None
-    if matched_eids or hinted_sids:
-        scoped_fact_ids = {
-            f.id
-            for f in facts
-            if f.subject_id in hinted_sids or any(fe.entity_id in matched_eids for fe in f.entities)
-        }
+    search_fn = getattr(st, "search_candidates", None)
+    get_facts_fn = getattr(st, "get_facts", None)
+    candidate_facts: list[Fact] = []
+    if callable(search_fn) and callable(get_facts_fn):
+        cands = search_fn(
+            owner,
+            text,
+            entity_ids=list(matched_eids) or None,
+            subject_ids=list(hinted_sids) or None,
+            limit=50,
+        )
+        ranked_ids = [c.fact_id for c in cands]
+        candidate_facts = get_facts_fn(owner, ranked_ids)
+    else:
+        seen_ids: set[str] = set()
+        if matched_eids or hinted_sids:
+            for f in st.visible_facts(
+                owner,
+                entity_ids=list(matched_eids) or None,
+                subject_ids=list(hinted_sids) or None,
+                limit=50,
+            ):
+                if f.id not in seen_ids:
+                    seen_ids.add(f.id)
+                    candidate_facts.append(f)
+        for f in st.visible_facts(owner, limit=50):
+            if f.id not in seen_ids:
+                seen_ids.add(f.id)
+                candidate_facts.append(f)
 
-    idx = _build_fts_index(st, owner, facts, by_id, subjects_by_id)
-    scoped_ranked = _bm25_search(idx, q_tokens, scoped_fact_ids) if scoped_fact_ids else []
-    if scoped_fact_ids and not scoped_ranked:
-        # Entity matched by alias alone (e.g. "Where does Omar work?") without query lexical hit on text
-        scoped_ranked = [
-            f.id
-            for f in sorted(
-                (idx["fact_map"][fid] for fid in scoped_fact_ids if fid in idx["fact_map"]),
-                key=lambda x: x.valid_from or "",
-                reverse=True,
-            )
-        ]
-    global_ranked = _bm25_search(idx, q_tokens, None)
-    fused_ids = rrf([r for r in (scoped_ranked[:30], global_ranked[:30]) if r])
+    candidate_facts = [
+        f for f in candidate_facts
+        if f.status != "history" and not _is_sensitive_hidden(f, subjects_by_id)
+    ]
 
-    # Open changes related to matched entities or retrieved facts
-    relevant_fids = set(fused_ids[:16])
+    # Open changes related to matched entities or top retrieved facts (bounded SQL query when supported)
+    top_fids = [f.id for f in candidate_facts[:16]]
     open_changes: list[dict[str, Any]] = []
-    facts_by_id = idx["fact_map"]
-    seen_changes: set[str] = set()
-    for f in facts:
-        if f.status not in ("superseded", "ended"):
-            continue
-        touches_match = (f.id in relevant_fids) or any(fe.entity_id in matched_eids for fe in f.entities)
-        if not touches_match or f.id in seen_changes:
-            continue
-        seen_changes.add(f.id)
-        sup = facts_by_id.get(f.superseded_by) if f.superseded_by else None
-        open_changes.append({
-            "fact_id": f.id,
-            "status": f.status,
-            "summary": f"{f.text} (was until {f.valid_to or '?'})" + (f" -> {sup.text}" if sup else ""),
-            "valid_from": f.valid_from,
-            "valid_to": f.valid_to,
-            "superseded_by": f.superseded_by,
-            "provenance": f.provenance,
-            "as_of": now_iso,
-        })
+    open_fn = getattr(st, "list_open_changes", None)
+    if callable(open_fn):
+        for f, sup_text in open_fn(owner, entity_ids=list(matched_eids), fact_ids=top_fids, limit=8):
+            if _is_sensitive_hidden(f, subjects_by_id):
+                continue
+            open_changes.append({
+                "fact_id": f.id,
+                "status": f.status,
+                "summary": f"{f.text} (was until {f.valid_to or '?'})" + (f" -> {sup_text}" if sup_text else ""),
+                "valid_from": f.valid_from,
+                "valid_to": f.valid_to,
+                "superseded_by": f.superseded_by,
+                "provenance": f.provenance,
+                "as_of": now_iso,
+            })
+    else:
+        fact_pool = list(candidate_facts)
+        if matched_eids:
+            seen_pool = {f.id for f in fact_pool}
+            for f in st.visible_facts(owner, entity_ids=list(matched_eids), limit=50):
+                if f.id not in seen_pool:
+                    fact_pool.append(f)
+                    seen_pool.add(f.id)
+        by_fid = {f.id: f for f in fact_pool}
+        relevant_fids = set(top_fids)
+        for f in fact_pool:
+            if f.status not in ("superseded", "ended") or _is_sensitive_hidden(f, subjects_by_id):
+                continue
+            if not ((f.id in relevant_fids) or any(fe.entity_id in matched_eids for fe in f.entities)):
+                continue
+            sup = by_fid.get(f.superseded_by) if f.superseded_by else None
+            if sup is None and f.superseded_by and callable(get_facts_fn):
+                res = get_facts_fn(owner, [f.superseded_by])
+                sup = res[0] if res else None
+            open_changes.append({
+                "fact_id": f.id,
+                "status": f.status,
+                "summary": f"{f.text} (was until {f.valid_to or '?'})" + (f" -> {sup.text}" if sup else ""),
+                "valid_from": f.valid_from,
+                "valid_to": f.valid_to,
+                "superseded_by": f.superseded_by,
+                "provenance": f.provenance,
+                "as_of": now_iso,
+            })
+            if len(open_changes) >= 8:
+                break
 
-    # Pack within token budget (approx 4 chars per token)
     char_budget = max(200, max_tokens * 4)
     used_chars = 0
 
     es_by_eid: dict[str, list[EntitySubject]] = defaultdict(list)
     for es in entity_subjects:
+        subj = subjects_by_id.get(es.subject_id)
+        if subj and subj.sensitive_cat is not None:
+            continue
         es_by_eid[es.entity_id].append(es)
+
+    sal_eids = [item["entity"].id for item in resolved_entities]
+    sal_map: dict[str, float] = (
+        (_call_optional(st, "entity_salience_map", owner, entity_ids=sal_eids, default={}) or {})
+        if sal_eids
+        else {}
+    )
 
     entity_cards: list[dict[str, Any]] = []
     for item in resolved_entities:
         ent: Entity = item["entity"]
+        ent_prov = getattr(ent, "provenance", "inferred") or "inferred"
         roles = [
             {
                 "subject_id": es.subject_id,
@@ -496,12 +510,15 @@ def context_pack(owner: str, text: str, max_tokens: int = 1500, *, store: GraphS
             "status": ent.status,
             "relation_to_user": ent.relation_to_user,
             "closeness_tier": ent.closeness_tier,
+            "closeness_suggested": getattr(ent, "closeness_suggested", None),
             "aliases": ent.aliases,
+            "salience": sal_map.get(ent.id, ent.salience),
             "roles_per_subject": roles,
             "ambiguous": item["ambiguous"],
             "confidence": item["confidence"],
             "matched_via": item["matched_via"],
-            "provenance": "user_supplied" if ent.status == "active" else "inferred",
+            "provenance": ent_prov,
+            "review_state": _review_state(ent_prov, is_demo),
             "as_of": ent.last_seen or now_iso,
         }
         est = len(ent.name) + 60 + sum(len(str(r)) for r in roles)
@@ -510,10 +527,7 @@ def context_pack(owner: str, text: str, max_tokens: int = 1500, *, store: GraphS
             used_chars += est
 
     packed_facts: list[dict[str, Any]] = []
-    for fid in fused_ids:
-        f = facts_by_id.get(fid)
-        if not f:
-            continue
+    for f in candidate_facts:
         est = len(f.text) + len(f.text_orig or "") + 64
         if packed_facts and used_chars + est > char_budget:
             break
@@ -525,7 +539,9 @@ def context_pack(owner: str, text: str, max_tokens: int = 1500, *, store: GraphS
             "valid_from": f.valid_from,
             "valid_to": f.valid_to,
             "status": f.status,
+            "superseded_by": f.superseded_by,
             "provenance": f.provenance,
+            "review_state": _review_state(f.provenance, is_demo),
             "as_of": f.valid_from or now_iso,
             "demo_data": is_demo or f.provenance == "demo_fixture",
         })
@@ -533,8 +549,12 @@ def context_pack(owner: str, text: str, max_tokens: int = 1500, *, store: GraphS
 
     existing_folded = {fold(e.name) for e in by_id.values()} | {fold(a) for e in by_id.values() for a in e.aliases}
     candidate_names = _extract_candidates(text, matched_toks, existing_folded)
+    env_prov = _envelope_provenance(
+        [*(f["provenance"] for f in packed_facts), *(e["provenance"] for e in entity_cards)],
+        is_demo=is_demo,
+    )
 
-    return {
+    result = {
         "owner": owner,
         "entities": entity_cards,
         "facts": packed_facts,
@@ -543,7 +563,15 @@ def context_pack(owner: str, text: str, max_tokens: int = 1500, *, store: GraphS
         "dates": extract_date(text),
         "aed_amounts": extract_aed(text),
         "tokens_est": max(1, used_chars // 4),
-        "provenance": "user_supplied",
+        "provenance": env_prov,
         "as_of": now_iso,
         "demo_data": is_demo,
     }
+    bucket = _PACK_CACHE.setdefault(owner, (ver, {}))
+    if bucket[0] != ver:
+        _PACK_CACHE[owner] = (ver, {cache_key: copy.deepcopy(result)})
+    else:
+        if len(bucket[1]) >= 128:
+            bucket[1].clear()
+        bucket[1][cache_key] = copy.deepcopy(result)
+    return result

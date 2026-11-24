@@ -106,7 +106,8 @@ def forget_source(owner: str, record_ids: list[str]) -> dict[str, Any]:
 
                 if plan["erase"]:
                     cur.execute(
-                        "UPDATE facts SET erased_at = now() "
+                        "UPDATE facts SET erased_at = now(), "
+                        "embedding = NULL, embedding_model = NULL, embedded_at = NULL "
                         "WHERE owner = %(owner)s AND erased_at IS NULL "
                         "AND id = ANY(%(fids)s)",
                         {"owner": owner, "fids": plan["erase"]},
@@ -321,7 +322,8 @@ def forget_fact(owner: str, fact_id: str) -> dict[str, Any]:
         with conn:
             with conn.cursor() as cur:
                 cur.execute(
-                    "UPDATE facts SET erased_at = now() "
+                    "UPDATE facts SET erased_at = now(), "
+                    "embedding = NULL, embedding_model = NULL, embedded_at = NULL "
                     "WHERE owner = %(owner)s AND id = %(fid)s AND erased_at IS NULL "
                     "RETURNING id",
                     {"owner": owner, "fid": fact_id},

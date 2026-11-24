@@ -60,6 +60,12 @@ def run_job(
             return {"status": "skipped", "job_id": job_id}
         return {"status": "applied", "job_id": job_id, "days": count}
 
+    if bundle.job.kind == "embed.backfill":
+        from temporal_memory.core.embed import embed_pending_facts
+
+        stats = embed_pending_facts(jobs_svc.db, owner=bundle.job.owner)
+        return {"status": "applied", "job_id": job_id, **stats}
+
     attempt = extract.run(bundle, used_runner, used_model)
     attempt.worker_id = worker.id
     attempt.worker_kind = worker.kind
@@ -75,3 +81,17 @@ def run_job(
 def reconcile(db: Database | None = None) -> dict[str, int]:
     """Republish pending outbox rows, trigger fallback, and requeue/dead-letter expired leases."""
     return reconcile_outbox(db or get_database())
+
+
+@celery_app.task(name="memory.embed_backfill")
+def embed_backfill(
+    owner: str | None = None,
+    *,
+    batch_size: int = 64,
+    limit: int | None = None,
+    db: Database | None = None,
+) -> dict[str, int]:
+    """Embed new/updated eligible facts in batches and backfill existing facts."""
+    from temporal_memory.core.embed import embed_pending_facts
+
+    return embed_pending_facts(db or get_database(), owner=owner, batch_size=batch_size, limit=limit)

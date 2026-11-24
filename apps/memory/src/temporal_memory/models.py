@@ -26,7 +26,7 @@ FactOp = Literal["new", "update", "end"]
 LinkRel = Literal["WORKS_AT", "WORKS_ON", "FRIEND_OF", "FAMILY_OF", "COLLEAGUE_OF", "MANAGES", "LIVES_IN",
                   "LOCATED_IN", "APPLIED_TO", "INTERVIEWS_WITH", "MEMBER_OF", "STUDIES", "OWNS", "PART_OF",
                   "ATTENDS", "RELATED_TO"]
-JobKind = Literal["extract.live", "extract.day", "extract.session", "reflect.week", "import.split"]
+JobKind = Literal["extract.live", "extract.day", "extract.session", "reflect.week", "import.split", "embed.backfill"]
 JobState = Literal["queued", "leased", "submitted", "applied", "rejected", "expired", "dead"]
 Pool = Literal["internal", "owner-device"]
 # internal-cloud  = our Haiku API worker      internal-local = our LM Studio worker (after release bar)
@@ -323,7 +323,7 @@ class JobBundle:  # what a claimer receives (Celery worker, agent-cli worker, or
 class Candidate(NamedTuple):
     fact_id: str
     score: float
-    channel: Literal["fts", "entity", "subject", "date"]
+    channel: Literal["fts", "entity", "subject", "date", "semantic"]
 
 
 # ---------------------------------------------------------------- module signatures (implement exactly)

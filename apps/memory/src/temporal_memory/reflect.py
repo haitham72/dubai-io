@@ -114,16 +114,20 @@ def reflect_week(
     w0 = date.fromisoformat(week_start[:10])
     w_end = (w0 + timedelta(days=6)).isoformat()
 
-    all_visible = st.visible_facts(owner, limit=10_000)
-    non_sens = [
+    iter_fn = getattr(st, "iter_visible_facts", None)
+    if callable(iter_fn):
+        raw_week = list(iter_fn(owner, date_from=w0.isoformat(), date_to=w_end, page_size=500))
+    else:
+        raw_week = [
+            f for f in st.visible_facts(owner, limit=200)
+            if w0.isoformat() <= (f.valid_from or "")[:10] <= w_end
+        ]
+    week_facts = [
         f
-        for f in all_visible
+        for f in raw_week
         if f.status != "history" and f.status != "hypothesis" and not pre_write(f.text)
     ]
-    fact_by_id = {f.id: f for f in non_sens}
-    week_facts = [
-        f for f in non_sens if w0.isoformat() <= (f.valid_from or "")[:10] <= w_end
-    ]
+    fact_by_id = {f.id: f for f in week_facts}
 
     prior_md = call_opt(st, "get_user_md", owner, default="") or ""
     bundle = JobBundle(
