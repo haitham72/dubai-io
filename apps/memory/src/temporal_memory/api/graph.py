@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from typing import Any, Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Path as FPath, Query
@@ -340,49 +340,48 @@ def _collect_sql_projection(
 
         hidden_fids = _hidden_fact_ids_for_owner(conn, owner)
         hid_clause = "AND NOT (f.id = ANY(%s))" if hidden_fids else ""
+        cutoff_30d = (date.today() - timedelta(days=30)).isoformat()
 
-        subj_agg_rows = conn.execute(
-            f"""
-            WITH counts AS (
-                SELECT s.id AS subject_id,
-                       s.provenance,
-                       s.user_confirmed_at,
-                       COUNT(f.id)::int AS total_cnt,
-                       COUNT(f.id) FILTER (WHERE f.provenance IN ('user_supplied', 'provider_confirmed'))::int AS conf_cnt,
-                       COUNT(f.id) FILTER (WHERE f.valid_from >= to_char(CURRENT_DATE - 30, 'YYYY-MM-DD'))::int AS mentions_30d,
-                       MAX(f.valid_from) AS max_valid_from,
-                       MAX(NULLIF(substr(f.valid_from, 1, 10), '')) AS max_valid_day
-                FROM subjects s
-                LEFT JOIN facts f ON f.owner = s.owner AND f.subject_id = s.id
-                  AND f.erased_at IS NULL AND f.status <> 'history' {hid_clause}
-                WHERE s.owner = %s
-                GROUP BY s.id, s.provenance, s.user_confirmed_at
-            )
-            SELECT subject_id, total_cnt, conf_cnt, max_valid_from,
-                   GREATEST(
-                       0.05,
-                       0.5 * LN(1.0 + mentions_30d)
-                       + 0.3 * EXP(
-                           -GREATEST(
-                               0,
-                               (CURRENT_DATE - COALESCE(
-                                   CASE WHEN COALESCE(max_valid_day, '') ~ '^[0-9]{{4}}-[0-9]{{2}}-[0-9]{{2}}$'
-                                        THEN max_valid_day::date
-                                        ELSE CURRENT_DATE - 90
-                                   END,
-                                   CURRENT_DATE - 90
-                               ))
-                           )::double precision / 30.0
-                       )
-                       + 0.2 * CASE WHEN provenance = 'user_supplied' OR user_confirmed_at IS NOT NULL THEN 1.0 ELSE 0.0 END
-                   ) AS sal
-            FROM counts
-            """,
-            (hidden_fids, owner) if hidden_fids else (owner,),
-        ).fetchall()
-
-        subj_ev_rows: list[dict[str, Any]] = []
         if view == "subjects":
+            subj_agg_rows = conn.execute(
+                f"""
+                WITH counts AS (
+                    SELECT s.id AS subject_id,
+                           s.provenance,
+                           s.user_confirmed_at,
+                           COUNT(f.id)::int AS total_cnt,
+                           COUNT(f.id) FILTER (WHERE f.provenance IN ('user_supplied', 'provider_confirmed'))::int AS conf_cnt,
+                           COUNT(f.id) FILTER (WHERE f.valid_from >= %s)::int AS mentions_30d,
+                           MAX(f.valid_from) AS max_valid_from,
+                           MAX(NULLIF(substr(f.valid_from, 1, 10), '')) AS max_valid_day
+                    FROM subjects s
+                    LEFT JOIN facts f ON f.owner = s.owner AND f.subject_id = s.id
+                      AND f.erased_at IS NULL AND f.status <> 'history' {hid_clause}
+                    WHERE s.owner = %s
+                    GROUP BY s.id, s.provenance, s.user_confirmed_at
+                )
+                SELECT subject_id, total_cnt, conf_cnt, max_valid_from,
+                       GREATEST(
+                           0.05,
+                           0.5 * LN(1.0 + mentions_30d)
+                           + 0.3 * EXP(
+                               -GREATEST(
+                                   0,
+                                   (CURRENT_DATE - COALESCE(
+                                       CASE WHEN COALESCE(max_valid_day, '') ~ '^[0-9]{{4}}-[0-9]{{2}}-[0-9]{{2}}$'
+                                            THEN max_valid_day::date
+                                            ELSE CURRENT_DATE - 90
+                                       END,
+                                       CURRENT_DATE - 90
+                                   ))
+                               )::double precision / 30.0
+                           )
+                           + 0.2 * CASE WHEN provenance = 'user_supplied' OR user_confirmed_at IS NOT NULL THEN 1.0 ELSE 0.0 END
+                       ) AS sal
+                FROM counts
+                """,
+                (cutoff_30d, hidden_fids, owner) if hidden_fids else (cutoff_30d, owner),
+            ).fetchall()
             subj_ev_rows = conn.execute(
                 f"""
                 SELECT s.id AS subject_id, ev.id, ev.provenance
@@ -399,16 +398,13 @@ def _collect_sql_projection(
                 """,
                 (hidden_fids, owner) if hidden_fids else (owner,),
             ).fetchall()
-
-        ent_agg_rows = conn.execute(
-            f"""
-            WITH agg AS MATERIALIZED (
+            ent_agg_rows = conn.execute(
+                f"""
                 SELECT fe.entity_id,
                        COUNT(*)::int AS total_cnt,
                        COUNT(*) FILTER (WHERE f.provenance IN ('user_supplied', 'provider_confirmed'))::int AS conf_cnt,
-                       COUNT(*) FILTER (WHERE f.valid_from >= to_char(CURRENT_DATE - 30, 'YYYY-MM-DD'))::int AS mentions_30d,
-                       MAX(f.valid_from) AS max_valid_from,
-                       MAX(NULLIF(substr(f.valid_from, 1, 10), '')) AS max_valid_day
+                       NULL::text AS max_valid_from,
+                       0.5::double precision AS sal
                 FROM fact_entities fe
                 JOIN facts f ON f.owner = fe.owner AND f.id = fe.fact_id
                 LEFT JOIN subjects s ON s.owner = f.owner AND s.id = f.subject_id
@@ -419,34 +415,71 @@ def _collect_sql_projection(
                       OR f.provenance IN ('user_supplied', 'provider_confirmed')
                   )
                 GROUP BY fe.entity_id
-            )
-            SELECT e.id AS entity_id,
-                   COALESCE(a.total_cnt, 0) AS total_cnt,
-                   COALESCE(a.conf_cnt, 0) AS conf_cnt,
-                   a.max_valid_from,
-                   GREATEST(
-                       0.05,
-                       0.5 * LN(1.0 + COALESCE(a.mentions_30d, 0))
-                       + 0.3 * EXP(
-                           -GREATEST(
-                               0,
-                               (CURRENT_DATE - COALESCE(
-                                   CASE WHEN COALESCE(a.max_valid_day, substr(e.last_seen, 1, 10), '') ~ '^[0-9]{{4}}-[0-9]{{2}}-[0-9]{{2}}$'
-                                        THEN COALESCE(a.max_valid_day, substr(e.last_seen, 1, 10))::date
-                                        ELSE CURRENT_DATE - 90
-                                   END,
-                                   CURRENT_DATE - 90
-                               ))
-                           )::double precision / 30.0
-                       )
-                       + 0.2 * CASE WHEN e.provenance = 'user_supplied' OR e.user_confirmed_at IS NOT NULL THEN 1.0 ELSE 0.0 END
-                   ) AS sal
-            FROM entities e
-            LEFT JOIN agg a ON a.entity_id = e.id
-            WHERE e.owner = %s AND e.erased_at IS NULL AND e.status <> 'merged'
-            """,
-            (owner, hidden_fids, owner) if hidden_fids else (owner, owner),
-        ).fetchall()
+                """,
+                (owner, hidden_fids) if hidden_fids else (owner,),
+            ).fetchall()
+        else:
+            subj_agg_rows = conn.execute(
+                f"""
+                SELECT f.subject_id,
+                       COUNT(*)::int AS total_cnt,
+                       COUNT(*) FILTER (WHERE f.provenance IN ('user_supplied', 'provider_confirmed'))::int AS conf_cnt,
+                       NULL::text AS max_valid_from,
+                       0.5::double precision AS sal
+                FROM facts f
+                WHERE f.owner = %s AND f.erased_at IS NULL AND f.status <> 'history' {hid_clause}
+                GROUP BY f.subject_id
+                """,
+                (owner, hidden_fids) if hidden_fids else (owner,),
+            ).fetchall()
+            subj_ev_rows = []
+            ent_agg_rows = conn.execute(
+                f"""
+                WITH agg AS MATERIALIZED (
+                    SELECT fe.entity_id,
+                           COUNT(*)::int AS total_cnt,
+                           COUNT(*) FILTER (WHERE f.provenance IN ('user_supplied', 'provider_confirmed'))::int AS conf_cnt,
+                           COUNT(*) FILTER (WHERE f.valid_from >= %s)::int AS mentions_30d,
+                           MAX(f.valid_from) AS max_valid_from,
+                           MAX(NULLIF(substr(f.valid_from, 1, 10), '')) AS max_valid_day
+                    FROM fact_entities fe
+                    JOIN facts f ON f.owner = fe.owner AND f.id = fe.fact_id
+                    LEFT JOIN subjects s ON s.owner = f.owner AND s.id = f.subject_id
+                    WHERE fe.owner = %s AND f.erased_at IS NULL AND f.status <> 'history' {hid_clause}
+                      AND (
+                          s.id IS NULL
+                          OR (s.sensitive_cat IS NULL AND split_part(s.path, '/', 1) NOT IN ('health', 'faith'))
+                          OR f.provenance IN ('user_supplied', 'provider_confirmed')
+                      )
+                    GROUP BY fe.entity_id
+                )
+                SELECT e.id AS entity_id,
+                       COALESCE(a.total_cnt, 0) AS total_cnt,
+                       COALESCE(a.conf_cnt, 0) AS conf_cnt,
+                       a.max_valid_from,
+                       GREATEST(
+                           0.05,
+                           0.5 * LN(1.0 + COALESCE(a.mentions_30d, 0))
+                           + 0.3 * EXP(
+                               -GREATEST(
+                                   0,
+                                   (CURRENT_DATE - COALESCE(
+                                       CASE WHEN COALESCE(a.max_valid_day, substr(e.last_seen, 1, 10), '') ~ '^[0-9]{{4}}-[0-9]{{2}}-[0-9]{{2}}$'
+                                            THEN COALESCE(a.max_valid_day, substr(e.last_seen, 1, 10))::date
+                                            ELSE CURRENT_DATE - 90
+                                       END,
+                                       CURRENT_DATE - 90
+                                   ))
+                               )::double precision / 30.0
+                           )
+                           + 0.2 * CASE WHEN e.provenance = 'user_supplied' OR e.user_confirmed_at IS NOT NULL THEN 1.0 ELSE 0.0 END
+                       ) AS sal
+                FROM entities e
+                LEFT JOIN agg a ON a.entity_id = e.id
+                WHERE e.owner = %s AND e.erased_at IS NULL AND e.status <> 'merged'
+                """,
+                (cutoff_30d, owner, hidden_fids, owner) if hidden_fids else (cutoff_30d, owner, owner),
+            ).fetchall()
 
         link_ev_rows = conn.execute(
             f"""
