@@ -53,7 +53,8 @@ def test_under18_profile_refused_403_honest_reason(client):
     r = c.put("/api/community/profiles/me", json={"handle": "kid_dxb", "age_band": "under-18"})
     assert r.status_code == 403
     assert "18+" in r.json()["detail"] or "adults-only" in r.json()["detail"].lower()
-    assert c.get("/api/community/profiles/me").status_code == 404
+    no_profile = c.get("/api/community/profiles/me")
+    assert no_profile.status_code == 200 and no_profile.json() == {"profile": None}
 
 
 def test_follow_and_feed_happy_and_empty(client):
