@@ -65,20 +65,59 @@ def run(out_dir: Path) -> dict:
                             "texts": [f["text"] for f in ctx_r.get("facts", [])],
                         }
 
-                    # 8B: Topic asked in 2 separate sessions -> check /hypotheses
-                    c.post(f"/v1/owners/{owner}/context", headers=hdrs, json={"text": "Tell me about AI agents", "max_tokens": 1000})
-                    h_after_1 = len(c.get(f"/v1/owners/{owner}/hypotheses", headers=hdrs).json().get("hypotheses", []))
-                    c.post(f"/v1/owners/{owner}/context", headers=hdrs, json={"text": "How do AI agents do tool calling?", "max_tokens": 1000})
-                    h_after_2 = len(c.get(f"/v1/owners/{owner}/hypotheses", headers=hdrs).json().get("hypotheses", []))
+                    # 8B (E6 rewrite): the real topic path is POST /records source=live, author=owner, meta.session_id.
+                    # A topic named in >= 2 separate sessions yields ONE "I noticed" hypothesis; a topic asked once yields none.
+                    with db.transaction() as conn:
+                        sid_agents = store._ensure_subject_path(conn, owner, "learning/ai-agents", "topic", "AI agents")
+                        sid_once = store._ensure_subject_path(conn, owner, "learning/quantum-gardening", "topic", "Quantum gardening")
+
+                    def post_live(rid, session, text):
+                        r = c.post(f"/v1/owners/{owner}/records", headers=hdrs, json={"records": [{
+                            "id": rid, "source": "live", "at": "2026-11-24T12:00:00+04:00", "author": owner,
+                            "text": text, "meta": {"session_id": session}}]})
+                        return r.status_code
+
+                    def hyps():
+                        return c.get(f"/v1/owners/{owner}/hypotheses", headers=hdrs).json().get("hypotheses", [])
+
+                    codes = [post_live("t1", "sess-1", "How do AI agents work?"),
+                             post_live("t2", "sess-1", "Quantum gardening sounds fun"),
+                             post_live("t3", "sess-1", "Tell me about AI agents again")]  # same session: still one visit
+                    h_after_1 = len(hyps())
+                    codes.append(post_live("t4", "sess-2", "How do AI agents do tool calling?"))
+                    hs = hyps()
+                    h_after_2 = len([h for h in hs if "AI agents" in str(h)])
+                    h_once = len([h for h in hs if "Quantum gardening" in str(h)])
+                    h_total_2 = len(hs)
+
+                    # 8C (E6): Forget the evidence records of the topic hypothesis -> hypothesis gone, and a raw SQL scan of every
+                    # owner table (current schema) finds no forgotten token (E8 scrubs text everywhere, tombstone only).
+                    fr = c.post(f"/v1/owners/{owner}/forget", headers=hdrs, json={"record_ids": ["t1", "t3", "t4"], "idempotency_key": "e6-s8-topic"})
+                    h_after_forget = len([h for h in hyps() if "AI agents" in str(h)])
+                    token_sql = "tool calling"
+                    scan_hits = {}
+                    with db.connection() as conn_:
+                        tabs = conn_.execute("SELECT table_name FROM information_schema.columns WHERE table_schema=current_schema() AND column_name='owner'").fetchall()
+                        for t_ in tabs:
+                            tn = t_["table_name"] if isinstance(t_, dict) else t_[0]
+                            cols = conn_.execute("SELECT column_name FROM information_schema.columns WHERE table_schema=current_schema() AND table_name=%s AND data_type IN ('text','character varying','json','jsonb','ARRAY')", (tn,)).fetchall()
+                            cn = [(c_["column_name"] if isinstance(c_, dict) else c_[0]) for c_ in cols]
+                            if not cn:
+                                continue
+                            cond = " OR ".join(f'"{x}"::text ILIKE %s' for x in cn)
+                            n_ = conn_.execute(f'SELECT count(*) AS n FROM "{tn}" WHERE owner=%s AND ({cond})', (owner, *[f"%{token_sql}%"] * len(cn))).fetchone()
+                            n_ = n_["n"] if isinstance(n_, dict) else n_[0]
+                            if n_:
+                                scan_hits[tn] = n_
 
             zuma_ok = hits_place["Zuma"]["context_hits"] > 0 or hits_place["Zuma"]["search_hits"] > 0
             difc_ok = hits_place["DIFC"]["context_hits"] > 0 or hits_place["DIFC"]["search_hits"] > 0
             rest_ok = hits_place["restaurant"]["context_hits"] > 0 or hits_place["restaurant"]["search_hits"] > 0
-            topic_ok = (h_after_1 == 0 and h_after_2 == 1)
+            topic_ok = (h_after_1 == 0 and h_after_2 == 1 and h_once == 0 and all(c_ == 200 for c_ in codes) and fr.status_code == 200 and h_after_forget == 0 and not scan_hits)
 
             out = {
                 "suite": "S8_r6_places_topics",
-                "status": "NOT YET BUILT",
+                "status": "PASS" if (zuma_ok and difc_ok and rest_ok and topic_ok) else "FAIL",
                 "passed": bool(zuma_ok and difc_ok and rest_ok and topic_ok),
                 "part_8a_restaurant": {
                     "input": rec_text,
@@ -94,9 +133,10 @@ def run(out_dir: Path) -> dict:
                 "part_8b_topic_counter": {
                     "hypotheses_after_session_1": h_after_1,
                     "hypotheses_after_session_2": h_after_2,
+                    "topic_asked_once_hypotheses": h_once, "forget_status": fr.status_code, "hypotheses_after_forget": h_after_forget, "raw_sql_scan_hits_for_forgotten_token": scan_hits, "total_hypotheses_after_2": h_total_2, "post_codes": codes,
                     "two_visit_ok": topic_ok,
                 },
-                "notes": "R6 keep-list expansion, place type ('restaurant'), and 2-session topic counter are U2/U3 work; recorded today's actual engine behaviour.",
+                "notes": "E6: 8B drives the shipped topic path (POST /records live + session_id).",
             }
             (out_dir / "s8_places_topics.json").write_text(json.dumps(out, indent=2, ensure_ascii=False), encoding="utf-8")
             return out
