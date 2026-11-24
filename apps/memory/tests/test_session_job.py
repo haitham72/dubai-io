@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 import httpx
 import pytest
 
-from temporal_memory.api import bridge, vault
+from temporal_memory.api import bridge, graph, vault
 from temporal_memory.core.graph_store import PostgresGraphStore
 from temporal_memory.db.db import create_test_schema, drop_test_schema
 from temporal_memory.models import Attempt, ExtractionOutput, OutFact, Owner
@@ -36,6 +36,8 @@ def api(monkeypatch):
         vault.configure(store=store, auth_verifier=lambda _: vault.AuthContext(role="owner-device", owner=OWNER))
         app = FastAPI()
         app.include_router(bridge.router)
+        app.include_router(vault.router)
+        app.include_router(graph.router)
         with TestClient(app) as client:
             yield db, client
     finally:
@@ -214,3 +216,47 @@ def test_forgotten_first_visit_cannot_qualify_a_topic(api):
     assert client.post(f"{BASE}/forget", json={"record_ids": ["r1"]}).status_code == 200
     assert not post(client, [record("r2", "What are AI agents?", "s2")])["fact_ids"]
     assert post(client, [record("r3", "Explain AI agents", "s3")])["fact_ids"]
+
+
+
+@pytest.mark.parametrize("replacement,erase", [(False, True), (True, False)])
+def test_topic_forget_rechecks_distinct_cited_sessions(api, replacement, erase, monkeypatch):
+    monkeypatch.setenv('TM_SEMANTIC', '0')
+    db, client = api
+    post(client, [record("visit1", "How do AI agents work?", "first")])
+    if replacement:
+        post(client, [record("backup", "More about AI agents", "first")])
+    fact_id, = post(client, [record("visit2", "Explain AI agents", "second")])["fact_ids"]
+    post(client, [record("unrelated", "An unrelated remark", "third")])
+
+    def surfaces():
+        return {
+            "hypotheses": client.get(f"{BASE}/hypotheses"),
+            "graph": client.get(f"{BASE}/vault/graph?view=subjects"),
+            "context": client.post(f"{BASE}/context", json={"text": "Tell me about AI agents"}),
+        }
+
+    def forget(rid):
+        req = client.post(f"{BASE}/forget", json={"record_ids": [rid]})
+        assert req.status_code == 200, req.text
+        return req.json()
+
+    assert fact_id in surfaces()["hypotheses"].text
+    assert forget("unrelated")["facts_erased"] == 0
+    assert fact_id in surfaces()["hypotheses"].text
+    revision = query(db, "SELECT privacy_revision FROM owners")[0]["privacy_revision"]
+    result = forget("visit1")
+    assert result["facts_erased"] == int(erase)
+    assert query(db, "SELECT privacy_revision FROM owners")[0]["privacy_revision"] == revision + 1
+    current = surfaces()
+    assert all(response.status_code == 200 for response in current.values())
+    assert (fact_id in current["hypotheses"].text) is not erase
+    assert query(db, "SELECT session_id FROM topic_mentions ORDER BY session_id") == [
+        {"session_id": key} for key in (["client:second"] if erase else ["client:first", "client:second"])
+    ]
+    if erase:
+        assert all(fact_id not in response.text for response in current.values())
+    else:
+        assert query(db, "SELECT record_id FROM fact_evidence ORDER BY record_id") == [
+            {"record_id": "backup"}, {"record_id": "visit2"},
+        ]

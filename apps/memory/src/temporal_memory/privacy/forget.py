@@ -68,6 +68,8 @@ def forget_source(owner: str, record_ids: list[str]) -> dict[str, Any]:
                            "generation": None}
     from temporal_memory import db as _db  # CR-1: WP-A pool/connect, no local seam
 
+    from temporal_memory.live.topics import forget_topic_mentions
+
     # Applied days to mint fresh survivor-only jobs for, after the forget
     # transaction commits: (day, surviving record ids).
     applied_requeue: list[tuple[str, list[str]]] = []
@@ -76,6 +78,7 @@ def forget_source(owner: str, record_ids: list[str]) -> dict[str, Any]:
     try:
         with conn:
             with conn.cursor() as cur:
+                cur.execute("SELECT pg_advisory_xact_lock(hashtext(%s))", (owner,))
                 # 1) Generation bump + erasure. No aggregates in RETURNING:
                 # collect per-row generations and take the max in Python.
                 cur.execute(
@@ -90,6 +93,9 @@ def forget_source(owner: str, record_ids: list[str]) -> dict[str, Any]:
                     return out
                 gen = out["generation"] = max(generations)
                 out["records"] = len(generations)
+
+                # Topics require evidence from two surviving sessions rather than two records.
+                out["facts_erased"] = forget_topic_mentions(cur, owner, rids)
 
                 # 2) Erase only-evidence facts, trim shared facts.
                 cur.execute(
@@ -112,7 +118,7 @@ def forget_source(owner: str, record_ids: list[str]) -> dict[str, Any]:
                         "AND id = ANY(%(fids)s)",
                         {"owner": owner, "fids": plan["erase"]},
                     )
-                    out["facts_erased"] = cur.rowcount
+                    out["facts_erased"] += cur.rowcount
                 if plan["trim"]:
                     cur.execute(
                         "DELETE FROM fact_evidence WHERE owner = %(owner)s "
@@ -321,6 +327,7 @@ def forget_fact(owner: str, fact_id: str) -> dict[str, Any]:
     try:
         with conn:
             with conn.cursor() as cur:
+                cur.execute("SELECT pg_advisory_xact_lock(hashtext(%s))", (owner,))
                 cur.execute(
                     "UPDATE facts SET erased_at = now(), "
                     "embedding = NULL, embedding_model = NULL, embedded_at = NULL "
