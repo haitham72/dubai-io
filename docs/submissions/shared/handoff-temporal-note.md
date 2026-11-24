@@ -7,6 +7,16 @@
 
 ---
 
+## 0. Expectation (founder, 24 Nov 2026)
+
+The rebuilt **temporal_note** is the Dubai-io companion's new memory, replacing Hindsight, Honcho, mem0 and GraphRAG. It **is expected to implement this hand-off**: `CR-TM-1` … `CR-TM-4` and the two fixes below, or an equivalent that the bridge can map one to one.
+
+- It is the **single memory service for all three entries**: Quest (the companion) uses it as its memory, and Community and the Messenger reach it only through `apps/api/app/memory_bridge/`. Nothing builds a second engine.
+- **Acceptance:** the bridge's contract suite (`apps/api/tests/test_memory_bridge_*.py` on `contest-shared`) passes with `HttpTemporalMemoryClient` against the rebuilt service. It is the same suite that passes today against `FakeTemporalMemoryClient`.
+- **If the rebuild's interface differs, the memory team replies with it.** The bridge adapts to the engine, not the other way round. Until the routes land on `main`, the entries keep running on the fake.
+
+---
+
 ## 1. Purpose & Auth Model
 
 All three Dubai Chambers entries (Quest, Community, Messenger) call `temporal_memory` strictly through `apps/api/app/memory_bridge/` using HTTP REST as primary transport.
