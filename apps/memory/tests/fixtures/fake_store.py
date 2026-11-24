@@ -49,6 +49,7 @@ class FakeGraphStore:
         self.forget_rule_values: dict[str, set[str]] = defaultdict(set)
         self._alias_ver: dict[str, int] = defaultdict(int)
         self._facts_ver: dict[str, int] = defaultdict(int)
+        self._topic_sessions: dict[tuple[str, str], set[str]] = defaultdict(set)
         self.jobs: list[Job] = []
         self.job_created: dict[str, str] = {}
         self.workers: list[Worker] = []
@@ -204,6 +205,16 @@ class FakeGraphStore:
         entry = self.owners[owner]
         entry.privacy_revision += 1
         return entry.privacy_revision
+
+    def record_topic_mention(self, owner: str, subject_id: str, session_id: str) -> int:
+        if not any(subject.id == subject_id for subject in self.subjects.get(owner, [])):
+            raise ValueError("Subject does not exist for this owner")
+        sessions = self._topic_sessions[owner, subject_id]
+        sessions.add(session_id)
+        return len(sessions)
+
+    def topic_session_count(self, owner: str, subject_id: str) -> int:
+        return len(self._topic_sessions.get((owner, subject_id), ()))
 
     def owner_generation(self, owner: str) -> int:
         return self.generations[owner]
