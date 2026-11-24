@@ -151,6 +151,8 @@ def test_crtm3_resolve_confirm_edit_reject():
         "action": "edit", "new_text": "Karim prefers shorebird guides", "valid_from": "2026-11-20T00:00:00+04:00",
     }).json()
     assert edited["new_fact_id"] and edited["facts_version"] == before + 2
+    assert edited["old_fact"] == {"id": "hyp-1", "status": "superseded"}
+    assert edited["new_fact"] == {"id": edited["new_fact_id"], "status": "active"}
     old = next(fact for fact in store.facts["karim"] if fact.id == "hyp-1")
     assert old.status == "superseded" and old.superseded_by == edited["new_fact_id"] and old.valid_to
 

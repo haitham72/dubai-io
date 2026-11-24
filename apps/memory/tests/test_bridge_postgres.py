@@ -232,6 +232,11 @@ def test_resolve_confirm_edit_reject(api):
     })
     assert edited.status_code == 200, edited.text
     assert edited.json()["new_fact_id"]
+    body = edited.json()
+    assert body["old_fact"] == {"id": fact_id, "status": "superseded"}
+    assert body["new_fact"] == {"id": body["new_fact_id"], "status": "active"}
+    assert body["status"] == "active"  # legacy field kept
+    assert confirmed.json()["old_fact"] == {"id": fact_id, "status": "active"} and confirmed.json()["new_fact"] is None
     rejected = client.post(
         f"/v1/owners/karim/facts/{edited.json()['new_fact_id']}/resolve",
         headers=headers,

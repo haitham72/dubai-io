@@ -292,7 +292,16 @@ def resolve_fact(
         status = "rejected"
     version = _bump_facts(store, owner)
     invalidate_alias_cache(owner)
-    return {"ok": True, "fact_id": fact_id, "new_fact_id": new_id, "status": status, "facts_version": version}
+    old_status = "superseded" if new_id else status
+    return {
+        "ok": True,
+        "fact_id": fact_id,
+        "new_fact_id": new_id,
+        "status": status,  # legacy: status of the NEW fact for edit/supersede (kept for old clients)
+        "old_fact": {"id": fact_id, "status": old_status},
+        "new_fact": {"id": new_id, "status": "active"} if new_id else None,
+        "facts_version": version,
+    }
 
 
 @router.post("/context")
