@@ -1,3 +1,5 @@
+This is the paused Next.js client. The active Dubai-io website runs via Expo web from `apps/mobile`.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 ## This is NOT the Next.js you know

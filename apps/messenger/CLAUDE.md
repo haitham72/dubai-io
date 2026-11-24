@@ -40,7 +40,7 @@ npx vite build
 3. `agents/README.md` — the Python agents service (voice, research, chat skills, stickers, verified vs not verified).
 4. `agents/eval/REPORT.md` — the voice eval: what is measured, held-out first runs, timing choices.
 
-## Branches (kept separate — owner rule, 2026-10-14)
+## Branches (historical POC record, 2026-10-14; superseded: Messenger work now starts on feature branches from `main`, Claude merges gated work into `main`, the demo runs from the founder's PC, and the sticker Builder service is excluded; stickers use founder-made packs and local background removal within D7)
 
 | Branch | What | Pushed? |
 |---|---|---|
@@ -109,7 +109,7 @@ Current checks (2026-10-08): 169 tests passed, 1 skipped; offline voice dev 113/
 14. **Agents service env:** `.env` may have `AGENTS_LIVE=1`: live OpenAI/Tavily calls cost money, metered against `AGENTS_BUDGET_USD` (default $1). Tests and evals never spend. Ask the owner before any live run you start yourself.
 15. **Files:** read and write text files as UTF-8 explicitly (Windows defaults to cp1252).
 
-## Agents service state (2026-10-08, branch `messenger-agents`)
+## Agents service state (2026-10-08, branch `messenger-agents`; historical POC state, old integrations and hosting are not current)
 
 - Built provider integrations: voice (realtime transcription + Decisions model + fast path), research, fact check (text and photos), GIPHY. Current cloud decision connectivity is unverified; recent traces fell back to rules. Demo (labelled): Diwan events, Nadi leave, Supabase pictures, Builder MCP, Gmail.
 - Stickers come from the sibling `Messenger-Builder` checkout's Library (read only) plus 4 bundled demo packs.

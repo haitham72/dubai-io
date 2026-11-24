@@ -1,7 +1,7 @@
 # temporal_note upgrade plan — power the Knowledge Graph Vault
 
 **Status:** `approved for build` — **v1, 24 Nov 2026** (Claude). Merges the independent audits by Codex, Cursor, Gemini and DeepSeek (`tn_upgrade_audit_{codex,cursor,gemini,deepseek}.md`; DeepSeek's mostly confirms the other three). Muse's audit is pending and can still amend it. v0 is superseded. **Founder decisions recorded 24 Nov (§7).**
-**Engine:** `apps/memory/` (package `temporal_memory`), branch `memory` @ `e05371f`, worktree `G:\Haitham\VsCode\contest-memory`. Paths below are relative to `apps/memory/src/temporal_memory/`.
+**Engine:** `apps/memory/` (package `temporal_memory`), on `main` (24 Nov; originally branch `memory` @ `e05371f`). Paths below are relative to `apps/memory/src/temporal_memory/`.
 **Target screen:** `design/20-11-2026/Dubai-io Knowledge Graph Vault.jpg` (founder-supplied, 20 Nov), with two views:
 - **Subjects:** clusters + counts.
 - **People & Places:** relation + **T1 ring**, places, projects, relation count.
@@ -76,6 +76,8 @@ The mobile screens exist on `ios` (`apps/mobile/src/features/vault/*`) and read 
 - **S6–S9** are not yet built. The 84-item trap set is ready (`acceptance/TRAPS.md`).
 
 ### 3c. Progress
+
+> **24 Nov:** the engine and Vault clients are on `main`. This v0 progress table and the assignments are historical. U1c, U2, U3, U4, U5 and the Vault UI are merged; U4 provides hybrid keyword + local multilingual embedding search; U6 has a paused handoff. Use E0-E4 for current execution and `reports/STATUS.md` for gate evidence.
 
 | WP | State |
 |---|---|

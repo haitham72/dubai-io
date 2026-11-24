@@ -1,6 +1,6 @@
 # temporal-memory (`apps/memory/`)
 
-A personal memory engine (in the spirit of mem0 / Hindsight). It turns a person's WhatsApp, email, notes and chat into a dated **entity ↔ subject graph**, a Quest-style markdown tree, and instant context for replies. It lives in the Dubai-io repo at `apps/memory/` (branch `memory`) and runs as its own service; the Dubai-io backend (`apps/api`) is its first client.
+temporal_note is the owner-scoped memory engine for Dubai-io, Community and Messenger. It serves dated facts, evidence, hybrid retrieval and the Vault through the shared memory bridge. It turns a person's WhatsApp, email, notes and chat into a dated **entity ↔ subject graph**, a Quest-style markdown tree, and instant context for replies. It lives in the Dubai-io repo at `apps/memory/` (on `main`) and runs as its own service; the Dubai-io backend (`apps/api`) is its first client.
 
 **Status:** under construction (build plan v2.1). Nothing here is production-ready yet.
 
@@ -43,9 +43,7 @@ tests/                 synthetic fixtures only
 
 ## Branches
 
-- `memory`: integration branch for the memory engine, checked out at `G:\Haitham\VsCode\contest-memory`. All engine work lands here.
-- `mem-wp<X>`: one branch + worktree per work package (`G:\Haitham\VsCode\contest-mem-wp<X>`), merged into `memory` by the integrator.
-- `main`: owned by the project orchestrator; never committed to from here.
+- Branch from `main` for changes (`mem-wp<X>` per work package). Claude verifies and merges finished work into `main` under D16.
 
 ## Data rule
 

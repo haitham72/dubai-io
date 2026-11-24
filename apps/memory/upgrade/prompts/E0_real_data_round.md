@@ -27,8 +27,8 @@
   - "You told me" only for user-stated facts;
   - health, family and faith never inferred.
 - **`apps/web` is frozen.** Never touch it.
-- **The LLM for extraction and chat** goes through the configured runners: the founder's `claude -p` subscription (Haiku, medium effort), with local Qwen (LM Studio) as an alternative. **No Gemini API calls.** Log the model actually used.
-- **Done for each task:** tests (happy + failure path) on the real Postgres, the touched apps' full suites green (only the known `test_ops` / redis env failure allowed), a report at `apps\memory\upgrade\reports\E<N>.md` + a line in `reports\STATUS.md` (in the `G:\Haitham\VsCode\contest-memory` worktree; don't commit reports).
+- **The LLM for extraction and chat** goes through the configured runners. For live session catch-up use local Qwen (LM Studio) first and Haiku (`claude -p`, medium effort) as fallback; follow the task's configured runner for other work. **No Gemini API calls.** Log the model actually used.
+- **Done for each task:** tests (happy + failure path) on the real Postgres, the touched apps' full suites green (only the known `test_ops` / redis env failure allowed), a report at `apps\memory\upgrade\reports\E<N>.md` + a line in `reports\STATUS.md` (round reports live under `apps/memory/upgrade/reports/`; follow the feature-branch workflow from `main`).
 - **Team:**
   - E1 run stack + E4 chat & Today feed: **Gemini**;
   - E2 sign-in, pairing, app wiring: **Gemini** (reassigned 24 Nov: Cursor ran out of quota), after E1, before E4;

@@ -1,6 +1,6 @@
 # CLAUDE.md — Dubai-io (contest build)
 
-A personal AI agent for people who live and work in Dubai (identity: `PLAN.md` §1). Contest entry strategy across 3 Dubai Chambers award tracks: Best Personal AI Agent, Best Societal AI Agent, and Best Business AI Agent (`PLAN.md` §2). Repo: `github.com/haitham72/dubai-io` (private).
+This monorepo contains Dubai-io (Personal), Community (Societal) and Messenger (Business): one entry per Dubai Chambers award track (Best Personal / Societal / Business AI Agent). Dubai-io is a personal AI agent for people who live and work in Dubai (identity: `PLAN.md` §1; contest strategy `PLAN.md` §2). See `PLAN.md` for scope and `ARCHITECTURE.md` for product and service boundaries. Repo: `github.com/haitham72/dubai-io` (private).
 
 ## Orient — read only what your task needs
 
@@ -31,12 +31,12 @@ Founder instructions override anything below; sensitive categories (rule 9) are 
 
 ## Original mobile app and the UI (founder, 23 Oct; paused 9 Nov)
 
-**Founder priorities (23 Oct):** one React codebase (`apps/site`) with one central design system, so a design change is **one edit that echoes everywhere** (website, desktop, iOS/Android); every screen is ported from the original mobile app, as close as possible to it.
+**Founder priorities (23 Oct; superseded for delivery, 24 Nov):** one central design system so a design change is **one edit that echoes everywhere**; every screen is ported from the original mobile app, as close as possible to it. Current delivery: Dubai-io uses `apps/mobile` (iPhone via Expo Go, website via Expo web) and `apps/desktop` (Electron); `apps/site` is paused. Finish the E0–E4 real-data round (`apps/memory/upgrade/prompts/`) before design polish.
 **Light mode first**; dark (Graphite) comes after light is polished.
 
 `apps/web` is the original mobile app — the reference, never labelled classic, old, legacy or stale. It must not be modified, diluted or retired without explicit founder approval. Check before every merge: `git diff --quiet mobile-pwa-baseline-2026-10-23 HEAD -- apps/web`. Subagent briefs must forbid touching it.
 
-**UI work paused 9 Nov** while the headless pipeline is built in `apps/api/app/lab/`.
+**UI work paused 9 Nov** (design polish now follows the E0–E4 real-data round).
 
 ## Gates
 
@@ -50,10 +50,15 @@ Founder instructions override anything below; sensitive categories (rule 9) are 
 ```
 apps/api/          FastAPI + LangGraph backend, tests/
 apps/api/app/lab/  Headless Know / Notice / Do pipeline (extraction skills: chat, email, ide_session)
-apps/memory/       temporal-memory engine (own service + Docker stack; branch `memory`; guide apps/memory/CLAUDE.md)
-apps/site/         THE app: one React codebase → website, desktop app (Tauri/Electron), iOS/Android (Capacitor); UI paused 9 Nov
+apps/mobile/       Dubai-io client: iPhone via Expo Go + website via Expo web
+apps/desktop/      Dubai-io Electron desktop client
+apps/memory/       temporal_note memory engine (guide apps/memory/CLAUDE.md; tracker apps/memory/upgrade/)
+apps/community/    Community (Societal entry); mobile/ + desktop/ shells
+apps/messenger/    Messenger (Business entry); mobile/ + desktop/ shells
+apps/api/app/identity, apps/api/app/memory_bridge   shared per-user layer (all three products)
+apps/site/         Paused Next.js client (UI paused 9 Nov)
 apps/web/          Original mobile app PWA — FROZEN, the reference (tag mobile-pwa-baseline-2026-10-23), embedded at /?devices
-apps/ios/          Native SwiftUI client — STOPPED 23 Oct (history only)
+apps/ios/          Native SwiftUI client — STOPPED 23 Oct (history only; iPhone is now apps/mobile in Expo Go)
 scripts/           Local ingestion pipelines (Gmail 50k tokens, YouTube 4-feed, local browser history, dev sessions, two-tower)
 supabase/          Migrations, local project config
 docs/              Status, backlog, specs, services/
@@ -69,14 +74,15 @@ design/            Screen references (founder files), locked Quest references (`
 - Validate generated content by assertion (counts, schema, loader, tests) — never re-read bulk output back into context.
 - Never rotate, edit or expose credentials/keys without an explicit ask. Keys stay server-side.
 
-## Contest submissions (branches `contest-shared`, `societal`, `business`; founder, 23 Nov 2026)
+## Contest submissions (all three products on `main`; decision D16, 24 Nov 2026)
 
-`main` is Entry 1, **Best Personal AI Agent** (Quest / Dubai-io). Two more entries share one verified `user_id` and one memory service with it. Each lives on its own long-lived branch, built by external agents (Cursor, Muse, Codex, Antigravity) from the briefs on that branch: plan first, then build, with subagents.
+All three products and the shared per-user layer live on `main`: Dubai-io (Personal), Community (Societal) and Messenger (Business). They share one verified `user_id` and one memory service (temporal_note).
 
-| Track | Entry | Branch | Folder |
-|---|---|---|---|
-| Shared base: identity, memory bridge, cross-app contract | — | `contest-shared` | `docs/submissions/shared/` |
-| Best Societal AI Agent | Dubai-io Community | `societal` | `docs/submissions/community/` |
-| Best Business AI Agent | Messenger (WhatsApp-like; name pending) | `business` | `docs/submissions/messenger/` |
+| Track | Entry | Folder |
+|---|---|---|
+| Shared: identity, memory bridge, cross-app contract | — | `docs/submissions/shared/` |
+| Best Personal AI Agent | Dubai-io | `apps/mobile`, `apps/desktop`, `apps/api`, `apps/memory` |
+| Best Societal AI Agent | Dubai-io Community | `apps/community`, `docs/submissions/community/` |
+| Best Business AI Agent | Messenger | `apps/messenger`, `docs/submissions/messenger/` |
 
-On those branches, read `docs/submissions/CLAUDE.md` first: the branch and merge protocol, owned vs read-only paths, phase gates, and the Messenger's IP and naming gate. Founder answers of 23 Nov: `docs/submissions/shared/founder-decisions.md`. **Never commit to or push `main` from these branches, and never merge them into `main`.** The other PC's `main` is ahead of `origin/main`, so it comes in by merge (into `contest-shared` first) only after it is pushed. Rules 1–10 apply to every entry.
+Start every feature branch from `main`. Claude verifies the applicable gates and merges finished branches into `main` (D16). Available agents: Gemini, Codex (half volume), Devin; Muse is unavailable. Read `docs/submissions/README.md` and `docs/submissions/CLAUDE.md` first: entry guides, owned vs read-only paths, gates, and the Messenger's IP and naming gate. Founder answers: `docs/submissions/shared/founder-decisions.md`. Rules 1–10 apply to every entry.
