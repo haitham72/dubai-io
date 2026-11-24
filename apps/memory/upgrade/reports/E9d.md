@@ -1,0 +1,7 @@
+# E9d model warm-up (2026-11-25) - MERGED into main 835db76
+
+What: compose named volume `tm-hf-cache` at /home/tm/.cache/huggingface with HF_HOME set explicitly (api, worker-p0, worker-p1; beat does not embed); Dockerfile creates that dir owned by tm and sets HF_HOME. New admin-only `POST /v1/admin/warmup` (loads embedder, embeds the fixed string "warm-up", no owner data; ok:false with a reason when semantic is off or the download fails). start-all calls it after the API is healthy (timeout 900 s, progress text, amber line on failure, never fatal). health.ps1 new row `memory-semantic-model` (green only when loaded, or semantic disabled). Pinned TM_SEMANTIC=0 in test_search_applies_source_prefix_before_limit. README note. New test: warmup is admin-only and honest when semantic is off.
+
+Tests: apps/memory 476 passed, 8 skipped. Pinned test 5/5.
+Timings: start-all first run (new volume, includes image rebuild) 162 s, model load/download step 19.5 s; second run 67 s, model step 1.3 s. health all green incl. memory-semantic-model (desktop red = -NoDesktop).
+Live (synthetic owner e9dsynth, direct_fact, no claude calls): first context query after start 0.07 s (semantic ok). After `up -d --force-recreate api`: model not loaded, first query 1.45 s (loaded from volume), no re-download. Forget: facts_erased 1. stop-all ok; postgres/rabbitmq/redis left running. apps/web clean vs baseline tag. Note: a bare recreate leaves the model unloaded until the first query (1.5 s) - start-all warms it.
