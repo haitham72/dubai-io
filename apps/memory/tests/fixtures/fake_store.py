@@ -42,6 +42,8 @@ class FakeGraphStore:
         self.generations: dict[str, int] = defaultdict(int)
         self.forgotten_record_ids: dict[str, set[str]] = defaultdict(set)
         self.forgotten_fact_ids: dict[str, set[str]] = defaultdict(set)
+        self.content_hashes: dict[str, dict[str, str]] = defaultdict(dict)
+        self.forget_rule_values: dict[str, set[str]] = defaultdict(set)
         self._alias_ver: dict[str, int] = defaultdict(int)
         self._facts_ver: dict[str, int] = defaultdict(int)
         self.jobs: list[Job] = []
@@ -230,11 +232,78 @@ class FakeGraphStore:
         return mid
 
     def forget_source(self, owner: str, record_ids: list[str]) -> dict:
+        forgotten = set(record_ids)
         self.generations[owner] += 1
-        self.forgotten_record_ids[owner].update(record_ids)
+        self.forgotten_record_ids[owner].update(forgotten)
+        for rid in forgotten:
+            self.forget_rule_values[owner].add(rid)
+            hashed = self.content_hashes.get(owner, {}).get(rid)
+            if hashed:
+                self.forget_rule_values[owner].add(hashed)
+        erased: list[str] = []
+        trimmed: list[str] = []
+        for fact in self.facts.get(owner, []):
+            if not fact.evidence or not (set(fact.evidence) & forgotten):
+                continue
+            if set(fact.evidence) <= forgotten:
+                erased.append(fact.id)
+                fact.evidence = []
+                self.forgotten_fact_ids[owner].add(fact.id)
+            else:
+                fact.evidence = [rid for rid in fact.evidence if rid not in forgotten]
+                trimmed.append(fact.id)
+        requeued = 0
+        enqueued = 0
+        requeueable = {"queued", "expired", "submitted", "rejected"}
+        for job in list(self.jobs):
+            if job.owner != owner or job.kind not in ("extract.day", "extract.live"):
+                continue
+            if not (set(job.input_ref) & forgotten):
+                continue
+            survivors = [rid for rid in job.input_ref if rid not in forgotten]
+            if job.state in requeueable:
+                if survivors:
+                    job.input_ref = survivors
+                    job.state = "queued"
+                    job.input_version = self.generations[owner]
+                    job.fence_token = None
+                    requeued += 1
+                else:
+                    job.state = "dead"
+                    job.fence_token = None
+            elif job.state == "applied" and survivors:
+                self.jobs.append(Job(
+                    id=f"re-{job.id}-{self.generations[owner]}",
+                    owner=owner,
+                    kind="extract.day",
+                    priority=1,
+                    pool=job.pool,
+                    input_ref=survivors,
+                    input_version=self.generations[owner],
+                    context_hash=job.context_hash,
+                    prompt_version=job.prompt_version,
+                    day=job.day,
+                    state="queued",
+                ))
+                enqueued += 1
         self._facts_ver[owner] += 1
         invalidate_alias_cache(owner)
-        return {"owner": owner, "generation": self.generations[owner], "records_forgotten": len(record_ids)}
+        return {
+            "owner": owner,
+            "generation": self.generations[owner],
+            "records": len(forgotten),
+            "records_forgotten": len(forgotten),
+            "facts_erased": len(erased),
+            "facts_trimmed": len(trimmed),
+            "entity_subjects_recomputed": len(self.list_entity_subjects(owner)),
+            "jobs_requeued": requeued,
+            "jobs_enqueued": enqueued,
+        }
+
+    def check_fence(self, owner: str, claimed_generation: int) -> str:
+        if claimed_generation < self.generations[owner]:
+            return "fence_stale"
+        return "ok"
 
     def forget_fact(self, owner: str, fact_id: str) -> None:
         self.generations[owner] += 1
