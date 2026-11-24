@@ -1,6 +1,6 @@
 # Founder decisions for Entries 2 and 3
 
-**Recorded 23 Nov 2026** (founder's answers to Claude Code, verbatim where quoted). This file **overrides** `docs/submissions/CLAUDE.md`, every brief, and the founder inputs in `founder-inputs/` wherever they disagree. Add new decisions on top; never delete old ones (mark them superseded).
+**Recorded 23 Nov 2026** (founder's answers to Claude Code, verbatim where quoted). This file **overrides** `docs/submissions/CLAUDE.md` and every brief wherever they disagree. The founder's starting inputs were removed on 24 Nov (D15). Add new decisions on top; never delete old ones (mark them superseded).
 
 ## D1 — Business entry: IP and name
 
@@ -19,7 +19,7 @@
 - **The old name is retired.** The entry's working name is **Messenger** until the founder picks a new one.
   - Paths: `apps/messenger/`, `apps/api/app/messenger/`, `docs/submissions/messenger/`. Lane prefix `mg/`, table prefix `mg_`, tests `test_messenger_*`.
   - The old name must not appear in the UI, code identifiers, package names, routes, `@`-skills, the deck, the video or any new doc.
-  - The only exceptions are the source-repo URL, local paths that already exist, and the founder's own filed documents in `founder-inputs/`, which stay unchanged as history.
+  - The only exceptions are the source-repo URL and local paths that already exist. *(The founder's filed inputs in `founder-inputs/` were a third exception until they were removed on 24 Nov, D15.)*
   - Planning docs may cite the redesign repo's own file paths so builders can find code; they never use the old name as the product's name.
   - Gate: `git grep -n -i -e "m[i]rsal" -- apps/messenger apps/api/app/messenger` prints nothing.
 
@@ -55,7 +55,7 @@ The redesign's latest design is current: commit `6b45ba4`, "AI workspace replace
 - Memory for all three entries is the rewritten **temporal_note** engine: `apps/memory/`, package `temporal_memory` (HTTP API `api/app.py`, MCP server `mcp/server.py`, contract `models.py`, Forget `privacy/forget.py`).
 - **Hindsight and Honcho are not used.** The founder inputs' mentions of Hindsight, `MemoryBackend` and `ScopeGuard` mean temporal_note. Hindsight's `AC-1` / `MEM-01` gates do not apply to these entries.
 - `apps/api/app/memory_bridge/` is a client of temporal_note and never a second engine. Until temporal_note is on `main`, the bridge's tests use a clearly named fake with the same interface.
-- The other PC's `main` builds Dubai-io's **iOS and desktop apps** and is far ahead of `origin/main`. These branches therefore only add new files in new folders (`docs/submissions/CLAUDE.md` §1–§2).
+- The other PC's `main` builds Dubai-io's **iOS and desktop apps** and is far ahead of `origin/main`. These branches therefore only add new files in new folders (`docs/submissions/CLAUDE.md` §1–§2). *(Corrected by D15: that work is on the pushed branches `memory`, `ios` and `desktop`, not on an unpushed `main`.)*
 
 ## D6 — The sticker Builder service is excluded
 
@@ -156,6 +156,23 @@ The redesign's latest design is current: commit `6b45ba4`, "AI workspace replace
   - `Demo data` as a small pill, never a banner.
 - **Demo imagery:** licensed photos (for example under the Unsplash licence) stored locally with a `CREDITS.md`, labelled Demo data. No hotlinks, no AI-generated images, no real identifiable private people.
 - **Process:** design-first. Rebuild the Feed screen (phone and desktop) first, capture it side by side with `m02` and `l08`, and **stop for the founder's approval** before restyling the other screens.
+
+## D15 — Three separate products in one repo; starting inputs removed (24 Nov)
+
+> "they are 3 completly different projects, should not be mono repo for now, they share memory layer per user, they are like meta 'facebook/whatsapp/muse'"
+>
+> Layout: "same repo, separate fodlers, while developing work in different branches". Shared layer: "inside dubai-io repo".
+>
+> On the starting inputs: "these were scratchpad to start the project, feel free to superseed and remov them"
+
+- **Three different products**, like Meta's family of apps: Dubai-io (ChatGPT-like, Entry 1), Community (Facebook-like, Entry 2) and Messenger (WhatsApp-like, Entry 3). They are not one codebase.
+- **They share only the per-user layer:** one verified `user_id` (`apps/api/app/identity/`) and one memory engine, temporal_note (`apps/memory/` on `memory`), reached only through `apps/api/app/memory_bridge/`. **That layer lives in this repo** (dubai-io).
+- **Same repo, own folders, own branches.** Dubai-io lives on `main` plus `memory` / `ios` / `desktop`. Community lives on `societal` (`apps/community/`, `apps/api/app/community/`, `docs/submissions/community/`). Messenger lives on `business` (`apps/messenger/`, `apps/api/app/messenger/`, `docs/submissions/messenger/`). The shared layer is on `contest-shared`.
+- **Never merged into one tree.** `societal` and `business` are never merged into `main` or into each other, and there are no separate GitHub repos for now. This supersedes the canon patches' "apply after the contest portfolio is merged" assumption: entry paths are described on `main` as living on their branches.
+- **Known coupling beyond the shared layer:** the entry backends also import Dubai-io's `app.actions` (the approval and registered-action engine, rules 6–7) and `app.lab.sensitive` (the Rule-9 filter). That is acceptable in one repo and keeps the guardrails identical. If the products are ever split into separate repos, these two move into the shared layer together with identity and memory.
+- **Corrects D5 and D12:** this PC's Dubai-io work is on the pushed branches `memory`, `ios` and `desktop`, and its `main` has no unpushed work, so no `pc2-main` will come. Gate 5 checks against those three branches; they merged cleanly with `contest-shared`, `societal` and `business` on 24 Nov.
+- **The starting inputs are superseded and removed:** `02_DUBAI_IO_COMMUNITY_PLAN.md`, the Messenger plan and `IDE_INGEST_TWO_SUBMISSIONS_PROMPT.md`, formerly `shared/founder-inputs/`. They were scratchpad. The specs are now each entry's approved `DELIVERY_ROADMAP.md` and `IMPLEMENTATION_GAP_MATRIX.md`, read through this file. Old citations resolve in history: `git show e7870c6:docs/submissions/shared/founder-inputs/<file>`.
+- **Status, 24 Nov:** per the founder, the builds are done and waiting for tests. On 24 Nov, after merging `origin/main` → `contest-shared` → both entries, the API suites passed (517 / 582 / 545; the only failure, `test_ops`, comes from a missing `redis` package on that PC). Community's 9 vitest tests and its build passed. Messenger's typecheck, store and photo-window checks and its build passed.
 
 ## Founder to-dos (not agent work)
 
