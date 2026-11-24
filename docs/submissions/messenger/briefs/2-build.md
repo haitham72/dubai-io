@@ -27,9 +27,9 @@ You are the **build lead** for *the Messenger*, our **Best Business AI Agent** e
 
 ## 1. Read
 
-1. `docs/submissions/shared/founder-decisions.md` (D1–D6) · root `CLAUDE.md` · `docs/submissions/CLAUDE.md` (zero-conflict rule, paths §2, gates §4 incl. gate 5, rules §5)
-2. The spec, `shared/founder-inputs/03_…_AI_MESSENGER_PLAN.md`, read through D1–D6
-3. `messenger/DELIVERY_ROADMAP.md`, `IMPLEMENTATION_GAP_MATRIX.md`, `ip-and-baseline.md`, `open-questions.md`, `demo-script.md`
+1. `docs/submissions/shared/founder-decisions.md` (D1–D15) · root `CLAUDE.md` · `docs/submissions/CLAUDE.md` (zero-conflict rule, paths §2, gates §4 incl. gate 5, rules §5)
+2. The spec since D15: `messenger/DELIVERY_ROADMAP.md` and `IMPLEMENTATION_GAP_MATRIX.md`, read through D1–D15 (the founder's starting plan was removed)
+3. `ip-and-baseline.md`, `open-questions.md`, `demo-script.md`
 4. `shared/SHARED_MEMORY_CROSS_APP_CONTRACT.md` · `ARCHITECTURE.md` §2, §3, §7, §9, §11 · `apps/api/CLAUDE.md`
 
 ## 2. Hard rules (paste this block into every subagent prompt)
@@ -38,7 +38,7 @@ You are the **build lead** for *the Messenger*, our **Best Business AI Agent** e
 - Work only on your lane branch mg/<slice-id>, cut from business. Never touch main. Never push to the redesign repo.
 - ADD files only, inside: apps/messenger/**, apps/api/app/messenger/**, apps/api/tests/test_messenger_*.py,
   apps/api/tests/fixtures/messenger/**, docs/submissions/messenger/**. Never edit an existing file anywhere else:
-  the other PC's main (Dubai-io iOS + desktop) is far ahead, and any edit risks a merge conflict. Read-only
+  Dubai-io's iOS, desktop and memory work (branches memory, ios, desktop) edits the same repo, and any edit risks a merge conflict. Read-only
   includes apps/web/**, apps/site/**, apps/memory/**, every existing module in apps/api/app/, PLAN.md,
   ARCHITECTURE.md, supabase/**, packages/**, docs/submissions/shared/**, apps/api/app/identity/**, apps/api/app/memory_bridge/**.
   Settings come from env, read inside your own package.
