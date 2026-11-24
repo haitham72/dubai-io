@@ -5,6 +5,8 @@ import {
   LOCALHOST_WARNING, isLocalhostUrl, loadSettings, saveSettings,
   startGoogleOAuth, testConnection, type ConnectionStatus,
 } from "./connectApi";
+import { CompletenessRingCard } from "./CompletenessRingCard";
+import { InitialRevealCard } from "./InitialRevealCard";
 import { WhatsappImportCard } from "./WhatsappImportCard";
 import { YoutubeOnboardingCard } from "./YoutubeOnboardingCard";
 
@@ -33,6 +35,8 @@ export function ConnectScreen({ apiBaseUrl: initialUrl, owner: initialOwner, fet
   return (
     <ScrollView style={styles.screen} testID="connect-screen">
       <Text style={styles.title}>Connect</Text>
+      <CompletenessRingCard />
+      <InitialRevealCard />
       <Text style={styles.label}>API Server URL</Text>
       <TextInput style={styles.input} value={apiBaseUrl} onChangeText={setApiBaseUrl}
         autoCapitalize="none" autoCorrect={false} placeholder="http://192.168.x.x:8000" />
