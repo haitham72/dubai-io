@@ -25,7 +25,8 @@ function newStore() {
 function fakeBrowser(authCode: string | null) {
   return async (startUrl: string) => {
     const returnTo = new URL(startUrl).searchParams.get("return_to") as string;
-    const target = authCode ? `${returnTo}?auth_code=${authCode}` : `${returnTo}?error=access_denied`;
+    const sep = returnTo.includes("?") ? "&" : "?";
+    const target = authCode ? `${returnTo}${sep}auth_code=${authCode}` : `${returnTo}${sep}error=access_denied`;
     setTimeout(() => void fetch(target).catch(() => undefined), 20);
   };
 }
@@ -58,6 +59,30 @@ describe("desktop Google sign-in (loopback, Google exchange mocked server-side)"
     const reloaded = new TokenStore(vault, log, file);
     expect(reloaded.loadFromDisk()).toBe(true);
     expect(reloaded.authStatus().userId).toBe("uid-1");
+  });
+
+  it("the loopback ignores a callback without the per-attempt nonce and still accepts the real one", async () => {
+    const { store } = newStore();
+    const fetchImpl = (async (url: string) =>
+      url.endsWith("/google/exchange")
+        ? json({ session_id: "sid-n", session_token: "t", user_id: "uid-n", email: null })
+        : json({ tm_token_id: "tmt-n", token: "d", owner_id: "uid-n" })) as unknown as typeof fetch;
+    const forged: number[] = [];
+    const openExternal = async (startUrl: string) => {
+      const returnTo = new URL(startUrl).searchParams.get("return_to") as string;
+      const u = new URL(returnTo);
+      expect(u.searchParams.get("nonce")?.length).toBeGreaterThanOrEqual(16);
+      const base = `${u.origin}${u.pathname}`;
+      setTimeout(async () => {
+        const r1 = await fetch(`${base}?auth_code=stolen`).catch(() => null);
+        const r2 = await fetch(`${base}?nonce=wrong&auth_code=stolen`).catch(() => null);
+        forged.push(r1?.status ?? 0, r2?.status ?? 0);
+        await fetch(`${returnTo}&auth_code=real-code`).catch(() => undefined);
+      }, 20);
+    };
+    const status = await new DesktopAuthManager(store, log).signIn({ apiBaseUrl: "http://127.0.0.1:8000", openExternal, fetchImpl, timeoutMs: 5000 });
+    expect(forged).toEqual([403, 403]);
+    expect(status.signedIn).toBe(true);
   });
 
   it("a denied Google consent signs nobody in", async () => {

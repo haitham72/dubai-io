@@ -498,7 +498,11 @@ def create_identity_router(
     ) -> dict[str, Any]:
         reject_spoofed_identity_headers(request)
         try:
-            session_out = service.complete_pairing(body.code, device_label=body.device_label)
+            session_out = service.complete_pairing(
+                body.code,
+                device_label=body.device_label,
+                client_ip=request.client.host if request.client else "unknown",
+            )
         except IdentityError as exc:
             raise _http_from_identity_error(exc) from exc
         return _session_out_dict(session_out)

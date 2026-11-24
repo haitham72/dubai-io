@@ -832,6 +832,24 @@ class IdentityStore:
                 "consumed_by_session_id": row[6],
             }
 
+    def is_pairing_session(self, session_id: str) -> bool:
+        """True when this session was minted by completing a pairing code (a paired phone)."""
+        with self.lock:
+            row = self.db.execute(
+                "SELECT 1 FROM cs_pairing_codes WHERE consumed_by_session_id = ? LIMIT 1",
+                (session_id,),
+            ).fetchone()
+            return row is not None
+
+    def invalidate_pairing_code(self, code_hash: str, *, at: str) -> bool:
+        with self.lock:
+            cur = self.db.execute(
+                "UPDATE cs_pairing_codes SET consumed_at = ? WHERE code_hash = ? AND consumed_at IS NULL",
+                (at, code_hash),
+            )
+            self.db.commit()
+            return cur.rowcount == 1
+
     def consume_pairing_code_atomic(
         self,
         code_hash: str,

@@ -26,3 +26,33 @@ describe("Owner hook", () => {
     expect(await screen.findByTestId("hook-status")).toHaveTextContent("claude-sonnet-4-5");
   });
 });
+
+describe("Desktop sign-in control", () => {
+  it("shows Not signed in, signs in through the bridge, shows the email, then signs out", async () => {
+    const base = demoBridge();
+    const signedIn = { signedIn: true, userId: "u1", displayName: "Test", email: "o@example.test", hasDeviceToken: true };
+    const signedOut = { signedIn: false, userId: null, displayName: null, email: null, hasDeviceToken: false };
+    const api: DesktopBridge = {
+      ...base,
+      authStatus: vi.fn(async () => signedOut),
+      authSignIn: vi.fn(async () => signedIn),
+      authSignOut: vi.fn(async () => signedOut),
+    };
+    render(<SettingsPanel bridge={api} />);
+    expect(await screen.findByTestId("auth-status")).toHaveTextContent("Not signed in");
+    fireEvent.click(screen.getByTestId("auth-toggle"));
+    expect(await screen.findByText(/Signed in as o@example.test/)).toBeTruthy();
+    expect(screen.getByTestId("auth-toggle")).toHaveTextContent("Sign out");
+    fireEvent.click(screen.getByTestId("auth-toggle"));
+    expect(await screen.findByText("Not signed in")).toBeTruthy();
+    expect(api.authSignOut).toHaveBeenCalled();
+  });
+
+  it("shows an honest error when sign-in fails", async () => {
+    const api: DesktopBridge = { ...demoBridge(), authSignIn: async () => { throw new Error("Google sign-in timed out"); } };
+    render(<SettingsPanel bridge={api} />);
+    fireEvent.click(await screen.findByTestId("auth-toggle"));
+    expect(await screen.findByTestId("auth-error")).toHaveTextContent("timed out");
+    expect(screen.getByTestId("auth-status")).toHaveTextContent("Not signed in");
+  });
+});

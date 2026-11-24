@@ -257,3 +257,88 @@ def test_account_a_never_sees_account_b(env):
 
     # no session, no data
     assert client.get("/api/vault/graph").status_code == 401
+
+
+# ---- E2b: pairing polish ----
+
+
+def test_qr_payload_carries_api_base_when_configured(env, monkeypatch):
+    _svc, _store, _tm, client, _state, _g = env
+    pc_h = {"X-App-Session": _login(client, "code-a")["session_token"]}
+    monkeypatch.delenv("PUBLIC_API_BASE_URL", raising=False)
+    plain = client.post("/api/identity/pair/start", headers=pc_h).json()
+    assert plain["qr_payload"] == f"dubaiio://pair?code={plain['code']}" and "api_base_url" not in plain
+
+    monkeypatch.setenv("PUBLIC_API_BASE_URL", "http://192.168.1.20:8000/")
+    rich = client.post("/api/identity/pair/start", headers=pc_h).json()
+    q = parse_qs(urlsplit(rich["qr_payload"]).query)
+    assert q["code"] == [rich["code"]] and q["api"] == ["http://192.168.1.20:8000"]
+    assert rich["api_base_url"] == "http://192.168.1.20:8000"
+
+    monkeypatch.setenv("PUBLIC_API_BASE_URL", "javascript:alert(1)")
+    bad = client.post("/api/identity/pair/start", headers=pc_h).json()
+    assert "api=" not in bad["qr_payload"]
+
+
+def test_pair_complete_locks_out_ip_after_five_failures(env):
+    _svc, _store, _tm, client, _state, _g = env
+    pc_h = {"X-App-Session": _login(client, "code-a")["session_token"]}
+    good = client.post("/api/identity/pair/start", headers=pc_h).json()["code"]
+    for i in range(5):
+        r = client.post("/api/identity/pair/complete", json={"code": f"WRONG00{i}"})
+        assert r.status_code == 400
+    locked = client.post("/api/identity/pair/complete", json={"code": good})
+    assert locked.status_code == 429 and locked.json()["detail"]["code"] == "too_many_attempts"
+
+
+def test_pair_lockout_expires_after_window(env, monkeypatch):
+    _svc, _store, _tm, client, _state, _g = env
+    pc_h = {"X-App-Session": _login(client, "code-a")["session_token"]}
+    good = client.post("/api/identity/pair/start", headers=pc_h, json={"ttl_seconds": 300}).json()["code"]
+    for i in range(5):
+        client.post("/api/identity/pair/complete", json={"code": f"WRONG00{i}"})
+    import app.identity.service as service_mod
+
+    real_now = service_mod.utcnow
+    monkeypatch.setattr(service_mod, "utcnow", lambda: real_now() + timedelta(minutes=5, seconds=1))
+    # lockout window passed (the code itself has also expired by now, a clear 410 not a 429)
+    r = client.post("/api/identity/pair/complete", json={"code": good})
+    assert r.status_code == 410
+
+
+def test_code_invalidated_after_five_wrong_guesses_against_it(env):
+    svc, _store, _tm, client, _state, _g = env
+    pc_h = {"X-App-Session": _login(client, "code-a")["session_token"]}
+    code = client.post("/api/identity/pair/start", headers=pc_h).json()["code"]
+    # five attempts on the same (expired-for-this-test) submitted code from a rotating client: simulate via service
+    for _ in range(4):
+        with pytest.raises(IdentityError):
+            svc.complete_pairing("ZZZZZZZZ", client_ip="10.0.0.1")
+    with pytest.raises(IdentityError) as exc:
+        svc.complete_pairing("ZZZZZZZZ", client_ip="10.0.0.1")
+    assert exc.value.status_code == 429
+    # an unrelated real code is still fine from another address
+    ok = client.post("/api/identity/pair/complete", json={"code": code})
+    assert ok.status_code == 200
+
+
+def test_invalidate_pairing_code_blocks_a_valid_code(env):
+    svc, store, _tm, client, _state, _g = env
+    pc_h = {"X-App-Session": _login(client, "code-a")["session_token"]}
+    code = client.post("/api/identity/pair/start", headers=pc_h).json()["code"]
+    from app.identity.service import _sha256_hex
+
+    assert store.invalidate_pairing_code(_sha256_hex(code), at=iso_utc())
+    r = client.post("/api/identity/pair/complete", json={"code": code})
+    assert r.status_code == 409
+
+
+def test_paired_phone_cannot_start_pairing(env):
+    _svc, _store, _tm, client, _state, _g = env
+    pc_h = {"X-App-Session": _login(client, "code-a")["session_token"]}
+    code = client.post("/api/identity/pair/start", headers=pc_h).json()["code"]
+    phone = client.post("/api/identity/pair/complete", json={"code": code}).json()
+    phone_h = {"X-App-Session": phone["session_token"]}
+    r = client.post("/api/identity/pair/start", headers=phone_h)
+    assert r.status_code == 403 and r.json()["detail"]["code"] == "pairing_from_paired_device"
+    assert client.post("/api/identity/pair/start", headers=pc_h).status_code == 200

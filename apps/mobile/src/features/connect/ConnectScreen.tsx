@@ -265,9 +265,14 @@ export function ConnectScreen({
       />
       <ScanQrModal
         visible={scanOpen}
-        onSubmitCode={async (codeOrPayload) => {
+        onSubmitCode={async (code, scannedBase) => {
           if (!auth) throw new Error("Auth provider is required to store paired session.");
-          await auth.completePairing(apiBaseUrl, codeOrPayload);
+          await auth.completePairing(scannedBase ?? apiBaseUrl, code);
+          if (scannedBase) {
+            setApiBaseUrl(scannedBase);
+            onApiBaseUrlChange?.(scannedBase);
+            await saveSettings(scannedBase, effectiveOwner, demo);
+          }
         }}
         onClose={() => setScanOpen(false)}
       />
