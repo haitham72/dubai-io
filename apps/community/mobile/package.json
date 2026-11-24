@@ -1,0 +1,30 @@
+{
+  "name": "@dubai-io/community-mobile",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Dubai-io Community iPhone shell (Expo Go + WebView wrapper).",
+  "main": "node_modules/expo/AppEntry.js",
+  "scripts": {
+    "start": "expo start",
+    "ios": "expo start --ios",
+    "tunnel": "expo start --tunnel",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@react-native-async-storage/async-storage": "^2.1.2",
+    "expo": "~58.0.26",
+    "expo-constants": "~58.0.16",
+    "expo-linking": "~58.0.17",
+    "expo-status-bar": "~58.0.5",
+    "react": "19.3.1",
+    "react-native": "0.88.1",
+    "react-native-safe-area-context": "~5.11.1",
+    "react-native-webview": "^14.0.1"
+  },
+  "devDependencies": {
+    "@types/react": "~19.2.2",
+    "typescript": "~5.9.3",
+    "vitest": "^4.0.0"
+  }
+}

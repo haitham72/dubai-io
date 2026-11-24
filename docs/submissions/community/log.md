@@ -77,3 +77,17 @@ Staged at `http://localhost:3060/` on 24 Nov 2026. The UI was not changed. Deskt
 5. Parked `social_generation` auto-replies (`ai_demo`) sit one import away from the publish path — CM-B9 must register its own capability and never reuse that path.
 
 **Next:** founder gate (answer Q1–Q5, set roadmap status to `approved — <date>`), then P2 Part B folds `identity-memory-needs.md` into the shared contract. No build starts before that.
+
+
+## 24 Nov 2026 — SH-1 Community mobile (Expo Go) + desktop (Electron + Windows .exe) shells
+
+**Scope (`cm/shells`, owned paths only):**
+- **iPhone Expo Go shell (`apps/community/mobile/`):** standalone Expo SDK 58 (`expo ~58.0.26`) TypeScript shell (`@dubai-io/community-mobile`) wrapping `EXPO_PUBLIC_COMMUNITY_URL` / `app.config.ts` (`http://localhost:3060` default, editable LAN/tunnel URL bar saved via `@react-native-async-storage/async-storage`) inside `react-native-webview` (`14.0.1`) + `react-native-safe-area-context` (`~5.11.1`). Enforces `isAllowedOrigin` / `classifyNavigation` (in-app same origin, external `http`/`https`/`mailto`/`tel` via `Linking.openURL`, unsafe schemes blocked), persistent cookies (`sharedCookiesEnabled`), pull-to-refresh, offline fallback view with Retry and LAN hint, and original Dubai-io Community icon/splash assets.
+- **Desktop Electron shell (`apps/community/desktop/`):** standalone Electron (`^39.2.0`) TypeScript wrapper (`@dubai-io/community-desktop`) with hardened `webPreferencesBase` (`contextIsolation: true`, `nodeIntegration: false`, `sandbox: true`, `webSecurity: true`, `webviewTag: false`), `attachNavigationGuards` (`will-navigate`, `setWindowOpenHandler`, `will-attach-webview`), application menu, `window-state.json` bounds persistence, CSP-hardened offline fallback page with Retry, and unsigned Windows portable `.exe` build via `electron-builder` (`signAndEditExecutable: false`).
+- **Start script & docs:** `apps/community/scripts/start-shells.ps1` (LAN IPv4 detection, TCP `3060` firewall check/rule, `0.0.0.0:3060` dev server launch, desktop shell launch, Expo Go QR start) and `docs/submissions/community/shells.md`.
+
+**Verification:**
+- `apps/community/mobile`: `npm run typecheck` exited 0; `npm test` (`vitest run`) passed 2 files, 8 tests (`tests/url.test.ts`, `tests/storage.test.ts`).
+- `apps/community/desktop`: `npm run typecheck` exited 0; `npm test` (`vitest run`) passed 2 files, 11 tests (`tests/security.test.ts`, `tests/windowState.test.ts`); `npm run pack:win` exited 0 producing unsigned `apps/community/desktop/dist/Dubai-io-Community-0.1.0-win-x64.exe` (93,873,422 bytes, gitignored).
+- `apps/community`: `npm test` (`vitest run`) passed 2 files, 9 tests; `npm run build` (`next build`) exited 0 on retry (7 static routes).
+- **Open:** live iPhone Expo Go + desktop `.exe` screenshots for founder visual sign-off (`start-shells.ps1` ready to run interactively).
