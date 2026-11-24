@@ -4,7 +4,7 @@
 
 `main` is **Entry 1, Best Personal AI Agent** (Quest / Dubai-io). Two more Dubai Chambers entries are built on their own long-lived branches. All three share one verified `user_id` and one memory service.
 
-**Three separate products, one repo (founder, D15, 24 Nov).** Dubai-io (like ChatGPT), Community (like Facebook) and Messenger (like WhatsApp) are three different products, Meta-style. They share **only the per-user layer** (identity + the temporal_note memory engine), and that layer lives in this repo. Each product is developed in its own folders on its own branch, and they are **never merged into one tree**: `societal` and `business` never go into `main` or into each other. **Status:** the builds are done and waiting for tests. Details: `docs/submissions/shared/founder-decisions.md` D15 on `contest-shared`.
+**Three separate products, one repo (founder, D15, 24 Nov).** Dubai-io (like ChatGPT), Community (like Facebook) and Messenger (like WhatsApp) are three different products, Meta-style. They share **only the per-user layer** (identity + the temporal_note memory engine), and that layer lives in this repo. Each product lives in its own folders; every feature is built on a branch, and **finished branches merge into `main` after their gates pass (D16)**. Entry branches never merge into each other. **Status:** the builds are done and waiting for tests. Details: `docs/submissions/shared/founder-decisions.md` D15 on `contest-shared`.
 
 | Track | Entry | Branch | Docs (on that branch) |
 |---|---|---|---|
@@ -25,7 +25,7 @@ The branch rules are in `docs/submissions/CLAUDE.md` on each of those branches. 
    git push origin main
    ```
    Never force-push `main`.
-2. **Do not merge `contest-shared`, `societal` or `business` into `main`.** `societal` and `business` never go into `main` (D15). Whether the shared layer reaches `main` for Entry 1 is a separate founder decision.
+2. **Agents don't merge into `main`.** The integrator merges `contest-shared`, `societal` and `business` into `main` after their gates pass (D16).
 3. **The memory team: the companion's new memory (the temporal_note rebuild) is expected to implement the hand-off.** That is 4 HTTP routes (`CR-TM-1` … `CR-TM-4`) and 2 fixes, in `git show origin/contest-shared:docs/submissions/shared/handoff-temporal-note.md` (§0 Expectation). It is the single memory service for all three entries. Acceptance: the bridge contract suite (`apps/api/tests/test_memory_bridge_*.py` on `contest-shared`) passes against the rebuilt service. If its interface differs, reply with it, and the bridge adapts. Until then the entries run on a fake with the same interface.
 4. **Security:** the Community app's Next.js had a known advisory. `apps/site` also uses Next.js; run `npm audit` there.
 5. **Old branches** are archived as tags (`archive/*`). To restore one: `git switch -c <name> archive/<tag>`.
