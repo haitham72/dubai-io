@@ -9,9 +9,11 @@
 | 3 | **Best Business AI Agent** | **Messenger** (working name; final name pending): the WhatsApp-like AI messenger, built from the founder's own redesign features, with chat-to-action business agents | `business` | `docs/submissions/messenger/` |
 | — | Shared base | Cross-app identity, memory bridge, consent scopes, the shared contract | `contest-shared` | `docs/submissions/shared/` |
 
-**Read first: `shared/founder-decisions.md`** (the founder's answers of 23 Nov: the Messenger's IP and name, Persocial, the messaging boundary, the current design). It overrides anything below and anything in the founder inputs.
+**Three separate products, one repo (D15, 24 Nov).** Dubai-io (like ChatGPT), Community (like Facebook) and Messenger (like WhatsApp) are **three different products**, Meta-style. They share only the **per-user layer**: one verified `user_id` and one memory engine (temporal_note), which live in this repo. They are developed in the same repo, each in its own folders and on its own branch, and they are **never merged into one tree**: not into `main`, and not into each other.
 
-**Product specs (the founder's, filed unchanged; never edit them):** `shared/founder-inputs/02_DUBAI_IO_COMMUNITY_PLAN.md`, `shared/founder-inputs/03_MIRSAL_AI_MESSENGER_PLAN.md`, and `shared/founder-inputs/IDE_INGEST_TWO_SUBMISSIONS_PROMPT.md`. Those inputs still use the Messenger's old product name; that name is **retired** (`founder-decisions.md` D1) and must not be carried into anything new. The last is the founder's original single-agent ingest prompt; the briefs on these branches split its tasks between agents.
+**Read first: `shared/founder-decisions.md`** (the founder's answers of 23–24 Nov: the Messenger's IP and name, Persocial, the messaging boundary, the current design, the three-product layout). It overrides anything below.
+
+**Specs:** each entry's approved `DELIVERY_ROADMAP.md` and `IMPLEMENTATION_GAP_MATRIX.md`, read through `founder-decisions.md`. The founder's starting inputs (the two plans and the ingest prompt) were scratchpad. They are superseded and were **removed on 24 Nov** (D15). Old citations to them resolve in git history: `git show e7870c6:docs/submissions/shared/founder-inputs/<file>`. The Messenger's old product name is **retired** (D1) and must not be carried into anything new.
 
 **What this supersedes, on these branches only** (`PLAN.md` itself is not edited here; proposed canon edits go to `shared/canon-patches/`):
 - `PLAN.md` §1 "not a social network (community parked 9 Nov) … Persocial is a separate project": community is **unparked for Entry 2**, and Community **replaces Persocial**.
@@ -25,14 +27,14 @@ origin/main @ f016856 (23 Nov) ── contest-shared ──┬── societal   
                                                    └── business   (Entry 3: Messenger)
 ```
 
-- The other PC's `main` (the team building Dubai-io's iOS and desktop apps) is **far ahead of `origin/main` and not pushed yet**. It uses the rewritten **temporal_note** memory engine (D5). Its pushed branches (`desktop`, `ios`, `memory`) edit `CLAUDE.md`'s repo-layout block, `PLAN.md`, `docs/plan/`, `docs/request-backlog.md`, `apps/memory/`, `apps/desktop/`, `apps/mobile/` and `packages/design-tokens/`.
-- **Zero-conflict rule:** these branches only **add new files in new folders**. The single edit to an existing file is the *Contest submissions* section appended at the very end of root `CLAUDE.md`; if that ever conflicts, keep both sides. Once the founder pushes a snapshot of the other PC's `main` to a non-`main` branch (for example `pc2-main`), gate 5 (§4) checks every merge against it.
-- **Never** commit to `main`, push `main`, open a PR into `main`, or merge anything into `main`. Merging into `main` is a founder decision, made after the two `main`s are reconciled.
+- The other PC's Dubai-io work (iOS, desktop and the rewritten **temporal_note** memory engine, D5) lives on the **pushed branches `memory`, `ios` and `desktop`**. Its `main` has no unpushed work (checked 24 Nov), so no `pc2-main` snapshot is coming. Those branches edit `CLAUDE.md`'s repo-layout block, `PLAN.md`, `docs/plan/`, `docs/request-backlog.md`, `apps/memory/`, `apps/desktop/`, `apps/mobile/` and `packages/design-tokens/`.
+- **Zero-conflict rule:** these branches only **add new files in new folders**. The single edit to an existing file is the *Contest submissions* section appended at the very end of root `CLAUDE.md`; if that ever conflicts, keep both sides. Gate 5 (§4) checks every merge against `origin/memory`, `origin/ios` and `origin/desktop`.
+- **Never** commit to `main`, push `main`, open a PR into `main`, or merge anything into `main` from these branches. **`societal` and `business` are never merged into `main` (D15).** Whether the shared layer reaches `main` for Entry 1 is a separate founder decision.
 - **Never** force-push `contest-shared`, `societal` or `business`.
 - **Shared work happens only on `contest-shared`.** Lane branches there are `cs/<slice>`. Entry branches take shared work with `git merge contest-shared`, and they **never edit shared paths** (§2). Entry branches are never merged into `contest-shared` or into each other.
 - **Entry lane branches:** `cm/<slice>` (Community, from `societal`) and `mg/<slice>` (Messenger, from `business`). Don't name them `societal/...` or `business/...`: git cannot hold a branch `societal` and a branch `societal/x` at the same time.
 - **Lane → its branch:** `--no-ff` merge (or a PR into that branch) only after the §4 gates pass. The lead agent merges; subagents never merge.
-- **Taking `main` in, once the other PC pushes it:** first the shared lead runs `git fetch origin && git merge origin/main` into `contest-shared`; then each entry lead runs `git merge contest-shared`. If a conflict falls outside your own paths, **stop and report it to the founder**. Never resolve it by bending a shared file toward your entry.
+- **Taking `main` in, whenever `origin/main` moves:** first the shared lead runs `git fetch origin && git merge origin/main` into `contest-shared`; then each entry lead runs `git merge contest-shared`. If a conflict falls outside your own paths, **stop and report it to the founder**. Never resolve it by bending a shared file toward your entry.
 - **Local worktrees (founder's PC):** `D:\Vscode\dubai-io-shared` (`contest-shared`), `D:\Vscode\dubai-io-societal` (`societal`), `D:\Vscode\dubai-io-business` (`business`). Cloud agents check out the branch from GitHub.
 - **The founder's redesign repo** (`github.com/haitham72/Mirsal-redesign`, branch `master`; local clone `D:\Vscode\Mirsal-redesign`) is **read-only** for every agent. Never commit or push there without the founder's say-so. Its founder-authored code enters `apps/messenger/` only as a **rebranded snapshot**, after the founder confirms the M0 file list (`founder-decisions.md` D1). The URL and local path are the only places the old name may still appear.
 
@@ -42,17 +44,19 @@ origin/main @ f016856 (23 Nov) ── contest-shared ──┬── societal   
 
 | Branch | Code | Tests | Docs |
 |---|---|---|---|
-| `contest-shared` | `apps/api/app/identity/`, `apps/api/app/memory_bridge/` | `apps/api/tests/test_identity_*.py`, `test_memory_bridge_*.py`, `fixtures/contest_shared/` | `docs/submissions/CLAUDE.md`, `docs/submissions/shared/**` (except `founder-inputs/`), the *Contest submissions* section at the end of root `CLAUDE.md` |
+| `contest-shared` | `apps/api/app/identity/`, `apps/api/app/memory_bridge/` | `apps/api/tests/test_identity_*.py`, `test_memory_bridge_*.py`, `fixtures/contest_shared/` | `docs/submissions/CLAUDE.md`, `docs/submissions/shared/**`, the *Contest submissions* section at the end of root `CLAUDE.md` |
 | `societal` | `apps/community/` (web), `apps/api/app/community/` (all new backend code: agents, services, `cm_` tables) | `apps/api/tests/test_community_*.py`, `fixtures/community/` | `docs/submissions/community/**` |
 | `business` | `apps/messenger/**` (only after the M0 list is confirmed), `apps/api/app/messenger/` (registered capabilities and approvals bridge into the Dubai-io action layer) | tests inside `apps/messenger/`, `apps/api/tests/test_messenger_*.py`, `fixtures/messenger/` | `docs/submissions/messenger/**` |
 
-**Read-only (import, never edit):** `PLAN.md`, `ARCHITECTURE.md`, `README.md`, the rest of `CLAUDE.md`, `docs/status.md`, `docs/request-backlog.md`, `docs/plan/**`, `docs/services/**`, `docs/submissions/shared/founder-inputs/**`, `apps/web/**` (frozen, the reference), `apps/site/**`, `apps/dash/**`, `apps/ios/**`, `apps/memory/**`, `apps/desktop/**`, `apps/mobile/**`, `packages/**`, `supabase/**`, `scripts/**`, `design/**` (the Quest references are permanent), every existing module in `apps/api/app/`, including the parked `communities.py` and `social_generation.py` (import or read them, never edit them: the other PC's apps may still use them), and `main.py`, `config.py`, `actions.py`, `auth.py`, `merchant.py`, `tasks.py`, `proactive.py`, `profile.py`, `recommendations.py`, `luna/`, `connectors/`, `lab/`, `memory/` …), every existing test, and the other entry's paths.
+**Read-only (import, never edit):** `PLAN.md`, `ARCHITECTURE.md`, `README.md`, the rest of `CLAUDE.md`, `docs/status.md`, `docs/request-backlog.md`, `docs/plan/**`, `docs/services/**`, `apps/web/**` (frozen, the reference), `apps/site/**`, `apps/dash/**`, `apps/ios/**`, `apps/memory/**`, `apps/desktop/**`, `apps/mobile/**`, `packages/**`, `supabase/**`, `scripts/**`, `design/**` (the Quest references are permanent), every existing module in `apps/api/app/`, including the parked `communities.py` and `social_generation.py` (import or read them, never edit them: the other PC's apps may still use them), and `main.py`, `config.py`, `actions.py`, `auth.py`, `merchant.py`, `tasks.py`, `proactive.py`, `profile.py`, `recommendations.py`, `luna/`, `connectors/`, `lab/`, `memory/` …), every existing test, and the other entry's paths.
 
 - **DB:** new tables are prefixed `cs_` / `cm_` / `mg_`, created in code with `CREATE TABLE IF NOT EXISTS` (the pattern of `apps/api/app/tasks.py`). The parked tables in `communities.py` are never altered; Community creates its own `cm_` tables. **No new files in `supabase/migrations/`**: their timestamps collide with the other team's. RLS or Realtime SQL goes under the entry's own folder (for example `apps/messenger/supabase/`) and is listed in `open-questions.md` until the mains are merged.
 - **No edits to existing files, not even one line.** Read new settings from env inside your own package. Register capability IDs into `actions.CAPABILITIES` from your own package at import time, and run your own FastAPI entrypoint (`app.community.server:app` on :8060, `app.messenger.server:app` on :8070) that includes the shared routers, so `main.py` is never edited. If something truly cannot work without changing an existing file, stop and put it in `open-questions.md`: only the founder can allow it.
 - **Never build a second memory engine.** Memory is the rewritten **temporal_note** engine (D5): the other team's `apps/memory/`, package `temporal_memory`, with its HTTP API, MCP server and the `models.py` contract. It is on the pushed branch `memory`; the other PC's `main` may hold a newer rewrite. **Hindsight and Honcho are not used.** Where the founder specs say `MemoryBackend` or `ScopeGuard`, read temporal_note. Entries reach memory **only** through `apps/api/app/memory_bridge/`, a client of temporal_note.
 
 ## 3. Phases: sequential and gated
+
+**Status (24 Nov, founder):** P1, P2, B0 and the entry builds are done; both entries are **waiting for tests**. Test and build results from 24 Nov are in `founder-decisions.md` D15.
 
 | Phase | Branch · brief | Output | Gate to the next phase |
 |---|---|---|---|
@@ -87,12 +91,12 @@ Cursor, Muse and Antigravity may all run long tasks and use subagents.
 cd apps/api && .venv/Scripts/python -m pytest -q tests                # 1. whole API suite (Mac/Linux: .venv/bin/python)
 git diff --quiet mobile-pwa-baseline-2026-10-23 HEAD -- apps/web && echo "apps/web untouched"   # 2. frozen reference
 git diff --name-only $(git merge-base HEAD origin/main) HEAD            # 3. only own paths
-git merge-tree --write-tree HEAD origin/pc2-main >/dev/null && echo clean   # 5. once the other PC's main is pushed as pc2-main
+for b in memory ios desktop; do git merge-tree --write-tree HEAD origin/$b >/dev/null && echo "clean vs $b"; done   # 5. the other PC's Dubai-io branches
 # 4. the entry's app: its own test + build commands (apps/community: npm test && npm run build; apps/messenger: per its README)
 ```
 
 - **Gate 3:** every printed path must be in your branch's *Own* row or a path inherited from `contest-shared`. Anything else fails, with no exceptions.
-- **Gate 5:** when `origin/pc2-main` exists, a merge that conflicts with it stops; report it to the founder.
+- **Gate 5:** a merge that conflicts with `origin/memory`, `origin/ios` or `origin/desktop` stops; report it to the founder.
 - Every workflow ships synthetic fixtures plus a happy-path **and** a failure-path test. No real personal data in the repo; real runs read from outside it (for example `G:\Haitham\lab-data\`).
 - Hindsight's `AC-1` and `MEM-01` (`PLAN.md` §2) are not gates for these entries (D5). Never claim any memory test passed unless you ran it.
 

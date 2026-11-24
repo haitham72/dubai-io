@@ -22,7 +22,7 @@ Root `CLAUDE.md` · `docs/submissions/CLAUDE.md` (paths §2, gates §4) · `shar
 ```
 - Work only on your lane branch cs/<slice-id>, cut from contest-shared. Never touch main.
 - Write only: apps/api/app/identity/**, apps/api/app/memory_bridge/**, apps/api/tests/test_identity_*.py,
-  apps/api/tests/test_memory_bridge_*.py, apps/api/tests/fixtures/contest_shared/**, docs/submissions/shared/** (not founder-inputs/).
+  apps/api/tests/test_memory_bridge_*.py, apps/api/tests/fixtures/contest_shared/**, docs/submissions/shared/**.
   Everything else is read-only, especially apps/memory/** (another team's engine: never edit it, never fork it),
   apps/web/**, apps/site/**, PLAN.md, ARCHITECTURE.md, supabase/**, and every existing module in apps/api/app/.
 - Memory is the rewritten temporal_note engine (founder-decisions D5), never Hindsight or Honcho. Do not build a second

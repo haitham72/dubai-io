@@ -93,3 +93,16 @@
 1. `apps/api/tests/conftest.py:27`: `postgres_schema` monkeypatches `actions.connect` only, not `app.db.connect` or `app.db.SQLiteDB`; worked around inside `tests/fixtures/contest_shared/db_fixtures.py` without editing `conftest.py`.
 2. Global Scoop `supabase.exe` (`v2.33.9`) on PATH rejects `supabase/config.toml` keys (`auto_expose_new_tables`, `health_timeout`, `[local_smtp]`); scripts pin `npx.cmd --yes supabase@2.121.0`.
 3. Running `supabase start` leaves nothing modified in git (`git status --short -- supabase` clean).
+
+## 2026-11-24 — D15: three separate products; starting inputs removed (Claude Code, other PC)
+
+- **Merged:** `origin/main` (`879fcb7`, the `docs/submissions/README.md` hand-off) into `contest-shared`, then `contest-shared` into `societal` and `business`, and pushed. No conflicts.
+- **Gates on all three:**
+  - The API suites passed: 517, 582 and 545. The one failure, `test_ops`, comes from `redis` missing in that PC's venv; `main` fails it too.
+  - `apps/web` is untouched, and only own paths are changed.
+  - The Messenger old-name grep prints nothing.
+  - Community: 9 vitest tests and the build pass. Messenger: typecheck, `test:store`, `test:photo-window` and the build pass.
+  - Gate 5 checked against `origin/memory`, `origin/ios` and `origin/desktop`: all clean.
+- **Recorded D15:** three separate products sharing only the per-user layer (identity + temporal_note), in the same repo with their own folders and branches, never merged into one. The builds are done and waiting for tests.
+- **Removed** `shared/founder-inputs/` (scratchpad, superseded). The live guidance now points to each entry's roadmap and gap matrix: `docs/submissions/CLAUDE.md`, `founder-decisions.md`, `THREE_ENTRIES_OVERVIEW.md`, `briefs/3-build-shared.md` and the canon patches. Historical citations resolve via `git show e7870c6:docs/submissions/shared/founder-inputs/<file>`.
+- **Corrected** the "other PC's `main` is far ahead / `pc2-main`" assumption: that work is on the pushed `memory`, `ios` and `desktop` branches.

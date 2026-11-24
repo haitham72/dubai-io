@@ -13,7 +13,7 @@ All three Dubai Chambers *Create AI Agents Championship* entries share **one ver
 
 | # | Track | Entry | Reference Shape | Branch & Runtime Ports | Core Boundary (D1–D10) |
 |---|---|---|---|---|---|
-| 1 | **Best Personal AI Agent** | **Quest / Dubai-io** | ChatGPT-like personal memory companion | `main` (and PC2 `main`: `origin/memory`, `origin/desktop`, `origin/ios`) · API `:8030`, `temporal_memory` `:8040` | Owns Know / Notice / Do personal assistant, Vault, Morning Brief, connectors; `handoff-temporal-note.md` covers `CR-TM-1..4` + 2 fixes (D10) |
+| 1 | **Best Personal AI Agent** | **Quest / Dubai-io** | ChatGPT-like personal memory companion | `main` + branches `memory`, `desktop`, `ios` · API `:8030`, `temporal_memory` `:8040` | Owns Know / Notice / Do personal assistant, Vault, Morning Brief, connectors; `handoff-temporal-note.md` covers `CR-TM-1..4` + 2 fixes (D10) |
 | 2 | **Best Societal AI Agent** | **Dubai-io Community** | Facebook-like social network | `societal` (`317de4d`) · `apps/community/` + `app.community.server:app` (`:8060`) | Replaces Persocial (D2); **owns NO P2P messaging** (D3 — Inbox is notifications only + Messenger hand-off); **all ages with self-declared age gate** (under-18: zero cross-app personalisation, zero memory writes, D9); `v3-higgsfield` layout + `design/20-11-2026/` visual style (D9) |
 | 3 | **Best Business AI Agent** | **Messenger** *(working name; O2 pending)* | WhatsApp-like AI messenger | `business` (`4f7c675`, M0 imported; `MG-B2` active) · `apps/messenger/` + `app.messenger.server:app` (`:8070`) | Rebranded from founder-authored redesign features (`github.com/haitham72/Mirsal-redesign`, 19 Nov AI workspace `6b45ba4`, D1/D4/D8); **owns ALL P2P messaging** + chat-to-action business agents; Builder/Higgsfield/Diwan/Nadi/watermark-cleaner dropped (D6–D8); founder packs + U²-Net any-subject cut-out stickers (D7/D8) |
 
@@ -28,7 +28,7 @@ All three Dubai Chambers *Create AI Agents Championship* entries share **one ver
   2. Extract time-anchored facts and candidate hypotheses (`status="hypothesis"`), surfaced only with `Confirm / Edit / Not true / Forget`.
   3. Propose external side effects through registered `actions.CAPABILITIES` requiring one explicit user tap per action (Rule 6 / D15) and authoritative provider evidence before `Confirmed`/`Booked`/`Paid` (Rule 1).
 - **Dependencies:**
-  - Reconciliation of PC2 `main` (`origin/memory`, `origin/desktop`, `origin/ios`) with `origin/main` (founder merge).
+  - Merging `memory`, `desktop` and `ios` into `main` (Entry 1 only; `societal` and `business` are never merged into `main`, D15).
   - Upstream `temporal_memory` hand-off (`docs/submissions/shared/handoff-temporal-note.md`: `CR-TM-1..4` + `vault.py:55-58` & `forget.py:147` fixes, D10).
   - Gate S (`apps/api/app/identity/` + `apps/api/app/memory_bridge/`) to replace hardcoded `"karim"` / anonymous cookie sessions with verified `user_id` and `owner-device` tokens.
   - Founder OAuth credentials (`GOOGLE_OAUTH_CLIENT_ID`, etc.) for live Gmail/Calendar connectors (`docs/status.md:43`).

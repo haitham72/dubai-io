@@ -3,10 +3,11 @@
 - **Target file:** `ARCHITECTURE.md` (currently 358 lines at `origin/main` `f016856` / `contest-shared` `206b9ff`)
 - **Affected line ranges:** lines `1-49` (header + §1 Shape), `86-93` (§4 Data), `118-138` (§7 Profile and memory), `143-167` (§9 Security and privacy — add §9.3), `168-171` (§10 Deliberately not built), `349-358` (§17 Remaining architecture gaps)
 - **Status:** **PROPOSAL ONLY — DO NOT APPLY ON `contest-shared`.**
+- **D15 (24 Nov):** `societal` and `business` are never merged into `main`; describe their paths on `main` as living on their branches.
 - **When to apply:** Only after the founder reconciles the other PC's unpushed `main` with `origin/main` and approves merging the three-entry contract into `main`.
 - **Merge-conflict notes:**
   - `origin/memory` (`fc2e24a`), `origin/desktop` (`d07ee53`), and `origin/ios` (`3b12997`) all have **zero diffs** against `origin/main` in `ARCHITECTURE.md`.
-  - Check the reconciled PC2 `main` for any updates it made to `ARCHITECTURE.md` (especially §1 Shape and §7 Memory for `apps/memory/` `temporal_memory`, `apps/desktop/`, `apps/mobile/`). Align exact `apps/memory/` routes/ports before applying.
+  - Check `main` after `memory`, `desktop` and `ios` are merged into it for any updates it made to `ARCHITECTURE.md` (especially §1 Shape and §7 Memory for `apps/memory/` `temporal_memory`, `apps/desktop/`, `apps/mobile/`). Align exact `apps/memory/` routes/ports before applying.
 
 ---
 
