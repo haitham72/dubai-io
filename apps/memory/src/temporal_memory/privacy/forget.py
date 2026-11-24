@@ -248,8 +248,18 @@ def scrub_erased(cur: Any, owner: str, record_ids: list[str], job_ids: list[str]
     # Attempts that carry extracted text/quotes of erased facts or of the affected jobs.
     cur.execute(
         "UPDATE job_attempts SET output_json = NULL WHERE owner = %(owner)s AND output_json IS NOT NULL AND ("
-        "job_id = ANY(%(jobs)s) OR id IN (SELECT attempt_id FROM facts WHERE owner = %(owner)s "
-        "AND erased_at IS NOT NULL AND attempt_id IS NOT NULL))", p)
+        "job_id = ANY(%(jobs)s) "
+        # every attempt of a job that read any erased record of this owner (earlier Forgets included)
+        "OR job_id IN (SELECT j.id FROM jobs j WHERE j.owner = %(owner)s AND j.input_ref && "
+        "ARRAY(SELECT r.id FROM records r WHERE r.owner = %(owner)s AND r.erased_at IS NOT NULL)) "
+        # every attempt of a job that produced an erased fact (retries, earlier attempts)
+        "OR job_id IN (SELECT a2.job_id FROM job_attempts a2 JOIN facts f ON f.attempt_id = a2.id "
+        "WHERE f.owner = %(owner)s AND f.erased_at IS NOT NULL) "
+        "OR id IN (SELECT attempt_id FROM facts WHERE owner = %(owner)s "
+        "AND erased_at IS NOT NULL AND attempt_id IS NOT NULL) "
+        # any attempt whose output still quotes the text of an erased fact (text is still present in this txn)
+        "OR EXISTS (SELECT 1 FROM facts f WHERE f.owner = %(owner)s AND f.erased_at IS NOT NULL "
+        "AND length(f.text) >= 8 AND strpos(job_attempts.output_json::text, f.text) > 0))", p)
     counts["job_attempts"] = cur.rowcount
 
     # Facts: every text-bearing column of an erased fact (tsv is generated from them and follows). Embedding is NULL.
