@@ -86,7 +86,8 @@ def test_records_dedupe_enqueue_and_reject_bad_evidence(api):
     assert secret.status_code == 400
 
 
-def test_search_applies_source_prefix_before_limit(api):
+def test_search_applies_source_prefix_before_limit(api, monkeypatch):
+    monkeypatch.setenv("TM_SEMANTIC", "0")  # asserts lexical ordering; the semantic channel would reorder the equal-lexical hits
     client, headers = api["client"], api["karim"]
     records = [
         _record("m1", "messenger:c1", "harbour west", "2026-11-20T09:00:00+04:00"),
@@ -286,3 +287,11 @@ def test_leased_job_submit_is_generation_stale(api):
     ))
     assert verdict.ok is False
     assert any("generation" in reason or "fence" in reason for reason in verdict.reasons)
+
+
+def test_admin_warmup_is_admin_only_and_honest_when_semantic_off(api, monkeypatch):
+    client = api["client"]
+    assert client.post("/v1/admin/warmup", headers=api["karim"]).status_code == 403
+    monkeypatch.setenv("TM_SEMANTIC", "0")
+    body = client.post("/v1/admin/warmup", headers={"Authorization": "Bearer adm"}).json()
+    assert body["ok"] is False and body["reason"] == "semantic_disabled"

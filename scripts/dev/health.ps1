@@ -130,6 +130,17 @@ Add-Row "host:beat (exactly 1)" ($beatRoots.Count -eq 1) "$($beatRoots.Count) be
 $memOk = Test-Http "http://127.0.0.1:$MemoryPort/health"
 Add-Row "memory-api:$MemoryPort" $memOk "http://localhost:$MemoryPort/health"
 
+# 2a'. Semantic model loaded (start-all warms it; green only when the embedder is in memory, or semantic is off).
+$semOk = $false; $semDetail = "memory API not reachable"
+try {
+    $h = Invoke-RestMethod -Uri "http://127.0.0.1:$MemoryPort/health" -TimeoutSec 3
+    $sm = $h.semantic
+    if ($sm -and -not $sm.enabled) { $semOk = $true; $semDetail = "semantic recall disabled (TM_SEMANTIC=0)" }
+    elseif ($sm -and $sm.loaded) { $semOk = $true; $semDetail = "bge-m3 loaded" }
+    else { $semDetail = "model not loaded (first start downloads ~570 MB): run start-all" }
+} catch {}
+Add-Row "memory-semantic-model" $semOk $semDetail
+
 # 2a. The memory image must match apps/memory (E6 FAIL 3): start-all records the source hash and the running image id.
 . (Join-Path $PSScriptRoot "memory-image.ps1")
 $imgOk = $false; $imgDetail = "no marker: run start-all"

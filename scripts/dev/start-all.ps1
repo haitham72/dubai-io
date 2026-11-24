@@ -282,6 +282,19 @@ if (-not (Test-HttpOk "http://127.0.0.1:$MemoryPort/health")) {
     throw "Memory API :$MemoryPort/health did not become ready"
 }
 
+# Warm the semantic model once the API is healthy: the first run downloads ~570 MB into the tm-hf-cache volume, which
+# would otherwise happen inside the founder's first chat query (21 s, past the bridge's 10 s timeout). A failed
+# download is not fatal: chat falls back to lexical recall and says so (retrieval.semantic).
+Write-Host "[2/6] Loading semantic model (first run downloads ~570 MB, can take minutes)..."
+$warmSw = [System.Diagnostics.Stopwatch]::StartNew()
+try {
+    $warm = Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:$MemoryPort/v1/admin/warmup" -Headers @{ Authorization = "Bearer $memAdminToken" } -TimeoutSec 900
+    if ($warm.ok) { Write-Host ("      semantic model loaded in {0:N1}s" -f $warmSw.Elapsed.TotalSeconds) }
+    else { Write-Host "      [amber] semantic model not loaded ($($warm.reason)); chat uses lexical recall until it is" -ForegroundColor Yellow }
+} catch {
+    Write-Host "      [amber] semantic warm-up failed (no internet?): chat uses lexical recall until the model loads" -ForegroundColor Yellow
+}
+
 # 2b. Celery workers + ONE beat on the HOST (so the founder's `claude` CLI can run extraction). Windows-safe pools.
 #     Python: apps/memory/.venv in this repo, else the sibling contest-memory worktree venv, else the apps/api venv.
 #     PYTHONPATH always points at THIS checkout's apps/memory/src so the code under test is the code that runs.
