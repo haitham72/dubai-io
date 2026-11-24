@@ -319,7 +319,7 @@ def _collect_sql_projection(
 
         ent_agg_rows = conn.execute(
             f"""
-            WITH agg AS (
+            WITH agg AS MATERIALIZED (
                 SELECT fe.entity_id,
                        COUNT(*)::int AS total_cnt,
                        COUNT(*) FILTER (WHERE f.provenance IN ('user_supplied', 'provider_confirmed'))::int AS conf_cnt,
@@ -329,7 +329,7 @@ def _collect_sql_projection(
                 FROM fact_entities fe
                 JOIN facts f ON f.owner = fe.owner AND f.id = fe.fact_id
                 LEFT JOIN subjects s ON s.owner = f.owner AND s.id = f.subject_id
-                WHERE fe.owner = %s AND f.erased_at IS NULL AND f.status <> 'history' {hid_clause}
+                WHERE fe.owner = %s AND (f.erased_at IS NULL)::int = 1 AND f.status <> 'history' {hid_clause}
                   AND (
                       s.id IS NULL
                       OR (s.sensitive_cat IS NULL AND split_part(s.path, '/', 1) NOT IN ('health', 'faith'))
