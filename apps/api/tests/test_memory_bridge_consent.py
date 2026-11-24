@@ -13,10 +13,10 @@ if str(API_ROOT) not in sys.path:
 
 from app import db as db_mod
 from tests.fixtures.contest_shared.db_fixtures import cs_postgres_isolation  # noqa: F401
+from tests.fixtures.contest_shared.memory_bridge_fixtures import memory_bridge_env  # noqa: F401
 from app.identity.models import AgeBand, AppId, VerifiedPrincipal
 from app.memory_bridge.bridge import MemoryBridge
 from app.memory_bridge.consent import ConsentStore
-from app.memory_bridge.fake_client import FakeTemporalMemoryClient
 from app.memory_bridge.models import (
     ConsentDeniedError,
     ForgetReceipt,
@@ -42,20 +42,20 @@ def _principal(
     )
 
 
-def _make_bridge(tmp_path: Path, name: str = "consent.db", *, forget_coordinator=None):
+def _make_bridge(tmp_path: Path, client, name: str = "consent.db", *, forget_coordinator=None):
     db = db_mod.connect(tmp_path / name)
-    client = FakeTemporalMemoryClient()
     bridge = MemoryBridge(db, client, forget_coordinator=forget_coordinator)
     return db, client, bridge
 
 
-def test_mb_default_off_consent(tmp_path: Path) -> None:
+def test_mb_default_off_consent(tmp_path: Path, memory_bridge_env) -> None:
     """MB-01: Default-off consent blocks writes/reads until explicitly enabled for adult_18_plus."""
-    db, client, bridge = _make_bridge(tmp_path)
+    db, client, bridge = _make_bridge(tmp_path, memory_bridge_env.client)
     try:
-        alice_quest = _principal("usr_alice", app_id="quest")
-        alice_comm = _principal("usr_alice", app_id="community")
-        alice_msg = _principal("usr_alice", app_id="messenger")
+        alice_id = memory_bridge_env.owner_id("alice")
+        alice_quest = _principal(alice_id, app_id="quest")
+        alice_comm = _principal(alice_id, app_id="community")
+        alice_msg = _principal(alice_id, app_id="messenger")
 
         # Default grants are all off with generation=1.
         src_grant = bridge.get_consent(alice_quest, "source", "quest")
@@ -75,7 +75,7 @@ def test_mb_default_off_consent(tmp_path: Path) -> None:
                     source_kind="quest",
                     source_id="quest:t1",
                     host_app="quest",
-                    author_id="usr_alice",
+                    author_id=alice_id,
                     text="I enjoy padel on weekends",
                     valid_time="2026-11-23T10:00:00+00:00",
                     explicit_user_confirm=True,
@@ -107,7 +107,7 @@ def test_mb_default_off_consent(tmp_path: Path) -> None:
                 source_kind="quest",
                 source_id="quest:t1",
                 host_app="quest",
-                author_id="usr_alice",
+                author_id=alice_id,
                 text="I enjoy padel on weekends",
                 valid_time="2026-11-23T10:00:00+00:00",
                 subject_path="hobbies/padel",
@@ -211,7 +211,7 @@ def test_d11_minor_fence_blocks_enabling_interest_export_on_consent(tmp_path: Pa
         db.close()
 
 
-def test_consent_validation_and_revoke_delegation(tmp_path: Path) -> None:
+def test_consent_validation_and_revoke_delegation(tmp_path: Path, memory_bridge_env) -> None:
     """Invalid scope/mode fails closed and revoke delegates to forget_coordinator when injected."""
     calls: list[tuple[str, str]] = []
 
@@ -252,9 +252,12 @@ def test_consent_validation_and_revoke_delegation(tmp_path: Path) -> None:
                 recorded_at="2026-11-23T12:00:00+00:00",
             )
 
-    db, _, bridge = _make_bridge(tmp_path, "deleg.db", forget_coordinator=_FakeForgetCoordinator())
+    db, _, bridge = _make_bridge(
+        tmp_path, memory_bridge_env.client, "deleg.db", forget_coordinator=_FakeForgetCoordinator()
+    )
     try:
-        alice = _principal("usr_alice")
+        alice_id = memory_bridge_env.owner_id("alice")
+        alice = _principal(alice_id)
         with pytest.raises(MemoryBridgeError):
             bridge.set_source_consent(alice, "invalid_src", enabled=True)  # type: ignore[arg-type]
         with pytest.raises(MemoryBridgeError):
@@ -264,7 +267,7 @@ def test_consent_validation_and_revoke_delegation(tmp_path: Path) -> None:
         with pytest.raises(MemoryBridgeError):
             bridge.set_conversation_consent(alice, "conv-1", ai_mode="invalid")  # type: ignore[arg-type]
         with pytest.raises(MemoryBridgeError):
-            bridge.consent_store.get_consent("usr_alice", "bad_kind", "quest")  # type: ignore[arg-type]
+            bridge.consent_store.get_consent(alice_id, "bad_kind", "quest")  # type: ignore[arg-type]
 
         # Enable then revoke source -> forget_coordinator invoked.
         _, r_enable = bridge.set_source_consent(alice, "quest", enabled=True)

@@ -106,3 +106,9 @@
 - **Recorded D15:** three separate products sharing only the per-user layer (identity + temporal_note), in the same repo with their own folders and branches, never merged into one. The builds are done and waiting for tests.
 - **Removed** `shared/founder-inputs/` (scratchpad, superseded). The live guidance now points to each entry's roadmap and gap matrix: `docs/submissions/CLAUDE.md`, `founder-decisions.md`, `THREE_ENTRIES_OVERVIEW.md`, `briefs/3-build-shared.md` and the canon patches. Historical citations resolve via `git show e7870c6:docs/submissions/shared/founder-inputs/<file>`.
 - **Corrected** the "other PC's `main` is far ahead / `pc2-main`" assumption: that work is on the pushed `memory`, `ios` and `desktop` branches.
+
+## 2026-11-24 — CS-1 Live Bridge Contract Tests (`cs/live-bridge-tests`)
+
+- Added `MEMORY_BRIDGE_LIVE=1` fixture in `apps/api/tests/fixtures/contest_shared/memory_bridge_fixtures.py` (defaulting to `FakeTemporalMemoryClient`; isolated per-run owner + owner-device token + Forget cleanup in live mode; `conftest.py` untouched).
+- Switched all `apps/api/tests/test_memory_bridge_*.py` suites to `memory_bridge_env` / `tm_client`, marking fake-internal assertions `@fake_only`.
+- Aligned `docs/submissions/shared/handoff-temporal-note.md` (`subject_path` canonical field, `subject_id` accepted alias note, and added `§5. How to run live mode`).

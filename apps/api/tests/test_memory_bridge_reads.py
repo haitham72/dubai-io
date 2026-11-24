@@ -13,9 +13,9 @@ if str(API_ROOT) not in sys.path:
 
 from app import db as db_mod
 from tests.fixtures.contest_shared.db_fixtures import cs_postgres_isolation  # noqa: F401
+from tests.fixtures.contest_shared.memory_bridge_fixtures import memory_bridge_env  # noqa: F401
 from app.identity.models import AgeBand, AppId, VerifiedPrincipal
 from app.memory_bridge.bridge import MemoryBridge
-from app.memory_bridge.fake_client import FakeTemporalMemoryClient
 from app.memory_bridge.models import (
     ConsentDeniedError,
     GroupConsentSnapshot,
@@ -40,23 +40,24 @@ def _principal(
     )
 
 
-def _setup(tmp_path: Path, name: str = "reads.db"):
+def _setup(tmp_path: Path, client, name: str = "reads.db"):
     db = db_mod.connect(tmp_path / name)
-    client = FakeTemporalMemoryClient()
     bridge = MemoryBridge(db, client)
     return db, client, bridge
 
 
-def test_mb_two_user_isolation(tmp_path: Path) -> None:
+def test_mb_two_user_isolation(tmp_path: Path, memory_bridge_env) -> None:
     """MB-02: User A reads own vault/context/timeline/why/chat/interests/audit; User B sees zero User A data."""
-    db, _, bridge = _setup(tmp_path, "iso.db")
+    db, _, bridge = _setup(tmp_path, memory_bridge_env.client, "iso.db")
     try:
-        alice_q = _principal("usr_alice", app_id="quest")
-        alice_c = _principal("usr_alice", app_id="community")
-        alice_m = _principal("usr_alice", app_id="messenger")
-        bob_q = _principal("usr_bob", app_id="quest")
-        bob_c = _principal("usr_bob", app_id="community")
-        bob_m = _principal("usr_bob", app_id="messenger")
+        alice_id = memory_bridge_env.owner_id("alice")
+        bob_id = memory_bridge_env.owner_id("bob")
+        alice_q = _principal(alice_id, app_id="quest")
+        alice_c = _principal(alice_id, app_id="community")
+        alice_m = _principal(alice_id, app_id="messenger")
+        bob_q = _principal(bob_id, app_id="quest")
+        bob_c = _principal(bob_id, app_id="community")
+        bob_m = _principal(bob_id, app_id="messenger")
 
         # Enable consent for both Alice and Bob.
         for u_q, u_c, u_m in ((alice_q, alice_c, alice_m), (bob_q, bob_c, bob_m)):
@@ -76,7 +77,7 @@ def test_mb_two_user_isolation(tmp_path: Path) -> None:
                 source_kind="quest",
                 source_id="quest:t1",
                 host_app="quest",
-                author_id="usr_alice",
+                author_id=alice_id,
                 text="Alice private running goal 10km",
                 valid_time="2026-11-23T09:00:00+00:00",
                 subject_path="fitness/running",
@@ -91,7 +92,7 @@ def test_mb_two_user_isolation(tmp_path: Path) -> None:
                 source_kind="messenger",
                 source_id="messenger:conv-shared",
                 host_app="messenger",
-                author_id="usr_alice",
+                author_id=alice_id,
                 text="Alice plans to bring dates to picnic",
                 valid_time="2026-11-23T09:05:00+00:00",
                 subject_path="plans/picnic",
@@ -118,7 +119,7 @@ def test_mb_two_user_isolation(tmp_path: Path) -> None:
         assert bridge.read_messenger_chat_scope(
             bob_m, "conv-shared", group_consent=GroupConsentSnapshot("conv-shared", True, True, True, 1)
         ) == []
-        assert all(ev["owner_id"] == "usr_bob" for ev in bridge.list_audit_events(bob_q))
+        assert all(ev["owner_id"] == bob_id for ev in bridge.list_audit_events(bob_q))
         with pytest.raises(MemoryBridgeError) as exc_info:
             bridge.read_why_fact(bob_q, alice_fid, host_app="quest")
         assert exc_info.value.status_code == 404
@@ -126,12 +127,13 @@ def test_mb_two_user_isolation(tmp_path: Path) -> None:
         db.close()
 
 
-def test_quest_source_revocation_hides_facts_immediately(tmp_path: Path) -> None:
+def test_quest_source_revocation_hides_facts_immediately(tmp_path: Path, memory_bridge_env) -> None:
     """Revoking source consent or setting Messenger ai_mode='session' hides those facts from Quest reads."""
-    db, _, bridge = _setup(tmp_path, "quest_revoke.db")
+    db, _, bridge = _setup(tmp_path, memory_bridge_env.client, "quest_revoke.db")
     try:
-        alice_q = _principal("usr_alice", app_id="quest")
-        alice_m = _principal("usr_alice", app_id="messenger")
+        alice_id = memory_bridge_env.owner_id("alice")
+        alice_q = _principal(alice_id, app_id="quest")
+        alice_m = _principal(alice_id, app_id="messenger")
         bridge.set_source_consent(alice_q, "quest", enabled=True)
         bridge.set_source_consent(alice_m, "messenger", enabled=True)
         bridge.set_app_consent(alice_q, "quest", read_enabled=True, write_enabled=True)
@@ -145,7 +147,7 @@ def test_quest_source_revocation_hides_facts_immediately(tmp_path: Path) -> None
                 source_kind="quest",
                 source_id="quest:t1",
                 host_app="quest",
-                author_id="usr_alice",
+                author_id=alice_id,
                 text="I study Arabic calligraphy",
                 valid_time="2026-11-23T09:00:00+00:00",
                 subject_path="arts/calligraphy",
@@ -159,7 +161,7 @@ def test_quest_source_revocation_hides_facts_immediately(tmp_path: Path) -> None
                 source_kind="messenger",
                 source_id="messenger:conv-1",
                 host_app="messenger",
-                author_id="usr_alice",
+                author_id=alice_id,
                 text="Meeting Friday at Kite Beach",
                 valid_time="2026-11-23T09:10:00+00:00",
                 subject_path="plans/meetup",
@@ -185,13 +187,14 @@ def test_quest_source_revocation_hides_facts_immediately(tmp_path: Path) -> None
         db.close()
 
 
-def test_mb_community_strict_allowlist_and_d11_minor_gate(tmp_path: Path) -> None:
+def test_mb_community_strict_allowlist_and_d11_minor_gate(tmp_path: Path, memory_bridge_env) -> None:
     """MB-07 & MB-11: Strict InterestFeature DTO only, zero private text/IDs, immediate toggle-off, and [] for minors."""
-    db, _, bridge = _setup(tmp_path, "comm_allowlist.db")
+    db, _, bridge = _setup(tmp_path, memory_bridge_env.client, "comm_allowlist.db")
     try:
-        alice_q = _principal("usr_alice", app_id="quest")
-        alice_c = _principal("usr_alice", app_id="community")
-        alice_m = _principal("usr_alice", app_id="messenger")
+        alice_id = memory_bridge_env.owner_id("alice")
+        alice_q = _principal(alice_id, app_id="quest")
+        alice_c = _principal(alice_id, app_id="community")
+        alice_m = _principal(alice_id, app_id="messenger")
 
         bridge.set_source_consent(alice_q, "quest", enabled=True, allow_interest_export=True)
         bridge.set_source_consent(alice_q, "gmail", enabled=True, allow_interest_export=True)
@@ -212,7 +215,7 @@ def test_mb_community_strict_allowlist_and_d11_minor_gate(tmp_path: Path) -> Non
                 source_kind="quest",
                 source_id="quest:t1",
                 host_app="quest",
-                author_id="usr_alice",
+                author_id=alice_id,
                 text="PRIVATE_QUEST_TEXT: Omar and I play padel at Marina",
                 valid_time="2026-11-23T10:00:00+00:00",
                 subject_path="hobbies/padel",
@@ -226,7 +229,7 @@ def test_mb_community_strict_allowlist_and_d11_minor_gate(tmp_path: Path) -> Non
                 source_kind="quest",
                 source_id="quest:t1",
                 host_app="quest",
-                author_id="usr_alice",
+                author_id=alice_id,
                 text="I visited the clinic for blood test",
                 valid_time="2026-11-23T10:05:00+00:00",
                 subject_path="health/checkup",
@@ -242,7 +245,7 @@ def test_mb_community_strict_allowlist_and_d11_minor_gate(tmp_path: Path) -> Non
                 source_kind="gmail",
                 source_id="gmail:msg-77",
                 host_app="connector",
-                author_id="usr_alice",
+                author_id=alice_id,
                 text="SECRET_GMAIL_SUBJECT: Flight booking to Salalah",
                 valid_time="2026-11-23T10:10:00+00:00",
                 subject_path="travel/salalah",
@@ -256,7 +259,7 @@ def test_mb_community_strict_allowlist_and_d11_minor_gate(tmp_path: Path) -> Non
                 source_kind="messenger",
                 source_id="messenger:conv-secret-99",
                 host_app="messenger",
-                author_id="usr_alice",
+                author_id=alice_id,
                 text="SECRET_CHAT_TEXT: Surprise gift at Mall",
                 valid_time="2026-11-23T10:15:00+00:00",
                 subject_path="shopping/gifts",
@@ -293,27 +296,28 @@ def test_mb_community_strict_allowlist_and_d11_minor_gate(tmp_path: Path) -> Non
             assert forbidden not in payload_dump
 
         # Cache hit works, and toggling OFF immediately clears results on next call.
-        assert db.execute("SELECT 1 FROM cs_interest_projection_cache WHERE owner_id = ?", ("usr_alice",)).fetchone() is not None
+        assert db.execute("SELECT 1 FROM cs_interest_projection_cache WHERE owner_id = ?", (alice_id,)).fetchone() is not None
         bridge.set_app_consent(
             alice_c, "community", read_enabled=True, write_enabled=False, allow_interest_export_to_community=False
         )
-        assert db.execute("SELECT 1 FROM cs_interest_projection_cache WHERE owner_id = ?", ("usr_alice",)).fetchone() is None
+        assert db.execute("SELECT 1 FROM cs_interest_projection_cache WHERE owner_id = ?", (alice_id,)).fetchone() is None
         assert bridge.read_community_interest_features(alice_c) == []
 
         # Minor-protected accounts always receive [] on read_community_interest_features.
         for band in ("under_13", "teen_13_17", "unknown"):
-            minor_c = _principal(f"usr_minor_{band}", app_id="community", age_band=band)  # type: ignore[arg-type]
+            minor_c = _principal(memory_bridge_env.owner_id(f"minor_{band}"), app_id="community", age_band=band)  # type: ignore[arg-type]
             assert bridge.read_community_interest_features(minor_c) == []
     finally:
         db.close()
 
 
-def test_mb_messenger_chat_scope_and_group_gate(tmp_path: Path) -> None:
+def test_mb_messenger_chat_scope_and_group_gate(tmp_path: Path, memory_bridge_env) -> None:
     """MB-08: Chat-scoped reads isolate conv-A from conv-B and enforce group + ai_mode gates."""
-    db, _, bridge = _setup(tmp_path, "messenger_scope.db")
+    db, _, bridge = _setup(tmp_path, memory_bridge_env.client, "messenger_scope.db")
     try:
-        alice_m = _principal("usr_alice", app_id="messenger")
-        alice_q = _principal("usr_alice", app_id="quest")
+        alice_id = memory_bridge_env.owner_id("alice")
+        alice_m = _principal(alice_id, app_id="messenger")
+        alice_q = _principal(alice_id, app_id="quest")
         bridge.set_source_consent(alice_m, "messenger", enabled=True)
         bridge.set_source_consent(alice_q, "quest", enabled=True)
         bridge.set_app_consent(alice_q, "quest", read_enabled=True, write_enabled=True)
@@ -331,7 +335,7 @@ def test_mb_messenger_chat_scope_and_group_gate(tmp_path: Path) -> None:
                 source_kind="quest",
                 source_id="quest:t1",
                 host_app="quest",
-                author_id="usr_alice",
+                author_id=alice_id,
                 text="I prefer morning flights",
                 valid_time="2026-11-23T08:00:00+00:00",
                 subject_path="travel/flights",
@@ -345,7 +349,7 @@ def test_mb_messenger_chat_scope_and_group_gate(tmp_path: Path) -> None:
                 source_kind="messenger",
                 source_id="messenger:conv-A",
                 host_app="messenger",
-                author_id="usr_alice",
+                author_id=alice_id,
                 text="Team agreed on Tuesday launch",
                 valid_time="2026-11-23T09:00:00+00:00",
                 subject_path="work/launch",
@@ -379,7 +383,7 @@ def test_mb_messenger_chat_scope_and_group_gate(tmp_path: Path) -> None:
                     source_kind="messenger",
                     source_id="messenger:conv-B",
                     host_app="messenger",
-                    author_id="usr_alice",
+                    author_id=alice_id,
                     text="Should not save in session mode",
                     valid_time="2026-11-23T09:05:00+00:00",
                     explicit_user_confirm=True,
@@ -423,15 +427,17 @@ def test_mb_messenger_chat_scope_and_group_gate(tmp_path: Path) -> None:
         db.close()
 
 
-def test_mb_community_own_activity_and_isolation(tmp_path: Path) -> None:
+def test_mb_community_own_activity_and_isolation(tmp_path: Path, memory_bridge_env) -> None:
     """MB-12: Community own activity shows saved discussions & authored posts (topic only) and hides when erased."""
-    db, client, bridge = _setup(tmp_path, "comm_activity.db")
+    db, client, bridge = _setup(tmp_path, memory_bridge_env.client, "comm_activity.db")
     try:
-        alice_c = _principal("usr_alice", app_id="community")
-        alice_q = _principal("usr_alice", app_id="quest")
-        bob_c = _principal("usr_bob", app_id="community")
+        alice_id = memory_bridge_env.owner_id("alice")
+        bob_id = memory_bridge_env.owner_id("bob")
+        alice_c = _principal(alice_id, app_id="community")
+        alice_q = _principal(alice_id, app_id="quest")
+        bob_c = _principal(bob_id, app_id="community")
 
-        for u_c, u_q in ((alice_c, alice_q), (bob_c, _principal("usr_bob", app_id="quest"))):
+        for u_c, u_q in ((alice_c, alice_q), (bob_c, _principal(bob_id, app_id="quest"))):
             bridge.set_source_consent(u_c, "community", enabled=True, allow_interest_export=True)
             bridge.set_source_consent(u_q, "quest", enabled=True)
             bridge.set_app_consent(u_c, "community", read_enabled=True, write_enabled=True)
@@ -445,7 +451,7 @@ def test_mb_community_own_activity_and_isolation(tmp_path: Path) -> None:
                 source_kind="quest",
                 source_id="quest:t1",
                 host_app="quest",
-                author_id="usr_alice",
+                author_id=alice_id,
                 text="SECRET_QUEST_ENTRY",
                 valid_time="2026-11-23T09:00:00+00:00",
                 explicit_user_confirm=True,
@@ -460,7 +466,7 @@ def test_mb_community_own_activity_and_isolation(tmp_path: Path) -> None:
                 source_kind="community",
                 source_id="community:post:p10",
                 host_app="community",
-                author_id="usr_alice",
+                author_id=alice_id,
                 text="Saved discussion about neighborhood cycling lanes",
                 valid_time="2026-11-23T10:00:00+00:00",
                 subject_path="community/cycling",
@@ -474,7 +480,7 @@ def test_mb_community_own_activity_and_isolation(tmp_path: Path) -> None:
                 source_kind="community",
                 source_id="community:post:p11",
                 host_app="community",
-                author_id="usr_alice",
+                author_id=alice_id,
                 text="Organizing weekend beach cleanup at Jumeirah",
                 valid_time="2026-11-23T10:05:00+00:00",
                 subject_path="community/volunteering",
@@ -492,10 +498,10 @@ def test_mb_community_own_activity_and_isolation(tmp_path: Path) -> None:
         # Simulate forget cascade erasing refs -> disappears from own activity & Quest immediately.
         db.execute(
             "UPDATE cs_memory_record_refs SET erased_at = '2026-11-23T12:00:00+00:00' WHERE owner_id = ? AND source_kind = 'community'",
-            ("usr_alice",),
+            (alice_id,),
         )
         db.commit()
-        client.forget_source("usr_alice", ["cmsave:s1", "cmpost:p11"])
+        client.forget_source(alice_id, ["cmsave:s1", "cmpost:p11"])
 
         assert bridge.read_community_own_activity(alice_c) == []
         quest_tl = bridge.read_quest_timeline(alice_q)
