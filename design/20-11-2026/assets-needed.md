@@ -3,16 +3,16 @@
 Companion to `INDEX.md`. Every card and hero in the mockups is an **image**; the build currently has none. Sizes below are the **@3x pixel size** of the pt sizes in `INDEX.md` (export JPEG q85 or WebP, sRGB).
 
 ## Rules for all images
-1. **Never use real third-party product art or logos**: no GTA VI artwork or logo, no PlayStation / PS5 / DualSense, no publisher or console marks, no DubaiNow or government emblems, no real person's likeness. The mockups contain such art only because they were AI-generated; it is a placeholder idea, not an asset.
-2. Use **original generated imagery** (the founder's generator tools) or **properly licensed** images (keep the licence note next to the file).
-3. Store **locally in the repo** under a path agreed with the app owner (suggested: `apps/mobile/assets/demo/`), never hot-linked. Name files `<screen>-<slot>.jpg`.
-4. A fixture image is shown with the visible **Demo data** pill (root rule 2). A real photo of the user's own content is not a fixture.
-5. Each image has a dark legibility gradient applied in code (see `INDEX.md` 4.1 / 4.2); export the image **without** baked text, price chips or gradients.
-6. Keep the focal subject in the **left-center / upper 60%**, because titles sit bottom-left on the image.
+1. **Source of card images (founder, 24 Nov):** each Today / Quest card shows a **live, interest-matched result image from the app's own API** (Google OAuth in `apps/api/app/oauth.py`, keys server-side only; `scripts/sync_google.py` then `scripts/extract_all_interests.py` then `scripts/run_two_tower_recommender.py` pick live deals / news / videos with their real images; provider calls via the API proxy, e.g. `apps/api/app/google_maps.py`). Every live image shows a **source chip + provenance + `as_of`** (`INDEX.md` 12.2).
+2. A **generated or licensed fallback image** is used **only when no live result exists**; fixture data shows the **Demo data** pill (root rule 2).
+3. **Never use real third-party product art or logos in static assets**: no GTA VI artwork or logo, no PlayStation / PS5 / DualSense, no publisher or console marks, no DubaiNow or government emblems, no real person's likeness, not in the repo, the deck or icons. Third-party art may appear **only as a live, source-labelled result**. The mockups contain such art only because they were AI-generated.
+4. Static images (fallbacks, hero / recap art, quest art) are **original generated** or **properly licensed** (keep the licence note beside the file), stored **locally** (suggested `apps/mobile/assets/demo/`), named `<screen>-<slot>.jpg`; never hot-linked.
+5. Each image gets its dark legibility gradient in code (`INDEX.md` 4.1 / 4.2); export **without** baked text, price chips or gradients.
+6. Keep the focal subject in the upper 60% / left-center: titles sit bottom-left.
 
 ## List
 
-| # | Slot | Screen | Pt size | Export px | Aspect | Description (original art) |
+| # | Slot | Screen | Pt size | Export px | Aspect | Description. Live result first; the text is the local fallback / generated art |
 |---|---|---|---|---|---|---|
 | 1 | `today-hero-recap` | Today hero | 390 x 590 | 1170 x 1770 | about 2:3 | Dubai skyline at golden-hour sunset seen across a calm canal, a tall tower on the right third, warm peach / pink sky, soft sun low-center, palm fronds entering from the left edge, water reflections. Fades to cream at top and bottom, so keep the top 15% and bottom 18% low-detail |
 | 2 | `today-gaming-feature` | Today card, "Gaming & Hardware" feature | 290 x 257 | 870 x 771 | 8:7 | **Original** neon-sunset coastal city illustration: purple / pink sky, palm silhouettes, an invented sports car and an invented character seen from behind, skyline on the water. Not Vice City, not GTA. Demo data |
