@@ -58,6 +58,8 @@ if (Test-Path $ApiPy) {
     if ($LASTEXITCODE -ne 0) { Write-Warning "pip check reports conflicts in the apps/api venv; run it by hand to see them" }
 }
 $DesktopOutDir = Join-Path $env:LOCALAPPDATA "Dubai-io\desktop-dist"
+. (Join-Path $PSScriptRoot "memory-image.ps1")
+$ImageMarker = Join-Path $PSScriptRoot ".memory-image.json"
 
 New-Item -ItemType Directory -Path $LogsDir -Force | Out-Null
 
@@ -191,6 +193,11 @@ function Wait-DockerLock {
 
 $lanIp = Get-LanIp
 $pids = Load-Pids
+$AdminMarker = Join-Path $PSScriptRoot ".admin-token-passed.json"
+$adminPassed = @{}
+if (Test-Path $AdminMarker) {
+    try { foreach ($ap in (Get-Content $AdminMarker -Raw | ConvertFrom-Json).PSObject.Properties) { $adminPassed[$ap.Name] = $ap.Value } } catch {}
+}
 
 Write-Host "=== Dubai-io Stack Startup (LAN IP: $lanIp) ==="
 
@@ -245,15 +252,23 @@ do {
 } while ((Get-Date) -lt $infraDeadline)
 if (-not ($pgOk -and $rbOk -and $rdOk)) { throw "Memory infra failed health wait" }
 
-$apiImage = (& docker images -q temporal-memory-api 2>$null)
-if ($Rebuild -or -not $apiImage) {
-    Write-Host "[2/6] Building & starting memory api (Docker)..."
-    & docker compose -f $MemCompose up -d --build api | Out-Null
-} else {
-    Write-Host "[2/6] Starting memory api (Docker)..."
+# Always build: Docker's layer cache makes this a no-op (a few seconds) when apps/memory is unchanged, and it can never
+# leave the api container on an image older than the source (E6 FAIL 3: a pre-E8 image kept forgotten text).
+# -Rebuild additionally ignores the cache.
+if ($Rebuild) {
+    Write-Host "[2/6] Rebuilding memory api image without cache (Docker)..."
+    & docker compose -f $MemCompose build --no-cache api | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw "docker compose build memory api failed" }
     & docker compose -f $MemCompose up -d api | Out-Null
+} else {
+    Write-Host "[2/6] Building (cached) and starting memory api (Docker)..."
+    & docker compose -f $MemCompose up -d --build api | Out-Null
 }
 if ($LASTEXITCODE -ne 0) { throw "docker compose memory services failed" }
+# Record what is running so health.ps1 can prove the image matches the source tree.
+$runImageId = Get-MemoryApiContainerImageId $MemCompose
+$srcHash = Get-MemorySourceHash $MemDir
+[System.IO.File]::WriteAllText($ImageMarker, (@{ src_hash = $srcHash; image_id = $runImageId; at = (Get-Date).ToString("o") } | ConvertTo-Json), (New-Object System.Text.UTF8Encoding($false)))
 # The Docker worker/beat containers have no claude CLI and would double-consume: they must not run next to the host workers.
 $ErrorActionPreference = "Continue"
 & docker compose -f $MemCompose stop worker-p0 worker-p1 beat 2>&1 | Out-Null
@@ -346,6 +361,10 @@ if (-not (Test-HttpOk "http://127.0.0.1:$ApiPort/api/health")) {
     $env:MEMORY_BRIDGE_BACKEND = "http"
     $env:TM_BASE_URL = "http://localhost:$MemoryPort"
     $env:PUBLIC_API_BASE_URL = "http://${lanIp}:$ApiPort"
+    # Owner provisioning (ingest ensure_owner, device tokens) needs the memory admin token; process environment only.
+    $env:TM_ADMIN_TOKEN = $memAdminToken
+    # CORS allowlist for the Dubai-io website (Expo web), plus the LAN address, Community and Messenger sites.
+    $env:PUBLIC_WEB_ORIGINS = "http://localhost:$ExpoPort,http://127.0.0.1:$ExpoPort,http://${lanIp}:$ExpoPort"
     if (-not $apiMap["TM_SERVICE_TOKEN"]) { $env:TM_SERVICE_TOKEN = $svcToken }
     $apiOut = Join-Path $LogsDir "api.out.log"
     $apiErr = Join-Path $LogsDir "api.err.log"
@@ -354,7 +373,8 @@ if (-not (Test-HttpOk "http://127.0.0.1:$ApiPort/api/health")) {
         -WorkingDirectory $ApiDir -RedirectStandardOutput $apiOut -RedirectStandardError $apiErr `
         -WindowStyle Hidden -PassThru
     $pids["apps_api"] = $proc.Id
-    Remove-Item Env:MEMORY_BRIDGE_BACKEND, Env:TM_BASE_URL, Env:PUBLIC_API_BASE_URL, Env:TM_SERVICE_TOKEN -ErrorAction SilentlyContinue
+    $adminPassed["apps_api"] = $proc.Id
+    Remove-Item Env:MEMORY_BRIDGE_BACKEND, Env:TM_BASE_URL, Env:PUBLIC_API_BASE_URL, Env:TM_SERVICE_TOKEN, Env:TM_ADMIN_TOKEN, Env:PUBLIC_WEB_ORIGINS -ErrorAction SilentlyContinue
     $apiDeadline = (Get-Date).AddSeconds(45)
     while (-not (Test-HttpOk "http://127.0.0.1:$ApiPort/api/health") -and (Get-Date) -lt $apiDeadline) {
         Start-Sleep -Seconds 1
@@ -385,6 +405,7 @@ function Start-EntryApi([string]$Name, [string]$Module, [int]$Port) {
     if (Test-HttpOk "http://127.0.0.1:$Port/api/shared/status") { return }
     $vars = @{
         "MEMORY_BRIDGE_BACKEND" = "http"; "TM_BASE_URL" = "http://localhost:$MemoryPort"; "TM_SERVICE_TOKEN" = $entrySvcToken
+        "TM_ADMIN_TOKEN" = $memAdminToken
         "DUBAI_SHARED_IDENTITY_DB" = $identityTarget
         "COMMUNITY_ALLOWED_ORIGINS" = "http://localhost:$CommunityWebPort,http://127.0.0.1:$CommunityWebPort,http://${lanIp}:$CommunityWebPort"
         "MESSENGER_ALLOWED_ORIGINS" = "http://localhost:$MessengerWebPort,http://127.0.0.1:$MessengerWebPort,http://${lanIp}:$MessengerWebPort"
@@ -396,6 +417,7 @@ function Start-EntryApi([string]$Name, [string]$Module, [int]$Port) {
             -WorkingDirectory $ApiDir -RedirectStandardOutput (Join-Path $LogsDir "$Name.out.log") `
             -RedirectStandardError (Join-Path $LogsDir "$Name.err.log") -WindowStyle Hidden -PassThru
         $pids[$Name] = $pr.Id
+        $adminPassed[$Name] = $pr.Id
     } finally { foreach ($k in $saved.Keys) { [Environment]::SetEnvironmentVariable($k, $saved[$k]) } }
     $dl = (Get-Date).AddSeconds(45)
     while (-not (Test-HttpOk "http://127.0.0.1:$Port/api/shared/status") -and (Get-Date) -lt $dl) { Start-Sleep -Seconds 1 }
@@ -444,6 +466,18 @@ if (-not (Test-HttpOk "http://127.0.0.1:$ExpoPort/status" 3)) {
 if (-not $NoDesktop -and -not (Is-Alive $pids["desktop"])) {
     Write-Host "[6/6] Starting apps/desktop dev window..."
     New-Item -ItemType Directory -Path $DesktopOutDir -Force | Out-Null
+    # Settings window renderer (Vite build): build once when missing or older than its sources.
+    $RendererDir = Join-Path $DesktopDir "renderer"
+    $rendererIndex = Join-Path $RendererDir "dist\index.html"
+    if (Test-Path (Join-Path $RendererDir "package.json")) {
+        Ensure-NodeModules $RendererDir "apps/desktop/renderer"
+        $srcNewest = (Get-ChildItem (Join-Path $RendererDir "src") -Recurse -File | Sort-Object LastWriteTime -Descending | Select-Object -First 1).LastWriteTime
+        if (-not (Test-Path $rendererIndex) -or ((Get-Item $rendererIndex).LastWriteTime -lt $srcNewest)) {
+            Write-Host "[6/6] Building the desktop Settings renderer..."
+            Push-Location $RendererDir
+            try { & npm.cmd run build | Out-Null } finally { Pop-Location }
+        }
+    }
     Push-Location $DesktopDir
     try {
         & npx.cmd tsc -p tsconfig.main.json --noEmit false --outDir $DesktopOutDir | Out-Null
@@ -452,7 +486,7 @@ if (-not $NoDesktop -and -not (Is-Alive $pids["desktop"])) {
             $electronExe = Join-Path $DesktopDir "node_modules\electron\dist\electron.exe"
             if (Test-Path $electronExe) {
                 $deskProc = Start-Process -FilePath "cmd.exe" `
-                    -ArgumentList @("/c", "set DUBAI_DESKTOP_BOOT=1&& `"$electronExe`" `"$entryJs`"") `
+                    -ArgumentList @("/c", "set DUBAI_DESKTOP_BOOT=1&& set DUBAI_APP_URL=http://localhost:$ExpoPort&& set DUBAI_API_URL=http://127.0.0.1:$ApiPort&& set DUBAI_DESKTOP_RENDERER_DIST=$(Join-Path $DesktopDir 'renderer\dist')&& `"$electronExe`" `"$entryJs`"") `
                     -WorkingDirectory $DesktopDir `
                     -RedirectStandardOutput (Join-Path $LogsDir "desktop.out.log") `
                     -RedirectStandardError (Join-Path $LogsDir "desktop.err.log") `
@@ -468,6 +502,7 @@ if (-not $NoDesktop -and -not (Is-Alive $pids["desktop"])) {
 }
 
 Save-Pids $pids
+[System.IO.File]::WriteAllText($AdminMarker, ($adminPassed | ConvertTo-Json), (New-Object System.Text.UTF8Encoding($false)))
 
 # Firewall: never changed by this script. Report what is missing so the founder can run the documented command.
 $missingFw = @()
