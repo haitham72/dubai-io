@@ -4,11 +4,8 @@ import { loadVault, type Fetcher, type VaultData } from "./vaultApi";
 import { KARIM_VAULT_FIXTURES } from "./vaultFixtures";
 import { PeoplePlacesConstellation } from "./PeoplePlacesConstellation";
 import { SubjectsConstellation } from "./SubjectsConstellation";
+import { UserAnalyticsCard } from "./UserAnalyticsCard";
 import { WhyProvenanceSheet } from "./WhyProvenanceSheet";
-
-export function DemoPill() {
-  return <Text style={styles.demoPill}>Demo data</Text>;
-}
 
 export function VaultScreen({ apiBaseUrl, owner, fetcher, initialData }: {
   apiBaseUrl: string; owner: string; fetcher?: Fetcher; initialData?: VaultData;
@@ -28,7 +25,7 @@ export function VaultScreen({ apiBaseUrl, owner, fetcher, initialData }: {
   return (
     <ScrollView style={styles.screen} testID="vault-screen">
       <Text style={styles.title}>Memory Vault</Text>
-      {data.isDemo ? <DemoPill /> : null}
+      <UserAnalyticsCard demo={data.isDemo} />
       <View style={styles.segmented}>
         <Pressable style={[styles.segment, tab === "subjects" && styles.segmentOn]} onPress={() => setTab("subjects")}>
           <Text>Subjects</Text>
@@ -79,5 +76,4 @@ const styles = StyleSheet.create({
   row: { borderWidth: 1, borderColor: "#E8E8EC", borderRadius: 12, padding: 10, marginTop: 8, backgroundColor: "#FFFFFF", shadowOpacity: 0, elevation: 0 },
   rowText: { fontSize: 14, marginTop: 8, color: "#1E2022" },
   meta: { fontSize: 13, marginTop: 6, color: "#5A5A5A" },
-  demoPill: { alignSelf: "flex-start", borderWidth: 1, borderColor: "#E8E8EC", borderRadius: 999, paddingHorizontal: 8, paddingVertical: 3, fontSize: 12, fontWeight: "700", backgroundColor: "#FAF8F5", marginTop: 8 },
-});
+  });
