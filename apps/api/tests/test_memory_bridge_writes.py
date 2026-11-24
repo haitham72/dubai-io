@@ -13,9 +13,9 @@ if str(API_ROOT) not in sys.path:
 
 from app import db as db_mod
 from tests.fixtures.contest_shared.db_fixtures import cs_postgres_isolation  # noqa: F401
+from tests.fixtures.contest_shared.memory_bridge_fixtures import memory_bridge_env  # noqa: F401
 from app.identity.models import AgeBand, AppId, VerifiedPrincipal
 from app.memory_bridge.bridge import MemoryBridge
-from app.memory_bridge.fake_client import FakeTemporalMemoryClient
 from app.memory_bridge.models import (
     ConsentDeniedError,
     GroupConsentSnapshot,
@@ -42,19 +42,21 @@ def _principal(
     )
 
 
-def _setup(tmp_path: Path, name: str = "writes.db", *, screen_fn=None):
+def _setup(tmp_path: Path, client, name: str = "writes.db", *, screen_fn=None):
     db = db_mod.connect(tmp_path / name)
-    client = FakeTemporalMemoryClient()
     bridge = MemoryBridge(db, client, screen_fn=screen_fn)
     return db, client, bridge
 
 
 @pytest.mark.parametrize("age_band", ["under_13", "teen_13_17", "unknown"])
-def test_mb_minor_age_gate_blocks_writes_and_signals(tmp_path: Path, age_band: AgeBand) -> None:
+def test_mb_minor_age_gate_blocks_writes_and_signals(
+    tmp_path: Path, age_band: AgeBand, memory_bridge_env
+) -> None:
     """MB-11: Minor-protected accounts fail closed on write_consented and record_behavioral_signal."""
-    db, client, bridge = _setup(tmp_path, f"minor_w_{age_band}.db")
+    db, client, bridge = _setup(tmp_path, memory_bridge_env.client, f"minor_w_{age_band}.db")
     try:
-        minor = _principal(f"usr_minor_{age_band}", app_id="quest", age_band=age_band)
+        minor_id = memory_bridge_env.owner_id(f"minor_{age_band}")
+        minor = _principal(minor_id, app_id="quest", age_band=age_band)
         bridge.set_source_consent(minor, "quest", enabled=True)
         bridge.set_app_consent(minor, "quest", read_enabled=True, write_enabled=True)
 
@@ -85,16 +87,19 @@ def test_mb_minor_age_gate_blocks_writes_and_signals(tmp_path: Path, age_band: A
 
         assert db.execute("SELECT COUNT(*) FROM cs_memory_record_refs WHERE owner_id = ?", (minor.user_id,)).fetchone()[0] == 0
         assert db.execute("SELECT COUNT(*) FROM cs_two_visit_signals WHERE owner_id = ?", (minor.user_id,)).fetchone()[0] == 0
-        assert client.facts.get(minor.user_id, []) == []
+        if memory_bridge_env.is_fake:
+            assert client.facts.get(minor.user_id, []) == []
     finally:
         db.close()
 
 
-def test_mb_no_owner_or_provenance_spoof(tmp_path: Path) -> None:
+def test_mb_no_owner_or_provenance_spoof(tmp_path: Path, memory_bridge_env) -> None:
     """MB-03: Server sets owner_id and provenance; caller spoof attempts and stale generations are rejected."""
-    db, client, bridge = _setup(tmp_path, "spoof.db")
+    db, client, bridge = _setup(tmp_path, memory_bridge_env.client, "spoof.db")
     try:
-        alice_q = _principal("usr_alice", app_id="quest")
+        alice_id = memory_bridge_env.owner_id("alice")
+        bob_id = memory_bridge_env.owner_id("bob")
+        alice_q = _principal(alice_id, app_id="quest")
         bridge.set_source_consent(alice_q, "quest", enabled=True)
         bridge.set_app_consent(alice_q, "quest", read_enabled=True, write_enabled=True)
 
@@ -107,14 +112,14 @@ def test_mb_no_owner_or_provenance_spoof(tmp_path: Path) -> None:
                 source_kind="quest",
                 source_id="quest:t1",
                 host_app="quest",
-                author_id="usr_alice",
+                author_id=alice_id,
                 text="I love specialty coffee in Alserkal",
                 valid_time="2026-11-23T10:00:00+00:00",
                 subject_path="food/coffee",
                 explicit_user_confirm=True,
             ),
         )
-        assert r_normal.owner_id == "usr_alice"
+        assert r_normal.owner_id == alice_id
         assert r_normal.provenance == "user_supplied"
         assert r_normal.trust_tier == "T0_user_confirmed"
 
@@ -125,7 +130,7 @@ def test_mb_no_owner_or_provenance_spoof(tmp_path: Path) -> None:
                 source_kind="quest",
                 source_id="quest:t1",
                 host_app="quest",
-                author_id="usr_alice",
+                author_id=alice_id,
                 text="I enjoy desert stargazing",
                 valid_time="2026-11-23T11:00:00+00:00",
                 subject_path="outdoors/stargazing",
@@ -152,7 +157,7 @@ def test_mb_no_owner_or_provenance_spoof(tmp_path: Path) -> None:
         # Failure: caller attempting to override owner or provenance via subclass attributes.
         SpoofInput = make_dataclass(
             "SpoofInput",
-            [("owner", str, "usr_bob"), ("provenance", str, "user_supplied")],
+            [("owner", str, bob_id), ("provenance", str, "user_supplied")],
             bases=(MemoryRecordInput,),
             frozen=True,
         )
@@ -164,7 +169,7 @@ def test_mb_no_owner_or_provenance_spoof(tmp_path: Path) -> None:
                     source_kind="quest",
                     source_id="quest:t1",
                     host_app="quest",
-                    author_id="usr_alice",
+                    author_id=alice_id,
                     text="Spoofed owner",
                     valid_time="2026-11-23T11:00:00+00:00",
                     explicit_user_confirm=True,
@@ -180,7 +185,7 @@ def test_mb_no_owner_or_provenance_spoof(tmp_path: Path) -> None:
                     source_kind="community",
                     source_id="community:post:1",
                     host_app="community",
-                    author_id="usr_alice",
+                    author_id=alice_id,
                     text="Cross app spoof",
                     valid_time="2026-11-23T11:00:00+00:00",
                 ),
@@ -195,7 +200,7 @@ def test_mb_no_owner_or_provenance_spoof(tmp_path: Path) -> None:
                     source_kind="quest",
                     source_id="gmail:123",
                     host_app="quest",
-                    author_id="usr_alice",
+                    author_id=alice_id,
                     text="Mismatched source_id",
                     valid_time="2026-11-23T11:00:00+00:00",
                 ),
@@ -210,7 +215,7 @@ def test_mb_no_owner_or_provenance_spoof(tmp_path: Path) -> None:
                     source_kind="quest",
                     source_id="quest:t1",
                     host_app="quest",
-                    author_id="usr_alice",
+                    author_id=alice_id,
                     text="Stale generation",
                     valid_time="2026-11-23T11:00:00+00:00",
                 ),
@@ -220,12 +225,14 @@ def test_mb_no_owner_or_provenance_spoof(tmp_path: Path) -> None:
         db.close()
 
 
-def test_mb_third_party_message_rule(tmp_path: Path) -> None:
+def test_mb_third_party_message_rule(tmp_path: Path, memory_bridge_env) -> None:
     """MB-05: Third-party messages store Record evidence only and never confirmed facts about owner."""
-    db, client, bridge = _setup(tmp_path, "third_party.db")
+    db, client, bridge = _setup(tmp_path, memory_bridge_env.client, "third_party.db")
     try:
-        alice_msg = _principal("usr_alice", app_id="messenger")
-        alice_comm = _principal("usr_alice", app_id="community")
+        alice_id = memory_bridge_env.owner_id("alice")
+        bob_id = memory_bridge_env.owner_id("bob")
+        alice_msg = _principal(alice_id, app_id="messenger")
+        alice_comm = _principal(alice_id, app_id="community")
         bridge.set_source_consent(alice_msg, "messenger", enabled=True)
         bridge.set_app_consent(alice_msg, "messenger", read_enabled=True, write_enabled=True)
         bridge.set_conversation_consent(alice_msg, "conv-A", ai_mode="save")
@@ -243,7 +250,7 @@ def test_mb_third_party_message_rule(tmp_path: Path) -> None:
                     source_kind="messenger",
                     source_id="messenger:conv-A",
                     host_app="messenger",
-                    author_id="usr_bob",
+                    author_id=bob_id,
                     text="Alice loves sushi",
                     valid_time="2026-11-23T10:00:00+00:00",
                     explicit_user_confirm=True,
@@ -259,7 +266,7 @@ def test_mb_third_party_message_rule(tmp_path: Path) -> None:
                 source_kind="messenger",
                 source_id="messenger:conv-A",
                 host_app="messenger",
-                author_id="usr_bob",
+                author_id=bob_id,
                 text="Let us meet at JBR at 7pm",
                 valid_time="2026-11-23T10:05:00+00:00",
                 explicit_user_confirm=False,
@@ -268,8 +275,10 @@ def test_mb_third_party_message_rule(tmp_path: Path) -> None:
         )
         assert rec_only.ok is True
         assert rec_only.fact_ids == []
-        assert "mgmsg:bob1" in client.records["usr_alice"]
-        assert client.facts.get("usr_alice", []) == []
+        assert client.search_facts(alice_id, "") == []
+        assert client.get_timeline(alice_id)["items"] == []
+        if memory_bridge_env.is_fake:
+            assert "mgmsg:bob1" in client.records[alice_id]
 
         # Third-party authored Community post rejected.
         with pytest.raises(ConsentDeniedError):
@@ -280,7 +289,7 @@ def test_mb_third_party_message_rule(tmp_path: Path) -> None:
                     source_kind="community",
                     source_id="community:post:99",
                     host_app="community",
-                    author_id="usr_bob",
+                    author_id=bob_id,
                     text="Bob's community post",
                     valid_time="2026-11-23T10:10:00+00:00",
                 ),
@@ -289,11 +298,12 @@ def test_mb_third_party_message_rule(tmp_path: Path) -> None:
         db.close()
 
 
-def test_write_rule9_sensitive_quarantine_and_allowlist(tmp_path: Path) -> None:
+def test_write_rule9_sensitive_quarantine_and_allowlist(tmp_path: Path, memory_bridge_env) -> None:
     """Rule 9 allows Dubai allowlist and quarantines credentials/sensitive text with category-only audit."""
-    db, client, bridge = _setup(tmp_path, "rule9.db")
+    db, client, bridge = _setup(tmp_path, memory_bridge_env.client, "rule9.db")
     try:
-        alice = _principal("usr_alice", app_id="quest")
+        alice_id = memory_bridge_env.owner_id("alice")
+        alice = _principal(alice_id, app_id="quest")
         bridge.set_source_consent(alice, "quest", enabled=True)
         bridge.set_app_consent(alice, "quest", read_enabled=True, write_enabled=True)
 
@@ -305,7 +315,7 @@ def test_write_rule9_sensitive_quarantine_and_allowlist(tmp_path: Path) -> None:
                 source_kind="quest",
                 source_id="quest:t1",
                 host_app="quest",
-                author_id="usr_alice",
+                author_id=alice_id,
                 text="Renewed Golden Visa on Sheikh Zayed Road despite ضغط الشغل",
                 valid_time="2026-11-23T10:00:00+00:00",
                 subject_path="admin/visa",
@@ -323,7 +333,7 @@ def test_write_rule9_sensitive_quarantine_and_allowlist(tmp_path: Path) -> None:
                 source_kind="quest",
                 source_id="quest:t1",
                 host_app="quest",
-                author_id="usr_alice",
+                author_id=alice_id,
                 text=secret_text,
                 valid_time="2026-11-23T10:05:00+00:00",
                 explicit_user_confirm=True,
@@ -331,7 +341,9 @@ def test_write_rule9_sensitive_quarantine_and_allowlist(tmp_path: Path) -> None:
             ),
         )
         assert q_cred.ok is False and q_cred.status == "quarantined" and q_cred.quarantine_category == "credential"
-        assert "qmsg:cred1" not in client.records.get("usr_alice", {})
+        assert not any("918273" in f["text"] for f in client.search_facts(alice_id, ""))
+        if memory_bridge_env.is_fake:
+            assert "qmsg:cred1" not in client.records.get(alice_id, {})
 
         audit_rows = bridge.list_audit_events(alice)
         serialized = str(audit_rows)
@@ -345,9 +357,10 @@ def test_write_rule9_sensitive_quarantine_and_allowlist(tmp_path: Path) -> None:
     def _broken_screen(_labels: list[str]) -> dict[str, str]:
         raise ScreenUnavailable("down")
 
-    db2, _, bridge2 = _setup(tmp_path, "screen_down.db", screen_fn=_broken_screen)
+    db2, _, bridge2 = _setup(tmp_path, memory_bridge_env.client, "screen_down.db", screen_fn=_broken_screen)
     try:
-        alice2 = _principal("usr_alice", app_id="quest")
+        alice2_id = memory_bridge_env.owner_id("alice2")
+        alice2 = _principal(alice2_id, app_id="quest")
         bridge2.set_source_consent(alice2, "quest", enabled=True)
         bridge2.set_app_consent(alice2, "quest", read_enabled=True, write_enabled=True)
         with pytest.raises(ScreenUnavailable):
@@ -358,7 +371,7 @@ def test_write_rule9_sensitive_quarantine_and_allowlist(tmp_path: Path) -> None:
                     source_kind="quest",
                     source_id="quest:t1",
                     host_app="quest",
-                    author_id="usr_alice",
+                    author_id=alice2_id,
                     text="I enjoy desert cycling",
                     valid_time="2026-11-23T10:00:00+00:00",
                     explicit_user_confirm=True,
@@ -368,12 +381,13 @@ def test_write_rule9_sensitive_quarantine_and_allowlist(tmp_path: Path) -> None:
         db2.close()
 
 
-def test_mb_two_visit_qualification(tmp_path: Path) -> None:
+def test_mb_two_visit_qualification(tmp_path: Path, memory_bridge_env) -> None:
     """MB-06: Single click or <6h visits never qualify; >=6h or >=2 distinct days promote hypothesis."""
-    db, client, bridge = _setup(tmp_path, "twovisit.db")
+    db, client, bridge = _setup(tmp_path, memory_bridge_env.client, "twovisit.db")
     try:
-        alice_comm = _principal("usr_alice", app_id="community")
-        alice_quest = _principal("usr_alice", app_id="quest")
+        alice_id = memory_bridge_env.owner_id("alice")
+        alice_comm = _principal(alice_id, app_id="community")
+        alice_quest = _principal(alice_id, app_id="quest")
         bridge.set_source_consent(alice_comm, "community", enabled=True, allow_interest_export=True)
         bridge.set_app_consent(
             alice_comm,
@@ -434,12 +448,13 @@ def test_mb_two_visit_qualification(tmp_path: Path) -> None:
         db.close()
 
 
-def test_mb_supersession_and_correction(tmp_path: Path) -> None:
+def test_mb_supersession_and_correction(tmp_path: Path, memory_bridge_env) -> None:
     """MB-09: confirm promotes hypothesis; edit/supersede closes prior fact; reject hides immediately."""
-    db, client, bridge = _setup(tmp_path, "resolve.db")
+    db, client, bridge = _setup(tmp_path, memory_bridge_env.client, "resolve.db")
     try:
-        alice_q = _principal("usr_alice", app_id="quest")
-        alice_c = _principal("usr_alice", app_id="community")
+        alice_id = memory_bridge_env.owner_id("alice")
+        alice_q = _principal(alice_id, app_id="quest")
+        alice_c = _principal(alice_id, app_id="community")
         bridge.set_source_consent(alice_q, "quest", enabled=True, allow_interest_export=True)
         bridge.set_app_consent(alice_q, "quest", read_enabled=True, write_enabled=True)
         bridge.set_source_consent(alice_c, "community", enabled=True, allow_interest_export=True)

@@ -20,6 +20,10 @@ from app.memory_bridge import (
     ensure_memory_bridge_schema,
 )
 from tests.fixtures.contest_shared.db_fixtures import cs_postgres_isolation  # noqa: F401
+from tests.fixtures.contest_shared.memory_bridge_fixtures import (  # noqa: F401
+    fake_only,
+    memory_bridge_env,
+)
 from tests.fixtures.contest_shared.memory_fixtures import (
     SYNTH_OWNER_A,
     SYNTH_OWNER_B,
@@ -311,6 +315,7 @@ def test_http_client_failure_paths():
 
 
 # ------------------------------------------------------- FakeTemporalMemoryClient
+@fake_only
 def test_fake_client_token_roles_and_owner_isolation():
     fake = make_seeded_fake_client()
     adm_tok = fake.register_token("admin", label="adm")["token"]
@@ -341,6 +346,7 @@ def test_fake_client_token_roles_and_owner_isolation():
     assert exc_rev.value.status_code == 401
 
 
+@fake_only
 def test_fake_client_source_prefix_isolation():
     fake = make_seeded_fake_client()
     conv_a = fake.search_facts(SYNTH_OWNER_A, "", source_prefix="messenger:conv-a")
@@ -349,6 +355,7 @@ def test_fake_client_source_prefix_isolation():
     assert [f["id"] for f in conv_b] == ["fact-mg-b1"]
 
 
+@fake_only
 def test_fake_client_forget_erase_trim_fence_and_reimport():
     fake = make_seeded_fake_client()
 
@@ -436,6 +443,7 @@ def test_fake_client_forget_erase_trim_fence_and_reimport():
         )
 
 
+@fake_only
 def test_fake_client_direct_fact_validation_resolve_and_export():
     fake = make_seeded_fake_client()
 
@@ -532,3 +540,76 @@ def test_fake_client_direct_fact_validation_resolve_and_export():
         fake.register_token("owner-device", owner=None)
     with pytest.raises(MemoryBridgeError):
         fake.revoke_token("tok_does_not_exist")
+
+
+def test_tm_client_contract_roundtrip(memory_bridge_env):
+    """TemporalMemoryClient contract works identically across fake and live HTTP backends."""
+    client = memory_bridge_env.client
+    owner_a = memory_bridge_env.owner_id("contract_a")
+    owner_b = memory_bridge_env.owner_id("contract_b")
+    client.ensure_owner(owner_a, label=owner_a, display_name="Contract Alpha", kind="demo")
+    client.ensure_owner(owner_b, label=owner_b, display_name="Contract Beta", kind="demo")
+
+    up_a = client.upsert_record_and_enqueue(
+        owner_a,
+        record_id="mgmsg:c-a1",
+        source="messenger:conv-a",
+        at="2026-11-23T10:00:00Z",
+        author=owner_a,
+        text="Alpha studies consensus protocols.",
+        enqueue="none",
+        direct_fact={
+            "text": "Alpha studies consensus protocols.",
+            "subject_path": "learning/consensus",
+            "valid_from": "2026-11-23T10:00:00Z",
+            "evidence": ["mgmsg:c-a1"],
+            "provenance": "user_supplied",
+        },
+    )
+    memory_bridge_env.track_record(owner_a, "mgmsg:c-a1")
+    fid_a = up_a["fact_ids"][0]
+
+    up_b = client.upsert_record_and_enqueue(
+        owner_b,
+        record_id="mgmsg:c-b1",
+        source="messenger:conv-b",
+        at="2026-11-23T10:05:00Z",
+        author=owner_b,
+        text="Beta cycles in Al Qudra.",
+        enqueue="none",
+        direct_fact={
+            "text": "Beta cycles in Al Qudra.",
+            "subject_path": "lifestyle/cycling",
+            "valid_from": "2026-11-23T10:05:00Z",
+            "evidence": ["mgmsg:c-b1"],
+            "provenance": "user_supplied",
+        },
+    )
+    memory_bridge_env.track_record(owner_b, "mgmsg:c-b1")
+    assert up_b["ok"] is True
+
+    hits_a = client.search_facts(owner_a, "consensus", source_prefix="messenger:conv-a")
+    assert [h["id"] for h in hits_a] == [fid_a]
+    assert client.search_facts(owner_a, "Al Qudra") == []
+    assert client.search_facts(owner_a, "consensus", source_prefix="messenger:conv-b") == []
+
+    ctx = client.context_pack(owner_a, "consensus")
+    assert any(f["id"] == fid_a for f in ctx["facts"])
+    assert client.get_vault_subjects(owner_a)["owner"] == owner_a
+    assert client.get_vault_people(owner_a)["owner"] == owner_a
+    assert client.get_hypotheses(owner_a)["owner"] == owner_a
+    assert any(i["id"] == fid_a for i in client.get_timeline(owner_a)["items"])
+    assert client.get_why_fact(owner_a, fid_a)["fact_id"] == fid_a
+
+    edited = client.resolve_fact(owner_a, fid_a, action="edit", new_text="Alpha studies Raft consensus.")
+    new_fid = edited["new_fact_id"]
+    assert new_fid is not None
+    assert client.get_why_fact(owner_a, new_fid)["fact_id"] == new_fid
+
+    raw_zip = client.export_markdown_zip(owner_a)
+    with zipfile.ZipFile(io.BytesIO(raw_zip), "r") as zf:
+        assert "memory/MEMORIES.md" in set(zf.namelist())
+
+    fg = client.forget_source(owner_a, ["mgmsg:c-a1"])
+    assert fg["ok"] is True
+    assert client.search_facts(owner_a, "Raft") == []

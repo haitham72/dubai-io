@@ -20,9 +20,13 @@ from app.identity import (
     create_identity_router,
 )
 from app.identity.deps import LEGACY_ANON_COOKIE
-from app.memory_bridge import FakeTemporalMemoryClient, MemoryBridge, create_memory_bridge_router
-from app.memory_bridge.models import MemoryBridgeUnavailable, SensitiveContentError
+from app.memory_bridge import MemoryBridge, create_memory_bridge_router
+from app.memory_bridge.models import MemoryBridgeUnavailable, SensitiveContentError, TemporalMemoryClient
 from tests.fixtures.contest_shared.db_fixtures import cs_postgres_isolation  # noqa: F401
+from tests.fixtures.contest_shared.memory_bridge_fixtures import (  # noqa: F401
+    fake_only,
+    memory_bridge_env,
+)
 from tests.fixtures.contest_shared.identity_fixtures import (
     TEST_AUDIENCE,
     TEST_HS256_SECRET,
@@ -32,7 +36,7 @@ from tests.fixtures.contest_shared.identity_fixtures import (
 )
 
 
-def _build_e2e_app(tmp_path: Path, *, bridge_override: Any = None):
+def _build_e2e_app(tmp_path: Path, tm_client: TemporalMemoryClient, *, bridge_override: Any = None):
     shared_db = db_mod.connect(tmp_path / "gate_s_shared.sqlite3")
     id_store = IdentityStore(shared_db)
     verifier = JWTVerifier(
@@ -49,14 +53,13 @@ def _build_e2e_app(tmp_path: Path, *, bridge_override: Any = None):
             jwt_hs256_secret=TEST_HS256_SECRET,
         ),
     )
-    fake_tm = FakeTemporalMemoryClient()
     token_svc = MemoryTokenService(
         id_store,
-        fake_tm,
+        tm_client,
         token_key=Fernet.generate_key(),
         key_path=tmp_path / "token.key",
     )
-    bridge = bridge_override if bridge_override is not None else MemoryBridge(shared_db, fake_tm)
+    bridge = bridge_override if bridge_override is not None else MemoryBridge(shared_db, tm_client)
 
     app = FastAPI()
     app.state.identity_service = id_svc
@@ -64,7 +67,7 @@ def _build_e2e_app(tmp_path: Path, *, bridge_override: Any = None):
     app.state.memory_bridge = bridge
     app.include_router(create_identity_router())
     app.include_router(create_memory_bridge_router())
-    return shared_db, id_svc, fake_tm, token_svc, bridge, TestClient(app)
+    return shared_db, id_svc, tm_client, token_svc, bridge, TestClient(app)
 
 
 def _login_all_apps(
@@ -98,9 +101,9 @@ def _login_all_apps(
     return next(iter(user_ids)), sessions
 
 
-def test_gate_s_full_cross_app_e2e(tmp_path: Path) -> None:
+def test_gate_s_full_cross_app_e2e(tmp_path: Path, memory_bridge_env) -> None:
     """E2E-01: Single user across Quest/Community/Messenger with consent, isolation, forget cascade, and Gate S fences."""
-    db, _id_svc, fake_tm, token_svc, _bridge, client = _build_e2e_app(tmp_path)
+    db, _id_svc, _tm_client, token_svc, _bridge, client = _build_e2e_app(tmp_path, memory_bridge_env.client)
     try:
         # Simulated native app source tables that must remain untouched by memory forget.
         social_posts = [{"id": "cmpost:p1", "author": "alice", "body": "Public coffee meetup thread"}]
@@ -109,8 +112,8 @@ def test_gate_s_full_cross_app_e2e(tmp_path: Path) -> None:
             {"id": "mgmsg:b1", "conversation_id": "conv-B", "text": "conv-B budget review tomorrow"},
         ]
 
-        uid_a, sess_a = _login_all_apps(client, sub="550e8400-e29b-41d4-a716-446655440201")
-        uid_b, sess_b = _login_all_apps(client, sub="550e8400-e29b-41d4-a716-446655440202")
+        uid_a, sess_a = _login_all_apps(client, sub=memory_bridge_env.sub_uuid("a"))
+        uid_b, sess_b = _login_all_apps(client, sub=memory_bridge_env.sub_uuid("b"))
         assert uid_a != uid_b
 
         # Bind per-owner temporal_memory bridge token.
@@ -433,7 +436,6 @@ def test_gate_s_full_cross_app_e2e(tmp_path: Path) -> None:
             },
         )
         assert mg_write_b.status_code == 200, mg_write_b.text
-        gen_before_forget = fake_tm.records[uid_a]["mgmsg:a1"].generation
 
         # Messenger chat scope isolates conv-A from conv-B.
         conv_a_ctx = client.post(
@@ -532,16 +534,6 @@ def test_gate_s_full_cross_app_e2e(tmp_path: Path) -> None:
         assert len(social_posts) == 1 and social_posts[0]["id"] == "cmpost:p1"
         assert len(mg_messages) == 2
 
-        # Late stale-generation worker blocked by fence.
-        stale = fake_tm.simulate_worker_submit(
-            uid_a,
-            "mgmsg:a1",
-            gen_before_forget,
-            "Late extracted conv-A memory",
-            subject_path="plans/meetup",
-        )
-        assert stale["ok"] is False and stale["verdict"] == "fence_stale"
-
         # User A audit contains content-free receipts.
         audit_a = client.get("/api/v1/memory-bridge/audit", headers={"X-App-Session": sess_a["quest"]}).json()["events"]
         assert any(ev["action"] == "memory.forget_conversation" for ev in audit_a)
@@ -598,12 +590,87 @@ def test_gate_s_full_cross_app_e2e(tmp_path: Path) -> None:
         db.close()
 
 
-@pytest.mark.parametrize("age_band", [None, "under_13", "teen_13_17"])
-def test_gate_s_d11_minor_protection_across_routes(tmp_path: Path, age_band: str | None) -> None:
-    """D11: under_13, teen_13_17, and undeclared (unknown) accounts fail closed 403 on writes/export and receive [] interests."""
-    db, _id_svc, _fake_tm, _token_svc, _bridge, client = _build_e2e_app(tmp_path)
+@fake_only
+def test_gate_s_e2e_stale_worker_generation_fence_fake_only(tmp_path: Path, memory_bridge_env) -> None:
+    """Fake-only E2E check verifying simulate_worker_submit respects the forget generation fence."""
+    db, _id_svc, fake_tm, _token_svc, _bridge, client = _build_e2e_app(tmp_path, memory_bridge_env.client)
     try:
-        sub = f"550e8400-e29b-41d4-a716-44665544030{0 if age_band is None else len(age_band)}"
+        uid_a, sess_a = _login_all_apps(client, sub=memory_bridge_env.sub_uuid("fence_a"))
+        assert (
+            client.put(
+                "/api/v1/memory-bridge/consent/source",
+                headers={"X-App-Session": sess_a["messenger"]},
+                json={"source_kind": "messenger", "enabled": True},
+            ).status_code
+            == 200
+        )
+        assert (
+            client.put(
+                "/api/v1/memory-bridge/consent/app",
+                headers={"X-App-Session": sess_a["messenger"]},
+                json={"app_id": "messenger", "read_enabled": True, "write_enabled": True},
+            ).status_code
+            == 200
+        )
+        assert (
+            client.put(
+                "/api/v1/memory-bridge/consent/conversation",
+                headers={"X-App-Session": sess_a["messenger"]},
+                json={"conversation_id": "conv-A", "ai_mode": "save"},
+            ).status_code
+            == 200
+        )
+        wr = client.post(
+            "/api/v1/memory-bridge/writes",
+            headers={"X-App-Session": sess_a["messenger"]},
+            json={
+                "record_id": "mgmsg:a1",
+                "source_kind": "messenger",
+                "source_id": "messenger:conv-A",
+                "host_app": "messenger",
+                "text": "Group agreed to meet at 6pm",
+                "valid_time": "2026-11-23T11:00:00Z",
+                "subject_path": "plans/meetup",
+                "explicit_user_confirm": True,
+                "group_consent": {
+                    "conversation_id": "conv-A",
+                    "caller_is_member": True,
+                    "all_active_members_ai_enabled": True,
+                    "cited_authors_save_enabled": True,
+                    "membership_revision": 1,
+                },
+            },
+        )
+        assert wr.status_code == 200
+        gen_before_forget = fake_tm.records[uid_a]["mgmsg:a1"].generation
+
+        fg = client.post(
+            "/api/v1/memory-bridge/forget/conversation",
+            headers={"X-App-Session": sess_a["messenger"]},
+            json={"conversation_id": "conv-A", "idempotency_key": "e2e-fence-conv-a"},
+        )
+        assert fg.status_code == 200 and fg.json()["status"] == "completed"
+
+        stale = fake_tm.simulate_worker_submit(
+            uid_a,
+            "mgmsg:a1",
+            gen_before_forget,
+            "Late extracted conv-A memory",
+            subject_path="plans/meetup",
+        )
+        assert stale["ok"] is False and stale["verdict"] == "fence_stale"
+    finally:
+        db.close()
+
+
+@pytest.mark.parametrize("age_band", [None, "under_13", "teen_13_17"])
+def test_gate_s_d11_minor_protection_across_routes(
+    tmp_path: Path, age_band: str | None, memory_bridge_env
+) -> None:
+    """D11: under_13, teen_13_17, and undeclared (unknown) accounts fail closed 403 on writes/export and receive [] interests."""
+    db, _id_svc, _tm_client, _token_svc, _bridge, client = _build_e2e_app(tmp_path, memory_bridge_env.client)
+    try:
+        sub = memory_bridge_env.sub_uuid(f"minor_{age_band}")
         _uid, sess = _login_all_apps(client, sub=sub, age_band=age_band)
 
         # Cannot enable cross-app interest export on any consent scope -> 403.
@@ -696,11 +763,11 @@ def test_gate_s_d11_minor_protection_across_routes(tmp_path: Path, age_band: str
         db.close()
 
 
-def test_router_error_mapping_and_spoof_guards(tmp_path: Path) -> None:
+def test_router_error_mapping_and_spoof_guards(tmp_path: Path, memory_bridge_env) -> None:
     """Router maps SensitiveContentError->400, MemoryBridgeUnavailable->503, and rejects caller field spoofs."""
-    db, _id_svc, _fake_tm, _token_svc, _bridge, client = _build_e2e_app(tmp_path)
+    db, _id_svc, _tm_client, _token_svc, _bridge, client = _build_e2e_app(tmp_path, memory_bridge_env.client)
     try:
-        uid, sess = _login_all_apps(client, sub="550e8400-e29b-41d4-a716-446655440401")
+        uid, sess = _login_all_apps(client, sub=memory_bridge_env.sub_uuid("err"))
 
         # Caller spoofs owner / scope / provenance / age_band in body or query -> 403/422.
         for bad_body in (
