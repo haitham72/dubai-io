@@ -186,18 +186,24 @@ def test_check3_evidence_outside_input_and_span_mismatch():
     now, job, bundle, attempt = _make_fixtures()
     attempt.output.facts[0].evidence = ["wa-999"]
     v = validate(job, bundle, attempt, now=now)
-    assert not v.ok and "evidence_outside_input" in v.reasons
+    assert v.ok and "evidence_outside_input" in v.reasons
+    assert attempt.output.facts == []
 
     _, job, bundle, attempt = _make_fixtures()
     attempt.output.facts[0].text = "Bought a submarine in Reykjavik yesterday"
     attempt.output.facts[0].entities = []
     v = validate(job, bundle, attempt, now=now)
-    assert not v.ok and "evidence_span_mismatch" in v.reasons
+    assert v.ok and "evidence_span_mismatch" in v.reasons
+    assert attempt.output.facts == []
 
     # Empty bundle.records skips span check gracefully
+    _, job, bundle, attempt = _make_fixtures()
+    attempt.output.facts[0].text = "Bought a submarine in Reykjavik yesterday"
+    attempt.output.facts[0].entities = []
     bundle.records = []
     v2 = validate(job, bundle, attempt, now=now)
     assert "evidence_span_mismatch" not in v2.reasons
+    assert attempt.output.facts
 
 
 def test_check4_target_outside_context():
@@ -205,7 +211,8 @@ def test_check4_target_outside_context():
     attempt.output.facts[0].op = "update"
     attempt.output.facts[0].target = "f_missing"
     v = validate(job, bundle, attempt, now=now)
-    assert not v.ok and "target_outside_context" in v.reasons
+    assert v.ok and "target_outside_context" in v.reasons
+    assert attempt.output.facts == []
 
 
 def test_check5_entity_guards_and_enums():
@@ -237,7 +244,8 @@ def test_check6_privacy_gate_credential_and_autotag():
     bundle.records[0].text = "My bank OTP code is 492011 for Falcon Tech"
     attempt.output.facts[0].text = "Karim received an OTP passcode for Falcon Tech"
     v = validate(job, bundle, attempt, now=now)
-    assert not v.ok and "credential_in_fact" in v.reasons
+    assert v.ok and "credential_in_fact" in v.reasons
+    assert attempt.output.facts == []
 
     _, job, bundle, attempt = _make_fixtures()
     bundle.records[0].text = "Went to hospital clinic near Falcon Tech for blood lab test"
@@ -285,7 +293,8 @@ def test_check8_dedupe_within_attempt_and_existing():
     )
     attempt.output.facts.append(dup)
     v = validate(job, bundle, attempt, now=now)
-    assert not v.ok and "duplicate_fact" in v.reasons
+    assert v.ok and "duplicate_fact" in v.reasons
+    assert len(attempt.output.facts) == 1
 
     _, job, bundle, attempt = _make_fixtures()
     v2 = validate(
@@ -295,4 +304,59 @@ def test_check8_dedupe_within_attempt_and_existing():
         existing_norm_subjects={("career/job-search/interview-prep", "karim interviewed with falcon tech in difc")},
         now=now,
     )
-    assert not v2.ok and "duplicate_fact" in v2.reasons
+    assert v2.ok and "duplicate_fact" in v2.reasons
+    assert attempt.output.facts == []
+
+
+def test_invented_reason_is_dropped_and_a_real_span_is_kept():
+    now, job, bundle, attempt = _make_fixtures()
+    bundle.records[0].text = "I left early because the metro was down."
+    fact = attempt.output.facts[0]
+    fact.text = "Karim left early because the metro was down"
+    fact.entities = []
+    fact.reason_text = "the traffic was awful"
+    fact.reason_record_id = "wa-101"
+    fact.reason_start = 0
+    fact.reason_end = 4
+    verdict = validate(job, bundle, attempt, now=now)
+    assert verdict.ok
+    assert fact.reason_text is None
+    assert fact.reason_start is None
+
+    _, job, bundle, attempt = _make_fixtures()
+    text = "I left early because the metro was down."
+    bundle.records[0].text = text
+    start = text.index("because")
+    fact = attempt.output.facts[0]
+    fact.text = "Karim left early because the metro was down"
+    fact.entities = []
+    fact.reason_text = text[start:]
+    fact.reason_record_id = "wa-101"
+    fact.reason_start = start
+    fact.reason_end = len(text)
+    verdict = validate(job, bundle, attempt, now=now)
+    assert verdict.ok
+    assert fact.reason_text == text[start:]
+
+
+def test_one_bad_fact_does_not_drop_the_rest_of_the_day():
+    now, job, bundle, attempt = _make_fixtures()
+    bundle.records[0].text = "My bank OTP code is 492011 and I met Falcon Tech."
+    good = attempt.output.facts[0]
+    good.entities = []
+    bad = OutFact(
+        text="Karim received an OTP passcode for Falcon Tech",
+        text_orig=None,
+        subject_path="home-money/banking",
+        entities=[],
+        op="new",
+        target=None,
+        valid_from="2026-10-05",
+        evidence=["wa-101"],
+        sensitive="credential",
+    )
+    attempt.output.facts.append(bad)
+    verdict = validate(job, bundle, attempt, now=now)
+    assert verdict.ok
+    assert "credential_in_fact" in verdict.reasons
+    assert attempt.output.facts == [good]

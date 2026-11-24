@@ -152,6 +152,7 @@ def test_first_person_statement_is_user_supplied(db_env):
             text="Karim runs at Zabeel on Fridays", text_orig=None, subject_path="health/running",
             entities=[FactEntity(entity_id="new:Karim Haddad", role="runner")],
             op="new", target=None, valid_from="2026-11-01", evidence=["mine"], sensitive=None,
+            stated=True,
         )],
         links=[],
     )

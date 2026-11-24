@@ -8,6 +8,7 @@ from typing import Any
 from temporal_memory.core.graph_store import PostgresGraphStore
 from temporal_memory.db.db import Database, get_database
 from temporal_memory.models import Job, Pool, Record
+from temporal_memory.core.daytime import local_day
 from temporal_memory.privacy.sensitive import pre_write
 from temporal_memory.queue.jobs import PostgresJobs
 from .whatsapp import MEDIA
@@ -248,6 +249,8 @@ def ingest_records(
                 (owner,),
             ).fetchall()
         ]
+        tz_row = conn.execute("SELECT timezone FROM owners WHERE id = %s", (owner,)).fetchone()
+        owner_tz = (tz_row["timezone"] if tz_row and tz_row["timezone"] else None) or "Asia/Dubai"
 
     dropped_triage = 0
     blocked_forgotten = 0
@@ -280,26 +283,24 @@ def ingest_records(
     if split and surviving:
         by_day: dict[str, list[Record]] = {}
         for rec in surviving:
-            day = (rec.at or "")[:10]
+            day = local_day(rec.at, owner_tz)
             by_day.setdefault(day, []).append(rec)
         days = sorted(by_day)
         has_device = owner_has_active_device(db, owner)
         jobs_mgr = PostgresJobs(db)
         for day in days:
             day_recs = sorted(by_day[day], key=lambda r: (r.at, r.id))
-            day_ids = [r.id for r in day_recs]
             has_sensitive = any(pre_write(r.text) is not None for r in day_recs)
             pool: Pool = "owner-device" if (has_device and not has_sensitive) else "internal"
-            job = jobs_mgr.enqueue(
-                owner,
-                "extract.day",
-                day_ids,
-                1,
-                pool=pool,
-                day=day,
-                sensitive_flag=has_sensitive,
+            enqueued_jobs.extend(
+                jobs_mgr.enqueue_day_packet(
+                    owner,
+                    day_recs,
+                    pool=pool,
+                    day=day,
+                    sensitive_flag=has_sensitive,
+                )
             )
-            enqueued_jobs.append(job)
 
     return {
         "owner": owner,

@@ -501,8 +501,25 @@ def search_candidates(
                     if hop_ids:
                         channel_ranks.append(("entity", 0.65, hop_ids))
 
-        # 3. Subject + descendants channel
+        # 3. Subject + descendants channel.
+        # Topic aliases are a SQL seed (indexed equality on folded query tokens),
+        # then the same descendant walk and Rule-9 filter as a path/label hit.
         seed_sids = list(subject_ids) if subject_ids is not None else _match_seed_subjects(conn, owner, expanded_terms)
+        if tokens:
+            alias_rows = conn.execute(
+                """
+                SELECT DISTINCT subject_id
+                FROM subject_aliases
+                WHERE owner = %s AND alias_folded = ANY(%s)
+                """,
+                (owner, tokens),
+            ).fetchall()
+            seen_seeds = set(seed_sids)
+            for row in alias_rows:
+                sid = row["subject_id"]
+                if sid and sid not in seen_seeds:
+                    seed_sids.append(sid)
+                    seen_seeds.add(sid)
         if seed_sids:
             desc_rows = conn.execute(
                 """

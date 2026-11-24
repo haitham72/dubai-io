@@ -11,6 +11,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from temporal_memory.api.vault import AuthContext, get_store, require_owner_access
+from temporal_memory.core.daytime import local_day
+from temporal_memory.core.extract import PROMPT_VERSION
 from temporal_memory.live.context import context_pack, invalidate_alias_cache
 from temporal_memory.models import Fact, GraphStore, Job, Record
 from temporal_memory.privacy.sensitive import pre_write
@@ -19,12 +21,17 @@ EnqueueKind = Literal["extract.live", "extract.day", "none"]
 ResolveAction = Literal["confirm", "edit", "reject", "supersede"]
 
 
+class RecordMeta(BaseModel):
+    session_id: str | None = Field(default=None, min_length=1, max_length=128)
+
+
 class RecordIn(BaseModel):
     id: str
     source: str
     at: str
     author: str
     text: str
+    meta: RecordMeta = Field(default_factory=RecordMeta)
 
 
 class DirectFactIn(BaseModel):
@@ -45,6 +52,8 @@ class RecordsIn(BaseModel):
     records: list[RecordIn] = Field(default_factory=list)
     enqueue: EnqueueKind = "extract.live"
     direct_fact: DirectFactIn | None = None
+    session_id: str | None = Field(default=None, min_length=1, max_length=128)
+    close_session: bool = False
 
 
 class ForgetIn(BaseModel):
@@ -102,13 +111,24 @@ def _bump_facts(store: Any, owner: str) -> int:
 def upsert_records(
     owner: str,
     body: RecordsIn,
-    _: AuthContext = Depends(require_owner_access),
+    auth: AuthContext = Depends(require_owner_access),
     store: GraphStore = Depends(get_store),
 ) -> dict[str, Any]:
     from temporal_memory.core.bridge_store import _postgres, ingest_records
+    from temporal_memory.queue.session import ingest_fake_live, ingest_live, live_source
 
+    owner_chat = auth.role == "owner-device" and auth.owner == owner
+    session_request = body.close_session or any(live_source(record.source) for record in body.records)
+    if owner_chat and body.enqueue == "extract.live" and session_request:
+        if _postgres(store):
+            return ingest_live(store, owner, body)
+        return ingest_fake_live(store, owner, body, _ingest_fake_records)
     if _postgres(store):
         return ingest_records(store, owner, body)
+    return _ingest_fake_records(owner, body, store)
+
+
+def _ingest_fake_records(owner: str, body: RecordsIn, store: GraphStore) -> dict[str, Any]:
     rules = _rules(store).get(owner, set())
     hashes = _hashes(store)
     record_ids: list[str] = []
@@ -161,11 +181,13 @@ def upsert_records(
         job_id = f"job-{uuid.uuid4().hex[:8]}"
         jobs = getattr(store, "jobs", None)
         if jobs is not None:
+            owner_obj = store.get_owner(owner) if hasattr(store, "get_owner") else None
+            owner_tz = getattr(owner_obj, "timezone", None) or "Asia/Dubai"
             jobs.append(Job(
                 id=job_id, owner=owner, kind=body.enqueue, priority=0 if body.enqueue == "extract.live" else 1,
                 pool="internal", input_ref=list(record_ids), input_version=int(getattr(store, "generations", {}).get(owner, 0)),
-                context_hash=_hash("job", job_id, ",".join(record_ids)), prompt_version="extract@3",
-                day=body.records[0].at[:10], state="queued",
+                context_hash=_hash("job", job_id, ",".join(record_ids)), prompt_version=PROMPT_VERSION,
+                day=local_day(body.records[0].at, owner_tz), state="queued",
             ))
     return {"ok": True, "record_ids": record_ids, "job_id": job_id, "fact_ids": fact_ids, "quarantined": quarantined}
 
