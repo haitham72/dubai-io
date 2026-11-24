@@ -4,7 +4,7 @@
 
 | Path | Role |
 |---|---|
-| `memory.md` | **The plan** — decisions, Hindsight go-to engine, mental model, tables, extract→card loop, §8 cards-UI benefit, **§12 Adaptive Knowledge Base Export Tree (`hindsight-kb-export/`)**, gaps, sources |
+| `memory.md` | **The plan** — decisions, mental model, tables, **§9 Quest-like export tree**, §17 Vault UI, and **§18 the current engine: temporal_note** (24 Nov; Hindsight superseded 23 Nov) |
 | `_archive/` | Historical research inputs (`memory-research-2026-11.md`, `quest-tree-mechanics.md`) + **permanent local benchmark exports (`quest-memory-export/`, `quest-memory-export.zip`, `hindsight-kb-export/`)** |
 | **LOCK (`quest-memory-export`)** | **NEVER remove, move, or delete `docs/plan/Memory/_archive/quest-memory-export/`, `quest-memory-export.zip`, `hindsight-kb-export/`, or `design/references/quest/` ever.** They must remain permanently on disk for side-by-side comparison. |
 

@@ -1,7 +1,13 @@
 # Memory plan (single source)
 
-**Status:** Proposed design + locked rulings from `PLAN.md` §2 · **Date:** 19 Nov 2026  
+**Status:** Design + locked rulings from `PLAN.md` §2 · **Date:** 19 Nov 2026 · **Updated 24 Nov 2026** (engine = temporal_note; §18)  
 **Authority:** root `CLAUDE.md` → `PLAN.md` → `ARCHITECTURE.md` §7 → this file. Research dumps live in `_archive/` — do not treat them as the plan.
+
+> **24 Nov 2026 update (founder decisions):**
+> - **Engine:** **temporal_note** (`apps/memory/`, branch `memory`) replaced Hindsight, Honcho and mem0 (bakeoff `DECISION.md`, 23 Nov). The founder doesn't want competitor comparisons: it's judged on the app's requirements only.
+> - **Wins on conflict:** where §1, §4–§8 and §11–§13 still say "Hindsight", **§18 wins**. The §2 mental model, the §9 Quest-like export tree, §16 trust and §17 Vault still stand. §9 / §17 got small updates.
+> - **Current engine architecture, measured state and owners:** **§18**. Live execution tracker: `G:\Haitham\lab-data\memory-bakeoff\TN_UPGRADE_PLAN.md` + `reports\STATUS.md`.
+> - **Three products** (Dubai-io, Community, Messenger) share only the per-user layer: identity + this memory (D15).
 
 ---
 
@@ -9,7 +15,7 @@
 
 | Item | Ruling |
 |---|---|
-| Backend (`MEM-01`) | Hindsight kept as **swappable** `MemoryBackend` + `ScopeGuard`. Fix Dubai-io rule gaps only. Full Postgres/markdown re-fit **after** AC-1–AC-3. |
+| Backend (`MEM-01`) | ~~Hindsight kept as **swappable** `MemoryBackend` + `ScopeGuard`.~~ **Superseded 23–24 Nov: temporal_note** (own engine, Postgres; §18). The Hindsight AC-1 / AC-3 gates no longer apply; the acceptance gates are in §18.6. |
 | Provider Exclusivity | **One active external MemoryBackend** at a time. The lightweight local session layer is always-on and additive. |
 | Store | One Postgres service (`user_id` everywhere). **Markdown tree = export/view, not the store.** |
 | Engines merged (ideas, not four products) | Hindsight verdicts · Graphiti end-dates · Mem0-style links (checklist) · Quest tree as export · temporal_note read path · Honcho 3-speed deriver/dreamer & peer scopes |
@@ -54,6 +60,8 @@ That maps to tables: **`memories`** + **`topics`** + **`entities`** + **`links`*
 ---
 
 ## 4. Mnemosyne vs Hindsight (roles & cost tiers)
+
+> *Superseded 24 Nov: no Hindsight. temporal_note covers both roles: the instant session layer (live context, instant triples) and the long-term bank (day-packet backfill, reflect). See §18. The hybrid policy below (FTS first, semantic only inside the slice) still holds.*
 
 | | Mnemosyne-like | Hindsight |
 |---|---|---|
@@ -151,9 +159,13 @@ When the user queries `"phone"`:
 
 ---
 
-## 9. Adaptive Knowledge Base Export Tree (`hindsight-kb-export/`)
+## 9. Adaptive Knowledge Base Export Tree (Quest-like; reference export `hindsight-kb-export/`)
 
-**Locked (18 Nov 2026, founder):** **Hindsight is the go-to memory engine.** Alongside its Postgres temporal fact bank, Hindsight Mental Models materialize to disk via a 36-file upgraded export tree matching Quest 1:1:
+**Locked (18 Nov 2026, founder):** the memory materializes to disk as a 36-file export tree matching Quest 1:1. *(Updated 24 Nov: the engine is temporal_note, not Hindsight; the tree is unchanged.)* It's produced by temporal_note's export (`tm export --owner X <dir>`, `GET /v1/owners/{o}/export/md.zip`). The permanent references `_archive/quest-memory-export/` and `_archive/hindsight-kb-export/` stay locked.
+
+> ⚠️ **Gap (24 Nov):** today's `apps/memory/.../api/export_md.py` renders the older planaudit §3.1 tree: `USER.md`, `MEMORIES.md`, `people/`, `places/`, `orgs/`, `memories/<category>/<topic>.md`, a monthly timeline. It is **not** this tree. Parity is work item **U5 Part C** (§18.7).
+>
+> **The spines = the 7 Vault clusters (founder D-a, 24 Nov):** `01-people` = People & family · `02-career-and-craft` = Career · `03-projects` = Projects · `04-learning-and-ideas` = Learning · `05-home-and-money` = Home & money · `06-events-and-occasions` = Events · `07-travel-and-places` = Travel (`models.CLUSTERS`). Health and faith are held back, never a spine or cluster (Rule 9).
 
 ### 9.1 Root Control Files (Disambiguated from Runtime)
 * **`USER.md`** *(Export View only)* — 7-section executive synthesis (*Identity, Core Craft, Personality, Values, Strengths/Tensions, Interests, Drive*), citing leaf `.md` files. *(Runtime active preference file is named `PROFILE_RUNTIME.md` to prevent name collisions).*
@@ -340,7 +352,7 @@ Documented and verified against production mockups in `design/20-11-2026/` ([IND
 The memory engine's export and graph representation is rendered to the user via two specialized interactive visualizer modes:
 1. **Subjects Graph (`Dubai-io Knowledge Graph Vault.jpg`, Left Frame):**
    - **Scale:** 458 nodes anchored by central `Haitham` node.
-   - **Clusters:** Mapped to life themes — `Career` (142 nodes), `Projects` (98 nodes), `Learning` (76 nodes), `Gaming` (64 nodes), `Travel` (41 nodes), `Health` (37 nodes).
+   - **Clusters:** Mapped to life themes — `Career` (142 nodes), `Projects` (98 nodes), `Learning` (76 nodes), `Gaming` (64 nodes), `Travel` (41 nodes), `Health` (37 nodes). **Changed 24 Nov (founder D-a):** the engine's **7 clusters** = the §9 spines (Career, Learning, Projects, People & family, Events, Home & money, Travel). There's **no Health cluster**, and People & family shows only stated or confirmed facts. The mockup's 6-cluster labels are superseded.
    - **Verification:** Verified facts carry gold/check badges directly corresponding to confirmed `trust_tier = 'T1'` rows in `memories`.
 2. **People & Places Graph (`Dubai-io Knowledge Graph Vault.jpg`, Right Frame):**
    - **Scale:** 179 nodes across `People (28)`, `Places (19)`, `Relations (132)`.
@@ -352,5 +364,125 @@ The memory engine's export and graph representation is rendered to the user via 
    `✓ Ingested into Temporal Memory | trust: T1 · topic: <domain>`
    This provides transparent evidence of the bi-temporal write pipeline (`POST /api/memory/chat/turn`).
 2. **Proactive Empathy & Memory Repair Cards:**
-   When background reflection identifies missed user preferences or contradictions, the engine surfaces an in-chat gold alert (`⚡ Proactive Ping · Memory Repair`) with an instant *"Apology Accepted 👍"* button. Tapping this issues a Hindsight `ends` verdict to invalidate the stale belief and establish the corrected preference without manual profile editing.
+   When background reflection identifies missed user preferences or contradictions, the engine surfaces an in-chat gold alert (`⚡ Proactive Ping · Memory Repair`) with an instant *"Apology Accepted 👍"* button. Tapping this issues a Hindsight `ends` verdict to invalidate the stale belief and establish the corrected preference without manual profile editing. *(24 Nov: in temporal_note this is an `end` / `update` op through `/facts/{id}/resolve`; see §18.)*
+
+---
+
+## 18. temporal_note — current engine architecture (24 Nov 2026)
+
+**Labels:**
+- ✅ built and merged (verified on Postgres);
+- 🔧 in progress (a branch exists);
+- 📋 planned (spec only).
+
+**As of** `memory` @ `573ff79`. Execution tracker, gates and owners: `G:\Haitham\lab-data\memory-bakeoff\TN_UPGRADE_PLAN.md`, `reports\STATUS.md`, and the measured scores in `acceptance\BASELINE.md`.
+
+### 18.1 Requirements (founder, 24 Nov)
+
+| ID | Requirement |
+|---|---|
+| R1 | Low cost |
+| R2 | Instant in conversation: obvious triples (the §2 idea `user → buy? → phone`, e.g. "I → bought → iPhone") with no LLM per message |
+| R3 | Backfill: who · where · why · contradict · update · retrieve · tell a story |
+| R4 | Draw the §17 Vault (both views) |
+| R5 | Rule 9: provenance + `as_of`; "You told me" only for what the user stated; inferences are "I noticed"; family, health and faith never inferred |
+| R6 | Restaurants and places (with type), and topics the user keeps asking about: two separate sessions → "I noticed" |
+
+**Founder decisions:**
+- **D-a:** the 7 clusters = the §9 spines.
+- **D-b:** the live catch-up pass runs once per session, on local Qwen with a Haiku fallback.
+- **D-c:** T1 is suggested by the engine and joins the ring only when the user confirms.
+
+### 18.2 Where it lives
+
+- **Code:** `apps/memory/` (package `temporal_memory`, about 11k lines, Python 3.12+) on branch `memory`; work-package branches `mem-wp<X>`; Claude verifies and merges.
+- **Stack (docker compose):** Postgres 17 + pgvector image (`:5442`; FTS via `tsvector` GIN; **no vectors used yet**), RabbitMQ (`:5682`) + Celery workers, Redis (`:6390`), the FastAPI API (`:8040`), an MCP server.
+- **Tests:** **364 passed, 8 skipped**; the gold-month e2e passes. Synthetic "Karim" data only.
+
+### 18.3 Data model (Postgres, owner-scoped; maps to the §3 concepts)
+
+- **`records`:** raw items with `content_hash` (dedupe) and `generation` (the Forget fence).
+- **`entities`:** person / place / org / project / event, with `relation_to_user`, `closeness_tier` (user-confirmed), `closeness_suggested` ("I noticed"), stored `provenance` + `user_confirmed_at`, `place_type`, `salience`. Aliases in **`entity_aliases`** (EN / AR / Arabizi folded).
+- **`subjects`:** the theme → topic tree, with stored provenance.
+- **`facts`:** atomic English text + `text_orig`; `valid_from` / `valid_to`; status active / superseded / ended / history / hypothesis; `superseded_by`; provenance; the writing model and job. **v2 fields:** a triple (actor, predicate, object, polarity, modality, `event_at`, span) and a reason span. `tsv` GIN.
+- **Join tables:** `fact_entities` (with role), `fact_evidence`, `links` + `link_evidence` (typed edges, each with its own evidence), `entity_subjects` (role, weight).
+- **Other tables:** `milestones`, `quarantine` (category counts only), `forget_rules`, `forget_requests` (durable receipts), `topic_mentions` (the R6 counter).
+- **Queue tables:** `jobs`, `job_attempts`, `outbox`, `workers`, `tokens`. Versioned migrations (`db/migrations/0001…0003`).
+
+### 18.4 Write path (backfill and live)
+
+1. **Import:** `tm import <kind> <path> --owner X`. Kinds: whatsapp, mbox / eml / gmail / gmail-json, notes, youtube, takeout, chatgpt, browser (daily aggregates only), agent-sessions, dev-sessions, temporal-note. Live chat and the other apps post through the bridge `POST /records`.
+2. **Triage:** drop noise, dedupe by hash, enforce Forget rules.
+3. **Jobs:**
+   - **One job per day of records** (`extract.day`, P1). Live batches are `extract.live` (P0, a reserved worker). 📋 `extract.session` comes in U2.
+   - An idempotency key; a lease + fence token; owner-device pool fallback (20 s P0 / 600 s P1); an outbox → Celery (`mem.p0`, `p1`, `p3`); a 60 s reconcile beat.
+4. **Extraction:** one LLM call per job (`extract@3`; records are inert untrusted data). Runners: cloud Haiku · local Qwen (LM Studio) · agent CLI (`claude -p`) · **owner-hook via MCP** (the user's own Claude/Codex, $0 app cost). Each attempt records the model actually used.
+5. **Validator:** checks evidence, duplicates, credentials and size. ⚠️ It is all-or-nothing per job today: one bad fact drops the whole day.
+6. **Applier:**
+   - sensitive → quarantine;
+   - entities, aliases, labels and links only from approved facts in the same attempt (✅ U1b);
+   - older evidence never overwrites newer: it becomes history, including against superseded / ended targets (✅ U1b).
+7. **Weekly reflect:** `USER.md` profile + milestone hypotheses (≥ 2 days of evidence).
+
+**Measured cost:** about **$0.0049 per day of data** (`claude-haiku-5-5`); the target is ≤ $0.0044.
+
+### 18.5 Privacy and truth (R5)
+
+- **Sensitive gate:** Layer 1 is regex with Arabic word boundaries (health, religion, ethnicity / nationality, gender / sexuality, politics, third-party private, credentials, family-of-third-party). Layer 2 is a classifier `screen()` for owner-hook output. Gold month: 8 / 8 true positives, 4 known false positives.
+- **Provenance is stored** (✅ U1b): `user_supplied` only when every cited record is owner-authored. 📋 U3 adds a stated / inferred flag per fact. Auto-promotion changes status only. Third-party people need the user's tap.
+- **T1:** suggestions from frequency and recency (never from family, health or faith signals). `closeness_tier` only by confirm (📋 the endpoint comes in U1c).
+- **Forget** (✅ U1a / U0c):
+  - by source, record or fact, in one transaction;
+  - erases evidence-less entities, aliases and links;
+  - bumps `facts_version` + `privacy_revision`, so caches drop the data;
+  - durable idempotency; re-import blocked; the generation fence rejects in-flight jobs;
+  - no runtime DDL.
+
+### 18.6 Read path, and the gates
+
+| Surface | State |
+|---|---|
+| Live context pack (no LLM; aliases EN / AR / Arabizi, dates, AED, BM25 + RRF; ≤ 1.5k tokens; target p95 < 150 ms) | ✅ works; ⚠️ **loads up to 10k facts per call**: 413 ms p95 at 20k, old facts invisible → 🔧 **U1c**: SQL candidates (FTS GIN + entity / alias + 1 hop + subject + date → RRF) |
+| `/search` (bridge) | ✅ on Postgres with the prefix filter in SQL (57 ms p95 at 20k); 🔧 ranked candidates in U1c |
+| Vault API (`/vault/subjects`, `/vault/people`, `/quests`, `/hypotheses`, `/timeline`, `/onboarding-status`, `/why`) | ✅ exists; ⚠️ loads all facts, and provenance is derived from status → 🔧 U1c |
+| `/vault/graph?view=subjects\|people` (versioned DTO, 7 clusters, Rule 9 gated, `+N more`, T1 + suggestions) + `POST …/tier` | 🔧 U1c |
+| `/why` with a cited reason span or "reason unknown"; `/story` (a deterministic cited timeline, optional verified narration) | 📋 U5 |
+| §9 Quest-like export tree | ⚠️ the old tree today → 📋 **U5 Part C** parity |
+| MCP tools (claim / submit jobs, `memory_search`, `memory_context`, vault summary) | ✅ (search hydration cap → U1c) |
+| Community / Messenger CR-TM bridge (`/records`, `/forget`, `/facts/{id}/resolve`, `/context`, `/search`) | ✅ on Postgres, 8/8 live ops (U1a); 📋 CS-1 adds a live mode to the shared tests |
+
+Access is by hashed tokens with roles admin / worker / owner-device, owner-scoped.
+
+**Gates (plan §6):**
+- retrieval p95 < 150 ms at 20k over HTTP, also during a backfill; per-bucket recall floors;
+- 0 sensitive leaks on every surface;
+- live triples: 0 false emissions on the 84-item trap set;
+- backfill: mean cost ≤ $0.0044 per day; all supersedes, ends and late updates right;
+- Forget: zero survivors;
+- graph p95 < 150 ms with true counts;
+- every why / story sentence cites visible evidence.
+
+**Measured on `267b0cf`:**
+- S1 retrieval **FAIL**: gold graph 0.67 / 0.73, extracted 0.36 / 0.41;
+- S2 extraction **FAIL**: recall 66.7 %, precision 59 %, changes 1/8 · 0/5 · 0/4;
+- S3 Forget: mechanism fixed;
+- S4 bridge **PASS 8/8**;
+- S5 Rule 9 **FAIL** until U1c renders the stored provenance;
+- S6–S9 not built.
+
+### 18.7 Work packages and owners
+
+| WP | What | Owner | State |
+|---|---|---|---|
+| U0a | contract v1 + migrations | — | ✅ |
+| U0b / U7 | acceptance harness; rerun after every merge | Gemini | ✅ / ongoing |
+| U1a | bridge + Forget on Postgres | Codex | ✅ |
+| U0c | remove runtime DDL + contract v2 (triples, reasons, `place_type`, topics, 7-cluster taxonomy) | Codex | ✅ |
+| U1b | no leaks from quarantine, stored provenance, T1 suggestions, false positives | Cursor | ✅ |
+| U1c | Postgres retrieval everywhere, salience, `/vault/graph`, tier confirm, provenance rendering | Gemini | 🔧 |
+| U3 | backfill quality (diagnosis done: all-or-nothing validator, update target not shown, heavy schema) + stated / inferred flag + reasons + places / preferences + one taxonomy + owner-timezone days + token-budget chunks | Cursor | 🔧 |
+| U2 | instant triples + topic counter + per-session catch-up (D-b) | Codex | 📋 |
+| U5 | why + story + **Part C: the §9 Quest-like export tree** | Gemini | 📋 |
+| UI | mobile Vault on `/vault/graph` (7 clusters, T1 ring, "I noticed" controls) | Cursor | 📋 |
+| U4 | local multilingual embeddings | — | deferred: only if Arabic or paraphrase recall fails after U1c + U3 |
 
