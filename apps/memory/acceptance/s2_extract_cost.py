@@ -17,7 +17,7 @@ from zoneinfo import ZoneInfo
 from temporal_memory.core import extract
 from temporal_memory.ingest.cli import _load_and_triage
 from temporal_memory.ingest.triage import ingest_records
-from temporal_memory.models import Worker
+from temporal_memory.models import Attempt, Worker
 from temporal_memory.privacy.sensitive import pre_write
 from temporal_memory.queue.jobs import PostgresJobs
 
@@ -111,6 +111,17 @@ def _haiku_judge(extracted_facts: list[dict], extracted_entities: list[dict], go
     return parsed, meta
 
 
+def _evidence_judge(snap: dict, gold: dict) -> dict:
+    """Deterministic stand-in for the LLM judge (offline replays only): a ledger fact matches the extracted facts
+    that cite one of its evidence records. Entities/labels are not scored in this mode."""
+    by_rec: dict[str, set[str]] = defaultdict(set)
+    for fe in snap["fact_evidence"]:
+        by_rec[_ledger_rid(fe["record_id"])].add(fe["fact_id"])
+    facts = {f["id"]: sorted(set().union(*(by_rec.get(r, set()) for r in f.get("evidence", []))) if f.get("evidence") else [])
+             for f in gold["facts"]}
+    return {"facts": facts, "extracted": {}, "leaks": [], "entities": {}}
+
+
 def run(out_dir: Path) -> dict:
     gold = load_gold()
     ingest_order = load_ingest_order()
@@ -128,6 +139,13 @@ def run(out_dir: Path) -> dict:
         calls_log.unlink()
 
     agent_cli_bug = None
+    # E9b: S2_REPLAY=<attempts.json> replays recorded extractions offline; S2_ONLY_DAYS limits nothing (full month).
+    replay_data = None
+    if os.environ.get("S2_REPLAY"):
+        replay_data = {r["key"]: r for r in json.loads(Path(os.environ["S2_REPLAY"]).read_text(encoding="utf-8"))}
+    dump_rows: list[dict] | None = [] if not replay_data else None
+    day_key = lambda d, ids: d + "|" + str(len(ids)) + "|" + ids[0] + "|" + ids[-1]
+    nojudge = bool(os.environ.get("S2_NOJUDGE"))
 
     try:
         os.environ["TM_LEASE_SECONDS"] = "1200"
@@ -215,8 +233,24 @@ def run(out_dir: Path) -> dict:
                 bundle.system_prompt = sys_prompt_text
 
                 t0 = time.monotonic()
-                attempt = extract.run(bundle, "agent-cli", "haiku")
+                if replay_data is not None and day_key(day, rec_ids) in replay_data:
+                    # E9b: offline replay of a recorded extraction (no LLM call) to test applier/validator logic.
+                    import dataclasses
+                    rec = replay_data[day_key(day, rec_ids)]
+                    attempt = Attempt(
+                        job_id=bundle.job.id, attempt_no=bundle.job.attempt_no,
+                        fence_token=bundle.job.fence_token or "", worker_id=bundle.job.worker_id or "replay",
+                        worker_kind="agent-cli", model="haiku", prompt_version=bundle.job.prompt_version,
+                        output=extract._parse_extraction_output(rec["output"]), tokens_in=rec["tokens_in"],
+                        tokens_out=rec["tokens_out"], cost_usd=rec["cost_usd"], model_observed=rec.get("model_observed"))
+                else:
+                    attempt = extract.run(bundle, "agent-cli", "haiku")
                 wall_s = round(time.monotonic() - t0, 2)
+                if dump_rows is not None and attempt.output is not None:
+                    dump_rows.append({"key": day_key(day, rec_ids), "day": day, "tokens_in": attempt.tokens_in,
+                                      "tokens_out": attempt.tokens_out, "cost_usd": attempt.cost_usd,
+                                      "model_observed": attempt.model_observed,
+                                      "output": extract.output_to_dict(attempt.output)})
 
                 if idx == 1 and agent_cli_bug is None:
                     # Probe unmodified worker_kind='agent-cli' once in-memory via validator to record ScreenUnavailable
@@ -280,7 +314,12 @@ def run(out_dir: Path) -> dict:
             ext_ents = [{**e, "aliases": aliases_by_ent.get(e["id"], [])} for e in snap["entities"]]
             ext_facts = snap["facts"]
 
-            judge_out, judge_meta = _haiku_judge(ext_facts, ext_ents, gold, judge_sys, calls_log)
+            if dump_rows is not None:
+                (out_dir / "s2_attempts.json").write_text(json.dumps(dump_rows, ensure_ascii=False), encoding="utf-8")
+            if nojudge:
+                judge_out, judge_meta = _evidence_judge(snap, gold), {"cost_usd": 0.0}
+            else:
+                judge_out, judge_meta = _haiku_judge(ext_facts, ext_ents, gold, judge_sys, calls_log)
             (out_dir / "s2_judge.json").write_text(json.dumps(judge_out, indent=2, ensure_ascii=False), encoding="utf-8")
 
             # Score metrics strictly per §6
