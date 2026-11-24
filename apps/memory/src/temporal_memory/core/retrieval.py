@@ -637,15 +637,48 @@ def search_candidates(
                 if sib_ids:
                     channel_ranks.append(("subject", 0.25, sib_ids))
 
-        # Single batch visibility verification (forget_rules + evidence generations) over fused <=240 candidates!
+        # Single batch visibility verification (forget_rules + evidence generations) over <=260 candidates.
+        # Queries base PK directly with (erased_at IS NULL)::int=1 so Postgres never switches to a slow generic plan on visible_facts.
         all_cand_ids = list({fid for _, _, rids in channel_ranks for fid in rids})
         visible_set: set[str] = set()
         if all_cand_ids:
-            vis_rows = conn.execute(
-                "SELECT id FROM visible_facts WHERE owner = %s AND id = ANY(%s)",
+            cand_rows = conn.execute(
+                """
+                SELECT f.id, f.text
+                FROM facts f
+                WHERE f.owner = %s AND f.id = ANY(%s)
+                  AND (f.erased_at IS NULL)::int = 1 AND f.status <> 'history'
+                """,
                 (owner, all_cand_ids),
             ).fetchall()
-            visible_set = {r["id"] for r in vis_rows}
+            if cand_rows:
+                cand_ids_alive = [r["id"] for r in cand_rows]
+                stale_rows = conn.execute(
+                    """
+                    SELECT DISTINCT fe.fact_id
+                    FROM fact_evidence fe
+                    JOIN records r ON r.id = fe.record_id AND r.owner = fe.owner
+                    WHERE fe.owner = %s AND fe.fact_id = ANY(%s)
+                      AND (r.erased_at IS NOT NULL OR r.generation > fe.record_generation)
+                    """,
+                    (owner, cand_ids_alive),
+                ).fetchall()
+                blocked_ids = {r["fact_id"] for r in stale_rows}
+                fr_rows = conn.execute(
+                    "SELECT kind, value FROM forget_rules WHERE owner = %s",
+                    (owner,),
+                ).fetchall()
+                item_rules = {r["value"] for r in fr_rows if r["kind"] == "item"}
+                text_rules = [r["value"].lower() for r in fr_rows if r["kind"] == "text" and r["value"]]
+                for r in cand_rows:
+                    fid = r["id"]
+                    if fid in blocked_ids or fid in item_rules:
+                        continue
+                    if text_rules:
+                        t_low = (r["text"] or "").lower()
+                        if any(rule in t_low for rule in text_rules):
+                            continue
+                    visible_set.add(fid)
 
     if not channel_ranks:
         return []
