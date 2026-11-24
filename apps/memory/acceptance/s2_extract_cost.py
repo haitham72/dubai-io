@@ -143,9 +143,10 @@ def run(out_dir: Path) -> dict:
     replay_data = None
     if os.environ.get("S2_REPLAY"):
         replay_data = {r["key"]: r for r in json.loads(Path(os.environ["S2_REPLAY"]).read_text(encoding="utf-8"))}
-    dump_rows: list[dict] | None = [] if not replay_data else None
+    dump_rows: list[dict] | None = []
     day_key = lambda d, ids: d + "|" + str(len(ids)) + "|" + ids[0] + "|" + ids[-1]
     nojudge = bool(os.environ.get("S2_NOJUDGE"))
+    llm_days = {d for d in os.environ.get("S2_LLM_DAYS", "").split(",") if d}  # days re-extracted live even in replay
 
     try:
         os.environ["TM_LEASE_SECONDS"] = "1200"
@@ -233,7 +234,7 @@ def run(out_dir: Path) -> dict:
                 bundle.system_prompt = sys_prompt_text
 
                 t0 = time.monotonic()
-                if replay_data is not None and day_key(day, rec_ids) in replay_data:
+                if replay_data is not None and day_key(day, rec_ids) in replay_data and ("late" if is_late else day) not in llm_days:
                     # E9b: offline replay of a recorded extraction (no LLM call) to test applier/validator logic.
                     import dataclasses
                     rec = replay_data[day_key(day, rec_ids)]

@@ -274,7 +274,12 @@ def validate(
             continue
         if fact.op in ("update", "end"):
             if not fact.target or fact.target not in context_fact_ids:
-                _drop(idx, "target_outside_context")
+                if fact.op == "end":
+                    # E9b: a cancellation/stop with no known fact to close is still an end event; keep it with no
+                    # target (the applier records it as ended). A made-up target id is never followed.
+                    fact.target = None
+                else:
+                    _drop(idx, "target_outside_context")
 
     # 5) Entity guards & enum validation
     for ent in out.entities:

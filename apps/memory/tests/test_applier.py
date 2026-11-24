@@ -310,7 +310,7 @@ def test_update_and_end_transition_target(db_env):
     assert by_id[f1].status == "ended"
     assert by_id[f1].valid_to == "2026-10-15"
     assert by_id[f1].superseded_by == f2
-    assert by_id[f2].status == "active"
+    assert by_id[f2].status == "ended" and by_id[f2].valid_to == "2026-10-15"  # E9b: the end event itself is ended
 
 
 def test_fence_stale_after_generation_bump_and_erasure(db_env):
@@ -513,3 +513,67 @@ def test_phone_query_finds_iphone_fact_by_subject_alias(db_env):
         matched = [hit for hit in hits if hit.fact_id == fact_id]
         assert matched and matched[0].channel == "subject"
         assert "phone" not in "Karim bought an iPhone 13 Pro Max".lower().split()
+
+
+def _simple_fact(text, op, target, valid_from, rid, path="career/job-search", ent="Acme"):
+    return OutFact(
+        text=text, text_orig=None, subject_path=path,
+        entities=[FactEntity(entity_id=ent, role="x")], op=op, target=target,
+        valid_from=valid_from, evidence=[rid], sensitive=None,
+    )
+
+
+def test_e9b_end_without_target_is_recorded_as_ended(db_env):
+    """No known fact to close (a subscription never ingested): the cancellation itself is an ended fact."""
+    db, store = db_env
+    store.upsert_records("karim", [Record(id="r1", owner="karim", source="gmail", at="2026-10-31T09:00:00Z", author="StreamFlix", text="Your StreamFlix subscription ends Nov 30.")])
+    out = ExtractionOutput(
+        entities=[OutEntity(ref="new:StreamFlix", kind="org", aliases=[], relation_to_user=None)],
+        facts=[_simple_fact("Karim cancelled his StreamFlix subscription", "end", None, "2026-11-30", "r1", "life/subscriptions", "new:StreamFlix")],
+        links=[],
+    )
+    v = apply("karim", _job("j1", ["r1"]), _attempt("j1", out), db=db)
+    assert v.ok and len(v.applied_fact_ids) == 1
+    with db.connection() as conn:
+        row = conn.execute("SELECT status, valid_to FROM facts WHERE id = %s", (v.applied_fact_ids[0],)).fetchone()
+    assert row["status"] == "ended" and row["valid_to"] == "2026-11-30"
+
+
+def test_e9b_late_end_against_newer_target_is_history_not_ended(db_env):
+    """A late end event older than the known fact it targets must not end it or show as an active/ended state."""
+    db, store = db_env
+    store.upsert_records("karim", [
+        Record(id="r1", owner="karim", source="notes", at="2026-11-10T09:00:00Z", author="Karim", text="Joined Acme gym"),
+        Record(id="r0", owner="karim", source="notes", at="2026-10-01T09:00:00Z", author="Karim", text="Quit the Acme gym"),
+    ])
+    v1 = apply("karim", _job("j1", ["r1"]), _attempt("j1", ExtractionOutput(
+        entities=[OutEntity(ref="new:Acme", kind="org", aliases=[], relation_to_user=None)],
+        facts=[_simple_fact("Karim joined Acme gym", "new", None, "2026-11-10", "r1", "life/fitness", "new:Acme")], links=[])), db=db)
+    tgt = v1.applied_fact_ids[0]
+    v2 = apply("karim", _job("j2", ["r0"]), _attempt("j2", ExtractionOutput(entities=[], facts=[
+        _simple_fact("Karim quit the Acme gym", "end", tgt, "2026-10-01", "r0", "life/fitness")], links=[])), db=db)
+    with db.connection() as conn:
+        new = conn.execute("SELECT status, superseded_by FROM facts WHERE id = %s", (v2.applied_fact_ids[0],)).fetchone()
+        old = conn.execute("SELECT status FROM facts WHERE id = %s", (tgt,)).fetchone()
+    assert new["status"] == "history" and new["superseded_by"] == tgt
+    assert old["status"] == "active"
+
+
+def test_e9b_late_update_gets_back_dated_history_and_keeps_newer_active(db_env):
+    """The late-record mechanism: older record + op update against the newer fact -> history, valid_to = newer start."""
+    db, store = db_env
+    store.upsert_records("karim", [
+        Record(id="r1", owner="karim", source="gmail", at="2026-11-04T09:00:00Z", author="Sara", text="Cohort pushed to Nov 16"),
+        Record(id="r0", owner="karim", source="gmail", at="2026-10-25T09:00:00Z", author="Sara", text="Payment confirmed for the Nov 2 cohort"),
+    ])
+    v1 = apply("karim", _job("j1", ["r1"]), _attempt("j1", ExtractionOutput(
+        entities=[OutEntity(ref="new:Sara Eid", kind="person", aliases=[], relation_to_user=None)],
+        facts=[_simple_fact("The cohort start was pushed to Nov 16", "new", None, "2026-11-04", "r1", "learning/courses", "new:Sara Eid")], links=[])), db=db)
+    tgt = v1.applied_fact_ids[0]
+    v2 = apply("karim", _job("j2", ["r0"]), _attempt("j2", ExtractionOutput(entities=[], facts=[
+        _simple_fact("Payment confirmed for the Nov 2 cohort", "update", tgt, "2026-10-25", "r0", "learning/courses", "Sara Eid")], links=[])), db=db)
+    with db.connection() as conn:
+        late = conn.execute("SELECT status, valid_to, valid_from FROM facts WHERE id = %s", (v2.applied_fact_ids[0],)).fetchone()
+        newer = conn.execute("SELECT status FROM facts WHERE id = %s", (tgt,)).fetchone()
+    assert late["status"] == "history" and late["valid_from"] == "2026-10-25" and late["valid_to"] == "2026-11-04"
+    assert newer["status"] == "active"

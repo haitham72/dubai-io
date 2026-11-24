@@ -360,3 +360,27 @@ def test_one_bad_fact_does_not_drop_the_rest_of_the_day():
     assert verdict.ok
     assert "credential_in_fact" in verdict.reasons
     assert attempt.output.facts == [good]
+
+
+def test_e9b_end_without_known_target_is_kept_as_end_event():
+    """A cancellation with no known fact to close is still an end event; a made-up target is never followed."""
+    now, job, bundle, attempt = _make_fixtures()
+    attempt.output.facts[0].op = "end"
+    attempt.output.facts[0].target = None
+    v = validate(job, bundle, attempt, now=now)
+    assert v.ok and "target_outside_context" not in v.reasons
+    assert attempt.output.facts and attempt.output.facts[0].op == "end" and attempt.output.facts[0].target is None
+
+    _, job, bundle, attempt = _make_fixtures()
+    attempt.output.facts[0].op = "end"
+    attempt.output.facts[0].target = "f_made_up"
+    v = validate(job, bundle, attempt, now=now)
+    assert v.ok and attempt.output.facts[0].target is None  # never followed
+
+
+def test_e9b_update_without_known_target_still_dropped():
+    now, job, bundle, attempt = _make_fixtures()
+    attempt.output.facts[0].op = "update"
+    attempt.output.facts[0].target = None
+    v = validate(job, bundle, attempt, now=now)
+    assert "target_outside_context" in v.reasons and attempt.output.facts == []

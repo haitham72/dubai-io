@@ -393,6 +393,11 @@ def apply(
                             (new_tgt_status, new_fact_id, fact.valid_from, owner, tgt["id"]),
                         )
 
+            if fact.op == "end" and status == "active":
+                # E9b: the fact that reports a cancellation/stop is itself an ended state (valid_to = the end date).
+                status = "ended"
+                valid_to = valid_to or fact.valid_from
+
             conn.execute(
                 """
                 INSERT INTO facts (
