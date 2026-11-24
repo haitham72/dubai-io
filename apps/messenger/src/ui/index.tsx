@@ -69,12 +69,12 @@ export function IconButton({ icon: I, label, onClick }: { icon: Icon; label: str
   );
 }
 
-export function Button({ children, icon: I, variant = "secondary", onClick, style }: {
+export function Button({ children, icon: I, variant = "secondary", onClick, style, disabled }: {
   children: ReactNode; icon?: Icon; variant?: "primary" | "secondary" | "ghost" | "purple";
-  onClick?: () => void; style?: React.CSSProperties;
+  onClick?: () => void; style?: React.CSSProperties; disabled?: boolean;
 }) {
   return (
-    <button className={cx(s.btn, s[variant])} onClick={onClick} style={style}>
+    <button className={cx(s.btn, s[variant])} onClick={onClick} style={style} disabled={disabled}>
       {I && <I size={16} strokeWidth={2} />}
       {children}
     </button>

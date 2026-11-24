@@ -22,3 +22,4 @@ tests/store-wiring/bundle.*
 agents/messenger_agents/models/
 agents/models/
 agents/.data/
+tests/memory-ui/bundle.*
