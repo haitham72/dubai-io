@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
+import contextvars
 from datetime import date, timedelta
 import os
 import re
@@ -10,6 +11,10 @@ from typing import Any, Iterable, Literal
 from temporal_memory.config import get_settings
 from temporal_memory.db.db import Database, fold_text
 from temporal_memory.models import Candidate
+
+# E9b: how the semantic channel went on the latest search in this context: ok | no_embeddings |
+# embedder_unavailable | disabled | skipped. The live context pack surfaces it so degradation is honest.
+LAST_SEMANTIC: contextvars.ContextVar[str] = contextvars.ContextVar("tm_last_semantic", default="skipped")
 
 ChannelName = Literal["fts", "entity", "subject", "date", "semantic"]
 
@@ -54,6 +59,8 @@ _SYNONYM_GROUPS: tuple[tuple[str, ...], ...] = (
     ("travel", "flight", "trip", "airport", "hotel", "سفر", "رحلة", "طيران", "مطار", "فندق"),
     ("restaurant", "cafe", "coffee", "dinner", "lunch", "food", "مطعم", "كافيه", "قهوة", "عشاء", "غداء", "أكل"),
     ("project", "app", "beta", "ship", "testflight", "مشروع", "تطبيق"),
+    ("sport", "sports", "surf", "surfing", "football", "soccer", "padel", "tennis", "swim", "swimming", "basketball",
+     "cycling", "yoga", "climbing", "volleyball", "cricket", "golf", "run", "running", "marathon", "رياضة", "كورة", "سباحة"),
     ("run", "running", "marathon", "10k", "half", "جري", "ماراثون"),
 )
 
@@ -664,11 +671,24 @@ def search_candidates(
         # 6. Semantic vector top-30 channel (local BAAI/bge-m3 1024-d + pgvector HNSW iterative scan)
         cfg = get_settings()
         sem_tokens = [t for t in tokens if t not in _NOISE_TOKENS]
+        LAST_SEMANTIC.set("skipped")
+        if not cfg.semantic_enabled:
+            LAST_SEMANTIC.set("disabled")
         if cfg.semantic_enabled and q_clean and sem_tokens:
+            LAST_SEMANTIC.set("ok")
+            if os.environ.get("TM_SEMANTIC_LAZY_EMBED", "1") != "0":
+                from temporal_memory.core.embed import ensure_embeddings
+
+                # Separate connection inside: finish the lazy backfill outside this read transaction's snapshot.
+                bf = ensure_embeddings(db, owner)
+                if bf:
+                    LAST_SEMANTIC.set(bf)
             has_emb = conn.execute(
                 "SELECT 1 FROM facts WHERE owner = %s AND embedding IS NOT NULL AND erased_at IS NULL AND status <> 'history' LIMIT 1",
                 (owner,),
             ).fetchone()
+            if has_emb is None and LAST_SEMANTIC.get() == "ok":
+                LAST_SEMANTIC.set("no_embeddings")
             if has_emb is not None:
                 try:
                     from temporal_memory.core.embed import embed_query, vector_literal
@@ -676,6 +696,7 @@ def search_candidates(
                     q_vec_lit = vector_literal(embed_query(q_clean, model_name=cfg.semantic_model))
                 except Exception:
                     q_vec_lit = None
+                    LAST_SEMANTIC.set("embedder_unavailable")
                 if q_vec_lit is not None:
                     clauses = ["f.embedding IS NOT NULL"]
                     params = []

@@ -141,3 +141,33 @@ def test_forget_fact_alone_scrubs_fact_text(tm):
     hits = _scan(tm)
     assert "facts" not in hits and "entities" not in hits and "story_cache" not in hits
     assert "job_attempts" not in hits
+
+
+def test_forget_twice_across_two_jobs_scrubs_every_attempt(tm):
+    """E9b FAIL 4: attempts of earlier forgotten jobs/retries must not keep output_json."""
+    from temporal_memory.privacy.forget import forget_source
+
+    t2 = "quokkaflux"
+    tm.write(
+        "INSERT INTO records (id, owner, source, at, author, text, content_hash, generation, meta) VALUES "
+        "('r3','o1','note','2026-10-27T10:00:00+04:00','me',%s,'h3',1,'{}')", (f"I adore {t2} tea",))
+    tm.write(
+        "INSERT INTO jobs (id, owner, kind, input_ref, input_version, state, idempotency_key, day) VALUES "
+        "('j2','o1','extract.day','{r3}',1,'applied','idem2','2026-10-27')")
+    tm.write(
+        "INSERT INTO facts (id, owner, text, text_orig, text_folded, subject_id, valid_from, status, content_hash, attempt_id)"
+        " VALUES ('fc','o1',%s,'',%s,'s1','2026-10-27','active','hfc','att2b')",
+        (f"Omar adores {t2} tea", f"omar adores {t2} tea"))
+    tm.write("INSERT INTO fact_evidence (owner, fact_id, record_id, record_generation) VALUES ('o1','fc','r3',1)")
+    for aid, no, verdict in (("att2a", 1, "rejected"), ("att2b", 2, "applied")):
+        tm.write(
+            "INSERT INTO job_attempts (id, job_id, owner, attempt_no, fence_token, worker_id, worker_kind, model,"
+            " prompt_version, output_json, verdict) VALUES (%s,'j2','o1',%s,'t','w','agent-cli','m','p',%s::jsonb,%s)",
+            (aid, no, json.dumps({"facts": [{"text": f"{t2} tea"}]}), verdict))
+    # Legacy state: an earlier forget only soft-erased r1 (no scrub, fact lost its attempt link) and left its attempt behind.
+    tm.write("UPDATE records SET erased_at = now() WHERE id = 'r1'")
+    tm.write("UPDATE facts SET erased_at = now(), attempt_id = NULL WHERE id = 'fa'")
+    forget_source("o1", ["r3"])
+    assert _scan(tm, t2) == {}, _scan(tm, t2)
+    assert _scan(tm, TOKEN).get("job_attempts") is None, _scan(tm, TOKEN)
+    assert tm.read("SELECT count(*)::int c FROM job_attempts WHERE output_json IS NOT NULL")[0]["c"] == 0

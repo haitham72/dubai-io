@@ -419,6 +419,10 @@ def context_pack(owner: str, text: str, max_tokens: int = 1500, *, store: GraphS
                 seen_ids.add(f.id)
                 candidate_facts.append(f)
 
+    from temporal_memory.core.retrieval import LAST_SEMANTIC
+
+    semantic_status = LAST_SEMANTIC.get() if callable(search_fn) else "skipped"
+
     candidate_facts = [
         f for f in candidate_facts
         if f.status != "history" and not _is_sensitive_hidden(f, subjects_by_id)
@@ -566,7 +570,11 @@ def context_pack(owner: str, text: str, max_tokens: int = 1500, *, store: GraphS
         "provenance": env_prov,
         "as_of": now_iso,
         "demo_data": is_demo,
+        "retrieval": {"semantic": semantic_status, "channels": ["lexical", "entity", "subject"]
+                      + (["semantic"] if semantic_status == "ok" else [])},
     }
+    if semantic_status in ("embedder_unavailable",):
+        return result  # do not cache a degraded pack: semantic may come back
     bucket = _PACK_CACHE.setdefault(owner, (ver, {}))
     if bucket[0] != ver:
         _PACK_CACHE[owner] = (ver, {cache_key: copy.deepcopy(result)})

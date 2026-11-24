@@ -24,6 +24,12 @@ from temporal_memory.privacy.policy import gate_fact as _gate_fact
 
 VALID_ENTITY_KINDS = frozenset({"person", "place", "org", "project", "event"})
 VALID_RELATIONS = frozenset({"self", "friend", "colleague", "family", "null", None})
+# E9b: explicit past-tense end verbs only ("cancelled", "called off", "quit", "unsubscribed", "withdrew", "paused").
+# Whole words, so "quitting"/"cancellation policy" do not fire.
+_END_CUE = re.compile(
+    r"(?<![A-Za-z])(?:cancell?ed|called off|quit|unsubscribed|withdrew|paused|dropped out|terminated)(?![A-Za-z])", re.I
+)
+
 VALID_FACT_OPS = frozenset({"new", "update", "end"})
 VALID_LINK_RELS = frozenset(
     {
@@ -272,9 +278,18 @@ def validate(
     for idx, fact in enumerate(out.facts):
         if idx in fact_drops:
             continue
+        if fact.op == "new" and _END_CUE.search(fact.text or ""):
+            # E9b: the model reports a cancellation/quit as a plain new fact; record it as the end event it is.
+            fact.op = "end"
+            fact.target = None
         if fact.op in ("update", "end"):
             if not fact.target or fact.target not in context_fact_ids:
-                _drop(idx, "target_outside_context")
+                if fact.op == "end":
+                    # E9b: a cancellation/stop with no known fact to close is still an end event; keep it with no
+                    # target (the applier records it as ended). A made-up target id is never followed.
+                    fact.target = None
+                else:
+                    _drop(idx, "target_outside_context")
 
     # 5) Entity guards & enum validation
     for ent in out.entities:

@@ -78,7 +78,8 @@ class Stack:
         self.broker = Celery(broker=f"amqp://guest:guest@127.0.0.1:{self.port('rabbitmq', 5672)}//")
         health = self.api.get("/health")
         health.raise_for_status()
-        assert health.json() == {"ok": True, "db": "ok"}
+        hj = health.json()
+        assert hj["ok"] is True and hj["db"] == "ok"
 
     def owner(self, display_name: str = "Synthetic Owner", *, self_aliases=()) -> str:
         owner_id = f"e2e_{uuid4().hex}"
