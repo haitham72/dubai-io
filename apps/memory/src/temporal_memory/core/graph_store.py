@@ -4,12 +4,13 @@ from __future__ import annotations
 from datetime import datetime
 import hashlib
 import json
-from typing import Any
+from typing import Any, Iterator
 import uuid
 
 from temporal_memory.db.db import Database, fold_text, get_database
 from temporal_memory.models import (
     Attempt,
+    Candidate,
     Entity,
     EntitySubject,
     Fact,
@@ -78,15 +79,15 @@ class PostgresGraphStore:
         with self.db.transaction() as conn:
             row = conn.execute(
                 """
-                INSERT INTO owners (id, label, kind, display_name, self_aliases, timezone)
-                VALUES (%s, %s, %s, %s, %s::jsonb, %s)
+                INSERT INTO owners (id, label, kind, display_name, self_aliases, timezone, privacy_revision)
+                VALUES (%s, %s, %s, %s, %s::jsonb, %s, %s)
                 ON CONFLICT (id) DO UPDATE SET
                     label = EXCLUDED.label,
                     kind = EXCLUDED.kind,
                     display_name = EXCLUDED.display_name,
                     self_aliases = EXCLUDED.self_aliases,
                     timezone = EXCLUDED.timezone
-                RETURNING id, label, kind, display_name, self_aliases, timezone
+                RETURNING id, label, kind, display_name, self_aliases, timezone, privacy_revision
                 """,
                 (
                     obj.id,
@@ -95,6 +96,7 @@ class PostgresGraphStore:
                     obj.display_name,
                     json.dumps(obj.self_aliases),
                     obj.timezone,
+                    int(getattr(obj, "privacy_revision", 0) or 0),
                 ),
             ).fetchone()
         return self._row_to_owner(row)
@@ -103,7 +105,8 @@ class PostgresGraphStore:
         """Fetch an owner by id, or None if not found."""
         with self.db.connection() as conn:
             row = conn.execute(
-                "SELECT id, label, kind, display_name, self_aliases, timezone FROM owners WHERE id = %s",
+                "SELECT id, label, kind, display_name, self_aliases, timezone, privacy_revision "
+                "FROM owners WHERE id = %s",
                 (owner_id,),
             ).fetchone()
         return self._row_to_owner(row) if row else None
@@ -407,13 +410,340 @@ class PostgresGraphStore:
 
         return _pack_within_budget(entity_dicts, fact_dicts, subject_dicts, char_budget)
 
+    def _hydrate_fact_rows(self, conn: Any, owner: str, fact_rows: list[dict[str, Any]]) -> list[Fact]:
+        if not fact_rows:
+            return []
+        fids = [r["id"] for r in fact_rows]
+        ent_rows = conn.execute(
+            """
+            SELECT fact_id, entity_id, role
+            FROM fact_entities
+            WHERE owner = %s AND fact_id = ANY(%s)
+            ORDER BY entity_id ASC
+            """,
+            (owner, fids),
+        ).fetchall()
+        ev_rows = conn.execute(
+            """
+            SELECT fact_id, record_id
+            FROM fact_evidence
+            WHERE owner = %s AND fact_id = ANY(%s)
+            ORDER BY record_id ASC
+            """,
+            (owner, fids),
+        ).fetchall()
+
+        ents_by_fact: dict[str, list[FactEntity]] = {}
+        for r in ent_rows:
+            ents_by_fact.setdefault(r["fact_id"], []).append(
+                FactEntity(entity_id=r["entity_id"], role=r["role"])
+            )
+
+        ev_by_fact: dict[str, list[str]] = {}
+        for r in ev_rows:
+            ev_by_fact.setdefault(r["fact_id"], []).append(r["record_id"])
+
+        return [
+            Fact(
+                id=r["id"],
+                owner=r["owner"],
+                text=r["text"],
+                subject_id=r["subject_id"],
+                valid_from=r["valid_from"],
+                evidence=ev_by_fact.get(r["id"], []),
+                entities=ents_by_fact.get(r["id"], []),
+                text_orig=r["text_orig"],
+                lang=r["lang"],
+                valid_to=r["valid_to"],
+                status=r["status"],
+                superseded_by=r["superseded_by"],
+                provenance=r["provenance"],
+                confidence=r["confidence"],
+                job_id=r["job_id"],
+                attempt_id=r["attempt_id"],
+                worker_id=r["worker_id"],
+                model=r["model"],
+                prompt_version=r["prompt_version"],
+            )
+            for r in fact_rows
+        ]
+
+    # ---------------------------------------------------------------- GraphStoreFull retrieval
+    def search_candidates(
+        self,
+        owner: str,
+        query: str,
+        *,
+        entity_ids: list[str] | None = None,
+        subject_ids: list[str] | None = None,
+        date_from: str | None = None,
+        date_to: str | None = None,
+        source_prefix: str | None = None,
+        limit: int = 50,
+    ) -> list[Candidate]:
+        """Rank unique visible fact IDs via Postgres multi-channel RRF."""
+        from temporal_memory.core.retrieval import search_candidates as _pg_search_candidates
+
+        return _pg_search_candidates(
+            self.db,
+            owner,
+            query,
+            entity_ids=entity_ids,
+            subject_ids=subject_ids,
+            date_from=date_from,
+            date_to=date_to,
+            source_prefix=source_prefix,
+            limit=limit,
+        )
+
+    def get_facts(self, owner: str, fact_ids: list[str]) -> list[Fact]:
+        """Hydrate visible IDs in input order, skipping missing or repeated IDs without a cap."""
+        ordered_ids = list(dict.fromkeys(fid for fid in fact_ids if fid))
+        if not ordered_ids:
+            return []
+        with self.db.connection() as conn:
+            fact_rows = conn.execute(
+                """
+                SELECT vf.id, vf.owner, vf.text, vf.text_orig, vf.lang, vf.subject_id,
+                       vf.valid_from, vf.valid_to, vf.status, vf.superseded_by,
+                       vf.provenance, vf.confidence, vf.job_id, vf.attempt_id,
+                       vf.worker_id, vf.model, vf.prompt_version
+                FROM visible_facts vf
+                WHERE vf.owner = %s AND vf.id = ANY(%s)
+                """,
+                (owner, ordered_ids),
+            ).fetchall()
+            hydrated = self._hydrate_fact_rows(conn, owner, fact_rows)
+        by_id = {f.id: f for f in hydrated}
+        return [by_id[fid] for fid in ordered_ids if fid in by_id]
+
+    def fact_counts_by_subject(self, owner: str) -> dict[str, int]:
+        """Count direct visible facts by subject via SQL aggregate."""
+        with self.db.connection() as conn:
+            rows = conn.execute(
+                """
+                SELECT vf.subject_id, COUNT(*)::int AS cnt
+                FROM visible_facts vf
+                WHERE vf.owner = %s
+                GROUP BY vf.subject_id
+                """,
+                (owner,),
+            ).fetchall()
+        return {r["subject_id"]: int(r["cnt"]) for r in rows}
+
+    def iter_visible_facts(
+        self,
+        owner: str,
+        *,
+        date_from: str | None = None,
+        date_to: str | None = None,
+        after: tuple[str, str] | None = None,
+        page_size: int = 500,
+    ) -> Iterator[Fact]:
+        """Iterate visible facts by (valid_from, id) descending using keyset cursors."""
+        if page_size < 1:
+            raise ValueError("page_size must be positive")
+        cursor = after
+        while True:
+            clauses = ["vf.owner = %s"]
+            params: list[Any] = [owner]
+            if date_from is not None:
+                clauses.append("substr(vf.valid_from, 1, 10) >= %s")
+                params.append(date_from[:10])
+            if date_to is not None:
+                clauses.append("substr(vf.valid_from, 1, 10) <= %s")
+                params.append(date_to[:10])
+            if cursor is not None:
+                clauses.append("(vf.valid_from, vf.id) < (%s, %s)")
+                params.extend([cursor[0], cursor[1]])
+            params.append(page_size)
+            sql = f"""
+                SELECT vf.id, vf.owner, vf.text, vf.text_orig, vf.lang, vf.subject_id,
+                       vf.valid_from, vf.valid_to, vf.status, vf.superseded_by,
+                       vf.provenance, vf.confidence, vf.job_id, vf.attempt_id,
+                       vf.worker_id, vf.model, vf.prompt_version
+                FROM visible_facts vf
+                WHERE {' AND '.join(clauses)}
+                ORDER BY vf.valid_from DESC, vf.id DESC
+                LIMIT %s
+            """
+            with self.db.connection() as conn:
+                fact_rows = conn.execute(sql, params).fetchall()
+                batch = self._hydrate_fact_rows(conn, owner, fact_rows)
+            if not batch:
+                break
+            for fact in batch:
+                yield fact
+            if len(batch) < page_size:
+                break
+            last = batch[-1]
+            cursor = (last.valid_from, last.id)
+
+    def bump_privacy_revision(self, owner: str) -> int:
+        """Increment the owner's privacy revision and return the updated value."""
+        with self.db.transaction() as conn:
+            row = conn.execute(
+                "UPDATE owners SET privacy_revision = privacy_revision + 1 WHERE id = %s RETURNING privacy_revision",
+                (owner,),
+            ).fetchone()
+        return int(row["privacy_revision"]) if row else 0
+
+    def privacy_revision(self, owner: str) -> int:
+        """Read current privacy_revision for cache keying."""
+        with self.db.connection() as conn:
+            row = conn.execute("SELECT privacy_revision FROM owners WHERE id = %s", (owner,)).fetchone()
+        return int(row["privacy_revision"]) if row else 0
+
+    def visible_entity_ids(self, owner: str) -> set[str]:
+        """Return distinct entity IDs referenced by non-sensitive-leaking visible facts."""
+        with self.db.connection() as conn:
+            rows = conn.execute(
+                """
+                SELECT DISTINCT fe.entity_id
+                FROM fact_entities fe
+                JOIN visible_facts vf ON vf.owner = fe.owner AND vf.id = fe.fact_id
+                LEFT JOIN subjects s ON s.owner = vf.owner AND s.id = vf.subject_id
+                WHERE fe.owner = %s
+                  AND (
+                      s.id IS NULL
+                      OR (s.sensitive_cat IS NULL AND split_part(s.path, '/', 1) NOT IN ('health', 'faith'))
+                      OR vf.provenance IN ('user_supplied', 'provider_confirmed')
+                  )
+                """,
+                (owner,),
+            ).fetchall()
+        return {r["entity_id"] for r in rows}
+
+    def confirmed_fact_counts_by_subject(self, owner: str) -> dict[str, int]:
+        """Count visible user_supplied/provider_confirmed facts by subject."""
+        with self.db.connection() as conn:
+            rows = conn.execute(
+                """
+                SELECT vf.subject_id, COUNT(*)::int AS cnt
+                FROM visible_facts vf
+                WHERE vf.owner = %s
+                  AND vf.provenance IN ('user_supplied', 'provider_confirmed')
+                GROUP BY vf.subject_id
+                """,
+                (owner,),
+            ).fetchall()
+        return {r["subject_id"]: int(r["cnt"]) for r in rows}
+
+    def visible_fact_ids_subset(self, owner: str, fact_ids: list[str]) -> set[str]:
+        """Check visibility of an explicit list of fact IDs without scanning the table."""
+        clean = list(dict.fromkeys(fid for fid in fact_ids if fid))
+        if not clean:
+            return set()
+        with self.db.connection() as conn:
+            rows = conn.execute(
+                "SELECT id FROM visible_facts WHERE owner = %s AND id = ANY(%s)",
+                (owner, clean),
+            ).fetchall()
+        return {r["id"] for r in rows}
+
+    def list_link_evidence_map(self, owner: str) -> dict[str, list[str]]:
+        """Return link_id -> visible fact_ids from link_evidence + links.evidence_fact_id."""
+        with self.db.connection() as conn:
+            rows = conn.execute(
+                """
+                SELECT le.link_id, le.fact_id
+                FROM link_evidence le
+                JOIN visible_facts vf ON vf.owner = le.owner AND vf.id = le.fact_id
+                WHERE le.owner = %s
+                ORDER BY le.link_id ASC, le.fact_id ASC
+                """,
+                (owner,),
+            ).fetchall()
+        out: dict[str, list[str]] = {}
+        for r in rows:
+            out.setdefault(r["link_id"], []).append(r["fact_id"])
+        return out
+
+    def list_hypotheses(self, owner: str, *, limit: int = 200) -> list[Fact]:
+        """Return visible hypothesis facts bounded in SQL without a 10k scan."""
+        with self.db.connection() as conn:
+            rows = conn.execute(
+                """
+                SELECT vf.id, vf.owner, vf.text, vf.text_orig, vf.lang, vf.subject_id,
+                       vf.valid_from, vf.valid_to, vf.status, vf.superseded_by,
+                       vf.provenance, vf.confidence, vf.job_id, vf.attempt_id,
+                       vf.worker_id, vf.model, vf.prompt_version
+                FROM visible_facts vf
+                LEFT JOIN subjects s ON s.owner = vf.owner AND s.id = vf.subject_id
+                WHERE vf.owner = %s AND vf.status = 'hypothesis'
+                  AND (s.id IS NULL OR (s.sensitive_cat IS NULL AND split_part(s.path, '/', 1) NOT IN ('health', 'faith')))
+                ORDER BY vf.valid_from DESC, vf.id DESC
+                LIMIT %s
+                """,
+                (owner, limit),
+            ).fetchall()
+            return self._hydrate_fact_rows(conn, owner, rows)
+
+    def list_open_changes(
+        self,
+        owner: str,
+        *,
+        entity_ids: list[str] | None = None,
+        fact_ids: list[str] | None = None,
+        limit: int = 16,
+    ) -> list[tuple[Fact, str | None]]:
+        """Return visible superseded/ended facts relevant to entity_ids/fact_ids with replacement text."""
+        eids = list(entity_ids or [])
+        fids = list(fact_ids or [])
+        if not eids and not fids:
+            return []
+        with self.db.connection() as conn:
+            rows = conn.execute(
+                """
+                SELECT vf.id, vf.owner, vf.text, vf.text_orig, vf.lang, vf.subject_id,
+                       vf.valid_from, vf.valid_to, vf.status, vf.superseded_by,
+                       vf.provenance, vf.confidence, vf.job_id, vf.attempt_id,
+                       vf.worker_id, vf.model, vf.prompt_version,
+                       sup.text AS sup_text
+                FROM visible_facts vf
+                LEFT JOIN visible_facts sup ON sup.owner = vf.owner AND sup.id = vf.superseded_by
+                LEFT JOIN subjects s ON s.owner = vf.owner AND s.id = vf.subject_id
+                WHERE vf.owner = %s
+                  AND vf.status IN ('superseded', 'ended')
+                  AND (s.id IS NULL OR (s.sensitive_cat IS NULL AND split_part(s.path, '/', 1) NOT IN ('health', 'faith'))
+                       OR vf.provenance IN ('user_supplied', 'provider_confirmed'))
+                  AND (
+                      vf.id = ANY(%s)
+                      OR EXISTS (
+                          SELECT 1 FROM fact_entities fe
+                          WHERE fe.owner = vf.owner AND fe.fact_id = vf.id AND fe.entity_id = ANY(%s)
+                      )
+                  )
+                ORDER BY vf.valid_from DESC, vf.id ASC
+                LIMIT %s
+                """,
+                (owner, fids, eids, limit),
+            ).fetchall()
+            hydrated = self._hydrate_fact_rows(conn, owner, rows)
+        sup_map = {r["id"]: r["sup_text"] for r in rows}
+        return [(f, sup_map.get(f.id)) for f in hydrated]
+
+    def entity_salience_map(self, owner: str, *, entity_ids: list[str] | None = None) -> dict[str, float]:
+        from temporal_memory.core.retrieval import compute_entity_salience_sql
+
+        with self.db.connection() as conn:
+            return compute_entity_salience_sql(conn, owner, entity_ids=entity_ids)
+
+    def subject_salience_map(self, owner: str) -> dict[str, float]:
+        from temporal_memory.core.retrieval import compute_subject_salience_sql
+
+        with self.db.connection() as conn:
+            return compute_subject_salience_sql(conn, owner)
+
     # ---------------------------------------------------------------- query helpers for vault/ops/ingest
     def list_entities(self, owner: str) -> list[Entity]:
         with self.db.connection() as conn:
             rows = conn.execute(
                 """
                 SELECT id, owner, kind, name, status, relation_to_user, closeness_tier,
-                       salience, first_seen, last_seen
+                       salience, first_seen, last_seen,
+                       provenance, user_confirmed_at, closeness_suggested,
+                       closeness_suggested_evidence, tier_confirmed_at, salience_updated_at
                 FROM entities
                 WHERE owner = %s AND erased_at IS NULL
                 ORDER BY salience DESC, id ASC
@@ -442,6 +772,16 @@ class PostgresGraphStore:
                 salience=float(r["salience"]),
                 first_seen=r["first_seen"],
                 last_seen=r["last_seen"],
+                provenance=r["provenance"] or "inferred",
+                user_confirmed_at=_as_iso(r["user_confirmed_at"]),
+                closeness_suggested=r["closeness_suggested"],
+                closeness_suggested_evidence=(
+                    _as_json_list(r["closeness_suggested_evidence"])
+                    if r["closeness_suggested_evidence"] is not None
+                    else None
+                ),
+                tier_confirmed_at=_as_iso(r["tier_confirmed_at"]),
+                salience_updated_at=_as_iso(r["salience_updated_at"]),
             )
             for r in rows
         ]
@@ -450,7 +790,8 @@ class PostgresGraphStore:
         with self.db.connection() as conn:
             rows = conn.execute(
                 """
-                SELECT id, owner, path, label, kind, parent_id, status, fact_count, salience, sensitive_cat
+                SELECT id, owner, path, label, kind, parent_id, status, fact_count,
+                       salience, sensitive_cat, provenance, user_confirmed_at
                 FROM subjects
                 WHERE owner = %s
                 ORDER BY salience DESC, path ASC
@@ -469,6 +810,8 @@ class PostgresGraphStore:
                 fact_count=int(r["fact_count"]),
                 salience=float(r["salience"]),
                 sensitive_cat=r["sensitive_cat"],
+                provenance=r["provenance"] or "inferred",
+                user_confirmed_at=_as_iso(r["user_confirmed_at"]),
             )
             for r in rows
         ]
@@ -792,6 +1135,7 @@ class PostgresGraphStore:
             display_name=row["display_name"],
             self_aliases=_as_json_list(row["self_aliases"]),
             timezone=row["timezone"],
+            privacy_revision=int(row.get("privacy_revision", 0) or 0),
         )
 
     @staticmethod

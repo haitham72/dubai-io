@@ -40,6 +40,13 @@ def _fmt_bullet(f: Fact, entities_by_id: dict[str, Entity]) -> str:
     return f"- {f.valid_from or '?'} · {f.text}{orig}{change}  `src: {src}`"
 
 
+def _iter_all_visible(st: Any, owner: str) -> list[Fact]:
+    iter_fn = getattr(st, "iter_visible_facts", None)
+    if callable(iter_fn):
+        return [f for f in iter_fn(owner, page_size=500) if f.status != "history"]
+    return [f for f in st.visible_facts(owner, limit=200) if f.status != "history"]
+
+
 def render(owner: str, *, store: GraphStore | None = None) -> dict[str, str]:
     """Render the full Quest-style markdown tree (`relative/path.md -> content`)."""
     st: Any = store or _DEFAULT_STORE
@@ -47,7 +54,7 @@ def render(owner: str, *, store: GraphStore | None = None) -> dict[str, str]:
         raise RuntimeError("No GraphStore configured for api.export_md.render")
 
     out: dict[str, str] = {}
-    facts = [f for f in st.visible_facts(owner, limit=10_000) if f.status != "history"]
+    all_facts = _iter_all_visible(st, owner)
     entities: list[Entity] = [e for e in call_opt(st, "list_entities", owner, default=[]) if e.status != "merged"]
     subjects: list[Subject] = call_opt(st, "list_subjects", owner, default=[])
     ent_subjs: list[EntitySubject] = call_opt(st, "list_entity_subjects", owner, default=[])
@@ -64,6 +71,18 @@ def render(owner: str, *, store: GraphStore | None = None) -> dict[str, str]:
 
     by_id: dict[str, Entity] = {e.id: e for e in entities}
     subj_by_id: dict[str, Subject] = {s.id: s for s in subjects}
+
+    def _is_sensitive_fact(fact: Fact) -> bool:
+        subj = subj_by_id.get(fact.subject_id)
+        if subj is None:
+            return False
+        root = (subj.path or "").split("/")[0].strip().lower()
+        return (subj.sensitive_cat is not None or root in ("health", "faith")) and fact.provenance not in (
+            "user_supplied",
+            "provider_confirmed",
+        )
+
+    facts = [f for f in all_facts if not _is_sensitive_fact(f)]
     visible_ids = {f.id for f in facts}
 
     # Group regular facts (non-hypothesis) vs open hypotheses
@@ -116,9 +135,9 @@ def render(owner: str, *, store: GraphStore | None = None) -> dict[str, str]:
         raw_path = (subj.path if subj else "background/general").strip("/")
         parts = [slug(p) for p in raw_path.split("/") if p] or ["general"]
         theme = parts[0]
-        # Canon Rule 9: health/ appears only when user_supplied facts exist
-        if theme == "health":
-            s_facts = [f for f in s_facts if f.provenance == "user_supplied"]
+        # Canon Rule 9: health/ and faith/ appear only when user_supplied/confirmed facts exist
+        if theme in ("health", "faith") or (subj and subj.sensitive_cat is not None):
+            s_facts = [f for f in s_facts if f.provenance in ("user_supplied", "provider_confirmed")]
             if not s_facts:
                 continue
         topic_rel = "/".join(parts[1:]) if len(parts) > 1 else parts[0]
@@ -158,6 +177,12 @@ def render(owner: str, *, store: GraphStore | None = None) -> dict[str, str]:
 
     for ent in sorted(entities, key=lambda x: x.name):
         e_facts = sorted(facts_by_entity.get(ent.id, []), key=lambda x: (x.valid_from or "", x.id))
+        e_hyps = [h for h in hypotheses if any(fe.entity_id == ent.id for fe in h.entities)]
+        if not e_facts and not e_hyps and ent.status != "active" and getattr(ent, "provenance", "inferred") not in (
+            "user_supplied",
+            "provider_confirmed",
+        ):
+            continue
         e_slug = slug(ent.name)
         subj_roles = []
         for es in es_by_entity.get(ent.id, []):
