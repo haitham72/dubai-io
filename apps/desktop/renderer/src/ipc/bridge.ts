@@ -137,7 +137,18 @@ export const DEMO_ONBOARDING: OnboardingStatus = {
   demo_data: true,
 };
 
+export interface AuthStatus {
+  signedIn: boolean;
+  userId: string | null;
+  displayName: string | null;
+  email: string | null;
+  hasDeviceToken: boolean;
+}
+
 export interface DesktopBridge {
+  authStatus(): Promise<AuthStatus>;
+  authSignIn(payload?: { apiBaseUrl?: string }): Promise<AuthStatus>;
+  authSignOut(): Promise<AuthStatus>;
   scanSessions(payload: { tool?: AgentTool; since?: string }): Promise<{ count: number }>;
   resumeCommand(payload: { agentTool: AgentTool; sessionId: string; cwd: string }): Promise<ResumeResult>;
   previewBrowser(payload: { browser: BrowserKind; profileName: string }): Promise<Record<string, number>>;
@@ -188,8 +199,19 @@ const DEMO_COUNTS: Record<string, number> = {
   "docs.example": 2,
 };
 
+const SIGNED_OUT: AuthStatus = { signedIn: false, userId: null, displayName: null, email: null, hasDeviceToken: false };
+
 export function demoBridge(): DesktopBridge {
   return {
+    async authStatus() {
+      return { ...SIGNED_OUT };
+    },
+    async authSignIn() {
+      throw new Error("Sign-in is available in the desktop app, not in this preview.");
+    },
+    async authSignOut() {
+      return { ...SIGNED_OUT };
+    },
     async scanSessions() {
       return { count: DEMO_SESSIONS.length };
     },

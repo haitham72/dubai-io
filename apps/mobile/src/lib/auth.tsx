@@ -105,9 +105,55 @@ export function parsePairingPayload(raw: string): string {
   return trimmed.toUpperCase();
 }
 
+/** True for http(s)://localhost, 127/8, 10/8, 172.16/12, 192.168/16 hosts. */
+function isLocalOrPrivateHost(host: string): boolean {
+  const h = host.toLowerCase().replace(/^\[|\]$/g, "");
+  if (h === "localhost" || h === "::1" || h.endsWith(".localhost")) return true;
+  const m = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(h);
+  if (!m) return false;
+  const [a, b, c, d] = m.slice(1).map(Number);
+  if ([a, b, c, d].some((n) => n > 255)) return false;
+  return a === 127 || a === 10 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168);
+}
+
+/**
+ * The API address a scanned QR may set on the phone: https anywhere, or http only to localhost / a private LAN address.
+ * Returns the normalised base (no trailing slash) or null when it must be refused.
+ */
+export function validatePairingApiBase(raw: string): string | null {
+  let parsed: URL;
+  try {
+    parsed = new URL(raw.trim());
+  } catch {
+    return null;
+  }
+  if (parsed.username || parsed.password || !parsed.hostname) return null;
+  if (parsed.protocol === "https:") return parsed.origin;
+  if (parsed.protocol === "http:" && isLocalOrPrivateHost(parsed.hostname)) return parsed.origin;
+  return null;
+}
+
+/** Scanned QR or typed text: the pairing code plus, when present, the API address the QR carried (unvalidated). */
+export function parsePairingScan(raw: string): { code: string; apiBase: string | null } {
+  const code = parsePairingPayload(raw);
+  let apiBase: string | null = null;
+  const trimmed = raw.trim();
+  if (/^[a-z]+:\/\//i.test(trimmed)) {
+    try {
+      apiBase = new URL(trimmed).searchParams.get("api")?.trim() || null;
+    } catch {
+      apiBase = null;
+    }
+  }
+  return { code, apiBase };
+}
+
 export function mapPairingErrorCode(code: string | undefined, status: number): string {
   if (code === "expired_code") return "Pairing code expired. Generate a new QR code on your PC.";
   if (code === "code_already_used") return "Pairing code was already used. Generate a new QR code on your PC.";
+  if (code === "too_many_attempts" || code === "code_invalidated" || status === 429) {
+    return "Too many wrong pairing attempts. Wait a few minutes and generate a new QR code on your PC.";
+  }
   if (code === "invalid_code") return "Invalid pairing code. Check the code and try again.";
   if (status === 410) return "Pairing code expired. Generate a new QR code on your PC.";
   if (status === 409) return "Pairing code was already used. Generate a new QR code on your PC.";

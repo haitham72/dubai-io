@@ -3,7 +3,7 @@ import { Modal, Platform, Pressable, StyleSheet, Text, TextInput, View } from "r
 import { CameraView, useCameraPermissions } from "expo-camera";
 import QRCode from "qrcode";
 import Svg, { Rect } from "react-native-svg";
-import { parsePairingPayload } from "../../lib/auth";
+import { parsePairingScan, validatePairingApiBase } from "../../lib/auth";
 import type { PairingStartOut } from "./connectApi";
 
 export function QrCodeSvg({ value, size = 180 }: { value: string; size?: number }) {
@@ -87,7 +87,8 @@ export function ScanQrModal({
   onClose,
 }: {
   visible: boolean;
-  onSubmitCode: (codeOrPayload: string) => Promise<void>;
+  /** apiBase is set only when the QR carried a validated API address. */
+  onSubmitCode: (code: string, apiBase?: string) => Promise<void>;
   onClose: () => void;
 }) {
   const [manualCode, setManualCode] = useState("");
@@ -97,15 +98,26 @@ export function ScanQrModal({
   const [permission, requestPermission] = useCameraPermissions();
 
   async function submit(raw: string) {
-    const parsed = parsePairingPayload(raw);
+    const { code: parsed, apiBase } = parsePairingScan(raw);
     if (!parsed) {
       setError("Enter or scan a valid pairing code.");
+      setScannedOnce(false);
       return;
+    }
+    let safeBase: string | undefined;
+    if (apiBase) {
+      const ok = validatePairingApiBase(apiBase);
+      if (!ok) {
+        setError("This QR code points to an address this phone will not trust. Use a QR from your own PC, or type the code.");
+        setScannedOnce(false);
+        return;
+      }
+      safeBase = ok;
     }
     setSubmitting(true);
     setError(null);
     try {
-      await onSubmitCode(parsed);
+      await onSubmitCode(parsed, safeBase);
       setManualCode("");
       onClose();
     } catch (err) {

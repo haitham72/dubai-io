@@ -399,9 +399,12 @@ def apply(
                     id, owner, text, text_orig, text_folded, subject_id,
                     valid_from, valid_to, status, superseded_by, provenance,
                     job_id, attempt_id, worker_id, model, prompt_version, content_hash,
-                    reason_text, reason_record_id, reason_start, reason_end
+                    reason_text, reason_record_id, reason_start, reason_end,
+                    predicate, object_text, polarity, modality, event_at,
+                    span_record_id, span_start, span_end
                 )
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                        %s, %s, %s, %s, %s, %s, %s, %s)
                 """,
                 (
                     new_fact_id,
@@ -425,6 +428,14 @@ def apply(
                     fact.reason_record_id,
                     fact.reason_start,
                     fact.reason_end,
+                    fact.predicate,
+                    fact.object_text,
+                    fact.polarity,
+                    fact.modality,
+                    fact.event_at,
+                    fact.span_record_id,
+                    fact.span_start,
+                    fact.span_end,
                 ),
             )
             applied_fact_ids.append(new_fact_id)

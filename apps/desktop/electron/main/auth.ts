@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import http from "http";
 import type { AddressInfo } from "net";
 import { shell } from "electron";
@@ -38,7 +39,13 @@ interface LoopbackHandle {
   close: () => void;
 }
 
-function startLoopbackServer(timeoutMs: number): Promise<LoopbackHandle> {
+function nonceMatches(expected: string, given: string): boolean {
+  const a = Buffer.from(expected);
+  const b = Buffer.from(given);
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
+function startLoopbackServer(timeoutMs: number, nonce: string): Promise<LoopbackHandle> {
   return new Promise((resolveStart, rejectStart) => {
     let settleCode: ((code: string) => void) | null = null;
     let rejectCode: ((err: Error) => void) | null = null;
@@ -54,6 +61,13 @@ function startLoopbackServer(timeoutMs: number): Promise<LoopbackHandle> {
       if (reqUrl.pathname !== "/callback") {
         res.writeHead(404, { "Content-Type": "text/plain" });
         res.end("Not found");
+        return;
+      }
+
+      // A local process that does not know this attempt's nonce cannot read or trigger the auth_code.
+      if (!nonceMatches(nonce, reqUrl.searchParams.get("nonce") || "")) {
+        res.writeHead(403, { "Content-Type": "text/plain", "Cache-Control": "no-store" });
+        res.end("Forbidden");
         return;
       }
 
@@ -113,7 +127,7 @@ function startLoopbackServer(timeoutMs: number): Promise<LoopbackHandle> {
         return;
       }
       resolveStart({
-        callbackUrl: `http://127.0.0.1:${addr.port}/callback`,
+        callbackUrl: `http://127.0.0.1:${addr.port}/callback?nonce=${encodeURIComponent(nonce)}`,
         waitForAuthCode: () => codePromise,
         close: () => {
           clearTimeout(timer);
@@ -147,7 +161,7 @@ export class DesktopAuthManager {
     const deviceLabel = (options.deviceLabel || "Dubai-io Desktop").trim();
     const timeoutMs = options.timeoutMs ?? 180_000;
 
-    const loopback = await startLoopbackServer(timeoutMs);
+    const loopback = await startLoopbackServer(timeoutMs, crypto.randomBytes(24).toString("base64url"));
     let authCode: string;
     try {
       const startUrl = `${baseUrl}/api/identity/google/start?client=desktop&return_to=${encodeURIComponent(loopback.callbackUrl)}`;
