@@ -400,23 +400,40 @@ def _collect_sql_projection(
             ).fetchall()
             ent_agg_rows = conn.execute(
                 f"""
-                SELECT fe.entity_id,
-                       COUNT(*)::int AS total_cnt,
-                       COUNT(*) FILTER (WHERE f.provenance IN ('user_supplied', 'provider_confirmed'))::int AS conf_cnt,
+                SELECT e.id AS entity_id,
+                       CASE WHEN EXISTS (
+                           SELECT 1
+                           FROM fact_entities fe
+                           JOIN facts f ON f.owner = fe.owner AND f.id = fe.fact_id
+                           LEFT JOIN subjects s ON s.owner = f.owner AND s.id = f.subject_id
+                           WHERE fe.owner = e.owner AND fe.entity_id = e.id
+                             AND (f.erased_at IS NULL)::int = 1 AND f.status <> 'history' {hid_clause}
+                             AND (
+                                 s.id IS NULL
+                                 OR (s.sensitive_cat IS NULL AND split_part(s.path, '/', 1) NOT IN ('health', 'faith'))
+                                 OR f.provenance IN ('user_supplied', 'provider_confirmed')
+                             )
+                       ) THEN 1 ELSE 0 END AS total_cnt,
+                       CASE WHEN e.relation_to_user = 'family' AND EXISTS (
+                           SELECT 1
+                           FROM fact_entities fe
+                           JOIN facts f ON f.owner = fe.owner AND f.id = fe.fact_id
+                           LEFT JOIN subjects s ON s.owner = f.owner AND s.id = f.subject_id
+                           WHERE fe.owner = e.owner AND fe.entity_id = e.id
+                             AND (f.erased_at IS NULL)::int = 1 AND f.status <> 'history' {hid_clause}
+                             AND f.provenance IN ('user_supplied', 'provider_confirmed')
+                             AND (
+                                 s.id IS NULL
+                                 OR (s.sensitive_cat IS NULL AND split_part(s.path, '/', 1) NOT IN ('health', 'faith'))
+                                 OR f.provenance IN ('user_supplied', 'provider_confirmed')
+                             )
+                       ) THEN 1 ELSE 0 END AS conf_cnt,
                        NULL::text AS max_valid_from,
                        0.5::double precision AS sal
-                FROM fact_entities fe
-                JOIN facts f ON f.owner = fe.owner AND f.id = fe.fact_id
-                LEFT JOIN subjects s ON s.owner = f.owner AND s.id = f.subject_id
-                WHERE fe.owner = %s AND f.erased_at IS NULL AND f.status <> 'history' {hid_clause}
-                  AND (
-                      s.id IS NULL
-                      OR (s.sensitive_cat IS NULL AND split_part(s.path, '/', 1) NOT IN ('health', 'faith'))
-                      OR f.provenance IN ('user_supplied', 'provider_confirmed')
-                  )
-                GROUP BY fe.entity_id
+                FROM entities e
+                WHERE e.owner = %s AND e.erased_at IS NULL AND e.status <> 'merged'
                 """,
-                (owner, hidden_fids) if hidden_fids else (owner,),
+                (hidden_fids, hidden_fids, owner) if hidden_fids else (owner,),
             ).fetchall()
         else:
             subj_agg_rows = conn.execute(
