@@ -3,9 +3,11 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 import hashlib
+import os
 import secrets
+import threading
 from typing import Callable, Optional
-from urllib.parse import urlsplit
+from urllib.parse import quote, urlsplit
 import uuid
 
 from fastapi import HTTPException
@@ -27,6 +29,22 @@ from .store import IdentityStore, iso_utc, parse_iso, utcnow
 
 
 _PAIR_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+PAIR_MAX_FAILURES = 5
+PAIR_WINDOW_SECONDS = 300
+
+
+def _public_api_base_url() -> Optional[str]:
+    """PUBLIC_API_BASE_URL (http/https only) or None; the QR carries it so a phone learns the API address."""
+    raw = (os.environ.get("PUBLIC_API_BASE_URL") or "").strip().rstrip("/")
+    if not raw:
+        return None
+    try:
+        parsed = urlsplit(raw)
+    except ValueError:
+        return None
+    if parsed.scheme not in {"http", "https"} or not parsed.hostname or parsed.username or parsed.fragment:
+        return None
+    return raw
 
 
 def _normalize_device_label(label: Optional[str]) -> Optional[str]:
@@ -90,6 +108,9 @@ class IdentityService:
         extra_verifiers: Optional[dict[str, JWTVerifier]] = None,
     ) -> None:
         self.store = store
+        self._pair_lock = threading.Lock()
+        self._pair_ip_failures: dict[str, list[datetime]] = {}
+        self._pair_code_failures: dict[str, int] = {}
         self.jwt_verifier = jwt_verifier
         self.config = config or IdentityConfig()
         self._legacy_session_resolver = legacy_session_resolver or _default_legacy_session_resolver
@@ -676,6 +697,12 @@ class IdentityService:
     ) -> dict:
         if not principal.is_verified:
             raise IdentityError("unverified_principal", "Verified principal is required", 401)
+        if principal.session_id and self.store.is_pairing_session(principal.session_id):
+            raise IdentityError(
+                "pairing_from_paired_device",
+                "A paired phone cannot create pairing codes; use the web or desktop app",
+                403,
+            )
         user = self.store.get_user(principal.user_id)
         if user is None or user["status"] != "active":
             raise IdentityError("user_inactive", "User account is not active", 403)
@@ -699,18 +726,64 @@ class IdentityService:
             detail={"expires_at": expires_str, "ttl_seconds": ttl},
             at=now_str,
         )
-        return {
-            "code": code,
-            "expires_at": expires_str,
-            "ttl_seconds": ttl,
-            "qr_payload": f"dubaiio://pair?code={code}",
-        }
+        api_base = _public_api_base_url()
+        payload = f"dubaiio://pair?code={code}"
+        out = {"code": code, "expires_at": expires_str, "ttl_seconds": ttl}
+        if api_base:
+            payload += f"&api={quote(api_base, safe='')}"
+            out["api_base_url"] = api_base
+        out["qr_payload"] = payload
+        return out
+
+    def _pair_throttle_check(self, client_ip: str) -> None:
+        now = utcnow()
+        cutoff = now - timedelta(seconds=PAIR_WINDOW_SECONDS)
+        with self._pair_lock:
+            recent = [t for t in self._pair_ip_failures.get(client_ip, []) if t > cutoff]
+            self._pair_ip_failures[client_ip] = recent
+            if len(recent) >= PAIR_MAX_FAILURES:
+                raise IdentityError(
+                    "too_many_attempts",
+                    "Too many failed pairing attempts. Wait 5 minutes and generate a fresh code.",
+                    429,
+                )
+
+    def _pair_record_failure(self, client_ip: str, code_hash: str) -> bool:
+        """Record a failed attempt; True when this code has now failed too many times."""
+        with self._pair_lock:
+            self._pair_ip_failures.setdefault(client_ip, []).append(utcnow())
+            n = self._pair_code_failures.get(code_hash, 0) + 1
+            self._pair_code_failures[code_hash] = n
+            return n >= PAIR_MAX_FAILURES
 
     def complete_pairing(
         self,
         code: str,
         *,
         device_label: Optional[str] = None,
+        client_ip: str = "unknown",
+    ) -> AppSessionOut:
+        self._pair_throttle_check(client_ip)
+        try:
+            return self._complete_pairing(code, device_label=device_label, client_ip=client_ip)
+        except IdentityError as exc:
+            if exc.status_code in (400, 409, 410):
+                code_hash = _sha256_hex((code or "").strip().upper()[:128])
+                if self._pair_record_failure(client_ip, code_hash):
+                    self.store.invalidate_pairing_code(code_hash, at=iso_utc())
+                    raise IdentityError(
+                        "code_invalidated",
+                        "Too many wrong attempts on this code; it is no longer valid. Generate a new one.",
+                        429,
+                    ) from exc
+            raise
+
+    def _complete_pairing(
+        self,
+        code: str,
+        *,
+        device_label: Optional[str] = None,
+        client_ip: str = "unknown",
     ) -> AppSessionOut:
         normalized = (code or "").strip().upper()
         if not normalized or len(normalized) > 128:
