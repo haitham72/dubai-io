@@ -225,9 +225,7 @@ $memUpdates = @{
 if (-not $memMap["TM_ADMIN_TOKEN"] -or -not $memMap["TM_ADMIN_TOKEN"].Trim()) {
     $memUpdates["TM_ADMIN_TOKEN"] = New-SecretToken
 }
-if (-not $memMap["TM_WORKER_RUNNER"]) {
-    $memUpdates["TM_WORKER_RUNNER"] = if ($lmOk) { "lmstudio" } else { "agent-cli" }
-}
+# Host workers (below) choose their runner at launch (lmstudio when :1234 answers, else agent-cli); not persisted here.
 Upsert-EnvFile $MemEnv $memUpdates
 $memAdminToken = (Read-EnvMap $MemEnv)["TM_ADMIN_TOKEN"]
 
@@ -249,13 +247,17 @@ if (-not ($pgOk -and $rbOk -and $rdOk)) { throw "Memory infra failed health wait
 
 $apiImage = (& docker images -q temporal-memory-api 2>$null)
 if ($Rebuild -or -not $apiImage) {
-    Write-Host "[2/6] Building & starting memory api, worker-p0, worker-p1, beat..."
-    & docker compose -f $MemCompose up -d --build api worker-p0 worker-p1 beat | Out-Null
+    Write-Host "[2/6] Building & starting memory api (Docker)..."
+    & docker compose -f $MemCompose up -d --build api | Out-Null
 } else {
-    Write-Host "[2/6] Starting memory api, worker-p0, worker-p1, beat..."
-    & docker compose -f $MemCompose up -d api worker-p0 worker-p1 beat | Out-Null
+    Write-Host "[2/6] Starting memory api (Docker)..."
+    & docker compose -f $MemCompose up -d api | Out-Null
 }
 if ($LASTEXITCODE -ne 0) { throw "docker compose memory services failed" }
+# The Docker worker/beat containers have no claude CLI and would double-consume: they must not run next to the host workers.
+$ErrorActionPreference = "Continue"
+& docker compose -f $MemCompose stop worker-p0 worker-p1 beat 2>&1 | Out-Null
+$ErrorActionPreference = "Stop"
 
 $memDeadline = (Get-Date).AddSeconds(120)
 while (-not (Test-HttpOk "http://127.0.0.1:$MemoryPort/health") -and (Get-Date) -lt $memDeadline) {
@@ -264,6 +266,56 @@ while (-not (Test-HttpOk "http://127.0.0.1:$MemoryPort/health") -and (Get-Date) 
 if (-not (Test-HttpOk "http://127.0.0.1:$MemoryPort/health")) {
     throw "Memory API :$MemoryPort/health did not become ready"
 }
+
+# 2b. Celery workers + ONE beat on the HOST (so the founder's `claude` CLI can run extraction). Windows-safe pools.
+#     Python: apps/memory/.venv in this repo, else the sibling contest-memory worktree venv, else the apps/api venv.
+#     PYTHONPATH always points at THIS checkout's apps/memory/src so the code under test is the code that runs.
+$MemPy = $null
+foreach ($cand in @(
+    (Join-Path $MemDir ".venv\Scripts\python.exe"),
+    (Join-Path (Split-Path -Parent $RepoRoot) "contest-memory\apps\memory\.venv\Scripts\python.exe"),
+    $ApiPy)) {
+    if ($cand -and (Test-Path $cand)) { $MemPy = $cand; break }
+}
+if (-not $MemPy) { throw "No python venv with the memory engine found (apps/memory/.venv, contest-memory venv or apps/api venv)" }
+$workerRunner = if ($env:DUBAI_WORKER_RUNNER) { $env:DUBAI_WORKER_RUNNER } elseif ($lmOk) { "lmstudio" } else { "agent-cli" }
+$workerNode = "w"
+function Start-HostCelery([string]$Name, [string[]]$CeleryArgs) {
+    if (Is-Alive $pids[$Name]) { return }
+    $saved = @{}
+    $vars = @{
+        "PYTHONPATH" = (Join-Path $MemDir "src")
+        "TM_WORKER_RUNNER" = $workerRunner
+        "TM_WORKER_MODEL" = "claude-haiku-4-5-20251001"
+        "TM_CLOUD_MODEL" = "claude-haiku-4-5-20251001"
+        "TM_AGENT_CLI_CMD" = 'claude -p --model {model} --effort medium --output-format json --tools "" --disable-slash-commands'
+        "TM_DATABASE_URL" = "postgresql://tm:tm@localhost:5442/tm"
+        "TM_BROKER_URL" = "amqp://guest:guest@localhost:5682//"
+        "TM_REDIS_URL" = "redis://localhost:6390/0"
+        "TM_LMSTUDIO_URL" = "http://127.0.0.1:1234/v1"
+        # Rule-9 layer-2 screen: no local classifier model is served by default, so use the same claude CLI (fail-closed).
+        "TM_CLASSIFIER_RUNNER" = $(if ($env:TM_CLASSIFIER_MODEL) { "" } else { "agent-cli" })
+    }
+    foreach ($k in $vars.Keys) { $saved[$k] = [Environment]::GetEnvironmentVariable($k); [Environment]::SetEnvironmentVariable($k, $vars[$k]) }
+    $claudeDir = if ($claudeCmd) { Split-Path -Parent $(if ($claudeCmd.Source) { $claudeCmd.Source } else { $claudeCmd.FullName }) } else { $null }
+    $oldPath = $env:PATH
+    if ($claudeDir) { $env:PATH = "$claudeDir;$env:PATH" }
+    try {
+        $o = Join-Path $LogsDir "$Name.out.log"; $e = Join-Path $LogsDir "$Name.err.log"
+        $pr = Start-Process -FilePath $MemPy -ArgumentList (@("-m", "celery", "-A", "temporal_memory.queue.celery_app") + $CeleryArgs) `
+            -WorkingDirectory $MemDir -RedirectStandardOutput $o -RedirectStandardError $e -WindowStyle Hidden -PassThru
+        $pids[$Name] = $pr.Id
+    } finally {
+        $env:PATH = $oldPath
+        foreach ($k in $saved.Keys) { [Environment]::SetEnvironmentVariable($k, $saved[$k]) }
+    }
+}
+if (-not $claudeCmd -and $workerRunner -eq "agent-cli") { Write-Warning "claude CLI not found: agent-cli extraction cannot run" }
+Write-Host "[2b] Host Celery workers (runner=$workerRunner, pools solo/threads) + one beat, python: $MemPy"
+Start-HostCelery "worker_p0" @("worker", "-Q", "mem.p0", "-P", "solo", "-n", "p0@$workerNode", "--loglevel=INFO")
+Start-HostCelery "worker_p1" @("worker", "-Q", "mem.p1,mem.p3", "-P", "threads", "--concurrency=2", "-n", "p1@$workerNode", "--loglevel=INFO")
+Start-HostCelery "beat" @("beat", "--loglevel=INFO", "--schedule=$(Join-Path $LogsDir 'celerybeat-schedule')")
+Save-Pids $pids
 
 # 3. Service token for apps/api -> memory. Created through the memory API admin flow ONLY when TM_SERVICE_TOKEN is
 #    missing from apps/api/.env; appended without printing; no other line of that file is ever modified.
@@ -374,7 +426,7 @@ foreach ($p in @($ApiPort, $ExpoPort)) {
 Write-Host ""
 Write-Host "Website URL  : http://localhost:$ExpoPort   (Expo web; Connect screen at /connect)"
 Write-Host "API URL      : http://localhost:$ApiPort  (LAN: http://${lanIp}:$ApiPort)"
-Write-Host "Memory API   : http://localhost:$MemoryPort"
+Write-Host "Memory API   : http://localhost:$MemoryPort   (workers + beat on the host: scripts\dev\logs\worker_p*.log)"
 Write-Host "iPhone Expo  : exp://${lanIp}:$ExpoPort   (scan the QR below in Expo Go)"
 # Expo prints no QR in CI mode, so render one from the exp:// URL with the qrcode package already in apps/mobile.
 Push-Location $MobileDir

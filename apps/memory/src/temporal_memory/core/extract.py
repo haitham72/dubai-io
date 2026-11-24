@@ -560,7 +560,13 @@ def _run_cli(
     if proc.returncode != 0 and not stdout:
         raise RuntimeError(f"agent CLI exited with {proc.returncode}: {(proc.stderr or '').strip()[:500]}")
 
-    parsed = _extract_json_dict(stdout)
+    # `claude -p --output-format json` prints ONE json envelope whose `result` string usually carries a ```json fence.
+    # Parse the envelope as-is first: running the fence stripper over the whole stdout would cut inside the string.
+    try:
+        envelope = json.loads(stdout)
+    except json.JSONDecodeError:
+        envelope = None
+    parsed = envelope if isinstance(envelope, dict) else _extract_json_dict(stdout)
     model_observed = extract_observed_model(parsed)
     tokens_in = 0
     tokens_out = 0

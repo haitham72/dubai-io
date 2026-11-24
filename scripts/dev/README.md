@@ -4,7 +4,8 @@ One command starts the real-data stack on the founder's Windows PC: memory engin
 
 | Piece | Where | Port |
 |---|---|---|
-| Memory API (Docker `apps/memory`: postgres 5442, rabbitmq 5682, redis 6390, api, worker-p0, worker-p1, beat) | `http://localhost:8040` | 8040 |
+| Memory API + infra (Docker `apps/memory`: postgres 5442, rabbitmq 5682, redis 6390, api) | `http://localhost:8040` | 8040 |
+| Memory **workers + one beat on the HOST** (Celery, `-P solo` for `mem.p0`, `-P threads -c 2` for `mem.p1,mem.p3`) | no port | - |
 | `apps/api` (FastAPI, own venv) | `http://localhost:8000` (LAN `http://<LAN IP>:8000`) | 8000 |
 | Expo: website (web bundle) **and** the LAN dev server the iPhone uses, one process | `http://localhost:8081` | 8081 |
 | Desktop app (Electron, dev start) | window | - |
@@ -29,7 +30,7 @@ powershell -ExecutionPolicy Bypass -File scripts\dev\stop-all.ps1      # keeps t
 
 Options: `start-all.ps1 -NoDesktop`, `-Rebuild` (rebuild memory images); `stop-all.ps1 -KeepInfra` (leave postgres/rabbitmq/redis up). `health.ps1 -AllowStoppedDesktop` shows the desktop row as SKIP.
 
-What `start-all` does, in order: prints the active LLM runner; starts postgres/rabbitmq/redis then api + workers + beat from `apps/memory/docker-compose.yml` (never `down -v`); creates a memory service token **only if `TM_SERVICE_TOKEN` is missing** from `apps/api/.env` (admin flow, appended, never printed, no other line of that file is touched; delete that one line to re-mint after a database reset); starts `apps/api` with process-environment `MEMORY_BRIDGE_BACKEND=http`, `TM_BASE_URL=http://localhost:8040`, `PUBLIC_API_BASE_URL=http://<LAN IP>:8000` (the pairing QR carries this address to the phone); starts Expo on :8081 and prints the website URL, `exp://<LAN IP>:8081` and the Expo QR; starts the desktop app. Logs go to `scripts/dev/logs/` (git-ignored).
+What `start-all` does, in order: prints the active LLM runner; starts postgres/rabbitmq/redis + the memory api from `apps/memory/docker-compose.yml` (never `down -v`) and **stops** the Docker `worker-p0`/`worker-p1`/`beat` containers (no `claude` CLI inside, and no double consumers); then starts the memory Celery workers (`p0@w`, `p1@w`) and ONE beat on the host with `TM_WORKER_RUNNER=agent-cli` (or `lmstudio` when :1234 answers; override with env `DUBAI_WORKER_RUNNER`), the host `claude` CLI on PATH (Haiku, medium effort) and `TM_CLASSIFIER_RUNNER=agent-cli` for the Rule-9 layer-2 screen (unless `TM_CLASSIFIER_MODEL` is set for a local classifier). Python for the workers: `apps/memory/.venv` if present, else the sibling `contest-memory\apps\memory\.venv`, else the apps/api venv; `PYTHONPATH` is always this checkout's `apps/memory/src`. PID files in `.pids.json` (`worker_p0`, `worker_p1`, `beat`); logs `logs/worker_p*.err.log`, `logs/beat.err.log`; creates a memory service token **only if `TM_SERVICE_TOKEN` is missing** from `apps/api/.env` (admin flow, appended, never printed, no other line of that file is touched; delete that one line to re-mint after a database reset); starts `apps/api` with process-environment `MEMORY_BRIDGE_BACKEND=http`, `TM_BASE_URL=http://localhost:8040`, `PUBLIC_API_BASE_URL=http://<LAN IP>:8000` (the pairing QR carries this address to the phone); starts Expo on :8081 and prints the website URL, `exp://<LAN IP>:8081` and the Expo QR; starts the desktop app. Logs go to `scripts/dev/logs/` (git-ignored).
 
 **Docker coordination.** Before touching containers, both `start-all` and `stop-all` look for `contest-memory\apps\memory\upgrade\reports\DOCKER_LOCK` (override with env `DUBAI_DOCKER_LOCK`). While it exists they wait, checking every 2 minutes for up to 60 minutes; `start-all` then exits with code 3 (skipped), `stop-all` stops only the app processes.
 
@@ -56,3 +57,7 @@ netsh advfirewall firewall add rule name="Dubai-io Dev TCP 8081" dir=in action=a
 4. Put `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET` and the token key in `apps/api/.env` (names in `.env.example`). Never commit it; never paste it into chat or logs.
 
 `http://localhost:8081/connect` and `http://127.0.0.1:<port>/callback` are app `return_to` addresses, not Google redirect URIs; do not add them to Google.
+
+## Proof that real extraction runs (synthetic owner)
+
+`python scripts\dev\proof_extraction.py` (stack up): creates a synthetic owner, posts one small record through the engine's normal `/v1/owners/{id}/records` path (the one apps/api uses), waits for the host worker to apply the job, prints the job state transitions, the `job_attempts` row (worker kind, model, tokens, cost) and the fact count, then Forgets the record and prints the unerased counts. One real `claude -p` Haiku call (about 2 min, about 0.08 USD).
