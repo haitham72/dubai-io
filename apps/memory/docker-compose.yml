@@ -35,7 +35,9 @@ services:
       TM_BROKER_URL: amqp://guest:guest@rabbitmq:5672//
       TM_REDIS_URL: redis://redis:6379/0
       TM_LMSTUDIO_URL: http://host.docker.internal:1234/v1
+      HF_HOME: /home/tm/.cache/huggingface   # bge-m3 (~570 MB) lives in the tm-hf-cache volume: downloaded once
     ports: ["8040:8040"]
+    volumes: &hf_cache [tm-hf-cache:/home/tm/.cache/huggingface]
     depends_on: {postgres: {condition: service_healthy}, rabbitmq: {condition: service_healthy}, redis: {condition: service_healthy}}
     # The app factory migrates Postgres before this endpoint becomes available.
     healthcheck:
@@ -49,6 +51,7 @@ services:
     command: ["celery", "-A", "temporal_memory.queue.celery_app", "worker", "-Q", "mem.p0", "--concurrency=1", "-n", "p0@%h", "--loglevel=INFO"]
     env_file: [{path: .env, required: false}]
     environment: *tm_env
+    volumes: *hf_cache
     depends_on: &api_ready {api: {condition: service_healthy}}
     healthcheck: &worker_health
       test: ["CMD-SHELL", "celery -A temporal_memory.queue.celery_app inspect --timeout=3 --destination=\"p0@$$HOSTNAME\" ping"]
@@ -61,6 +64,7 @@ services:
     command: ["celery", "-A", "temporal_memory.queue.celery_app", "worker", "-Q", "mem.p1,mem.p3", "--concurrency=2", "-n", "p1@%h", "--loglevel=INFO"]
     env_file: [{path: .env, required: false}]
     environment: *tm_env
+    volumes: *hf_cache
     depends_on: *api_ready
     healthcheck:
       <<: *worker_health
@@ -81,3 +85,4 @@ services:
 volumes:
   pg-data:
   rabbitmq-data:
+  tm-hf-cache:

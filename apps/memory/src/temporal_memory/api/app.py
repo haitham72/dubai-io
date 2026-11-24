@@ -360,6 +360,19 @@ def create_app(db: Database | None = None, *, admin_token: str | None = None) ->
 
         return {"ok": True, "db": "ok", "semantic": _embed.status()}
 
+    @app.post("/v1/admin/warmup")
+    def warmup(_: AuthInfo = Depends(require_admin)) -> dict[str, Any]:
+        """Load the semantic embedder (first run downloads it) and embed one fixed dummy string; touches no owner data."""
+        from temporal_memory.core import embed as _embed
+
+        if not get_settings().semantic_enabled:
+            return {"ok": False, "reason": "semantic_disabled", "semantic": _embed.status()}
+        try:
+            _embed.embed_query("warm-up")
+        except Exception as exc:
+            return {"ok": False, "reason": f"embedder_unavailable: {type(exc).__name__}", "semantic": _embed.status()}
+        return {"ok": True, "semantic": _embed.status()}
+
     @app.post("/v1/owners")
     def create_owner(body: OwnerCreateIn, _: AuthInfo = Depends(require_admin)) -> dict[str, Any]:
         with database.transaction() as conn:

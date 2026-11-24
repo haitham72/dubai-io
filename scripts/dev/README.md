@@ -72,3 +72,7 @@ netsh advfirewall firewall add rule name="Dubai-io Dev TCP 8081" dir=in action=a
 - **Image freshness:** the memory image is always built (cached). `start-all` records a hash of everything the Dockerfile copies plus the running image id in `scripts/dev/.memory-image.json`; health row `memory-image-current` is red if `apps/memory` changed afterwards or another container is running.
 - **Website CORS:** apps/api allows only `http://localhost:8081`, `http://127.0.0.1:8081` and the origins in `PUBLIC_WEB_ORIGINS` (`start-all` adds `http://<LAN IP>:8081`). No wildcard.
 - **Desktop:** the main window loads the Dubai-io app (`DUBAI_APP_URL`, default `http://localhost:8081`) with no bridge and the same navigation guard as the Community and Messenger shells. Menu `Dubai-io > Settings and Sign in...` (Ctrl+,) opens the Settings window (the built `renderer/dist`, with the allowlisted preload). `start-all` builds the renderer when missing or stale.
+
+## Semantic model first run (E9d)
+
+The memory API embeds with BAAI/bge-m3 (int8 ONNX, ~570 MB). It is stored in the named Docker volume `tm-hf-cache` (`HF_HOME` in the container), so it downloads once and survives rebuilds and recreates (never `down -v`). The very first `start-all` downloads it during the "Loading semantic model" step (minutes); later starts load it from the volume in seconds. Offline, `start-all` prints an amber line and chat uses lexical recall (honest `retrieval.semantic` flag); health row `memory-semantic-model` is red until the model loads.
