@@ -40,6 +40,8 @@ from .memory.schema import ensure_memory_schema
 from .connectors.api import router as connector_router
 from .ingest_routes import router as ingest_router
 from .connectors.schema import ensure_connector_schema
+from .chat_memory import router as chat_memory_router
+from .today_feed import router as today_feed_router
 
 @asynccontextmanager
 async def lifespan(_app):
@@ -58,6 +60,8 @@ async def lifespan(_app):
 app = FastAPI(title="Dubai-io API", version="0.1.0", lifespan=lifespan)
 app.include_router(auth_router)
 app.include_router(action_router)
+app.include_router(chat_memory_router)
+app.include_router(today_feed_router)
 app.include_router(merchant_router)
 app.include_router(proactive_router)
 app.include_router(profile_router)
