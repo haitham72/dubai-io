@@ -16,15 +16,15 @@ You are the **build lead** for *Dubai-io Community*, our **Best Societal AI Agen
 
 ## 1. Read
 
-Root `CLAUDE.md` · `docs/submissions/CLAUDE.md` (paths §2, gates §4, rules §5) · `shared/founder-inputs/02_DUBAI_IO_COMMUNITY_PLAN.md` (the spec) · `community/DELIVERY_ROADMAP.md`, `IMPLEMENTATION_GAP_MATRIX.md`, `open-questions.md` (with the founder's answers), `demo-script.md` · `shared/SHARED_MEMORY_CROSS_APP_CONTRACT.md` · `ARCHITECTURE.md` §7, §9 · `apps/api/CLAUDE.md`.
+Root `CLAUDE.md` · `docs/submissions/CLAUDE.md` (paths §2, gates §4, rules §5) · `shared/founder-decisions.md` (D1–D15) · `community/DELIVERY_ROADMAP.md` and `IMPLEMENTATION_GAP_MATRIX.md` (the spec since D15; the founder's starting plan was removed), `open-questions.md` (with the founder's answers), `demo-script.md` · `shared/SHARED_MEMORY_CROSS_APP_CONTRACT.md` · `ARCHITECTURE.md` §7, §9 · `apps/api/CLAUDE.md`.
 
 ## 2. Hard rules (paste this block into every subagent prompt)
 
 ```
 - Work only on your lane branch cm/<slice-id>, cut from societal. Never touch main.
 - ADD files only, inside: apps/community/**, apps/api/app/community/**, apps/api/tests/test_community_*.py,
-  apps/api/tests/fixtures/community/**, docs/submissions/community/**. Never edit an existing file: the other PC's
-  main (Dubai-io iOS + desktop) is far ahead, and any edit risks a merge conflict. Read-only includes the parked
+  apps/api/tests/fixtures/community/**, docs/submissions/community/**. Never edit an existing file: Dubai-io's iOS,
+  desktop and memory work (branches memory, ios, desktop) edits the same repo, and any edit risks a merge conflict. Read-only includes the parked
   apps/api/app/communities.py and social_generation.py (import them, never edit them) and their tests, apps/web/** (frozen),
   apps/site/**, apps/memory/**, PLAN.md, ARCHITECTURE.md, supabase/**, packages/**, docs/submissions/shared/**,
   apps/api/app/identity/**, apps/api/app/memory_bridge/**, and every other module in apps/api/app/. Settings come from env.
