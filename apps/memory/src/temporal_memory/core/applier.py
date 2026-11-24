@@ -31,6 +31,53 @@ _CLOSENESS_SKIP_ROOTS = {"family", "health", "faith", "religion", "wellbeing"}
 _CLOSENESS_SKIP_CATS = {"health", "religion", "family_third_party"}
 
 
+_STOP = frozenset("this that with from have been were will would about after before their there which while karim "
+                  "per month year week day days into than then also only just over under again onto upon the and for his her was are has not new its our you your out but all can may had who how why got get set".split())
+
+
+def _slot_tokens(text: str) -> tuple[set[str], set[str]]:
+    """(content words, number-bearing tokens) of a folded fact text, for the late-arrival slot check."""
+    words: set[str] = set()
+    nums: set[str] = set()
+    for tok in re.findall(r"[^\W_]+", fold_text(text)):
+        if any(c.isdigit() for c in tok):
+            nums.add(tok)
+        elif len(tok) >= 3 and tok not in _STOP:
+            words.add(tok)
+    return words, nums
+
+
+def _late_superseder(conn: Any, owner: str, subject_id: str, fact: Any) -> dict | None:
+    """E9b late arrival: an OLDER record that restates a number/date of a newer active fact on the same subject.
+
+    Returns the newest such fact (id, valid_from) or None. Conservative on purpose: the evidence record must be dated
+    before the newer fact starts (a truly late record, not a backdated mention), both texts must carry a number or
+    date, and they must share two content words. A fact with no number ("Sara is the instructor") never matches.
+    """
+    if not fact.valid_from or not fact.evidence:
+        return None
+    words, nums = _slot_tokens(fact.text)
+    if not nums or len(words) < 2:
+        return None
+    ats = conn.execute(
+        "SELECT max(substr(at, 1, 10)) AS d FROM records WHERE owner = %s AND id = ANY(%s)",
+        (owner, list(fact.evidence)),
+    ).fetchone()
+    rec_day = (ats or {}).get("d") if ats else None
+    if not rec_day:
+        return None
+    rows = conn.execute(
+        "SELECT id, valid_from, text FROM facts WHERE owner = %s AND subject_id = %s AND status = 'active' "
+        "AND erased_at IS NULL AND valid_from > %s AND valid_from > %s ORDER BY valid_from DESC",
+        (owner, subject_id, fact.valid_from, rec_day),
+    ).fetchall()
+    for row in rows:
+        w2, n2 = _slot_tokens(row["text"])
+        if n2 and len(words & w2) >= 2:
+            return {"id": row["id"], "valid_from": row["valid_from"]}
+    return None
+
+
 def _strip_new(ref: str) -> str:
     s = ref.strip()
     return s[4:].strip() if s.startswith("new:") else s
@@ -392,6 +439,14 @@ def apply(
                             """,
                             (new_tgt_status, new_fact_id, fact.valid_from, owner, tgt["id"]),
                         )
+
+            if fact.op == "new" and status == "active":
+                late = _late_superseder(conn, owner, subject_id, fact)
+                if late:
+                    # Older evidence never overwrites newer: a late restatement is history, back-dated.
+                    status = "history"
+                    superseded_by = late["id"]
+                    valid_to = late["valid_from"]
 
             if fact.op == "end" and status == "active":
                 # E9b: the fact that reports a cancellation/stop is itself an ended state (valid_to = the end date).

@@ -1,6 +1,8 @@
 """Unit tests for Validator v2 (all 8 safety, fence, schema, and privacy checks)."""
 from __future__ import annotations
 
+import pytest
+
 from datetime import datetime, timedelta, timezone
 
 from temporal_memory.core.validator import validate
@@ -384,3 +386,23 @@ def test_e9b_update_without_known_target_still_dropped():
     attempt.output.facts[0].target = None
     v = validate(job, bundle, attempt, now=now)
     assert "target_outside_context" in v.reasons and attempt.output.facts == []
+
+
+@pytest.mark.parametrize("text,becomes_end", [
+    ("Karim cancelled his StreamFlix subscription", True),
+    ("Karim called off the freelance gig", True),
+    ("Karim quit the calligraphy class", True),
+    ("Karim unsubscribed from the TechDaily newsletter", True),
+    ("Karim reviewed the cancellation policy", False),
+    ("Karim is quitting his job next year", False),
+    ("Karim joined PeakForm Gym", False),
+])
+def test_e9b_end_cue_fallback_for_plain_new_facts(text, becomes_end):
+    now, job, bundle, attempt = _make_fixtures()
+    attempt.output.facts[0].op = "new"
+    attempt.output.facts[0].text = text
+    attempt.output.facts[0].entities = []
+    bundle.records = []
+    validate(job, bundle, attempt, now=now)
+    assert attempt.output.facts, "fact must survive validation"
+    assert (attempt.output.facts[0].op == "end") is becomes_end

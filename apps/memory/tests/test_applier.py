@@ -577,3 +577,42 @@ def test_e9b_late_update_gets_back_dated_history_and_keeps_newer_active(db_env):
         newer = conn.execute("SELECT status FROM facts WHERE id = %s", (tgt,)).fetchone()
     assert late["status"] == "history" and late["valid_from"] == "2026-10-25" and late["valid_to"] == "2026-11-04"
     assert newer["status"] == "active"
+
+
+def _late_pair(db, store, new_text, late_text, late_at="2026-10-22T09:00:00Z", late_from="2026-10-22", path="home/rent"):
+    store.upsert_records("karim", [
+        Record(id="rn", owner="karim", source="gmail", at="2026-10-28T09:00:00Z", author="L", text="newer"),
+        Record(id="rl", owner="karim", source="gmail", at=late_at, author="L", text="late"),
+    ])
+    v1 = apply("karim", _job("jn", ["rn"]), _attempt("jn", ExtractionOutput(
+        entities=[OutEntity(ref="new:Mostafa", kind="person", aliases=[], relation_to_user=None)],
+        facts=[_simple_fact(new_text, "new", None, "2026-11-01", "rn", path, "new:Mostafa")], links=[])), db=db)
+    v2 = apply("karim", _job("jl", ["rl"]), _attempt("jl", ExtractionOutput(entities=[], facts=[
+        _simple_fact(late_text, "new", None, late_from, "rl", path, "Mostafa")], links=[])), db=db)
+    with db.connection() as conn:
+        late = conn.execute("SELECT status, superseded_by, valid_to FROM facts WHERE id = %s", (v2.applied_fact_ids[0],)).fetchone()
+        newer = conn.execute("SELECT status FROM facts WHERE id = %s", (v1.applied_fact_ids[0],)).fetchone()
+    return v1.applied_fact_ids[0], late, newer
+
+
+def test_e9b_late_new_fact_restating_a_number_is_history(db_env):
+    db, store = db_env
+    nid, late, newer = _late_pair(db, store, "Barsha rent rises to AED 5,400 per month from November 1",
+                                  "Karim paid October rent of AED 5,000 per receipt")
+    assert late["status"] == "history" and late["superseded_by"] == nid and late["valid_to"] == "2026-11-01"
+    assert newer["status"] == "active"
+
+
+def test_e9b_late_fact_without_number_or_shared_words_stays_active(db_env):
+    db, store = db_env
+    _, late, newer = _late_pair(db, store, "Barsha rent rises to AED 5,400 per month from November 1",
+                                "Mostafa is the landlord contact for the Barsha flat")
+    assert late["status"] == "active" and newer["status"] == "active"
+
+
+def test_e9b_backdated_mention_in_a_newer_record_is_not_late(db_env):
+    """The record itself is newer than the fact it resembles: a backdated mention, not a late arrival."""
+    db, store = db_env
+    _, late, newer = _late_pair(db, store, "Barsha rent rises to AED 5,400 per month from November 1",
+                                "Karim paid October rent of AED 5,000 per receipt", late_at="2026-11-05T09:00:00Z")
+    assert late["status"] == "active" and newer["status"] == "active"

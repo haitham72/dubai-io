@@ -143,6 +143,11 @@ def run(out_dir: Path) -> dict:
     replay_data = None
     if os.environ.get("S2_REPLAY"):
         replay_data = {r["key"]: r for r in json.loads(Path(os.environ["S2_REPLAY"]).read_text(encoding="utf-8"))}
+    replay_text_by_id: dict[str, str] = {}
+    if replay_data is not None:
+        from temporal_memory.db.db import fold_text
+        base_graph = Path(os.environ["S2_REPLAY"]).with_name("s2_extracted_graph.json")
+        replay_text_by_id = {f["id"]: fold_text(f["text"]) for f in json.loads(base_graph.read_text(encoding="utf-8"))["facts"]}
     dump_rows: list[dict] | None = []
     day_key = lambda d, ids: d + "|" + str(len(ids)) + "|" + ids[0] + "|" + ids[-1]
     nojudge = bool(os.environ.get("S2_NOJUDGE"))
@@ -238,6 +243,15 @@ def run(out_dir: Path) -> dict:
                     # E9b: offline replay of a recorded extraction (no LLM call) to test applier/validator logic.
                     import dataclasses
                     rec = replay_data[day_key(day, rec_ids)]
+                    # Recorded update/end targets name facts of the recording run; remap to this run by fact text.
+                    for f in rec["output"].get("facts", []):
+                        tgt = f.get("target")
+                        if tgt and tgt in replay_text_by_id:
+                            with db.connection() as conn:
+                                row = conn.execute("SELECT id FROM facts WHERE owner = %s AND text_folded = %s "
+                                                   "AND erased_at IS NULL ORDER BY created_at DESC LIMIT 1",
+                                                   (owner, replay_text_by_id[tgt])).fetchone()
+                            f["target"] = row["id"] if row else None
                     attempt = Attempt(
                         job_id=bundle.job.id, attempt_no=bundle.job.attempt_no,
                         fence_token=bundle.job.fence_token or "", worker_id=bundle.job.worker_id or "replay",

@@ -196,6 +196,7 @@ def build_system_prompt(owner: Owner | None) -> str:
         "  null; valid_from = the end date). ACTIVE FACTS lists every fact you may update or end. Only target ids in that list.\n"
         "- LATE RECORD: when a record is dated EARLIER than a known fact it restates or changes (same price, date, plan, rent,\n"
         "  appointment), use op \"update\" with that fact as target and valid_from = the record's own date, never op \"new\".\n"
+        "- An unsubscribe or cancellation confirmation is an end event, not a newsletter: keep it as op \"end\".\n"
         "- stated: true only when the user literally said this fact. false when you are interpreting (for example\n"
         "  \"seems stressed\" from \"ugh work again\"). An interpretation is never stated.\n"
         "- reason_text: copy a \"because …\" span only when that exact span is in the cited record. Set reason_record_id\n"
