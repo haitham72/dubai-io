@@ -1,4 +1,5 @@
 import { spawn, type ChildProcess } from "child_process";
+import fs from "fs";
 import path from "path";
 
 export interface HookStart {
@@ -87,10 +88,34 @@ export interface TokenVault {
   decryptString(value: Buffer): string;
 }
 
+export interface DesktopCredentials {
+  sessionToken: string;
+  sessionId: string;
+  deviceToken: string;
+  tmTokenId: string;
+  userId: string;
+  displayName: string | null;
+  email: string | null;
+}
+
+export interface DesktopAuthStatus {
+  signedIn: boolean;
+  userId: string | null;
+  displayName: string | null;
+  email: string | null;
+  hasDeviceToken: boolean;
+}
+
 export class TokenStore {
   private blob: Buffer | null = null;
+  private credsBlob: Buffer | null = null;
+  private cachedMeta: Omit<DesktopAuthStatus, "signedIn" | "hasDeviceToken"> | null = null;
 
-  constructor(private readonly vault: TokenVault, private readonly log: HookLog) {}
+  constructor(
+    private readonly vault: TokenVault,
+    private readonly log: HookLog,
+    private readonly storagePath: string | null = null,
+  ) {}
 
   save(token: string): void {
     if (!this.vault.isEncryptionAvailable()) {
@@ -98,6 +123,59 @@ export class TokenStore {
     }
     this.blob = this.vault.encryptString(token);
     this.log.info("token stored (ciphertext only)");
+  }
+
+  saveCredentials(creds: DesktopCredentials): void {
+    if (!this.vault.isEncryptionAvailable()) {
+      throw new Error("safeStorage encryption is unavailable");
+    }
+    const serialized = JSON.stringify(creds);
+    this.credsBlob = this.vault.encryptString(serialized);
+    this.blob = this.vault.encryptString(creds.deviceToken);
+    this.cachedMeta = {
+      userId: creds.userId,
+      displayName: creds.displayName,
+      email: creds.email,
+    };
+    if (this.storagePath) {
+      fs.mkdirSync(path.dirname(this.storagePath), { recursive: true });
+      fs.writeFileSync(this.storagePath, this.credsBlob, { mode: 0o600 });
+    }
+    this.log.info("desktop credentials stored (safeStorage ciphertext only)");
+  }
+
+  loadFromDisk(): boolean {
+    if (!this.storagePath || !fs.existsSync(this.storagePath)) return false;
+    if (!this.vault.isEncryptionAvailable()) return false;
+    try {
+      const raw = fs.readFileSync(this.storagePath);
+      const parsed = JSON.parse(this.vault.decryptString(raw)) as DesktopCredentials;
+      if (!parsed.sessionToken || !parsed.deviceToken || !parsed.userId) return false;
+      this.credsBlob = raw;
+      this.blob = this.vault.encryptString(parsed.deviceToken);
+      this.cachedMeta = {
+        userId: parsed.userId,
+        displayName: parsed.displayName ?? null,
+        email: parsed.email ?? null,
+      };
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  clear(): void {
+    this.blob = null;
+    this.credsBlob = null;
+    this.cachedMeta = null;
+    if (this.storagePath && fs.existsSync(this.storagePath)) {
+      try {
+        fs.unlinkSync(this.storagePath);
+      } catch {
+        // Ignore unlink errors.
+      }
+    }
+    this.log.info("desktop credentials cleared");
   }
 
   status(): { stored: boolean; masked: string | null; encryptionAvailable: boolean } {
@@ -108,9 +186,26 @@ export class TokenStore {
     };
   }
 
+  authStatus(): DesktopAuthStatus {
+    return {
+      signedIn: this.credsBlob !== null && this.cachedMeta !== null,
+      userId: this.cachedMeta?.userId ?? null,
+      displayName: this.cachedMeta?.displayName ?? null,
+      email: this.cachedMeta?.email ?? null,
+      hasDeviceToken: this.blob !== null,
+    };
+  }
+
   /** Decrypts only for the callback that builds the worker argv. Callers must not log the value. */
   withToken<T>(use: (token: string) => T): T {
     if (!this.blob) throw new Error("owner-device token is not stored");
     return use(this.vault.decryptString(this.blob));
+  }
+
+  /** Decrypts stored credentials strictly within the callback scope. Callers must not log tokens. */
+  withCredentials<T>(use: (creds: DesktopCredentials) => T): T {
+    if (!this.credsBlob) throw new Error("Sign-in required");
+    const parsed = JSON.parse(this.vault.decryptString(this.credsBlob)) as DesktopCredentials;
+    return use(parsed);
   }
 }
