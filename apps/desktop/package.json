@@ -4,6 +4,7 @@
   "private": true,
   "description": "Dubai-io desktop main process. Renderer and packaging are D-B.",
   "scripts": {
+    "test": "vitest run --dir tests/main --environment node",
     "test:main": "vitest run --dir tests/main --environment node",
     "typecheck:main": "tsc -p tsconfig.main.json --noEmit"
   },

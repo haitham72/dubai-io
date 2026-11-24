@@ -11,6 +11,9 @@ export const IPC = {
   hookStatus: "hook:status",
   hookToggle: "hook:toggle",
   tokenStatus: "token:status",
+  syncStatus: "sync:status",
+  syncConfigure: "sync:configure",
+  syncRun: "sync:run",
 } as const;
 
 export type IpcChannel = (typeof IPC)[keyof typeof IPC];
@@ -58,7 +61,17 @@ export interface HookTogglePayload {
   owner?: string;
 }
 
+export const SYNC_SOURCE_NAMES = ["chrome", "edge", "claude-code", "codex"] as const;
+export type SyncSourceName = (typeof SYNC_SOURCE_NAMES)[number];
+
+export interface SyncConfigurePayload {
+  enabledSources: SyncSourceName[];
+  intervalMinutes: 60;
+  syncOnFocus: boolean;
+}
+
 const TOOLS = new Set<AgentTool>(["claude-code", "codex"]);
+const SYNC_SOURCE_SET = new Set<string>(SYNC_SOURCE_NAMES);
 const BROWSERS = new Set<BrowserKind>(["chrome", "edge", "brave"]);
 const SESSION_ID = /^[A-Za-z0-9_-]{1,128}$/;
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
@@ -127,6 +140,28 @@ export function parseHookToggle(payload: unknown): HookTogglePayload {
     model: body.model === undefined ? undefined : asString(body.model, "model"),
     url: body.url === undefined ? undefined : asString(body.url, "url"),
     owner: body.owner === undefined ? undefined : asString(body.owner, "owner"),
+  };
+}
+
+export function parseSyncConfigure(payload: unknown): SyncConfigurePayload {
+  const body = asRecord(payload);
+  rejectForbidden(body);
+  const raw = body.enabledSources;
+  if (!Array.isArray(raw)) throw new Error("enabledSources must be a list");
+  const enabledSources: SyncSourceName[] = [];
+  for (const item of raw) {
+    if (typeof item !== "string" || !SYNC_SOURCE_SET.has(item)) {
+      throw new Error("sync source is not allowlisted");
+    }
+    enabledSources.push(item as SyncSourceName);
+  }
+  if (body.intervalMinutes !== undefined && body.intervalMinutes !== 60) {
+    throw new Error("interval must be 60 minutes");
+  }
+  return {
+    enabledSources,
+    intervalMinutes: 60,
+    syncOnFocus: body.syncOnFocus === true,
   };
 }
 

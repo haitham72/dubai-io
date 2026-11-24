@@ -6,6 +6,7 @@ import {
   parseHookToggle,
   parseResume,
   parseSessionsScan,
+  parseSyncConfigure,
 } from "./ipcAllowlist";
 import {
   buildResumeArgs,
@@ -16,12 +17,14 @@ import {
   scanSessions,
 } from "./localReader";
 import { OwnerHook, TokenStore } from "./ownerHook";
+import { ContinuousSync, filesystemPacketReader, type SyncSource } from "./continuousSync";
 import { createMainWindow } from "./window";
 
 const roots = defaultRoots();
 const hookLog = { info: (line: string) => console.info(line) };
 const hook = new OwnerHook(hookLog);
 const tokens = new TokenStore(safeStorage, hookLog);
+const sync = new ContinuousSync(filesystemPacketReader(roots));
 
 export function registerIpc(): void {
   ipcMain.handle(IPC.sessionsScan, async (_event, payload: unknown) => {
@@ -63,6 +66,15 @@ export function registerIpc(): void {
   });
 
   ipcMain.handle(IPC.tokenStatus, async () => tokens.status());
+
+  ipcMain.handle(IPC.syncStatus, async () => sync.status());
+
+  ipcMain.handle(IPC.syncConfigure, async (_event, payload: unknown) => {
+    const body = parseSyncConfigure(payload);
+    return sync.configure(body.enabledSources as SyncSource[], body.syncOnFocus);
+  });
+
+  ipcMain.handle(IPC.syncRun, async () => sync.runSyncNow().status);
 }
 
 export function boot(): void {

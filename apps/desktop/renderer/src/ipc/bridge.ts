@@ -27,6 +27,116 @@ export interface TokenStatus {
   masked: string | null;
 }
 
+export type SyncSource = "chrome" | "edge" | "claude-code" | "codex";
+
+export interface SyncStatus {
+  enabledSources: SyncSource[];
+  intervalMinutes: 60;
+  syncOnFocus: boolean;
+  lastSyncAt: string | null;
+  enqueued: number;
+}
+
+export interface ThemeStat {
+  facts: number;
+  recent_21d: number;
+  baseline_21d: number;
+  delta: number;
+  rising_21d: boolean;
+}
+
+export interface OnboardingStatus {
+  owner: string;
+  completeness_pct: number;
+  breakdown: Record<string, number>;
+  sources_present: string[];
+  next_recommended_action: string;
+  known_so_far: Record<string, { id: string; text: string; evidence: string[]; provenance: string; as_of: string }[]>;
+  analytics: {
+    by_source: Record<string, { records: number; facts: number }>;
+    by_theme: Record<string, ThemeStat>;
+    rising_21d: string[];
+    privacy_shield: { held_back_total: number; by_category: Record<string, number> };
+    compute_saved: {
+      owner_hook_facts: number;
+      tokens_in: number;
+      tokens_out: number;
+      demo_cost_saved_usd: number;
+    };
+  };
+  provenance: string;
+  as_of: string;
+  demo_data: boolean;
+}
+
+export const LIFE_THEMES = [
+  "Career",
+  "Learning",
+  "Projects",
+  "People & family",
+  "Events",
+  "Home & money",
+  "Travel",
+] as const;
+
+function emptyTheme(): ThemeStat {
+  return { facts: 0, recent_21d: 0, baseline_21d: 0, delta: 0, rising_21d: false };
+}
+
+export const DEMO_ONBOARDING: OnboardingStatus = {
+  owner: "karim",
+  completeness_pct: 73,
+  breakdown: {
+    gmail: 14,
+    calendar: 10,
+    youtube_api: 12,
+    whatsapp: 0,
+    youtube_history: 0,
+    browser: 18,
+    agent_sessions: 19,
+  },
+  sources_present: ["gmail", "calendar", "youtube_api", "browser", "agent_sessions"],
+  next_recommended_action: "add_whatsapp_or_youtube_history",
+  known_so_far: {
+    Career: [
+      {
+        id: "f-demo-career",
+        text: "A product-role search is open in Dubai",
+        evidence: ["g1"],
+        provenance: "demo_fixture",
+        as_of: "2026-11-18",
+      },
+    ],
+  },
+  analytics: {
+    by_source: {
+      gmail: { records: 2, facts: 1 },
+      "youtube:interests": { records: 1, facts: 1 },
+      whatsapp: { records: 0, facts: 0 },
+      browser: { records: 4, facts: 1 },
+      "agent:claude-code": { records: 1, facts: 0 },
+      "agent:codex": { records: 1, facts: 0 },
+      "ai:chatgpt": { records: 0, facts: 0 },
+      "takeout:*": { records: 0, facts: 0 },
+    },
+    by_theme: {
+      Career: { facts: 2, recent_21d: 2, baseline_21d: 1, delta: 1, rising_21d: true },
+      Learning: emptyTheme(),
+      Projects: emptyTheme(),
+      "People & family": emptyTheme(),
+      Events: emptyTheme(),
+      "Home & money": emptyTheme(),
+      Travel: emptyTheme(),
+    },
+    rising_21d: ["Career"],
+    privacy_shield: { held_back_total: 3, by_category: { health: 2, credential: 1 } },
+    compute_saved: { owner_hook_facts: 1, tokens_in: 1200, tokens_out: 400, demo_cost_saved_usd: 0 },
+  },
+  provenance: "demo_fixture",
+  as_of: "2026-11-24",
+  demo_data: true,
+};
+
 export interface DesktopBridge {
   scanSessions(payload: { tool?: AgentTool; since?: string }): Promise<{ count: number }>;
   resumeCommand(payload: { agentTool: AgentTool; sessionId: string; cwd: string }): Promise<ResumeResult>;
@@ -35,6 +145,9 @@ export interface DesktopBridge {
   hookStatus(): Promise<HookStatus>;
   hookToggle(payload: { enabled: boolean; model?: string; url?: string; owner?: string }): Promise<HookStatus>;
   tokenStatus(): Promise<TokenStatus>;
+  syncStatus(): Promise<SyncStatus>;
+  syncConfigure(payload: { enabledSources: SyncSource[]; intervalMinutes?: 60; syncOnFocus: boolean }): Promise<SyncStatus>;
+  syncRun(): Promise<SyncStatus>;
 }
 
 export const DEMO_SESSIONS: SessionRow[] = [
@@ -103,6 +216,21 @@ export function demoBridge(): DesktopBridge {
     },
     async tokenStatus() {
       return { stored: false, masked: null };
+    },
+    async syncStatus() {
+      return { enabledSources: [], intervalMinutes: 60 as const, syncOnFocus: false, lastSyncAt: null, enqueued: 0 };
+    },
+    async syncConfigure(payload) {
+      return {
+        enabledSources: payload.enabledSources,
+        intervalMinutes: 60 as const,
+        syncOnFocus: payload.syncOnFocus,
+        lastSyncAt: null,
+        enqueued: 0,
+      };
+    },
+    async syncRun() {
+      return { enabledSources: [], intervalMinutes: 60 as const, syncOnFocus: false, lastSyncAt: null, enqueued: 0 };
     },
   };
 }
