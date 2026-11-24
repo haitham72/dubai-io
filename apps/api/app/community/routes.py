@@ -300,7 +300,9 @@ def my_profile(request: Request):
     store, owner = scope(request)
     with store.lock:
         cm.setup(store)
-        return {"profile": present_profile(require_profile_row(store, owner), owner)}
+        row = profile_by_owner(store, owner)
+        # No profile yet is a normal state, not an error: 200 keeps the browser console clean (E6 FAIL 8).
+        return {"profile": present_profile(row, owner) if row else None}
 
 
 @router.get("/api/community/profiles/{handle}")

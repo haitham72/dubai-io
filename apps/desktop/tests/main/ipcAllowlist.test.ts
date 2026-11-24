@@ -39,6 +39,8 @@ describe("ipc allowlist", () => {
       nodeIntegration: false,
       sandbox: true,
       webSecurity: true,
+      allowRunningInsecureContent: false,
+      webviewTag: false,
     });
   });
 });

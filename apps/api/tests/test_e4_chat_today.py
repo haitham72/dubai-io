@@ -659,3 +659,52 @@ def test_main_app_routes_chat_turn_and_today_feed(
     today_json = today_res.json()
     assert today_json["owner_id"] == uid
     assert today_json["empty_reason"] == "no_confirmed_interests"
+
+
+def _two_owner_chat(tmp_path, monkeypatch):
+    import re
+
+    app, _id_svc, tm_client, client = _build_harness(tmp_path, monkeypatch)
+    uid_a, sess_a, _ = _login_quest(client, "550e8400-e29b-41d4-a716-446655440401")
+    uid_b, sess_b, _ = _login_quest(client, "550e8400-e29b-41d4-a716-446655440402")
+    for uid, fid, text, subj in (
+        (uid_a, "fact_a_padel", "Karim plays padel in Jumeirah on Thursdays", "hobbies/padel"),
+        (uid_b, "fact_b_surf", "Rui joined the Marmoset surf school in Cascais", "hobbies/surf"),
+    ):
+        tm_client.upsert_record_and_enqueue(
+            uid, record_id=f"rec:{fid}", source="whatsapp", at="2026-11-24T06:00:00Z", author=uid,
+            text=text, enqueue="none",
+            direct_fact={"id": fid, "text": text, "subject_path": subj, "valid_from": "2026-11-24T06:00:00Z",
+                         "provenance": "user_supplied", "status": "active", "evidence": [f"rec:{fid}"]},
+        )
+    prompts: list[str] = []
+
+    def _runner(prompt: str) -> dict:
+        prompts.append(prompt)
+        ids = re.findall(r'"fact_id": "([^"]+)"', prompt)
+        return {"text": json.dumps({"reply": "Reply.", "cited_fact_ids": ids}), "runner": "claude-cli", "model": "m"}
+
+    app.state.chat_runner = _runner
+    return client, sess_a, sess_b, prompts
+
+
+def test_chat_each_account_cites_only_its_own_retrieved_facts(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    client, sess_a, sess_b, prompts = _two_owner_chat(tmp_path, monkeypatch)
+    ra = client.post("/api/chat/turn", headers={"X-App-Session": sess_a}, json={"text": "Where do I play padel?"}).json()
+    rb = client.post("/api/chat/turn", headers={"X-App-Session": sess_b}, json={"text": "Which surf school did I join?"}).json()
+    assert ra["applied_fact_ids"] == ["fact_a_padel"] and ra["memory_used"] is True
+    assert rb["applied_fact_ids"] == ["fact_b_surf"] and rb["memory_used"] is True
+    assert "surf" not in prompts[0] and "padel" not in prompts[1]  # A never sees B's facts, and vice versa
+
+
+def test_chat_empty_pack_answers_without_memory_and_never_sends_unrelated_facts(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A paraphrase with no word overlap ("activity" vs "surf school") retrieves nothing until the engine's hybrid
+    channel lands. Chat then answers without memory: no citations, memory_used=false, and the owner's other facts
+    are NOT put into the prompt."""
+    client, _sess_a, sess_b, prompts = _two_owner_chat(tmp_path, monkeypatch)
+    r = client.post("/api/chat/turn", headers={"X-App-Session": sess_b}, json={"text": "Which activity am I into lately?"}).json()
+    assert r["citations"] == [] and r["applied_fact_ids"] == []
+    assert r["memory_used"] is False
+    assert "surf" not in prompts[0] and '"fact_id"' not in prompts[0]

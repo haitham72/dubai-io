@@ -42,9 +42,11 @@ export const getNotifications = async (): Promise<{ notifications: Notification[
   const r = await request<{ notifications: Notification[]; unread_count?: number; unread?: number }>("/api/community/inbox");
   return { notifications: r.notifications ?? [], unread_count: r.unread_count ?? r.unread ?? 0 };
 };
-export const getMyProfile = async (): Promise<Profile> =>
-  (await request<{ profile?: Profile } & Profile>("/api/community/profiles/me")).profile ??
-  (await request<Profile>("/api/community/profiles/me"));
+/** The caller's profile, or null when they have none yet (the API answers 200 with `profile: null`). */
+export const getMyProfile = async (): Promise<Profile | null> => {
+  const r = await request<{ profile?: Profile | null }>("/api/community/profiles/me");
+  return r.profile ?? null;
+};
 export const createPost = async (text: string): Promise<Post> =>
   (await request<{ post: Post }>("/api/community/posts", { method: "POST", body: JSON.stringify({ text }) })).post;
 export const markNotificationRead = async (id: string): Promise<void> => {

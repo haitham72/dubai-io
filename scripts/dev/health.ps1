@@ -130,6 +130,53 @@ Add-Row "host:beat (exactly 1)" ($beatRoots.Count -eq 1) "$($beatRoots.Count) be
 $memOk = Test-Http "http://127.0.0.1:$MemoryPort/health"
 Add-Row "memory-api:$MemoryPort" $memOk "http://localhost:$MemoryPort/health"
 
+# 2a. The memory image must match apps/memory (E6 FAIL 3): start-all records the source hash and the running image id.
+. (Join-Path $PSScriptRoot "memory-image.ps1")
+$imgOk = $false; $imgDetail = "no marker: run start-all"
+$ImageMarker = Join-Path $PSScriptRoot ".memory-image.json"
+if (Test-Path $ImageMarker) {
+    try {
+        $mk = Get-Content $ImageMarker -Raw | ConvertFrom-Json
+        $curHash = Get-MemorySourceHash (Join-Path $RepoRoot "apps\memory")
+        $runId = Get-MemoryApiContainerImageId $MemCompose
+        if ($mk.src_hash -ne $curHash) { $imgDetail = "apps/memory changed since the image was built: run start-all" }
+        elseif (-not $runId -or $runId -ne $mk.image_id) { $imgDetail = "the running api container is not the image start-all built: run start-all" }
+        else { $imgOk = $true; $imgDetail = "image matches apps/memory source" }
+    } catch { $imgDetail = "marker unreadable" }
+}
+Add-Row "memory-image-current" $imgOk $imgDetail
+
+# 2b. Owner provisioning ready, without creating data: POST /v1/owners with the admin token and an EMPTY body. The
+#     memory API authorizes first, so 422 = token accepted (nothing created); 401/403 = token rejected.
+$provOk = $false; $provDetail = "memory admin token missing"
+$envFile = Join-Path $RepoRoot "apps\memory\.env"
+$adminTok = $null
+if (Test-Path $envFile) {
+    foreach ($line in Get-Content $envFile -Encoding UTF8) { if ($line -match '^\s*TM_ADMIN_TOKEN=(.+)$') { $adminTok = $matches[1].Trim() } }
+}
+if ($adminTok) {
+    $code = 0
+    try {
+        $null = Invoke-WebRequest -Method Post -Uri "http://127.0.0.1:$MemoryPort/v1/owners" -Headers @{ Authorization = "Bearer $adminTok" } `
+            -ContentType "application/json" -Body "{}" -UseBasicParsing -TimeoutSec 5
+        $code = 200
+    } catch { if ($_.Exception.Response) { $code = [int]$_.Exception.Response.StatusCode } }
+    $memAccepts = ($code -eq 422)
+    $AdminMarker = Join-Path $PSScriptRoot ".admin-token-passed.json"
+    $apiHas = $false
+    if (Test-Path $AdminMarker) {
+        try {
+            $am = Get-Content $AdminMarker -Raw | ConvertFrom-Json
+            $apiHas = ($am.apps_api -and (Get-Process -Id ([int]$am.apps_api) -ErrorAction SilentlyContinue))
+        } catch {}
+    }
+    $provOk = ($memAccepts -and [bool]$apiHas)
+    $provDetail = if ($provOk) { "memory accepts the admin token (http 422 on empty body, nothing created); apps/api was started with it" }
+        elseif (-not $memAccepts) { "memory API rejected the admin token (http $code): restart the memory api via start-all" }
+        else { "apps/api was not started by start-all with TM_ADMIN_TOKEN: stop-all then start-all" }
+}
+Add-Row "owner-provisioning-ready" $provOk $provDetail
+
 $apiOk = Test-Http "http://127.0.0.1:$ApiPort/api/health"
 Add-Row "apps/api:$ApiPort" $apiOk "http://localhost:$ApiPort/api/health"
 

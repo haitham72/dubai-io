@@ -376,6 +376,21 @@ def _sanitize_reply(text: str) -> str:
     return cleaned or "I noted your message."
 
 
+def _collect_safe_facts(
+    raw: Any,
+    out: list[dict[str, Any]],
+    by_id: dict[str, dict[str, Any]],
+) -> None:
+    for fact in raw or []:
+        if not isinstance(fact, dict) or is_sensitive_memory_item(fact):
+            continue
+        fid = str(fact.get("id") or fact.get("fact_id") or "").strip()
+        if not fid or fid in by_id:
+            continue
+        out.append(fact)
+        by_id[fid] = fact
+
+
 @router.post("/api/chat/turn")
 def post_chat_turn(
     body: ChatTurnIn,
@@ -435,16 +450,11 @@ def post_chat_turn(
     raw_facts = pack.get("facts") if isinstance(pack, dict) else []
     safe_facts: list[dict[str, Any]] = []
     safe_facts_by_id: dict[str, dict[str, Any]] = {}
-    for fact in raw_facts or []:
-        if not isinstance(fact, dict):
-            continue
-        if is_sensitive_memory_item(fact):
-            continue
-        fid = str(fact.get("id") or fact.get("fact_id") or "").strip()
-        if not fid or fid in safe_facts_by_id:
-            continue
-        safe_facts.append(fact)
-        safe_facts_by_id[fid] = fact
+    _collect_safe_facts(raw_facts, safe_facts, safe_facts_by_id)
+
+    # Only retrieved, relevant facts ever reach the prompt (founder design). An empty pack means no saved memory
+    # matched: the model answers without memory and the response says so (memory_used=false, no citations).
+    memory_used = bool(safe_facts)
 
     # Step (c): Synthesize plain-text reply via configured runner with untrusted <memory_data>.
     prompt = _build_synthesis_prompt(clean_text, safe_facts)
@@ -490,4 +500,5 @@ def post_chat_turn(
         "model": model_name,
         "as_of": now_iso,
         "demo": demo,
+        "memory_used": memory_used,
     }
