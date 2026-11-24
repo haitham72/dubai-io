@@ -319,3 +319,34 @@ def test_forget_dead_job_not_blindly_requeued(tm):
     assert out["days_dead"] == ["2026-10-27"]
     queued = tm.read("SELECT id FROM jobs WHERE owner='o1' AND day='2026-10-27' AND state='queued'")
     assert queued == []
+
+
+
+def test_forget_executes_no_runtime_ddl(tm, monkeypatch):
+    import psycopg
+
+    from temporal_memory import db as db_package
+    from temporal_memory.privacy.forget import forget_source, recorded_forget
+
+    connect = db_package.connect
+    statements = []
+
+    class RecordingCursor(psycopg.Cursor):
+        def execute(self, query, *args, **kwargs):
+            statements.append(str(query).strip())
+            return super().execute(query, *args, **kwargs)
+
+    def recording_connect():
+        conn = connect()
+        conn.cursor_factory = RecordingCursor
+        return conn
+
+    monkeypatch.setattr(db_package, "connect", recording_connect)
+    assert forget_source("o1", ["wab-0001"])["facts_erased"] == 1
+    first = recorded_forget("o1", [], "m_shared", "forget-1")
+    assert first["facts_erased"] == 1
+    assert recorded_forget("o1", [], "m_shared", "forget-1") == first
+    assert any(statement.startswith("UPDATE owners") for statement in statements)
+    assert any(statement.startswith("INSERT INTO forget_requests") for statement in statements)
+    assert not any(statement.split(maxsplit=1)[0].upper() in {"ALTER", "CREATE", "DROP"}
+                   for statement in statements)

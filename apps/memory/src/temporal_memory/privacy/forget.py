@@ -226,28 +226,8 @@ def forget_source(owner: str, record_ids: list[str]) -> dict[str, Any]:
     return out
 
 
-def _ensure_upgrade(cur: Any) -> None:
-    """Additive objects U0a owns. Created here so Forget works before that migration is merged."""
-    cur.execute(
-        "ALTER TABLE owners ADD COLUMN IF NOT EXISTS privacy_revision BIGINT NOT NULL DEFAULT 0"
-    )
-    cur.execute(
-        """
-        CREATE TABLE IF NOT EXISTS forget_requests (
-            owner TEXT NOT NULL,
-            idempotency_key TEXT NOT NULL,
-            request JSONB NOT NULL,
-            result JSONB NOT NULL,
-            created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-            PRIMARY KEY (owner, idempotency_key)
-        )
-        """
-    )
-
-
 def _finish_owner(cur: Any, owner: str) -> None:
     """Drop evidence-less entities, aliases and links, then bump both cache versions."""
-    _ensure_upgrade(cur)
     cur.execute(
         """
         UPDATE links SET erased_at = now()
@@ -406,14 +386,6 @@ def recorded_forget(
             public["generation"] = int(fact_raw.get("generation") or public["generation"])
             public["entity_subjects_recomputed"] = int(fact_raw["entity_subjects_recomputed"])
         return public
-
-    bootstrap = _db.connect()
-    try:
-        with bootstrap:
-            with bootstrap.cursor() as cur:
-                _ensure_upgrade(cur)
-    finally:
-        bootstrap.close()
 
     conn = _db.connect()
     try:
