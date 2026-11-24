@@ -2,12 +2,13 @@ import React, { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
 import type { Fetcher } from "../vault/vaultApi";
-import { loadRegion, saveRegion, startGoogleOAuth, uploadPickedFile, type YoutubeRegion } from "./connectApi";
+import { loadRegion, saveRegion, type YoutubeRegion } from "./connectApi";
+import { uploadIngestFile } from "./ingestApi";
 
 type Progress = "Not connected" | "Syncing" | "Ready";
 
-export function YoutubeOnboardingCard({ apiBaseUrl, owner, fetcher, initialRegion }: {
-  apiBaseUrl: string; owner: string; fetcher?: Fetcher; initialRegion?: YoutubeRegion;
+export function YoutubeOnboardingCard({ apiBaseUrl, sessionToken, fetcher, initialRegion }: {
+  apiBaseUrl: string; sessionToken?: string | null; fetcher?: Fetcher; initialRegion?: YoutubeRegion;
 }) {
   const [region, setRegion] = useState<YoutubeRegion>(initialRegion ?? "UAE");
   const [status, setStatus] = useState<Progress>("Not connected");
@@ -28,9 +29,9 @@ export function YoutubeOnboardingCard({ apiBaseUrl, owner, fetcher, initialRegio
     });
     if (picked.canceled || !picked.assets?.length) return; // cancel: no state change
     setStatus("Syncing");
-    const ok = await uploadPickedFile(apiBaseUrl, owner, "takeout", picked.assets[0], fetcher);
-    if (ok) { setStatus("Ready"); setMessage("Takeout uploaded"); }
-    else { setStatus("Not connected"); setMessage("Upload failed — server unreachable"); }
+    const res = await uploadIngestFile(apiBaseUrl, sessionToken, "takeout", picked.assets[0], fetcher);
+    if (res.ok) { setStatus("Ready"); setMessage(`Takeout uploaded${res.added !== null ? ` · ${res.added} new records` : ""}`); }
+    else { setStatus("Not connected"); setMessage(res.message); }
   };
 
   return (
@@ -46,17 +47,9 @@ export function YoutubeOnboardingCard({ apiBaseUrl, owner, fetcher, initialRegio
         </Pressable>
       </View>
 
-      <Text style={styles.step}>YouTube Data API v3 — uploads, liked, subscriptions, playlists</Text>
-      <Pressable style={styles.button} onPress={() => void startGoogleOAuth(apiBaseUrl)}>
-        <Text style={styles.buttonText}>Connect YouTube</Text>
-      </Pressable>
-
       {region === "EEA" ? (
         <>
-          <Text style={styles.step}>Google Data Portability API (dataportability.myactivity.youtube)</Text>
-          <Pressable style={styles.button} onPress={() => void startGoogleOAuth(apiBaseUrl)}>
-            <Text style={styles.buttonText}>Connect Data Portability</Text>
-          </Pressable>
+          <Text style={styles.step}>Google Data Portability API is not wired yet. Use the Takeout upload instead.</Text>
         </>
       ) : (
         <>

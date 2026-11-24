@@ -2,10 +2,10 @@ import React, { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
 import type { Fetcher } from "../vault/vaultApi";
-import { uploadPickedFile } from "./connectApi";
+import { uploadIngestFile } from "./ingestApi";
 
-export function WhatsappImportCard({ apiBaseUrl, owner, fetcher }: {
-  apiBaseUrl: string; owner: string; fetcher?: Fetcher;
+export function WhatsappImportCard({ apiBaseUrl, sessionToken, fetcher }: {
+  apiBaseUrl: string; sessionToken?: string | null; fetcher?: Fetcher;
 }) {
   const [message, setMessage] = useState<string | null>(null);
 
@@ -20,8 +20,8 @@ export function WhatsappImportCard({ apiBaseUrl, owner, fetcher }: {
         setMessage("WhatsApp exports must be .txt files");
         return;
       }
-      const ok = await uploadPickedFile(apiBaseUrl, owner, "whatsapp", asset, fetcher);
-      setMessage(ok ? `Uploaded ${asset.name}` : "Upload failed — server unreachable");
+      const res = await uploadIngestFile(apiBaseUrl, sessionToken, "whatsapp", asset, fetcher);
+      setMessage(res.ok ? `Uploaded ${asset.name}${res.added !== null ? ` · ${res.added} new records` : ""}` : res.message);
     } catch {
       setMessage("Could not open the file picker");
     }

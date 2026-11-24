@@ -1,4 +1,6 @@
-# Messenger POC
+# Messenger
+
+The Vite website is here. The Expo Go iPhone and Electron desktop shells are in `mobile/` and `desktop/`. Run the current local demo stack on the founder's PC. The Vite dev-server instructions below cover the local web preview. See `docs/submissions/messenger/shells.md` and D13 for shell and demo hosting details. (The sections below are the original POC README; its Vercel deploy is historical.)
 
 An investor demo of Messenger: private messaging with an AI assistant, agentic tasks and utility workspaces. Clickable and polished — not a production product.
 
@@ -64,7 +66,7 @@ Image and video generation are not part of this app. `media/videos/` holds the b
 
 ---
 
-## Deploy (Vercel)
+## Deploy (Vercel) - historical, superseded by D13 (founder's PC)
 
 Project `messenger-demo` → **https://messenger-demo.vercel.app** (private: share `https://messenger-demo.vercel.app/?key=<DEMO_KEY>`).
 

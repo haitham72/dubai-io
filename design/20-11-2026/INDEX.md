@@ -1,7 +1,7 @@
 # Dubai-io (Quest Companion) — Visual Design Catalog & UI Architecture (20-11-2026)
 
 **Date Created:** 20 November 2026  
-**Status:** Locked Design Baseline for Mobile Interface & Sovereign Knowledge Vault  
+**Status:** Parked visual reference (`archive/design-spec-20-11`). Screenshot labels and counts are illustrative. The seven live Vault clusters are Career, Learning, Projects, People & family, Events, Home & money and Travel; T1 suggestions join the ring only after user confirmation. Design polish follows E0–E4.  
 **Asset Folder:** `design/20-11-2026/`  
 **Related Docs:** `PLAN.md` §2, `design/CLAUDE.md`, `ARCHITECTURE.md`, `docs/plan/Memory/memory.md`  
 
@@ -191,7 +191,7 @@ $card-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
    - The green `✓ Ingested into Temporal Memory` badge reflects the bi-temporal write confirmation.
 2. **Proactive Pings & Empathy Repair:**
    - Autonomous background events (apology repairs, shared news updates) are fetched via `GET /api/memory/chat/pings`.
-   - The user's tap on *"Apology Accepted 👍"* resolves the open memory contradiction in Hindsight via the `ends` verdict.
+   - The user's tap on *"Apology Accepted 👍"* resolves the open memory contradiction (mockup concept; the backend contract is temporal_note, `docs/plan/Memory/memory.md` §18 — in production, distinguish user confirmation, correction and user-triggered Forget).
 3. **Knowledge Vault Graph Visualization:**
    - Fed directly by `GET /api/memory/graph` or `apps/api/app/lab/tree.py`.
    - The 7 Life Themes match the sovereign directory structure in `docs/plan/Memory/memory.md` §12.

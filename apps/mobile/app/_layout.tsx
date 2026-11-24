@@ -6,6 +6,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { colors, noShadow, radii, spacing, typography } from "@dubai-io/design-tokens";
 import { CapsuleDock } from "../src/components/CapsuleDock";
 import { ApiSettingsProvider } from "../src/lib/api-settings";
+import { AuthProvider } from "../src/lib/auth";
 import { DOCK_TABS, type PillarId } from "../src/lib/types";
 
 function pillarFromPath(path: string): PillarId {
@@ -48,14 +49,16 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <ApiSettingsProvider>
-        <StatusBar style="dark" />
-        <Tabs screenOptions={{ headerShown: false }} tabBar={() => <DockBar />}>
-          <Tabs.Screen name="index" options={{ title: "Today" }} />
-          <Tabs.Screen name="chat" options={{ title: "Chat" }} />
-          <Tabs.Screen name="quests" options={{ title: "Quests" }} />
-          <Tabs.Screen name="memory" options={{ title: "Memory" }} />
-          <Tabs.Screen name="connect" options={{ href: null, title: "Connect" }} />
-        </Tabs>
+        <AuthProvider>
+          <StatusBar style="dark" />
+          <Tabs screenOptions={{ headerShown: false }} tabBar={() => <DockBar />}>
+            <Tabs.Screen name="index" options={{ title: "Today" }} />
+            <Tabs.Screen name="chat" options={{ title: "Chat" }} />
+            <Tabs.Screen name="quests" options={{ title: "Quests" }} />
+            <Tabs.Screen name="memory" options={{ title: "Memory" }} />
+            <Tabs.Screen name="connect" options={{ href: null, title: "Connect" }} />
+          </Tabs>
+        </AuthProvider>
       </ApiSettingsProvider>
     </SafeAreaProvider>
   );

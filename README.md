@@ -3,16 +3,20 @@
 Dubai-io is a personal AI agent for people who live and work in Dubai.
 
 Contest entries: Create AI Agents Championship (Dubai Chambers) — 3 award tracks ($150k grant each):
-1. **Best Personal AI Agent:** Memory-driven Notice Cards (Quest-style) + Resident/Visitor Cold-Start Onboarding.
-2. **Best Societal AI Agent:** Dubai Civic Social & Community Mesh (`apps/api/app/communities.py`).
-3. **Best Business AI Agent:** Enterprise Workspace Agent Evaluator & Analytics (`ide-companio` / Claude Report).
+Three entries live on `main`: **Dubai-io** (Best Personal AI Agent), **Community** (Best Societal AI Agent) and **Messenger** (Best Business AI Agent).
 
 Identity, scope and dates: `PLAN.md`.
 
 ```
 apps/api/          FastAPI + LangGraph backend, tests/
 apps/api/app/lab/  Headless Know / Notice / Do pipeline (active, 9 Nov)
-apps/site/         THE app: one React codebase (Next.js) → website, desktop, iOS/Android; UI paused 9 Nov
+apps/mobile/       Dubai-io: iPhone via Expo Go + website via Expo web
+apps/desktop/      Dubai-io: Electron desktop
+apps/memory/       temporal_note memory engine
+apps/community/    Community entry (mobile/ + desktop/ shells)
+apps/messenger/    Messenger entry (mobile/ + desktop/ shells)
+apps/api/app/identity, apps/api/app/memory_bridge   shared per-user layer
+apps/site/         Paused Next.js client (UI paused 9 Nov)
 apps/web/          Original mobile app PWA — FROZEN reference (tag mobile-pwa-baseline-2026-10-23)
 apps/ios/          Native SwiftUI client — STOPPED 23 Oct (history only)
 scripts/           Local ingestion pipelines (Gmail 50k tokens cap, YouTube 4-feed, local browser history, dev sessions)
@@ -26,10 +30,9 @@ design/            Screen references
 ```powershell
 cd apps/api; $env:DATABASE_URL=' '; .\.venv\Scripts\python.exe -m uvicorn app.main:app --port 8030
 # API + original mobile app: http://localhost:8030/index.html · merchant sandbox: /merchant.html
-
-cd apps/site; npm run dev
-# THE app: http://localhost:3000/ — proxies the API at DUBAIIO_API_ORIGIN (default http://127.0.0.1:8030)
 ```
+
+Current local setup and verification: start with `apps/memory/upgrade/prompts/E0_real_data_round.md` and E1. For Dubai-io web development run `npm run web` from `apps/mobile`. See the app READMEs for individual clients and `docs/status.md` for current runtime state. (`apps/site` is paused.)
 
 `DATABASE_URL` set to a single space selects SQLite; a real value uses Supabase Postgres (`supabase/CLAUDE.md`). Keys live in `apps/api/.env`, never committed; key names are in `docs/status.md`.
 
@@ -38,9 +41,8 @@ cd apps/site; npm run dev
 ```powershell
 cd apps/api; .\.venv\Scripts\python.exe -m pytest -q tests   # $env:RUN_LIVE='1' adds the live Luna cases
 cd apps/api; .\.venv\Scripts\python.exe -m app.lab <step> --data <dir>   # headless Know/Notice/Do lab CLI
-cd apps/site; npm test                                       # Vitest; npm run e2e = Playwright (builds and serves on :3041)
 ```
 
 ## Docs
 
-Read in order: `CLAUDE.md` (rules, router) → `PLAN.md` (identity, decisions, scope) → `ARCHITECTURE.md` (contracts) → `docs/status.md` (current state) → `apps/api/app/lab/CLAUDE.md` (headless build). Connector framework (not live-enabled): `docs/connectors/README.md`. Open requests: `docs/request-backlog.md`. History: `docs/archive/` and git.
+Read in order: `CLAUDE.md` (rules, router) → `PLAN.md` (identity, decisions, scope) → `ARCHITECTURE.md` (contracts) → `docs/status.md` (current state) → `apps/memory/upgrade/` (current E0–E4 round); `apps/api/app/lab/CLAUDE.md` (legacy headless lab). Connector framework (not live-enabled): `docs/connectors/README.md`. Open requests: `docs/request-backlog.md`. History: `docs/archive/` and git.

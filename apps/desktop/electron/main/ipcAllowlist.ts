@@ -14,6 +14,9 @@ export const IPC = {
   syncStatus: "sync:status",
   syncConfigure: "sync:configure",
   syncRun: "sync:run",
+  authStatus: "auth:status",
+  authSignIn: "auth:signIn",
+  authSignOut: "auth:signOut",
 } as const;
 
 export type IpcChannel = (typeof IPC)[keyof typeof IPC];
@@ -141,6 +144,27 @@ export function parseHookToggle(payload: unknown): HookTogglePayload {
     url: body.url === undefined ? undefined : asString(body.url, "url"),
     owner: body.owner === undefined ? undefined : asString(body.owner, "owner"),
   };
+}
+
+export interface SignInPayload {
+  apiBaseUrl?: string;
+}
+
+/** Only an http(s) API origin may be supplied; no paths, secrets or shell strings. */
+export function parseSignIn(payload: unknown): SignInPayload {
+  const body = payload === undefined || payload === null ? {} : asRecord(payload);
+  rejectForbidden(body);
+  if (body.apiBaseUrl === undefined) return {};
+  const raw = asString(body.apiBaseUrl, "apiBaseUrl").trim();
+  let url: URL;
+  try {
+    url = new URL(raw);
+  } catch {
+    throw new Error("apiBaseUrl must be a URL");
+  }
+  if (url.protocol !== "http:" && url.protocol !== "https:") throw new Error("apiBaseUrl must use http or https");
+  if (url.username || url.password) throw new Error("apiBaseUrl cannot carry credentials");
+  return { apiBaseUrl: url.origin };
 }
 
 export function parseSyncConfigure(payload: unknown): SyncConfigurePayload {

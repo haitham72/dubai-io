@@ -1,4 +1,6 @@
-# Dubai-io Community — web preview (CM-B10)
+# Dubai-io Community
+
+The website is in this folder. The Expo Go iPhone shell is in `mobile/`; the Electron desktop shell is in `desktop/`. Keep the Community web app and API reachable by the shells.
 
 Staged preview for founder visual review. Not marked done until the founder approves it visually.
 

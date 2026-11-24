@@ -17,7 +17,7 @@ Read `E0_real_data_round.md` first. Branch `e3/ingest` from `main`. Keep it tigh
 
 ## Deliverables
 
-0. **FIX FIRST: the privacy issue you found in U2** (now merged in `main` / `memory`): Forget can leave an existing topic hypothesis ("I noticed you're into X") visible after erasing one of its two supporting sessions. You may edit `apps/memory/src/temporal_memory/privacy/forget.py` and `live/topics.py` for this.
+0. **Verify the merged Forget regression (fix merged in `4e2646d`; originally FIX FIRST):** a topic hypothesis retracts when fewer than two supporting sessions survive. Original issue: Forget could leave an existing topic hypothesis ("I noticed you're into X") visible after erasing one of its two supporting sessions. You may edit `apps/memory/src/temporal_memory/privacy/forget.py` and `live/topics.py` for this.
    - On any Forget, drop the `topic_mentions` rows tied to the erased records.
    - Re-check every affected hypothesis, and erase or retract it if fewer than 2 distinct surviving sessions remain.
    - Bump `privacy_revision`.

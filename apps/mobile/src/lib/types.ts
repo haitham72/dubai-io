@@ -36,10 +36,32 @@ export const DOCK_TABS: DockTab[] = [
 
 export type LifeTheme = "career" | "projects" | "learning" | "gaming" | "travel" | "health";
 
+export interface AuthSession {
+  sessionToken: string;
+  sessionId: string;
+  userId: string;
+  displayName: string | null;
+  email: string | null;
+}
+
+export interface ChatCitation {
+  fact_id: string;
+  text: string;
+  why_url?: string;
+  provenance?: string;
+  as_of?: string;
+}
+
 export interface TodayCard extends DemoMeta {
   id: string;
   title: string;
+  subtitle?: string;
   eyebrow?: string;
+  interest?: string;
+  category?: string;
+  imageUrl?: string | null;
+  source?: string;
+  url?: string | null;
   because: string;
   tone: LifeTheme;
 }
@@ -58,6 +80,8 @@ export interface ChatMessage {
   /** True only after a confirmed memory write. Never set on send, offline, or demo fallback. */
   ingested: boolean;
   ingestDetail?: string;
+  citations?: ChatCitation[];
+  error?: boolean;
   demo: boolean;
 }
 
@@ -83,6 +107,7 @@ export interface PillarScreenProps {
   ownerId: string;
   apiBaseUrl: string;
   demo: boolean;
+  sessionToken?: string | null;
 }
 
 export interface VaultScreenProps extends PillarScreenProps {}
@@ -96,11 +121,17 @@ export interface ConnectScreenProps extends PillarScreenProps {
 
 export interface MemoryTurnConfirmation {
   ok: boolean;
+  ingested?: boolean;
   applied: boolean;
   appliedFactIds: string[];
+  citations?: ChatCitation[];
   reply: string;
+  runner?: string;
+  model?: string;
+  asOf?: string;
   trust?: string;
   topic?: string;
   demo: boolean;
   warning: string | null;
+  error?: string;
 }

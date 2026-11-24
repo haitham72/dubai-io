@@ -5,6 +5,9 @@ on the same Wi-Fi uses one origin and the keys stay on this machine.
 Run: cd apps/api && .venv/Scripts/python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
 Then open http://<pc-ip>:8000/lab/home-v2-cyan.html
 """
+import os
+import secrets
+from threading import RLock
 import uuid
 from contextlib import asynccontextmanager
 
@@ -18,6 +21,20 @@ from . import catalog, google_maps
 from .auth import router as auth_router
 from .actions import COOKIE, engine, router as action_router
 from .config import settings
+from .identity import (
+    IdentityConfig,
+    IdentityService,
+    IdentityStore,
+    JWTVerifier,
+    MemoryTokenService,
+    create_identity_router,
+    get_identity_service,
+)
+from .identity.google_signin import GoogleSignInService
+from .identity.vault_gateway import create_vault_gateway_router
+from .memory_bridge.config import build_temporal_memory_client
+from .memory_bridge.fake_client import FakeTemporalMemoryClient
+from .memory_bridge.models import MemoryBridgeUnavailable
 from .merchant import merchant_pin, router as merchant_router
 from .proactive import router as proactive_router
 from .profile import router as profile_router
@@ -38,16 +55,85 @@ from .memory.api import router as memory_router
 from .mail_profile import router as mail_router
 from .memory.schema import ensure_memory_schema
 from .connectors.api import router as connector_router
+from .ingest_routes import router as ingest_router
 from .connectors.schema import ensure_connector_schema
+from .chat_memory import router as chat_memory_router
+from .today_feed import router as today_feed_router
+
+_identity_init_lock = RLock()
+
+
+def _init_identity_runtime(target_app: FastAPI) -> None:
+    if getattr(target_app.state, "identity_service", None) is not None:
+        return
+    with _identity_init_lock:
+        if getattr(target_app.state, "identity_service", None) is not None:
+            return
+        cfg = IdentityConfig.from_env()
+        if cfg.jwt_issuer and (cfg.jwt_hs256_secret or cfg.jwt_jwks_url):
+            verifier = JWTVerifier(
+                issuer=cfg.jwt_issuer,
+                audience=cfg.jwt_audience,
+                hs256_secret=cfg.jwt_hs256_secret,
+                jwks_url=cfg.jwt_jwks_url,
+                clock_skew_s=cfg.clock_skew_seconds,
+                jwks_ttl_s=cfg.jwks_ttl_seconds,
+                jwks_refresh_cooldown_s=cfg.jwks_refresh_cooldown_seconds,
+            )
+        else:
+            verifier = JWTVerifier(
+                issuer="local-unconfigured",
+                audience=cfg.jwt_audience or "authenticated",
+                hs256_secret=secrets.token_urlsafe(32),
+            )
+
+        store = IdentityStore(settings.database_url or (settings.data_dir / "identity.sqlite3"))
+        svc = IdentityService(store, verifier, config=cfg)
+
+        raw_backend = (os.environ.get("MEMORY_BRIDGE_BACKEND") or "").strip().lower()
+        if raw_backend in ("", "fake") and not (os.environ.get("TM_BASE_URL") or "").strip():
+            tm_client = FakeTemporalMemoryClient()
+        else:
+            try:
+                tm_client = build_temporal_memory_client()
+            except MemoryBridgeUnavailable:
+                if raw_backend == "http":
+                    raise
+                tm_client = FakeTemporalMemoryClient()
+
+        token_svc = MemoryTokenService(store, tm_client, token_key=cfg.token_key or None)
+        if hasattr(tm_client, "_owner_token_resolver") and getattr(tm_client, "_owner_token_resolver", None) is None:
+            tm_client._owner_token_resolver = token_svc.owner_token_resolver
+
+        target_app.state.identity_store = store
+        target_app.state.identity_service = svc
+        target_app.state.temporal_memory_client = tm_client
+        target_app.state.memory_token_handler = token_svc
+        target_app.state.google_signin_service = GoogleSignInService(svc)
+
+
+def _get_runtime_identity_service(request: Request) -> IdentityService:
+    _init_identity_runtime(request.app)
+    return request.app.state.identity_service
+
+
+def _get_runtime_tm_client(request: Request):
+    _init_identity_runtime(request.app)
+    return request.app.state.temporal_memory_client
+
 
 @asynccontextmanager
-async def lifespan(_app):
+async def lifespan(target_app: FastAPI):
     merchant_pin()  # sandbox merchant PIN: MERCHANT_PIN, or generated into data/merchant.pin
     try:
         ensure_memory_schema(engine().store.db)
         ensure_connector_schema(engine().store.db)
     except Exception:
         pass  # schema retries on first MemoryStore / connector use
+    try:
+        _init_identity_runtime(target_app)
+    except Exception:
+        pass
     if settings.widget_port:  # mini-apps on their own origin (rule 10)
         from .widgets import serve_in_background
         serve_in_background("0.0.0.0", settings.widget_port)
@@ -55,8 +141,18 @@ async def lifespan(_app):
 
 
 app = FastAPI(title="Dubai-io API", version="0.1.0", lifespan=lifespan)
+app.dependency_overrides[get_identity_service] = _get_runtime_identity_service
 app.include_router(auth_router)
+app.include_router(create_identity_router(get_service=_get_runtime_identity_service))
+app.include_router(
+    create_vault_gateway_router(
+        get_tm_client=_get_runtime_tm_client,
+        get_identity=_get_runtime_identity_service,
+    )
+)
 app.include_router(action_router)
+app.include_router(chat_memory_router)
+app.include_router(today_feed_router)
 app.include_router(merchant_router)
 app.include_router(proactive_router)
 app.include_router(profile_router)
@@ -72,6 +168,7 @@ app.include_router(prayer_router)
 app.include_router(memory_router)
 app.include_router(mail_router)
 app.include_router(connector_router)
+app.include_router(ingest_router)
 
 
 @app.middleware("http")

@@ -3,9 +3,9 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { loadWhy, type Fetcher, type WhyResult } from "./vaultApi";
 import { KARIM_WHY_FIXTURE } from "./vaultFixtures";
 
-export function WhyProvenanceSheet({ apiBaseUrl, owner, factId, onClose, fetcher }: {
+export function WhyProvenanceSheet({ apiBaseUrl, owner, factId, onClose, fetcher, demo, sessionToken }: {
   apiBaseUrl: string; owner: string; factId: string | null;
-  onClose?: () => void; fetcher?: Fetcher;
+  onClose?: () => void; fetcher?: Fetcher; demo?: boolean; sessionToken?: string | null;
 }) {
   const [why, setWhy] = useState<WhyResult | null>(null);
   const [isDemo, setIsDemo] = useState(false);
@@ -14,12 +14,12 @@ export function WhyProvenanceSheet({ apiBaseUrl, owner, factId, onClose, fetcher
   useEffect(() => {
     if (!factId) return;
     let live = true;
-    loadWhy(apiBaseUrl, owner, factId, KARIM_WHY_FIXTURE, fetcher).then((res) => {
+    loadWhy(apiBaseUrl, owner, factId, KARIM_WHY_FIXTURE, fetcher, { demo, sessionToken }).then((res) => {
       if (!live) return;
       setWhy(res.why); setIsDemo(res.isDemo); setError(res.error);
     });
     return () => { live = false; };
-  }, [apiBaseUrl, owner, factId, fetcher]);
+  }, [apiBaseUrl, owner, factId, fetcher, demo, sessionToken]);
 
   if (!factId) return null;
   return (

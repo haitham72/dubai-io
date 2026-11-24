@@ -1,6 +1,6 @@
 # Dubai-io Desktop
 
-Windows shell. The main process and preload live in `electron/` (already on this branch). This UI is the Vite renderer in `renderer/`.
+Windows shell. Dubai-io's Electron main process and preload are in `electron/`, and the Vite UI is in `renderer/`. Follow E1 for the full local stack, E2 for PC Google sign-in, and E3 for consented desktop sources (`apps/memory/upgrade/prompts/`). The standalone renderer and owner-device instructions below are development setup.
 
 Light canvas, gold accent, 1px borders. Fixture rows say **Demo data**. No real personal history is in the repo.
 
@@ -24,7 +24,7 @@ npm test
 npm run build
 ```
 
-## Owner-device token
+## Owner-device token (development setup)
 
 The token is encrypted in the main process (`safeStorage`). Settings shows a mask, never the bearer string. In the app, open **Settings**, pick a model (`claude-sonnet-4-5`, `claude-haiku-4-5`, or `o3-mini`), then turn on **Process on your own Claude/Codex ($0 app cost)**. Source consent switches start off.
 

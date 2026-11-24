@@ -12,6 +12,9 @@ const dubaiDesktop = {
   syncStatus: () => ipcRenderer.invoke(IPC.syncStatus),
   syncConfigure: (payload: unknown) => ipcRenderer.invoke(IPC.syncConfigure, payload),
   syncRun: () => ipcRenderer.invoke(IPC.syncRun),
+  authStatus: () => ipcRenderer.invoke(IPC.authStatus),
+  authSignIn: (payload?: unknown) => ipcRenderer.invoke(IPC.authSignIn, payload),
+  authSignOut: () => ipcRenderer.invoke(IPC.authSignOut),
 };
 
 contextBridge.exposeInMainWorld("dubaiDesktop", dubaiDesktop);

@@ -1,4 +1,6 @@
-# Dubai-io app & website (`apps/site`)
+# Paused Dubai-io Next.js client (`apps/site`)
+
+The active website runs via Expo web from `apps/mobile`. The routes and run commands below describe the paused client for historical development reference.
 
 Next.js App Router + TypeScript client for Dubai-io. **UI work is paused since 9 Nov 2026** while the headless Know / Notice / Do pipeline is built in `apps/api/app/lab/`. Plain CSS only — no UI kit, no Tailwind, no shadows; `prefers-reduced-motion` respected.
 

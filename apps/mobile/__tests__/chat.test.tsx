@@ -25,7 +25,7 @@ const offline: MemoryTurnConfirmation = {
 
 describe("Chat memory badge", () => {
   it("hides the ingested badge on the synthetic thread", async () => {
-    const view = await render(<ChatView />);
+    const view = await render(<ChatView demo />);
     expect(view.queryByTestId("memory-ingested-badge")).toBeNull();
     expect(view.queryByText(/Ingested into Temporal Memory/)).toBeNull();
     expect(view.getByText("Apology Accepted 👍")).toBeTruthy();

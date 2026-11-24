@@ -200,10 +200,12 @@ def test_find_repo_root_and_export_owner_tree(isolated_db: Database, tmp_path: P
     assert summary["files_written"] == len(summary["files"])
     assert "MEMORIES.md" in summary["files"]
     assert "USER.md" in summary["files"]
-    assert "orgs/falcon-tech.md" in summary["files"]
-    assert "people/nadia-mansour.md" in summary["files"]
-    assert "subjects/work/network.md" in summary["files"]
-    assert (out_dir / "people" / "nadia-mansour.md").read_text(encoding="utf-8").startswith("---\nname: Nadia Mansour")
+    assert "02-career-and-craft/network.md" in summary["files"]
+    assert "orgs/falcon-tech.md" not in summary["files"]
+    assert "people/nadia-mansour.md" not in summary["files"]
+    leaf = (out_dir / "02-career-and-craft" / "network.md").read_text(encoding="utf-8")
+    assert leaf.startswith("---\n")
+    assert "Nadia Mansour joined Falcon Tech" in leaf
 
     # Refuses path traversal in rendered paths
     monkeypatch.setattr(

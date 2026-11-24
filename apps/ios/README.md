@@ -1,4 +1,6 @@
-# Dubai-io native iOS preview
+# Dubai-io native SwiftUI preview (historical)
+
+The current iPhone client is `apps/mobile`, which runs in Expo Go. The instructions below describe the archived client preview.
 
 Native SwiftUI, iOS 26+, Apple frameworks and one local Swift package. Open the checked-in project directly; no Expo, JavaScript runtime or project-generation tool is needed.
 

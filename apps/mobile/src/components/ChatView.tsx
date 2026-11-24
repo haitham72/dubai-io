@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { colors, noShadow, radii, spacing, typography } from "@dubai-io/design-tokens";
-import { postMemoryChatTurn } from "../lib/api";
+import { postChatTurn } from "../lib/api";
+import { useApiSettingsOptional } from "../lib/api-settings";
+import { useAuthOptional } from "../lib/auth";
 import { demoAction, demoRepair, demoThread } from "../lib/fixtures";
 import type { ChatMessage, MemoryTurnConfirmation, RepairPing } from "../lib/types";
 import { ChatMessageList } from "./ChatMessageList";
@@ -10,23 +12,45 @@ import { LifeDrawer } from "./LifeDrawer";
 import { ProactiveRepairCard } from "./ProactiveRepairCard";
 
 export function ChatView({
-  ownerId = "karim",
-  apiBaseUrl = "",
+  ownerId: propOwnerId,
+  apiBaseUrl: propApiBaseUrl,
+  sessionToken: propSessionToken,
+  demo: propDemo,
+  threadId = "default",
   sendTurn,
-  initialMessages = demoThread,
-  repair = demoRepair,
+  initialMessages,
+  repair,
 }: {
   ownerId?: string;
   apiBaseUrl?: string;
+  sessionToken?: string | null;
+  demo?: boolean;
+  threadId?: string;
   sendTurn?: (text: string) => Promise<MemoryTurnConfirmation>;
   initialMessages?: ChatMessage[];
-  repair?: RepairPing;
+  repair?: RepairPing | null;
 }) {
-  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
+  const auth = useAuthOptional();
+  const apiSettings = useApiSettingsOptional();
+
+  const demo = propDemo ?? auth?.demoMode ?? false;
+  const apiBaseUrl = propApiBaseUrl ?? apiSettings?.apiBaseUrl ?? "";
+  const sessionToken = propSessionToken !== undefined ? propSessionToken : auth?.session?.sessionToken ?? null;
+  const ownerId = propOwnerId ?? (demo ? "karim" : auth?.session?.userId ?? "");
+  const effectiveInitialMessages = initialMessages ?? (demo ? demoThread : []);
+  const effectiveRepair = repair !== undefined ? repair : demo ? demoRepair : null;
+
+  const [messages, setMessages] = useState<ChatMessage[]>(effectiveInitialMessages);
   const [draft, setDraft] = useState("");
   const [accepted, setAccepted] = useState(false);
   const [drawer, setDrawer] = useState(false);
   const [sending, setSending] = useState(false);
+
+  useEffect(() => {
+    if (initialMessages === undefined) {
+      setMessages(demo ? demoThread : []);
+    }
+  }, [demo, initialMessages]);
 
   async function onSend() {
     const text = draft.trim();
@@ -45,9 +69,31 @@ export function ChatView({
     try {
       const turn = sendTurn
         ? await sendTurn(text)
-        : await postMemoryChatTurn(apiBaseUrl, { ownerId, text });
-      const confirmed = turn.applied === true || (turn.ok === true && !turn.demo);
-      const detail = confirmed && turn.trust && turn.topic ? `trust: ${turn.trust} · topic: ${turn.topic}` : undefined;
+        : await postChatTurn(apiBaseUrl, { text, threadId, sessionToken, demo });
+
+      if (!turn.ok && turn.error && !turn.demo) {
+        setMessages((current) => [
+          ...current,
+          {
+            id: `a-err-${messages.length + 1}`,
+            role: "assistant",
+            text: turn.error ?? "Chat request failed. Nothing was ingested.",
+            at: "now",
+            ingested: false,
+            error: true,
+            demo: false,
+          },
+        ]);
+        return;
+      }
+
+      const confirmed = turn.ingested === true || turn.applied === true || (turn.ok === true && !turn.demo);
+      const metaParts = [
+        turn.trust ? `trust: ${turn.trust}` : null,
+        turn.topic ? `topic: ${turn.topic}` : null,
+        turn.model ? `model: ${turn.model}` : null,
+      ].filter(Boolean);
+      const detail = confirmed && metaParts.length > 0 ? metaParts.join(" · ") : undefined;
       const assistant: ChatMessage = {
         id: `a-${messages.length + 1}`,
         role: "assistant",
@@ -55,6 +101,7 @@ export function ChatView({
         at: "now",
         ingested: confirmed,
         ingestDetail: detail,
+        citations: turn.citations,
         demo: turn.demo,
       };
       setMessages((current) => [...current, assistant]);
@@ -67,7 +114,8 @@ export function ChatView({
           text: "The memory service did not confirm this turn. Nothing was ingested.",
           at: "now",
           ingested: false,
-          demo: true,
+          error: true,
+          demo: false,
         },
       ]);
     } finally {
@@ -80,19 +128,37 @@ export function ChatView({
       <View style={styles.header}>
         <View>
           <Text style={styles.brand}>Dubai-io Quest AI Companion</Text>
+          {ownerId && !demo ? <Text style={styles.subBrand}>{auth?.session?.displayName ?? ownerId}</Text> : null}
         </View>
-        <Pressable accessibilityRole="button" accessibilityLabel="Life categories" onPress={() => setDrawer(true)} testID="open-life-drawer">
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Life categories"
+          onPress={() => setDrawer(true)}
+          testID="open-life-drawer"
+        >
           <Text style={styles.more}>···</Text>
         </Pressable>
       </View>
       <ScrollView contentContainerStyle={styles.thread}>
+        {!demo && !sessionToken && !sendTurn ? (
+          <View style={styles.notice} testID="chat-auth-notice">
+            <Text style={styles.noticeTitle}>Sign in required</Text>
+            <Text style={styles.noticeBody}>
+              Sign in with Google or pair your iPhone on Connect to chat with your real memory.
+            </Text>
+          </View>
+        ) : null}
         <ChatMessageList messages={messages} />
-        <ProactiveRepairCard ping={repair} accepted={accepted} onAccept={() => setAccepted(true)} />
-        <View style={styles.action} testID="action-card">
-          {demoAction.demo ? <DemoPill /> : null}
-          <Text style={styles.actionTitle}>{demoAction.title}</Text>
-          <Text style={styles.actionSub}>{demoAction.subtitle}</Text>
-        </View>
+        {effectiveRepair ? (
+          <ProactiveRepairCard ping={effectiveRepair} accepted={accepted} onAccept={() => setAccepted(true)} />
+        ) : null}
+        {demo ? (
+          <View style={styles.action} testID="action-card">
+            {demoAction.demo ? <DemoPill /> : null}
+            <Text style={styles.actionTitle}>{demoAction.title}</Text>
+            <Text style={styles.actionSub}>{demoAction.subtitle}</Text>
+          </View>
+        ) : null}
       </ScrollView>
       <View style={styles.composer}>
         <TextInput
@@ -131,6 +197,10 @@ const styles = StyleSheet.create({
     fontFamily: typography.serif,
     fontSize: typography.body,
   },
+  subBrand: {
+    color: colors.muted,
+    fontSize: typography.caption,
+  },
   more: {
     color: colors.ink,
     fontSize: 22,
@@ -140,6 +210,25 @@ const styles = StyleSheet.create({
     gap: spacing.lg,
     padding: spacing.lg,
     paddingBottom: 140,
+  },
+  notice: {
+    ...noShadow,
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: radii.card,
+    borderWidth: 1,
+    gap: spacing.xs,
+    padding: spacing.lg,
+  },
+  noticeTitle: {
+    color: colors.ink,
+    fontWeight: "700",
+    fontSize: typography.body,
+  },
+  noticeBody: {
+    color: colors.muted,
+    fontSize: typography.caption,
+    lineHeight: 18,
   },
   action: {
     ...noShadow,

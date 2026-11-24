@@ -20,7 +20,17 @@ export function ChatMessageList({ messages }: { messages: ChatMessage[] }) {
             ) : (
               <View style={styles.aiBlock} testID={`ai-${message.id}`}>
                 {message.demo ? <DemoPill /> : null}
-                <Text style={styles.aiText}>{message.text}</Text>
+                <Text style={[styles.aiText, message.error && styles.errorText]}>{message.text}</Text>
+                {Array.isArray(message.citations) && message.citations.length > 0 ? (
+                  <View style={styles.citations} testID={`citations-${message.id}`}>
+                    {message.citations.map((cit, idx) => (
+                      <View key={`${cit.fact_id}-${idx}`} style={styles.citationChip} testID={`citation-${cit.fact_id}`}>
+                        <Text style={styles.citationId}>{cit.fact_id}</Text>
+                        <Text style={styles.citationText}>{cit.text}</Text>
+                      </View>
+                    ))}
+                  </View>
+                ) : null}
                 <Text style={styles.aiTime}>{message.at}</Text>
                 <MemoryIngestedBadge confirmed={message.ingested} detail={message.ingestDetail} />
               </View>
@@ -72,6 +82,30 @@ const styles = StyleSheet.create({
     color: colors.ink,
     fontSize: typography.body,
     lineHeight: 22,
+  },
+  errorText: {
+    color: "#B3261E",
+  },
+  citations: {
+    gap: spacing.xs,
+  },
+  citationChip: {
+    ...noShadow,
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: radii.chip,
+    borderWidth: 1,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+  },
+  citationId: {
+    color: colors.gold.primary,
+    fontSize: 11,
+    fontWeight: "700",
+  },
+  citationText: {
+    color: colors.ink,
+    fontSize: typography.caption,
   },
   aiTime: {
     color: colors.muted,

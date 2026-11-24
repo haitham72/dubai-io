@@ -26,6 +26,16 @@ from .models import (
 from .store import IdentityStore, iso_utc, parse_iso, utcnow
 
 
+_PAIR_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+
+
+def _normalize_device_label(label: Optional[str]) -> Optional[str]:
+    if label is None:
+        return None
+    clean = " ".join(label.strip().split())
+    return clean[:80] if clean else None
+
+
 def _sha256_hex(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
@@ -222,13 +232,33 @@ class IdentityService:
         requested_capabilities: Optional[set[str]] = None,
         ttl_seconds: Optional[int] = None,
         source_jti: Optional[str] = None,
+        device_label: Optional[str] = None,
     ) -> AppSessionOut:
         if not principal.is_verified:
             raise IdentityError("unverified_principal", "Verified principal is required", 401)
+        return self.issue_user_session(
+            principal.user_id,
+            app_id=app_id,
+            requested_capabilities=requested_capabilities,
+            ttl_seconds=ttl_seconds,
+            source_jti=source_jti,
+            device_label=device_label,
+        )
+
+    def issue_user_session(
+        self,
+        user_id: str,
+        *,
+        app_id: AppId,
+        requested_capabilities: Optional[set[str]] = None,
+        ttl_seconds: Optional[int] = None,
+        source_jti: Optional[str] = None,
+        device_label: Optional[str] = None,
+    ) -> AppSessionOut:
         if app_id not in VALID_APP_IDS:
             raise IdentityError("invalid_app_id", f"Unsupported app_id: {app_id}", 422)
 
-        user = self.store.get_user(principal.user_id)
+        user = self.store.get_user(user_id)
         if user is None or user["status"] != "active":
             raise IdentityError("user_inactive", "User account is not active", 403)
 
@@ -250,6 +280,7 @@ class IdentityService:
         if ttl < 1 or ttl > self.config.max_session_ttl_seconds:
             raise IdentityError("invalid_ttl", "Session TTL is outside allowed bounds", 422)
 
+        clean_label = _normalize_device_label(device_label)
         now_dt = utcnow()
         now_str = iso_utc(now_dt)
         expires_str = iso_utc(now_dt + timedelta(seconds=ttl))
@@ -265,6 +296,7 @@ class IdentityService:
             capabilities=sorted(granted),
             session_version=user["session_version"],
             source_jti=source_jti,
+            device_label=clean_label,
             created_at=now_str,
             expires_at=expires_str,
         )
@@ -273,7 +305,7 @@ class IdentityService:
             app_id=app_id,
             session_id=session_id,
             event_kind="app_session_created",
-            detail={"capabilities": sorted(granted), "expires_at": expires_str},
+            detail={"capabilities": sorted(granted), "expires_at": expires_str, "device_label": clean_label},
             at=now_str,
         )
         return AppSessionOut(
@@ -284,7 +316,29 @@ class IdentityService:
             capabilities=tuple(sorted(granted)),
             age_band=user["age_band"],
             expires_at=expires_str,
+            display_name=user.get("display_name") or "",
+            email=user.get("email"),
+            device_label=clean_label,
         )
+
+    def list_active_sessions(
+        self,
+        user_id: str,
+        *,
+        current_session_id: Optional[str] = None,
+    ) -> list[dict]:
+        rows = self.store.list_active_user_sessions(user_id)
+        return [
+            {
+                "session_id": row["session_id"],
+                "app_id": row["app_id"],
+                "device_label": row.get("device_label"),
+                "created_at": row["created_at"],
+                "expires_at": row["expires_at"],
+                "is_current": bool(current_session_id and row["session_id"] == current_session_id),
+            }
+            for row in rows
+        ]
 
     def _validate_session_record(
         self,
@@ -613,3 +667,85 @@ class IdentityService:
             "subject": claims.subject,
             "challenge_id": challenge_id,
         }
+
+    def start_pairing(
+        self,
+        principal: VerifiedPrincipal,
+        *,
+        ttl_seconds: int = 300,
+    ) -> dict:
+        if not principal.is_verified:
+            raise IdentityError("unverified_principal", "Verified principal is required", 401)
+        user = self.store.get_user(principal.user_id)
+        if user is None or user["status"] != "active":
+            raise IdentityError("user_inactive", "User account is not active", 403)
+        ttl = max(30, min(int(ttl_seconds), 300))
+        code = "".join(secrets.choice(_PAIR_ALPHABET) for _ in range(8))
+        now_dt = utcnow()
+        now_str = iso_utc(now_dt)
+        expires_str = iso_utc(now_dt + timedelta(seconds=ttl))
+        self.store.create_pairing_code(
+            code_hash=_sha256_hex(code),
+            user_id=principal.user_id,
+            created_by_session_id=principal.session_id,
+            created_at=now_str,
+            expires_at=expires_str,
+        )
+        self.store.record_audit(
+            user_id=principal.user_id,
+            app_id=principal.app_id,
+            session_id=principal.session_id,
+            event_kind="device_pairing_started",
+            detail={"expires_at": expires_str, "ttl_seconds": ttl},
+            at=now_str,
+        )
+        return {
+            "code": code,
+            "expires_at": expires_str,
+            "ttl_seconds": ttl,
+            "qr_payload": f"dubaiio://pair?code={code}",
+        }
+
+    def complete_pairing(
+        self,
+        code: str,
+        *,
+        device_label: Optional[str] = None,
+    ) -> AppSessionOut:
+        normalized = (code or "").strip().upper()
+        if not normalized or len(normalized) > 128:
+            raise IdentityError("invalid_code", "Invalid pairing code", 400)
+
+        code_hash = _sha256_hex(normalized)
+        record = self.store.get_pairing_code(code_hash)
+        if record is None:
+            raise IdentityError("invalid_code", "Invalid pairing code", 400)
+        if record["consumed_at"] is not None:
+            raise IdentityError("code_already_used", "Pairing code has already been used", 409)
+        if parse_iso(record["expires_at"]) <= utcnow():
+            raise IdentityError("expired_code", "Pairing code has expired", 410)
+
+        session_out = self.issue_user_session(
+            record["user_id"],
+            app_id="quest",
+            device_label=device_label or "iPhone",
+        )
+        now_str = iso_utc()
+        if not self.store.consume_pairing_code_atomic(
+            code_hash,
+            consumed_at=now_str,
+            consumed_by_session_id=session_out.session_id,
+        ):
+            # Another concurrent request consumed the code first — revoke the just-minted session.
+            self.store.revoke_app_session(session_out.session_id, revoked_at=now_str, reason="pairing_race")
+            raise IdentityError("code_already_used", "Pairing code has already been used", 409)
+
+        self.store.record_audit(
+            user_id=record["user_id"],
+            app_id="quest",
+            session_id=session_out.session_id,
+            event_kind="device_pairing_completed",
+            detail={"device_label": session_out.device_label},
+            at=now_str,
+        )
+        return session_out

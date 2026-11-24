@@ -69,3 +69,7 @@ export function useApiSettings(): ApiSettings {
   }
   return value;
 }
+
+export function useApiSettingsOptional(): ApiSettings | null {
+  return useContext(ApiSettingsContext);
+}

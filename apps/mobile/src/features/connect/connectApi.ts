@@ -1,4 +1,4 @@
-/** Connect helpers: SecureStore persistence, honest health check, OAuth, uploads. */
+/** Connect helpers: SecureStore persistence, honest health check, OAuth, QR pairing, sessions, uploads. */
 import { Platform } from "react-native";
 import * as SecureStore from "expo-secure-store";
 import * as WebBrowser from "expo-web-browser";
@@ -12,7 +12,23 @@ export const DEMO_KEY = "dubaiio.demoMode";
 export type YoutubeRegion = "EEA" | "UAE";
 export type ConnectionStatus = "unknown" | "reachable" | "offline";
 
-const defaultFetcher: Fetcher = (url) => fetch(url);
+export interface DeviceSessionInfo {
+  session_id: string;
+  app_id: string;
+  device_label: string | null;
+  created_at: string;
+  expires_at: string;
+  is_current: boolean;
+}
+
+export interface PairingStartOut {
+  code: string;
+  expires_at: string;
+  ttl_seconds: number;
+  qr_payload: string;
+}
+
+const defaultFetcher: Fetcher = (url, init) => fetch(url, init);
 
 export function isLocalhostUrl(value: string): boolean {
   try {
@@ -46,7 +62,7 @@ export async function saveSettings(apiBaseUrl: string, owner: string, demo: bool
 export async function loadSettings(): Promise<{ apiBaseUrl: string; owner: string; demo: boolean }> {
   return {
     apiBaseUrl: (await getSetting(API_URL_KEY)) ?? "",
-    owner: (await getSetting(OWNER_KEY)) ?? "karim",
+    owner: (await getSetting(OWNER_KEY)) ?? "",
     demo: (await getSetting(DEMO_KEY)) === "1",
   };
 }
@@ -67,23 +83,78 @@ export async function testConnection(apiBaseUrl: string, fetcher: Fetcher = defa
   }
 }
 
-/** Google OAuth is server-side; the app never bundles a client secret. */
-export async function startGoogleOAuth(apiBaseUrl: string): Promise<WebBrowser.WebBrowserAuthSessionResult> {
-  const start = `${apiBaseUrl.replace(/\/$/, "")}/api/auth/google/start`;
-  return WebBrowser.openAuthSessionAsync(start, "dubaiio://auth/google");
+/** Identity Google Sign-In (PKCE + state -> short-lived auth_code). */
+export async function startGoogleSignIn(
+  apiBaseUrl: string,
+  returnTo?: string,
+): Promise<WebBrowser.WebBrowserAuthSessionResult | void> {
+  const base = apiBaseUrl.replace(/\/$/, "");
+  const defaultWebReturn =
+    typeof window !== "undefined" && window.location?.origin
+      ? `${window.location.origin}/connect`
+      : "http://localhost:8081/connect";
+  const targetReturn = returnTo ?? defaultWebReturn;
+  const startUrl = `${base}/api/identity/google/start?client=web&return_to=${encodeURIComponent(targetReturn)}`;
+  if (Platform.OS === "web" && typeof window !== "undefined" && window.location?.assign) {
+    window.location.assign(startUrl);
+    return;
+  }
+  return WebBrowser.openAuthSessionAsync(startUrl, targetReturn);
 }
 
-export async function uploadPickedFile(
-  apiBaseUrl: string, owner: string, kind: "takeout" | "whatsapp",
-  asset: { name: string; uri: string },
+export async function startDevicePairing(
+  apiBaseUrl: string,
+  sessionToken: string,
   fetcher: Fetcher = defaultFetcher,
-): Promise<boolean> {
-  try {
-    const res = await fetcher(
-      `${apiBaseUrl.replace(/\/$/, "")}/api/connectors/${kind}?owner=${encodeURIComponent(owner)}&name=${encodeURIComponent(asset.name)}`,
-    );
-    return res.ok;
-  } catch {
-    return false;
+): Promise<PairingStartOut> {
+  const res = await fetcher(`${apiBaseUrl.replace(/\/$/, "")}/api/identity/pair/start`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      "X-App-Session": sessionToken,
+    },
+    body: JSON.stringify({ ttl_seconds: 300 }),
+  });
+  if (!res.ok) {
+    throw new Error(`Could not start pairing (${res.status})`);
+  }
+  return (await res.json()) as PairingStartOut;
+}
+
+export async function listActiveSessions(
+  apiBaseUrl: string,
+  sessionToken: string,
+  fetcher: Fetcher = defaultFetcher,
+): Promise<DeviceSessionInfo[]> {
+  const res = await fetcher(`${apiBaseUrl.replace(/\/$/, "")}/api/identity/sessions`, {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+      "X-App-Session": sessionToken,
+    },
+  });
+  if (!res.ok) {
+    throw new Error(`Could not load sessions (${res.status})`);
+  }
+  const body = (await res.json()) as { sessions?: DeviceSessionInfo[] };
+  return Array.isArray(body.sessions) ? body.sessions : [];
+}
+
+export async function revokeDeviceSession(
+  apiBaseUrl: string,
+  sessionToken: string,
+  sessionId: string,
+  fetcher: Fetcher = defaultFetcher,
+): Promise<void> {
+  const res = await fetcher(`${apiBaseUrl.replace(/\/$/, "")}/api/identity/sessions/${encodeURIComponent(sessionId)}`, {
+    method: "DELETE",
+    headers: {
+      Accept: "application/json",
+      "X-App-Session": sessionToken,
+    },
+  });
+  if (!res.ok) {
+    throw new Error(`Could not revoke session (${res.status})`);
   }
 }

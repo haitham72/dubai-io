@@ -1,8 +1,16 @@
 # Dubai-io — Plan
 
-**Updated:** 17 Nov 2026 · **Owner:** Haitham · State: [docs/status.md](docs/status.md) · Open requests: [docs/request-backlog.md](docs/request-backlog.md) · Active build: `apps/api/app/lab/CLAUDE.md`
+**Updated:** 24 Nov 2026 (status block below; dated entries are history) · **Owner:** Haitham · State: [docs/status.md](docs/status.md) · Open requests: [docs/request-backlog.md](docs/request-backlog.md) · Active build: `apps/api/app/lab/CLAUDE.md`
 
 The single plan: identity, founder decisions, scope locks, live rulings, contest facts, demo arc, pitch guardrails. Done work lives in git history; the previous version of this file is `git show main:PLAN.md`.
+
+## 0. Current status (24 Nov 2026, D16)
+
+- **Portfolio:** one monorepo, all on `main`: Dubai-io (Personal), Community (Societal, replaces Persocial) and Messenger (Business, owns person-to-person messaging). Founder decisions D1–D16: `docs/submissions/shared/founder-decisions.md`.
+- **Delivery matrix:** each product targets an iPhone app in Expo Go, a website, and an Electron desktop app (Dubai-io's website is Expo web). All nine code targets are on `main`. Android and the $99 Apple Developer account are deferred. The founder's PC hosts the demo stack; Cloudflare Tunnel comes later (D13); Azure's $200 demo credit is reserved for later deployment.
+- **Immediate milestone:** the E0–E4 real-data round (`apps/memory/upgrade/prompts/`): local startup, Google sign-in and iPhone pairing, consented Gmail, Calendar, YouTube, Takeout, WhatsApp and desktop ingest, then Chat and Today on real memory. The sticker Builder is excluded (D6). Design polish follows that round; the 20 Nov visual spec is parked at `archive/design-spec-20-11`.
+- **Memory engine:** temporal_note (`apps/memory`), replacing Hindsight/Honcho/mem0. Current design, gates and the Vault: `docs/plan/Memory/memory.md` §9, §17, §18. The Vault has seven clusters (Career, Learning, Projects, People & family, Events, Home & money, Travel); inner-circle (T1) members are suggested, then user-confirmed; memory decays by default and Forget runs only on user request.
+- Entries below are dated records. Where they name Hindsight, AC-1/AC-3 gates, Mirsal Studio, a single Personal focus, or `apps/site` as the one app, they are superseded by this block.
 
 ## 1. Identity (approved by the founder, 9 Nov 2026)
 
@@ -12,13 +20,13 @@ The single plan: identity, founder decisions, scope locks, live rulings, contest
 
 **References:** Quest (new.quest) is the closest reference for Know and Notice — its experience, not its access methods (a cloud phone linked to the user's WhatsApp, residential proxies, unconfirmed inference of sensitive facts). Grok Bot is the reference for task threads.
 
-**What it is not:** not a visitor or tourist app (visitor framing retired 22 Oct) · not a DubaiNow clone · not a services-only or shop app (services are capabilities inside Do) · not a social network (community parked 9 Nov; Persocial is a separate project).
+**What it is not:** not a visitor or tourist app (visitor framing retired 22 Oct) · not a DubaiNow clone · not a services-only or shop app (services are capabilities inside Do) · not a social network (Dubai-io itself; the social/community track is the separate Community entry, which replaces Persocial; person-to-person messaging belongs to the separate Messenger entry).
 
 ## 2. Founder decisions log (newest first)
 
 Only decisions still in force. Superseded ones stay in git history.
 
-**20 Nov 2026 — Sovereign Knowledge Vault, 3:4 Peeking Carousel & Proactive Memory Repair UI Lock (`design/20-11-2026/`)**
+**20 Nov 2026 — Sovereign Knowledge Vault, 3:4 Peeking Carousel & Proactive Memory Repair UI Lock (`design/20-11-2026/`)** [24 Nov: visual spec parked at `archive/design-spec-20-11`; Vault now uses temporal_note's seven clusters, hybrid search and a suggested, user-confirmed inner circle (`memory.md` §§9, 17, 18); the Hindsight/Honcho engine line below is superseded]
 - **Mobile UI Standard Locked:** Warm luxury white canvas (`#FFFFFF` / `#FAF8F5`), 4-pillar capsule dock (`Today`, `Chat`, `Quests`, `Memory`) with a central floating audio waveform orb. Full catalog and screen breakdown documented in [`design/20-11-2026/INDEX.md`](design/20-11-2026/INDEX.md).
 - **3:4 Vertical Card Ergonomics:** Category carousels render cards in 3:4 aspect ratio (~78% viewport width) with an ~18% right edge peek to signal horizontal swipe navigation naturally.
 - **Proactive Empathy & Memory Repair Cards:** In-chat gold proactive notification cards (`⚡ Proactive Ping · Memory Repair`) with an instant *"Apology Accepted 👍"* resolution tap, coupled with real-time temporal ingestion badges (`✓ Ingested into Temporal Memory | trust: T1`).
@@ -27,7 +35,7 @@ Only decisions still in force. Superseded ones stay in git history.
   2. *People & Places View:* 179 nodes featuring social trust boundaries (`T1` Inner Circle: `Mamty`, `Radwa`, `Khalid`, `Abdelaziz`) and geographic anchors (`Dubai`, `Istanbul`, `Mirsal Studio`).
 - **Memory Engine Integration:** Fully wired to the locked memory pipeline: Custom Extractors $\to$ Honcho 3-speed deriver $\to$ Hindsight 4-way verdict engine $\to$ Sovereign Knowledge Base.
 
-**19 Nov 2026 (Evening) — Dual Contest Entry Strategy, Mirsal Studio Business Entry & IDE-Companio Skill Integration**
+**19 Nov 2026 (Evening) [24 Nov: portfolio is now Dubai-io, Community and Messenger; the sticker Builder is excluded (D6)] — Dual Contest Strategy, Mirsal Studio Business Entry & IDE-Companio Skill Integration**
 - **Dual Contest Strategy (Dubai Chambers Championship $150k Tracks):**
   1. **Entry 1: Best Personal AI Agent ("AI-Companion: Quest / Dubai IO"):** Flagship personal companion with consented memory management, multi-source temporal ingestion (YouTube 500 titles, Gmail 250 threads, Chrome 23.9k URLs), ScopeGuard privacy shield, and Two-Tower feed spanning 6 life clusters (Gaming, Deals/Hardware, Academics, AI Systems, Design, Career). Presentation elevated to an Executive Showcase Suite.
   2. **Entry 2: Best Business AI Agent ("Mirsal Studio" — working title, renaming pending):** The product is functionally completed at `G:\Haitham\VsCode\emoji-creator\mirsal-builder-io` (FastAPI backend, PostgreSQL with 36 migrations, 1,898-row cultural emoji bank, Kling 4.0/GPT Image 2.5 generative engine, 44-check deterministic verifier, and Arabic design canvas). Next steps: Focus on founder story, presentation deck, running primarily on local models + cloud fallback, subscription-based pricing for users, and direct export to Telegram / messaging.
@@ -36,7 +44,7 @@ Only decisions still in force. Superseded ones stay in git history.
   - Scans local developer transcripts (`~/.claude/projects/`, Codex, Git commits) with secret scrubbing and logs them temporally to the memory engine.
   - **Minimal Developer Presentation:** User-facing representation under the 'Developer' category/filter is strictly minimal (one clean card: project name, 1-sentence accomplishment narrative, commit/token stats; zero raw log or prompt dumps).
 
-**19 Nov 2026 — AI-Companion (Quest) Single Active Focus & Multi-Modal Data Pipeline**
+**19 Nov 2026 [24 Nov: single focus superseded; current milestone is the E0–E4 real-data round] — AI-Companion (Quest) Single Active Focus & Multi-Modal Data Pipeline**
 - **Single Active Focus:** We are exclusively building and demonstrating **Entry 1: Best Personal AI Agent ("AI-Companion: Quest")**. The immediate milestone is pulling real personal context data and rendering a high-fidelity, interactive **Figma-style mockup** (`design/17-11-2026/Quest_ Thoughtful Memory Management.png`) to review the complete experience.
 - **Next Phases (Deferred & Modular):**
   - *Social (Reddit style with DMs):* Deferred to Phase 5.
@@ -51,7 +59,7 @@ Only decisions still in force. Superseded ones stay in git history.
 - **Context Budget & Cost Taxonomy:** 3-tier cost hierarchy: Always-on ($<3.5$k tokens: rules/identity), Runtime ($\le 50$k tokens: memory/thread), On-demand (never auto-loaded: full KB tree).
 - **Security & Sanctions:** Zero Gemini API calls; all real data stays in gitignored `data/sync/` or `G:\Haitham\lab-data\`.
 
-**18 Nov 2026 — Hindsight Go-To Engine, Adaptive KB Export Tree & Permanent Quest Files Lock**
+**18 Nov 2026 [24 Nov: Hindsight decision superseded by temporal_note; see `memory.md` §18] — Hindsight Go-To Engine, Adaptive KB Export Tree & Permanent Quest Files Lock**
 - **Hindsight is the go-to memory engine (`MEM-01`):** Hindsight owns the 3-tier memory lifecycle: Tier 1 Raw Facts (`retain`), Tier 2 Consolidated Beliefs (`observations`), and Tier 3 Living Knowledge Pages (`Mental Models` via `create_mental_model` + background `reflect`). Product retrieval stays FTS/BM25-first (`ScopeGuard` scoped by category/entity/person), with semantic/RRF ranking inside that scoped slice (`docs/plan/Memory/memory.md`).
 - **Adaptive Knowledge Base Export Tree (`docs/plan/Memory/memory.md` §12, benchmarked at `docs/plan/Memory/_archive/hindsight-kb-export/`):** Materializes Hindsight Mental Models & consolidated facts into an upgraded markdown vault:
   - **4 Root Control Files:** `USER.md` (7-section profile with leaf citations), `NOW.md` (active open loops, next-30d occasions, rising 21d topics, pending confirmations), `MEMORIES.md` (complete router index with non-empty descriptions and fact counts), and `SOURCES.md` (watermarks, evidence limits, `Never Remember` blocklist).
@@ -75,9 +83,9 @@ Locked architectural decisions (do not relitigate without a written counter-evid
 | **Backfill agent architecture** | **One accountable lead + bounded delegation + durable SQLite queue** | Goal loop = testable `"done"` contract; `blocked` state routes borderline (<10%) cases to human review; frontier plans / cheap executes (`docs/plan/backfill-agent.md`). |
 | **`mamty-hindsight` weekly extract (`G:\Haitham\lab-data\mamty-hindsight\`)** | **Prompt-level retain lab run only; blocked from `mem_*` until AC-1 + L3/L4** | ISO week (`Mon–Sun`, recent→older) + ~40–80 msg day packets + Egyptian Arabic/Arabizi kept + never overwrite `status=done` weeks. Raw week JSON requires object schema check (reject `list_root`), `circle.json` alias normalization, `sensitive.py` gate, and user confirmation before touching `mem_*` (`apps/api/app/lab/CLAUDE.md`). |
 
-**Gate before new features:** Do not proceed to new feature work until **AC-1** (Hindsight LLM-provider extraction verified in `tests/test_live_hindsight_llm.py`), **AC-2** (Card lifecycle `new → seen → actioned → dismissed → resolved` + honest `reminder saved — delivery not yet enabled` label), and **AC-3** (Orchestrator query rewriter) are green. Until AC-1 runs live with an LLM provider enabled, `MEM-01` is tracked as **unproven at the LLM fact-extraction layer** in `docs/status.md`.
+**Gate before new features** [historical: AC-1 and the AC-3 Hindsight rewriter gate are retired as of 24 Nov; current gates are `memory.md` §18]: Do not proceed to new feature work until **AC-1** (Hindsight LLM-provider extraction verified in `tests/test_live_hindsight_llm.py`), **AC-2** (Card lifecycle `new → seen → actioned → dismissed → resolved` + honest `reminder saved — delivery not yet enabled` label), and **AC-3** (Orchestrator query rewriter) are green. Until AC-1 runs live with an LLM provider enabled, `MEM-01` is tracked as **unproven at the LLM fact-extraction layer** in `docs/status.md`.
 
-**16 Nov 2026 — memory design** (single plan: `docs/plan/Memory/memory.md`; historical research: `docs/plan/Memory/_archive/memory-research-2026-11.md`)
+**16 Nov 2026 — memory design** [24 Nov: the merged 10-table Postgres service is historical; the active store is temporal_note] (single plan: `docs/plan/Memory/memory.md`; historical research: `docs/plan/Memory/_archive/memory-research-2026-11.md`)
 
 Decided (founder, 16 Nov):
 - **One memory service on Postgres (Supabase), every table keyed by `user_id`**, merging Mem0 (links between memories), Graphiti (a dated end for a fact), Hindsight (a verdict per new fact against the closest memories), the Quest tree (sections, topic and person files, profile) and the temporal_note engine. **The md tree is an export, not the store.** This settles the open Stage-2 engine pick of 8–9 Nov: no single engine is adopted.
@@ -102,7 +110,7 @@ Proposed, not yet approved:
 - **Rule 6 strict:** one explicit tap per side effect; no "Yes to all" batch approval. Auto / Ask / Learn modes stay rule-compliant: sends and shares always need a tap.
 - **Memory folders are user-visible life themes:** Career · Learning · Projects · People & family · Events · Home & money · Travel. The residence ontology stays the fine tree underneath (`docs/references/residence-ontology-tree.md`). Supersedes the 2 Nov UI-bot list and "user never browses folders".
 - **WhatsApp only from manually exported chats** (WhatsApp's own Export chat). No linked device, Baileys or Evolution API, no automation of a personal account.
-- **Community/social track parked:** code stays, not in the contest build. Personalised feeds stay under Notice.
+- **Community/social track parked:** [24 Nov: now the separate Community entry on `main`, D2–D3.]  Personalised feeds stay under Notice.
 - **UI work paused** while a headless pipeline is built in `apps/api/app/lab/` (guide: `apps/api/app/lab/CLAUDE.md`).
 - **Persocial** is a separate, deprioritised project with its own repo. Never build its features into Dubai-io, or the reverse.
 
@@ -114,7 +122,7 @@ Proposed, not yet approved:
 **2 Nov 2026** (from docs/archive/root/cursor-plan.md) — residence-companion lock, still valid: not DEWA Jarvis, not a shop, not a DubaiNow clone; Services = a feature (cards → detail → approve → honest proof); "Because…" chips stay rare; the temporal_note *engine* (cloud-slim), never the founder's personal vault. Taxi / UAE Pass demos: no fake Paid / Filed. The UI-bot list (Lifestyle · Career · Social · Household · Money · Travel · Me) is superseded by the 9 Nov life themes.
 
 **23 Oct 2026**
-- **One React codebase** (`apps/site`) → website, desktop (Tauri/Electron), iOS/Android (Capacitor), with one central design system: a design change is one edit that echoes everywhere. Screens are ported from the original mobile app, as close as possible to it. Light mode first; dark = Graphite after. Wrapping the original as the phone app was declined.
+- **One React codebase** (`apps/site`) [24 Nov: delivery superseded: `apps/mobile` Expo Go + Expo web, `apps/desktop` Electron; `apps/site` paused] → website, desktop (Tauri/Electron), iOS/Android (Capacitor), with one central design system: a design change is one edit that echoes everywhere. Screens are ported from the original mobile app, as close as possible to it. Light mode first; dark = Graphite after. Wrapping the original as the phone app was declined.
 - **`apps/web` frozen** at tag `mobile-pwa-baseline-2026-10-23`: the reference, never "classic"; embedded at `/?devices` with an Original ⇄ New toggle; retired only after parity and explicit founder approval.
 - **Native iOS (Swift) STOPPED.**
 - **Lock removal:** government/civic transactions, bill top-ups/payments, in-app donations and third-party purchasing are unlocked — only through a real registered adapter with per-action approval and verified provider evidence (rule 4). Without an adapter: show the blocker and an "Open official portal" link, keep the draft. Still locked: the DubaiNow look, fake statuses, invented facts, bidding.
@@ -149,7 +157,7 @@ Proposed, not yet approved:
 
 Civic RAG with citations · background geofencing · ticket wallet · media memory · Arabic RTL UI · live AR try-on · affiliate marketplace feeds. A broader audience does not automatically activate these features. (Unlocked 23 Oct by founder: resident bills + Salik/DEWA displays, payments and third-party purchasing, government transactions — each ships only behind a real adapter with verified evidence; no fake sends.)
 
-Also out of the contest build for now: **community/social track** (parked 9 Nov; code stays) · **UI work** (paused 9 Nov until the headless pipeline works; when it resumes, no UI track is done without founder visual review of a staged preview) · native iOS (STOPPED 23 Oct).
+Also out of the contest build for now [24 Nov: Community and Messenger are now separate entries on `main`]: **community/social track** (parked 9 Nov; code stays) · **UI work** (paused 9 Nov until the headless pipeline works; when it resumes, no UI track is done without founder visual review of a staged preview) · native iOS (STOPPED 23 Oct).
 
 ### NEVER
 
@@ -168,7 +176,7 @@ The other D-rows (D01–D13, D16–D18) are history: `git show main:PLAN.md`, §
 
 Source: `docs/Researches/contest.md` (official page, last updated 15 Oct 2026). Archive a dated screenshot of the rules before submission.
 
-- **Create AI Agents Championship** (Dubai Chambers). Four categories: Societal, Personal, Business, Youth (lead under 21). Our entry: **Best Personal AI Agent** — agents that "help people live better every day". Each category winner gets a USD 150,000 grant; one of them is also named Dubai AI Agent of the Year.
+- **Create AI Agents Championship** (Dubai Chambers). Four categories: Societal, Personal, Business, Youth (lead under 21). Our entries: **Best Personal AI Agent** (Dubai-io), **Best Societal AI Agent** (Community) and **Best Business AI Agent** (Messenger) — agents that "help people live better every day". Each category winner gets a USD 150,000 grant; one of them is also named Dubai AI Agent of the Year.
 - **Timeline:** registration opened 7 Oct 2026 · build phase Nov–Dec 2026 · **January 2027: registration closes; submit the agent prototype + pitch deck + demo video** (day not stated) · January: 24 semi-finalists and the Tech Accelerator · March 2027: semi-final pitch day, 12 finalists · **Grand Final: first week of May 2027**.
 - **Internal target: Fri 18 Dec 2026** — deck, demo video, hosting or tunnel, small user test.
 - **Rules:** individual or team (max 6) · an original solution, not copied or taken from an existing repository · idea, prototype or early-MVP stage, not fully commercialised · must protect personal, confidential and organisational data and prevent leakage · English only · free to enter. **Finalists must present a fully functional, working agent live** — not an MVP.
