@@ -7,6 +7,7 @@ from dataclasses import asdict
 from datetime import datetime, timezone
 import functools
 import inspect
+from itertools import islice
 import threading
 import time
 from typing import Any, Callable
@@ -446,7 +447,7 @@ def create_mcp_app(
         res["processed_by"] = "your Claude" if effective_kind == "owner-hook" else model
         return res
 
-    @mcp.tool(description="Search visible facts for an owner using Postgres FTS and folded token matching.")
+    @mcp.tool(description="Search visible facts for an owner using SQL multi-channel retrieval.")
     @_audited("memory_search")
     def memory_search(query: str, owner: str | None = None, limit: int = 10) -> dict[str, Any]:
         auth = _require_auth()
@@ -455,7 +456,7 @@ def create_mcp_app(
         q_clean = (query or "").strip()
 
         if not q_clean:
-            facts = graph_store.visible_facts(target_owner, limit=clamped_limit)
+            facts = list(islice(graph_store.iter_visible_facts(target_owner, page_size=clamped_limit), clamped_limit))
             return {
                 "owner": target_owner,
                 "query": query,
@@ -463,38 +464,8 @@ def create_mcp_app(
                 "count": len(facts),
             }
 
-        q_folded = fold_text(q_clean)
-        with database.connection() as conn:
-            fts_rows = conn.execute(
-                """
-                SELECT id
-                FROM visible_facts
-                WHERE owner = %s
-                  AND (
-                      tsv @@ plainto_tsquery('simple', %s)
-                      OR (%s <> '' AND tsv @@ plainto_tsquery('simple', %s))
-                  )
-                ORDER BY valid_from DESC, created_at DESC
-                LIMIT %s
-                """,
-                (target_owner, q_clean, q_folded, q_folded, clamped_limit),
-            ).fetchall()
-        fts_ids = [r["id"] for r in fts_rows]
-        fts_set = set(fts_ids)
-
-        all_visible = graph_store.visible_facts(target_owner, limit=1000)
-        q_tokens = [tok for tok in q_folded.split() if tok]
-        fts_hits = [f for f in all_visible if f.id in fts_set]
-        fallback_hits = []
-        if len(fts_hits) < clamped_limit and q_tokens:
-            for f in all_visible:
-                if f.id in fts_set:
-                    continue
-                hay = fold_text(f"{f.text} {f.text_orig or ''}")
-                if all(tok in hay for tok in q_tokens):
-                    fallback_hits.append(f)
-
-        matched = (fts_hits + fallback_hits)[:clamped_limit]
+        cands = graph_store.search_candidates(target_owner, q_clean, limit=clamped_limit)
+        matched = graph_store.get_facts(target_owner, [c.fact_id for c in cands])[:clamped_limit]
         return {
             "owner": target_owner,
             "query": query,
@@ -514,19 +485,47 @@ def create_mcp_app(
     def memory_vault(owner: str | None = None) -> dict[str, Any]:
         auth = _require_auth()
         target_owner = _scoped_owner(auth, owner)
-        facts = graph_store.visible_facts(target_owner, limit=10_000)
+        counts_by_subj = graph_store.fact_counts_by_subject(target_owner)
+        confirmed_by_subj = (
+            graph_store.confirmed_fact_counts_by_subject(target_owner)
+            if hasattr(graph_store, "confirmed_fact_counts_by_subject")
+            else {}
+        )
         subjects = graph_store.list_subjects(target_owner)
+        visible_subjects = [
+            s for s in subjects
+            if (s.sensitive_cat is None and (s.path or "").split("/")[0].lower() not in ("health", "faith"))
+            or confirmed_by_subj.get(s.id, 0) > 0
+        ]
+        vis_sids = {s.id for s in visible_subjects}
+        visible_fact_count = sum(cnt for sid, cnt in counts_by_subj.items() if sid in vis_sids or not subjects)
+
+        vis_eids = (
+            graph_store.visible_entity_ids(target_owner)
+            if hasattr(graph_store, "visible_entity_ids")
+            else None
+        )
         entities = graph_store.list_entities(target_owner)
+        active_entities = [
+            e for e in entities
+            if e.status != "merged"
+            and (
+                vis_eids is None
+                or e.id in vis_eids
+                or e.relation_to_user == "self"
+                or getattr(e, "provenance", "inferred") in ("user_supplied", "provider_confirmed")
+            )
+        ]
+        recent_facts = list(islice(graph_store.iter_visible_facts(target_owner, page_size=20), 20))
         quarantine_counts = graph_store.get_quarantine_counts(target_owner)
 
-        active_entities = [e for e in entities if e.status != "merged"]
         people = [e for e in active_entities if e.kind == "person"]
         places = [e for e in active_entities if e.kind == "place"]
         orgs = [e for e in active_entities if e.kind == "org"]
 
         return {
             "owner": target_owner,
-            "subject_count": len(subjects),
+            "subject_count": len(visible_subjects),
             "people_count": len(people),
             "entity_counts": {
                 "person": len(people),
@@ -534,16 +533,16 @@ def create_mcp_app(
                 "org": len(orgs),
                 "total": len(active_entities),
             },
-            "visible_fact_count": len(facts),
+            "visible_fact_count": visible_fact_count,
             "subjects": [
                 {
                     "id": s.id,
                     "path": s.path,
                     "label": s.label,
                     "kind": s.kind,
-                    "fact_count": s.fact_count,
+                    "fact_count": counts_by_subj.get(s.id, s.fact_count),
                 }
-                for s in subjects[:50]
+                for s in visible_subjects[:50]
             ],
             "people": [
                 {
@@ -562,7 +561,7 @@ def create_mcp_app(
                     "valid_from": f.valid_from,
                     "status": f.status,
                 }
-                for f in facts[:20]
+                for f in recent_facts
             ],
             "quarantine_counts": quarantine_counts,
         }
