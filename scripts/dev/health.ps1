@@ -1,5 +1,4 @@
 param(
-    [int]$WebPort = 8082,
     [int]$ExpoPort = 8081,
     [int]$ApiPort = 8000,
     [int]$MemoryPort = 8040,
@@ -91,11 +90,14 @@ Add-Row "memory-api:$MemoryPort" $memOk "http://localhost:$MemoryPort/health"
 $apiOk = Test-Http "http://127.0.0.1:$ApiPort/api/health"
 Add-Row "apps/api:$ApiPort" $apiOk "http://localhost:$ApiPort/api/health"
 
-$webOk = Test-Http "http://127.0.0.1:$WebPort/"
-Add-Row "website:$WebPort" $webOk "http://localhost:$WebPort"
+$webOk = Test-Http "http://127.0.0.1:$ExpoPort/status"
+Add-Row "website:$ExpoPort" $webOk "http://localhost:$ExpoPort"
 
 $expoOk = Test-Port $ExpoPort
 Add-Row "expo-lan:$ExpoPort" $expoOk "exp://${lanIp}:$ExpoPort"
+
+$lanOk = ($lanIp -ne "127.0.0.1")
+Add-Row "lan-ip" $lanOk $lanIp
 
 # 3. Queue depth
 $qDepth = "unknown"
