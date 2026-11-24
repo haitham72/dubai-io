@@ -297,7 +297,7 @@ def resolve_fact(store: Any, owner: str, fact_id: str, body: Any) -> dict[str, A
             status = "active"
         elif body.action == "reject":
             conn.execute(
-                "UPDATE facts SET erased_at = now() WHERE owner = %s AND id = %s",
+                "UPDATE facts SET erased_at = now(), embedding = NULL, embedding_model = NULL, embedded_at = NULL WHERE owner = %s AND id = %s",
                 (owner, fact_id),
             )
             conn.execute(
@@ -396,8 +396,48 @@ def _sql_search(store: Any, owner: str, query: str, limit: int, source_prefix: s
     ]
 
 
+def _hydrate_ranked_facts(store: Any, owner: str, ranked_ids: list[str], limit: int) -> list[dict[str, Any]]:
+    if not ranked_ids or limit <= 0:
+        return []
+    target_ids = list(dict.fromkeys(ranked_ids))[:limit]
+    with store.db.connection() as conn:
+        rows = conn.execute(
+            """
+            SELECT f.id, f.text, f.subject_id, f.status, f.provenance, f.valid_from,
+                   COALESCE((
+                       SELECT json_agg(fe.record_id ORDER BY fe.record_id)
+                       FROM fact_evidence fe
+                       WHERE fe.owner = f.owner AND fe.fact_id = f.id
+                   ), '[]'::json) AS evidence,
+                   COALESCE((
+                       SELECT json_agg(r.source ORDER BY r.id)
+                       FROM fact_evidence fe
+                       JOIN records r ON r.owner = fe.owner AND r.id = fe.record_id
+                       WHERE fe.owner = f.owner AND fe.fact_id = f.id AND r.erased_at IS NULL
+                   ), '[]'::json) AS sources
+            FROM facts f
+            WHERE f.owner = %s AND f.id = ANY(%s) AND (f.erased_at IS NULL)::int = 1
+            """,
+            (owner, target_ids),
+        ).fetchall()
+    by_id = {
+        row["id"]: {
+            "id": row["id"],
+            "text": row["text"],
+            "subject_id": row["subject_id"],
+            "status": row["status"],
+            "provenance": row["provenance"],
+            "as_of": row["valid_from"],
+            "evidence": _as_list(row["evidence"]),
+            "sources": _as_list(row["sources"]),
+        }
+        for row in rows
+    }
+    return [by_id[fid] for fid in target_ids if fid in by_id]
+
+
 def search_facts(store: Any, owner: str, query: str, limit: int, source_prefix: str | None) -> dict[str, Any]:
-    """Prefer the contract method. Otherwise filter the prefix in SQL, then limit."""
+    """Prefer the contract method and hydrate exact ranked IDs by PK; fall back to substring SQL when empty."""
     fn = getattr(store, "search_candidates", None)
     if callable(fn):
         params = inspect.signature(fn).parameters
@@ -416,7 +456,6 @@ def search_facts(store: Any, owner: str, query: str, limit: int, source_prefix: 
                     ids.append(str(cand[0]))
                 else:
                     ids.append(str(getattr(cand, "fact_id", cand)))
-            facts = [fact for fact in _sql_search(store, owner, query, max(limit, 1), source_prefix) if fact["id"] in set(ids)]
-            if facts or not ids:
-                return {"ok": True, "facts": facts[:limit]}
+            if ids:
+                return {"ok": True, "facts": _hydrate_ranked_facts(store, owner, ids, limit)}
     return {"ok": True, "facts": _sql_search(store, owner, query, limit, source_prefix)}

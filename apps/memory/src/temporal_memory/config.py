@@ -26,6 +26,9 @@ class Settings:
     lease_seconds: int = int(os.environ.get("TM_LEASE_SECONDS", "300"))
     cloud_rate_in_per_1m: float = float(os.environ.get("TM_CLOUD_RATE_IN_PER_1M", "1.00"))
     cloud_rate_out_per_1m: float = float(os.environ.get("TM_CLOUD_RATE_OUT_PER_1M", "5.00"))
+    semantic_enabled: bool = os.environ.get("TM_SEMANTIC", "1").strip().lower() not in ("0", "false", "no", "off")
+    semantic_model: str = os.environ.get("TM_SEMANTIC_MODEL", "BAAI/bge-m3")
+    semantic_min_sim: float = float(os.environ.get("TM_SEMANTIC_MIN_SIM", "0.40"))
 
 
 def get_settings() -> Settings:
@@ -50,6 +53,9 @@ def get_settings() -> Settings:
         lease_seconds=int(os.environ.get("TM_LEASE_SECONDS", "300")),
         cloud_rate_in_per_1m=float(os.environ.get("TM_CLOUD_RATE_IN_PER_1M", "1.00")),
         cloud_rate_out_per_1m=float(os.environ.get("TM_CLOUD_RATE_OUT_PER_1M", "5.00")),
+        semantic_enabled=os.environ.get("TM_SEMANTIC", "1").strip().lower() not in ("0", "false", "no", "off"),
+        semantic_model=os.environ.get("TM_SEMANTIC_MODEL", "BAAI/bge-m3"),
+        semantic_min_sim=float(os.environ.get("TM_SEMANTIC_MIN_SIM", "0.40")),
     )
 
 
