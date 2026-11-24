@@ -190,8 +190,11 @@ class PostgresJobs:
         owner_obj: Owner | None,
         records: list[Record],
     ) -> JobBundle:
+        from temporal_memory.ingest.receipts import prefilled_to_context, prepass  # lazy: ingest imports queue
+
         context = self._get_store().scoped_context(job.owner, records)
         context["facts"] = self._active_facts_for_prompt(job.owner)
+        context.update(prefilled_to_context(prepass(records)))  # E7: code-copied receipts/bookings
         return JobBundle(
             job=job,
             records=records,
@@ -547,7 +550,11 @@ class PostgresJobs:
                 if r.get("subject_path") and r.get("text")
             }
 
+        from temporal_memory.ingest.receipts import merge_prefilled, prefilled_from_context
+
         bundle = self._build_bundle(job, owner_obj, records)
+        if attempt.output is not None:  # E7: pre-filled slots are applied with the LLM facts
+            merge_prefilled(attempt.output, prefilled_from_context(bundle.context))
         verdict = _call_validate(
             validator.validate,
             job,
