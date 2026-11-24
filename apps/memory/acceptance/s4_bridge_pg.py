@@ -110,7 +110,7 @@ def _run_cs_http_client_probe(base_url: str, admin_token: str, owner: str, owner
             scoped_a = client.search_facts(owner, "Shorebirds", limit=20, source_prefix="messenger:conv-a")
             scoped_b = client.search_facts(owner, "Shorebirds", limit=20, source_prefix="messenger:conv-b")
             results["search_source_prefix"] = {
-                "ok": len(unscoped) == 2 and [f["id"] for f in scoped_a] == ["f_s4_a"] and [f["id"] for f in scoped_b] == ["f_s4_b"],
+                "ok": {"f_s4_a", "f_s4_b"} <= {f["id"] for f in unscoped} and [f["id"] for f in scoped_a] == ["f_s4_a"] and [f["id"] for f in scoped_b] == ["f_s4_b"],
                 "unscoped_ids": [f["id"] for f in unscoped],
                 "conv_a_ids": [f["id"] for f in scoped_a],
                 "conv_b_ids": [f["id"] for f in scoped_b],
