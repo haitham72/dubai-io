@@ -1,0 +1,35 @@
+# Isolated Docker project for pytest. Publish random loopback ports only.
+x-oracle: &oracle
+  environment:
+    TM_WORKER_RUNNER: oracle
+    TM_WORKER_MODEL: gold-oracle
+    TM_LEASE_SECONDS: '12'
+    TM_E2E_GOLD_DIR: /opt/gold
+    PYTHONPATH: /opt/e2e
+  volumes:
+    - ./tests/e2e:/opt/e2e:ro
+    - type: bind
+      source: ${TM_E2E_GOLD_DIR:?set TM_E2E_GOLD_DIR to the synthetic gold directory}
+      target: /opt/gold
+      read_only: true
+
+services:
+  postgres:
+    ports: !override ['127.0.0.1::5432']
+  rabbitmq:
+    ports: !override ['127.0.0.1::5672', '127.0.0.1::15672']
+  redis:
+    ports: !reset []
+  api:
+    environment:
+      TM_ADMIN_TOKEN: ${TM_E2E_ADMIN_TOKEN:?set by pytest}
+    ports: !override ['127.0.0.1::8040']
+  worker-p0:
+    <<: *oracle
+    command: ['celery', '-A', 'worker_bootstrap:app', 'worker', '-Q', 'mem.p0', '--concurrency=1', '-n', 'p0@%h', '--loglevel=INFO']
+  worker-p1:
+    <<: *oracle
+    command: ['celery', '-A', 'worker_bootstrap:app', 'worker', '-Q', 'mem.p1,mem.p3', '--concurrency=2', '-n', 'p1@%h', '--loglevel=INFO']
+  beat:
+    <<: *oracle
+    command: ['celery', '-A', 'worker_bootstrap:app', 'beat', '--loglevel=INFO', '--schedule=/tmp/celerybeat-schedule']

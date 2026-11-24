@@ -83,7 +83,7 @@ Declared in `app/connectors/catalog.py`. `available` in the API is false for `un
 | `finance_statements` | finance | export_import | export | file_import | true | false | none | none | false | full | Import bank or card statements you exported. No bank is contacted. |
 | `saved_media` | media | export_import | export | file_import | true | false | none | none | false | full | Import a media list you supply. Does not scrape a streaming site. |
 | `spotify` | media | official_api | live | oauth_bearer | true | true | none | polling | false | metadata | Official Spotify read of your saved tracks. |
-| `youtube` | media | official_api | live | oauth_bearer | true | true | none | polling | false | metadata | Official YouTube read of your uploads playlist. Not watch history. |
+| `youtube` | media | official_api | live | oauth_bearer | true | true | none | polling | false | metadata | Official YouTube Data API v3 (uploads, liked videos, subscriptions, user playlists — not Watch Later or watch history). |
 | `discord` | messaging | official_api | live | bot_token | true | true | none | polling | false | full | Official Discord bot read of one channel you name. Not personal DMs. |
 | `signal` | messaging | unavailable | unavailable | none | false | false | none | none | false | none | Signal has no authorized personal API. No unofficial client is included. |
 | `slack` | messaging | official_api | live | oauth_bearer | true | true | none | polling | false | full | Official Slack read of conversations the token can access. |
@@ -115,7 +115,15 @@ Declared in `app/connectors/catalog.py`. `available` in the API is false for `un
 - Dropbox, Drive, and OneDrive list metadata. They do not download file bytes.
 - Slack reads conversations the token can see. It does not post.
 - Telegram outbound is `sendMessage` to a chat that has talked to the bot, and only after approval. Personal history is not available.
-- Reddit is saved posts. X is the user's own posts, not DMs. YouTube is uploads, not watch history. Spotify is saved tracks.
+- Reddit is saved posts. X is the user's own posts, not DMs. YouTube Data API v3 exposes uploads (`google_sources.py`), liked videos (`LL`), subscriptions, and user playlists — not Watch Later (`WL`) or watch history (`HL`, removed in 2016). Spotify is saved tracks.
+
+#### YouTube Watch History Pathways (Mobile vs Desktop & Regional Availability)
+
+- **YouTube Data API v3 (Global, Mobile + Desktop OAuth):** Pulls uploads, liked videos (`LL`), subscriptions, and user playlists reliably on both mobile and web. Watch history (`HL`) was deprecated in 2016 and Watch Later (`WL`) is restricted/empty in API v3.
+- **Google Data Portability API (`dataportability.myactivity.youtube`, Official OAuth):** Programmatically exports YouTube watch and search history (supporting one-time or 30/180-day recurring access, 24h refreshes, and time filters), **but is currently region-restricted by Google to the EEA, UK, and Switzerland** (DMA compliance) and requires restricted-scope app verification — it is not available for UAE/Dubai or US accounts today.
+- **Google Takeout → Scheduled "Add to Drive" (Global / UAE, Mobile-Friendly):** One-time user setup (`Export every 2 months for 1 year` → `Add to Drive` as JSON) drops updated `watch-history.json` archives into the user's Google Drive, which our `google_drive` connector can auto-ingest on a 2-month cadence without repeated manual exports like WhatsApp (plus manual Takeout upload for immediate backfill).
+- **Mobile Share Sheet ("Share to Dubai-io"):** Explicit per-video capture straight from the native iOS/Android YouTube app.
+- **Desktop Opt-In Only (`scripts/extract_youtube_history.py` / Manifest V3 extension):** Local Chrome/Edge SQLite extraction works only on desktop (a sandboxed mobile app cannot read Chrome history, and local browser history misses native phone app plays).
 
 ---
 
@@ -184,7 +192,7 @@ Notes that move a source down even when user value is high:
 - **Telegram** is the official Bot API. It does not see personal chat history.
 - **Discord** is an official bot in one channel you name. A user token (self-bot) is not implemented.
 - **X** can list the authenticated user's own recent posts. Direct messages are not requested. Access is restricted and often paid.
-- **YouTube** reads the uploads playlist, not watch history. Watch history is not in the Data API.
+- **YouTube** (`youtube` connector) reads the uploads playlist via Data API v3 (API v3 also covers liked videos, subscriptions, and user playlists — not Watch Later or watch history). Watch history requires Google Data Portability API (EEA/UK/Switzerland only), Takeout (manual or scheduled every-2-months to Google Drive), Mobile Share Sheet, or desktop-only browser extraction.
 - **Noon, Amazon, eBay, LinkedIn, Instagram** have no authorized personal-inbox or order API for this app. Import is a file the user already downloaded.
 - **Signal, iOS, Android notifications, contacts, open banking** have no authorized server integration here. They stay unavailable rather than unofficial.
 

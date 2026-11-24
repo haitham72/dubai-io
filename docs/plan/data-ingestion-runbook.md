@@ -54,22 +54,24 @@ flowchart TD
   .\apps\api\.venv\Scripts\python.exe scripts\sync_google.py --tokens 50000 --days 30
   ```
 
-### Channel 2: YouTube Channel & Liked Videos (`scripts/sync_google.py`)
-* **Transport:** YouTube Data API v3 using the same authorized OAuth token.
-* **Feeds Pulled:**
+### Channel 2: YouTube Channel, Likes & Playlists (`scripts/sync_google.py`)
+* **Transport:** YouTube Data API v3 using the same authorized OAuth token (works globally on mobile and desktop).
+* **Feeds Pulled Today:**
   * Channel uploads for active creator output (connected to channel `iHisam`).
   * Liked videos playlist (`playlistId=LL`, 50 items).
+* **Other API v3 Feeds Supported Globally:** Subscriptions (`subscriptions.list`) and user-created playlists (`playlists.list`). Watch Later (`WL`) and Watch History (`HL`) are not accessible via Data API v3.
 * **Output:** `data/sync/youtube_latest.json` (100 items).
 
-### Channel 3: YouTube Watch History — Zero-API Local Extraction (`scripts/extract_youtube_history.py`)
-* **Why not API?** Google disabled the `watchHistory` playlist in YouTube Data API v3 in 2016 for third-party privacy.
-* **The Local SQLite Solution:**
+### Channel 3: YouTube Watch History — Desktop SQLite vs Mobile & Production Pathways (`scripts/extract_youtube_history.py`)
+* **Why not YouTube Data API v3?** Google disabled the `watchHistory` playlist (`HL`) in Data API v3 in 2016 and restricts Watch Later (`WL`).
+* **Desktop / Local Dev Only — Local SQLite Solution:**
   * Scans Windows local browser history at `AppData\Local\Google\Chrome\User Data\Profile *\History` and `AppData\Local\Microsoft\Edge\User Data\Default\History`.
-  * Copies SQLite file to a temp path to bypass browser read-locks.
-  * Queries `url LIKE '%youtube.com/watch%'` and orders by `last_visit_time DESC`.
-  * Converts WebKit microsecond timestamps to ISO 8601 UTC.
-* **Takeout Fallback:** If `data/sync/watch-history.json` is present from Google Takeout, it automatically ingests that instead.
-* **Speed:** **0.3 seconds**, zero API calls, zero manual downloads.
+  * Copies SQLite file to a temp path to bypass browser read-locks, queries `url LIKE '%youtube.com/watch%'`, and converts WebKit microsecond timestamps to ISO 8601 UTC (**0.3 seconds**, zero API calls).
+  * **Scope limit:** Cannot run inside a sandboxed iOS/Android mobile app and misses native YouTube mobile app plays.
+* **Production & Mobile Watch-History Pathways:**
+  1. **Google Data Portability API (`dataportability.myactivity.youtube`):** Official OAuth access to YouTube watch & search history with 30/180-day recurring refreshes and time filters — **currently limited to EEA, UK, and Switzerland** (DMA) and requires restricted-scope OAuth verification (unavailable in UAE/Dubai and US today).
+  2. **Google Takeout → Scheduled "Add to Drive" (Global / UAE, Mobile-Friendly):** One-time setup (`Export every 2 months for 1 year` → `Add to Drive` JSON) lets our `google_drive` connector automatically ingest new `watch-history.json` snapshots without repeated manual uploads like WhatsApp (plus immediate manual Takeout upload `data/sync/watch-history.json` for backfill).
+  3. **Mobile Share Sheet + Desktop Browser Extension:** Per-video OS Share Sheet ("Share to Dubai-io") on mobile, plus an optional desktop Manifest V3 extension for opt-in browser capture.
 * **Output:** `data/sync/youtube_watch_history.json` (500 watched video titles with timestamps).
 * **Run Command:**
   ```powershell
