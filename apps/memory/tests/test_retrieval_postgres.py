@@ -158,7 +158,14 @@ def test_20k_facts_needle_and_p95_under_150ms_inproc_and_http(pg_db: Database):
             cp.write_row(("k20", "f_needle", "r_needle"))
         conn.execute("UPDATE owners SET facts_version = 1, alias_version = 1 WHERE id = 'k20'")
     with pg_db.connection() as conn:
-        conn.execute("ANALYZE")
+        conn.commit()
+        old_ac = conn.autocommit
+        conn.autocommit = True
+        try:
+            conn.execute("VACUUM ANALYZE facts")
+            conn.execute("VACUUM ANALYZE fact_entities")
+        finally:
+            conn.autocommit = old_ac
 
     live_ctx.invalidate_alias_cache()
 
