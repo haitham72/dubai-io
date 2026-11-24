@@ -201,3 +201,48 @@ export async function scanSessions(
   const rows = JSON.parse(stdout) as unknown[];
   return { count: rows.length };
 }
+
+export type SyncRecord = { id: string; at: string; text: string };
+
+const BROWSER_RECORDS_CODE = [
+  "import json,sys",
+  "from temporal_memory.ingest.desktop.browser import browser_records",
+  "rows = browser_records('Asia/Dubai', sys.argv[1], since=sys.argv[2] or None)",
+  "json.dump([{'id': r.id, 'at': r.at, 'text': r.text} for r in rows], sys.stdout)",
+].join("; ");
+const SESSION_RECORDS_CODE = [
+  "import json,sys",
+  "from pathlib import Path",
+  "from temporal_memory.ingest.desktop.agent_sessions import agent_session_records",
+  "tool, root, since = sys.argv[1], sys.argv[2], sys.argv[3]",
+  "rows = agent_session_records('Asia/Dubai', {tool: Path(root)}, since=since or None)",
+  "json.dump([{'id': r.id, 'at': r.at, 'text': r.text} for r in rows], sys.stdout)",
+].join("; ");
+
+function cleanRecords(raw: string): SyncRecord[] {
+  const rows = JSON.parse(raw) as unknown;
+  if (!Array.isArray(rows)) throw new Error("local reader returned an unexpected shape");
+  const out: SyncRecord[] = [];
+  for (const row of rows as Array<Record<string, unknown>>) {
+    if (typeof row.id === "string" && typeof row.at === "string" && typeof row.text === "string" && row.text.trim()) {
+      out.push({ id: row.id, at: row.at, text: row.text.slice(0, 8000) });
+    }
+  }
+  return out;
+}
+
+/** Already-redacted day aggregates from the existing local importers (R1 path rules apply). Nothing is written locally. */
+export async function collectBrowserRecords(
+  browser: BrowserKind, profileName: string, roots: ReaderRoots, since?: string, deps: ReaderDeps = {},
+): Promise<SyncRecord[]> {
+  const profile = resolveProfile(browser, profileName, roots);
+  return cleanRecords(await runPython(deps, BROWSER_RECORDS_CODE, [profile, since ?? ""]));
+}
+
+export async function collectSessionRecords(
+  tool: AgentTool, roots: ReaderRoots, since?: string, deps: ReaderDeps = {},
+): Promise<SyncRecord[]> {
+  const root = resolveSessionRoot(tool, roots);
+  assertNotCredential(root);
+  return cleanRecords(await runPython(deps, SESSION_RECORDS_CODE, [tool, root, since ?? ""]));
+}

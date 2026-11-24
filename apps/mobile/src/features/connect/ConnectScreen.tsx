@@ -11,7 +11,6 @@ import {
   revokeDeviceSession,
   saveSettings,
   startDevicePairing,
-  startGoogleOAuth,
   startGoogleSignIn,
   testConnection,
   type ConnectionStatus,
@@ -21,6 +20,7 @@ import {
 import { CompletenessRingCard } from "./CompletenessRingCard";
 import { InitialRevealCard } from "./InitialRevealCard";
 import { PairIphoneModal, ScanQrModal } from "./QrPairingModals";
+import { SourcesCard } from "./SourcesCard";
 import { WhatsappImportCard } from "./WhatsappImportCard";
 import { YoutubeOnboardingCard } from "./YoutubeOnboardingCard";
 
@@ -251,12 +251,10 @@ export function ConnectScreen({
         {status === "reachable" ? "Server reachable" : status === "offline" ? "Offline — server unreachable" : "Not tested yet"}
       </Text>
 
-      <Pressable style={styles.button} onPress={() => void startGoogleOAuth(apiBaseUrl)}>
-        <Text style={styles.buttonText}>Connect Google</Text>
-      </Pressable>
+      <SourcesCard apiBaseUrl={apiBaseUrl} sessionToken={activeSession?.sessionToken ?? null} fetcher={fetcher} />
 
-      <YoutubeOnboardingCard apiBaseUrl={apiBaseUrl} owner={effectiveOwner} fetcher={fetcher} />
-      <WhatsappImportCard apiBaseUrl={apiBaseUrl} owner={effectiveOwner} fetcher={fetcher} />
+      <YoutubeOnboardingCard apiBaseUrl={apiBaseUrl} sessionToken={activeSession?.sessionToken ?? null} fetcher={fetcher} />
+      <WhatsappImportCard apiBaseUrl={apiBaseUrl} sessionToken={activeSession?.sessionToken ?? null} fetcher={fetcher} />
 
       <PairIphoneModal
         visible={pairOpen}

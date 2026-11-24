@@ -21,7 +21,7 @@ describe("API client", () => {
     });
     const turn = await postMemoryChatTurn(
       "http://192.168.1.20:8000",
-      { ownerId: "karim", text: "hello" },
+      { ownerId: "karim", text: "hello", demo: true },
       { fetchImpl: fetchImpl as unknown as typeof fetch },
     );
     expect(turn.demo).toBe(true);
@@ -56,7 +56,8 @@ describe("API client", () => {
       { ownerId: "karim", text: "nope" },
       { fetchImpl: (async () => jsonResponse({ ok: false }, false)) as unknown as typeof fetch },
     );
-    expect(rejected.demo).toBe(true);
-    expect(isIngestConfirmed(rejected, { demo: true, httpOk: false })).toBe(false);
+    expect(rejected.demo).toBe(false);
+    expect(rejected.ok).toBe(false);
+    expect(isIngestConfirmed(rejected, { demo: false, httpOk: false })).toBe(false);
   });
 });

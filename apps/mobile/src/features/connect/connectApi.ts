@@ -102,12 +102,6 @@ export async function startGoogleSignIn(
   return WebBrowser.openAuthSessionAsync(startUrl, targetReturn);
 }
 
-/** Provider Google OAuth (Gmail/mail connector) — server-side; the app never bundles a client secret. */
-export async function startGoogleOAuth(apiBaseUrl: string): Promise<WebBrowser.WebBrowserAuthSessionResult> {
-  const start = `${apiBaseUrl.replace(/\/$/, "")}/api/auth/google/start`;
-  return WebBrowser.openAuthSessionAsync(start, "dubaiio://auth/google");
-}
-
 export async function startDevicePairing(
   apiBaseUrl: string,
   sessionToken: string,
@@ -162,20 +156,5 @@ export async function revokeDeviceSession(
   });
   if (!res.ok) {
     throw new Error(`Could not revoke session (${res.status})`);
-  }
-}
-
-export async function uploadPickedFile(
-  apiBaseUrl: string, owner: string, kind: "takeout" | "whatsapp",
-  asset: { name: string; uri: string },
-  fetcher: Fetcher = defaultFetcher,
-): Promise<boolean> {
-  try {
-    const res = await fetcher(
-      `${apiBaseUrl.replace(/\/$/, "")}/api/connectors/${kind}?owner=${encodeURIComponent(owner)}&name=${encodeURIComponent(asset.name)}`,
-    );
-    return res.ok;
-  } catch {
-    return false;
   }
 }
