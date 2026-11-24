@@ -38,6 +38,30 @@ MilestoneState = Literal["done", "in_progress", "planned"]
 SensitiveCat = str  # canonical list: temporal_memory.privacy.sensitive.CATEGORIES (WP-C); never duplicated here
 
 
+TriplePredicate = Literal[
+    "buys", "wants", "likes", "dislikes", "visits", "moves_to", "works_at", "joins", "leaves",
+    "birthday", "other",
+]
+TriplePolarity = Literal["affirmed", "negated"]
+TripleModality = Literal["done", "planned", "wanted"]
+PlaceType = Literal[
+    "restaurant", "caf?", "gym", "clinic", "school", "office", "shop", "mall", "beach",
+    "park", "hotel", "airport", "home", "other",
+]
+
+CLUSTERS = ["career", "learning", "projects", "people-family", "events", "home-money", "travel"]
+CLUSTER_LABELS = {
+    "career": "Career",
+    "learning": "Learning",
+    "projects": "Projects",
+    "people-family": "People & family",
+    "events": "Events",
+    "home-money": "Home & money",
+    "travel": "Travel",
+}
+HELD_BACK_ROOTS = ["health", "faith"]
+
+
 # ---------------------------------------------------------------- tenancy
 @dataclass
 class Owner:
@@ -81,6 +105,7 @@ class Entity:
     closeness_suggested_evidence: Optional[list[str]] = None  # supporting fact IDs
     tier_confirmed_at: Optional[str] = None
     salience_updated_at: Optional[str] = None
+    place_type: Optional[PlaceType] = None
 
 
 @dataclass
@@ -126,6 +151,20 @@ class Fact:
     worker_id: Optional[str] = None
     model: Optional[str] = None
     prompt_version: Optional[str] = None
+    actor_entity_id: Optional[str] = None
+    predicate: Optional[TriplePredicate] = None
+    object_text: Optional[str] = None
+    object_entity_id: Optional[str] = None
+    polarity: Optional[TriplePolarity] = None
+    modality: Optional[TripleModality] = None
+    event_at: Optional[str] = None
+    span_record_id: Optional[str] = None
+    span_start: Optional[int] = None  # inclusive character offset in the cited record
+    span_end: Optional[int] = None    # exclusive character offset
+    reason_text: Optional[str] = None
+    reason_record_id: Optional[str] = None
+    reason_start: Optional[int] = None
+    reason_end: Optional[int] = None
 
 
 @dataclass
@@ -168,6 +207,7 @@ class OutEntity:
     kind: EntityKind
     aliases: list[str]
     relation_to_user: Optional[Relation]
+    place_type: Optional[PlaceType] = None
 
 
 @dataclass
@@ -181,6 +221,20 @@ class OutFact:
     valid_from: str
     evidence: list[str]
     sensitive: Optional[SensitiveCat]
+    actor_entity_id: Optional[str] = None
+    predicate: Optional[TriplePredicate] = None
+    object_text: Optional[str] = None
+    object_entity_id: Optional[str] = None
+    polarity: Optional[TriplePolarity] = None
+    modality: Optional[TripleModality] = None
+    event_at: Optional[str] = None
+    span_record_id: Optional[str] = None
+    span_start: Optional[int] = None  # inclusive character offset in the cited record
+    span_end: Optional[int] = None    # exclusive character offset
+    reason_text: Optional[str] = None
+    reason_record_id: Optional[str] = None
+    reason_start: Optional[int] = None
+    reason_end: Optional[int] = None
 
 
 @dataclass
@@ -316,6 +370,14 @@ class GraphStoreFull(GraphStore, Protocol):        # WP-A must implement ALL of 
 
     def bump_privacy_revision(self, owner: str) -> int:
         """Increment the owner's privacy revision and return the updated value."""
+        ...
+
+    def record_topic_mention(self, owner: str, subject_id: str, session_id: str) -> int:
+        """Record the first mention in this session and return the distinct-session count."""
+        ...
+
+    def topic_session_count(self, owner: str, subject_id: str) -> int:
+        """Count distinct sessions that mentioned the owner-scoped subject."""
         ...
 
     def owner_generation(self, owner: str) -> int: ...       # max records.generation for the owner
