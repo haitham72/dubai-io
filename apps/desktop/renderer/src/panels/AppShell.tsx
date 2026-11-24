@@ -1,11 +1,12 @@
 import { useState, type CSSProperties } from "react";
 import type { DesktopBridge, SessionRow } from "../ipc/bridge";
+import { AnalyticsPanel } from "./AnalyticsPanel";
 import { BrowserImportPanel } from "./BrowserImportPanel";
 import { SessionHistoryPanel } from "./SessionHistoryPanel";
 import { SettingsPanel } from "./SettingsPanel";
 import { flat, theme } from "../theme";
 
-const TABS = ["Today", "Chat", "Quests", "Memory", "Sessions", "Local Import", "Settings"] as const;
+const TABS = ["Today", "Chat", "Quests", "Memory", "Analytics", "Sessions", "Local Import", "Settings"] as const;
 type Tab = (typeof TABS)[number];
 
 export function AppShell({ bridge, sessions }: { bridge: DesktopBridge; sessions: SessionRow[] }) {
@@ -36,10 +37,11 @@ export function AppShell({ bridge, sessions }: { bridge: DesktopBridge; sessions
         ))}
       </nav>
       <main style={{ padding: 16 }}>
+        {tab === "Analytics" ? <AnalyticsPanel bridge={bridge} /> : null}
         {tab === "Sessions" ? <SessionHistoryPanel bridge={bridge} sessions={sessions} /> : null}
         {tab === "Local Import" ? <BrowserImportPanel bridge={bridge} /> : null}
         {tab === "Settings" ? <SettingsPanel bridge={bridge} /> : null}
-        {tab !== "Sessions" && tab !== "Local Import" && tab !== "Settings" ? (
+        {tab !== "Analytics" && tab !== "Sessions" && tab !== "Local Import" && tab !== "Settings" ? (
           <section style={{ ...flat, background: theme.surface, borderRadius: 16, padding: 16 }}>
             <h2 style={{ fontFamily: "Georgia, serif" }}>{tab}</h2>
             <p>This pillar is a desktop placeholder. Fixture cards stay labelled.</p>
