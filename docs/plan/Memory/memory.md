@@ -375,7 +375,7 @@ The memory engine's export and graph representation is rendered to the user via 
 - 🔧 in progress (a branch exists);
 - 📋 planned (spec only).
 
-**As of** `memory` @ `573ff79`. Execution tracker, gates and owners: `apps/memory/upgrade/TN_UPGRADE_PLAN.md`, `apps/memory/upgrade/reports/STATUS.md`, and the measured scores in `G:\Haitham\lab-data\memory-bakeoff\acceptance\BASELINE.md` (moving to `apps/memory/acceptance/`).
+**As of** `main` @ `d813e7f` (24 Nov, evening). Execution tracker, gates and owners: `apps/memory/upgrade/TN_UPGRADE_PLAN.md`, `apps/memory/upgrade/reports/STATUS.md`, and the measured scores in `G:\Haitham\lab-data\memory-bakeoff\acceptance\BASELINE.md` (moving to `apps/memory/acceptance/`).
 
 ### 18.1 Requirements (founder, 24 Nov)
 
