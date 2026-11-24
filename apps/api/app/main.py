@@ -21,6 +21,7 @@ from . import catalog, google_maps
 from .auth import router as auth_router
 from .actions import COOKIE, engine, router as action_router
 from .config import settings
+from .cors import install_cors
 from .identity import (
     IdentityConfig,
     IdentityService,
@@ -142,6 +143,7 @@ async def lifespan(target_app: FastAPI):
 
 app = FastAPI(title="Dubai-io API", version="0.1.0", lifespan=lifespan)
 app.dependency_overrides[get_identity_service] = _get_runtime_identity_service
+install_cors(app)
 app.include_router(auth_router)
 app.include_router(create_identity_router(get_service=_get_runtime_identity_service))
 app.include_router(
