@@ -4,7 +4,8 @@ from __future__ import annotations
 import hashlib
 from typing import Any, Callable, Literal, Optional
 
-from fastapi import APIRouter, Body, Depends, Header, HTTPException, Request, Response
+from fastapi import APIRouter, Body, Depends, Header, HTTPException, Query, Request, Response
+from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, ConfigDict, Field
 
 from .deps import (
@@ -17,6 +18,7 @@ from .deps import (
     reject_spoofed_query_identity,
     require_verified_jwt,
 )
+from .google_signin import GoogleSignInService
 from .models import VALID_APP_IDS, AppId, IdentityError, VerifiedPrincipal
 from .service import IdentityService, normalize_origin
 
@@ -63,6 +65,24 @@ class CompleteLinkIn(BaseModel):
     nonce: Optional[str] = Field(default=None, max_length=512)
 
 
+class GoogleExchangeIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    auth_code: str = Field(min_length=1, max_length=512)
+    device_label: Optional[str] = Field(default=None, max_length=80)
+    set_cookie: bool = False
+
+
+class PairStartIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    ttl_seconds: int = Field(default=300, ge=30, le=300)
+
+
+class PairCompleteIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    code: str = Field(min_length=1, max_length=128)
+    device_label: Optional[str] = Field(default=None, max_length=80)
+
+
 def _authenticate_session_for_identity_route(
     request: Request,
     service: IdentityService,
@@ -101,9 +121,16 @@ def _authenticate_session_for_identity_route(
     return None
 
 
-def _principal_to_dict(principal: VerifiedPrincipal) -> dict[str, Any]:
+def _principal_to_dict(
+    principal: VerifiedPrincipal,
+    *,
+    display_name: Optional[str] = None,
+    email: Optional[str] = None,
+) -> dict[str, Any]:
     return {
         "user_id": principal.user_id,
+        "display_name": display_name,
+        "email": email,
         "app_id": principal.app_id,
         "capabilities": sorted(principal.capabilities),
         "auth_mode": principal.auth_mode,
@@ -113,6 +140,18 @@ def _principal_to_dict(principal: VerifiedPrincipal) -> dict[str, Any]:
         "session_id": principal.session_id,
         "session_version": principal.session_version,
         "expires_at": principal.expires_at,
+    }
+
+
+def _session_out_dict(session_out: Any) -> dict[str, Any]:
+    return {
+        "session_id": session_out.session_id,
+        "session_token": session_out.session_token,
+        "user_id": session_out.user_id,
+        "display_name": session_out.display_name or None,
+        "email": session_out.email,
+        "app_id": session_out.app_id,
+        "expires_at": session_out.expires_at,
     }
 
 
@@ -173,7 +212,10 @@ def create_identity_router(
             refreshed = service.refresh_principal(principal)
         except IdentityError as exc:
             raise _http_from_identity_error(exc) from exc
-        return _principal_to_dict(refreshed)
+        user = service.store.get_user(refreshed.user_id)
+        display_name = (user.get("display_name") or None) if user else None
+        email = user.get("email") if user else None
+        return _principal_to_dict(refreshed, display_name=display_name, email=email)
 
     @router.post("/age-band")
     def declare_age_band(
@@ -206,6 +248,18 @@ def create_identity_router(
             return service.adopt_session_owner(principal, proof_cookie_token=proof_token)
         except IdentityError as exc:
             raise _http_from_identity_error(exc) from exc
+
+    @router.get("/sessions")
+    def list_sessions(
+        principal: VerifiedPrincipal = Depends(_require_verified_any),
+        service: IdentityService = Depends(service_dep),
+    ) -> dict[str, Any]:
+        return {
+            "sessions": service.list_active_sessions(
+                principal.user_id,
+                current_session_id=principal.session_id,
+            )
+        }
 
     @router.post("/sessions")
     def create_session(
@@ -350,6 +404,104 @@ def create_identity_router(
             )
         except IdentityError as exc:
             raise _http_from_identity_error(exc) from exc
+
+    def _resolve_google_signin(request: Request, service: IdentityService) -> GoogleSignInService:
+        configured = getattr(request.app.state, "google_signin_service", None)
+        if configured is not None:
+            return configured
+        return GoogleSignInService(service)
+
+    @router.get("/google/start")
+    def google_start(
+        request: Request,
+        client: Literal["web", "desktop"] = Query(default="web"),
+        return_to: str = Query(..., min_length=1, max_length=2048),
+        service: IdentityService = Depends(service_dep),
+    ) -> RedirectResponse:
+        reject_spoofed_identity_headers(request)
+        google_svc = _resolve_google_signin(request, service)
+        try:
+            auth_url = google_svc.start(client_kind=client, return_to=return_to)
+        except IdentityError as exc:
+            raise _http_from_identity_error(exc) from exc
+        return RedirectResponse(
+            auth_url,
+            status_code=302,
+            headers={"Cache-Control": "no-store", "Referrer-Policy": "no-referrer"},
+        )
+
+    @router.get("/google/callback")
+    async def google_callback(
+        request: Request,
+        state: str = Query(default=""),
+        code: str = Query(default=""),
+        error: str = Query(default=""),
+        service: IdentityService = Depends(service_dep),
+    ) -> RedirectResponse:
+        if error:
+            raise HTTPException(
+                status_code=400,
+                detail={"code": "google_signin_denied", "message": "Google sign-in was cancelled or denied"},
+            )
+        google_svc = _resolve_google_signin(request, service)
+        try:
+            target = await google_svc.callback(state=state, code=code)
+        except IdentityError as exc:
+            raise _http_from_identity_error(exc) from exc
+        return RedirectResponse(
+            target,
+            status_code=302,
+            headers={"Cache-Control": "no-store", "Referrer-Policy": "no-referrer"},
+        )
+
+    @router.post("/google/exchange")
+    def google_exchange(
+        request: Request,
+        response: Response,
+        body: GoogleExchangeIn,
+        service: IdentityService = Depends(service_dep),
+    ) -> dict[str, Any]:
+        reject_spoofed_identity_headers(request)
+        google_svc = _resolve_google_signin(request, service)
+        try:
+            session_out = google_svc.exchange_auth_code(body.auth_code, device_label=body.device_label)
+        except IdentityError as exc:
+            raise _http_from_identity_error(exc) from exc
+        if body.set_cookie:
+            response.set_cookie(
+                key="cs_session_quest",
+                value=session_out.session_token,
+                httponly=True,
+                samesite="lax",
+                secure=request.url.scheme == "https",
+                max_age=service.config.session_ttl_seconds,
+            )
+        return _session_out_dict(session_out)
+
+    @router.post("/pair/start")
+    def pair_start(
+        body: Optional[PairStartIn] = Body(default=None),
+        principal: VerifiedPrincipal = Depends(_require_verified_any),
+        service: IdentityService = Depends(service_dep),
+    ) -> dict[str, Any]:
+        ttl = body.ttl_seconds if body else 300
+        try:
+            return service.start_pairing(principal, ttl_seconds=ttl)
+        except IdentityError as exc:
+            raise _http_from_identity_error(exc) from exc
+
+    @router.post("/pair/complete")
+    def pair_complete(
+        request: Request,
+        body: PairCompleteIn,
+        service: IdentityService = Depends(service_dep),
+    ) -> dict[str, Any]:
+        reject_spoofed_identity_headers(request)
+        try:
+            session_out = service.complete_pairing(body.code, device_label=body.device_label)
+        except IdentityError as exc:
+            raise _http_from_identity_error(exc) from exc
+        return _session_out_dict(session_out)
 
     # CS-B5 temporal_memory owner-device token routes.
     def _resolve_memory_token_handler(request: Request) -> Any:

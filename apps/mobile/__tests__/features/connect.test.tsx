@@ -45,19 +45,21 @@ test("Test Connection is honest: offline on failure, reachable only on success",
   await waitFor(() => expect(online.getByText("Server reachable")).toBeTruthy());
 });
 
-test("Save persists settings via SecureStore and Google OAuth has no secret", async () => {
+test("Save persists settings via SecureStore", async () => {
   const screen = await render(<ConnectScreen apiBaseUrl="http://192.168.1.10:8000" owner="karim" fetcher={okFetcher} />);
   await fireEvent.press(screen.getByText("Save settings"));
   await waitFor(() => expect(SecureStore.setItemAsync).toHaveBeenCalled());
-  await fireEvent.press(screen.getByText("Connect Google"));
-  await waitFor(() => expect(WebBrowser.openAuthSessionAsync).toHaveBeenCalled());
-  const call = (WebBrowser.openAuthSessionAsync as jest.Mock).mock.calls[0];
-  expect(String(call[0])).toContain("/api/auth/google/start");
-  expect(JSON.stringify(call)).not.toContain("client_secret");
+});
+
+test("signed-out Connect has no source toggles and no client secret anywhere", async () => {
+  const screen = await render(<ConnectScreen apiBaseUrl="http://192.168.1.10:8000" fetcher={okFetcher} />);
+  expect(screen.getByTestId("sources-signed-out")).toBeTruthy();
+  expect(screen.queryByTestId("consent-gmail")).toBeNull();
+  expect(screen.queryByText("Connect Google")).toBeNull();
 });
 
 test("EEA shows Data Portability, UAE shows Takeout-to-Drive, region persists", async () => {
-  const screen = await render(<YoutubeOnboardingCard apiBaseUrl="http://192.168.1.10:8000" owner="karim" initialRegion="UAE" fetcher={okFetcher} />);
+  const screen = await render(<YoutubeOnboardingCard apiBaseUrl="http://192.168.1.10:8000" sessionToken="tok" initialRegion="UAE" fetcher={okFetcher} />);
   expect(screen.getByText(/Add to Drive/)).toBeTruthy();
   expect(screen.getByText(/Waiting for first Takeout drop in Drive/)).toBeTruthy();
   expect(screen.getByText(/sensitive topics are held back/)).toBeTruthy();
@@ -70,7 +72,7 @@ test("EEA shows Data Portability, UAE shows Takeout-to-Drive, region persists", 
 test("Takeout picker cancel does nothing; success uploads", async () => {
   picker.mockResolvedValueOnce({ canceled: true, assets: [] });
   const fetcher = jest.fn(okFetcher);
-  const screen = await render(<YoutubeOnboardingCard apiBaseUrl="http://192.168.1.10:8000" owner="karim" initialRegion="UAE" fetcher={fetcher} />);
+  const screen = await render(<YoutubeOnboardingCard apiBaseUrl="http://192.168.1.10:8000" sessionToken="tok" initialRegion="UAE" fetcher={fetcher} />);
   await fireEvent.press(screen.getByText("Upload Takeout JSON/ZIP now"));
   await waitFor(() => expect(picker).toHaveBeenCalled());
   expect(fetcher).not.toHaveBeenCalled();
@@ -84,7 +86,7 @@ test("Takeout picker cancel does nothing; success uploads", async () => {
 
 test("WhatsApp picker: .txt happy path, non-txt rejected, cancel is a no-op", async () => {
   const fetcher = jest.fn(okFetcher);
-  const screen = await render(<WhatsappImportCard apiBaseUrl="http://192.168.1.10:8000" owner="karim" fetcher={fetcher} />);
+  const screen = await render(<WhatsappImportCard apiBaseUrl="http://192.168.1.10:8000" sessionToken="tok" fetcher={fetcher} />);
   picker.mockResolvedValueOnce({ canceled: false, assets: [{ name: "chat.pdf", uri: "file:///c.pdf" }] });
   await fireEvent.press(screen.getByText("Pick WhatsApp .txt export"));
   await waitFor(() => expect(screen.getByText(/must be .txt/)).toBeTruthy());

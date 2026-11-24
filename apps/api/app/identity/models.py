@@ -83,6 +83,9 @@ class AppSessionOut:
     capabilities: tuple[str, ...]
     age_band: AgeBand
     expires_at: str
+    display_name: str = ""
+    email: Optional[str] = None
+    device_label: Optional[str] = None
 
 
 @dataclass(frozen=True)

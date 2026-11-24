@@ -40,6 +40,7 @@ _DDL_STATEMENTS: tuple[str, ...] = (
     """CREATE TABLE IF NOT EXISTS cs_users (
         user_id TEXT PRIMARY KEY,
         display_name TEXT NOT NULL DEFAULT '',
+        email TEXT,
         age_band TEXT NOT NULL DEFAULT 'unknown',
         age_declared_at TEXT,
         age_source TEXT NOT NULL DEFAULT 'self_declared',
@@ -82,6 +83,7 @@ _DDL_STATEMENTS: tuple[str, ...] = (
         capabilities JSON NOT NULL,
         session_version INTEGER NOT NULL,
         source_jti TEXT,
+        device_label TEXT,
         created_at TEXT NOT NULL,
         expires_at TEXT NOT NULL,
         revoked_at TEXT,
@@ -89,6 +91,32 @@ _DDL_STATEMENTS: tuple[str, ...] = (
         FOREIGN KEY (user_id) REFERENCES cs_users(user_id)
     )""",
     "CREATE INDEX IF NOT EXISTS cs_app_sessions_user_app ON cs_app_sessions(user_id, app_id, revoked_at)",
+    """CREATE TABLE IF NOT EXISTS cs_oauth_attempts (
+        state_hash TEXT PRIMARY KEY,
+        client_kind TEXT NOT NULL,
+        return_to TEXT NOT NULL,
+        code_verifier_enc BLOB NOT NULL,
+        expires_at TEXT NOT NULL,
+        consumed_at TEXT
+    )""",
+    """CREATE TABLE IF NOT EXISTS cs_oauth_auth_codes (
+        code_hash TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        client_kind TEXT NOT NULL,
+        expires_at TEXT NOT NULL,
+        consumed_at TEXT,
+        FOREIGN KEY (user_id) REFERENCES cs_users(user_id)
+    )""",
+    """CREATE TABLE IF NOT EXISTS cs_pairing_codes (
+        code_hash TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        created_by_session_id TEXT,
+        created_at TEXT NOT NULL,
+        expires_at TEXT NOT NULL,
+        consumed_at TEXT,
+        consumed_by_session_id TEXT,
+        FOREIGN KEY (user_id) REFERENCES cs_users(user_id)
+    )""",
     """CREATE TABLE IF NOT EXISTS cs_revoked_jtis (
         jti TEXT PRIMARY KEY,
         user_id TEXT NOT NULL,
@@ -146,7 +174,21 @@ class IdentityStore:
         with self.lock:
             for stmt in _DDL_STATEMENTS:
                 self.db.execute(stmt)
+            self._migrate_schema()
             self.db.commit()
+
+    def _migrate_schema(self) -> None:
+        dialect = getattr(self.db, "dialect", "sqlite")
+        if dialect == "postgres":
+            self.db.execute("ALTER TABLE cs_users ADD COLUMN IF NOT EXISTS email TEXT")
+            self.db.execute("ALTER TABLE cs_app_sessions ADD COLUMN IF NOT EXISTS device_label TEXT")
+            return
+        user_cols = {row[1] for row in self.db.execute("PRAGMA table_info(cs_users)").fetchall()}
+        if "email" not in user_cols:
+            self.db.execute("ALTER TABLE cs_users ADD COLUMN email TEXT")
+        sess_cols = {row[1] for row in self.db.execute("PRAGMA table_info(cs_app_sessions)").fetchall()}
+        if "device_label" not in sess_cols:
+            self.db.execute("ALTER TABLE cs_app_sessions ADD COLUMN device_label TEXT")
 
     def close(self) -> None:
         with self.lock:
@@ -155,7 +197,7 @@ class IdentityStore:
     def get_user(self, user_id: str) -> Optional[dict[str, Any]]:
         with self.lock:
             row = self.db.execute(
-                """SELECT user_id, display_name, age_band, age_declared_at, age_source,
+                """SELECT user_id, display_name, email, age_band, age_declared_at, age_source,
                           status, session_version, created_at, updated_at
                    FROM cs_users WHERE user_id = ?""",
                 (user_id,),
@@ -165,13 +207,14 @@ class IdentityStore:
             return {
                 "user_id": row[0],
                 "display_name": row[1],
-                "age_band": row[2],
-                "age_declared_at": row[3],
-                "age_source": row[4],
-                "status": row[5],
-                "session_version": int(row[6]),
-                "created_at": row[7],
-                "updated_at": row[8],
+                "email": row[2],
+                "age_band": row[3],
+                "age_declared_at": row[4],
+                "age_source": row[5],
+                "status": row[6],
+                "session_version": int(row[7]),
+                "created_at": row[8],
+                "updated_at": row[9],
             }
 
     def get_identity_link(self, issuer: str, subject: str) -> Optional[dict[str, Any]]:
@@ -198,6 +241,7 @@ class IdentityStore:
         issuer: str,
         subject: str,
         display_name: str = "",
+        email: Optional[str] = None,
         email_verified: bool = False,
     ) -> tuple[dict[str, Any], bool]:
         """Resolve canonical user_id strictly by (issuer, subject); never auto-merge by display_name or email."""
@@ -207,6 +251,17 @@ class IdentityStore:
                 user = self.get_user(link["user_id"])
                 if user is None:
                     raise RuntimeError("Orphaned identity link")
+                clean_name = (display_name or "").strip()
+                clean_email = (email or "").strip() or None
+                if (clean_name and clean_name != user["display_name"]) or (clean_email and clean_email != user.get("email")):
+                    now_str = iso_utc()
+                    self.db.execute(
+                        "UPDATE cs_users SET display_name = ?, email = ?, updated_at = ? WHERE user_id = ?",
+                        (clean_name or user["display_name"], clean_email or user.get("email"), now_str, user["user_id"]),
+                    )
+                    self.db.commit()
+                    user = self.get_user(user["user_id"])
+                    assert user is not None
                 return user, False
 
             now_str = iso_utc()
@@ -216,11 +271,12 @@ class IdentityStore:
             else:
                 user_id = f"usr_{uuid.uuid4()}"
 
+            clean_email = (email or "").strip() or None
             self.db.execute(
                 """INSERT INTO cs_users
-                   (user_id, display_name, age_band, age_declared_at, age_source, status, session_version, created_at, updated_at)
-                   VALUES (?, ?, 'unknown', NULL, 'self_declared', 'active', 1, ?, ?)""",
-                (user_id, display_name or "", now_str, now_str),
+                   (user_id, display_name, email, age_band, age_declared_at, age_source, status, session_version, created_at, updated_at)
+                   VALUES (?, ?, ?, 'unknown', NULL, 'self_declared', 'active', 1, ?, ?)""",
+                (user_id, display_name or "", clean_email, now_str, now_str),
             )
             self.db.execute(
                 """INSERT INTO cs_identity_links
@@ -345,13 +401,14 @@ class IdentityStore:
         source_jti: Optional[str],
         created_at: str,
         expires_at: str,
+        device_label: Optional[str] = None,
     ) -> None:
         with self.lock:
             self.db.execute(
                 """INSERT INTO cs_app_sessions
                    (session_id, token_hash, user_id, app_id, capabilities, session_version,
-                    source_jti, created_at, expires_at, revoked_at, revocation_reason)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL)""",
+                    source_jti, device_label, created_at, expires_at, revoked_at, revocation_reason)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL)""",
                 (
                     session_id,
                     token_hash,
@@ -360,6 +417,7 @@ class IdentityStore:
                     json.dumps(sorted(capabilities)),
                     session_version,
                     source_jti,
+                    device_label,
                     created_at,
                     expires_at,
                 ),
@@ -375,17 +433,18 @@ class IdentityStore:
             "capabilities": list(json.loads(row[4])),
             "session_version": int(row[5]),
             "source_jti": row[6],
-            "created_at": row[7],
-            "expires_at": row[8],
-            "revoked_at": row[9],
-            "revocation_reason": row[10],
+            "device_label": row[7],
+            "created_at": row[8],
+            "expires_at": row[9],
+            "revoked_at": row[10],
+            "revocation_reason": row[11],
         }
 
     def get_app_session_by_token_hash(self, token_hash: str) -> Optional[dict[str, Any]]:
         with self.lock:
             row = self.db.execute(
                 """SELECT session_id, token_hash, user_id, app_id, capabilities, session_version,
-                          source_jti, created_at, expires_at, revoked_at, revocation_reason
+                          source_jti, device_label, created_at, expires_at, revoked_at, revocation_reason
                    FROM cs_app_sessions WHERE token_hash = ?""",
                 (token_hash,),
             ).fetchone()
@@ -395,11 +454,32 @@ class IdentityStore:
         with self.lock:
             row = self.db.execute(
                 """SELECT session_id, token_hash, user_id, app_id, capabilities, session_version,
-                          source_jti, created_at, expires_at, revoked_at, revocation_reason
+                          source_jti, device_label, created_at, expires_at, revoked_at, revocation_reason
                    FROM cs_app_sessions WHERE session_id = ?""",
                 (session_id,),
             ).fetchone()
             return self._row_to_session(row) if row else None
+
+    def list_active_user_sessions(self, user_id: str) -> list[dict[str, Any]]:
+        with self.lock:
+            user = self.get_user(user_id)
+            if user is None or user["status"] != "active":
+                return []
+            rows = self.db.execute(
+                """SELECT session_id, token_hash, user_id, app_id, capabilities, session_version,
+                          source_jti, device_label, created_at, expires_at, revoked_at, revocation_reason
+                   FROM cs_app_sessions
+                   WHERE user_id = ? AND revoked_at IS NULL AND session_version = ?
+                   ORDER BY created_at DESC""",
+                (user_id, user["session_version"]),
+            ).fetchall()
+            now_dt = utcnow()
+            out: list[dict[str, Any]] = []
+            for row in rows:
+                sess = self._row_to_session(row)
+                if parse_iso(sess["expires_at"]) > now_dt:
+                    out.append(sess)
+            return out
 
     def revoke_app_session(self, session_id: str, *, revoked_at: str, reason: str) -> bool:
         with self.lock:
@@ -625,3 +705,146 @@ class IdentityStore:
                 }
                 for row in rows
             ]
+
+    # Google OAuth PKCE attempts, single-use auth codes, and QR pairing codes (E2)
+    def create_oauth_attempt(
+        self,
+        *,
+        state_hash: str,
+        client_kind: str,
+        return_to: str,
+        code_verifier_enc: bytes,
+        expires_at: str,
+    ) -> None:
+        with self.lock:
+            self.db.execute(
+                """INSERT INTO cs_oauth_attempts
+                   (state_hash, client_kind, return_to, code_verifier_enc, expires_at, consumed_at)
+                   VALUES (?, ?, ?, ?, ?, NULL)""",
+                (state_hash, client_kind, return_to, code_verifier_enc, expires_at),
+            )
+            self.db.commit()
+
+    def get_oauth_attempt(self, state_hash: str) -> Optional[dict[str, Any]]:
+        with self.lock:
+            row = self.db.execute(
+                """SELECT state_hash, client_kind, return_to, code_verifier_enc, expires_at, consumed_at
+                   FROM cs_oauth_attempts WHERE state_hash = ?""",
+                (state_hash,),
+            ).fetchone()
+            if not row:
+                return None
+            return {
+                "state_hash": row[0],
+                "client_kind": row[1],
+                "return_to": row[2],
+                "code_verifier_enc": bytes(row[3]),
+                "expires_at": row[4],
+                "consumed_at": row[5],
+            }
+
+    def consume_oauth_attempt_atomic(self, state_hash: str, *, consumed_at: str) -> bool:
+        with self.lock:
+            cur = self.db.execute(
+                "UPDATE cs_oauth_attempts SET consumed_at = ? WHERE state_hash = ? AND consumed_at IS NULL",
+                (consumed_at, state_hash),
+            )
+            self.db.commit()
+            return cur.rowcount == 1
+
+    def create_oauth_auth_code(
+        self,
+        *,
+        code_hash: str,
+        user_id: str,
+        client_kind: str,
+        expires_at: str,
+    ) -> None:
+        with self.lock:
+            self.db.execute(
+                """INSERT INTO cs_oauth_auth_codes
+                   (code_hash, user_id, client_kind, expires_at, consumed_at)
+                   VALUES (?, ?, ?, ?, NULL)""",
+                (code_hash, user_id, client_kind, expires_at),
+            )
+            self.db.commit()
+
+    def get_oauth_auth_code(self, code_hash: str) -> Optional[dict[str, Any]]:
+        with self.lock:
+            row = self.db.execute(
+                """SELECT code_hash, user_id, client_kind, expires_at, consumed_at
+                   FROM cs_oauth_auth_codes WHERE code_hash = ?""",
+                (code_hash,),
+            ).fetchone()
+            if not row:
+                return None
+            return {
+                "code_hash": row[0],
+                "user_id": row[1],
+                "client_kind": row[2],
+                "expires_at": row[3],
+                "consumed_at": row[4],
+            }
+
+    def consume_oauth_auth_code_atomic(self, code_hash: str, *, consumed_at: str) -> bool:
+        with self.lock:
+            cur = self.db.execute(
+                "UPDATE cs_oauth_auth_codes SET consumed_at = ? WHERE code_hash = ? AND consumed_at IS NULL",
+                (consumed_at, code_hash),
+            )
+            self.db.commit()
+            return cur.rowcount == 1
+
+    def create_pairing_code(
+        self,
+        *,
+        code_hash: str,
+        user_id: str,
+        created_by_session_id: Optional[str],
+        created_at: str,
+        expires_at: str,
+    ) -> None:
+        with self.lock:
+            self.db.execute(
+                """INSERT INTO cs_pairing_codes
+                   (code_hash, user_id, created_by_session_id, created_at, expires_at, consumed_at, consumed_by_session_id)
+                   VALUES (?, ?, ?, ?, ?, NULL, NULL)""",
+                (code_hash, user_id, created_by_session_id, created_at, expires_at),
+            )
+            self.db.commit()
+
+    def get_pairing_code(self, code_hash: str) -> Optional[dict[str, Any]]:
+        with self.lock:
+            row = self.db.execute(
+                """SELECT code_hash, user_id, created_by_session_id, created_at, expires_at, consumed_at, consumed_by_session_id
+                   FROM cs_pairing_codes WHERE code_hash = ?""",
+                (code_hash,),
+            ).fetchone()
+            if not row:
+                return None
+            return {
+                "code_hash": row[0],
+                "user_id": row[1],
+                "created_by_session_id": row[2],
+                "created_at": row[3],
+                "expires_at": row[4],
+                "consumed_at": row[5],
+                "consumed_by_session_id": row[6],
+            }
+
+    def consume_pairing_code_atomic(
+        self,
+        code_hash: str,
+        *,
+        consumed_at: str,
+        consumed_by_session_id: str,
+    ) -> bool:
+        with self.lock:
+            cur = self.db.execute(
+                """UPDATE cs_pairing_codes
+                   SET consumed_at = ?, consumed_by_session_id = ?
+                   WHERE code_hash = ? AND consumed_at IS NULL""",
+                (consumed_at, consumed_by_session_id, code_hash),
+            )
+            self.db.commit()
+            return cur.rowcount == 1

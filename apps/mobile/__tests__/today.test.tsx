@@ -6,7 +6,7 @@ import { TodayView } from "../src/components/TodayView";
 
 describe("Today", () => {
   it("renders 3:4 cards, a Because chip, and a Demo data pill", async () => {
-    const view = await render(<TodayView onOpenSettings={() => undefined} />);
+    const view = await render(<TodayView onOpenSettings={() => undefined} demo />);
 
     expect(view.getByText("Good morning, Karim")).toBeTruthy();
     expect(view.getByText("Dubai · Monday, 23 Nov")).toBeTruthy();

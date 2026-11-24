@@ -1,10 +1,11 @@
 /**
- * Memory Vault API client (WP I-B).
- * Shapes mirror apps/memory vault.py: GET /v1/owners/{owner}/vault/subjects,
- * /vault/people, /timeline and /why/{fact_id}. Any fetch failure falls back to
- * synthetic Karim fixtures and is reported as demo data (never hidden).
+ * Memory Vault API client (WP I-B + E2 authenticated /api/vault/* gateway).
+ * All requests go through apps/api (/api/vault/*) with X-App-Session — never :8040 directly.
  */
-export type Fetcher = (url: string) => Promise<{ ok: boolean; status: number; json: () => Promise<unknown> }>;
+export type Fetcher = (
+  url: string,
+  init?: RequestInit,
+) => Promise<{ ok: boolean; status: number; json: () => Promise<unknown> }>;
 
 export interface SubjectNode {
   id: string; path: string; label: string; kind: string; status: string;
@@ -144,11 +145,11 @@ export function buildPeopleNodes(people: VaultEntity[], size = 320): Constellati
   });
 }
 
-const defaultFetcher: Fetcher = (url) => fetch(url);
+const defaultFetcher: Fetcher = (url, init) => fetch(url, init);
 
-async function getJson(fetcher: Fetcher, url: string): Promise<Record<string, unknown>> {
-  const res = await fetcher(url);
-  if (!res.ok) throw new Error(`Vault API ${res.status} for ${url}`);
+async function getJson(fetcher: Fetcher, url: string, init?: RequestInit): Promise<Record<string, unknown>> {
+  const res = await fetcher(url, init);
+  if (!res.ok) throw new VaultStatusError(res.status);
   return (await res.json()) as Record<string, unknown>;
 }
 
@@ -236,28 +237,40 @@ class VaultStatusError extends Error {
   }
 }
 
-async function readBody(fetcher: Fetcher, url: string): Promise<{ missing: boolean; body: unknown }> {
-  const res = await fetcher(url);
+async function readBody(fetcher: Fetcher, url: string, init?: RequestInit): Promise<{ missing: boolean; body: unknown }> {
+  const res = await fetcher(url, init);
   if (res.status === 404) return { missing: true, body: null };
   if (!res.ok) throw new VaultStatusError(res.status);
   return { missing: false, body: await res.json() };
 }
 
+function authInit(sessionToken?: string | null): RequestInit | undefined {
+  return sessionToken ? { headers: { "X-App-Session": sessionToken } } : undefined;
+}
+
 export async function loadVault(
-  apiBaseUrl: string, owner: string,
+  apiBaseUrl: string, _owner: string,
   fixtures: VaultData,
   fetcher: Fetcher = defaultFetcher,
-  options?: { demo?: boolean },
+  options?: { demo?: boolean; sessionToken?: string | null },
 ): Promise<VaultData> {
-  const base = `${apiBaseUrl.replace(/\/$/, "")}/v1/owners/${encodeURIComponent(owner)}`;
   if (options?.demo) {
     return { ...fixtures, isDemo: true, demoData: true, error: null };
   }
+  const cleanBase = apiBaseUrl.replace(/\/$/, "");
+  if (!cleanBase) {
+    return emptyVault("Connect to your API server");
+  }
+  if (!options?.sessionToken && fetcher === defaultFetcher) {
+    return emptyVault("Sign-in required");
+  }
+  const base = `${cleanBase}/api/vault`;
+  const init = authInit(options?.sessionToken);
   try {
     const [subjectRes, peopleRes, timeline] = await Promise.all([
-      readBody(fetcher, `${base}/vault/graph?view=subjects`),
-      readBody(fetcher, `${base}/vault/graph?view=people`),
-      getJson(fetcher, `${base}/timeline`).catch(() => ({ items: [] })),
+      readBody(fetcher, `${base}/graph?view=subjects`, init),
+      readBody(fetcher, `${base}/graph?view=people`, init),
+      getJson(fetcher, `${base}/timeline`, init).catch(() => ({ items: [] })),
     ]);
     const subjectGraph = subjectRes.missing ? null : asGraph(subjectRes.body);
     const peopleGraph = peopleRes.missing ? null : asGraph(peopleRes.body);
@@ -265,8 +278,8 @@ export async function loadVault(
     if (subjectGraph && peopleGraph) return graphToVault(subjectGraph, peopleGraph, facts);
     if (subjectRes.missing || peopleRes.missing || !subjectGraph || !peopleGraph) {
       const [subjects, people] = await Promise.all([
-        getJson(fetcher, `${base}/vault/subjects`),
-        getJson(fetcher, `${base}/vault/people`),
+        getJson(fetcher, `${base}/subjects`, init),
+        getJson(fetcher, `${base}/people`, init),
       ]);
       const demo = subjects.demo_data === true || people.demo_data === true;
       return {
@@ -291,18 +304,23 @@ export async function loadVault(
 }
 
 export async function loadWhy(
-  apiBaseUrl: string, owner: string, factId: string,
+  apiBaseUrl: string, _owner: string, factId: string,
   fixtureWhy: WhyResult | null,
   fetcher: Fetcher = defaultFetcher,
+  options?: { demo?: boolean; sessionToken?: string | null },
 ): Promise<{ why: WhyResult | null; isDemo: boolean; error: string | null }> {
-  const url = `${apiBaseUrl.replace(/\/$/, "")}/v1/owners/${encodeURIComponent(owner)}/why/${encodeURIComponent(factId)}`;
+  if (options?.demo && fixtureWhy) {
+    return { why: { ...fixtureWhy, evidence: fixtureWhy.evidence.filter((e) => !isSensitive(e)) },
+      isDemo: true, error: null };
+  }
+  const url = `${apiBaseUrl.replace(/\/$/, "")}/api/vault/why/${encodeURIComponent(factId)}`;
   try {
-    const raw = await getJson(fetcher, url);
+    const raw = await getJson(fetcher, url, authInit(options?.sessionToken));
     const why = raw as unknown as WhyResult;
     return { why: { ...why, evidence: (why.evidence ?? []).filter((e) => !isSensitive(e)) },
       isDemo: why.demo_data === true, error: null };
   } catch {
-    if (fixtureWhy) {
+    if (options?.demo && fixtureWhy) {
       return { why: { ...fixtureWhy, evidence: fixtureWhy.evidence.filter((e) => !isSensitive(e)) },
         isDemo: true, error: null };
     }

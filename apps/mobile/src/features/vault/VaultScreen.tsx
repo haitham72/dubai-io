@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { useAuthOptional } from "../../lib/auth";
 import { loadVault, type Fetcher, type VaultData, type VaultEntity, type VaultFact } from "./vaultApi";
 import { KARIM_VAULT_FIXTURES } from "./vaultFixtures";
 import { PeoplePlacesConstellation } from "./PeoplePlacesConstellation";
@@ -14,10 +15,13 @@ function toldLabel(provenance?: string): { mark: string; words: string } {
   return { mark: "", words: "I noticed" };
 }
 
-export function VaultScreen({ apiBaseUrl, owner, fetcher, initialData, poster, demo }: {
+export function VaultScreen({ apiBaseUrl, owner, fetcher, initialData, poster, demo: propDemo, sessionToken: propSessionToken }: {
   apiBaseUrl: string; owner: string; fetcher?: Fetcher; initialData?: VaultData;
-  poster?: Poster; demo?: boolean;
+  poster?: Poster; demo?: boolean; sessionToken?: string | null;
 }) {
+  const auth = useAuthOptional();
+  const demo = propDemo ?? auth?.demoMode ?? false;
+  const sessionToken = propSessionToken !== undefined ? propSessionToken : auth?.session?.sessionToken ?? null;
   const [tab, setTab] = useState<"subjects" | "people">("subjects");
   const [data, setData] = useState<VaultData>(initialData ?? {
     themes: [], people: [], places: [], orgs: [], projects: [], facts: [],
@@ -31,18 +35,20 @@ export function VaultScreen({ apiBaseUrl, owner, fetcher, initialData, poster, d
   useEffect(() => {
     if (initialData) return;
     let live = true;
-    loadVault(apiBaseUrl, owner, KARIM_VAULT_FIXTURES, fetcher, { demo }).then((d) => { if (live) setData(d); });
+    loadVault(apiBaseUrl, owner, KARIM_VAULT_FIXTURES, fetcher, { demo, sessionToken }).then((d) => { if (live) setData(d); });
     return () => { live = false; };
-  }, [apiBaseUrl, owner, fetcher, initialData, demo]);
+  }, [apiBaseUrl, owner, fetcher, initialData, demo, sessionToken]);
 
-  const base = `${apiBaseUrl.replace(/\/$/, "")}/v1/owners/${encodeURIComponent(owner)}`;
+  const base = `${apiBaseUrl.replace(/\/$/, "")}/api/vault`;
   const allPeople = [...data.people, ...data.places, ...(data.projects ?? []), ...data.orgs];
   const hiddenMore = Object.values(data.hiddenByGroup ?? {}).reduce((sum, n) => sum + n, 0);
 
   async function confirmTier(entityId: string) {
-    const url = `${base}/vault/people/${encodeURIComponent(entityId)}/tier`;
+    const url = `${base}/people/${encodeURIComponent(entityId)}/tier`;
     const send = poster ?? (async (target: string, body: unknown) => {
-      const res = await fetch(target, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+      const headers: Record<string, string> = { "content-type": "application/json" };
+      if (sessionToken) headers["X-App-Session"] = sessionToken;
+      const res = await fetch(target, { method: "POST", headers, body: JSON.stringify(body) });
       return { ok: res.ok, status: res.status };
     });
     await send(url, { tier: "T1" });
@@ -96,7 +102,7 @@ export function VaultScreen({ apiBaseUrl, owner, fetcher, initialData, poster, d
         </>
       )}
       <WhyProvenanceSheet apiBaseUrl={apiBaseUrl} owner={owner} factId={selectedFact}
-        fetcher={fetcher} onClose={() => setSelectedFact(null)} />
+        fetcher={fetcher} demo={demo} sessionToken={sessionToken} onClose={() => setSelectedFact(null)} />
     </ScrollView>
   );
 }
