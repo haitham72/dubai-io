@@ -14,7 +14,7 @@ ChannelName = Literal["fts", "entity", "subject", "date"]
 _PER_CHANNEL_LIMIT = 60
 
 _STOPWORDS = frozenset({
-    "a", "an", "and", "are", "as", "at", "be", "been", "being", "but", "by", "can",
+    "a", "again", "an", "and", "are", "as", "at", "be", "been", "being", "but", "by", "can",
     "could", "did", "do", "does", "doing", "done", "for", "from", "had", "has", "have",
     "he", "her", "here", "hers", "him", "his", "how", "i", "if", "in", "into", "is",
     "it", "its", "just", "me", "more", "most", "my", "no", "not", "now", "of", "ok",
@@ -39,7 +39,8 @@ _SYNONYM_GROUPS: tuple[tuple[str, ...], ...] = (
     ("price", "cost", "aed", "سعر", "بكام", "كم", "تمن", "bekam", "درهم"),
     ("car", "camry", "autohub", "vehicle", "سيارة", "عربية", "عربيه", "كامري"),
     ("gym", "fitness", "workout", "train", "trainer", "coach", "fitzone", "peakform", "جيم", "نادي", "الجيم", "تمرين", "يمرن", "بيمرني", "بيمرن", "مدرب", "كوتش"),
-    ("rent", "flat", "apartment", "housing", "ايجار", "إيجار", "شقة", "شقه", "سكن"),
+    ("rent", "flat", "apartment", "housing", "landlord", "building", "lobby", "lease", "ايجار", "إيجار", "شقة", "شقه", "سكن"),
+    ("interview", "hiring", "round", "recruiter", "offer", "مقابلة", "توظيف"),
     ("work", "works", "job", "office", "company", "boss", "manager", "شغل", "عمل", "يشتغل", "شركة", "مدير", "مديره", "مديرة", "مديرتي"),
     ("mom", "mother", "mama", "ماما", "امي", "أمي", "الوالدة"),
     ("father", "dad", "baba", "بابا", "ابي", "أبي", "والد", "والدي"),
@@ -237,6 +238,12 @@ def _match_seed_entities(conn: Any, owner: str, tokens: list[str]) -> list[str]:
                 for var in tok_variants[i]:
                     if var in by_key:
                         hit_eids = [eid for eid, _ in by_key[var]]
+                        break
+                    for syn in _SYNONYM_MAP.get(var, ()):
+                        if syn in by_key:
+                            hit_eids = [eid for eid, _ in by_key[syn]]
+                            break
+                    if hit_eids is not None:
                         break
                 if hit_eids is not None:
                     i += 1
@@ -446,9 +453,6 @@ def search_candidates(
                 FROM links ln
                 WHERE ln.owner = %s AND ln.erased_at IS NULL
                   AND (ln.src = ANY(%s) OR ln.dst = ANY(%s))
-                  AND (ln.evidence_fact_id IS NOT NULL OR EXISTS (
-                      SELECT 1 FROM link_evidence le WHERE le.owner = ln.owner AND le.link_id = ln.id
-                  ))
                 LIMIT 40
                 """,
                 (seed_eids, owner, seed_eids, seed_eids),
@@ -544,8 +548,8 @@ def search_candidates(
                         params.append(d + "%")
                     else:
                         dt = date.fromisoformat(d)
-                        lo = (dt - timedelta(days=7)).isoformat()
-                        hi = (dt + timedelta(days=7)).isoformat()
+                        lo = (dt - timedelta(days=2)).isoformat()
+                        hi = (dt + timedelta(days=2)).isoformat()
                         date_preds.append("(substr(f.valid_from, 1, 10) BETWEEN %s AND %s)")
                         params.extend([lo, hi])
                 clauses.append(f"({' OR '.join(date_preds)})")
@@ -564,7 +568,7 @@ def search_candidates(
             for r in drows:
                 status_by_id[r["id"]] = r["status"]
             if date_fids:
-                channel_ranks.append(("date", 0.65, date_fids))
+                channel_ranks.append(("date", 0.35, date_fids))
 
         # Fallback: when empty query yielded no signal channels
         if not channel_ranks and not q_clean:
@@ -588,6 +592,50 @@ def search_candidates(
                 status_by_id[r["id"]] = r["status"]
             if frows:
                 channel_ranks.append(("date", 0.5, [r["id"] for r in frows]))
+
+        # 5. Lightweight co-subject expansion from top FTS/entity hits (helps multi-fact/contradiction clusters)
+        top_seed_fids = []
+        for ch_name, _, rids in channel_ranks:
+            if ch_name in ("fts", "entity"):
+                for fid in rids[:3]:
+                    if fid not in top_seed_fids:
+                        top_seed_fids.append(fid)
+        if top_seed_fids[:3] and not seed_sids:
+            sid_rows = conn.execute(
+                """
+                SELECT DISTINCT f.subject_id
+                FROM facts f
+                LEFT JOIN subjects s ON s.owner = f.owner AND s.id = f.subject_id
+                WHERE f.owner = %s AND f.id = ANY(%s) AND (f.erased_at IS NULL)::int = 1
+                  AND (s.id IS NULL OR (s.sensitive_cat IS NULL AND split_part(s.path, '/', 1) NOT IN ('health', 'faith')))
+                """,
+                (owner, top_seed_fids[:3]),
+            ).fetchall()
+            co_sids = [r["subject_id"] for r in sid_rows if r["subject_id"]]
+            if co_sids:
+                clauses = []
+                params = []
+                _append_fast_filters(
+                    clauses, params, owner=owner, date_from=date_from, date_to=date_to, source_prefix=source_prefix
+                )
+                clauses.append("f.subject_id = ANY(%s)")
+                params.append(co_sids)
+                sib_rows = conn.execute(
+                    f"""
+                    SELECT f.id, f.status
+                    FROM facts f
+                    LEFT JOIN subjects s ON s.owner = f.owner AND s.id = f.subject_id
+                    WHERE {' AND '.join(clauses)}
+                    ORDER BY f.valid_from DESC, f.id ASC
+                    LIMIT 20
+                    """,
+                    tuple(params),
+                ).fetchall()
+                sib_ids = [r["id"] for r in sib_rows]
+                for r in sib_rows:
+                    status_by_id[r["id"]] = r["status"]
+                if sib_ids:
+                    channel_ranks.append(("subject", 0.25, sib_ids))
 
         # Single batch visibility verification (forget_rules + evidence generations) over fused <=240 candidates!
         all_cand_ids = list({fid for _, _, rids in channel_ranks for fid in rids})

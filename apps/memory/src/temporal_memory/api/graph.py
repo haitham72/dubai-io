@@ -220,7 +220,7 @@ def _fetch_entity_evidence_map(
             LEFT JOIN subjects s ON s.owner = f.owner AND s.id = f.subject_id
             WHERE fe.owner = %s
               AND fe.entity_id = ANY(%s)
-              AND f.erased_at IS NULL AND f.status <> 'history' {hid_clause}
+              AND (f.erased_at IS NULL)::int = 1 AND f.status <> 'history' {hid_clause}
               AND (
                   s.id IS NULL
                   OR (s.sensitive_cat IS NULL AND split_part(s.path, '/', 1) NOT IN ('health', 'faith'))
@@ -319,51 +319,50 @@ def _collect_sql_projection(
 
         ent_agg_rows = conn.execute(
             f"""
-            WITH counts AS (
-                SELECT e.id AS entity_id,
-                       e.provenance,
-                       e.user_confirmed_at,
-                       e.last_seen,
-                       COUNT(f.id)::int AS total_cnt,
-                       COUNT(f.id) FILTER (WHERE f.provenance IN ('user_supplied', 'provider_confirmed'))::int AS conf_cnt,
-                       COUNT(f.id) FILTER (WHERE f.valid_from >= to_char(CURRENT_DATE - 30, 'YYYY-MM-DD'))::int AS mentions_30d,
+            WITH agg AS (
+                SELECT fe.entity_id,
+                       COUNT(*)::int AS total_cnt,
+                       COUNT(*) FILTER (WHERE f.provenance IN ('user_supplied', 'provider_confirmed'))::int AS conf_cnt,
+                       COUNT(*) FILTER (WHERE f.valid_from >= to_char(CURRENT_DATE - 30, 'YYYY-MM-DD'))::int AS mentions_30d,
                        MAX(f.valid_from) AS max_valid_from,
                        MAX(NULLIF(substr(f.valid_from, 1, 10), '')) AS max_valid_day
-                FROM entities e
-                LEFT JOIN fact_entities fe ON fe.owner = e.owner AND fe.entity_id = e.id
-                LEFT JOIN facts f ON f.owner = fe.owner AND f.id = fe.fact_id
-                  AND f.erased_at IS NULL AND f.status <> 'history' {hid_clause}
+                FROM fact_entities fe
+                JOIN facts f ON f.owner = fe.owner AND f.id = fe.fact_id
                 LEFT JOIN subjects s ON s.owner = f.owner AND s.id = f.subject_id
-                WHERE e.owner = %s AND e.erased_at IS NULL AND e.status <> 'merged'
+                WHERE fe.owner = %s AND f.erased_at IS NULL AND f.status <> 'history' {hid_clause}
                   AND (
-                      f.id IS NULL
-                      OR s.id IS NULL
+                      s.id IS NULL
                       OR (s.sensitive_cat IS NULL AND split_part(s.path, '/', 1) NOT IN ('health', 'faith'))
                       OR f.provenance IN ('user_supplied', 'provider_confirmed')
                   )
-                GROUP BY e.id, e.provenance, e.user_confirmed_at, e.last_seen
+                GROUP BY fe.entity_id
             )
-            SELECT entity_id, total_cnt, conf_cnt, max_valid_from,
+            SELECT e.id AS entity_id,
+                   COALESCE(a.total_cnt, 0) AS total_cnt,
+                   COALESCE(a.conf_cnt, 0) AS conf_cnt,
+                   a.max_valid_from,
                    GREATEST(
                        0.05,
-                       0.5 * LN(1.0 + mentions_30d)
+                       0.5 * LN(1.0 + COALESCE(a.mentions_30d, 0))
                        + 0.3 * EXP(
                            -GREATEST(
                                0,
                                (CURRENT_DATE - COALESCE(
-                                   CASE WHEN COALESCE(max_valid_day, substr(last_seen, 1, 10), '') ~ '^[0-9]{{4}}-[0-9]{{2}}-[0-9]{{2}}$'
-                                        THEN COALESCE(max_valid_day, substr(last_seen, 1, 10))::date
+                                   CASE WHEN COALESCE(a.max_valid_day, substr(e.last_seen, 1, 10), '') ~ '^[0-9]{{4}}-[0-9]{{2}}-[0-9]{{2}}$'
+                                        THEN COALESCE(a.max_valid_day, substr(e.last_seen, 1, 10))::date
                                         ELSE CURRENT_DATE - 90
                                    END,
                                    CURRENT_DATE - 90
                                ))
                            )::double precision / 30.0
                        )
-                       + 0.2 * CASE WHEN provenance = 'user_supplied' OR user_confirmed_at IS NOT NULL THEN 1.0 ELSE 0.0 END
+                       + 0.2 * CASE WHEN e.provenance = 'user_supplied' OR e.user_confirmed_at IS NOT NULL THEN 1.0 ELSE 0.0 END
                    ) AS sal
-            FROM counts
+            FROM entities e
+            LEFT JOIN agg a ON a.entity_id = e.id
+            WHERE e.owner = %s AND e.erased_at IS NULL AND e.status <> 'merged'
             """,
-            (hidden_fids, owner) if hidden_fids else (owner,),
+            (owner, hidden_fids, owner) if hidden_fids else (owner, owner),
         ).fetchall()
 
         link_ev_rows = conn.execute(
