@@ -26,6 +26,7 @@ from app.memory_bridge.router import create_memory_bridge_router
 from app.shared_runtime import create_shared_status_router, init_shared_runtime, shared_runtime_enabled
 from app.messenger.hub import DEFAULT_DEV_ORIGINS, ChatHub, get_allowed_origins
 from app.messenger.routes_chat import router as chat_router
+from app.messenger.routes_memory import router as memory_ui_router
 from app.messenger.stickers import PackError, load_manifest, packs_root, resolve_sticker
 from app.messenger.store import ChatStore
 
@@ -114,6 +115,7 @@ app.add_middleware(
 )
 app.include_router(create_identity_router())
 app.include_router(chat_router)
+app.include_router(memory_ui_router)
 app.include_router(create_shared_status_router())
 if shared_runtime_enabled():
     app.include_router(create_memory_bridge_router())

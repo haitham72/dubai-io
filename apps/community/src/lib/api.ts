@@ -50,3 +50,18 @@ export const createPost = async (text: string): Promise<Post> =>
 export const markNotificationRead = async (id: string): Promise<void> => {
   await request(`/api/community/notifications/${id}/read`, { method: "POST" });
 };
+
+export interface MemoryConsent {
+  read_enabled: boolean;
+  write_enabled: boolean;
+  allow_interest_export: boolean;
+  default_off: boolean;
+  as_of?: string;
+  provenance?: string;
+}
+export interface ForgetResult { records_forgotten: number; facts_erased: number; as_of?: string }
+export const getMemoryConsent = (): Promise<MemoryConsent> => request<MemoryConsent>("/api/community/memory/consent");
+export const setMemoryConsent = (c: Pick<MemoryConsent, "read_enabled" | "write_enabled" | "allow_interest_export">): Promise<MemoryConsent> =>
+  request<MemoryConsent>("/api/community/memory/consent", { method: "POST", body: JSON.stringify(c) });
+export const forgetMemory = (): Promise<ForgetResult> =>
+  request<ForgetResult>("/api/community/memory/forget", { method: "POST" });

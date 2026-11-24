@@ -31,6 +31,7 @@ from .store import IdentityStore, iso_utc, parse_iso, utcnow
 _PAIR_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 PAIR_MAX_FAILURES = 5
 PAIR_WINDOW_SECONDS = 300
+PAIR_STORE_MAX_ENTRIES = 4096  # per dict; oldest entries are evicted beyond this
 
 
 def _public_api_base_url() -> Optional[str]:
@@ -110,7 +111,7 @@ class IdentityService:
         self.store = store
         self._pair_lock = threading.Lock()
         self._pair_ip_failures: dict[str, list[datetime]] = {}
-        self._pair_code_failures: dict[str, int] = {}
+        self._pair_code_failures: dict[str, tuple[int, datetime]] = {}  # code hash -> (count, last failure)
         self.jwt_verifier = jwt_verifier
         self.config = config or IdentityConfig()
         self._legacy_session_resolver = legacy_session_resolver or _default_legacy_session_resolver
@@ -735,13 +736,27 @@ class IdentityService:
         out["qr_payload"] = payload
         return out
 
+    def _pair_prune(self, now: datetime) -> None:
+        """Drop expired entries and cap both stores (caller holds _pair_lock)."""
+        cutoff = now - timedelta(seconds=PAIR_WINDOW_SECONDS)
+        for ip in list(self._pair_ip_failures):
+            recent = [t for t in self._pair_ip_failures[ip] if t > cutoff]
+            if recent:
+                self._pair_ip_failures[ip] = recent
+            else:
+                del self._pair_ip_failures[ip]
+        for h in [h for h, (_n, last) in self._pair_code_failures.items() if last <= cutoff]:
+            del self._pair_code_failures[h]
+        while len(self._pair_ip_failures) > PAIR_STORE_MAX_ENTRIES:
+            del self._pair_ip_failures[next(iter(self._pair_ip_failures))]
+        while len(self._pair_code_failures) > PAIR_STORE_MAX_ENTRIES:
+            del self._pair_code_failures[next(iter(self._pair_code_failures))]
+
     def _pair_throttle_check(self, client_ip: str) -> None:
         now = utcnow()
-        cutoff = now - timedelta(seconds=PAIR_WINDOW_SECONDS)
         with self._pair_lock:
-            recent = [t for t in self._pair_ip_failures.get(client_ip, []) if t > cutoff]
-            self._pair_ip_failures[client_ip] = recent
-            if len(recent) >= PAIR_MAX_FAILURES:
+            self._pair_prune(now)
+            if len(self._pair_ip_failures.get(client_ip, [])) >= PAIR_MAX_FAILURES:
                 raise IdentityError(
                     "too_many_attempts",
                     "Too many failed pairing attempts. Wait 5 minutes and generate a fresh code.",
@@ -750,10 +765,15 @@ class IdentityService:
 
     def _pair_record_failure(self, client_ip: str, code_hash: str) -> bool:
         """Record a failed attempt; True when this code has now failed too many times."""
+        now = utcnow()
         with self._pair_lock:
-            self._pair_ip_failures.setdefault(client_ip, []).append(utcnow())
-            n = self._pair_code_failures.get(code_hash, 0) + 1
-            self._pair_code_failures[code_hash] = n
+            self._pair_prune(now)
+            hits = self._pair_ip_failures.pop(client_ip, [])
+            hits.append(now)
+            self._pair_ip_failures[client_ip] = hits  # re-insert: newest last
+            n = self._pair_code_failures.pop(code_hash, (0, now))[0] + 1
+            self._pair_code_failures[code_hash] = (n, now)
+            self._pair_prune(now)
             return n >= PAIR_MAX_FAILURES
 
     def complete_pairing(
