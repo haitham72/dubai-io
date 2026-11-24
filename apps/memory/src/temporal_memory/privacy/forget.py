@@ -144,7 +144,7 @@ def forget_source(owner: str, record_ids: list[str]) -> dict[str, Any]:
                 # 4/5) Affected day jobs, classified by state.
                 cur.execute(
                     "SELECT id, day, state, input_ref FROM jobs "
-                    "WHERE owner = %(owner)s AND kind IN ('extract.day', 'extract.live') "
+                    "WHERE owner = %(owner)s AND kind IN ('extract.day', 'extract.live', 'extract.session') "
                     "AND input_ref && %(rids)s",
                     {"owner": owner, "rids": rids},
                 )
@@ -192,8 +192,22 @@ def forget_source(owner: str, record_ids: list[str]) -> dict[str, Any]:
                         "VALUES (%(owner)s, 'item', %(rid)s, now()) ON CONFLICT DO NOTHING",
                         {"owner": owner, "rid": rid},
                     )
+                cur.execute(
+                    "SELECT content_hash FROM records WHERE owner = %(owner)s AND id = ANY(%(rids)s)",
+                    {"owner": owner, "rids": rids},
+                )
+                for (digest,) in cur.fetchall():
+                    if not digest:
+                        continue
+                    cur.execute(
+                        "INSERT INTO forget_rules (owner, kind, value, created_at) "
+                        "VALUES (%(owner)s, 'item', %(digest)s, now()) ON CONFLICT DO NOTHING",
+                        {"owner": owner, "digest": digest},
+                    )
+                _finish_owner(cur, owner)
     finally:
         conn.close()
+    _invalidate(owner)
 
     # CR-3: mint fresh jobs for applied days through the real queue, with
     # surviving records only, after the forget has committed.
@@ -210,3 +224,234 @@ def forget_source(owner: str, record_ids: list[str]) -> dict[str, Any]:
             jobs.enqueue(owner, "extract.day", survivors, priority=1, day=day)
             out["jobs_enqueued"] += 1
     return out
+
+
+def _ensure_upgrade(cur: Any) -> None:
+    """Additive objects U0a owns. Created here so Forget works before that migration is merged."""
+    cur.execute(
+        "ALTER TABLE owners ADD COLUMN IF NOT EXISTS privacy_revision BIGINT NOT NULL DEFAULT 0"
+    )
+    cur.execute(
+        """
+        CREATE TABLE IF NOT EXISTS forget_requests (
+            owner TEXT NOT NULL,
+            idempotency_key TEXT NOT NULL,
+            request JSONB NOT NULL,
+            result JSONB NOT NULL,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+            PRIMARY KEY (owner, idempotency_key)
+        )
+        """
+    )
+
+
+def _finish_owner(cur: Any, owner: str) -> None:
+    """Drop evidence-less entities, aliases and links, then bump both cache versions."""
+    _ensure_upgrade(cur)
+    cur.execute(
+        """
+        UPDATE links SET erased_at = now()
+        WHERE owner = %(owner)s AND erased_at IS NULL
+          AND evidence_fact_id IS NOT NULL
+          AND NOT EXISTS (
+              SELECT 1 FROM facts f
+              WHERE f.owner = links.owner AND f.id = links.evidence_fact_id
+                AND f.erased_at IS NULL
+          )
+        """,
+        {"owner": owner},
+    )
+    cur.execute(
+        """
+        UPDATE entities e SET erased_at = now()
+        WHERE e.owner = %(owner)s AND e.erased_at IS NULL
+          AND EXISTS (
+              SELECT 1 FROM fact_entities fe
+              WHERE fe.owner = e.owner AND fe.entity_id = e.id
+          )
+          AND NOT EXISTS (
+              SELECT 1 FROM fact_entities fe
+              JOIN facts f ON f.owner = fe.owner AND f.id = fe.fact_id AND f.erased_at IS NULL
+              WHERE fe.owner = e.owner AND fe.entity_id = e.id
+          )
+        """,
+        {"owner": owner},
+    )
+    cur.execute(
+        """
+        DELETE FROM entity_aliases a
+        USING entities e
+        WHERE a.owner = e.owner AND a.entity_id = e.id
+          AND e.owner = %(owner)s AND e.erased_at IS NOT NULL
+        """,
+        {"owner": owner},
+    )
+    cur.execute(
+        """
+        UPDATE subjects s SET fact_count = (
+            SELECT count(*)::int FROM facts f
+            WHERE f.owner = s.owner AND f.subject_id = s.id
+              AND f.erased_at IS NULL AND f.status <> 'history'
+        )
+        WHERE s.owner = %(owner)s
+        """,
+        {"owner": owner},
+    )
+    cur.execute(
+        """
+        UPDATE owners
+        SET facts_version = facts_version + 1,
+            privacy_revision = privacy_revision + 1
+        WHERE id = %(owner)s
+        """,
+        {"owner": owner},
+    )
+
+
+def _invalidate(owner: str) -> None:
+    from temporal_memory.live.context import invalidate_alias_cache
+
+    invalidate_alias_cache(owner)
+
+
+def _public(raw: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "ok": True,
+        "generation": int(raw.get("generation") or 0),
+        "records": int(raw.get("records") or 0),
+        "facts_erased": int(raw.get("facts_erased") or 0),
+        "facts_trimmed": int(raw.get("facts_trimmed") or 0),
+        "entity_subjects_recomputed": int(raw.get("entity_subjects_recomputed") or 0),
+        "jobs_requeued": int(raw.get("jobs_requeued") or 0),
+        "jobs_enqueued": int(raw.get("jobs_enqueued") or 0),
+    }
+
+
+def forget_fact(owner: str, fact_id: str) -> dict[str, Any]:
+    """Erase one fact, its evidence, and anything left with no surviving evidence."""
+    from temporal_memory import db as _db
+
+    out: dict[str, Any] = {
+        "owner": owner, "records": 0, "facts_erased": 0, "facts_trimmed": 0,
+        "entity_subjects_recomputed": 0, "jobs_requeued": 0, "jobs_enqueued": 0,
+        "generation": 0,
+    }
+    conn = _db.connect()
+    try:
+        with conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "UPDATE facts SET erased_at = now() "
+                    "WHERE owner = %(owner)s AND id = %(fid)s AND erased_at IS NULL "
+                    "RETURNING id",
+                    {"owner": owner, "fid": fact_id},
+                )
+                if cur.fetchone() is None:
+                    return out
+                out["facts_erased"] = 1
+                cur.execute(
+                    "DELETE FROM fact_evidence WHERE owner = %(owner)s AND fact_id = %(fid)s",
+                    {"owner": owner, "fid": fact_id},
+                )
+                cur.execute(
+                    "INSERT INTO forget_rules (owner, kind, value, created_at) "
+                    "VALUES (%(owner)s, 'item', %(fid)s, now()) ON CONFLICT DO NOTHING",
+                    {"owner": owner, "fid": fact_id},
+                )
+                cur.execute("DELETE FROM entity_subjects WHERE owner = %(owner)s", {"owner": owner})
+                cur.execute(
+                    "INSERT INTO entity_subjects (owner, entity_id, subject_id, "
+                    "role, weight, fact_count, first_seen, last_seen) "
+                    "SELECT vf.owner, fe.entity_id, vf.subject_id, "
+                    "coalesce(fe.role, ''), "
+                    "sum(CASE WHEN vf.status = 'active' THEN 1.0 ELSE 0.3 END), "
+                    "count(*)::int, min(vf.valid_from), max(vf.valid_from) "
+                    "FROM visible_facts vf "
+                    "JOIN fact_entities fe ON fe.owner = vf.owner AND fe.fact_id = vf.id "
+                    "WHERE vf.owner = %(owner)s "
+                    "GROUP BY vf.owner, fe.entity_id, vf.subject_id, coalesce(fe.role, '')",
+                    {"owner": owner},
+                )
+                out["entity_subjects_recomputed"] = cur.rowcount
+                _finish_owner(cur, owner)
+                cur.execute(
+                    "SELECT coalesce(max(generation), 0) FROM records WHERE owner = %(owner)s",
+                    {"owner": owner},
+                )
+                out["generation"] = int(cur.fetchone()[0])
+    finally:
+        conn.close()
+    _invalidate(owner)
+    return out
+
+
+def recorded_forget(
+    owner: str,
+    record_ids: list[str],
+    fact_id: str | None,
+    idempotency_key: str | None,
+) -> dict[str, Any]:
+    """One forget effect per (owner, idempotency_key), durable across processes."""
+    import json
+
+    from temporal_memory import db as _db
+
+    key = (idempotency_key or "").strip()
+    if not key:
+        raw = forget_source(owner, list(record_ids)) if record_ids else _public({})
+        public = _public(raw)
+        if fact_id:
+            fact_raw = forget_fact(owner, fact_id)
+            public["facts_erased"] = int(public["facts_erased"]) + int(fact_raw["facts_erased"])
+            public["generation"] = int(fact_raw.get("generation") or public["generation"])
+            public["entity_subjects_recomputed"] = int(fact_raw["entity_subjects_recomputed"])
+        return public
+
+    bootstrap = _db.connect()
+    try:
+        with bootstrap:
+            with bootstrap.cursor() as cur:
+                _ensure_upgrade(cur)
+    finally:
+        bootstrap.close()
+
+    conn = _db.connect()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT pg_advisory_xact_lock(hashtext(%s), hashtext(%s))",
+                (owner, key),
+            )
+            cur.execute(
+                "SELECT result FROM forget_requests WHERE owner = %s AND idempotency_key = %s",
+                (owner, key),
+            )
+            row = cur.fetchone()
+            if row is not None:
+                payload = row[0]
+                if isinstance(payload, str):
+                    payload = json.loads(payload)
+                conn.commit()
+                return dict(payload)
+        raw = forget_source(owner, list(record_ids)) if record_ids else _public({})
+        public = _public(raw)
+        if fact_id:
+            fact_raw = forget_fact(owner, fact_id)
+            public["facts_erased"] = int(public["facts_erased"]) + int(fact_raw["facts_erased"])
+            public["generation"] = int(fact_raw.get("generation") or public["generation"])
+            public["entity_subjects_recomputed"] = int(fact_raw["entity_subjects_recomputed"])
+        request = {"record_ids": list(record_ids), "fact_id": fact_id}
+        with conn.cursor() as cur:
+            cur.execute(
+                "INSERT INTO forget_requests (owner, idempotency_key, request, result) "
+                "VALUES (%s, %s, %s::jsonb, %s::jsonb) "
+                "ON CONFLICT (owner, idempotency_key) DO NOTHING",
+                (owner, key, json.dumps(request), json.dumps(public)),
+            )
+        conn.commit()
+        return public
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()

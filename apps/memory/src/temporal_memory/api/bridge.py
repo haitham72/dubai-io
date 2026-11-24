@@ -29,10 +29,16 @@ class RecordIn(BaseModel):
 
 class DirectFactIn(BaseModel):
     text: str
-    subject_id: str
-    valid_from: str
+    subject_id: str = ""
+    subject_path: str = ""
+    valid_from: str = ""
     evidence: list[str] = Field(default_factory=list)
     provenance: str = "user_supplied"
+    status: str = "active"
+    text_orig: str | None = None
+
+    def resolved_subject(self) -> str:
+        return self.subject_id or self.subject_path or "general/interests"
 
 
 class RecordsIn(BaseModel):
@@ -99,6 +105,10 @@ def upsert_records(
     _: AuthContext = Depends(require_owner_access),
     store: GraphStore = Depends(get_store),
 ) -> dict[str, Any]:
+    from temporal_memory.core.bridge_store import _postgres, ingest_records
+
+    if _postgres(store):
+        return ingest_records(store, owner, body)
     rules = _rules(store).get(owner, set())
     hashes = _hashes(store)
     record_ids: list[str] = []
@@ -139,7 +149,7 @@ def upsert_records(
                 raise HTTPException(status_code=422, detail="provenance is not allowlisted")
             fid = f"df-{uuid.uuid4().hex[:8]}"
             store.facts.setdefault(owner, []).append(Fact(  # type: ignore[attr-defined]
-                id=fid, owner=owner, text=fact.text, subject_id=fact.subject_id,
+                id=fid, owner=owner, text=fact.text, subject_id=fact.resolved_subject(),
                 valid_from=fact.valid_from, evidence=list(fact.evidence),
                 status="active", provenance=provenance,  # type: ignore[arg-type]
             ))
@@ -167,6 +177,10 @@ def forget_owner(
     _: AuthContext = Depends(require_owner_access),
     store: GraphStore = Depends(get_store),
 ) -> dict[str, Any]:
+    from temporal_memory.core.bridge_store import _postgres, forget as pg_forget
+
+    if _postgres(store):
+        return pg_forget(store, owner, body.record_ids, body.fact_id, body.idempotency_key)
     if body.idempotency_key:
         cached = _FORGET_IDEMPOTENCY.get((owner, body.idempotency_key))
         if cached is not None:
@@ -210,6 +224,10 @@ def resolve_fact(
     _: AuthContext = Depends(require_owner_access),
     store: GraphStore = Depends(get_store),
 ) -> dict[str, Any]:
+    from temporal_memory.core.bridge_store import _postgres, resolve_fact as pg_resolve
+
+    if _postgres(store):
+        return pg_resolve(store, owner, fact_id, body)
     fact = _find_fact(store, owner, fact_id)
     if fact is None or fact.id in getattr(store, "forgotten_fact_ids", {}).get(owner, set()):
         raise HTTPException(status_code=404, detail="Fact not found or forgotten")
@@ -274,6 +292,10 @@ def search_facts(
     _: AuthContext = Depends(require_owner_access),
     store: GraphStore = Depends(get_store),
 ) -> dict[str, Any]:
+    from temporal_memory.core.bridge_store import _postgres, search_facts as pg_search
+
+    if _postgres(store):
+        return pg_search(store, owner, q, limit, source_prefix)
     needle = q.casefold()
     records = getattr(store, "records", {}).get(owner, {})
     hits = []

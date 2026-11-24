@@ -114,6 +114,9 @@ def test_forget_erases_only_evidence_and_bumps_generation(tm):
     assert [r["record_id"] for r in ev] == ["g001"]
     rec = tm.read("SELECT generation, erased_at FROM records WHERE id='wab-0001'")[0]
     assert rec["generation"] == 2 and rec["erased_at"] is not None
+    versions = tm.read("SELECT facts_version, privacy_revision FROM owners WHERE id='o1'")[0]
+    assert int(versions["facts_version"]) == 1
+    assert int(versions["privacy_revision"]) == 1
 
 
 def test_forget_while_job_leased_late_submit_rejected(tm):
@@ -248,6 +251,58 @@ def test_forget_generation_is_max_and_records_erased(tm):
     assert out["generation"] == 6  # max(5,1) + 1, not an arbitrary RETURNING row
     assert out["records"] == 2
     assert {f.id for f in tm.store.visible_facts("o1", limit=100)} == set()
+
+
+def test_forget_requeues_extract_session_and_drops_orphans(tm):
+    from temporal_memory.privacy.forget import forget_source
+
+    tm.write(
+        "INSERT INTO entities (id, owner, kind, name, status) VALUES "
+        "('e_mom','o1','person','Mom','active')"
+    )
+    tm.write(
+        "INSERT INTO entity_aliases (owner, entity_id, alias, alias_folded) "
+        "VALUES ('o1','e_mom','Mom','mom')"
+    )
+    tm.write(
+        "INSERT INTO fact_entities (owner, fact_id, entity_id, role) "
+        "VALUES ('o1','m_only','e_mom','family')"
+    )
+    tm.write(
+        "INSERT INTO links (id, owner, src, rel, dst, evidence_fact_id) "
+        "VALUES ('l1','o1','e_mom','mentioned','e_mom','m_only')"
+    )
+    tm.write(
+        "INSERT INTO jobs (id, owner, kind, priority, pool, input_ref, input_version,"
+        " context_hash, prompt_version, day, state, idempotency_key) VALUES "
+        "('j_sess','o1','extract.session',1,'internal','{wab-0001,g001}',1,'c','extract@3',"
+        "'2026-10-26','queued','idem-j-sess')"
+    )
+    out = forget_source("o1", ["wab-0001"])
+    assert out["jobs_requeued"] >= 1
+    sess = _job_row(tm, "j_sess")
+    assert sess["state"] == "queued"
+    assert list(sess["input_ref"]) == ["g001"]
+    erased = tm.read("SELECT erased_at FROM entities WHERE id='e_mom'")[0]["erased_at"]
+    assert erased is not None
+    aliases = tm.read("SELECT alias FROM entity_aliases WHERE entity_id='e_mom'")
+    assert aliases == []
+    link = tm.read("SELECT erased_at FROM links WHERE id='l1'")[0]["erased_at"]
+    assert link is not None
+    count = tm.read("SELECT fact_count FROM subjects WHERE id='s1'")[0]["fact_count"]
+    assert int(count) == 2
+
+
+def test_forget_fact_id_erases_and_bumps_version(tm):
+    from temporal_memory.privacy.forget import forget_fact
+
+    out = forget_fact("o1", "m_other")
+    assert out["facts_erased"] == 1
+    visible = {f.id for f in tm.store.visible_facts("o1", limit=100)}
+    assert "m_other" not in visible
+    versions = tm.read("SELECT facts_version, privacy_revision FROM owners WHERE id='o1'")[0]
+    assert int(versions["facts_version"]) == 1
+    assert int(versions["privacy_revision"]) == 1
 
 
 def test_forget_dead_job_not_blindly_requeued(tm):
