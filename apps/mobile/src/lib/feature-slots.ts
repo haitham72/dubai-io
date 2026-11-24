@@ -4,8 +4,8 @@ import { QuestsScreen } from "../features/quests/QuestsScreen";
 import { VaultScreen } from "../features/vault/VaultScreen";
 import type { ConnectScreenProps, QuestsScreenProps, VaultScreenProps } from "./types";
 
-const MountedVaultScreen: ComponentType<VaultScreenProps> = ({ ownerId, apiBaseUrl }) =>
-  React.createElement(VaultScreen, { owner: ownerId, apiBaseUrl });
+const MountedVaultScreen: ComponentType<VaultScreenProps> = ({ ownerId, apiBaseUrl, demo }) =>
+  React.createElement(VaultScreen, { owner: ownerId, apiBaseUrl, demo });
 
 const MountedQuestsScreen: ComponentType<QuestsScreenProps> = ({ ownerId, apiBaseUrl }) =>
   React.createElement(QuestsScreen, { owner: ownerId, apiBaseUrl });

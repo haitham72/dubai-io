@@ -8,9 +8,10 @@ export const KARIM_VAULT_FIXTURES: VaultData = {
     ] },
     { id: "th-projects", path: "projects", label: "Projects", kind: "theme", status: "active", salience: 8, fact_count: 2 },
     { id: "th-learning", path: "learning", label: "Learning", kind: "theme", status: "candidate", salience: 5, fact_count: 1 },
-    { id: "th-gaming", path: "gaming", label: "Gaming", kind: "theme", status: "candidate", salience: 3, fact_count: 1 },
+    { id: "th-family", path: "people-family", label: "People & family", kind: "theme", status: "active", salience: 4, fact_count: 1, provenance: "user_supplied" },
+    { id: "th-events", path: "events", label: "Events", kind: "theme", status: "active", salience: 4, fact_count: 2 },
+    { id: "th-home", path: "home-money", label: "Home & money", kind: "theme", status: "active", salience: 3, fact_count: 1 },
     { id: "th-travel", path: "travel", label: "Travel", kind: "theme", status: "active", salience: 6, fact_count: 2 },
-    { id: "th-health", path: "health", label: "Health", kind: "theme", status: "candidate", salience: 2, fact_count: 1, sensitive_cat: "health" },
   ],
   people: [
     { id: "e-sara", kind: "person", name: "Sara Nasser", status: "active", relation_to_user: "colleague", closeness_tier: "T1", salience: 9, subjects: [{ subject_id: "th-projects", subject: "Projects", role: "beta tester", fact_count: 2 }] },
@@ -20,6 +21,10 @@ export const KARIM_VAULT_FIXTURES: VaultData = {
     { id: "e-qamar", kind: "place", name: "QamarTech Office, Dubai", status: "active", closeness_tier: null, salience: 5, subjects: [] },
   ],
   orgs: [],
+  projects: [],
+  suggestions: [],
+  hiddenByGroup: {},
+  error: null,
   facts: [
     { id: "f001", text: "Sara is a beta tester for the Raseef project", subject_id: "th-projects", valid_from: "2026-11-18", provenance: "user_supplied", as_of: "2026-11-18" },
     { id: "f002", text: "Karim interviewed at QamarTech on 18 Nov", subject_id: "s-interviews", valid_from: "2026-11-18", provenance: "inferred", as_of: "2026-11-18" },

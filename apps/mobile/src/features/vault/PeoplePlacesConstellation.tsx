@@ -12,7 +12,7 @@ export function PeoplePlacesConstellation({ people, onSelect, size = 320 }: {
     <View style={styles.wrap} testID="people-constellation">
       {hasT1 ? <Text style={styles.t1Badge}>T1 Inner Circle</Text> : null}
       <Svg width={size} height={size}>
-        <Circle cx={size / 2} cy={size / 2} r={42} fill="none" stroke="#E8D5A3" strokeWidth={1} />
+        {hasT1 ? <Circle testID="t1-ring" cx={size / 2} cy={size / 2} r={42} fill="none" stroke="#E8D5A3" strokeWidth={1} /> : null}
         <Circle cx={size / 2} cy={size / 2} r={88} fill="none" stroke="#E8E8EC" strokeWidth={1} />
         {nodes.map((n) => (
           <Circle key={n.id} cx={n.x} cy={n.y} r={n.r} fill={n.color} onPress={() => onSelect?.(n.id)} />

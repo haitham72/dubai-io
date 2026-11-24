@@ -1,4 +1,5 @@
 /** Connect helpers: SecureStore persistence, honest health check, OAuth, uploads. */
+import { Platform } from "react-native";
 import * as SecureStore from "expo-secure-store";
 import * as WebBrowser from "expo-web-browser";
 import type { Fetcher } from "../vault/vaultApi";
@@ -24,23 +25,36 @@ export function isLocalhostUrl(value: string): boolean {
 export const LOCALHOST_WARNING =
   "This phone cannot reach localhost — use your PC's LAN IP (http://192.168.x.x:8000) or a tunnel URL.";
 
+async function putSetting(key: string, value: string): Promise<void> {
+  if (Platform.OS === "web") {
+    globalThis.localStorage?.setItem(key, value);
+    return;
+  }
+  await SecureStore.setItemAsync(key, value);
+}
+
+async function getSetting(key: string): Promise<string | null> {
+  if (Platform.OS === "web") return globalThis.localStorage?.getItem(key) ?? null;
+  return SecureStore.getItemAsync(key);
+}
+
 export async function saveSettings(apiBaseUrl: string, owner: string, demo: boolean): Promise<void> {
-  await SecureStore.setItemAsync(API_URL_KEY, apiBaseUrl);
-  await SecureStore.setItemAsync(OWNER_KEY, owner);
-  await SecureStore.setItemAsync(DEMO_KEY, demo ? "1" : "0");
+  await putSetting(API_URL_KEY, apiBaseUrl);
+  await putSetting(OWNER_KEY, owner);
+  await putSetting(DEMO_KEY, demo ? "1" : "0");
 }
 export async function loadSettings(): Promise<{ apiBaseUrl: string; owner: string; demo: boolean }> {
   return {
-    apiBaseUrl: (await SecureStore.getItemAsync(API_URL_KEY)) ?? "",
-    owner: (await SecureStore.getItemAsync(OWNER_KEY)) ?? "karim",
-    demo: (await SecureStore.getItemAsync(DEMO_KEY)) === "1",
+    apiBaseUrl: (await getSetting(API_URL_KEY)) ?? "",
+    owner: (await getSetting(OWNER_KEY)) ?? "karim",
+    demo: (await getSetting(DEMO_KEY)) === "1",
   };
 }
 export async function saveRegion(region: YoutubeRegion): Promise<void> {
-  await SecureStore.setItemAsync(REGION_KEY, region);
+  await putSetting(REGION_KEY, region);
 }
 export async function loadRegion(): Promise<YoutubeRegion> {
-  return (await SecureStore.getItemAsync(REGION_KEY)) === "EEA" ? "EEA" : "UAE";
+  return (await getSetting(REGION_KEY)) === "EEA" ? "EEA" : "UAE";
 }
 
 /** Honest check: only a real 2xx from GET /api/health counts as reachable. */

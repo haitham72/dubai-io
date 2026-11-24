@@ -67,3 +67,84 @@ test("Rule 9: sensitive subjects and people never render", async () => {
   expect(screen.getAllByText(/Sara/).length).toBeGreaterThan(0);
   expect(screen.queryByText(/MumHidden/)).toBeNull();
 });
+
+const CLUSTERS = ["Career", "Learning", "Projects", "People & family", "Events", "Home & money", "Travel"];
+
+test("graph DTO renders 7 clusters and falls back when the route is missing", async () => {
+  const graph = async (url: string) => {
+    if (url.includes("view=subjects")) return okJson({
+      demo_data: false,
+      nodes: CLUSTERS.map((label, i) => ({ id: `c${i}`, kind: "cluster", label, group: label, fact_count: i + 1, provenance: "inferred" })),
+      counts: { hidden_by_group: { career: 3 } },
+    })();
+    if (url.includes("view=people")) return okJson({
+      demo_data: false,
+      nodes: [
+        { id: "owner", kind: "owner", label: "Karim Haddad" },
+        { id: "omar", kind: "person", label: "Omar Farouk", tier: "T1", provenance: "user_supplied", subtitle: "friend" },
+        { id: "layla", kind: "person", label: "Layla Haddad", tier: null, closeness_suggested: "T1", provenance: "inferred" },
+        { id: "cafe", kind: "place", label: "Alserkal Cafe", place_type: "restaurant", provenance: "inferred" },
+      ],
+      counts: { hidden_by_group: {} },
+    })();
+    return okJson({ items: [] })();
+  };
+  const screen = await render(<VaultScreen apiBaseUrl="http://192.168.1.10:8000" owner="karim" fetcher={graph} />);
+  await waitFor(() => expect(screen.getByText("Career")).toBeTruthy());
+  for (const label of CLUSTERS) expect(screen.getAllByText(label).length).toBeGreaterThan(0);
+  expect(screen.getByText("+3 more")).toBeTruthy();
+  expect(screen.queryByText("Demo data")).toBeNull();
+  expect(screen.queryByText(/You told me/)).toBeNull();
+  await fireEvent.press(screen.getByText("People & Places"));
+  expect(screen.getByText("T1 Inner Circle")).toBeTruthy();
+  expect(screen.getAllByText(/You told me Omar Farouk/).length).toBeGreaterThan(0);
+  expect(screen.getAllByText(/I noticed Layla Haddad/).length).toBeGreaterThan(0);
+  expect(screen.getAllByText(/Alserkal Cafe · restaurant/).length).toBeGreaterThan(0);
+  expect(screen.queryByText(/✓ Layla/)).toBeNull();
+});
+
+test("missing graph route falls back to subjects and people", async () => {
+  const fetcher = async (url: string) => {
+    if (url.includes("/vault/graph")) return { ok: false, status: 404, json: async () => ({}) };
+    if (url.includes("vault/subjects")) return okJson({ themes: [
+      { id: "t1", path: "career", label: "Career", kind: "theme", status: "active", salience: 1, fact_count: 2, provenance: "user_supplied" },
+    ], demo_data: false })();
+    if (url.includes("vault/people")) return okJson({ people: [
+      { id: "p1", kind: "person", name: "Sara", status: "active", closeness_tier: "T1", provenance: "user_supplied" },
+    ], places: [], orgs: [], demo_data: false })();
+    return okJson({ items: [] })();
+  };
+  const screen = await render(<VaultScreen apiBaseUrl="http://192.168.1.10:8000" owner="karim" fetcher={fetcher} />);
+  await waitFor(() => expect(screen.getByText("Career")).toBeTruthy());
+  expect(screen.queryByText("Demo data")).toBeNull();
+});
+
+test("401 is shown and does not fall back to demo fixtures", async () => {
+  const fetcher = async () => ({ ok: false, status: 401, json: async () => ({}) });
+  const screen = await render(<VaultScreen apiBaseUrl="http://192.168.1.10:8000" owner="karim" fetcher={fetcher} />);
+  await waitFor(() => expect(screen.getByText("Sign-in required")).toBeTruthy());
+  expect(screen.queryByText("Demo data")).toBeNull();
+  expect(screen.queryByText("Career")).toBeNull();
+});
+
+test("suggestion Confirm posts the tier and demo fixtures are explicit", async () => {
+  const posts: string[] = [];
+  const graph = async (url: string) => {
+    if (url.includes("view=subjects")) return okJson({ demo_data: false, nodes: [{ id: "c", kind: "cluster", label: "Career", fact_count: 1 }], counts: { hidden_by_group: {} } })();
+    if (url.includes("view=people")) return okJson({
+      demo_data: false,
+      nodes: [{ id: "layla", kind: "person", label: "Layla Haddad", closeness_suggested: "T1", provenance: "inferred" }],
+      counts: { hidden_by_group: {} },
+    })();
+    return okJson({ items: [] })();
+  };
+  const screen = await render(
+    <VaultScreen apiBaseUrl="http://192.168.1.10:8000" owner="karim" fetcher={graph} poster={async (url) => { posts.push(url); return { ok: true, status: 200 }; }} />,
+  );
+  await waitFor(() => expect(screen.getByText("Career")).toBeTruthy());
+  await fireEvent.press(screen.getByText("People & Places"));
+  expect(screen.queryByText("T1 Inner Circle")).toBeNull();
+  await fireEvent.press(screen.getByTestId("confirm-layla"));
+  expect(posts[0]).toContain("/vault/people/layla/tier");
+  expect(screen.queryByText("Demo data")).toBeNull();
+});
