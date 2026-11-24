@@ -30,3 +30,4 @@ States: in-progress · ready-for-review · fixes-requested (see `<WP>.review.md`
 2026-11-24 17:30 | U3 | cursor | mem-wpU3 | 1ab1cee | merged → memory 7ecbbd4 (U3.review.md)
 2026-11-24 17:30 | U2 | codex | mem-wpU2 | 6476a83 | merged → memory cbd20c8 (U2.review.md)
 2026-11-24 17:30 | E-round | claude | — | — | prompts E0–E4 written (real-data round: E1 run stack, E2 sign-in+QR pairing, E3 ingest, E4 chat+Today feed)
+2026-11-24 18:10 | U6 | cursor | mem-wpU6 | e23d8e8 | paused (Cursor quota out) — unverified WIP commit; see U6.handoff.md. E2 reassigned Cursor → Gemini

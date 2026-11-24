@@ -31,6 +31,6 @@
 - **Done for each task:** tests (happy + failure path) on the real Postgres, the touched apps' full suites green (only the known `test_ops` / redis env failure allowed), a report at `apps\memory\upgrade\reports\E<N>.md` + a line in `reports\STATUS.md` (in the `G:\Haitham\VsCode\contest-memory` worktree; don't commit reports).
 - **Team:**
   - E1 run stack + E4 chat & Today feed: **Gemini**;
-  - E2 sign-in, pairing, app wiring: **Cursor**;
+  - E2 sign-in, pairing, app wiring: **Gemini** (reassigned 24 Nov: Cursor ran out of quota), after E1, before E4;
   - E3 real data in: **Codex**;
   - Claude verifies and merges.

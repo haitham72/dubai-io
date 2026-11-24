@@ -1,6 +1,6 @@
-# E2 — Google sign-in on the PC, QR pairing for the iPhone, and the app wired to the real account (Cursor)
+# E2 — Google sign-in on the PC, QR pairing for the iPhone, and the app wired to the real account (Gemini; reassigned from Cursor 24 Nov)
 
-Read `E0_real_data_round.md` first. Branch `e2/signin` from `main` (after your U6 is merged; if it's not merged yet, branch from `main` anyway; U6 doesn't touch these files).
+Read `E0_real_data_round.md` first. Branch `e2/signin` from `main`.
 
 ## What exists (build on it; don't rebuild)
 
