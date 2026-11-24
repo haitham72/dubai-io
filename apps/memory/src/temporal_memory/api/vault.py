@@ -795,6 +795,64 @@ def onboarding_status(
     }
 
 
+def _extract_record_span(
+    record_text: str,
+    fact_text: str,
+    fact_text_orig: str | None,
+    *,
+    span_start: int | None = None,
+    span_end: int | None = None,
+    max_chars: int = 220,
+) -> tuple[str, int, int]:
+    """Return a bounded excerpt (span, start, end) from record_text instead of the whole raw record."""
+    raw = record_text or ""
+    if not raw:
+        return "", 0, 0
+    if (
+        span_start is not None
+        and span_end is not None
+        and 0 <= span_start < span_end <= len(raw)
+    ):
+        excerpt = raw[span_start:span_end]
+        if len(excerpt) <= max_chars:
+            return excerpt, span_start, span_end
+        return excerpt[:max_chars].rstrip() + "...", span_start, span_start + max_chars
+
+    if len(raw) <= max_chars:
+        return raw, 0, len(raw)
+
+    # Locate the strongest token overlap window between the fact and long record.
+    terms = [
+        tok
+        for tok in f"{fact_text} {fact_text_orig or ''}".lower().replace(".", " ").split()
+        if len(tok) >= 4
+    ]
+    low = raw.lower()
+    anchor = 0
+    for term in terms:
+        pos = low.find(term)
+        if pos >= 0:
+            anchor = pos
+            break
+    half = max_chars // 2
+    start = max(0, anchor - half // 2)
+    if start > 0:
+        ws = raw.find(" ", start)
+        if 0 < ws < anchor:
+            start = ws + 1
+    end = min(len(raw), start + max_chars)
+    if end < len(raw):
+        ws_end = raw.rfind(" ", start, end)
+        if ws_end > start + half:
+            end = ws_end
+    snippet = raw[start:end].strip()
+    if start > 0:
+        snippet = "..." + snippet
+    if end < len(raw):
+        snippet = snippet + "..."
+    return snippet, start, end
+
+
 @router.get("/why/{fact_id}")
 def why_fact(
     owner: str,
@@ -819,11 +877,90 @@ def why_fact(
     ):
         raise HTTPException(status_code=404, detail="Fact not found or forgotten")
 
-    records = call_opt(store, "get_records", owner, fact.evidence, default=[])
+    span_record_id = getattr(fact, "span_record_id", None)
+    span_start = getattr(fact, "span_start", None)
+    span_end = getattr(fact, "span_end", None)
+    reason_text = getattr(fact, "reason_text", None)
+    reason_record_id = getattr(fact, "reason_record_id", None)
+    reason_start = getattr(fact, "reason_start", None)
+    reason_end = getattr(fact, "reason_end", None)
+
+    db_obj = getattr(store, "db", None)
+    if db_obj is not None and reason_text is None and span_record_id is None and reason_record_id is None:
+        try:
+            with db_obj.connection() as conn:
+                extra = conn.execute(
+                    """
+                    SELECT span_record_id, span_start, span_end,
+                           reason_text, reason_record_id, reason_start, reason_end
+                    FROM facts
+                    WHERE owner = %s AND id = %s AND (erased_at IS NULL)::int = 1
+                    """,
+                    (owner, fact.id),
+                ).fetchone()
+            if extra:
+                span_record_id = extra["span_record_id"]
+                span_start = extra["span_start"]
+                span_end = extra["span_end"]
+                reason_text = extra["reason_text"]
+                reason_record_id = extra["reason_record_id"]
+                reason_start = extra["reason_start"]
+                reason_end = extra["reason_end"]
+        except Exception:
+            pass
+
+    rec_ids = list(dict.fromkeys([*fact.evidence, *([reason_record_id] if reason_record_id else [])]))
+    records = call_opt(store, "get_records", owner, rec_ids, default=[])
+    rec_by_id = {r.id: r for r in records}
     attempt: Attempt | None = call_opt(store, "get_attempt", fact.attempt_id, default=None) if fact.attempt_id else None
     is_owner_hook = bool(attempt and attempt.worker_kind == "owner-hook")
     model_label = "your Claude" if is_owner_hook else (fact.model or (attempt.model if attempt else None) or "unknown")
     ev_prov = "demo_fixture" if is_demo else fact.provenance
+
+    evidence_spans: list[dict[str, Any]] = []
+    for rid in fact.evidence:
+        r = rec_by_id.get(rid)
+        if r is None:
+            continue
+        use_exact = span_record_id == r.id
+        span_txt, s_lo, s_hi = _extract_record_span(
+            r.text,
+            fact.text,
+            fact.text_orig,
+            span_start=span_start if use_exact else None,
+            span_end=span_end if use_exact else None,
+        )
+        evidence_spans.append({
+            "id": r.id,
+            "source": r.source,
+            "at": r.at,
+            "author": r.author,
+            "span": span_txt,
+            "text": span_txt,
+            "span_start": s_lo,
+            "span_end": s_hi,
+            "provenance": ev_prov,
+            "as_of": r.at,
+        })
+
+    # Stored cited reason ONLY, kept strictly separate from provenance; never generated.
+    clean_reason = (reason_text or "").strip()
+    reason_span: dict[str, Any] | None = None
+    if not clean_reason and reason_record_id and reason_start is not None and reason_end is not None:
+        r_src = rec_by_id.get(reason_record_id)
+        if r_src is not None and 0 <= reason_start < reason_end <= len(r_src.text):
+            clean_reason = r_src.text[reason_start:reason_end].strip()
+    if clean_reason:
+        reason_value = clean_reason
+        if reason_record_id is not None or reason_start is not None:
+            reason_span = {
+                "record_id": reason_record_id,
+                "start": reason_start,
+                "end": reason_end,
+                "text": clean_reason,
+            }
+    else:
+        reason_value = "reason unknown"
 
     return {
         "owner": owner,
@@ -836,19 +973,10 @@ def why_fact(
         "attempt_id": fact.attempt_id,
         "model": model_label,
         "cost_badge": "processed on your Claude · $0 app cost" if is_owner_hook else None,
-        "evidence": [
-            {
-                "id": r.id,
-                "source": r.source,
-                "at": r.at,
-                "author": r.author,
-                "text": r.text,
-                "provenance": ev_prov,
-                "as_of": r.at,
-            }
-            for r in records
-        ],
+        "evidence": evidence_spans,
         "provenance": fact.provenance,
+        "reason": reason_value,
+        "reason_span": reason_span,
         "review_state": _review_state(fact.provenance, is_demo),
         "as_of": fact.valid_from or now_iso,
         "demo_data": is_demo or fact.provenance == "demo_fixture",
