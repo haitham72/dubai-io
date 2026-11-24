@@ -144,7 +144,7 @@ def forget_source(owner: str, record_ids: list[str]) -> dict[str, Any]:
                 # 4/5) Affected day jobs, classified by state.
                 cur.execute(
                     "SELECT id, day, state, input_ref FROM jobs "
-                    "WHERE owner = %(owner)s AND kind = 'extract.day' "
+                    "WHERE owner = %(owner)s AND kind IN ('extract.day', 'extract.live') "
                     "AND input_ref && %(rids)s",
                     {"owner": owner, "rids": rids},
                 )
