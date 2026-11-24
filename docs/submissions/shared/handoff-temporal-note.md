@@ -47,14 +47,14 @@ All three Dubai Chambers entries (Quest, Community, Messenger) call `temporal_me
     "enqueue": "extract.live",
     "direct_fact": {
       "text": "...",
-      "subject_id": "projects/dubai-io",
+      "subject_path": "projects/dubai-io",
       "valid_from": "2026-11-23T14:00:00+04:00",
       "evidence": ["mgmsg:m-101"],
       "provenance": "user_supplied"
     }
   }
   ```
-  `enqueue` is `"extract.live" | "extract.day" | "none"` (default `"extract.live"`). `direct_fact` is optional; when present, `evidence` MUST be non-empty and reference records in the batch or DB, must pass `privacy/sensitive.py` + `forget_rules` (reject credentials fail-closed), and writes via the same validator/applier invariants as `PostgresGraphStore`.
+  `enqueue` is `"extract.live" | "extract.day" | "none"` (default `"extract.live"`). `direct_fact` is optional (`"subject_id"` is also accepted as an alias for `"subject_path"`); when present, `evidence` MUST be non-empty and reference records in the batch or DB, must pass `privacy/sensitive.py` + `forget_rules` (reject credentials fail-closed), and writes via the same validator/applier invariants as `PostgresGraphStore`.
 - **Response JSON:** `{"ok": true, "record_ids": [...], "job_id": "..." | null, "fact_ids": [...], "quarantined": 0}`
 
 ### `CR-TM-2` — HTTP Forget Endpoint
@@ -109,3 +109,37 @@ All three Dubai Chambers entries (Quest, Community, Messenger) call `temporal_me
 4. `test_crtm3_resolve_confirm_edit_reject`: `confirm` promotes hypothesis; `edit`/`supersede` links `superseded_by` + sets `valid_to`; `reject` hides immediately; `facts_version` increments on each.
 5. `test_crtm4_http_context_and_source_prefix_search`: `POST /context` matches MCP `memory_context`; `GET /search?source_prefix=messenger:c1` never returns `messenger:c2` or `quest:` facts.
 6. `test_crtm2_forget_blocks_reimport`: `forget_rules` populated so re-upserting a forgotten `record_id` is blocked.
+
+---
+
+## 5. How to run live mode
+
+To run the bridge contract suite (`apps/api/tests/test_memory_bridge_*.py`) against a live `temporal_memory` HTTP server (`origin/memory` on port `8040`):
+
+1. Create a worktree for `origin/memory` and configure `.env` with `TM_ADMIN_TOKEN`:
+   ```bat
+   git worktree add ..\tm-live origin/memory
+   cd ..\tm-live\apps\memory
+   copy .env.example .env
+   rem Set TM_ADMIN_TOKEN=<your-admin-token> in .env
+   docker compose up -d postgres rabbitmq redis api
+   ```
+2. Provision an owner (`POST /v1/owners`) and an `owner-device` token (`POST /v1/tokens`) using `TM_ADMIN_TOKEN`:
+   ```sh
+   curl -X POST http://localhost:8040/v1/owners \
+     -H "Authorization: Bearer $TM_ADMIN_TOKEN" \
+     -H "Content-Type: application/json" \
+     -d '{"id":"cs_live_default","label":"cs_live_default","kind":"demo"}'
+
+   curl -X POST http://localhost:8040/v1/tokens \
+     -H "Authorization: Bearer $TM_ADMIN_TOKEN" \
+     -H "Content-Type: application/json" \
+     -d '{"role":"owner-device","owner":"cs_live_default","label":"cs-live"}'
+   ```
+3. Export the live bridge environment variables and run `pytest` with `MEMORY_BRIDGE_LIVE=1`:
+   ```sh
+   export TM_BASE_URL=http://localhost:8040
+   export TM_SERVICE_TOKEN=<owner-device-or-service-token>
+   export TM_ADMIN_TOKEN=<your-admin-token>
+   MEMORY_BRIDGE_LIVE=1 pytest -q apps/api/tests/test_memory_bridge_*.py
+   ```
