@@ -168,11 +168,20 @@ The redesign's latest design is current: commit `6b45ba4`, "AI workspace replace
 - **Three different products**, like Meta's family of apps: Dubai-io (ChatGPT-like, Entry 1), Community (Facebook-like, Entry 2) and Messenger (WhatsApp-like, Entry 3). They are not one codebase.
 - **They share only the per-user layer:** one verified `user_id` (`apps/api/app/identity/`) and one memory engine, temporal_note (`apps/memory/` on `memory`), reached only through `apps/api/app/memory_bridge/`. **That layer lives in this repo** (dubai-io).
 - **Same repo, own folders, own branches.** Dubai-io lives on `main` plus `memory` / `ios` / `desktop`. Community lives on `societal` (`apps/community/`, `apps/api/app/community/`, `docs/submissions/community/`). Messenger lives on `business` (`apps/messenger/`, `apps/api/app/messenger/`, `docs/submissions/messenger/`). The shared layer is on `contest-shared`.
-- **Never merged into one tree.** `societal` and `business` are never merged into `main` or into each other, and there are no separate GitHub repos for now. This supersedes the canon patches' "apply after the contest portfolio is merged" assumption: entry paths are described on `main` as living on their branches.
+- ~~**Never merged into one tree.** `societal` and `business` are never merged into `main` or into each other, and there are no separate GitHub repos for now.~~ **Superseded by D16.** This supersedes the canon patches' "apply after the contest portfolio is merged" assumption: entry paths are described on `main` as living on their branches.
 - **Known coupling beyond the shared layer:** the entry backends also import Dubai-io's `app.actions` (the approval and registered-action engine, rules 6–7) and `app.lab.sensitive` (the Rule-9 filter). That is acceptable in one repo and keeps the guardrails identical. If the products are ever split into separate repos, these two move into the shared layer together with identity and memory.
 - **Corrects D5 and D12:** this PC's Dubai-io work is on the pushed branches `memory`, `ios` and `desktop`, and its `main` has no unpushed work, so no `pc2-main` will come. Gate 5 checks against those three branches; they merged cleanly with `contest-shared`, `societal` and `business` on 24 Nov.
 - **The starting inputs are superseded and removed:** `02_DUBAI_IO_COMMUNITY_PLAN.md`, the Messenger plan and `IDE_INGEST_TWO_SUBMISSIONS_PROMPT.md`, formerly `shared/founder-inputs/`. They were scratchpad. The specs are now each entry's approved `DELIVERY_ROADMAP.md` and `IMPLEMENTATION_GAP_MATRIX.md`, read through this file. Old citations resolve in history: `git show e7870c6:docs/submissions/shared/founder-inputs/<file>`.
 - **Status, 24 Nov:** per the founder, the builds are done and waiting for tests. On 24 Nov, after merging `origin/main` → `contest-shared` → both entries, the API suites passed (517 / 582 / 545; the only failure, `test_ops`, comes from a missing `redis` package on that PC). Community's 9 vitest tests and its build passed. Messenger's typecheck, store and photo-window checks and its build passed.
+
+## D16 — Monorepo: finished branches merge into `main` (24 Nov, later)
+
+> "basically, the contest is mono repo, but any feature dev is done in branch" · on where finished branches go: "Everything merges to main"
+
+- `contest` is **one monorepo**. `main` ends up holding all three products, each in its own folders. Dubai-io: `apps/web`, `apps/site`, `apps/mobile`, `apps/desktop`, `apps/memory`, `apps/api`. Community: `apps/community`, `apps/api/app/community`. Messenger: `apps/messenger`, `apps/api/app/messenger`.
+- **Every feature is built on a branch.** The product branches (`memory`, `ios`, `desktop`, `contest-shared`, `societal`, `business`) **merge into `main` once their gates pass** (§4 of `docs/submissions/CLAUDE.md` plus each app's own tests). Lane branches (`cs/`, `cm/`, `mg/`, `mem-wp*`) merge into their product branch first.
+- **The integrator (Claude) merges into `main`;** agents never commit to, push or merge into `main` themselves. On `CLAUDE.md` / `PLAN.md` / `docs/` overlaps, keep both sides. `apps/web` stays frozen. `main` is never force-pushed.
+- Still true from D15: the products are **separate apps** sharing only the per-user layer (identity + temporal_note). No imports between apps.
 
 ## Founder to-dos (not agent work)
 

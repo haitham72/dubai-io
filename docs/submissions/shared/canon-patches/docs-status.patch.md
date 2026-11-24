@@ -3,7 +3,7 @@
 - **Target file:** `docs/status.md` (currently 57 lines at `origin/main` `f016856` / `contest-shared` `206b9ff`)
 - **Affected line ranges:** lines `1-16`, `35-49`, `55-57`
 - **Status:** **PROPOSAL ONLY — DO NOT APPLY ON `contest-shared`.**
-- **D15 (24 Nov):** `societal` and `business` are never merged into `main`; describe their paths on `main` as living on their branches.
+- **D16 (24 Nov):** all branches merge into `main` after their gates; describe the paths as `main` folders once merged.
 - **When to apply:** Only after the founder reconciles the other PC's unpushed `main` with `origin/main` and approves merging the three-entry portfolio into `main`.
 - **Merge-conflict notes:**
   - `origin/memory` (`fc2e24a`), `origin/desktop` (`d07ee53`), and `origin/ios` (`3b12997`) have **zero diffs** against `origin/main` in `docs/status.md`.

@@ -9,7 +9,7 @@
 | 3 | **Best Business AI Agent** | **Messenger** (working name; final name pending): the WhatsApp-like AI messenger, built from the founder's own redesign features, with chat-to-action business agents | `business` | `docs/submissions/messenger/` |
 | — | Shared base | Cross-app identity, memory bridge, consent scopes, the shared contract | `contest-shared` | `docs/submissions/shared/` |
 
-**Three separate products, one repo (D15, 24 Nov).** Dubai-io (like ChatGPT), Community (like Facebook) and Messenger (like WhatsApp) are **three different products**, Meta-style. They share only the **per-user layer**: one verified `user_id` and one memory engine (temporal_note), which live in this repo. They are developed in the same repo, each in its own folders and on its own branch, and they are **never merged into one tree**: not into `main`, and not into each other.
+**Three separate products, one repo (D15, 24 Nov).** Dubai-io (like ChatGPT), Community (like Facebook) and Messenger (like WhatsApp) are **three different products**, Meta-style. They share only the **per-user layer**: one verified `user_id` and one memory engine (temporal_note), which live in this repo. They are developed in the same **monorepo**, each in its own folders, with every feature on a branch. **Finished branches merge into `main` after their gates pass (D16)**; entry branches never merge into each other.
 
 **Read first: `shared/founder-decisions.md`** (the founder's answers of 23–24 Nov: the Messenger's IP and name, Persocial, the messaging boundary, the current design, the three-product layout). It overrides anything below.
 
@@ -29,7 +29,7 @@ origin/main @ f016856 (23 Nov) ── contest-shared ──┬── societal   
 
 - The other PC's Dubai-io work (iOS, desktop and the rewritten **temporal_note** memory engine, D5) lives on the **pushed branches `memory`, `ios` and `desktop`**. Its `main` has no unpushed work (checked 24 Nov), so no `pc2-main` snapshot is coming. Those branches edit `CLAUDE.md`'s repo-layout block, `PLAN.md`, `docs/plan/`, `docs/request-backlog.md`, `apps/memory/`, `apps/desktop/`, `apps/mobile/` and `packages/design-tokens/`.
 - **Zero-conflict rule:** these branches only **add new files in new folders**. The single edit to an existing file is the *Contest submissions* section appended at the very end of root `CLAUDE.md`; if that ever conflicts, keep both sides. Gate 5 (§4) checks every merge against `origin/memory`, `origin/ios` and `origin/desktop`.
-- **Never** commit to `main`, push `main`, open a PR into `main`, or merge anything into `main` from these branches. **`societal` and `business` are never merged into `main` (D15).** Whether the shared layer reaches `main` for Entry 1 is a separate founder decision.
+- **Agents never** commit to `main`, push `main`, open a PR into `main`, or merge into `main`. **The integrator (Claude) merges `contest-shared`, `societal` and `business` into `main` after the §4 gates pass (D16).**
 - **Never** force-push `contest-shared`, `societal` or `business`.
 - **Shared work happens only on `contest-shared`.** Lane branches there are `cs/<slice>`. Entry branches take shared work with `git merge contest-shared`, and they **never edit shared paths** (§2). Entry branches are never merged into `contest-shared` or into each other.
 - **Entry lane branches:** `cm/<slice>` (Community, from `societal`) and `mg/<slice>` (Messenger, from `business`). Don't name them `societal/...` or `business/...`: git cannot hold a branch `societal` and a branch `societal/x` at the same time.
