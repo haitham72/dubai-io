@@ -107,14 +107,14 @@ def test_vault_graph_both_views_rule9_and_tier_auth(graph_api):
             "('lnk_fam_inf', 'karim', 'e_self', 'FAMILY_OF', 'p_fam_inf', '2026-11-04', 'f_fam_inf')"
         )
 
-    # Auto-promote Alserkal Cafe over 2 distinct days -> must remain provenance='inferred'
+    # Auto-promote Alserkal Cafe over 2 distinct days from a non-owner message -> must remain provenance='inferred'
     for idx, (rid, day, txt) in enumerate([
         ("r_c1", "2026-11-05", "Karim met Omar at Alserkal Cafe."),
         ("r_c2", "2026-11-08", "Karim worked at Alserkal Cafe."),
     ], 1):
         with db.transaction() as conn:
             conn.execute(
-                "INSERT INTO records (id, owner, source, at, author, text, content_hash) VALUES (%s,'karim','notes',%s,'Karim',%s,%s)",
+                "INSERT INTO records (id, owner, source, at, author, text, content_hash) VALUES (%s,'karim','whatsapp:work',%s,'Omar',%s,%s)",
                 (rid, day, txt, hashlib.sha256(txt.encode()).hexdigest()),
             )
         j = Job(id=f"jg_{idx}", owner="karim", kind="extract.day", priority=1, pool="internal", input_ref=[rid], input_version=0, context_hash=f"cg{idx}", prompt_version="extract@3", day=day, state="leased")

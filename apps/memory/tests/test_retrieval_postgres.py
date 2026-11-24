@@ -94,9 +94,11 @@ def test_postgres_implements_graph_store_full_channels_and_cursors(pg_db: Databa
     hop_cands = full.search_candidates("karim", "Who did Sherif's company hire?", limit=10)
     assert [c.fact_id for c in hop_cands[:2]] and "f2" in [c.fact_id for c in hop_cands]
 
-    # 4. source_prefix strict filter before limit
+    # 4. source_prefix strict filter before limit + empty query returns visible facts
     c1_only = full.search_candidates("karim", "NexaPay", source_prefix="messenger:c1", limit=10)
     assert [c.fact_id for c in c1_only] == ["f1"]
+    all_vis = full.search_candidates("karim", "", limit=10)
+    assert len(all_vis) >= 3
 
     # 5. Sensitive inferred sleep fact excluded from search_candidates
     sens_cands = full.search_candidates("karim", "sleep tracker", limit=10)

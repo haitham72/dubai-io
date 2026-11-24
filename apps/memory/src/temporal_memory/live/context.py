@@ -14,7 +14,7 @@ from datetime import date, datetime, timedelta, timezone
 import re
 from typing import Any, Iterable
 
-from temporal_memory.models import Entity, EntitySubject, Fact, GraphStore, Link, Subject
+from temporal_memory.models import Entity, EntitySubject, Fact, GraphStore, HELD_BACK_ROOTS, Link, Subject
 
 _DIACRITICS = re.compile("[\u064b-\u065f\u0670\u0640]")
 _LETTERS = str.maketrans({"أ": "ا", "إ": "ا", "آ": "ا", "ى": "ي", "ة": "ه"})
@@ -36,7 +36,7 @@ _ALIAS_STOPWORDS = frozenset({
     "hr", "it", "md", "ceo", "cfo", "user", "person", "people", "someone", "flat",
 })
 _MIN_AUTO_ALIAS_LEN = 3
-_HELD_BACK_ROOTS = frozenset({"health", "faith"})
+_HELD_BACK_ROOTS = frozenset(HELD_BACK_ROOTS)
 
 _DEFAULT_STORE: GraphStore | None = None
 _ALIAS_CACHE: dict[str, tuple[Any, dict[str, list[Entity]], dict[str, Entity]]] = {}

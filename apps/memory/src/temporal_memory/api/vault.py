@@ -9,11 +9,23 @@ from typing import Any, Callable, Iterable, Literal
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Path as FPath, Query
 
-from temporal_memory.models import Attempt, Entity, EntitySubject, Fact, GraphStore, Link, Milestone, Subject
+from temporal_memory.models import (
+    CLUSTER_LABELS,
+    CLUSTERS,
+    HELD_BACK_ROOTS,
+    Attempt,
+    Entity,
+    EntitySubject,
+    Fact,
+    GraphStore,
+    Link,
+    Milestone,
+    Subject,
+)
 
 Role = Literal["admin", "worker", "owner-device"]
 
-_HELD_BACK_ROOTS = frozenset({"health", "faith"})
+_HELD_BACK_ROOTS = frozenset(HELD_BACK_ROOTS)
 
 
 @dataclass
@@ -530,18 +542,28 @@ SOURCE_WEIGHTS: dict[str, int] = {
     "gmail": 14, "calendar": 10, "youtube_api": 12,
     "whatsapp": 15, "youtube_history": 12, "browser": 18, "agent_sessions": 19,
 }
-LIFE_SPINES = ["Career", "Learning", "Projects", "People & family",
-               "Events", "Home & money", "Travel"]
+LIFE_SPINES = [CLUSTER_LABELS[c] for c in CLUSTERS]
 _SPINE_BY_ROOT = {
-    "career": "Career", "work": "Career", "learning": "Learning",
-    "education": "Learning", "projects": "Projects", "project": "Projects",
-    "family": "People & family", "people": "People & family",
-    "people-family": "People & family",
-    "relationships": "People & family", "lifestyle": "Events",
-    "events": "Events", "social": "Events", "life": "Events",
-    "money": "Home & money", "finance": "Home & money", "home": "Home & money",
-    "home-money": "Home & money",
-    "travel": "Travel", "places": "Travel",
+    "career": CLUSTER_LABELS["career"],
+    "work": CLUSTER_LABELS["career"],
+    "learning": CLUSTER_LABELS["learning"],
+    "education": CLUSTER_LABELS["learning"],
+    "projects": CLUSTER_LABELS["projects"],
+    "project": CLUSTER_LABELS["projects"],
+    "family": CLUSTER_LABELS["people-family"],
+    "people": CLUSTER_LABELS["people-family"],
+    "people-family": CLUSTER_LABELS["people-family"],
+    "relationships": CLUSTER_LABELS["people-family"],
+    "lifestyle": CLUSTER_LABELS["events"],
+    "events": CLUSTER_LABELS["events"],
+    "social": CLUSTER_LABELS["events"],
+    "life": CLUSTER_LABELS["events"],
+    "money": CLUSTER_LABELS["home-money"],
+    "finance": CLUSTER_LABELS["home-money"],
+    "home": CLUSTER_LABELS["home-money"],
+    "home-money": CLUSTER_LABELS["home-money"],
+    "travel": CLUSTER_LABELS["travel"],
+    "places": CLUSTER_LABELS["travel"],
 }
 
 

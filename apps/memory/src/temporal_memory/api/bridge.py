@@ -287,7 +287,7 @@ def owner_context(
 def search_facts(
     owner: str,
     q: str = Query(...),
-    limit: int = Query(default=20, ge=1, le=100),
+    limit: int = Query(default=20, ge=1, le=500),
     source_prefix: str | None = Query(default=None),
     _: AuthContext = Depends(require_owner_access),
     store: GraphStore = Depends(get_store),

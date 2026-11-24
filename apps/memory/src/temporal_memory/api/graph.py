@@ -21,28 +21,10 @@ from temporal_memory.api.vault import (
 )
 from temporal_memory.core.retrieval import compute_entity_salience_sql, compute_subject_salience_sql
 from temporal_memory.live.context import invalidate_alias_cache
-from temporal_memory.models import Entity, GraphStore, Link, Subject
+from temporal_memory.models import CLUSTER_LABELS, CLUSTERS as ENGINE_CLUSTERS, Entity, GraphStore, HELD_BACK_ROOTS, Link, Subject
 
 router = APIRouter(prefix="/v1/owners/{owner}", tags=["vault"])
 
-ENGINE_CLUSTERS: tuple[str, ...] = (
-    "career",
-    "learning",
-    "projects",
-    "people-family",
-    "events",
-    "home-money",
-    "travel",
-)
-CLUSTER_LABELS: dict[str, str] = {
-    "career": "Career",
-    "learning": "Learning",
-    "projects": "Projects",
-    "people-family": "People & family",
-    "events": "Events",
-    "home-money": "Home & money",
-    "travel": "Travel",
-}
 _CLUSTER_BY_ROOT: dict[str, str] = {
     "career": "career",
     "work": "career",
@@ -65,7 +47,7 @@ _CLUSTER_BY_ROOT: dict[str, str] = {
     "travel": "travel",
     "places": "travel",
 }
-_SENSITIVE_ROOTS = frozenset({"health", "faith"})
+_SENSITIVE_ROOTS = frozenset(HELD_BACK_ROOTS)
 
 
 def _cluster_for_subject(subj: Subject | None) -> str | None:
