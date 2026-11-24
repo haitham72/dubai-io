@@ -17,6 +17,7 @@ export interface VaultEntity {
   id: string; kind: string; name: string; status: string;
   relation_to_user?: string | null; closeness_tier?: "T1" | "T2" | "T3" | null;
   aliases?: string[]; salience?: number; first_seen?: string | null; last_seen?: string | null;
+  provenance?: string; place_type?: string | null;
   subjects?: { subject_id: string; subject: string; role?: string | null; fact_count: number; weight?: number }[];
   sensitive_cat?: string | null; quarantined?: boolean; sensitive?: boolean;
 }
@@ -31,10 +32,30 @@ export interface WhyResult {
   model: string; cost_badge: string | null; evidence: WhyEvidence[];
   provenance: string; as_of: string; demo_data?: boolean;
 }
+export interface VaultSuggestion {
+  id: string; name: string; suggested: "T1" | "T2" | "T3";
+}
 export interface VaultData {
   themes: SubjectNode[];
   people: VaultEntity[]; places: VaultEntity[]; orgs: VaultEntity[];
-  facts: VaultFact[]; isDemo: boolean; demoData: boolean;
+  projects: VaultEntity[];
+  facts: VaultFact[];
+  suggestions: VaultSuggestion[];
+  hiddenByGroup: Record<string, number>;
+  isDemo: boolean; demoData: boolean;
+  error: string | null;
+}
+
+export interface GraphNode {
+  id: string; kind: string; label: string; subtitle?: string | null; group?: string;
+  tier?: "T1" | "T2" | "T3" | null;
+  closeness_suggested?: "T1" | "T2" | "T3" | null;
+  fact_count?: number; provenance?: string; place_type?: string | null;
+}
+export interface GraphDto {
+  view?: string; demo_data?: boolean; provenance?: string;
+  nodes?: GraphNode[];
+  counts?: { hidden_by_group?: Record<string, number> };
 }
 
 export const SENSITIVE_CATEGORIES = [
@@ -58,13 +79,28 @@ export function filterFacts<T extends VaultFact>(items: T[]): T[] {
   return items.filter((f) => !isSensitive(f));
 }
 
+export const CLUSTER_LABELS = [
+  "Career", "Learning", "Projects", "People & family", "Events", "Home & money", "Travel",
+] as const;
+
 export const THEME_COLORS: Record<string, string> = {
-  Career: "#2F80ED", Projects: "#9B51E0", Learning: "#F2994A",
-  Gaming: "#EB5757", Travel: "#00B4D8", Health: "#27AE60",
+  Career: "#2F80ED",
+  Learning: "#F2994A",
+  Projects: "#9B51E0",
+  "People & family": "#C5A059",
+  Events: "#EB5757",
+  "Home & money": "#27AE60",
+  Travel: "#00B4D8",
+};
+const GROUP_TO_LABEL: Record<string, string> = {
+  career: "Career", learning: "Learning", projects: "Projects",
+  "people-family": "People & family", events: "Events",
+  "home-money": "Home & money", travel: "Travel",
 };
 export function themeColorFor(label: string): string {
-  const head = label.split(/[/\s-]/)[0];
-  return THEME_COLORS[label] ?? THEME_COLORS[head] ?? "#C5A059";
+  const mapped = GROUP_TO_LABEL[label] ?? label;
+  const head = mapped.split(/[/\s-]/)[0];
+  return THEME_COLORS[mapped] ?? THEME_COLORS[head] ?? "#C5A059";
 }
 
 export interface ConstellationNode { id: string; label: string; x: number; y: number; r: number; color: string; factCount: number }
@@ -116,32 +152,141 @@ async function getJson(fetcher: Fetcher, url: string): Promise<Record<string, un
   return (await res.json()) as Record<string, unknown>;
 }
 
+function emptyVault(error: string | null): VaultData {
+  return {
+    themes: [], people: [], places: [], orgs: [], projects: [], facts: [],
+    suggestions: [], hiddenByGroup: {}, isDemo: false, demoData: false, error,
+  };
+}
+
+function asGraph(body: unknown): GraphDto | null {
+  if (!body || typeof body !== "object" || !Array.isArray((body as GraphDto).nodes)) return null;
+  return body as GraphDto;
+}
+
+function clusterThemes(graph: GraphDto): SubjectNode[] {
+  const clusters = (graph.nodes ?? []).filter((node) => node.kind === "cluster");
+  return clusters.map((node) => ({
+    id: node.id,
+    path: node.group ?? node.id,
+    label: node.label,
+    kind: "theme",
+    status: "active",
+    salience: 0,
+    fact_count: node.fact_count ?? 0,
+    provenance: node.provenance,
+  }));
+}
+
+function peopleFromGraph(graph: GraphDto): Pick<VaultData, "people" | "places" | "orgs" | "projects" | "suggestions"> {
+  const people: VaultEntity[] = [];
+  const places: VaultEntity[] = [];
+  const orgs: VaultEntity[] = [];
+  const projects: VaultEntity[] = [];
+  const suggestions: VaultSuggestion[] = [];
+  for (const node of graph.nodes ?? []) {
+    if (node.kind === "owner") continue;
+    const entity: VaultEntity = {
+      id: node.id,
+      kind: node.kind,
+      name: node.label,
+      status: "active",
+      relation_to_user: node.subtitle ?? null,
+      closeness_tier: node.tier ?? null,
+      provenance: node.provenance,
+      place_type: node.place_type ?? null,
+    };
+    if (node.kind === "person") {
+      people.push(entity);
+      if (node.closeness_suggested) {
+        suggestions.push({ id: node.id, name: node.label, suggested: node.closeness_suggested });
+      }
+    } else if (node.kind === "place") places.push(entity);
+    else if (node.kind === "project") projects.push(entity);
+    else if (node.kind === "org") orgs.push(entity);
+  }
+  return { people, places, orgs, projects, suggestions };
+}
+
+export function graphToVault(subjects: GraphDto, people: GraphDto, facts: VaultFact[]): VaultData {
+  const fromPeople = peopleFromGraph(people);
+  const hidden = {
+    ...(subjects.counts?.hidden_by_group ?? {}),
+    ...(people.counts?.hidden_by_group ?? {}),
+  };
+  const demo = subjects.demo_data === true || people.demo_data === true;
+  return {
+    themes: filterSubjects(clusterThemes(subjects)),
+    people: filterEntities(fromPeople.people),
+    places: filterEntities(fromPeople.places),
+    orgs: filterEntities(fromPeople.orgs),
+    projects: filterEntities(fromPeople.projects),
+    suggestions: fromPeople.suggestions,
+    facts: filterFacts(facts),
+    hiddenByGroup: hidden,
+    isDemo: demo,
+    demoData: demo,
+    error: null,
+  };
+}
+
+class VaultStatusError extends Error {
+  constructor(readonly status: number) {
+    super(status === 401 || status === 403 ? "Sign-in required" : `Vault API ${status}`);
+  }
+}
+
+async function readBody(fetcher: Fetcher, url: string): Promise<{ missing: boolean; body: unknown }> {
+  const res = await fetcher(url);
+  if (res.status === 404) return { missing: true, body: null };
+  if (!res.ok) throw new VaultStatusError(res.status);
+  return { missing: false, body: await res.json() };
+}
+
 export async function loadVault(
   apiBaseUrl: string, owner: string,
   fixtures: VaultData,
   fetcher: Fetcher = defaultFetcher,
+  options?: { demo?: boolean },
 ): Promise<VaultData> {
   const base = `${apiBaseUrl.replace(/\/$/, "")}/v1/owners/${encodeURIComponent(owner)}`;
+  if (options?.demo) {
+    return { ...fixtures, isDemo: true, demoData: true, error: null };
+  }
   try {
-    const [subjects, people, timeline] = await Promise.all([
-      getJson(fetcher, `${base}/vault/subjects`),
-      getJson(fetcher, `${base}/vault/people`),
+    const [subjectRes, peopleRes, timeline] = await Promise.all([
+      readBody(fetcher, `${base}/vault/graph?view=subjects`),
+      readBody(fetcher, `${base}/vault/graph?view=people`),
       getJson(fetcher, `${base}/timeline`).catch(() => ({ items: [] })),
     ]);
-    const demo = subjects.demo_data === true || people.demo_data === true;
-    return {
-      themes: filterSubjects((subjects.themes as SubjectNode[]) ?? []),
-      people: filterEntities((people.people as VaultEntity[]) ?? []),
-      places: filterEntities((people.places as VaultEntity[]) ?? []),
-      orgs: filterEntities((people.orgs as VaultEntity[]) ?? []),
-      facts: filterFacts((timeline.items as VaultFact[]) ?? []),
-      isDemo: demo, demoData: demo,
-    };
-  } catch {
-    return { ...fixtures, themes: filterSubjects(fixtures.themes),
-      people: filterEntities(fixtures.people), places: filterEntities(fixtures.places),
-      orgs: filterEntities(fixtures.orgs), facts: filterFacts(fixtures.facts),
-      isDemo: true, demoData: true };
+    const subjectGraph = subjectRes.missing ? null : asGraph(subjectRes.body);
+    const peopleGraph = peopleRes.missing ? null : asGraph(peopleRes.body);
+    const facts = filterFacts((timeline.items as VaultFact[]) ?? []);
+    if (subjectGraph && peopleGraph) return graphToVault(subjectGraph, peopleGraph, facts);
+    if (subjectRes.missing || peopleRes.missing || !subjectGraph || !peopleGraph) {
+      const [subjects, people] = await Promise.all([
+        getJson(fetcher, `${base}/vault/subjects`),
+        getJson(fetcher, `${base}/vault/people`),
+      ]);
+      const demo = subjects.demo_data === true || people.demo_data === true;
+      return {
+        themes: filterSubjects((subjects.themes as SubjectNode[]) ?? []),
+        people: filterEntities((people.people as VaultEntity[]) ?? []),
+        places: filterEntities((people.places as VaultEntity[]) ?? []),
+        orgs: filterEntities((people.orgs as VaultEntity[]) ?? []),
+        projects: filterEntities((people.projects as VaultEntity[]) ?? []),
+        suggestions: [],
+        facts,
+        hiddenByGroup: {},
+        isDemo: demo,
+        demoData: demo,
+        error: null,
+      };
+    }
+    return emptyVault(null);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Vault unavailable";
+    return emptyVault(message);
   }
 }
 
