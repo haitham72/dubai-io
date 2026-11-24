@@ -19,6 +19,7 @@ from temporal_memory.models import (
     Verdict,
 )
 from temporal_memory.privacy.policy import may_promote as _may_promote
+from temporal_memory.core.subject_aliases import aliases_for_text, write_subject_aliases
 from temporal_memory.privacy.policy import provenance_for_statement
 from temporal_memory.privacy.sensitive import pre_write
 
@@ -240,12 +241,13 @@ def apply(
             kind = hint.kind if hint else "person"
             ent_obj = Entity(id=eid, owner=owner, kind=kind, name=name, relation_to_user=None)
             status = "active" if _may_promote(ent_obj, distinct_days=1, user_confirmed=False) else "candidate"
+            place_type = hint.place_type if hint and hint.kind == "place" else None
             conn.execute(
                 """
-                INSERT INTO entities (id, owner, kind, name, status, relation_to_user, provenance)
-                VALUES (%s, %s, %s, %s, %s, NULL, %s)
+                INSERT INTO entities (id, owner, kind, name, status, relation_to_user, provenance, place_type)
+                VALUES (%s, %s, %s, %s, %s, NULL, %s, %s)
                 """,
-                (eid, owner, kind, name, status, provenance),
+                (eid, owner, kind, name, status, provenance, place_type),
             )
             entities_by_id[eid] = {
                 "id": eid,
@@ -346,8 +348,13 @@ def apply(
                 quarantined[sens_cat] = quarantined.get(sens_cat, 0) + 1
                 continue
 
-            fact_provenance = provenance_for_statement(author_is_owner=_stated(fact))
+            fact_provenance = provenance_for_statement(
+                author_is_owner=_stated(fact), stated=bool(fact.stated)
+            )
             subject_id = _ensure_subject(fact.subject_path, fact_provenance)
+            write_subject_aliases(
+                conn, owner, subject_id, aliases_for_text(fact.subject_path, fact.text)
+            )
             new_fact_id = f"f_{uuid.uuid4().hex[:12]}"
             text_folded = fold_text(fact.text)
             content_hash = hashlib.sha256(
@@ -391,9 +398,10 @@ def apply(
                 INSERT INTO facts (
                     id, owner, text, text_orig, text_folded, subject_id,
                     valid_from, valid_to, status, superseded_by, provenance,
-                    job_id, attempt_id, worker_id, model, prompt_version, content_hash
+                    job_id, attempt_id, worker_id, model, prompt_version, content_hash,
+                    reason_text, reason_record_id, reason_start, reason_end
                 )
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """,
                 (
                     new_fact_id,
@@ -413,6 +421,10 @@ def apply(
                     attempt.model,
                     attempt.prompt_version,
                     content_hash,
+                    fact.reason_text,
+                    fact.reason_record_id,
+                    fact.reason_start,
+                    fact.reason_end,
                 ),
             )
             applied_fact_ids.append(new_fact_id)
@@ -425,6 +437,15 @@ def apply(
                     continue
                 resolved_eids.add(eid)
                 touched_eids.add(eid)
+                if hint and hint.place_type:
+                    conn.execute(
+                        """
+                        UPDATE entities
+                        SET place_type = COALESCE(place_type, %s)
+                        WHERE owner = %s AND id = %s
+                        """,
+                        (hint.place_type, owner, eid),
+                    )
                 _note_relation(eid, hint, fact)
                 _note_provenance(eid, fact_provenance)
                 for al in (hint.aliases if hint else []):

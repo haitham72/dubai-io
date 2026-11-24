@@ -413,3 +413,103 @@ def test_sensitive_quarantine_and_forget_rules(db_env):
     assert len(q_rows) == 1
     assert q_rows[0]["category"] == "family_third_party"
     assert q_rows[0]["record_ids"] == ["wa-s1"]
+
+
+def test_stated_fact_is_user_supplied_and_inferred_fact_is_not(db_env):
+    db, store = db_env
+    store.upsert_records(
+        "karim",
+        [Record(
+            id="ugh", owner="karim", source="whatsapp:me", at="2026-11-02T09:00:00Z",
+            author="Karim", text="ugh work again",
+        )],
+    )
+    out = ExtractionOutput(
+        entities=[],
+        facts=[
+            OutFact(
+                text="Karim said ugh work again", text_orig=None, subject_path="career/mood",
+                entities=[], op="new", target=None, valid_from="2026-11-02",
+                evidence=["ugh"], sensitive=None, stated=True,
+            ),
+            OutFact(
+                text="Karim wants a different project", text_orig=None, subject_path="career/mood",
+                entities=[], op="new", target=None, valid_from="2026-11-02",
+                evidence=["ugh"], sensitive=None, stated=False,
+            ),
+        ],
+        links=[],
+    )
+    apply("karim", _job("j-stated", ["ugh"]), _attempt("j-stated", out), db=db)
+    with db.connection() as conn:
+        rows = conn.execute("SELECT text, provenance FROM facts WHERE owner = 'karim'").fetchall()
+    by_text = {row["text"]: row["provenance"] for row in rows}
+    assert by_text["Karim said ugh work again"] == "user_supplied"
+    assert by_text["Karim wants a different project"] == "inferred"
+
+
+def test_restaurant_loved_it_stores_place_type_and_preference(db_env):
+    db, store = db_env
+    store.upsert_records(
+        "karim",
+        [Record(
+            id="meal", owner="karim", source="whatsapp:me", at="2026-11-03T19:00:00Z",
+            author="Karim", text="Loved dinner at Alserkal Cafe.",
+        )],
+    )
+    out = ExtractionOutput(
+        entities=[OutEntity(
+            ref="new:Alserkal Cafe", kind="place", aliases=["Alserkal Cafe"],
+            relation_to_user=None, place_type="restaurant",
+        )],
+        facts=[
+            OutFact(
+                text="Karim ate at Alserkal Cafe", text_orig=None, subject_path="events/restaurants",
+                entities=[FactEntity(entity_id="new:Alserkal Cafe", role=None)],
+                op="new", target=None, valid_from="2026-11-03", evidence=["meal"], sensitive=None,
+                stated=True,
+            ),
+            OutFact(
+                text="Karim loved Alserkal Cafe", text_orig=None, subject_path="events/restaurants",
+                entities=[FactEntity(entity_id="new:Alserkal Cafe", role=None)],
+                op="new", target=None, valid_from="2026-11-03", evidence=["meal"], sensitive=None,
+                stated=True,
+            ),
+        ],
+        links=[],
+    )
+    apply("karim", _job("j-place", ["meal"]), _attempt("j-place", out), db=db)
+    place = next(entity for entity in store.list_entities("karim") if entity.name == "Alserkal Cafe")
+    with db.connection() as conn:
+        row = conn.execute("SELECT place_type FROM entities WHERE id = %s", (place.id,)).fetchone()
+        texts = {r["text"] for r in conn.execute("SELECT text FROM facts WHERE owner = 'karim'")}
+    assert row["place_type"] == "restaurant"
+    assert "Karim loved Alserkal Cafe" in texts
+
+
+def test_phone_query_finds_iphone_fact_by_subject_alias(db_env):
+    db, store = db_env
+    store.upsert_records(
+        "karim",
+        [Record(
+            id="handset", owner="karim", source="notes", at="2026-11-04T08:00:00Z",
+            author="Karim", text="Picked up the iPhone 13 Pro Max today.",
+        )],
+    )
+    out = ExtractionOutput(
+        entities=[],
+        facts=[OutFact(
+            text="Karim bought an iPhone 13 Pro Max", text_orig=None,
+            subject_path="home-money/devices/phone", entities=[],
+            op="new", target=None, valid_from="2026-11-04", evidence=["handset"],
+            sensitive=None, stated=True,
+        )],
+        links=[],
+    )
+    verdict = apply("karim", _job("j-phone", ["handset"]), _attempt("j-phone", out), db=db)
+    fact_id = verdict.applied_fact_ids[0]
+    for query in ("phone", "mobile"):
+        hits = store.search_candidates("karim", query)
+        matched = [hit for hit in hits if hit.fact_id == fact_id]
+        assert matched and matched[0].channel == "subject"
+        assert "phone" not in "Karim bought an iPhone 13 Pro Max".lower().split()

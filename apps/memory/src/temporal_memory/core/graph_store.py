@@ -10,6 +10,7 @@ import uuid
 from temporal_memory.db.db import Database, fold_text, get_database
 from temporal_memory.models import (
     Attempt,
+    Candidate,
     Entity,
     EntitySubject,
     Fact,
@@ -406,6 +407,30 @@ class PostgresGraphStore:
         ]
 
         return _pack_within_budget(entity_dicts, fact_dicts, subject_dicts, char_budget)
+
+    def search_candidates(
+        self,
+        owner: str,
+        query: str,
+        *,
+        entity_ids: list[str] | None = None,
+        subject_ids: list[str] | None = None,
+        date_from: str | None = None,
+        date_to: str | None = None,
+        source_prefix: str | None = None,
+        limit: int = 50,
+    ) -> list[Candidate]:
+        """Subject aliases plus fact-text tokens. U1c's retrieval should keep the alias call.
+
+        ``entity_ids``, ``subject_ids`` and the date window are accepted so the
+        contract signature matches. This pass does not rank those channels.
+        """
+        del entity_ids, subject_ids, date_from, date_to
+        from temporal_memory.core.subject_aliases import subject_channel_candidates
+
+        return subject_channel_candidates(
+            self.db, owner, query, source_prefix=source_prefix, limit=limit,
+        )
 
     # ---------------------------------------------------------------- query helpers for vault/ops/ingest
     def list_entities(self, owner: str) -> list[Entity]:

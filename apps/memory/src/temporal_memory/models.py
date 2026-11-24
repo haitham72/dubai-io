@@ -235,6 +235,7 @@ class OutFact:
     reason_record_id: Optional[str] = None
     reason_start: Optional[int] = None
     reason_end: Optional[int] = None
+    stated: bool = False  # owner literally said it; an interpretation is False
 
 
 @dataclass

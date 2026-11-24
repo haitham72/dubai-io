@@ -1,0 +1,52 @@
+-- PROPOSAL ONLY. Not a migration. migrate() does not read this folder.
+-- Do not run this file on any database. The founder confirms the mapping.
+--
+-- Extractor roots (extract@4) are models.CLUSTERS + HELD_BACK_ROOTS:
+--   career, learning, projects, people-family, events, home-money, travel, health, faith
+-- health and faith are held back: they are never clusters.
+--
+-- Old extractor roots -> new roots:
+--   background -> career
+--   devices    -> home-money
+--   family     -> people-family
+--   health     -> health          (held back, not a cluster)
+--   identity   -> people-family
+--   interests  -> events
+--   learning   -> learning
+--   lifestyle  -> home-money
+--   money      -> home-money
+--   projects   -> projects
+--   wellbeing  -> health          (held back)
+--   work       -> career
+--
+-- Finer leaves from docs/references/residence-ontology-tree.md, applied
+-- before the root rewrite so food and outings land under events:
+--   lifestyle/food          -> events/food
+--   lifestyle/sports/sports_events -> events/sports
+--   fun_out                 -> events/outings
+
+-- UPDATE subjects SET path = regexp_replace(path, '^lifestyle/food', 'events/food')
+--   WHERE path = 'lifestyle/food' OR path LIKE 'lifestyle/food/%';
+-- UPDATE subjects SET path = regexp_replace(path, '^lifestyle/sports/sports_events', 'events/sports')
+--   WHERE path = 'lifestyle/sports/sports_events' OR path LIKE 'lifestyle/sports/sports_events/%';
+-- UPDATE subjects SET path = regexp_replace(path, '^fun_out', 'events/outings')
+--   WHERE path = 'fun_out' OR path LIKE 'fun_out/%';
+-- UPDATE subjects SET path = regexp_replace(path, '^background(/|$)', 'career\1')
+--   WHERE path = 'background' OR path LIKE 'background/%';
+-- UPDATE subjects SET path = regexp_replace(path, '^devices(/|$)', 'home-money\1')
+--   WHERE path = 'devices' OR path LIKE 'devices/%';
+-- UPDATE subjects SET path = regexp_replace(path, '^family(/|$)', 'people-family\1')
+--   WHERE path = 'family' OR path LIKE 'family/%';
+-- UPDATE subjects SET path = regexp_replace(path, '^identity(/|$)', 'people-family\1')
+--   WHERE path = 'identity' OR path LIKE 'identity/%';
+-- UPDATE subjects SET path = regexp_replace(path, '^interests(/|$)', 'events\1')
+--   WHERE path = 'interests' OR path LIKE 'interests/%';
+-- UPDATE subjects SET path = regexp_replace(path, '^lifestyle(/|$)', 'home-money\1')
+--   WHERE path = 'lifestyle' OR path LIKE 'lifestyle/%';
+-- UPDATE subjects SET path = regexp_replace(path, '^money(/|$)', 'home-money\1')
+--   WHERE path = 'money' OR path LIKE 'money/%';
+-- UPDATE subjects SET path = regexp_replace(path, '^wellbeing(/|$)', 'health\1')
+--   WHERE path = 'wellbeing' OR path LIKE 'wellbeing/%';
+-- UPDATE subjects SET path = regexp_replace(path, '^work(/|$)', 'career\1')
+--   WHERE path = 'work' OR path LIKE 'work/%';
+-- learning, projects, and health stay on those roots.

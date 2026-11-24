@@ -26,6 +26,7 @@ class Settings:
     lease_seconds: int = int(os.environ.get("TM_LEASE_SECONDS", "300"))
     cloud_rate_in_per_1m: float = float(os.environ.get("TM_CLOUD_RATE_IN_PER_1M", "1.00"))
     cloud_rate_out_per_1m: float = float(os.environ.get("TM_CLOUD_RATE_OUT_PER_1M", "5.00"))
+    packet_token_budget: int = int(os.environ.get("TM_PACKET_TOKEN_BUDGET", "4000"))
 
 
 def get_settings() -> Settings:
@@ -50,6 +51,7 @@ def get_settings() -> Settings:
         lease_seconds=int(os.environ.get("TM_LEASE_SECONDS", "300")),
         cloud_rate_in_per_1m=float(os.environ.get("TM_CLOUD_RATE_IN_PER_1M", "1.00")),
         cloud_rate_out_per_1m=float(os.environ.get("TM_CLOUD_RATE_OUT_PER_1M", "5.00")),
+        packet_token_budget=int(os.environ.get("TM_PACKET_TOKEN_BUDGET", "4000")),
     )
 
 

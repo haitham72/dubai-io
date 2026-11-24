@@ -88,6 +88,41 @@ def _fact_hashes(subject_path: str, text: str) -> tuple[str, str, str]:
     return h_folded, h_raw, h_subj
 
 
+_FACT_DROPS = frozenset(
+    {
+        "evidence_outside_input",
+        "evidence_span_mismatch",
+        "target_outside_context",
+        "credential_in_fact",
+        "duplicate_fact",
+    }
+)
+
+
+def _reason_holds(fact: OutFact, records_by_id: dict[str, Record]) -> bool:
+    """True when reason_text is absent or is an exact span of a cited record."""
+    if not fact.reason_text:
+        return True
+    rec_id = fact.reason_record_id or (fact.evidence[0] if fact.evidence else None)
+    rec = records_by_id.get(rec_id) if rec_id else None
+    if rec is None:
+        return False
+    text = rec.text or ""
+    if fact.reason_start is not None and fact.reason_end is not None:
+        start, end = int(fact.reason_start), int(fact.reason_end)
+        if start < 0 or end > len(text) or start >= end:
+            return False
+        return text[start:end] == fact.reason_text
+    return fact.reason_text in text
+
+
+def _clear_reason(fact: OutFact) -> None:
+    fact.reason_text = None
+    fact.reason_record_id = None
+    fact.reason_start = None
+    fact.reason_end = None
+
+
 def _check_evidence_span(
     fact: OutFact,
     cited_records: list[Record],
@@ -131,6 +166,7 @@ def validate(
 ) -> Verdict:
     """Run all 8 Validator v2 checks in order and return a Verdict."""
     reasons: list[str] = []
+    fatal: list[str] = []
     quarantined: dict[str, int] = {}
 
     # 1) Fence / lease / generation
@@ -196,29 +232,39 @@ def validate(
             if f:
                 self_folded.add(f)
 
-    # 3) Evidence check (subset of input_ref + key-token span check)
-    for fact in out.facts:
+    # 3) Evidence check. A bad fact is dropped later; it does not reject the day.
+    fact_drops: dict[int, list[str]] = {}
+
+    def _drop(idx: int, reason: str) -> None:
+        fact_drops.setdefault(idx, []).append(reason)
+
+    for idx, fact in enumerate(out.facts):
+        if not _reason_holds(fact, records_by_id):
+            _clear_reason(fact)
         if not fact.evidence or not set(fact.evidence).issubset(allowed_input):
-            reasons.append("evidence_outside_input")
+            _drop(idx, "evidence_outside_input")
         elif bundle.records:
             cited = [records_by_id[rid] for rid in fact.evidence if rid in records_by_id]
             if cited and not _check_evidence_span(
                 fact, cited, out_entities_by_ref, ctx_entities_by_id
             ):
-                reasons.append("evidence_span_mismatch")
+                _drop(idx, "evidence_span_mismatch")
 
     for lnk in out.links:
         if not lnk.evidence or not set(lnk.evidence).issubset(allowed_input):
             reasons.append("evidence_outside_input")
+            fatal.append("evidence_outside_input")
 
     # 4) Target check for update / end
     context_fact_ids = {
         f["id"] for f in bundle.context.get("facts", []) if isinstance(f, dict) and "id" in f
     }
-    for fact in out.facts:
+    for idx, fact in enumerate(out.facts):
+        if idx in fact_drops:
+            continue
         if fact.op in ("update", "end"):
             if not fact.target or fact.target not in context_fact_ids:
-                reasons.append("target_outside_context")
+                _drop(idx, "target_outside_context")
 
     # 5) Entity guards & enum validation
     for ent in out.entities:
@@ -265,11 +311,13 @@ def validate(
             if not cname or len(cname) > 80:
                 reasons.append("entity_name_invalid")
 
-    # 6) Privacy gate
-    for fact in out.facts:
+    # 6) Privacy gate. Credentials drop that fact alone.
+    for idx, fact in enumerate(out.facts):
+        if idx in fact_drops:
+            continue
         cat = _gate_fact(fact, attempt.worker_kind)
         if cat == "credential" or fact.sensitive == "credential":
-            reasons.append("credential_in_fact")
+            _drop(idx, "credential_in_fact")
         elif cat and not fact.sensitive:
             fact.sensitive = cat
             quarantined[cat] = quarantined.get(cat, 0) + 1
@@ -296,14 +344,25 @@ def validate(
     seen_norm_subjects: set[tuple[str, str]] = {
         (s.strip().lower(), fold_text(t)) for s, t in (existing_norm_subjects or ())
     }
-    for fact in out.facts:
+    for idx, fact in enumerate(out.facts):
+        if idx in fact_drops:
+            continue
         norm_key = (fact.subject_path.strip().lower(), fold_text(fact.text))
         hashes = _fact_hashes(fact.subject_path, fact.text)
         if norm_key in seen_norm_subjects or any(h in seen_hashes for h in hashes):
-            reasons.append("duplicate_fact")
+            _drop(idx, "duplicate_fact")
         else:
             seen_norm_subjects.add(norm_key)
             seen_hashes.update(hashes)
+
+    if fact_drops:
+        kept: list[OutFact] = []
+        for idx, fact in enumerate(out.facts):
+            if idx in fact_drops:
+                reasons.extend(fact_drops[idx])
+            else:
+                kept.append(fact)
+        out.facts[:] = kept
 
     if (
         attempt.model_observed
@@ -313,8 +372,10 @@ def validate(
         reasons.append("model_mismatch")
 
     unique_reasons = list(dict.fromkeys(reasons))
+    nonfatal = _FACT_DROPS | {"model_mismatch"}
+    dropped_only = all(r in nonfatal for r in unique_reasons)
     return Verdict(
-        ok=all(r == "model_mismatch" for r in unique_reasons),
+        ok=dropped_only and not fatal,
         reasons=unique_reasons,
         quarantined=quarantined,
     )
