@@ -38,6 +38,7 @@ from .memory.api import router as memory_router
 from .mail_profile import router as mail_router
 from .memory.schema import ensure_memory_schema
 from .connectors.api import router as connector_router
+from .ingest_routes import router as ingest_router
 from .connectors.schema import ensure_connector_schema
 
 @asynccontextmanager
@@ -72,6 +73,7 @@ app.include_router(prayer_router)
 app.include_router(memory_router)
 app.include_router(mail_router)
 app.include_router(connector_router)
+app.include_router(ingest_router)
 
 
 @app.middleware("http")
