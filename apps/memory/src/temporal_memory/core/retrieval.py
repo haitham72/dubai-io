@@ -3,13 +3,15 @@ from __future__ import annotations
 
 from collections import defaultdict
 from datetime import date, timedelta
+import os
 import re
 from typing import Any, Iterable, Literal
 
+from temporal_memory.config import get_settings
 from temporal_memory.db.db import Database, fold_text
 from temporal_memory.models import Candidate
 
-ChannelName = Literal["fts", "entity", "subject", "date"]
+ChannelName = Literal["fts", "entity", "subject", "date", "semantic"]
 
 _PER_CHANNEL_LIMIT = 60
 
@@ -29,6 +31,10 @@ _STOPWORDS = frozenset({
     "انت", "أنت", "كان", "كانت", "يكون", "لا", "لم", "لن", "قد", "او", "أو", "و",
     "el", "al", "fe", "fi", "min", "men", "3an", "emta", "fein", "meen", "eih",
     "delwa2ty", "delwati", "leh", "ezay", "ya",
+})
+_NOISE_TOKENS = frozenset({
+    "ok", "okay", "lol", "lmao", "rofl", "haha", "hahaha", "hehe", "kk", "k",
+    "thx", "thanks", "ty", "yep", "yup", "nope", "nice", "cool", "wow", "gm", "gn", "hi", "hey",
 })
 
 # Lightweight EN <-> AR <-> Arabizi everyday domain bridges for Postgres simple FTS + subjects.
@@ -356,6 +362,7 @@ def search_candidates(
 
     channel_ranks: list[tuple[ChannelName, float, list[str]]] = []
     status_by_id: dict[str, str] = {}
+    sem_sims: dict[str, float] = {}
 
     with db.connection() as conn:
         # 1. FTS channel (GIN index on facts.tsv — tight AND first, relax to OR if < 15 hits)
@@ -637,7 +644,65 @@ def search_candidates(
                 if sib_ids:
                     channel_ranks.append(("subject", 0.25, sib_ids))
 
-        # Single batch visibility verification (forget_rules + evidence generations) over <=260 candidates.
+        # 6. Semantic vector top-30 channel (local BAAI/bge-m3 1024-d + pgvector HNSW iterative scan)
+        cfg = get_settings()
+        sem_tokens = [t for t in tokens if t not in _NOISE_TOKENS]
+        if cfg.semantic_enabled and q_clean and sem_tokens:
+            has_emb = conn.execute(
+                "SELECT 1 FROM facts WHERE owner = %s AND embedding IS NOT NULL AND erased_at IS NULL AND status <> 'history' LIMIT 1",
+                (owner,),
+            ).fetchone()
+            if has_emb is not None:
+                try:
+                    from temporal_memory.core.embed import embed_query, vector_literal
+
+                    q_vec_lit = vector_literal(embed_query(q_clean, model_name=cfg.semantic_model))
+                except Exception:
+                    q_vec_lit = None
+                if q_vec_lit is not None:
+                    clauses = ["f.embedding IS NOT NULL"]
+                    params = []
+                    _append_fast_filters(
+                        clauses, params, owner=owner, date_from=date_from, date_to=date_to, source_prefix=source_prefix
+                    )
+                    use_exact = os.environ.get("TM_SEMANTIC_EXACT", "").strip() == "1"
+                    if use_exact:
+                        conn.execute("SET LOCAL enable_indexscan = off")
+                        conn.execute("SET LOCAL enable_bitmapscan = off")
+                    else:
+                        conn.execute("SET LOCAL hnsw.iterative_scan = relaxed_order")
+                    vrows = conn.execute(
+                        f"""
+                        WITH nearest AS (
+                            SELECT f.id, f.status,
+                                   1.0 - (f.embedding <=> %s::public.vector) AS sim,
+                                   f.valid_from
+                            FROM facts f
+                            LEFT JOIN subjects s ON s.owner = f.owner AND s.id = f.subject_id
+                            WHERE {' AND '.join(clauses)}
+                            ORDER BY f.embedding <=> %s::public.vector ASC
+                            LIMIT 60
+                        )
+                        SELECT id, status, sim
+                        FROM nearest
+                        WHERE sim >= %s
+                        ORDER BY sim DESC, valid_from DESC, id ASC
+                        LIMIT 30
+                        """,
+                        (q_vec_lit, *params, q_vec_lit, cfg.semantic_min_sim),
+                    ).fetchall()
+                    if use_exact:
+                        conn.execute("RESET enable_indexscan")
+                        conn.execute("RESET enable_bitmapscan")
+                    vec_fids = [r["id"] for r in vrows]
+                    for r in vrows:
+                        status_by_id[r["id"]] = r["status"]
+                        sem_sims[r["id"]] = float(r["sim"])
+                    if vec_fids:
+                        sem_weight = float(os.environ.get("TM_SEMANTIC_WEIGHT", "0.35"))
+                        channel_ranks.append(("semantic", sem_weight, vec_fids))
+
+        # Single batch visibility verification (forget_rules + evidence generations) over <=290 candidates.
         # Queries base PK directly with (erased_at IS NULL)::int=1 so Postgres never switches to a slow generic plan on visible_facts.
         all_cand_ids = list({fid for _, _, rids in channel_ranks for fid in rids})
         visible_set: set[str] = set()
@@ -689,7 +754,8 @@ def search_candidates(
     for ch, weight, ranked_ids in channel_ranks:
         vis_ranked = [fid for fid in ranked_ids if fid in visible_set]
         for pos, fid in enumerate(vis_ranked):
-            contrib = weight / (k + pos + 1.0)
+            eff_weight = weight + (0.9 if ch == "semantic" and sem_sims.get(fid, 0.0) >= 0.62 else 0.0)
+            contrib = eff_weight / (k + pos + 1.0)
             scores[fid] += contrib
             prev = best_ch_score.get(fid)
             if prev is None or contrib > prev[0]:
