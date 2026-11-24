@@ -6,7 +6,7 @@
 > **24 Nov 2026 update (founder decisions):**
 > - **Engine:** **temporal_note** (`apps/memory/`, branch `memory`) replaced Hindsight, Honcho and mem0 (bakeoff `DECISION.md`, 23 Nov). The founder doesn't want competitor comparisons: it's judged on the app's requirements only.
 > - **Wins on conflict:** where §1, §4–§8 and §11–§13 still say "Hindsight", **§18 wins**. The §2 mental model, the §9 Quest-like export tree, §16 trust and §17 Vault still stand. §9 / §17 got small updates.
-> - **Current engine architecture, measured state and owners:** **§18**. Live execution tracker: `G:\Haitham\lab-data\memory-bakeoff\TN_UPGRADE_PLAN.md` + `reports\STATUS.md`.
+> - **Current engine architecture, measured state and owners:** **§18**. Live execution tracker: `apps/memory/upgrade/TN_UPGRADE_PLAN.md` + `apps/memory/upgrade/reports/STATUS.md`.
 > - **Three products** (Dubai-io, Community, Messenger) share only the per-user layer: identity + this memory (D15).
 
 ---
@@ -375,7 +375,7 @@ The memory engine's export and graph representation is rendered to the user via 
 - 🔧 in progress (a branch exists);
 - 📋 planned (spec only).
 
-**As of** `memory` @ `573ff79`. Execution tracker, gates and owners: `G:\Haitham\lab-data\memory-bakeoff\TN_UPGRADE_PLAN.md`, `reports\STATUS.md`, and the measured scores in `acceptance\BASELINE.md`.
+**As of** `memory` @ `573ff79`. Execution tracker, gates and owners: `apps/memory/upgrade/TN_UPGRADE_PLAN.md`, `apps/memory/upgrade/reports/STATUS.md`, and the measured scores in `G:\Haitham\lab-data\memory-bakeoff\acceptance\BASELINE.md` (moving to `apps/memory/acceptance/`).
 
 ### 18.1 Requirements (founder, 24 Nov)
 
