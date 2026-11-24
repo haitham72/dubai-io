@@ -12,7 +12,7 @@ Module owners (planaudit.md §12, v2.1 layout):
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Literal, Optional, Protocol
+from typing import Iterator, Literal, NamedTuple, Optional, Protocol
 
 # ---------------------------------------------------------------- enums (closed sets; the validator enforces them)
 OwnerKind = Literal["real", "simulated", "demo"]          # simulated = parallel "users" in the queue test
@@ -26,7 +26,7 @@ FactOp = Literal["new", "update", "end"]
 LinkRel = Literal["WORKS_AT", "WORKS_ON", "FRIEND_OF", "FAMILY_OF", "COLLEAGUE_OF", "MANAGES", "LIVES_IN",
                   "LOCATED_IN", "APPLIED_TO", "INTERVIEWS_WITH", "MEMBER_OF", "STUDIES", "OWNS", "PART_OF",
                   "ATTENDS", "RELATED_TO"]
-JobKind = Literal["extract.live", "extract.day", "reflect.week", "import.split"]
+JobKind = Literal["extract.live", "extract.day", "extract.session", "reflect.week", "import.split"]
 JobState = Literal["queued", "leased", "submitted", "applied", "rejected", "expired", "dead"]
 Pool = Literal["internal", "owner-device"]
 # internal-cloud  = our Haiku API worker      internal-local = our LM Studio worker (after release bar)
@@ -47,6 +47,7 @@ class Owner:
     display_name: str = ""               # how the user is named in sources ("Haitham", "Karim Haddad")
     self_aliases: list[str] = field(default_factory=list)  # "Kimo", "كريم", email addresses, phone
     timezone: str = "Asia/Dubai"
+    privacy_revision: int = 0
 
 
 # ---------------------------------------------------------------- graph rows
@@ -74,6 +75,12 @@ class Entity:
     salience: float = 0.0
     first_seen: Optional[str] = None
     last_seen: Optional[str] = None
+    provenance: Provenance = "inferred"
+    user_confirmed_at: Optional[str] = None
+    closeness_suggested: Optional[Literal["T1", "T2", "T3"]] = None
+    closeness_suggested_evidence: Optional[list[str]] = None  # supporting fact IDs
+    tier_confirmed_at: Optional[str] = None
+    salience_updated_at: Optional[str] = None
 
 
 @dataclass
@@ -88,6 +95,8 @@ class Subject:
     fact_count: int = 0
     salience: float = 0.0
     sensitive_cat: Optional[SensitiveCat] = None
+    provenance: Provenance = "inferred"
+    user_confirmed_at: Optional[str] = None
 
 
 @dataclass
@@ -256,6 +265,12 @@ class JobBundle:  # what a claimer receives (Celery worker, agent-cli worker, or
     output_schema: dict
 
 
+class Candidate(NamedTuple):
+    fact_id: str
+    score: float
+    channel: Literal["fts", "entity", "subject", "date"]
+
+
 # ---------------------------------------------------------------- module signatures (implement exactly)
 class GraphStore(Protocol):                       # WP-A  core/graph_store.py
     def scoped_context(self, owner: str, records: list[Record], max_tokens: int = 3000) -> dict: ...
@@ -268,6 +283,41 @@ class GraphStoreFull(GraphStore, Protocol):        # WP-A must implement ALL of 
     tests/fixtures/fake_store.py (FakeGraphStore) — the Postgres store must pass the same WP-B tests."""
     def alias_version(self, owner: str) -> int: ...          # bumps when aliases/entities change (L1 cache key)
     def facts_version(self, owner: str) -> int: ...
+    def search_candidates(
+        self, owner: str, query: str, *, entity_ids: list[str] | None = None,
+        subject_ids: list[str] | None = None, date_from: str | None = None,
+        date_to: str | None = None, source_prefix: str | None = None, limit: int = 50,
+    ) -> list[Candidate]:
+        """Rank unique visible fact IDs. Entity and subject IDs seed retrieval channels.
+
+        Date bounds are inclusive ISO days. A source prefix is literal and must match
+        every surviving evidence record, with at least one record, before limiting.
+        Return candidates in descending score order with fact ID as the tie-breaker.
+        """
+        ...
+
+    def get_facts(self, owner: str, fact_ids: list[str]) -> list[Fact]:
+        """Hydrate visible IDs in input order, skipping missing or repeated IDs without a cap."""
+        ...
+
+    def fact_counts_by_subject(self, owner: str) -> dict[str, int]:
+        """Count direct visible facts by subject, without limiting to a candidate page."""
+        ...
+
+    def iter_visible_facts(
+        self, owner: str, *, date_from: str | None = None, date_to: str | None = None,
+        after: tuple[str, str] | None = None, page_size: int = 500,
+    ) -> Iterator[Fact]:
+        """Iterate by (valid_from, fact_id) descending in page_size batches.
+
+        Date bounds are inclusive ISO days. The after pair is the exclusive starting cursor.
+        """
+        ...
+
+    def bump_privacy_revision(self, owner: str) -> int:
+        """Increment the owner's privacy revision and return the updated value."""
+        ...
+
     def owner_generation(self, owner: str) -> int: ...       # max records.generation for the owner
     def get_owner(self, owner: str) -> Owner | None: ...
     def list_entities(self, owner: str) -> list[Entity]: ...

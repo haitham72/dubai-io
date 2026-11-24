@@ -23,7 +23,7 @@ def test_schema_tables_and_views_exist(db_and_store):
         "owners", "records", "entities", "entity_aliases", "subjects",
         "facts", "fact_entities", "fact_evidence", "links", "entity_subjects",
         "milestones", "quarantine", "forget_rules", "workers", "tokens",
-        "jobs", "job_attempts", "outbox",
+        "jobs", "job_attempts", "outbox", "schema_migrations", "link_evidence", "forget_requests",
     }
     expected_views = {"visible_facts", "hypotheses"}
     with db.connection() as conn:

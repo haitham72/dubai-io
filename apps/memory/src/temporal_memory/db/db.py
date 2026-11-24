@@ -9,12 +9,15 @@ from typing import Iterator
 import uuid
 
 import psycopg
+from psycopg import sql
 from psycopg.pq import TransactionStatus
 from psycopg.rows import dict_row
 
 from temporal_memory.config import settings
 
 SCHEMA_SQL_PATH = Path(__file__).with_name("schema.sql")
+MIGRATIONS_PATH = Path(__file__).with_name("migrations")
+_MIGRATION_FILE = re.compile(r"([0-9]{4})_.+\.sql")
 _DIACRITICS = re.compile("[\u064b-\u065f\u0670\u0640]")
 _LETTERS = str.maketrans({"أ": "ا", "إ": "ا", "آ": "ا", "ى": "ي", "ة": "ه"})
 
@@ -101,15 +104,55 @@ class Database:
 
 
 def migrate(db: Database) -> None:
-    """Apply idempotent DDL from schema.sql."""
-    sql = SCHEMA_SQL_PATH.read_text(encoding="utf-8")
-    with db.connection() as conn:
-        if db.schema:
-            conn.execute(f"CREATE SCHEMA IF NOT EXISTS {db.schema}")
-            conn.execute(f"SET search_path TO {db.schema}, public")
-        conn.execute(sql)
-        conn.execute("ALTER TABLE job_attempts ADD COLUMN IF NOT EXISTS model_observed TEXT")
-        conn.commit()
+    """Bootstrap the base schema and apply pending migrations in one transaction."""
+    migrations: dict[int, Path] = {}
+    for path in MIGRATIONS_PATH.glob("*.sql"):
+        match = _MIGRATION_FILE.fullmatch(path.name)
+        if match is None or int(match[1]) == 0 or int(match[1]) in migrations:
+            raise SchemaError(f"Invalid or repeated migration version: {path.name}")
+        migrations[int(match[1])] = path
+    if not migrations:
+        raise SchemaError(f"No SQL migrations found in {MIGRATIONS_PATH}")
+
+    # Use the same identifier semantics as Database.connection().
+    schema_name = db.schema.lower() if db.schema else None
+    with db.transaction() as conn:
+        conn.execute(
+            "SELECT pg_advisory_xact_lock(hashtextextended("
+            "'temporal_memory:migrate:' || COALESCE(%s, current_schema()), 0))",
+            (schema_name,),
+        )
+        if schema_name:
+            schema = sql.Identifier(schema_name)
+            conn.execute(sql.SQL("CREATE SCHEMA IF NOT EXISTS {}").format(schema))
+            conn.execute(sql.SQL("SET LOCAL search_path TO {}, public").format(schema))
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS schema_migrations (
+                version INTEGER PRIMARY KEY,
+                applied_at TIMESTAMPTZ NOT NULL DEFAULT now()
+            )
+            """
+        )
+        applied = {row["version"] for row in conn.execute("SELECT version FROM schema_migrations")}
+        if not applied:
+            conn.execute(SCHEMA_SQL_PATH.read_text(encoding="utf-8"))
+
+        # Preserve the legacy repair without locking the table for DDL on every startup.
+        model_column = conn.execute(
+            """
+            SELECT 1 FROM pg_catalog.pg_attribute
+            WHERE attrelid = 'job_attempts'::regclass
+              AND attname = 'model_observed' AND NOT attisdropped
+            """
+        ).fetchone()
+        if model_column is None:
+            conn.execute("ALTER TABLE job_attempts ADD COLUMN IF NOT EXISTS model_observed TEXT")
+
+        for version, path in sorted(migrations.items()):
+            if version not in applied:
+                conn.execute(path.read_text(encoding="utf-8"))
+                conn.execute("INSERT INTO schema_migrations (version) VALUES (%s)", (version,))
 
 
 def create_test_schema(dsn: str | None = None) -> tuple[Database, str]:
