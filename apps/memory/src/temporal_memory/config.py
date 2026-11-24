@@ -13,13 +13,12 @@ class Settings:
     redis_url: str = os.environ.get("TM_REDIS_URL", "redis://localhost:6390/0")
     lmstudio_url: str = os.environ.get("TM_LMSTUDIO_URL", "http://127.0.0.1:1234/v1")
     lmstudio_model: str = os.environ.get("TM_LMSTUDIO_MODEL", "qwen/qwen3-4b-2507")
-    cloud_model: str = os.environ.get("TM_CLOUD_MODEL", "claude-haiku-4-5-20251001")
+    cloud_model: str = os.environ.get("TM_CLOUD_MODEL", "claude-haiku-5-5")
     anthropic_api_key: str = os.environ.get("ANTHROPIC_API_KEY", "")
     admin_token: str = os.environ.get("TM_ADMIN_TOKEN", "")
-    agent_cli_cmd: str = os.environ.get(
-        "TM_AGENT_CLI_CMD",
-        "claude -p --model {model} --effort medium --output-format json --tools \"\" --disable-slash-commands",
-    )
+    # "claude" (default) = the trimmed claude CLI argv built in core/extract.py (agent_cli_argv). Any other command is a
+    # custom template with a {model} placeholder, run as-is (e.g. a codex wrapper).
+    agent_cli_cmd: str = os.environ.get("TM_AGENT_CLI_CMD", "claude")
     governor_usd_per_month: float = float(os.environ.get("TM_GOVERNOR_USD_PER_MONTH", "0.18"))
     p0_fallback_seconds: int = int(os.environ.get("TM_P0_FALLBACK_SECONDS", "20"))
     p1_fallback_seconds: int = int(os.environ.get("TM_P1_FALLBACK_SECONDS", "600"))
@@ -42,13 +41,10 @@ def get_settings() -> Settings:
         redis_url=os.environ.get("TM_REDIS_URL", "redis://localhost:6390/0"),
         lmstudio_url=os.environ.get("TM_LMSTUDIO_URL", "http://127.0.0.1:1234/v1"),
         lmstudio_model=os.environ.get("TM_LMSTUDIO_MODEL", "qwen/qwen3-4b-2507"),
-        cloud_model=os.environ.get("TM_CLOUD_MODEL", "claude-haiku-4-5-20251001"),
+        cloud_model=os.environ.get("TM_CLOUD_MODEL", "claude-haiku-5-5"),
         anthropic_api_key=os.environ.get("ANTHROPIC_API_KEY", ""),
         admin_token=os.environ.get("TM_ADMIN_TOKEN", ""),
-        agent_cli_cmd=os.environ.get(
-            "TM_AGENT_CLI_CMD",
-            "claude -p --model {model} --effort medium --output-format json --tools \"\" --disable-slash-commands",
-        ),
+        agent_cli_cmd=os.environ.get("TM_AGENT_CLI_CMD", "claude"),
         governor_usd_per_month=float(os.environ.get("TM_GOVERNOR_USD_PER_MONTH", "0.18")),
         p0_fallback_seconds=int(os.environ.get("TM_P0_FALLBACK_SECONDS", "20")),
         p1_fallback_seconds=int(os.environ.get("TM_P1_FALLBACK_SECONDS", "600")),

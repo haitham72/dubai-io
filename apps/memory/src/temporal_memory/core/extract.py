@@ -14,6 +14,7 @@ import os
 import re
 import shlex
 import subprocess
+import tempfile
 from typing import Any
 
 import httpx
@@ -537,6 +538,64 @@ def _run_lmstudio(
     return output, used_model, tokens_in, tokens_out, 0.0, model_observed
 
 
+# --- claude CLI runner: trimmed flags (measured 23 Nov: overhead ~46k -> ~1k tokens/call, $0.0039 -> $0.0004) ---------
+_CLI_ALIASES = ("haiku", "sonnet", "opus")
+# Windows caps a command line at ~32k chars; a longer system prompt travels on stdin instead of --system-prompt.
+_MAX_SYSTEM_PROMPT_ARG = 12000
+
+
+def cli_model_alias(model: str) -> str:
+    """Map a full model id (claude-haiku-5-5) to the CLI alias (haiku); anything unknown is passed through."""
+    low = (model or "").lower()
+    if low in ("", "default"):
+        return "haiku"
+    for alias in _CLI_ALIASES:
+        if alias in low:
+            return alias
+    return model or "haiku"
+
+
+def neutral_cwd() -> str:
+    """An empty directory the CLI runs in, so no repo CLAUDE.md or project memory is loaded. Created on demand."""
+    path = os.path.join(tempfile.gettempdir(), "tm-agent-cli-neutral")
+    os.makedirs(path, exist_ok=True)
+    return path
+
+
+def _empty_mcp_config() -> str:
+    path = os.path.join(neutral_cwd(), "empty-mcp.json")
+    if not os.path.exists(path):
+        with open(path, "w", encoding="utf-8") as fh:
+            fh.write('{"mcpServers":{}}')
+    return path
+
+
+def is_claude_cmd(cmd: str) -> bool:
+    parts = (cmd or "claude").split()
+    base = os.path.basename((parts[0] if parts else "claude").strip("\"'")).lower()
+    return base in ("claude", "claude.exe", "claude.cmd")
+
+
+def agent_cli_argv(model: str, system_prompt: str, cmd: str | None = None) -> tuple[list[str], str]:
+    """Return (argv, stdin_prefix). Never uses --bare (it skips the subscription login).
+
+    claude -p --model haiku --effort medium --output-format json --system-prompt <...> --strict-mcp-config
+        --mcp-config <empty.json> --tools "" --disable-slash-commands ; the user prompt goes to stdin.
+    A custom TM_AGENT_CLI_CMD (not the claude CLI) is run as-is with {model} filled in, system prompt on stdin.
+    """
+    cfg_cmd = cmd if cmd is not None else get_settings().agent_cli_cmd
+    if not is_claude_cmd(cfg_cmd):
+        return shlex.split(cfg_cmd.format(model=model or "default")), f"{system_prompt}\n\n"
+    argv = ["claude", "-p", "--model", cli_model_alias(model), "--effort", "medium", "--output-format", "json"]
+    prefix = ""
+    if len(system_prompt) <= _MAX_SYSTEM_PROMPT_ARG:
+        argv += ["--system-prompt", system_prompt]
+    else:
+        prefix = f"{system_prompt}\n\n"
+    argv += ["--strict-mcp-config", "--mcp-config", _empty_mcp_config(), "--tools", "", "--disable-slash-commands"]
+    return argv, prefix
+
+
 def _run_cli(
     system_prompt: str,
     user_prompt: str,
@@ -544,11 +603,11 @@ def _run_cli(
 ) -> tuple[ExtractionOutput, str, int, int, float, str | None]:
     cfg = get_settings()
     used_model = model or "default"
-    cmd_str = cfg.agent_cli_cmd.format(model=used_model)
-    cmd = shlex.split(cmd_str)
-    stdin_payload = f"{system_prompt}\n\n{user_prompt}"
+    cmd, prefix = agent_cli_argv(used_model, system_prompt, cfg.agent_cli_cmd)
+    stdin_payload = f"{prefix}{user_prompt}"
     proc = subprocess.run(
         cmd,
+        cwd=neutral_cwd(),
         input=stdin_payload,
         capture_output=True,
         text=True,
