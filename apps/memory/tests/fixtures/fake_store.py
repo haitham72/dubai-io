@@ -5,11 +5,14 @@ from collections import defaultdict
 from datetime import datetime, timezone
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterator
+
+from temporal_memory.db.db import fold_text
 
 from temporal_memory.live.context import invalidate_alias_cache
 from temporal_memory.models import (
     Attempt,
+    Candidate,
     Entity,
     EntitySubject,
     Fact,
@@ -137,6 +140,70 @@ class FakeGraphStore:
 
     def facts_version(self, owner: str) -> int:
         return self._facts_ver[owner]
+
+    def search_candidates(
+        self, owner: str, query: str, *, entity_ids: list[str] | None = None,
+        subject_ids: list[str] | None = None, date_from: str | None = None,
+        date_to: str | None = None, source_prefix: str | None = None, limit: int = 50,
+    ) -> list[Candidate]:
+        query_tokens = set(fold_text(query).split())
+        entity_filter = set(entity_ids or [])
+        subject_filter = set(subject_ids or [])
+        candidates: list[Candidate] = []
+        for fact in self.iter_visible_facts(owner, date_from=date_from, date_to=date_to):
+            if source_prefix is not None:
+                records = self.get_records(owner, fact.evidence)
+                if not records or len(records) != len(fact.evidence):
+                    continue
+                if not all(record.source.startswith(source_prefix) for record in records):
+                    continue
+            fact_tokens = set(fold_text(f"{fact.text} {fact.text_orig or ''}").split())
+            lexical_hits = len(query_tokens & fact_tokens)
+            if lexical_hits:
+                candidates.append(Candidate(fact.id, float(lexical_hits), "fts"))
+            elif any(entity.entity_id in entity_filter for entity in fact.entities):
+                candidates.append(Candidate(fact.id, 1.0, "entity"))
+            elif fact.subject_id in subject_filter:
+                candidates.append(Candidate(fact.id, 1.0, "subject"))
+            elif date_from is not None or date_to is not None:
+                candidates.append(Candidate(fact.id, 1.0, "date"))
+        return sorted(candidates, key=lambda candidate: (-candidate.score, candidate.fact_id))[:max(0, limit)]
+
+    def get_facts(self, owner: str, fact_ids: list[str]) -> list[Fact]:
+        visible = {fact.id: fact for fact in self._all_visible_facts(owner)}
+        return [visible[fact_id] for fact_id in dict.fromkeys(fact_ids) if fact_id in visible]
+
+    def fact_counts_by_subject(self, owner: str) -> dict[str, int]:
+        counts: dict[str, int] = defaultdict(int)
+        for fact in self._all_visible_facts(owner):
+            counts[fact.subject_id] += 1
+        return dict(counts)
+
+    def iter_visible_facts(
+        self, owner: str, *, date_from: str | None = None, date_to: str | None = None,
+        after: tuple[str, str] | None = None, page_size: int = 500,
+    ) -> Iterator[Fact]:
+        if page_size < 1:
+            raise ValueError("page_size must be positive")
+        facts = sorted(self._all_visible_facts(owner), key=lambda fact: (fact.valid_from, fact.id), reverse=True)
+        for fact in facts:
+            day = fact.valid_from[:10]
+            if date_from is not None and day < date_from:
+                continue
+            if date_to is not None and day > date_to:
+                continue
+            if after is None or (fact.valid_from, fact.id) < after:
+                yield fact
+
+    def _all_visible_facts(self, owner: str) -> Iterator[Fact]:
+        for fact in self.visible_facts(owner, limit=len(self.facts.get(owner, []))):
+            if fact.status != "history":
+                yield fact
+
+    def bump_privacy_revision(self, owner: str) -> int:
+        entry = self.owners[owner]
+        entry.privacy_revision += 1
+        return entry.privacy_revision
 
     def owner_generation(self, owner: str) -> int:
         return self.generations[owner]

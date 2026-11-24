@@ -1,5 +1,6 @@
 -- temporal-memory Postgres 17 schema (planaudit.md v2.1 §3.2, §6; no mem_ prefix)
 -- Unqualified table names allow per-session test isolation via SET search_path.
+-- Baseline for fresh installs and pre-migration databases. New DDL belongs in migrations/.
 
 CREATE TABLE IF NOT EXISTS owners (
     id TEXT PRIMARY KEY,
