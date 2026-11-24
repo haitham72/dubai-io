@@ -41,15 +41,9 @@ def run(out_dir: Path) -> dict:
             [bundle] = jobs.claim(Worker(id="w-s8", kind="agent-cli", model="haiku", runner="agent-cli", owner=owner), ["owner-device"], owner=owner, limit=1)
 
             sys_file.write_text(orig_build(store.get_owner(owner)), encoding="utf-8")
-            os.environ["TM_AGENT_CLI_CMD"] = shlex.join([
-                Path(CLAUDE_EXE).as_posix(), "-p", "--model", "{model}", "--effort", "medium", "--output-format", "json",
-                "--system-prompt-file", sys_file.as_posix(), "--strict-mcp-config", "--mcp-config", EMPTY_MCP.as_posix(),
-                "--tools", "", "--disable-slash-commands", "--no-session-persistence", "--max-turns", "1",
-            ])
             os.environ["CLAUDE_CODE_DISABLE_ATTACHMENTS"] = "1"
             os.environ["CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC"] = "1"
-            extract.build_system_prompt = lambda _: ""
-            bundle.system_prompt = ""
+            bundle.system_prompt = orig_build(store.get_owner(owner))  # E6: product runner (E8) ignores custom claude cmd
             attempt = extract.run(bundle, "agent-cli", "haiku")
             attempt.worker_kind = "internal-cloud"
             verdict = jobs.submit(attempt)

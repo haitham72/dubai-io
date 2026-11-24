@@ -193,15 +193,12 @@ def run(out_dir: Path) -> dict:
 
             sys_prompt_text = orig_build_sys(store.get_owner(owner))
             sys_file.write_text(sys_prompt_text, encoding="utf-8")
-            os.environ["TM_AGENT_CLI_CMD"] = shlex.join([
-                Path(CLAUDE_EXE).as_posix(), "-p", "--model", "{model}", "--effort", "medium", "--output-format", "json",
-                "--system-prompt-file", sys_file.as_posix(), "--strict-mcp-config", "--mcp-config", EMPTY_MCP.as_posix(),
-                "--tools", "", "--disable-slash-commands", "--no-session-persistence", "--max-turns", "1",
-            ])
+            # E6: E8 made the claude CLI runner ignore a custom claude TM_AGENT_CLI_CMD (is_claude_cmd), so the
+            # old --system-prompt-file override + blanked prompt sent the model NO instructions. Use the product runner
+            # and hand it the owner system prompt through the bundle.
 
             # Pre-check: submit 1 unmodified agent-cli attempt to capture LM Studio fail-closed bug (policy.py:44)
             # We do NOT alter the DB state unless it succeeds; if it raises ScreenUnavailable we log the bug.
-            extract.build_system_prompt = lambda _: ""
             consecutive_failures = 0
 
             day_costs: dict[str, float] = defaultdict(float)
@@ -215,7 +212,7 @@ def run(out_dir: Path) -> dict:
                 if not bundles:
                     raise RuntimeError(f"Failed to claim job {job.id} for {day}")
                 bundle = bundles[0]
-                bundle.system_prompt = ""
+                bundle.system_prompt = sys_prompt_text
 
                 t0 = time.monotonic()
                 attempt = extract.run(bundle, "agent-cli", "haiku")
