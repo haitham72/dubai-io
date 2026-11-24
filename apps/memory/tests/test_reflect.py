@@ -64,7 +64,7 @@ def test_reflect_week_enforces_two_days_trivia_and_rule9():
 
     # Surfaced in noticed.md
     tree = export_md.render("karim", store=st)
-    assert "I noticed Values close friendships" in tree["noticed.md"]
+    assert "I noticed Values close friendships" in tree["_staging/hypotheses-to-confirm.md"]
 
 
 def test_reflect_week_excludes_forgotten_facts():

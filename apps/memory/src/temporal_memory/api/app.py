@@ -278,7 +278,7 @@ def _mount_optional_routers(app: FastAPI, db: Database, store: Any, auth_verifie
     except ImportError:
         _vault_verifier = auth_verifier  # type: ignore[assignment]
 
-    for mod_name in ("temporal_memory.api.vault", "temporal_memory.api.story", "temporal_memory.api.graph", "temporal_memory.api.bridge", "temporal_memory.api.export_md", "temporal_memory.api.ops", "temporal_memory.reflect"):
+    for mod_name in ("temporal_memory.api.vault", "temporal_memory.api.story", "temporal_memory.api.graph", "temporal_memory.api.bridge", "temporal_memory.api.export_md", "temporal_memory.api.cards", "temporal_memory.api.ops", "temporal_memory.reflect"):
         try:
             mod = __import__(mod_name, fromlist=["*"])
         except ImportError:
