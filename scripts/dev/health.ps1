@@ -63,7 +63,7 @@ function Add-Row([string]$Component, [bool]$Ok, [string]$Detail) {
 }
 
 # 1. Containers
-$containers = @("postgres", "rabbitmq", "redis", "api", "worker-p0", "worker-p1", "beat")
+$containers = @("postgres", "rabbitmq", "redis", "api")
 $psJson = & docker compose -f $MemCompose ps --format json 2>$null
 $cMap = @{}
 foreach ($line in $psJson) {
@@ -82,6 +82,49 @@ foreach ($svc in $containers) {
         Add-Row "container:$svc" $healthy "$($info.State) ($($info.Health))"
     }
 }
+
+# 1b. Docker worker/beat containers must NOT run (host workers own the queues; no double consumers).
+foreach ($svc in @("worker-p0", "worker-p1", "beat")) {
+    $info = $cMap[$svc]
+    $running = ($null -ne $info) -and ($info.State -eq "running")
+    Add-Row "no-docker:$svc" (-not $running) $(if ($running) { "RUNNING in Docker: run stop-all/start-all" } else { "not running (good)" })
+}
+
+# 1c. Host claude CLI (version only, no auth details) and host Celery workers / beat
+$claudeCmd = Get-Command "claude" -ErrorAction SilentlyContinue
+$claudePath = if ($claudeCmd) { if ($claudeCmd.Source) { $claudeCmd.Source } else { $claudeCmd.Path } } elseif (Test-Path "$env:USERPROFILE\.local\bin\claude.exe") { "$env:USERPROFILE\.local\bin\claude.exe" } else { $null }
+if ($claudePath) {
+    $ver = (& $claudePath --version 2>$null | Select-Object -First 1)
+    Add-Row "host-claude-cli" ([bool]$ver) "$ver"
+} else {
+    Add-Row "host-claude-cli" $false "claude CLI not found"
+}
+$MemDir = Join-Path $RepoRoot "apps\memory"
+$MemPy = $null
+foreach ($cand in @((Join-Path $MemDir ".venv\Scripts\python.exe"),
+        (Join-Path (Split-Path -Parent $RepoRoot) "contest-memory\apps\memory\.venv\Scripts\python.exe"),
+        (Join-Path $RepoRoot "apps\api\.venv\Scripts\python.exe"),
+        (Join-Path (Split-Path -Parent $RepoRoot) "contest\apps\api\.venv\Scripts\python.exe"))) {
+    if (Test-Path $cand) { $MemPy = $cand; break }
+}
+foreach ($q in @(@{n="p0"; label="worker-p0 (mem.p0)"}, @{n="p1"; label="worker-p1 (mem.p1,mem.p3)"})) {
+    $ok = $false; $detail = "no python venv"
+    if ($MemPy) {
+        $oldPp = $env:PYTHONPATH; $env:PYTHONPATH = (Join-Path $MemDir "src")
+        try {
+            $out = (& $MemPy -m celery -A temporal_memory.queue.celery_app inspect --timeout=4 --destination="$($q.n)@w" ping 2>&1) -join " "
+            $ok = ($out -match "pong")
+            $detail = if ($ok) { "host worker $($q.n)@w answers ping" } else { "no pong from $($q.n)@w" }
+        } catch { $detail = "inspect failed" } finally { $env:PYTHONPATH = $oldPp }
+    }
+    Add-Row "host:$($q.label)" $ok $detail
+}
+$beats = @(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object {
+    $_.CommandLine -match "temporal_memory\.queue\.celery_app" -and $_.CommandLine -match "\sbeat\s" -and $_.Name -match "python"
+})
+# the venv launcher and the real interpreter both match: count distinct parents-or-self roots
+$beatRoots = @($beats | Where-Object { -not ($beats.ProcessId -contains $_.ParentProcessId) })
+Add-Row "host:beat (exactly 1)" ($beatRoots.Count -eq 1) "$($beatRoots.Count) beat process(es)"
 
 # 2. HTTP endpoints
 $memOk = Test-Http "http://127.0.0.1:$MemoryPort/health"
@@ -110,6 +153,13 @@ try {
     }
 } catch {}
 Add-Row "queue-depth" $qOk "pending/leased jobs=$qDepth"
+
+# Per-queue depth (RabbitMQ)
+try {
+    $qs = (& docker compose -f $MemCompose exec -T rabbitmq rabbitmqctl list_queues name messages -q 2>$null) | Where-Object { $_ -match "^mem\." }
+    $qd = ($qs | ForEach-Object { ($_ -split "\s+") -join "=" }) -join " "
+    Add-Row "queue-depth-rabbit" ($LASTEXITCODE -eq 0) $(if ($qd) { $qd } else { "no mem.* queues yet" })
+} catch { Add-Row "queue-depth-rabbit" $false "unavailable" }
 
 # 4. Active LLM runner
 $lmOk = $false

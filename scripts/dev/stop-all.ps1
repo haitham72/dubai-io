@@ -29,7 +29,7 @@ if (Test-Path $PidsFile) {
             if ($procId) {
                 $p = Get-Process -Id ([int]$procId) -ErrorAction SilentlyContinue
                 if ($p) {
-                    Write-Host "Stopping $($prop.Name) (pid=$procId)..."
+                    Write-Host "Stopping $($prop.Name) (pid=$procId) [PID file entry]..."
                     & taskkill /PID $procId /T /F 2>$null | Out-Null
                 }
             }

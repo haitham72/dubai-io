@@ -258,6 +258,40 @@ def _lmstudio_classifier(labels: list[str]) -> dict[str, str]:
             for k, label in enumerate(labels, 1)}
 
 
+def _agent_cli_classifier(labels: list[str]) -> dict[str, str]:
+    """Layer-2 classifier through the same agent CLI the extraction runner uses (`TM_AGENT_CLI_CMD`, claude -p Haiku).
+
+    Opt-in with TM_CLASSIFIER_RUNNER=agent-cli, for hosts where no local classifier model is served. Same prompt, same
+    fail-closed contract as the LM Studio classifier: any failure raises ScreenUnavailable, a label the model skips or
+    mislabels comes back "unscreened" (blocking). It never returns "none" for something it did not classify.
+    """
+    import json as _json
+    import shlex as _shlex
+    import subprocess as _subprocess
+
+    from temporal_memory.config import get_settings
+
+    cfg = get_settings()
+    cmd = _shlex.split(cfg.agent_cli_cmd.format(model=os.environ.get("TM_CLASSIFIER_CLI_MODEL", cfg.cloud_model)))
+    user = (SCREEN_SYSTEM + "\n\nLabels (return the category for each number):\n"
+            + "\n".join(f"{k}. {x}" for k, x in enumerate(labels, 1))
+            + '\n\nReturn only a JSON object {"items":[{"n":1,"category":"none"}, ...]}.')
+    try:
+        proc = _subprocess.run(cmd, input=user, capture_output=True, text=True, encoding="utf-8",
+                               timeout=float(os.environ.get("TM_CLASSIFIER_TIMEOUT_S", "120")), check=False)
+        env = _json.loads((proc.stdout or "").strip())
+        if env.get("is_error"):
+            raise RuntimeError("agent CLI reported an error")
+        content = env.get("result") or ""
+        data = _json.loads(content[content.find("{"): content.rfind("}") + 1])
+        seen = {int(i["n"]): i.get("category", "none") for i in data.get("items", []) if "n" in i}
+    except Exception as exc:
+        raise ScreenUnavailable(f"agent-cli classifier failed: {exc}") from exc
+    cats = {c for c in SCREEN_CATS}
+    return {label: (seen[k] if seen.get(k) in cats else "unscreened")
+            for k, label in enumerate(labels, 1)}
+
+
 def screen(labels: list[str], classify=None, batch: int = 30) -> dict[str, str]:
     """Layer 2. label -> blocking category for every label that must not pass.
 
@@ -266,7 +300,9 @@ def screen(labels: list[str], classify=None, batch: int = 30) -> dict[str, str]:
     label the classifier skips comes back as "unscreened" (blocking), and a
     classifier outage raises ScreenUnavailable. Ported from lab/sensitive.py.
     """
-    classify = classify or _lmstudio_classifier
+    if classify is None:
+        classify = (_agent_cli_classifier if os.environ.get("TM_CLASSIFIER_RUNNER", "").strip().lower() == "agent-cli"
+                    else _lmstudio_classifier)
     blocked: dict[str, str] = {}
     unique = list(dict.fromkeys(labels))
     for i in range(0, len(unique), batch):
