@@ -55,9 +55,11 @@ def get_auth(authorization: str | None = Header(default=None)) -> AuthContext:
 
 
 def require_owner_access(owner: str = FPath(...), auth: AuthContext = Depends(get_auth)) -> AuthContext:
-    if auth.role == "owner-device" and auth.owner != owner:
-        raise HTTPException(status_code=403, detail="owner-device token scoped to a different owner")
-    return auth
+    if auth.role == "admin":
+        return auth
+    if auth.role == "owner-device" and auth.owner == owner:
+        return auth
+    raise HTTPException(status_code=403, detail="owner access required")
 
 
 def require_admin(auth: AuthContext = Depends(get_auth)) -> AuthContext:
