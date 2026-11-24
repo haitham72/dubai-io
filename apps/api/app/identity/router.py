@@ -70,6 +70,7 @@ class GoogleExchangeIn(BaseModel):
     auth_code: str = Field(min_length=1, max_length=512)
     device_label: Optional[str] = Field(default=None, max_length=80)
     set_cookie: bool = False
+    app_id: Literal["quest", "community", "messenger"] = "quest"
 
 
 class PairStartIn(BaseModel):
@@ -81,6 +82,7 @@ class PairCompleteIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
     code: str = Field(min_length=1, max_length=128)
     device_label: Optional[str] = Field(default=None, max_length=80)
+    app_id: Literal["quest", "community", "messenger"] = "quest"
 
 
 def _authenticate_session_for_identity_route(
@@ -464,12 +466,12 @@ def create_identity_router(
         reject_spoofed_identity_headers(request)
         google_svc = _resolve_google_signin(request, service)
         try:
-            session_out = google_svc.exchange_auth_code(body.auth_code, device_label=body.device_label)
+            session_out = google_svc.exchange_auth_code(body.auth_code, device_label=body.device_label, app_id=body.app_id)
         except IdentityError as exc:
             raise _http_from_identity_error(exc) from exc
         if body.set_cookie:
             response.set_cookie(
-                key="cs_session_quest",
+                key=f"cs_session_{body.app_id}",
                 value=session_out.session_token,
                 httponly=True,
                 samesite="lax",
@@ -502,6 +504,7 @@ def create_identity_router(
                 body.code,
                 device_label=body.device_label,
                 client_ip=request.client.host if request.client else "unknown",
+                app_id=body.app_id,
             )
         except IdentityError as exc:
             raise _http_from_identity_error(exc) from exc

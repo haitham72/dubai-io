@@ -364,6 +364,61 @@ if (-not (Test-HttpOk "http://127.0.0.1:$ApiPort/api/health")) {
     }
 }
 
+# 4b. Community (API :8060 + website :3060) and Messenger (API :8070 + website :5173): same identity store as apps/api
+#     (one user_id) and the real temporal_note memory (MEMORY_BRIDGE_BACKEND=http). Secrets go to the children by process
+#     environment only, never printed.
+$CommunityApiPort = 8060; $MessengerApiPort = 8070; $CommunityWebPort = 3060; $MessengerWebPort = 5173
+$CommunityDir = Join-Path $RepoRoot "apps\community"
+$MessengerDir = Join-Path $RepoRoot "apps\messenger"
+Ensure-NodeModules $CommunityDir "apps/community"
+Ensure-NodeModules $MessengerDir "apps/messenger"
+Write-Host "[4b] Community + Messenger (API + website), shared identity and http memory..."
+$identityTarget = $null
+try {
+    Push-Location $ApiDir
+    $identityTarget = (& $ApiPy -c "from app.config import settings; print(settings.database_url or (settings.data_dir / 'identity.sqlite3'))" 2>$null | Select-Object -Last 1)
+} finally { Pop-Location }
+if (-not $identityTarget) { throw "Could not resolve the apps/api identity store target" }
+$apiMap2 = Read-EnvMap $ApiEnv
+$entrySvcToken = if ($apiMap2["TM_SERVICE_TOKEN"]) { $apiMap2["TM_SERVICE_TOKEN"] } else { $svcToken }
+function Start-EntryApi([string]$Name, [string]$Module, [int]$Port) {
+    if (Test-HttpOk "http://127.0.0.1:$Port/api/shared/status") { return }
+    $vars = @{
+        "MEMORY_BRIDGE_BACKEND" = "http"; "TM_BASE_URL" = "http://localhost:$MemoryPort"; "TM_SERVICE_TOKEN" = $entrySvcToken
+        "DUBAI_SHARED_IDENTITY_DB" = $identityTarget
+        "COMMUNITY_ALLOWED_ORIGINS" = "http://localhost:$CommunityWebPort,http://127.0.0.1:$CommunityWebPort,http://${lanIp}:$CommunityWebPort"
+        "MESSENGER_ALLOWED_ORIGINS" = "http://localhost:$MessengerWebPort,http://127.0.0.1:$MessengerWebPort,http://${lanIp}:$MessengerWebPort"
+    }
+    $saved = @{}
+    foreach ($k in $vars.Keys) { $saved[$k] = [Environment]::GetEnvironmentVariable($k); [Environment]::SetEnvironmentVariable($k, $vars[$k]) }
+    try {
+        $pr = Start-Process -FilePath $ApiPy -ArgumentList @("-m", "uvicorn", $Module, "--host", "0.0.0.0", "--port", "$Port") `
+            -WorkingDirectory $ApiDir -RedirectStandardOutput (Join-Path $LogsDir "$Name.out.log") `
+            -RedirectStandardError (Join-Path $LogsDir "$Name.err.log") -WindowStyle Hidden -PassThru
+        $pids[$Name] = $pr.Id
+    } finally { foreach ($k in $saved.Keys) { [Environment]::SetEnvironmentVariable($k, $saved[$k]) } }
+    $dl = (Get-Date).AddSeconds(45)
+    while (-not (Test-HttpOk "http://127.0.0.1:$Port/api/shared/status") -and (Get-Date) -lt $dl) { Start-Sleep -Seconds 1 }
+    if (-not (Test-HttpOk "http://127.0.0.1:$Port/api/shared/status")) { Write-Warning "$Name did not answer on :$Port (see scripts\dev\logs\$Name.err.log)" }
+}
+Start-EntryApi "community_api" "app.community.server:app" $CommunityApiPort
+Start-EntryApi "messenger_api" "app.messenger.server:app" $MessengerApiPort
+if (-not (Test-PortOpen $CommunityWebPort)) {
+    $cmdArgs = "/c set NEXT_TELEMETRY_DISABLED=1&& set NEXT_PUBLIC_CM_API=http://localhost:$CommunityApiPort&& set NEXT_PUBLIC_DUBAI_API=http://localhost:$ApiPort&& npx.cmd next dev -p $CommunityWebPort -H 0.0.0.0"
+    $pr = Start-Process -FilePath "cmd.exe" -ArgumentList @($cmdArgs) -WorkingDirectory $CommunityDir `
+        -RedirectStandardOutput (Join-Path $LogsDir "community_web.out.log") -RedirectStandardError (Join-Path $LogsDir "community_web.err.log") -WindowStyle Hidden -PassThru
+    $pids["community_web"] = $pr.Id
+}
+if (-not (Test-PortOpen $MessengerWebPort)) {
+    $cmdArgs = "/c set VITE_MESSENGER_API_URL=http://localhost:$MessengerApiPort&& set VITE_DUBAI_API_URL=http://localhost:$ApiPort&& npx.cmd vite --host 0.0.0.0 --port $MessengerWebPort --strictPort"
+    $pr = Start-Process -FilePath "cmd.exe" -ArgumentList @($cmdArgs) -WorkingDirectory $MessengerDir `
+        -RedirectStandardOutput (Join-Path $LogsDir "messenger_web.out.log") -RedirectStandardError (Join-Path $LogsDir "messenger_web.err.log") -WindowStyle Hidden -PassThru
+    $pids["messenger_web"] = $pr.Id
+}
+$webDeadline = (Get-Date).AddSeconds(90)
+while (-not ((Test-HttpOk "http://127.0.0.1:$CommunityWebPort/") -and (Test-HttpOk "http://127.0.0.1:$MessengerWebPort/")) -and (Get-Date) -lt $webDeadline) { Start-Sleep -Seconds 2 }
+Save-Pids $pids
+
 # 5. Expo dev server on :8081: serves the website (web bundle, E2 return_to = http://localhost:8081/connect)
 #    and the LAN dev server the iPhone connects to (Expo Go / dev client), from ONE process.
 Write-Host "[5/6] Ensuring Expo (web + iPhone LAN) on :$ExpoPort..."
@@ -426,6 +481,8 @@ foreach ($p in @($ApiPort, $ExpoPort)) {
 Write-Host ""
 Write-Host "Website URL  : http://localhost:$ExpoPort   (Expo web; Connect screen at /connect)"
 Write-Host "API URL      : http://localhost:$ApiPort  (LAN: http://${lanIp}:$ApiPort)"
+Write-Host "Community    : http://localhost:$CommunityWebPort   (API http://localhost:$CommunityApiPort, LAN http://${lanIp}:$CommunityWebPort)"
+Write-Host "Messenger    : http://localhost:$MessengerWebPort   (API http://localhost:$MessengerApiPort, LAN http://${lanIp}:$MessengerWebPort)"
 Write-Host "Memory API   : http://localhost:$MemoryPort   (workers + beat on the host: scripts\dev\logs\worker_p*.log)"
 Write-Host "iPhone Expo  : exp://${lanIp}:$ExpoPort   (scan the QR below in Expo Go)"
 # Expo prints no QR in CI mode, so render one from the exp:// URL with the qrcode package already in apps/mobile.

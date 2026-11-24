@@ -8,6 +8,7 @@ const links = [
   { href: "/create", label: "Create" },
   { href: "/inbox", label: "Inbox" },
   { href: "/profile", label: "Profile" },
+  { href: "/signin", label: "Sign in" },
 ];
 
 export default function Nav() {

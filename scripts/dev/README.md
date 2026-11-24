@@ -61,3 +61,7 @@ netsh advfirewall firewall add rule name="Dubai-io Dev TCP 8081" dir=in action=a
 ## Proof that real extraction runs (synthetic owner)
 
 `python scripts\dev\proof_extraction.py` (stack up): creates a synthetic owner, posts one small record through the engine's normal `/v1/owners/{id}/records` path (the one apps/api uses), waits for the host worker to apply the job, prints the job state transitions, the `job_attempts` row (worker kind, model, tokens, cost) and the fact count, then Forgets the record and prints the unerased counts. One real `claude -p` Haiku call (about 2 min, about 0.08 USD).
+
+## Community and Messenger (E5)
+
+`start-all` also starts the Community API (`:8060`) + website (`:3060`) and the Messenger API (`:8070`) + website (`:5173`). Both APIs run with `MEMORY_BRIDGE_BACKEND=http`, `TM_BASE_URL` and `TM_SERVICE_TOKEN` (process environment, never printed) and `DUBAI_SHARED_IDENTITY_DB` = the same identity database apps/api uses, so one Google sign-in is one `user_id` in all three apps (`app_id` = quest | community | messenger on `/api/identity/google/exchange` and `/api/identity/pair/complete`). The Google redirect URIs do not change: sign-in always starts on apps/api (`http://localhost:8000/api/identity/google/start?return_to=http://localhost:3060/signin`). `health.ps1` shows `community-*` / `messenger-*` rows (API, memory backend must be `http`, website). Their Expo shells load the website, so they use the website sign-in or the same QR pairing.

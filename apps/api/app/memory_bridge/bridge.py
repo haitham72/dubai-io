@@ -1096,13 +1096,17 @@ class MemoryBridge:
                 )
                 raise SensitiveContentError(hit)
 
-        res = self.client.resolve_fact(
+        res = dict(self.client.resolve_fact(
             owner_id,
             fact_id,
             action=action,
             new_text=new_text,
             valid_from=valid_from,
-        )
+        ))
+        if action in ("edit", "supersede") and res.get("new_fact_id"):
+            # The live engine reports the NEW fact's status ("active") next to the OLD fact_id; the contract (and the
+            # fake) report the status of the fact_id that was resolved: superseded.
+            res["status"] = "superseded"
         now_iso = _now_iso()
         with self._lock:
             if action == "reject":
@@ -1233,7 +1237,7 @@ class MemoryBridge:
             text=str(fact_dict.get("text") or ""),
             text_orig=fact_dict.get("text_orig"),
             subject_id=str(fact_dict.get("subject_id") or ""),
-            subject_path=str(fact_dict.get("subject_path") or "general"),
+            subject_path=str(fact_dict.get("subject_path") or fact_dict.get("subject_id") or "general"),
             valid_from=str(fact_dict.get("valid_from") or ""),
             valid_to=fact_dict.get("valid_to"),
             status=status_raw,  # type: ignore[arg-type]
@@ -1519,7 +1523,9 @@ class MemoryBridge:
                 """,
                 (owner_id,),
             ).fetchone()
-        if cached is not None and cached[0] == consent_sig and int(cached[1]) == facts_version:
+        # Without a client-side facts_version (live HTTP client) the cache cannot be proven fresh: recompute.
+        cache_provable = isinstance(facts_version_map, dict)
+        if cache_provable and cached is not None and cached[0] == consent_sig and int(cached[1]) == facts_version:
             raw_items = json.loads(cached[2]) if isinstance(cached[2], str) else (cached[2] or [])
             return [InterestFeature(**item) for item in raw_items[:lim]]
 
@@ -1572,7 +1578,7 @@ class MemoryBridge:
                 continue
 
             src_kind, _, eff_gen = exportable_sources[0]
-            topic_slug = _safe_topic_slug(str(fact.get("subject_path") or "general"))
+            topic_slug = _safe_topic_slug(str(fact.get("subject_path") or fact.get("subject_id") or "general"))
             topic_label = topic_slug.replace("-", " ").replace("_", " ").title()
             if pre_write(topic_label) is not None:
                 continue

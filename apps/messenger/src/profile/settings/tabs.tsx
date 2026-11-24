@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { Avatar, Button, ICON, Segmented } from "../../ui";
 import { actions, useStore } from "../../store";
+import { googleSignInStartUrl } from "../../apiclient/chatCore";
 import { applyFrost, loadFrost } from "../../frost";
 import { Group, Row, ToggleRow } from "../shared";
 import { apps, me, responseStyles, sessions, toggleGroups } from "../data";
@@ -63,6 +64,8 @@ export function AccountTab({ say }: TabProps) {
     </div>
 
     <Group title="Sign-in & security">
+      <Row icon={KeyRound} label="Continue with Google" value="Same account as Quest and Community"
+        onClick={() => { window.location.href = googleSignInStartUrl(`${window.location.origin}/`); }} />
       {sessions.map((x, i) => (
         <Row key={x.label} icon={sessionIcons[i % sessionIcons.length]} label={x.label} value={x.value} action={x.action}
           onClick={() => say(`${x.label}: we'll email you a secure link`)} />

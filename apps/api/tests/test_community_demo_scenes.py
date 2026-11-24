@@ -1,5 +1,7 @@
 """CM-B11: scenes A–D, three clean runs, restart continuity, two-user isolation."""
 
+import uuid
+
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
@@ -23,9 +25,13 @@ SOURCE = {
 }
 
 
+_OPEN_STORES: list = []
+
+
 def _open(root, monkeypatch, *, bridge=None, fake=None, session=True):
     monkeypatch.setenv("CM_SOURCE_ALLOWLIST", "example.com,gov.ae,rta.ae")
     store = ActionStore(root / "community.sqlite3")
+    _OPEN_STORES.append(store)
     monkeypatch.setattr(actions, "_engine", ActionEngine(store))
     if bridge is None:
         mem = db_mod.connect(root / "memory.sqlite3")
@@ -70,15 +76,18 @@ def _post_ids(store):
 
 
 def _run_scenes(root, monkeypatch, run_n):
+    # Unique handles per run: a shared database (DATABASE_URL) must never see rana twice (409 handle_taken).
+    tag = uuid.uuid4().hex[:6]
+    rana, layla, omar = f"rana_{tag}", f"layla_{tag}", f"omar_{tag}"
     client, bridge, fake, store = _open(root, monkeypatch)
-    me = _profile(client, "rana_b11", interests=["marina"], privacy="public")
+    me = _profile(client, rana, interests=["marina"], privacy="public")
     owner = me["owner"]
     seeded = store.db.execute("SELECT provenance FROM cm_posts WHERE owner='demo'").fetchall()
     assert seeded and {row[0] for row in seeded} == {"demo_fixture"}
 
     other = TestClient(client.app)
     other.get("/api/session")
-    _profile(other, "layla_b11", interests=["food"], privacy="public")
+    _profile(other, layla, interests=["food"], privacy="public")
     group = other.post("/api/community/groups", json={
         "name": "Marina neighbours",
         "handle": "marina-neighbours",
@@ -210,13 +219,13 @@ def _run_scenes(root, monkeypatch, run_n):
     assert any(row["owner"] == owner and row["status"] == "active" for row in members.json()["members"])
 
     private = client.put("/api/community/profiles/me", json={
-        "handle": "rana_b11", "age_band": "18+", "interests": ["marina"], "privacy": "private",
+        "handle": rana, "age_band": "18+", "interests": ["marina"], "privacy": "private",
     })
     assert private.status_code == 200, private.text
     stranger = TestClient(client.app)
     stranger.get("/api/session")
-    _profile(stranger, "omar_b11", interests=["food"], privacy="public")
-    hidden_profile = stranger.get("/api/community/profiles/rana_b11")
+    _profile(stranger, omar, interests=["food"], privacy="public")
+    hidden_profile = stranger.get(f"/api/community/profiles/{rana}")
     assert hidden_profile.status_code == 404, hidden_profile.text
     hidden_draft = stranger.get(f"/api/community/answers/{draft_id}")
     assert hidden_draft.status_code == 404, hidden_draft.text
@@ -229,8 +238,16 @@ def _run_scenes(root, monkeypatch, run_n):
 
 
 def test_community_demo_scenes_three_clean_runs(tmp_path, monkeypatch):
-    for n in range(3):
-        _run_scenes(tmp_path / f"run{n}", monkeypatch, n)
+    try:
+        for n in range(3):
+            _run_scenes(tmp_path / f"run{n}", monkeypatch, n)
+    finally:
+        # A failed run must not leave its connection holding a schema lock for the next run or the teardown.
+        while _OPEN_STORES:
+            try:
+                _OPEN_STORES.pop().db.close()
+            except Exception:
+                pass
 
 
 def test_second_user_cannot_approve_draft_without_a_flag(tmp_path, monkeypatch):
