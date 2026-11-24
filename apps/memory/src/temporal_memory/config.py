@@ -23,6 +23,7 @@ class Settings:
     governor_usd_per_month: float = float(os.environ.get("TM_GOVERNOR_USD_PER_MONTH", "0.18"))
     p0_fallback_seconds: int = int(os.environ.get("TM_P0_FALLBACK_SECONDS", "20"))
     p1_fallback_seconds: int = int(os.environ.get("TM_P1_FALLBACK_SECONDS", "600"))
+    session_idle_minutes: int = max(1, int(os.environ.get("TM_SESSION_IDLE_MINUTES", "30")))
     lease_seconds: int = int(os.environ.get("TM_LEASE_SECONDS", "300"))
     cloud_rate_in_per_1m: float = float(os.environ.get("TM_CLOUD_RATE_IN_PER_1M", "1.00"))
     cloud_rate_out_per_1m: float = float(os.environ.get("TM_CLOUD_RATE_OUT_PER_1M", "5.00"))
@@ -51,6 +52,7 @@ def get_settings() -> Settings:
         governor_usd_per_month=float(os.environ.get("TM_GOVERNOR_USD_PER_MONTH", "0.18")),
         p0_fallback_seconds=int(os.environ.get("TM_P0_FALLBACK_SECONDS", "20")),
         p1_fallback_seconds=int(os.environ.get("TM_P1_FALLBACK_SECONDS", "600")),
+        session_idle_minutes=max(1, int(os.environ.get("TM_SESSION_IDLE_MINUTES", "30"))),
         lease_seconds=int(os.environ.get("TM_LEASE_SECONDS", "300")),
         cloud_rate_in_per_1m=float(os.environ.get("TM_CLOUD_RATE_IN_PER_1M", "1.00")),
         cloud_rate_out_per_1m=float(os.environ.get("TM_CLOUD_RATE_OUT_PER_1M", "5.00")),

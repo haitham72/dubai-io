@@ -1,0 +1,3 @@
+Hershey stroke SVGs: public-domain lettering. Conversion credit is in each file's metadata.
+
+EMS stroke SVGs: SIL Open Font License, stated in each file's metadata (a derivative of a named OFL family).

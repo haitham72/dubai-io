@@ -1,0 +1,17 @@
+{
+  "name": "@dubai-io/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Dubai-io desktop main process. Renderer and packaging are D-B.",
+  "scripts": {
+    "test": "vitest run --dir tests/main --environment node",
+    "test:main": "vitest run --dir tests/main --environment node",
+    "typecheck:main": "tsc -p tsconfig.main.json --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.0",
+    "electron": "^39.2.0",
+    "typescript": "~5.9.3",
+    "vitest": "^4.0.0"
+  }
+}

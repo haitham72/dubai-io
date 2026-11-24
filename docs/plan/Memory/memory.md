@@ -375,7 +375,7 @@ The memory engine's export and graph representation is rendered to the user via 
 - 🔧 in progress (a branch exists);
 - 📋 planned (spec only).
 
-**As of** `memory` @ `573ff79`. Execution tracker, gates and owners: `apps/memory/upgrade/TN_UPGRADE_PLAN.md`, `apps/memory/upgrade/reports/STATUS.md`, and the measured scores in `G:\Haitham\lab-data\memory-bakeoff\acceptance\BASELINE.md` (moving to `apps/memory/acceptance/`).
+**As of** `main` @ `d813e7f` (24 Nov, evening). Execution tracker, gates and owners: `apps/memory/upgrade/TN_UPGRADE_PLAN.md`, `apps/memory/upgrade/reports/STATUS.md`, and the measured scores in `G:\Haitham\lab-data\memory-bakeoff\acceptance\BASELINE.md` (moving to `apps/memory/acceptance/`).
 
 ### 18.1 Requirements (founder, 24 Nov)
 
@@ -479,10 +479,13 @@ Access is by hashed tokens with roles admin / worker / owner-device, owner-scope
 | U1a | bridge + Forget on Postgres | Codex | ✅ |
 | U0c | remove runtime DDL + contract v2 (triples, reasons, `place_type`, topics, 7-cluster taxonomy) | Codex | ✅ |
 | U1b | no leaks from quarantine, stored provenance, T1 suggestions, false positives | Cursor | ✅ |
-| U1c | Postgres retrieval everywhere, salience, `/vault/graph`, tier confirm, provenance rendering | Gemini | 🔧 |
-| U3 | backfill quality (diagnosis done: all-or-nothing validator, update target not shown, heavy schema) + stated / inferred flag + reasons + places / preferences + one taxonomy + owner-timezone days + token-budget chunks | Cursor | 🔧 |
-| U2 | instant triples + topic counter + per-session catch-up (D-b) | Codex | 📋 |
-| U5 | why + story + **Part C: the §9 Quest-like export tree** | Gemini | 📋 |
-| UI | mobile Vault on `/vault/graph` (7 clusters, T1 ring, "I noticed" controls) | Cursor | 📋 |
-| U4 | local multilingual embeddings | — | deferred: only if Arabic or paraphrase recall fails after U1c + U3 |
+| U1c | Postgres retrieval everywhere, salience, `/vault/graph`, tier confirm, provenance rendering | Gemini | ✅ (20k: context ~11 ms, graph ~145 ms HTTP p95) |
+| U3 | backfill quality: per-fact validator, active facts shown for update/end, stated / inferred flag, cited reasons, places / preferences + `place_type`, one 7-cluster taxonomy, owner-timezone days, token-budget chunks, **topic aliases in SQL** | Cursor | ✅ |
+| U2 | instant triples (code-only, 0/51 trap emissions) + topic counter + per-session catch-up (D-b) | Codex | ✅ (Forget-vs-topic-hypothesis fix queued first in E3) |
+| U4 | **hybrid search:** local multilingual embeddings (bge-m3, $0) fused by RRF. Founder asked for hybrid: no longer deferred | Gemini | ✅ (paraphrase top-16 0.20 → 0.53) |
+| U5 | why (cited spans / "reason unknown") + story (cited timeline, optional verified narration) | Gemini | ✅ |
+| UI | mobile Vault on `/vault/graph` (7 clusters, T1 ring, "I noticed" controls) + the Dubai-io website via Expo web | Cursor | ✅ |
+| U6 | the §9 Quest-like export tree + persona cards + person card | Cursor | 🔧 |
+| E1–E4 | **real-data round:** one-command stack on the PC; Google sign-in on the PC + QR pairing for the iPhone; Gmail / Calendar / YouTube / Takeout / WhatsApp / desktop ingest with consent; chat on real memory + the Today feed from real interests (`apps/memory/upgrade/prompts/E0–E4`) | Gemini / Cursor / Codex | 📋 |
+| Design | rewrite of `design/20-11-2026/INDEX.md` from the images (branch `design/spec-20-11`); restyle **after** the real-data round | — | parked |
 

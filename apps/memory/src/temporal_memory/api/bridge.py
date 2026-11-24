@@ -21,12 +21,17 @@ EnqueueKind = Literal["extract.live", "extract.day", "none"]
 ResolveAction = Literal["confirm", "edit", "reject", "supersede"]
 
 
+class RecordMeta(BaseModel):
+    session_id: str | None = Field(default=None, min_length=1, max_length=128)
+
+
 class RecordIn(BaseModel):
     id: str
     source: str
     at: str
     author: str
     text: str
+    meta: RecordMeta = Field(default_factory=RecordMeta)
 
 
 class DirectFactIn(BaseModel):
@@ -47,6 +52,8 @@ class RecordsIn(BaseModel):
     records: list[RecordIn] = Field(default_factory=list)
     enqueue: EnqueueKind = "extract.live"
     direct_fact: DirectFactIn | None = None
+    session_id: str | None = Field(default=None, min_length=1, max_length=128)
+    close_session: bool = False
 
 
 class ForgetIn(BaseModel):
@@ -104,13 +111,24 @@ def _bump_facts(store: Any, owner: str) -> int:
 def upsert_records(
     owner: str,
     body: RecordsIn,
-    _: AuthContext = Depends(require_owner_access),
+    auth: AuthContext = Depends(require_owner_access),
     store: GraphStore = Depends(get_store),
 ) -> dict[str, Any]:
     from temporal_memory.core.bridge_store import _postgres, ingest_records
+    from temporal_memory.queue.session import ingest_fake_live, ingest_live, live_source
 
+    owner_chat = auth.role == "owner-device" and auth.owner == owner
+    session_request = body.close_session or any(live_source(record.source) for record in body.records)
+    if owner_chat and body.enqueue == "extract.live" and session_request:
+        if _postgres(store):
+            return ingest_live(store, owner, body)
+        return ingest_fake_live(store, owner, body, _ingest_fake_records)
     if _postgres(store):
         return ingest_records(store, owner, body)
+    return _ingest_fake_records(owner, body, store)
+
+
+def _ingest_fake_records(owner: str, body: RecordsIn, store: GraphStore) -> dict[str, Any]:
     rules = _rules(store).get(owner, set())
     hashes = _hashes(store)
     record_ids: list[str] = []

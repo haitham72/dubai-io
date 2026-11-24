@@ -1,6 +1,7 @@
 # Onboarding Progress & Multi-Path YouTube Watch-History Ingestion
 
 **Date:** 23 Nov 2026 · **Status:** Proposed Product/Connector Entry (for Orchestrator Review) · **Related:** `33ea030` (`docs/connectors/README.md`, `docs/plan/data-ingestion-runbook.md`, `docs/plan/Memory/memory.md`), `mem-wpF` (`ingest/youtube.py`), `mem-wpG` (`ingest/desktop/browser.py`)
+**Date:** 23 Nov 2026 · **Status:** Reference Copy on `ios` (Source on `memory`: `0a0e5b7`) · **Related:** `33ea030`, `docs/plan/ios-expo.md`
 
 ---
 

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="orb-bg" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#2563EB" />
+      <stop offset="50%" stop-color="#4F46E5" />
+      <stop offset="100%" stop-color="#7C3AED" />
+    </linearGradient>
+    <radialGradient id="orb-glow" cx="35%" cy="30%" r="65%">
+      <stop offset="0%" stop-color="#93C5FD" stop-opacity="0.45" />
+      <stop offset="100%" stop-color="#7C3AED" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <circle cx="32" cy="32" r="30" fill="url(#orb-bg)" />
+  <circle cx="32" cy="32" r="30" fill="url(#orb-glow)" />
+  <path
+    d="M32 12 Q34.5 29.5 52 32 Q34.5 34.5 32 52 Q29.5 34.5 12 32 Q29.5 29.5 32 12 Z"
+    fill="#FFFFFF"
+  />
+</svg>

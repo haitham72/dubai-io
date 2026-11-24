@@ -1,0 +1,19 @@
+# Local stack: agents service on :8787 (reached by the Vite dev server at /agents) + Redis for memory and cache.
+services:
+  agents:
+    build: .
+    ports: ["127.0.0.1:8787:8787"]
+    env_file: [../.env]
+    environment:
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      - ./.data:/data
+      - ./.secrets:/secrets
+    depends_on: [redis]
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports: ["127.0.0.1:6379:6379"]
+    volumes: ["redis:/data"]
+volumes:
+  redis:

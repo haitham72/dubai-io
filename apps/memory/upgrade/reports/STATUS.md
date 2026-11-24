@@ -23,3 +23,11 @@ States: in-progress · ready-for-review · fixes-requested (see `<WP>.review.md`
 2026-11-24 14:40 | U5 | gemini | mem-wpU5 | f1f2161 | merged → memory 932de06; migration renamed 0005 in fb96253; pushed (U5.review.md)
 2026-11-24 14:40 | U3 | cursor | mem-wpU3 | 5218ee5 | fixes-requested (alias channel: Rule-9 leak + full scan 304 ms) — see U3.review.md
 2026-11-24 14:55 | UI | cursor | ios-graph | e3125bb | merged → ios, pushed (UI.review.md)
+2026-11-24 15:20 | (all) | claude | memory | e598d43 | tracker/prompts/reports moved into repo apps/memory/upgrade/; next round: Cursor U3-fix→U6, Codex U2, Gemini harness-move+rerun→SH-1/SH-2; Claude: CS-1 merge
+2026-11-24 16:45 | U3 | cursor | mem-wpU3 | 1ab1cee | ready-for-review
+2026-11-24 15:50 | CS-1 | gemini (+claude) | cs/live-bridge-tests | f4922b9 | merged → contest-shared dd40257 → societal aad53cc, business 2d15989; pushed (API suites green except known test_ops/redis; societal test_identity_jwt flaky in full run, passes alone 3/3)
+2026-11-24 14:52 | U2 | codex | mem-wpU2 | 6476a83 | ready-for-review (396 passed; 13.98 ms HTTP p95; 0/51 trap emissions; 5/5 quarantined)
+2026-11-24 17:30 | U3 | cursor | mem-wpU3 | 1ab1cee | merged → memory 7ecbbd4 (U3.review.md)
+2026-11-24 17:30 | U2 | codex | mem-wpU2 | 6476a83 | merged → memory cbd20c8 (U2.review.md)
+2026-11-24 17:30 | E-round | claude | — | — | prompts E0–E4 written (real-data round: E1 run stack, E2 sign-in+QR pairing, E3 ingest, E4 chat+Today feed)
+2026-11-24 18:10 | U6 | cursor | mem-wpU6 | e23d8e8 | paused (Cursor quota out) — unverified WIP commit; see U6.handoff.md. E2 reassigned Cursor → Gemini

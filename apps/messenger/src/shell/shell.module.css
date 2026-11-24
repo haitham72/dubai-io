@@ -1,0 +1,38 @@
+/* App shell — owned by the lead session. */
+.app { display: flex; height: 100%; min-width: 1100px; overflow: hidden; background: transparent; } /* sized by the Mac window (MacDesktop); transparent so the wallpaper refracts through frosted panels */
+
+/* zone A: global nav (expanded with labels; collapses to an icon rail that turns solid white) */
+.nav { display: flex; flex-direction: column; width: var(--nav-width); flex-shrink: 0; padding: var(--s-4) var(--s-3); background: var(--frost); backdrop-filter: var(--frost-blur); -webkit-backdrop-filter: var(--frost-blur); border-inline-end: 1px solid var(--border); transition: width 0.2s var(--ease), background 0.2s var(--ease); overflow: hidden; }
+.brand { display: flex; align-items: center; gap: var(--s-2); height: 44px; padding: 0 var(--s-2); margin-bottom: var(--s-4); font-size: var(--fs-lg); font-weight: 700; }
+.brandName { flex: 1; min-width: 0; }
+.collapseBtn { display: grid; place-items: center; width: 32px; height: 32px; flex-shrink: 0; border-radius: var(--r-sm); color: var(--text-2); }
+.collapseBtn:hover { background: var(--hover); color: var(--text); }
+.logo { width: 34px; height: 34px; flex-shrink: 0; object-fit: contain; }
+.navGroup { display: flex; flex-direction: column; gap: 2px; }
+.navItem { position: relative; display: flex; align-items: center; gap: var(--s-3); height: 40px; padding: 0 var(--s-3); border-radius: var(--r-sm); color: var(--text-2); font-size: var(--fs-md); font-weight: 500; transition: background 0.12s var(--ease), color 0.12s var(--ease); }
+.navItem:hover { background: var(--hover); color: var(--text); }
+.navItemActive, .navItemActive:hover { background: var(--blue-soft); color: var(--blue); font-weight: 600; }
+.navBadge { margin-inline-start: auto; min-width: 20px; height: 18px; padding: 0 5px; border-radius: var(--r-pill); background: var(--purple); color: var(--on-accent); font-size: var(--fs-xs); font-weight: 650; display: grid; place-items: center; }
+.navDivider { height: 1px; margin: var(--s-3) var(--s-2); background: var(--border); }
+.spacer { flex: 1; }
+.me { display: flex; align-items: center; gap: var(--s-3); padding: var(--s-2); border-radius: var(--r-md); text-align: start; }
+.me:hover { background: var(--hover); }
+.meText { display: flex; flex-direction: column; min-width: 0; }
+.meName { font-weight: 600; font-size: var(--fs-md); }
+.meStatus { font-size: var(--fs-xs); color: var(--success); }
+
+/* collapsed rail: pure white, icons only */
+.navCollapsed { width: 72px; padding-inline: var(--s-2); background: var(--surface-solid); backdrop-filter: none; -webkit-backdrop-filter: none; }
+.navCollapsed .brand { flex-direction: column; justify-content: center; height: auto; gap: var(--s-2); padding: 0; }
+.navCollapsed .brandName, .navCollapsed .navItem > span:not(.navBadge), .navCollapsed .meText { display: none; }
+.navCollapsed .navItem { justify-content: center; padding: 0; }
+.navCollapsed .navBadge { position: absolute; top: 2px; inset-inline-end: 4px; min-width: 16px; height: 16px; padding: 0 4px; }
+.navCollapsed .me { justify-content: center; padding: var(--s-1); }
+
+/* zone B: module sidebar */
+.sidebar { position: relative; display: flex; flex-direction: column; width: var(--sidebar-width); flex-shrink: 0; background: var(--surface-solid); border-inline-end: 1px solid var(--border); z-index: 2; /* overlays (Messenger Updates) extend out of here over zone C */ }
+
+/* zone C: workspace */
+.main { position: relative; flex: 1; min-width: 0; display: flex; flex-direction: column; background: var(--surface); overflow: hidden; }
+.screenFade { display: contents; animation: fade 0.18s var(--ease); }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }

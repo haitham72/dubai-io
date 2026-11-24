@@ -1,0 +1,203 @@
+/* Weather screen — R06, full-width, real Open-Meteo data. */
+
+.main {
+  display: flex; flex-direction: column; overflow-y: auto;
+  background: var(--surface);
+}
+
+/* ---- top bar ---- */
+.topBar {
+  display: flex; align-items: center; gap: var(--s-3);
+  height: var(--header-height); padding: 0 var(--gutter);
+  border-bottom: 1px solid var(--border); flex-shrink: 0;
+  background: var(--surface);
+}
+.topBarTitle { font-size: var(--fs-xl); font-weight: 650; margin: 0; }
+.topBarSearch { flex: 1; max-width: 320px; }
+.locBtn {
+  display: inline-flex; align-items: center; gap: var(--s-2);
+  height: 36px; padding: 0 var(--s-3);
+  border-radius: var(--r-pill);
+  background: var(--surface-solid); border: 1px solid var(--border-strong);
+  font-size: var(--fs-sm); font-weight: 500; color: var(--text-2);
+  transition: background 0.12s var(--ease);
+}
+.locBtn:hover { background: var(--blue-soft); color: var(--blue); }
+
+/* ---- hero card ---- */
+.heroCard {
+  position: relative;
+  margin: var(--gutter) var(--gutter) 0;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  height: 300px; flex-shrink: 0; /* .main is a scrolling flex column: don't let content squeeze the hero */
+  background: var(--bg);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border);
+}
+.heroImg {
+  width: 100%; height: 100%; object-fit: cover;
+}
+.heroShade {
+  position: absolute; inset: 0;
+  /* Left-side dark gradient for readable text */
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.65) 0%, rgba(0, 0, 0, 0.25) 50%, transparent 100%);
+  display: flex; flex-direction: column; justify-content: space-between;
+  padding: var(--s-5); color: #fff;
+}
+.heroLeft { display: flex; flex-direction: column; }
+.heroCity { font-size: 32px; font-weight: 650; line-height: 1.1; letter-spacing: -0.02em; }
+.heroCountry { font-size: var(--fs-md); opacity: 0.85; margin-top: 4px; }
+.heroRight { display: flex; align-items: baseline; gap: var(--s-3); }
+.heroTemp { font-size: 72px; font-weight: 200; line-height: 1; letter-spacing: -0.04em; }
+.heroCond { font-size: var(--fs-lg); opacity: 0.9; }
+.heroStatsRow {
+  display: flex; align-items: center; gap: var(--s-6);
+  padding: var(--s-3) var(--s-5);
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+  color: #fff; font-size: var(--fs-sm);
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+.statItem { display: flex; align-items: center; gap: var(--s-2); }
+.statItem svg { opacity: 0.8; }
+
+/* ---- tabs ---- */
+.tabsWrap {
+  display: flex; align-items: center; gap: var(--s-3);
+  padding: var(--s-4) var(--gutter);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  position: sticky; top: 0; z-index: 10;
+}
+.contentArea {
+  display: flex; flex-direction: column; gap: var(--s-5);
+  padding: var(--s-5) var(--gutter) var(--s-8);
+  width: 100%;
+  /* no max-width: content uses full main width */
+}
+
+.sectionTitle { font-size: var(--fs-md); font-weight: 650; margin: 0 0 var(--s-3) 0; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* ---- today dashboard grid ---- */
+.todayGrid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--s-4);
+  align-items: start;
+}
+.todayHourly { grid-column: 1 / -1; }
+.hourlyStrip {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: var(--s-2);
+}
+.hourlyItem { min-width: 0; }
+/* Below the hourly strip: 7-day list on the left, air quality / sun / map cards on the right. */
+.sideCards { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--s-5); align-items: start; }
+.sideCards .dayList { display: flex; flex-direction: column; gap: var(--s-1); }
+.dayBars { display: flex; align-items: center; }
+
+/* ---- hourly strip ---- */
+.hourlyStrip {
+  display: flex; gap: var(--s-2); overflow-x: auto;
+  padding-bottom: var(--s-2);
+}
+.hourlyItem {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  min-width: 72px; padding: var(--s-3);
+  border-radius: var(--r-md); background: var(--surface-solid);
+  border: 1px solid var(--border);
+  transition: border-color 0.12s var(--ease);
+}
+.hourlyItem.now { border-color: var(--blue); background: var(--blue-soft); }
+.hourlyTime { font-size: var(--fs-xs); color: var(--text-2); font-weight: 600; }
+.hourlyTemp { font-size: var(--fs-md); font-weight: 650; }
+
+/* ---- 7-day list ---- */
+.dayList { display: flex; flex-direction: column; gap: var(--s-1); }
+.dayRow {
+  display: grid; grid-template-columns: 120px 40px 1fr 80px;
+  align-items: center; gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--r-md);
+  background: var(--surface-solid);
+  border: 1px solid var(--border);
+  transition: background 0.12s var(--ease);
+}
+.dayRow:hover { background: color-mix(in srgb, var(--hover) 45%, transparent); }
+.dayName { font-size: var(--fs-md); font-weight: 600; }
+.dayBars { display: flex; align-items: center; gap: var(--s-2); }
+/* Shared week-scale track: light background, no per-day gradient */
+.dayBarTrack {
+  flex: 1; height: 10px; border-radius: 5px;
+  background: var(--bubble-in);
+  position: relative; overflow: hidden;
+}
+.dayBarRange {
+  position: absolute; height: 100%; border-radius: 5px;
+  /* Solid gradient from cool blue to warm red */
+  background: linear-gradient(to right, var(--blue), var(--warning), var(--danger));
+  opacity: 0.85;
+}
+.dayTemps { font-size: var(--fs-sm); text-align: end; color: var(--text-2); white-space: nowrap; }
+.dayTemps strong { color: var(--text); }
+
+/* ---- cards grid ---- */
+.cardsGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-4); }
+.weatherCard {
+  background: var(--surface-solid); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: var(--s-5);
+  box-shadow: var(--shadow-sm);
+}
+.weatherCardTitle { font-size: var(--fs-sm); font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--s-3); }
+.aqValue { font-size: 48px; font-weight: 200; line-height: 1; letter-spacing: -0.03em; }
+.aqLabel { font-size: var(--fs-md); font-weight: 500; margin-top: var(--s-1); }
+.aqGood { color: var(--success); }
+.aqModerate { color: var(--warning); }
+.sunTimes { display: flex; flex-direction: column; gap: var(--s-2); margin-top: var(--s-2); }
+.sunRow { display: flex; align-items: center; gap: var(--s-3); }
+.sunRowIcon { color: var(--warning); }
+.sunRowTime { font-size: var(--fs-lg); font-weight: 600; }
+.sunRowLabel { font-size: var(--fs-sm); color: var(--text-2); }
+.mapCard {
+  height: 260px; border-radius: var(--r-md); overflow: hidden;
+  background: linear-gradient(135deg, var(--bg-tint-1) 0%, color-mix(in srgb, var(--blue) 10%, var(--track)) 100%);
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
+.mapCard::after {
+  content: ""; position: absolute; inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2398a2b3' fill-opacity='0.08'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+.mapCardText { position: relative; z-index: 1; font-size: var(--fs-sm); color: var(--text-2); display: flex; flex-direction: column; align-items: center; gap: var(--s-2); }
+
+/* ---- states ---- */
+.loadingState, .errorState {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: var(--s-4); padding: var(--s-12) 0; color: var(--text-2);
+}
+.retryBtn {
+  display: inline-flex; align-items: center; gap: var(--s-2);
+  height: 40px; padding: 0 var(--s-4);
+  border-radius: var(--r-pill);
+  background: var(--blue); color: var(--on-accent);
+  font-size: var(--fs-md); font-weight: 600;
+}
+.retryBtn:hover { filter: brightness(0.96); }
+
+/* iPhone: single column; the mobile toolbar already shows the title. */
+@media (max-width: 820px) {
+  .topBar { height: auto; padding: var(--s-3) var(--s-4); flex-wrap: wrap; }
+  .topBarTitle { display: none; }
+  .topBarSearch { max-width: none; }
+  .heroCard { margin: var(--s-3) var(--s-4) 0; width: auto; height: 240px; }
+  .heroCity { font-size: 26px; }
+  .heroTemp { font-size: 60px; }
+  .heroStatsRow { gap: var(--s-4); flex-wrap: wrap; }
+  .tabsWrap { padding: var(--s-3) var(--s-4); overflow-x: auto; scrollbar-width: none; }
+  .contentArea { padding: var(--s-4) var(--s-4) calc(var(--safe-bottom) + var(--s-8)); }
+  .sideCards { grid-template-columns: 1fr; }
+  .cardsGrid { grid-template-columns: 1fr 1fr; }
+  .dayRow { grid-template-columns: 84px 24px 1fr 64px; gap: var(--s-2); padding: var(--s-3); }
+}

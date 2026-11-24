@@ -68,3 +68,15 @@ design/            Screen references (founder files), locked Quest references (`
 - Verify before claiming: run the touched area's tests (see folder guides). A partial slice is never "done".
 - Validate generated content by assertion (counts, schema, loader, tests) — never re-read bulk output back into context.
 - Never rotate, edit or expose credentials/keys without an explicit ask. Keys stay server-side.
+
+## Contest submissions (branches `contest-shared`, `societal`, `business`; founder, 23 Nov 2026)
+
+`main` is Entry 1, **Best Personal AI Agent** (Quest / Dubai-io). Two more entries share one verified `user_id` and one memory service with it. Each lives on its own long-lived branch, built by external agents (Cursor, Muse, Codex, Antigravity) from the briefs on that branch: plan first, then build, with subagents.
+
+| Track | Entry | Branch | Folder |
+|---|---|---|---|
+| Shared base: identity, memory bridge, cross-app contract | — | `contest-shared` | `docs/submissions/shared/` |
+| Best Societal AI Agent | Dubai-io Community | `societal` | `docs/submissions/community/` |
+| Best Business AI Agent | Messenger (WhatsApp-like; name pending) | `business` | `docs/submissions/messenger/` |
+
+On those branches, read `docs/submissions/CLAUDE.md` first: the branch and merge protocol, owned vs read-only paths, phase gates, and the Messenger's IP and naming gate. Founder answers of 23 Nov: `docs/submissions/shared/founder-decisions.md`. **Never commit to or push `main` from these branches, and never merge them into `main`.** The other PC's `main` is ahead of `origin/main`, so it comes in by merge (into `contest-shared` first) only after it is pushed. Rules 1–10 apply to every entry.
