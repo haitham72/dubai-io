@@ -1,10 +1,12 @@
-# Dubai-io on iPhone 13 Pro Max (Expo Go)
+# Dubai-io on iPhone and web
+
+Use Expo Go on iPhone and run `npm run web` for the website. The E2 acceptance flow signs in with Google on the PC and pairs the iPhone with an account QR. The Expo Go development QR opens the app. Manual API URL configuration (below) is development setup.
 
 Companion shell for Today, Chat, Quests, and Memory. It runs in the App Store **Expo Go** app. No Apple Developer account, no Mac, and no custom native code.
 
 Synthetic owner: **Karim Haddad**. Fixture cards show a **Demo data** pill. The `✓ Ingested into Temporal Memory` badge appears only after `POST /api/memory/chat/turn` returns `applied: true` or `ok: true`.
 
-## Run on an iPhone 13 Pro Max
+## Run on an iPhone (development setup)
 
 1. Install **Expo Go** from the App Store.
 2. On the PC, start the API bound to all interfaces, for example `uvicorn` on `0.0.0.0:8000`.

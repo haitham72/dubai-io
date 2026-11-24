@@ -7,7 +7,7 @@ Read `E0_real_data_round.md` first. Branch `e4/chat-today` from `main`.
 - new `apps/api/app/chat_memory.py`, new `apps/api/app/today_feed.py` (+ `include_router` lines)
 - tests for them
 
-**Not** `apps/mobile` (Cursor wires the screens in E2 from your DTO samples).
+**Not** `apps/mobile` (the E2 task, Gemini, owns the app wiring and consumes your DTO samples; E4 owns the backend and DTO samples).
 
 ## Deliverables
 
@@ -23,7 +23,7 @@ Read `E0_real_data_round.md` first. Branch `e4/chat-today` from `main`.
    - **live results per interest** through the existing `apps/api` providers (Google Shopping AE / Places / YouTube): each card has `image_url`, `title`, `subtitle`, `source` (the chip), `url`, `provenance`, `as_of`, `because`;
    - cached per owner (TTL) so the app is fast. No result → no card (never invent one).
    - Third-party images are shown only as live, source-labelled results; never saved as static assets.
-3. **DTO samples** for both endpoints in the report (Cursor builds against them).
+3. **DTO samples** for both endpoints in the report (the E2 task, Gemini, builds against them).
 4. **Tests (synthetic owner, provider calls mocked):**
    - a chat turn saves + cites;
    - a sensitive fact is never cited;

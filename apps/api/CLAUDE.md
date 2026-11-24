@@ -51,17 +51,19 @@ Stop the dev server by its PID only.
 - **other:** `GET /api/reading`, `/api/reading/thumbnails/{id}`, `/api/prayer-times`, `/api/ops/health`, `/api/ops/ml`, `/api/ml/status`, `/api/community/search`
 - **community (parked):** `/api/communities` (+`/{id}/join|leave|stories|posts`), `/api/feed`, `/api/posts/{id}` (+`/comments`, `/hide`), `/api/votes`, `/api/me/posts`, `/api/chats` (+`/{id}/messages|read|archive`), `/api/contacts`, `/api/calls`
 
-**vs `docs/archive/references/ios-swift-plan.md` (23 Oct inventory):** every endpoint it names exists. **Planned** (named there, absent in code): Supabase Auth bearer-token verification in FastAPI; outbox → APNs push. Also planned elsewhere: a Calendar connector and a WhatsApp export importer (`ARCHITECTURE.md` §14).
+**vs `docs/archive/references/ios-swift-plan.md` (23 Oct inventory):** every endpoint it names exists. **Planned** (named there, absent in code): Supabase Auth bearer-token verification in FastAPI; outbox → APNs push. The shared per-user modules are `app/identity` and `app/memory_bridge`. Reuse existing Google OAuth helpers, connectors and temporal_note importers; see E2 (`apps/memory/upgrade/prompts/E2_signin_pairing_wiring.md`) for sign-in and pairing and E3 for consented ingest wiring and acceptance (`ARCHITECTURE.md` §14).
 
 ## Contracts (FIN-08)
 
 Full table: `ARCHITECTURE.md` §12.1. Essentials: approve sends `Idempotency-Key` + `snapshot_hash` + `revision`, and 409 means reload; every task command carries `expected_revision` + `command_key`; Needs you holds only crucial stops (`approve | check | deadline`); the brief is deterministic, never model text; no assist mode sends, shares or pays. Task engine rules (write guard, RUN-01, no transaction across a provider/LLM call): §11.
 
-## Hosting (recommended, not deployed)
+## Hosting
+
+Demo hosting (24 Nov): the founder's PC with local Postgres; use E1 for current stack startup. Add the allowlisted Cloudflare Tunnel later under D13. The Dubai-io website runs via Expo web (`apps/mobile`). The 23 Oct recommendations below are historical.
 
 - **Supabase** (Postgres + pgvector, Auth, Storage); migrations in `supabase/migrations`; only the API reaches the DB, with the backend role.
 - **Keep FastAPI + LangGraph** as a container (Fly.io, Railway, Render or Cloud Run) in the Supabase region. **No Edge Functions rewrite:** they host neither Python nor long SSE well; use them only as small glue (auth hooks, signed, replay-safe, idempotent provider webhooks).
-- **Vercel** for the website (`apps/site`), calling the same API; CORS allowlists the Vercel domain.
+- ~~Vercel for the website (`apps/site`)~~ superseded: `apps/site` is paused and the website runs via Expo web.
 - DB connection: direct or session pooler for persistent Python/LangGraph, never transaction pooling blindly.
 - No paid deployment or budget assumed. Healthy durable writes precede runtime adoption; a hosted worker, health visibility and an agreed budget precede any always-on promise.
 

@@ -2,19 +2,19 @@
 
 **For:** the team on the other PC (Dubai-io iOS + desktop, temporal_note) and any agent opening `main`. **Written:** 24 Nov 2026.
 
-`main` is **Entry 1, Best Personal AI Agent** (Quest / Dubai-io). Two more Dubai Chambers entries are built on their own long-lived branches. All three share one verified `user_id` and one memory service.
+All three products and the shared per-user layer are on `main` (D16, 24 Nov): Dubai-io (Best Personal AI Agent), Community (Best Societal AI Agent) and Messenger (Best Business AI Agent). All three share one verified `user_id` and one memory service (temporal_note).
 
-**Three separate products, one repo (founder, D15, 24 Nov).** Dubai-io (like ChatGPT), Community (like Facebook) and Messenger (like WhatsApp) are three different products, Meta-style. They share **only the per-user layer** (identity + the temporal_note memory engine), and that layer lives in this repo. Each product lives in its own folders; every feature is built on a branch, and **finished branches merge into `main` after their gates pass (D16)**. Entry branches never merge into each other. **Status:** the builds are done and waiting for tests. Details: `docs/submissions/shared/founder-decisions.md` D15 on `contest-shared`.
+**Three separate products, one repo (founder, D15, 24 Nov).** Dubai-io (like ChatGPT), Community (like Facebook) and Messenger (like WhatsApp) are three different products, Meta-style. They share **only the per-user layer** (identity + the temporal_note memory engine), and that layer lives in this repo. Each product lives in its own folders; every feature is built on a branch from `main`, and **finished branches merge into `main` after their gates pass (D16)**. Entry branches never merge into each other. **Status:** the builds are done and waiting for tests. Details: `docs/submissions/shared/founder-decisions.md` D15 on `contest-shared`.
 
-| Track | Entry | Branch | Docs (on that branch) |
-|---|---|---|---|
-| Shared base: identity, memory bridge, cross-app contract | — | `contest-shared` | `docs/submissions/shared/` (start with `founder-decisions.md`) |
-| Best Societal AI Agent | Dubai-io Community (Facebook / Reddit-like) | `societal` | `docs/submissions/community/` |
-| Best Business AI Agent | Messenger (WhatsApp-like; working name) | `business` | `docs/submissions/messenger/` |
+| Track | Entry | Folders |
+|---|---|---|
+| Shared: identity, memory bridge, cross-app contract | — | `apps/api/app/identity`, `apps/api/app/memory_bridge`, `docs/submissions/shared/` (start with `founder-decisions.md`) |
+| Best Societal AI Agent | Dubai-io Community | `apps/community`, `docs/submissions/community/` |
+| Best Business AI Agent | Messenger | `apps/messenger`, `docs/submissions/messenger/` |
 
-The branch rules are in `docs/submissions/CLAUDE.md` on each of those branches. In short, they **only add new files**: `apps/community/`, `apps/messenger/`, `apps/api/app/{identity,memory_bridge,community,messenger}/`, their tests, and `docs/submissions/**`. The one exception is a section appended at the end of `CLAUDE.md`. They never touch `main`, `apps/web`, `apps/site`, `apps/memory`, `PLAN.md`, `ARCHITECTURE.md` or `supabase/migrations/`.
+Start with D16 and the shared memory contract on `main`. Read `community/` for the Societal entry, `messenger/` for the Business entry, and `shared/` for identity, memory and founder decisions. Feature branches start at `main`; Claude merges after the relevant gates pass (`docs/submissions/CLAUDE.md`). The branch graph (`contest-shared`, `societal`, `business`) described in earlier versions of this file is integration history.
 
-## For the other PC: merging your `main`
+## Integration history (superseded by D16; kept as a record)
 
 *Done 24 Nov: this PC's `main` had no unpushed work (Dubai-io's iOS, desktop and memory work is on the pushed `ios`, `desktop` and `memory` branches), so it was fast-forwarded to `origin/main`. Those three branches merge cleanly with `contest-shared`, `societal` and `business`.*
 
@@ -35,4 +35,4 @@ The branch rules are in `docs/submissions/CLAUDE.md` on each of those branches. 
 1. ~~Fast-forward the local `main`.~~ Done 24 Nov.
 2. ~~`git merge origin/main` into `contest-shared` and run the full test suite. Then `git merge contest-shared` into `societal` and `business`.~~ Done and pushed 24 Nov; all gates green (results in D15). Repeat this whenever `origin/main` moves.
 3. Re-add the contest pointer to `CLAUDE.md`, and apply the drafted canon updates (`docs/submissions/shared/canon-patches/` on `contest-shared`) to `PLAN.md`, `ARCHITECTURE.md` and `docs/status.md` as one reviewed commit. Under D15, `main` describes Entries 2–3 as living on their branches and never lists their folders as `main` folders.
-4. Re-check `apps/api/app/memory_bridge/` against the rebuilt temporal_note, and swap the fake client for the real one.
+4. Re-check `apps/api/app/memory_bridge/` against the rebuilt temporal_note. The temporal_note HTTP bridge exists and CS-1 supports live contract tests; verify real wiring and isolation in the E-round before claiming the demo works. Review the canon drafts (`docs/submissions/shared/canon-patches/`) against current `main` before applying them.

@@ -4,8 +4,8 @@
 **Authority:** root `CLAUDE.md` → `PLAN.md` → `ARCHITECTURE.md` §7 → this file. Research dumps live in `_archive/` — do not treat them as the plan.
 
 > **24 Nov 2026 update (founder decisions):**
-> - **Engine:** **temporal_note** (`apps/memory/`, branch `memory`) replaced Hindsight, Honcho and mem0 (bakeoff `DECISION.md`, 23 Nov). The founder doesn't want competitor comparisons: it's judged on the app's requirements only.
-> - **Wins on conflict:** where §1, §4–§8 and §11–§13 still say "Hindsight", **§18 wins**. The §2 mental model, the §9 Quest-like export tree, §16 trust and §17 Vault still stand. §9 / §17 got small updates.
+> - **Engine:** **temporal_note** (`apps/memory/`, on `main`) replaced Hindsight, Honcho and mem0 (bakeoff `DECISION.md`, 23 Nov). The founder doesn't want competitor comparisons: it's judged on the app's requirements only.
+> - **Wins on conflict:** where §1, §4–§8 and §11–§13 still say "Hindsight", **§18 wins**. The §2 mental model, the §9 Quest-like export tree and §16 trust still stand. Use §18 for engine behavior and §9 for the Quest-like export design; use §17 for Vault interaction design, with §18 taking precedence on taxonomy, retrieval and evidence. §9 / §17 got small updates.
 > - **Current engine architecture, measured state and owners:** **§18**. Live execution tracker: `apps/memory/upgrade/TN_UPGRADE_PLAN.md` + `apps/memory/upgrade/reports/STATUS.md`.
 > - **Three products** (Dubai-io, Community, Messenger) share only the per-user layer: identity + this memory (D15).
 
@@ -61,7 +61,7 @@ That maps to tables: **`memories`** + **`topics`** + **`entities`** + **`links`*
 
 ## 4. Mnemosyne vs Hindsight (roles & cost tiers)
 
-> *Superseded 24 Nov: no Hindsight. temporal_note covers both roles: the instant session layer (live context, instant triples) and the long-term bank (day-packet backfill, reflect). See §18. The hybrid policy below (FTS first, semantic only inside the slice) still holds.*
+> *Superseded 24 Nov: no Hindsight. temporal_note covers both roles: the instant session layer (live context, instant triples) and the long-term bank (day-packet backfill, reflect). See §18. temporal_note fuses keyword and local multilingual embedding candidates (hybrid search, §18.7 U4).*
 
 | | Mnemosyne-like | Hindsight |
 |---|---|---|
@@ -364,7 +364,7 @@ The memory engine's export and graph representation is rendered to the user via 
    `✓ Ingested into Temporal Memory | trust: T1 · topic: <domain>`
    This provides transparent evidence of the bi-temporal write pipeline (`POST /api/memory/chat/turn`).
 2. **Proactive Empathy & Memory Repair Cards:**
-   When background reflection identifies missed user preferences or contradictions, the engine surfaces an in-chat gold alert (`⚡ Proactive Ping · Memory Repair`) with an instant *"Apology Accepted 👍"* button. Tapping this issues a Hindsight `ends` verdict to invalidate the stale belief and establish the corrected preference without manual profile editing. *(24 Nov: in temporal_note this is an `end` / `update` op through `/facts/{id}/resolve`; see §18.)*
+   When background reflection identifies missed user preferences or contradictions, the engine surfaces an in-chat gold alert (`⚡ Proactive Ping · Memory Repair`) with an instant *"Apology Accepted 👍"* button. Tapping this runs temporal_note's provenance and resolution flow to invalidate the stale belief and establish the corrected preference without manual profile editing. *(24 Nov: in temporal_note this is an `end` / `update` op through `/facts/{id}/resolve`; see §18.)*
 
 ---
 
@@ -375,7 +375,7 @@ The memory engine's export and graph representation is rendered to the user via 
 - 🔧 in progress (a branch exists);
 - 📋 planned (spec only).
 
-**As of** `main` @ `d813e7f` (24 Nov, evening). Execution tracker, gates and owners: `apps/memory/upgrade/TN_UPGRADE_PLAN.md`, `apps/memory/upgrade/reports/STATUS.md`, and the measured scores in `G:\Haitham\lab-data\memory-bakeoff\acceptance\BASELINE.md` (moving to `apps/memory/acceptance/`).
+**As of** `main` @ `d813e7f` (24 Nov, evening). Execution tracker, gates and owners: `apps/memory/upgrade/TN_UPGRADE_PLAN.md`, `apps/memory/upgrade/reports/STATUS.md`, and the measured scores in `G:\Haitham\lab-data\memory-bakeoff\acceptance\BASELINE.md` (the acceptance harness and synthetic gold dataset are in `apps/memory/acceptance/`; current implementation and verified status: §18.7 and `apps/memory/upgrade/reports/STATUS.md`).
 
 ### 18.1 Requirements (founder, 24 Nov)
 
@@ -389,14 +389,14 @@ The memory engine's export and graph representation is rendered to the user via 
 | R6 | Restaurants and places (with type), and topics the user keeps asking about: two separate sessions → "I noticed" |
 
 **Founder decisions:**
-- **D-a:** the 7 clusters = the §9 spines.
+- **D-a:** the 7 clusters = the §9 spines. Vault clusters: Career, Learning, Projects, People & family, Events, Home & money, Travel. Health has no cluster.
 - **D-b:** the live catch-up pass runs once per session, on local Qwen with a Haiku fallback.
 - **D-c:** T1 is suggested by the engine and joins the ring only when the user confirms.
 
 ### 18.2 Where it lives
 
-- **Code:** `apps/memory/` (package `temporal_memory`, about 11k lines, Python 3.12+) on branch `memory`; work-package branches `mem-wp<X>`; Claude verifies and merges.
-- **Stack (docker compose):** Postgres 17 + pgvector image (`:5442`; FTS via `tsvector` GIN; **no vectors used yet**), RabbitMQ (`:5682`) + Celery workers, Redis (`:6390`), the FastAPI API (`:8040`), an MCP server.
+- **Code:** `apps/memory/` (package `temporal_memory`, about 11k lines, Python 3.12+) on `main`; work-package branches `mem-wp<X>` start from `main`; Claude verifies and merges (D16).
+- **Stack (docker compose):** Postgres 17 + pgvector image (`:5442`; FTS via `tsvector` GIN; hybrid search ships: local multilingual embeddings fused with keyword candidates, U4), RabbitMQ (`:5682`) + Celery workers, Redis (`:6390`), the FastAPI API (`:8040`), an MCP server.
 - **Tests:** **364 passed, 8 skipped**; the gold-month e2e passes. Synthetic "Karim" data only.
 
 ### 18.3 Data model (Postgres, owner-scoped; maps to the §3 concepts)
@@ -414,10 +414,10 @@ The memory engine's export and graph representation is rendered to the user via 
 1. **Import:** `tm import <kind> <path> --owner X`. Kinds: whatsapp, mbox / eml / gmail / gmail-json, notes, youtube, takeout, chatgpt, browser (daily aggregates only), agent-sessions, dev-sessions, temporal-note. Live chat and the other apps post through the bridge `POST /records`.
 2. **Triage:** drop noise, dedupe by hash, enforce Forget rules.
 3. **Jobs:**
-   - **One job per day of records** (`extract.day`, P1). Live batches are `extract.live` (P0, a reserved worker). 📋 `extract.session` comes in U2.
+   - **One job per day of records** (`extract.day`, P1). Live batches are `extract.live` (P0, a reserved worker). ✅ U2 queues one `extract.session` catch-up per session on local Qwen with a Haiku fallback.
    - An idempotency key; a lease + fence token; owner-device pool fallback (20 s P0 / 600 s P1); an outbox → Celery (`mem.p0`, `p1`, `p3`); a 60 s reconcile beat.
 4. **Extraction:** one LLM call per job (`extract@3`; records are inert untrusted data). Runners: cloud Haiku · local Qwen (LM Studio) · agent CLI (`claude -p`) · **owner-hook via MCP** (the user's own Claude/Codex, $0 app cost). Each attempt records the model actually used.
-5. **Validator:** checks evidence, duplicates, credentials and size. ⚠️ It is all-or-nothing per job today: one bad fact drops the whole day.
+5. **Validator:** checks evidence, duplicates, credentials and size. ✅ U3 validates per fact, so one bad fact no longer drops the whole day.
 6. **Applier:**
    - sensitive → quarantine;
    - entities, aliases, labels and links only from approved facts in the same attempt (✅ U1b);
@@ -429,27 +429,28 @@ The memory engine's export and graph representation is rendered to the user via 
 ### 18.5 Privacy and truth (R5)
 
 - **Sensitive gate:** Layer 1 is regex with Arabic word boundaries (health, religion, ethnicity / nationality, gender / sexuality, politics, third-party private, credentials, family-of-third-party). Layer 2 is a classifier `screen()` for owner-hook output. Gold month: 8 / 8 true positives, 4 known false positives.
-- **Provenance is stored** (✅ U1b): `user_supplied` only when every cited record is owner-authored. 📋 U3 adds a stated / inferred flag per fact. Auto-promotion changes status only. Third-party people need the user's tap.
-- **T1:** suggestions from frequency and recency (never from family, health or faith signals). `closeness_tier` only by confirm (📋 the endpoint comes in U1c).
+- **Provenance is stored** (✅ U1b): `user_supplied` only when every cited record is owner-authored. ✅ U3 records a stated / inferred provenance flag per fact. Auto-promotion changes status only. Third-party people need the user's tap.
+- **T1:** suggestions from frequency and recency (never from family, health or faith signals). `closeness_tier` only by confirm (✅ endpoint, U1c); T1 suggestions stay outside the ring until user confirmation.
 - **Forget** (✅ U1a / U0c):
   - by source, record or fact, in one transaction;
   - erases evidence-less entities, aliases and links;
   - bumps `facts_version` + `privacy_revision`, so caches drop the data;
   - durable idempotency; re-import blocked; the generation fence rejects in-flight jobs;
-  - no runtime DDL.
+  - no runtime DDL;
+  - Forget runs only when the user requests it; memory decays by default and is never deleted by age.
 
 ### 18.6 Read path, and the gates
 
 | Surface | State |
 |---|---|
-| Live context pack (no LLM; aliases EN / AR / Arabizi, dates, AED, BM25 + RRF; ≤ 1.5k tokens; target p95 < 150 ms) | ✅ works; ⚠️ **loads up to 10k facts per call**: 413 ms p95 at 20k, old facts invisible → 🔧 **U1c**: SQL candidates (FTS GIN + entity / alias + 1 hop + subject + date → RRF) |
+| Live context pack (no LLM; aliases EN / AR / Arabizi, dates, AED, BM25 + RRF; ≤ 1.5k tokens; target p95 < 150 ms) | ✅ works; ✅ SQL candidates (FTS GIN + entity / alias + 1 hop + subject + date → RRF) fused with local multilingual embeddings (U1c, U4) |
 | `/search` (bridge) | ✅ on Postgres with the prefix filter in SQL (57 ms p95 at 20k); 🔧 ranked candidates in U1c |
-| Vault API (`/vault/subjects`, `/vault/people`, `/quests`, `/hypotheses`, `/timeline`, `/onboarding-status`, `/why`) | ✅ exists; ⚠️ loads all facts, and provenance is derived from status → 🔧 U1c |
-| `/vault/graph?view=subjects\|people` (versioned DTO, 7 clusters, Rule 9 gated, `+N more`, T1 + suggestions) + `POST …/tier` | 🔧 U1c |
-| `/why` with a cited reason span or "reason unknown"; `/story` (a deterministic cited timeline, optional verified narration) | 📋 U5 |
+| Vault API (`/vault/subjects`, `/vault/people`, `/quests`, `/hypotheses`, `/timeline`, `/onboarding-status`, `/why`) | ✅ exists; ✅ provenance rendered (U1c) |
+| `/vault/graph?view=subjects\|people` (versioned DTO, 7 clusters, Rule 9 gated, `+N more`, T1 + suggestions) + `POST …/tier` | ✅ U1c |
+| `/why` with a cited reason span or "reason unknown"; `/story` (a deterministic cited timeline, optional verified narration) | ✅ U5 |
 | §9 Quest-like export tree | ⚠️ the old tree today → 📋 **U5 Part C** parity |
 | MCP tools (claim / submit jobs, `memory_search`, `memory_context`, vault summary) | ✅ (search hydration cap → U1c) |
-| Community / Messenger CR-TM bridge (`/records`, `/forget`, `/facts/{id}/resolve`, `/context`, `/search`) | ✅ on Postgres, 8/8 live ops (U1a); 📋 CS-1 adds a live mode to the shared tests |
+| Community / Messenger CR-TM bridge (`/records`, `/forget`, `/facts/{id}/resolve`, `/context`, `/search`) | ✅ on Postgres, 8/8 live ops (U1a); 📋 CS-1 adds live bridge contract tests |
 
 Access is by hashed tokens with roles admin / worker / owner-device, owner-scoped.
 
@@ -462,7 +463,7 @@ Access is by hashed tokens with roles admin / worker / owner-device, owner-scope
 - graph p95 < 150 ms with true counts;
 - every why / story sentence cites visible evidence.
 
-**Measured on `267b0cf`:**
+**Measured on `267b0cf` (dated baseline; current results in §18.7):**
 - S1 retrieval **FAIL**: gold graph 0.67 / 0.73, extracted 0.36 / 0.41;
 - S2 extraction **FAIL**: recall 66.7 %, precision 59 %, changes 1/8 · 0/5 · 0/4;
 - S3 Forget: mechanism fixed;
@@ -481,11 +482,11 @@ Access is by hashed tokens with roles admin / worker / owner-device, owner-scope
 | U1b | no leaks from quarantine, stored provenance, T1 suggestions, false positives | Cursor | ✅ |
 | U1c | Postgres retrieval everywhere, salience, `/vault/graph`, tier confirm, provenance rendering | Gemini | ✅ (20k: context ~11 ms, graph ~145 ms HTTP p95) |
 | U3 | backfill quality: per-fact validator, active facts shown for update/end, stated / inferred flag, cited reasons, places / preferences + `place_type`, one 7-cluster taxonomy, owner-timezone days, token-budget chunks, **topic aliases in SQL** | Cursor | ✅ |
-| U2 | instant triples (code-only, 0/51 trap emissions) + topic counter + per-session catch-up (D-b) | Codex | ✅ (Forget-vs-topic-hypothesis fix queued first in E3) |
+| U2 | instant triples (code-only, 0/51 trap emissions) + topic counter + per-session catch-up (D-b) | Codex | ✅ (Forget retracts topic hypotheses that lose their second surviving session; merged in `4e2646d`) |
 | U4 | **hybrid search:** local multilingual embeddings (bge-m3, $0) fused by RRF. Founder asked for hybrid: no longer deferred | Gemini | ✅ (paraphrase top-16 0.20 → 0.53) |
 | U5 | why (cited spans / "reason unknown") + story (cited timeline, optional verified narration) | Gemini | ✅ |
 | UI | mobile Vault on `/vault/graph` (7 clusters, T1 ring, "I noticed" controls) + the Dubai-io website via Expo web | Cursor | ✅ |
-| U6 | the §9 Quest-like export tree + persona cards + person card | Cursor | 🔧 |
-| E1–E4 | **real-data round:** one-command stack on the PC; Google sign-in on the PC + QR pairing for the iPhone; Gmail / Calendar / YouTube / Takeout / WhatsApp / desktop ingest with consent; chat on real memory + the Today feed from real interests (`apps/memory/upgrade/prompts/E0–E4`) | Gemini / Cursor / Codex | 📋 |
-| Design | rewrite of `design/20-11-2026/INDEX.md` from the images (branch `design/spec-20-11`); restyle **after** the real-data round | — | parked |
+| U6 | the §9 Quest-like export tree + persona cards + person card | Cursor | 🔧 paused (unverified handoff) |
+| E1–E4 | **real-data round:** one-command stack on the PC; Google sign-in on the PC + QR pairing for the iPhone; Gmail / Calendar / YouTube / Takeout / WhatsApp / desktop ingest with consent; chat on real memory + the Today feed from real interests (`apps/memory/upgrade/prompts/E0–E4`) | Gemini / Codex (half volume) / Devin | 🔧 active |
+| Design | rewrite of `design/20-11-2026/INDEX.md` from the images (parked at tag `archive/design-spec-20-11`); restyle **after** the real-data round | — | parked |
 

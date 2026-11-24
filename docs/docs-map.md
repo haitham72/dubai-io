@@ -1,4 +1,8 @@
-# Dubai-io — Documentation & Architecture Consolidation Plan (`doc_consolidation_plan.md`)
+# Documentation map — 17 Nov 2026 consolidation snapshot
+
+Historical inventory and proposals. For current placement use `docs/CLAUDE.md`; for current state use `docs/status.md`; for the contest portfolio use `docs/submissions/README.md`; for memory use `docs/plan/Memory/memory.md` §18 and `apps/memory/upgrade/`. Preserve the Quest references and memory archive in place. Everything below predates the D16 monorepo merge and temporal_note; the "10-table Postgres schema" target store and the step-by-step execution plan are superseded.
+
+(Original title: Dubai-io — Documentation & Architecture Consolidation Plan.)
 
 **Date:** 17 Nov 2026 · **Scope:** Full repository review (`apps/`, `supabase/`, `docs/`, `design/`, `.claude/`, unmerged branches, and external `memory-engine` package)  
 **Status:** EXECUTED 17 Nov 2026 (Docs-only pass; data/ and G:\Haitham\lab-data\ untouched per founder instruction).
@@ -15,7 +19,7 @@ On **9 Nov 2026** (`d95a8a2`), a first documentation cleanup (`docs/docs-map.md`
 4. **16 Nov — Headless Lab Pipeline v2 Implementation (`ed15f47`, +5,291 lines across 40 files):** Built the full skill-based extraction, local sentiment/emotion scoring (`scorer_worker.py`), semantic chunking (`chunking.py`), circle alias/typo resolution (`circle.py`), hybrid BM25+dense+translation search (`searchlib.py`), follow-up resolver (`followups.py`), Mermaid topic tree/graph (`tree.py`), and LLM-judge evaluation harness (`evaluate.py`) in `apps/api/app/lab/`.
 5. **17 Nov — Three Untracked Files in `docs/plan/`:** Added `docs/plan/BUILD_REPORT.md` (a report for an external `quest/*` Hindsight 1.2.1 prototype not in this repo), `docs/plan/desktop-llm-sessions.md` (Electron multi-LLM desktop app + local transcript ingestion), and `docs/plan/agent-session-history.md` (Orca-based session index/search spec).
 
-### Current Footprint
+### Footprint (17 Nov snapshot)
 - **120 `.md` files** inside the repository (**86** outside `docs/archive/`, including **36** private Quest export files in `docs/references/quest - info/quest-memory-export/`, plus **34** in `docs/archive/`).
 - **6 external `.md` files** in `C:\Users\h.ibrahim\Documents\Claude\Projects\proposals\memory-engine\` still cross-referenced as "pending" by live docs despite being settled on 16 Nov.
 - **5 unmerged `.md` files** across `origin/docs/consolidate-plan-agents` and `origin/cursor/readme-project-story-cd6a`.
@@ -419,7 +423,7 @@ Actions:
 
 ---
 
-## 6. Step-by-Step Execution Plan (Once Approved by Founder)
+## 6. Step-by-Step Execution Plan (Once Approved by Founder) [historical, executed 17 Nov; superseded]
 
 ```mermaid
 flowchart LR

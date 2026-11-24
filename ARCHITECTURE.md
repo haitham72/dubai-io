@@ -1,6 +1,6 @@
 # Dubai-io — Architecture
 
-**Updated:** 17 Nov 2026 · Scope: `PLAN.md` · State: `docs/status.md` · Root `CLAUDE.md` rules 1–10 win over this file.
+**Updated:** 24 Nov 2026 (topology, memory engine and retention facts; dated entries below are history) · Scope: `PLAN.md` · State: `docs/status.md` · Root `CLAUDE.md` rules 1–10 win over this file.
 **Lock:** no bidding/quote. `quote.request`, `QUOTED`, `QUOTE_ACCEPTED` do not exist.
 
 **Core rule:** the LLM reads and proposes; it never mutates. Every side effect goes through the deterministic action engine after a user tap (approval) or a merchant tap (inbox). Truth in status holds by construction.
@@ -10,8 +10,12 @@
 ## 1. Shape
 
 ```
-apps/site  THE app: one React codebase (Next.js) → website now; desktop (Tauri/Electron) and
-           iOS/Android (Capacitor) packaging parked. UI work paused 9 Nov.
+apps/mobile   Dubai-io client: iPhone via Expo Go, website via Expo web
+apps/desktop  Dubai-io Electron desktop client
+apps/memory   temporal_note engine (shared memory store; tracker apps/memory/upgrade/)
+apps/community, apps/messenger   separate web apps with Expo Go (mobile/) and Electron (desktop/) shells
+              shared per-user boundary: apps/api/app/identity + apps/api/app/memory_bridge → temporal_note
+apps/site  paused Next.js client (UI work paused 9 Nov)
 apps/web   original mobile PWA, FROZEN reference (tag mobile-pwa-baseline-2026-10-23);
            served by apps/api at / (and at /lab, a static alias, unrelated to app/lab/)
 apps/dash  founder ops page, static at /dash, reads /api/ops/*
@@ -86,7 +90,7 @@ ambiguous adapter outcome / interrupted dispatch ─► UNKNOWN_STATUS (no autom
 | Recommender | `recommendation_events`, `profile_interests`, `recommendation_runs` |
 | Connectors (`20261114000100_connectors.sql`) | `connector_credentials`, `connector_connections`, `connector_records`, `connector_sync_log`, `connector_outbound_grants` (Google sign-in grants live in `oauth_attempts`, `oauth_grants`) |
 | Lab (`app/lab/store.py`, `<data>/lab.sqlite`) | `lab_windows`, `lab_annotations`, `lab_vectors`, `lab_rows`, `lab_followups`, `lab_alias_suggestions` (plus `connector_records` and `mem_*`) |
-| Memory Service Target (decided 16 Nov, `PLAN.md` §2) | 10 Postgres tables keyed by `user_id` (`sources, source_records, chunks, topics, memories, entities, links, followups, profile, alias_suggestions`, `vector(768)` + `tsvector`; DDL in `docs/Researches/memory-research-2026-11.md`) |
+| Active shared memory store (24 Nov) | temporal_note in `apps/memory`: owner-scoped Postgres records, entities, subjects, facts, evidence and job state; schema and write/read paths in `docs/plan/Memory/memory.md` §18. (The 16 Nov 10-table target in `docs/Researches/memory-research-2026-11.md` is historical.) |
 | Community (parked) | `personas`, `communities`, `community_members`, `posts`, `comments`, `hidden_posts`, `votes`, `chat_threads`, `chat_messages`, `chat_reads`, `chat_archived`, `contacts`, `call_log`, `social_generations`, `comment_labels`, `comment_embeddings` |
 | Conversation | LangGraph checkpoints |
 
@@ -118,7 +122,7 @@ Sources: (a) a reminder the user asked for, (b) order state changes (live over S
 | Proactive message or daily card | ✓ with consent | ✗ |
 | Set any status | ✗ | ✗ |
 
-- **Memory Architecture & MEM-01 Decision (16–17 Nov, `PLAN.md` §2, `docs/Researches/memory-research-2026-11.md`):**
+- **[Superseded 24 Nov: the shared memory engine is temporal_note (`apps/memory`; `memory.md` §18). The API's older `mem_*` routes and `app/lab` are legacy surfaces. The live engine uses keyword and local multilingual embedding search; session catch-up runs on local Qwen with Haiku fallback; T1 membership requires user confirmation; decay is automatic and Forget runs only when the user requests it.]** Historical record follows. **Memory Architecture & MEM-01 Decision (16–17 Nov, `PLAN.md` §2, `docs/Researches/memory-research-2026-11.md`):**
   - **Swappable Hindsight backend retained (`MEM-01`):** Keep Hindsight behind the swappable `MemoryBackend` + `ScopeGuard` contract (raw → time-anchored facts → embeddings → multi-strategy recall → graph in one container) and fix the 6 Dubai-io rule violations only (`§R-ND` decay-with-floor instead of retention delete, Amazon.ae/AED, `"I noticed"` phrasing with two-visit qualification, sensitive-category confirmation gate, Gmail/Calendar first); defer full Postgres/markdown-tree re-fit until the card contract and AC-1 (`tests/test_live_hindsight_llm.py` with LLM provider enabled) are proven. Mem0 is rejected as a backend and retained only as an extraction/retrieval audit checklist; Graphiti is deferred unless edge-level `valid_at`/`invalid_at` becomes a hard requirement.
   - **10-table Postgres target & `lab.sqlite` (`apps/api/app/lab/`):** `sources, source_records, chunks, topics, memories, entities, links, followups, profile, alias_suggestions` remains the target schema when the full Postgres/markdown-tree re-fit runs.
 - **Profile document** (`user_profile.py`): `user_profile` is a projection of current `profile_facts` (facets identity · context · situation · preference · like · dislike · routine). A newer statement closes the old fact (`valid_to`, `superseded_by`); Forget deletes the key's history. Only told or confirmed facts are stored here.
@@ -133,7 +137,7 @@ Sources: (a) a reminder the user asked for, (b) order state changes (live over S
   - **3:4 Peeking Carousels:** Vertical cards rendered in 3:4 aspect ratio (~78% viewport width) with ~18% right-margin peeking to signal horizontal swiping.
   - **Proactive Empathy & Memory Repair:** In-chat gold repair cards (`⚡ Proactive Ping · Memory Repair`) allowing 1-tap apology acceptance (`Apology Accepted 👍`) resolving Hindsight contradictions, coupled with live temporal memory ingestion badges (`✓ Ingested into Temporal Memory | trust: T1`).
   - **Sovereign Knowledge Vault:** Dual-view interactive constellation graph (`Subjects` with 458 nodes across 6 life clusters; `People & Places` with 179 nodes and `T1` Inner Circle boundary for `Mamty`, `Radwa`, `Khalid`, `Abdelaziz`).
-- **Engine stage (settled 16 Nov):** the deterministic `temporal_note` port (`memory/`) and `apps/api/app/lab/` SQLite pipeline run today; the open 8–9 Nov Stage-2 engine pick was settled on 16 Nov (`PLAN.md` §2) in favor of the merged 10-table Postgres memory service rather than adopting Mem0 or Graphiti separately. No new database without a measured need.
+- **Engine stage (settled 16 Nov; superseded 24 Nov by temporal_note, `memory.md` §18):** the deterministic `temporal_note` port (`memory/`) and `apps/api/app/lab/` SQLite pipeline run today; the open 8–9 Nov Stage-2 engine pick was settled on 16 Nov (`PLAN.md` §2) in favor of the merged 10-table Postgres memory service rather than adopting Mem0 or Graphiti separately. No new database without a measured need.
 - **Conversation memory:** LangGraph checkpoints in Postgres, scoped to the session owner and thread. Checkpoints are never the durable record of a task (§11).
 
 ## 8. Luna (LangGraph)
@@ -351,8 +355,8 @@ Detail and scoring rationale: `docs/references/recommender-plan.md`.
 - Production auth and roles: Supabase Auth, FastAPI bearer verification, proof-based anonymous-owner transfer, separate merchant/operator roles, cross-device accounts. Local Supabase Auth/Storage/Edge does not mean identity, uploads or webhooks exist.
 - Real provider adapters beyond the sandbox inbox; provider cancellation.
 - Durable task worker: the DRAFT/WORKING/WAITING_EXTERNAL/BLOCKED states, leases and the `stale_worker` event (§11).
-- Memory: WhatsApp export + `.mbox`/`.eml` parsers and skill-based extraction/search/tree/eval are built in `app/lab/`; the remaining memory gap is migrating the 16 Nov 10-table Postgres schema (`PLAN.md` §2) + verdict step to Supabase Postgres (alongside `mem_*` migration/RLS parity C6, the §R-ND sweep C3, and Calendar connector live-run).
+- Memory: the shared engine is temporal_note (`apps/memory`). The live temporal_note bridge and contract test mode exist; verify end-to-end wiring on the real-data stack in E0–E4. Current gaps: `docs/plan/Memory/memory.md` §18 and `apps/memory/upgrade/`. (WhatsApp export + `.mbox`/`.eml` parsers and the lab pipeline in `app/lab/` are legacy surfaces.)
 - Semantic recall over `profile_facts.embedding` (column reserved, nothing writes it).
 - Kill switch and a unified user-visible activity log (§9.1).
-- Production multi-worker coordination for turn/forget and scheduled retention cleanup; single-tester checkpoint forgetting is implemented and tested.
-- Contract codegen (`packages/contracts` → TypeScript for `apps/site`) once the site consumes the API.
+- Production multi-worker turn coordination remains a gap; single-tester checkpoint forgetting is implemented and tested. Memory decays over time and is erased only through user-triggered Forget.
+- Contract codegen (`packages/contracts` → TypeScript for the clients) once a client consumes the API.
