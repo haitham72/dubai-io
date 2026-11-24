@@ -48,6 +48,15 @@ def gate_fact(fact: OutFact, worker_kind: WorkerKind) -> SensitiveCat | None:
     return None
 
 
+def provenance_for_statement(*, author_is_owner: bool) -> str:
+    """`user_supplied` only when the cited records are the owner's own messages.
+
+    An explicit confirm is a separate action: it also sets `user_confirmed_at`.
+    Auto-promotion never changes provenance.
+    """
+    return "user_supplied" if author_is_owner else "inferred"
+
+
 def may_promote(entity: Entity, distinct_days: int, user_confirmed: bool) -> bool:
     """Promotion gate candidate -> active (plan §4, Rule 9).
 

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import uuid
 from typing import Any
 
@@ -18,6 +19,15 @@ from temporal_memory.models import (
     Verdict,
 )
 from temporal_memory.privacy.policy import may_promote as _may_promote
+from temporal_memory.privacy.policy import provenance_for_statement
+from temporal_memory.privacy.sensitive import pre_write
+
+_FAMILY_WORD = re.compile(
+    r"\b(?:family|mother|mom|mum|father|dad|sister|brother|wife|husband|aunt|uncle|cousin|relative)\b",
+    re.I,
+)
+_CLOSENESS_SKIP_ROOTS = {"family", "health", "faith", "religion", "wellbeing"}
+_CLOSENESS_SKIP_CATS = {"health", "religion", "family_third_party"}
 
 
 def _strip_new(ref: str) -> str:
@@ -50,6 +60,31 @@ def _matches_forget_rule(
     return False
 
 
+def _family_supported(fact: OutFact) -> bool:
+    blob = " ".join([fact.text, fact.text_orig or "", *(fe.role or "" for fe in fact.entities)])
+    return bool(_FAMILY_WORD.search(blob))
+
+
+def _closeness_tier(days: int, facts: int) -> str | None:
+    """T1/T2/T3 from frequency across at least two separate days. None below that."""
+    if days < 2:
+        return None
+    if facts >= 5:
+        return "T1"
+    if facts >= 3:
+        return "T2"
+    return "T3"
+
+
+def _eligible_for_closeness(text: str, subject_path: str, relation: str | None) -> bool:
+    if relation == "family" or _FAMILY_WORD.search(text or ""):
+        return False
+    root = (subject_path or "").split("/", 1)[0].lower()
+    if root in _CLOSENESS_SKIP_ROOTS:
+        return False
+    return pre_write(text or "") not in _CLOSENESS_SKIP_CATS
+
+
 def apply(
     owner: str,
     job: Job,
@@ -73,10 +108,14 @@ def apply(
 
         # 1) Generation & erasure fence
         rec_gen: dict[str, int] = {}
+        rec_by_id: dict[str, dict[str, Any]] = {}
         if job.input_ref:
             unique_refs = list(dict.fromkeys(job.input_ref))
             rec_rows = conn.execute(
-                "SELECT id, generation, erased_at FROM records WHERE owner = %s AND id = ANY(%s)",
+                """
+                SELECT id, generation, erased_at, author, text
+                FROM records WHERE owner = %s AND id = ANY(%s)
+                """,
                 (owner, unique_refs),
             ).fetchall()
             if len(rec_rows) != len(unique_refs):
@@ -85,6 +124,37 @@ def apply(
                 if r["erased_at"] is not None or int(r["generation"]) > job.input_version:
                     return Verdict(ok=False, reasons=["fence_stale"])
                 rec_gen[r["id"]] = int(r["generation"])
+                rec_by_id[r["id"]] = dict(r)
+
+        owner_row = conn.execute(
+            "SELECT label, display_name, self_aliases FROM owners WHERE id = %s",
+            (owner,),
+        ).fetchone()
+        owner_names = {fold_text(owner), "me", "owner", "self"}
+        if owner_row:
+            for raw in (owner_row["label"], owner_row["display_name"]):
+                folded = fold_text(raw or "")
+                if folded:
+                    owner_names.add(folded)
+            aliases = owner_row["self_aliases"] or []
+            if isinstance(aliases, str):
+                aliases = json.loads(aliases)
+            for raw in aliases:
+                folded = fold_text(str(raw))
+                if folded:
+                    owner_names.add(folded)
+
+        def _author_is_owner(author: str) -> bool:
+            return fold_text(author or "") in owner_names
+
+        def _stated(fact: OutFact) -> bool:
+            if not fact.evidence:
+                return False
+            for rid in fact.evidence:
+                rec = rec_by_id.get(rid)
+                if rec is None or not _author_is_owner(str(rec.get("author") or "")):
+                    return False
+            return True
 
         # 2) Active forget rules
         forget_rules = conn.execute(
@@ -95,7 +165,7 @@ def apply(
         # 3) Load existing entities & aliases for resolution
         ent_rows = conn.execute(
             """
-            SELECT id, kind, name, status, relation_to_user, first_seen, last_seen, merged_into
+            SELECT id, kind, name, status, relation_to_user, provenance, first_seen, last_seen, merged_into
             FROM entities
             WHERE owner = %s AND erased_at IS NULL
             """,
@@ -146,7 +216,7 @@ def apply(
                 (owner, eid, alias.strip(), af),
             )
 
-        def _resolve(ref: str, hint: OutEntity | None = None) -> str | None:
+        def _resolve(ref: str, hint: OutEntity | None = None, *, provenance: str = "inferred", create: bool = True) -> str | None:
             raw = (ref or "").strip()
             if not raw:
                 return None
@@ -163,25 +233,27 @@ def apply(
                 eid = alias_to_eid[folded]
                 ref_to_eid[raw] = eid
                 return eid
+            if not create:
+                return None
 
             eid = f"e_{uuid.uuid4().hex[:12]}"
             kind = hint.kind if hint else "person"
-            rel = hint.relation_to_user if hint else None
-            ent_obj = Entity(id=eid, owner=owner, kind=kind, name=name, relation_to_user=rel)
+            ent_obj = Entity(id=eid, owner=owner, kind=kind, name=name, relation_to_user=None)
             status = "active" if _may_promote(ent_obj, distinct_days=1, user_confirmed=False) else "candidate"
             conn.execute(
                 """
-                INSERT INTO entities (id, owner, kind, name, status, relation_to_user)
-                VALUES (%s, %s, %s, %s, %s, %s)
+                INSERT INTO entities (id, owner, kind, name, status, relation_to_user, provenance)
+                VALUES (%s, %s, %s, %s, %s, NULL, %s)
                 """,
-                (eid, owner, kind, name, status, rel),
+                (eid, owner, kind, name, status, provenance),
             )
             entities_by_id[eid] = {
                 "id": eid,
                 "kind": kind,
                 "name": name,
                 "status": status,
-                "relation_to_user": rel,
+                "relation_to_user": None,
+                "provenance": provenance,
                 "first_seen": None,
                 "last_seen": None,
             }
@@ -192,18 +264,27 @@ def apply(
             ref_to_eid[raw] = eid
             return eid
 
-        for ref, hint in hints.items():
-            before_count = len(entities_by_id)
-            eid = _resolve(ref, hint)
-            if eid and len(entities_by_id) == before_count:
-                for al in hint.aliases:
-                    _add_alias(eid, al)
-                if hint.relation_to_user and not entities_by_id[eid].get("relation_to_user"):
-                    conn.execute(
-                        "UPDATE entities SET relation_to_user = %s WHERE owner = %s AND id = %s",
-                        (hint.relation_to_user, owner, eid),
-                    )
-                    entities_by_id[eid]["relation_to_user"] = hint.relation_to_user
+        def _note_relation(eid: str, hint: OutEntity | None, fact: OutFact) -> None:
+            if hint is None or not hint.relation_to_user:
+                return
+            if entities_by_id[eid].get("relation_to_user"):
+                return
+            if hint.relation_to_user == "family" and not _family_supported(fact):
+                return
+            conn.execute(
+                "UPDATE entities SET relation_to_user = %s WHERE owner = %s AND id = %s",
+                (hint.relation_to_user, owner, eid),
+            )
+            entities_by_id[eid]["relation_to_user"] = hint.relation_to_user
+
+        def _note_provenance(eid: str, provenance: str) -> None:
+            if provenance != "user_supplied" or entities_by_id[eid].get("provenance") == "user_supplied":
+                return
+            conn.execute(
+                "UPDATE entities SET provenance = 'user_supplied' WHERE owner = %s AND id = %s",
+                (owner, eid),
+            )
+            entities_by_id[eid]["provenance"] = "user_supplied"
 
         # 4) Load subjects map & helper to ensure hierarchy exists
         subj_rows = conn.execute(
@@ -212,7 +293,7 @@ def apply(
         ).fetchall()
         subj_by_path: dict[str, str] = {r["path"]: r["id"] for r in subj_rows}
 
-        def _ensure_subject(subject_path: str) -> str:
+        def _ensure_subject(subject_path: str, provenance: str) -> str:
             parts = [p.strip() for p in subject_path.strip("/").split("/") if p.strip()]
             if not parts:
                 parts = ["general"]
@@ -227,11 +308,11 @@ def apply(
                     kind = "theme" if idx == 0 else "topic"
                     conn.execute(
                         """
-                        INSERT INTO subjects (id, owner, parent_id, path, label, kind, status)
-                        VALUES (%s, %s, %s, %s, %s, %s, 'candidate')
+                        INSERT INTO subjects (id, owner, parent_id, path, label, kind, status, provenance)
+                        VALUES (%s, %s, %s, %s, %s, %s, 'candidate', %s)
                         ON CONFLICT (owner, path) DO NOTHING
                         """,
-                        (cur_id, owner, parent_id, seg_path, part, kind),
+                        (cur_id, owner, parent_id, seg_path, part, kind, provenance),
                     )
                     row = conn.execute(
                         "SELECT id FROM subjects WHERE owner = %s AND path = %s",
@@ -243,9 +324,9 @@ def apply(
             return cur_id
 
         # 5) Apply facts (privacy quarantine + forget rules + temporal update/end)
-        resolved_names_by_ref = {
-            k: entities_by_id[v]["name"] for k, v in ref_to_eid.items() if v in entities_by_id
-        }
+        resolved_names_by_ref = {ref: _strip_new(hint.ref) for ref, hint in hints.items()}
+        applied_details: list[tuple[str, OutFact, set[str]]] = []
+        touched_eids: set[str] = set()
 
         for fact in out.facts:
             if _matches_forget_rule(fact, forget_rules, resolved_names_by_ref):
@@ -265,7 +346,8 @@ def apply(
                 quarantined[sens_cat] = quarantined.get(sens_cat, 0) + 1
                 continue
 
-            subject_id = _ensure_subject(fact.subject_path)
+            fact_provenance = provenance_for_statement(author_is_owner=_stated(fact))
+            subject_id = _ensure_subject(fact.subject_path, fact_provenance)
             new_fact_id = f"f_{uuid.uuid4().hex[:12]}"
             text_folded = fold_text(fact.text)
             content_hash = hashlib.sha256(
@@ -285,12 +367,14 @@ def apply(
                     """,
                     (owner, fact.target),
                 ).fetchone()
-                if tgt and tgt["status"] == "active":
-                    if fact.valid_from and tgt["valid_from"] and fact.valid_from < tgt["valid_from"]:
-                        # Older evidence never overwrites newer
+                if tgt and tgt["status"] in ("active", "superseded", "ended"):
+                    older = bool(fact.valid_from and tgt["valid_from"] and fact.valid_from < tgt["valid_from"])
+                    if older or tgt["status"] != "active":
+                        # Older evidence never overwrites newer. A late arrival
+                        # against an already superseded or ended target is history.
                         status = "history"
                         superseded_by = tgt["id"]
-                        valid_to = tgt["valid_from"]
+                        valid_to = tgt["valid_from"] if older else fact.valid_from
                     else:
                         new_tgt_status = "superseded" if fact.op == "update" else "ended"
                         conn.execute(
@@ -309,7 +393,7 @@ def apply(
                     valid_from, valid_to, status, superseded_by, provenance,
                     job_id, attempt_id, worker_id, model, prompt_version, content_hash
                 )
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'inferred', %s, %s, %s, %s, %s, %s)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """,
                 (
                     new_fact_id,
@@ -322,6 +406,7 @@ def apply(
                     valid_to,
                     status,
                     superseded_by,
+                    fact_provenance,
                     job.id,
                     f"{job.id}:{attempt.attempt_no}",
                     attempt.worker_id,
@@ -331,11 +416,19 @@ def apply(
                 ),
             )
             applied_fact_ids.append(new_fact_id)
+            resolved_eids: set[str] = set()
 
             for fe in fact.entities:
-                eid = _resolve(fe.entity_id, hints.get(fe.entity_id))
+                hint = hints.get(fe.entity_id) or hints.get(fe.entity_id.strip())
+                eid = _resolve(fe.entity_id, hint, provenance=fact_provenance)
                 if not eid:
                     continue
+                resolved_eids.add(eid)
+                touched_eids.add(eid)
+                _note_relation(eid, hint, fact)
+                _note_provenance(eid, fact_provenance)
+                for al in (hint.aliases if hint else []):
+                    _add_alias(eid, al)
                 conn.execute(
                     """
                     INSERT INTO fact_entities (owner, fact_id, entity_id, role)
@@ -394,21 +487,79 @@ def apply(
                     """,
                     (owner, new_fact_id, rid, rec_gen.get(rid, job.input_version)),
                 )
+            applied_details.append((new_fact_id, fact, resolved_eids))
 
-        # 6) Links
-        anchor_fact_id = applied_fact_ids[0] if applied_fact_ids else None
+        # 6) Links cite their own approved facts. Never the day's first fact, never null.
+        link_evidence_ids = {row[0] for row in applied_details}
         for lnk in out.links:
-            src_id = _resolve(lnk.src, hints.get(lnk.src))
-            dst_id = _resolve(lnk.dst, hints.get(lnk.dst))
-            if src_id and dst_id and src_id != dst_id:
-                link_id = f"l_{uuid.uuid4().hex[:12]}"
+            src_id = _resolve(lnk.src, hints.get(lnk.src), create=False)
+            dst_id = _resolve(lnk.dst, hints.get(lnk.dst), create=False)
+            if not src_id or not dst_id or src_id == dst_id:
+                continue
+            if src_id not in touched_eids or dst_id not in touched_eids:
+                continue
+            link_records = set(lnk.evidence or [])
+            by_overlap = [
+                fact_id for fact_id, fact, _eids in applied_details
+                if link_records and link_records & set(fact.evidence)
+            ]
+            by_mention = [
+                fact_id for fact_id, _fact, eids in applied_details
+                if src_id in eids and dst_id in eids
+            ]
+            support = [fid for fid in (by_overlap or by_mention) if fid in link_evidence_ids]
+            if not support:
+                continue
+            link_id = f"l_{uuid.uuid4().hex[:12]}"
+            conn.execute(
+                """
+                INSERT INTO links (id, owner, src, rel, dst, valid_from, evidence_fact_id)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """,
+                (link_id, owner, src_id, lnk.rel, dst_id, lnk.valid_from, support[0]),
+            )
+            for fid in support:
                 conn.execute(
                     """
-                    INSERT INTO links (id, owner, src, rel, dst, valid_from, evidence_fact_id)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    INSERT INTO link_evidence (owner, link_id, fact_id)
+                    VALUES (%s, %s, %s)
+                    ON CONFLICT DO NOTHING
                     """,
-                    (link_id, owner, src_id, lnk.rel, dst_id, lnk.valid_from, anchor_fact_id),
+                    (owner, link_id, fid),
                 )
+
+        for eid in touched_eids:
+            ent_row = entities_by_id.get(eid)
+            if ent_row is None or ent_row.get("relation_to_user") == "family":
+                continue
+            rows = conn.execute(
+                """
+                SELECT f.id, f.text, f.valid_from, COALESCE(s.path, '') AS path
+                FROM facts f
+                JOIN fact_entities fe ON fe.owner = f.owner AND fe.fact_id = f.id
+                LEFT JOIN subjects s ON s.owner = f.owner AND s.id = f.subject_id
+                WHERE f.owner = %s AND fe.entity_id = %s AND f.erased_at IS NULL
+                  AND f.status <> 'history'
+                """,
+                (owner, eid),
+            ).fetchall()
+            kept = [
+                row for row in rows
+                if _eligible_for_closeness(row["text"], row["path"], ent_row.get("relation_to_user"))
+            ]
+            days = {str(row["valid_from"])[:10] for row in kept if row["valid_from"]}
+            suggested = _closeness_tier(len(days), len(kept))
+            if suggested is None:
+                continue
+            conn.execute(
+                """
+                UPDATE entities
+                SET closeness_suggested = %s,
+                    closeness_suggested_evidence = %s::jsonb
+                WHERE owner = %s AND id = %s AND closeness_tier IS NULL
+                """,
+                (suggested, json.dumps([row["id"] for row in kept]), owner, eid),
+            )
 
         # 7) Recompute derived entity_subjects & subject fact_count from visible_facts
         conn.execute("DELETE FROM entity_subjects WHERE owner = %s", (owner,))
