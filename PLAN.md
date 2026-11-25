@@ -9,7 +9,7 @@ The single plan: identity, founder decisions, scope locks, live rulings, contest
 - **Portfolio:** one monorepo, all on `main`: Dubai-io (Personal), Community (Societal, replaces Persocial) and Messenger (Business, owns person-to-person messaging). Founder decisions D1–D16: `docs/submissions/shared/founder-decisions.md`.
 - **Delivery matrix:** each product targets an iPhone app in Expo Go, a website, and an Electron desktop app (Dubai-io's website is Expo web). All nine code targets are on `main`. Android and the $99 Apple Developer account are deferred. The founder's PC hosts the demo stack; Cloudflare Tunnel comes later (D13); Azure's $200 demo credit is reserved for later deployment.
 - **Immediate milestone:** the E0–E4 real-data round (`apps/memory/upgrade/prompts/`): local startup, Google sign-in and iPhone pairing, consented Gmail, Calendar, YouTube, Takeout, WhatsApp and desktop ingest, then Chat and Today on real memory. The sticker Builder is excluded (D6). Design polish follows that round; the 20 Nov visual spec is parked at `archive/design-spec-20-11`.
-- **Memory engine:** temporal_note (`apps/memory`), replacing Hindsight/Honcho/mem0. Current design, gates and the Vault: `docs/plan/Memory/memory.md` §9, §17, §18. The Vault has seven clusters (Career, Learning, Projects, People & family, Events, Home & money, Travel); inner-circle (T1) members are suggested, then user-confirmed; memory decays by default and Forget runs only on user request.
+- **Memory engine:** temporal_note (`apps/memory`), replacing Hindsight/Honcho/mem0. Current design, gates and the Vault: `docs/plan/Memory/memory.md` §9, §17, §18. The Vault has seven clusters (Career, Learning, Projects, People & family, Events, Home & money, Travel); inner-circle (T1) members are suggested, then user-confirmed; per D19 (25 Nov), memory decays to floor `0.01` and item/source controls **Lower** weights rather than deleting, while account-level **Delete my data** removes external queries and Redis immediately and keeps a de-identified training backup per FAQs.
 - Entries below are dated records. Where they name Hindsight, AC-1/AC-3 gates, Mirsal Studio, a single Personal focus, or `apps/site` as the one app, they are superseded by this block.
 
 ## 1. Identity (approved by the founder, 9 Nov 2026)
@@ -161,7 +161,7 @@ Also deferred / parked [24 Nov: Community and Messenger are separate entries on 
 
 ### NEVER
 
-Fake "Confirmed/Booked/Paid" · invented positions, belts, queues or prices shown as real · copying the official DubaiNow look · bidding / quote / price negotiation in any form.
+Fake "Confirmed/Booked/Paid" · invented positions, belts, queues or prices shown as real · copying the official DubaiNow look or Meta/Facebook/WhatsApp marks · bidding / quote / price negotiation in any form · any code, prompts, design, emoji-bank data, or MCP adapter from the contested sticker Builder service (`D:\Vscode\mirsal-builder-io`, D6) · AI image or sticker generation in Messenger (D7) · using the retired Messenger product name as a product name or shipping office-owned branding/code (D1) · building P2P messaging inside Community (D3) · claiming end-to-end encryption without independent assessment.
 
 ## 4. Live D-rulings (19 Oct)
 

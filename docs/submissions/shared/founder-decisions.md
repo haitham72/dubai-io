@@ -194,7 +194,36 @@ The redesign's latest design is current: commit `6b45ba4`, "AI workspace replace
 > "i am so opposed to the whole 'forget' thing, i only allow 'lower weights' not forget"
 
 - Applies now to all new work: no new delete paths. Learned vocabulary terms and inferred subjects decay to the weight floor instead of being deleted (E10 §4 rewritten; MORNING.md §E #6 and the #18 deletion sweep dropped).
-- Open: whether to remove the existing user-tapped Forget / source-revoke erasure (E8). Pending founder, given the user-erasure points (UAE PDPL right to erasure; YouTube API policy on deleting data after a user revokes access) and canon Rule 9 / ARCHITECTURE §7, which still list Forget. Canon docs are NOT changed by this entry.
+- Open: whether to remove the existing user-tapped Forget / source-revoke erasure (E8). Pending founder, given the user-erasure points (UAE PDPL right to erasure; YouTube API policy on deleting data after a user revokes access) and canon Rule 9 / ARCHITECTURE §7, which still list Forget. Canon docs are NOT changed by this entry. *(Settled 25 Nov 2026 by D19 below.)*
+
+## D19 — Never forget (lower weights to formula minimum); "Delete my data" purges external queries & Redis immediately with de-identified training backup (25 Nov)
+
+> "- never forget, lower weights to a minimum weight you come up with the formula
+> - delete my data successfully removes the data from external queries and from reddis immediately, but backup is kept for training as mentioned in faqs"
+
+- **Item & source controls (replaces Forget everywhere):** Every item/source Forget control becomes **Lower** (with **Restore**). Nothing is deleted or tombstoned on normal memory operations. Unified weight formula:
+  $$w_{\text{eff}}(t, k, c) = \max\Big(w_{\min},\; w_{\text{base}} \cdot c \cdot 2^{-\frac{\max(0,\, t - 30)}{30}} \cdot 0.5^{k}\Big)$$
+  where $w_{\min} = 0.01$ (hard floor), natural age-decay floor is $0.05$, surface visibility threshold for Chat / Today / recommender retrieval is $\tau_{\text{surface}} = 0.10$, $t$ is age in days (confirmed `user_supplied` / `provider_confirmed` items have zero time decay), $c$ is confidence, and $k$ is user "Not true" / dismissal half-life steps. An explicit **Lower** sets weight directly to $w_{\min} = 0.01$: the item immediately drops below $\tau_{\text{surface}} = 0.10$ (leaving Chat context, Today cards, and recommendations) while remaining visible in Memory Vault as `"Lowered"` and restorable. Work package: `apps/memory/upgrade/prompts/E13a_lower_weights_delete_my_data.md` (Codex).
+- **Account-level "Delete my data":** Synchronously purges all owner keys from Redis and in-process caches, revokes active app sessions and memory device tokens, bumps generation/version fences, and excludes the owner from every external query, API read, MCP tool, and UI surface immediately. Simultaneously retains an isolated, externally unreachable, de-identified training backup row set per the user-facing FAQs (explicitly excluding Google Workspace / YouTube-restricted data under Google API Limited Use policy). Settles D18's open question.
+
+## D20 — Canon patches finalized and archived (25 Nov)
+
+> "idk what you are talking about, but if they are succesffuly done and stale then finalize them"
+
+- Missing valid pieces from `docs/submissions/shared/canon-patches/` (`PLAN.patch.md` `### NEVER` additions and `ARCHITECTURE.patch.md` §4 `cs_*`/`cm_*`/`mg_*` rows, §7 Cross-App Memory via `temporal_note`, §9.3 Verified Cross-App Identity, and §10 D3/D6/D7 exclusions) are merged into canon; already-superseded `CLAUDE.patch.md` and `docs-status.patch.md` and all four `.patch.md` files are moved via `git mv` into `docs/archive/canon-patches-2026-11-25/`.
+
+## D21 — Similar-query clustering and logical agent for shared vocabulary proposals (25 Nov)
+
+> "there should be a function that quries most similar quiries and propose them by logical agent"
+
+- Extends D17: adds a similarity query function (`find_similar_queries_and_terms` over `BAAI/bge-m3` cosine similarity + folded lexical matching) and a logical-agent proposer (`propose_shared_vocab_promotions` through `core/extract.py`) that groups anonymised recurring unknown queries/terms across multiple distinct owners (`>= 3` owners, Rule-9 filtered, zero raw PII) and stages canonical EN/AR/Arabizi shared-vocabulary proposals (`shared_vocab_proposals` table) for human/integrator approval rather than auto-editing curated `vocab/tree.json`. Work package: `apps/memory/upgrade/prompts/E13b_similar_queries_vocab_agent.md`.
+
+## D22 — Dubai Community Facebook/Reddit replica + Real Two-Tower Recommender + Context-Aware Usage Profile (25 Nov)
+
+> "we are building facebook/reddit replica for dubai community, plan for it and check recommender systems/two tower recommendation/ logic for populating profile usage understanding coupled with location/mobile/time of day/userState like walking standing sitting driving etc"
+
+- Expands Entry 2 (`apps/community/`, `apps/api/app/community/`) into full Facebook + Reddit social parity while preserving D3 (zero P2P messaging inside Community), D11 (18+ gate), and D14 (light mode, no shadows, native social UI).
+- Replaces `scripts/run_two_tower_recommender.py` (which is a 10-query Tavily search prototype) with a real 4-stage **Two-Tower Recommender** (`pgvector` HNSW + `BAAI/bge-m3` + E10 topic tree + calibrated multi-task ranker + diversity + deterministic `Why this?`) and a **Context-Aware Profile Usage Understanding** projector combining opt-in foreground `area_coarse`, `device_class`, `time_of_day`, and `user_state` (`stationary|sitting|standing|walking|running|driving|unknown`) — strictly foreground-only (zero background geofencing per Rule 8), zero health inference (Rule 9), driving safety filter, and ephemeral Redis TTL. Plan: `docs/submissions/community/FACEBOOK_REDDIT_RECOMMENDER_PLAN.md`; work packages: `E14a_community_social_parity.md` and `E14b_community_two_tower_context.md`.
 
 ## Founder to-dos (not agent work)
 

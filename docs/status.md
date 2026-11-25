@@ -1,10 +1,10 @@
-# Status — 24 Nov 2026 (evening)
+# Status — 25 Nov 2026
 
 Single current-state file. Scope: `PLAN.md`. Open requests: [request-backlog.md](request-backlog.md).
 
-## Direction (24 Nov 2026, evening)
+## Direction (25 Nov 2026)
 
-All three products and their nine client targets (iPhone via Expo Go, website, Electron, for each of Dubai-io, Community and Messenger) are on `main`. Current work is **E0–E4**: local stack, PC Google sign-in and iPhone QR pairing, consented ingest, and Chat and Today on real memory. Engine: temporal_note. Current gates and evidence are in `docs/plan/Memory/memory.md` §18 and `apps/memory/upgrade/reports/STATUS.md`. Delivery matrix: `PLAN.md` §0. Treat the 16–18 Nov lab results below as historical.
+All three products and their nine client targets (iPhone via Expo Go, website, Electron, for each of Dubai-io, Community and Messenger) are on `main`, with **E10, E11a, E11b, and E12 merged** and the full 5-lane acceptance rerun recorded in `apps/memory/upgrade/reports/U7_post_E11.md`. Next queued packages (`D19–D22`, tracked in `apps/memory/upgrade/reports/STATUS.md`): `E13a` (Lower-to-floor `0.01` + Delete-my-data immediate external/Redis purge with de-identified training backup), `E13b` (similar-query logical agent for shared vocab proposals), and `E14a`/`E14b` (Dubai Community Facebook/Reddit parity + real Two-Tower Recommender + context-aware usage profile). Engine: temporal_note (`docs/plan/Memory/memory.md` §18). Delivery matrix: `PLAN.md` §0. Treat the 16–18 Nov lab results below as historical.
 
 ## Historical: MEM-01 & Acceptance Gates Status (18 Nov 2026; superseded by temporal_note)
 
@@ -54,4 +54,4 @@ The current demo runs on the founder's PC with local Postgres (E1). Cloudflare T
 
 ## Branches
 
-All three products are on `main` (D16). Feature branches start from `main`; Claude integrates gated branches. `apps/web` is frozen at `mobile-pwa-baseline-2026-10-23`.
+All three products are on `main` (D16). Feature branches start from `main`; the integrator verifies gates and merges into `main`. `apps/web` is frozen at `mobile-pwa-baseline-2026-10-23`.
