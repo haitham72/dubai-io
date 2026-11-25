@@ -6,19 +6,17 @@ export const seedPosts: Post[] = [
     id: "demo-1", text: "Morning walk along the marina — the light at 7am makes the whole route feel new again. Anyone else doing the Saturday loop?",
     author: { handle: "sara_m", display_name: "Sara M." }, group_id: "g-walks", group_name: "Weekend Walks",
     created_at: asOf, as_of: asOf, provenance: "demo_fixture", reactions: 12, comments: 4,
-    media_label: "Marina promenade at sunrise (demo image)", why: "You follow Sara and joined Weekend Walks.",
+    media_label: "Marina promenade at sunrise (demo image)",
   },
   {
     id: "demo-2", text: "Found a small book-swap shelf in JLT cluster D. Left two novels, took one. Lovely idea — should we start one per cluster?",
     author: { handle: "omar_k", display_name: "Omar K." }, group_id: "g-books", group_name: "Book Swap Circle",
     created_at: asOf, as_of: asOf, provenance: "demo_fixture", reactions: 8, comments: 6,
-    why: "Matches an interest you saved: reading.",
   },
   {
     id: "demo-3", text: "Reminder: community garden volunteer hour is Friday 8am. Bring gloves if you have them; tools are provided.",
     author: { handle: "layla_a", display_name: "Layla A." }, group_id: "g-garden", group_name: "Community Garden",
     created_at: asOf, as_of: asOf, provenance: "demo_fixture", reactions: 5, comments: 2, pinned: true,
-    why: "Pinned in a community you joined.",
   },
 ];
 

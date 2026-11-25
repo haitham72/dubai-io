@@ -7,6 +7,9 @@ export const SESSION_KEY = "dubaiio_community_session";
 export function getSessionToken(): string | null {
   try { return window.localStorage.getItem(SESSION_KEY); } catch { return null; }
 }
+export function isSignedIn(): boolean {
+  return !!getSessionToken();
+}
 export function setSessionToken(token: string | null): void {
   try {
     if (token) window.localStorage.setItem(SESSION_KEY, token);
