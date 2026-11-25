@@ -406,3 +406,43 @@ def test_e9b_end_cue_fallback_for_plain_new_facts(text, becomes_end):
     validate(job, bundle, attempt, now=now)
     assert attempt.output.facts, "fact must survive validation"
     assert (attempt.output.facts[0].op == "end") is becomes_end
+
+
+@pytest.mark.parametrize("text, original, expected_op", [
+    ("my gym membership got cancelled", None, "end"),
+    ("I quit my class", None, "end"),
+    ("Kimo cancelled his gym membership", None, "end"),
+    ("Omar quit his job", None, "new"),
+    ("My friend Omar quit his job", None, "new"),
+    ("I heard Omar quit his job", None, "new"),
+    ("I cancelled Omar's booking", None, "new"),
+    ("I cancelled his booking", None, "new"),
+    ("my friend Omar's booking was cancelled", None, "new"),
+    ("the class was not cancelled", None, "new"),
+    ("my class was not cancelled", None, "new"),
+    ("I never quit my class", None, "new"),
+    ("my gym membership wasn\x27t cancelled", None, "new"),
+    ("I didn\u2019t quit my job", None, "new"),
+    ("\u0627\u0644\u0643\u0644\u0627\u0633 \u0645\u0627 \u0627\u062a\u0644\u063a\u0627\u0634", None, "new"),
+    ("my class was cancelled", "\u0627\u0644\u0643\u0644\u0627\u0633 \u0645\u0627 \u0627\u062a\u0644\u063a\u0627\u0634", "new"),
+    ("I quit my class", "\u0645\u0634 \u0633\u0628\u062a \u0627\u0644\u0643\u0644\u0627\u0633", "new"),
+    ("my class was cancelled", "\u0627\u0644\u0643\u0644\u0627\u0633 \u0645\u0648 \u0645\u0644\u063a\u064a", "new"),
+    ("my class was cancelled", "\u0644\u0645 \u064a\u0644\u063a \u0627\u0644\u0643\u0644\u0627\u0633", "new"),
+    ("my class was cancelled", "\u0644\u0646 \u064a\u0644\u063a\u0649 \u0627\u0644\u0643\u0644\u0627\u0633", "new"),
+    ("my class was cancelled", "\u0627\u0644\u0643\u0644\u0627\u0633 \u0645\u0627\u062a\u0644\u063a\u0627\u0634", "new"),
+    ("my class was cancelled", "el class msh etlagha", "new"),
+    ("my class was cancelled", "el class mesh etlagha", "new"),
+])
+def test_e11_end_cue_requires_unnegated_owner_action(text, original, expected_op):
+    now, job, bundle, attempt = _make_fixtures()
+    fact = attempt.output.facts[0]
+    fact.op = "new"
+    fact.text = text
+    fact.text_orig = original
+    fact.entities = []
+    bundle.records = []
+
+    verdict = validate(job, bundle, attempt, now=now, owner_obj=_owner())
+
+    assert verdict.ok
+    assert [result.op for result in attempt.output.facts] == [expected_op]

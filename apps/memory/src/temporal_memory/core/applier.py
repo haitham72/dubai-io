@@ -31,50 +31,202 @@ _CLOSENESS_SKIP_ROOTS = {"family", "health", "faith", "religion", "wellbeing"}
 _CLOSENESS_SKIP_CATS = {"health", "religion", "family_third_party"}
 
 
-_STOP = frozenset("this that with from have been were will would about after before their there which while karim "
-                  "per month year week day days into than then also only just over under again onto upon the and for his her was are has not new its our you your out but all can may had who how why got get set".split())
+_LATE_MONTH = r"(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)"
+_LATE_SCHEDULE = re.compile(
+    rf"\b(?:\d{{1,2}}(?::\d{{2}})?\s*[ap]\.?m\.?|{_LATE_MONTH}\.?\s+\d{{1,2}}|\d{{1,2}}\s+{_LATE_MONTH}|\d{{4}}-\d{{2}}-\d{{2}})\b",
+    re.I,
+)
+_LATE_AMOUNT = r"\d+(?:,\d{3})*(?:\.\d+)?"
+_LATE_MONEY = re.compile(
+    rf"(?<!\w)(?:(?:aed|usd|dhs|\$)\s*{_LATE_AMOUNT}|{_LATE_AMOUNT}\s*(?:aed|usd|dhs|k))\b", re.I,
+)
+_LATE_CHANGE_TARGET = r"(?:\s+from\s+(?P<prior>[^;!?]+?))?\s+to\b"
+_LATE_SCHEDULE_CHANGE = re.compile(
+    r"\b(?:moved|rescheduled|pushed|shifted|postponed|changed)" + _LATE_CHANGE_TARGET
+)
+_LATE_RENT_EFFECTIVE = re.compile(r"\bwill be\b(?=.*\b(?:starts?|starting|effective|adjustment)\b)")
+_LATE_MONEY_CHANGE = re.compile(
+    r"\b(?:rais(?:ed|es)|rose|rises|increas(?:ed|es)|drop(?:ped|s)|reduc(?:ed|es)|"
+    r"adjust(?:ed|s)|lower(?:ed|s)|chang(?:ed|es))" + _LATE_CHANGE_TARGET
+)
+_LATE_UNIT = re.compile(r"aed|usd|dhs|k|\$", re.I)
+_LATE_PRICE_DESCRIPTION = re.compile(r"\b(?:price|costs?|listed|listing|priced|offered|asking)\b")
+_LATE_INTERVIEW_STAGE = re.compile(r"\b(first|second|third|final) (?:\w+ )?interview\b")
+_LATE_LABELED_INTERVIEW = re.compile(
+    r"\b(first|second|third|final) (?:(\w+) interview|interview with (\w+))\b"
+)
+_LATE_EVENT = re.compile(r"\b(?:appointment|booking|class|cohort|flight|interview|meeting|reservation|trip)\b")
+_LATE_SLOT_NOISE = frozenset(
+    "a an the my of for to s is was were got has had been his her their our paid payment original confirmation".split()
+)
 
 
-def _slot_tokens(text: str) -> tuple[set[str], set[str]]:
-    """(content words, number-bearing tokens) of a folded fact text, for the late-arrival slot check."""
-    words: set[str] = set()
-    nums: set[str] = set()
-    for tok in re.findall(r"[^\W_]+", fold_text(text)):
-        if any(c.isdigit() for c in tok):
-            nums.add(tok)
-        elif len(tok) >= 3 and tok not in _STOP:
-            words.add(tok)
-    return words, nums
+def _late_value(pattern: re.Pattern[str], raw: str) -> str:
+    value = raw.lower().replace(",", "").strip()
+    if pattern is _LATE_MONEY:
+        unit = _LATE_UNIT.search(value)[0]
+        amount = _LATE_UNIT.sub("", value).strip()
+        whole, _, decimals = amount.partition(".")
+        unit = {"dhs": "aed", "$": "usd"}.get(unit, unit)
+        return f"{unit} {int(whole)}.{decimals.rstrip('0')}"
+
+    clock = re.fullmatch(r"(\d{1,2})(?::(\d{2}))?\s*([ap])\.?m\.?", value)
+    if clock:
+        return f"{int(clock[1])}:{clock[2] or '00'}{clock[3]}m"
+    iso_date = re.fullmatch(r"\d{4}-(\d{2})-(\d{2})", value)
+    if iso_date:
+        return f"{int(iso_date[1])}:{int(iso_date[2])}"
+    month = re.search(_LATE_MONTH, value)
+    day = re.search(r"\d+", value)
+    months = "jan feb mar apr may jun jul aug sep oct nov dec".split()
+    return f"{months.index(month[0][:3]) + 1}:{int(day[0])}"
 
 
-def _late_superseder(conn: Any, owner: str, subject_id: str, fact: Any) -> dict | None:
-    """E9b late arrival: an OLDER record that restates a number/date of a newer active fact on the same subject.
+def _late_event_labels(text: str) -> set[tuple[str, tuple[str, ...], tuple[str, ...]]]:
+    labels = set()
+    for event in _LATE_EVENT.finditer(text):
+        prefix = re.sub(rf"\b{_LATE_MONTH}\s+\d{{1,2}}\b", "", text[:event.start()])
+        words = [word for word in prefix.split() if word not in _LATE_SLOT_NOISE]
+        suffix = text[event.end():].split()
+        qualifiers = tuple(word for word in suffix if word not in {"at", "on", "is", "was", "got", "were"})
+        labels.add((event[0], tuple(words[-2:]), qualifiers))
+    return labels
 
-    Returns the newest such fact (id, valid_from) or None. Conservative on purpose: the evidence record must be dated
-    before the newer fact starts (a truly late record, not a backdated mention), both texts must carry a number or
-    date, and they must share two content words. A fact with no number ("Sara is the instructor") never matches.
-    """
-    if not fact.valid_from or not fact.evidence:
-        return None
-    words, nums = _slot_tokens(fact.text)
-    if not nums or len(words) < 2:
+
+def _late_rent_label(text: str) -> str:
+    prefix = text.split(" rent", 1)[0] if not text.startswith("rent ") and text != "rent" else ""
+    prefix = re.split(r"\b(?:paid|receipt of)\s+", prefix)[-1]
+    # Strip billing months and owner possessives before comparing a property label.
+    prefix = re.sub(rf"\b{_LATE_MONTH}(?: (?:19|20)\d{{2}})?\b", "", prefix)
+    prefix = prefix.rsplit(" s ", 1)[-1]
+    if prefix.endswith(" s"):
+        return ""
+    words = [
+        word for word in prefix.split()
+        if word not in _LATE_SLOT_NOISE and word not in {"one", "two", "three", "bedroom", "flat", "apartment"}
+    ]
+    return words[-1] if words else ""
+
+
+def _late_same_slot(
+    older: str, newer: str, change: re.Match[str], pattern: re.Pattern[str], same_source: bool,
+) -> bool:
+    old_values = list(pattern.finditer(older))
+    target = newer[change.end():].lstrip()
+    if pattern is _LATE_SCHEDULE:
+        target = re.sub(r"^(?:start(?:ing)? |(?:mon|tues|wednes|thurs|fri|satur|sun)day,? )+", "", target)
+    new_value = pattern.match(target)
+    if not old_values or new_value is None:
+        return False
+    new_normalized = _late_value(pattern, new_value[0])
+    old_normalized = {_late_value(pattern, value[0]) for value in old_values}
+    if new_normalized in old_normalized:
+        return False
+    prior = change.groupdict().get("prior")
+    if prior is not None and not any(
+        _late_value(pattern, value[0]) in old_normalized for value in pattern.finditer(prior)
+    ):
+        return False
+
+    new_prefix = fold_text(newer[:change.start()])
+    if set(new_prefix.split()) & {"not", "never", "might", "could", "would", "may"}:
+        return False
+
+    old_prefix = fold_text(older[:old_values[0].start()])
+    if pattern is _LATE_SCHEDULE:
+        # The event noun and its modifiers must agree, including any booking identifier.
+        if _late_event_labels(old_prefix) & _late_event_labels(new_prefix):
+            return True
+        # Named interview stages can be worded as "first Acme interview" or
+        # "first interview with Acme". Require corroborating sender and stage.
+        interview = _LATE_LABELED_INTERVIEW.search(new_prefix)
+        if not (interview and same_source):
+            return False
+        party = interview[2] or interview[3]
+        old_stage = _LATE_INTERVIEW_STAGE.search(old_prefix)
+        return bool(
+            old_stage and old_stage[1] == interview[1] and re.search(rf"\b{re.escape(party)}\b", old_prefix)
+        )
+
+    old_rent, new_rent = "rent" in old_prefix.split(), "rent" in new_prefix.split()
+    if old_rent or new_rent:
+        if not (old_rent and new_rent):
+            return False
+        # Month qualifiers describe the billing period, not a different rental.
+        old_label, new_label = _late_rent_label(old_prefix), _late_rent_label(new_prefix)
+        if old_label and new_label:
+            return old_label == new_label
+        return same_source
+    if change.re is _LATE_RENT_EFFECTIVE:
+        return False
+
+    if not _LATE_PRICE_DESCRIPTION.search(old_prefix):
+        return False
+    # A displayed price is distinct from another expense involving the same item.
+    new_prefix = re.sub(r" s (?=(?:price|cost)$)", " ", new_prefix)
+    item = re.search(r"\b([a-z0-9]+(?: [a-z0-9]+)?) (?:price|cost)$", new_prefix)
+    if item:
+        label = [word for word in item[1].split() if word not in {"a", "an", "the", "my", "its", "asking", "s"}]
+        if label and re.search(rf"\b{re.escape(' '.join(label))}\b", old_prefix):
+            return True
+
+    old_models, new_models = _late_model_labels(old_prefix), _late_model_labels(new_prefix)
+    return len(new_models) == 1 and old_models == new_models
+
+
+def _late_model_labels(text: str) -> set[tuple[str, str]]:
+    year = r"(?:19|20)\d{2}"
+    model = r"[a-z][a-z0-9-]*"
+    year_first = set(re.findall(rf"\b({year}) ({model})\b", text))
+    if year_first:
+        return year_first
+    return {
+        (year_value, model_value)
+        for model_value, year_value in re.findall(rf"\b({model}) ({year})\b", text)
+        if model_value not in _LATE_SLOT_NOISE
+    }
+
+
+def _late_superseder(conn: Any, owner: str, subject_id: str, fact: OutFact) -> dict | None:
+    """Find a newer active fact that explicitly changes the same scheduled or priced slot."""
+    if not fact.valid_from or not fact.evidence or not (
+        _LATE_SCHEDULE.search(fact.text) or _LATE_MONEY.search(fact.text)
+    ):
         return None
     ats = conn.execute(
         "SELECT max(substr(at, 1, 10)) AS d FROM records WHERE owner = %s AND id = ANY(%s)",
         (owner, list(fact.evidence)),
     ).fetchone()
-    rec_day = (ats or {}).get("d") if ats else None
+    rec_day = (ats or {}).get("d")
     if not rec_day:
         return None
     rows = conn.execute(
-        "SELECT id, valid_from, text FROM facts WHERE owner = %s AND subject_id = %s AND status = 'active' "
-        "AND erased_at IS NULL AND valid_from > %s AND valid_from > %s ORDER BY valid_from DESC",
-        (owner, subject_id, fact.valid_from, rec_day),
+        """
+        SELECT f.id, f.valid_from, f.text, EXISTS (
+            SELECT 1 FROM fact_evidence AS e
+            JOIN records AS newer ON newer.owner = e.owner AND newer.id = e.record_id
+            JOIN records AS older ON older.owner = e.owner
+                AND older.source = newer.source AND older.author = newer.author
+            WHERE e.owner = f.owner AND e.fact_id = f.id AND older.id = ANY(%s)
+                AND newer.author <> '' AND newer.erased_at IS NULL AND older.erased_at IS NULL
+        ) AS same_source
+        FROM facts AS f
+        WHERE f.owner = %s AND f.subject_id = %s AND f.status = 'active'
+            AND f.erased_at IS NULL AND f.valid_from > %s AND f.valid_from > %s
+        ORDER BY f.valid_from DESC
+        """,
+        (list(fact.evidence), owner, subject_id, fact.valid_from, rec_day),
     ).fetchall()
     for row in rows:
-        w2, n2 = _slot_tokens(row["text"])
-        if n2 and len(words & w2) >= 2:
-            return {"id": row["id"], "valid_from": row["valid_from"]}
+        newer = row["text"].lower()
+        for change_pattern, value_pattern in (
+            (_LATE_SCHEDULE_CHANGE, _LATE_SCHEDULE),
+            (_LATE_MONEY_CHANGE, _LATE_MONEY),
+            (_LATE_RENT_EFFECTIVE, _LATE_MONEY),
+        ):
+            change = change_pattern.search(newer)
+            if change and _late_same_slot(fact.text, newer, change, value_pattern, row["same_source"]):
+                return {"id": row["id"], "valid_from": row["valid_from"]}
     return None
 
 

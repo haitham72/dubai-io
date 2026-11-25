@@ -30,6 +30,47 @@ _END_CUE = re.compile(
     r"(?<![A-Za-z])(?:cancell?ed|called off|quit|unsubscribed|withdrew|paused|dropped out|terminated)(?![A-Za-z])", re.I
 )
 
+_END_NEGATION = re.compile(
+    r"\b(?:not|never|[a-z]+n['\u2019]t|msh|mesh|مش|مو|ما|لم|لن|ما[\u0621-\u064a]+ش)\b",
+    re.I,
+)
+
+
+_END_PASSIVE_SUBJECT = re.compile(
+    r"\b(?:account|appointment|booking|class|contract|event|flight|gig|interview|job|lease|membership|"
+    r"order|plan|project|reservation|service|session|shift|subscription|trip)"
+    r"(?: (?:at|for|on|to|with) .+)? (?:was|were|got|has been|have been|had been)$"
+)
+
+
+def _owner_end_cue(fact: OutFact, self_names: set[str]) -> bool:
+    """Recognize direct owner actions and passive endings of owner-possessed events."""
+    text = fact.text or ""
+    cue = _END_CUE.search(text)
+    original = fact.text_orig or ""
+    if cue is None or fact.polarity == "negated" or fact.modality in {"planned", "wanted"}:
+        return False
+    if any(_END_NEGATION.search(value) for value in (text, original, fold_text(text), fold_text(original))):
+        return False
+
+    prefix = fold_text(text[:cue.start()])
+    actor = re.sub(r" (?:has|have|had)$", "", prefix)
+    if actor == "i" or actor in self_names:
+        target = text[cue.end():].lstrip()
+        # A user can report ending a different person's event.
+        if re.match(r"(?:[\w-]+\s+){0,2}[\w-]+['\u2019]s\s", target, re.I):
+            return False
+        return actor != "i" or not re.match(r"(?:his|her|their|your)\b", target, re.I)
+
+    # A possessive by itself is insufficient: "my friend Omar quit" is Omar's action.
+    if cue.group().lower() not in {"quit", "unsubscribed", "withdrew", "dropped out"}:
+        for possessive in ("my", *(f"{name} s" for name in self_names)):
+            if prefix.startswith(possessive + " "):
+                event = prefix[len(possessive):]
+                return " s " not in event and bool(_END_PASSIVE_SUBJECT.search(event))
+    return False
+
+
 VALID_FACT_OPS = frozenset({"new", "update", "end"})
 VALID_LINK_RELS = frozenset(
     {
@@ -271,6 +312,9 @@ def validate(
             reasons.append("evidence_outside_input")
             fatal.append("evidence_outside_input")
 
+    # Named references may use the owner's first name when the profile uses a full name.
+    end_cue_self_names = self_folded | {name.split()[0] for name in self_folded}
+
     # 4) Target check for update / end
     context_fact_ids = {
         f["id"] for f in bundle.context.get("facts", []) if isinstance(f, dict) and "id" in f
@@ -278,7 +322,7 @@ def validate(
     for idx, fact in enumerate(out.facts):
         if idx in fact_drops:
             continue
-        if fact.op == "new" and _END_CUE.search(fact.text or ""):
+        if fact.op == "new" and _owner_end_cue(fact, end_cue_self_names):
             # E9b: the model reports a cancellation/quit as a plain new fact; record it as the end event it is.
             fact.op = "end"
             fact.target = None
