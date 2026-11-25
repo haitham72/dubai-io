@@ -73,3 +73,4 @@ E9b: branch e9b/s2-quality 37f0d1f pushed (not merged); pytest 475/8 skip; S2 su
 2026-11-25 07:46 | E11a | codex | e11a/temporal-fixes | — | queued (prompts/E11_review_fixes.md Part A)
 2026-11-25 07:46 | E11b | devin | e11b/review-fixes | — | queued (prompts/E11_review_fixes.md Part B)
 2026-11-25 08:24 | E10 | claude | e10/topic-tree | — | prompt amended per D18 (no deletion; weights to floor) — agents read latest main
+2026-11-25 08:28 | E12 | devin | e12/community-wiring | — | queued after E11b (prompts/E12_community_wiring.md)

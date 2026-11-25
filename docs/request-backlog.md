@@ -20,6 +20,7 @@ Queued 25 Nov (founder decision D17, topic vocabulary):
 
 - **E10 (Gemini):** one topic tree replaces the hard-coded `_SYNONYM_GROUPS`; the LLM may propose new words under an existing word with a cited source. Prompt: [E10_topic_tree.md](../apps/memory/upgrade/prompts/E10_topic_tree.md). Branch `e10/topic-tree`. Queued.
 - **E11 (Codex part A, Devin part B):** review fixes from the E1–E9 reviews. Prompt: [E11_review_fixes.md](../apps/memory/upgrade/prompts/E11_review_fixes.md). Part A `e11a/temporal-fixes` (Codex), part B `e11b/review-fixes` (Devin). Queued.
+- **E12 (Devin, after E11b):** wire the Community website to the real backend (feed, post actions, follows, groups, search, For you). Prompt: [E12_community_wiring.md](../apps/memory/upgrade/prompts/E12_community_wiring.md). Branch `e12/community-wiring`. Queued.
 
 ## HISTORICAL — LAB-01 headless Know / Notice / Do pipeline (9–16 Nov)
 
