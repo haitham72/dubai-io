@@ -90,3 +90,4 @@ E9b: branch e9b/s2-quality 37f0d1f pushed (not merged); pytest 475/8 skip; S2 su
 2026-11-25 | E14b | devin | e14b/community-two-tower | — | queued after E14a (prompts/E14b_community_two_tower_context.md — D22 real Two-Tower + foreground context + usage profile)
 2026-11-25 | E14 | gemini-integrator (4 sub-agents) | e14/community-replica-recommender | 1275b25 | in-progress, UNVERIFIED WIP pushed (2 of 4 agents hit quota; two-tower not wired into server.py/agents.py; 2 failing tests; web UI gates not run) - see prompts/HANDOFF_integrator_2026-11-25b.md
 2026-11-25 | HANDOFF | gemini-integrator | main | 55878ab | handoff 2 written (prompts/HANDOFF_integrator_2026-11-25b.md); PR #9 (chore/e11b-e12-cleanups) open, E13a uncommitted in contest-e13a
+2026-11-25 | E14c | devin | e14c-1..7 | - | queued piece by piece (prompts/E14c_devin_piecewise.md): 1 start shells, 2 LAN api base, 3 backend verify, 4 mobile verify, 5 web social, 6 two-tower fix, 7 wire
