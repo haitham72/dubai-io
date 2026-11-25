@@ -154,6 +154,13 @@ def run(out_dir: Path) -> dict:
     llm_days = {d for d in os.environ.get("S2_LLM_DAYS", "").split(",") if d}  # days re-extracted live even in replay
 
     try:
+        from temporal_memory.vocab.proposals import get_proposal_stats, reset_proposal_stats
+
+        reset_proposal_stats()
+    except ImportError:
+        get_proposal_stats = None  # type: ignore[assignment]
+
+    try:
         os.environ["TM_LEASE_SECONDS"] = "1200"
         os.environ["CLAUDE_CODE_DISABLE_ATTACHMENTS"] = "1"
         os.environ["CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC"] = "1"
@@ -507,6 +514,7 @@ def run(out_dir: Path) -> dict:
                     "privacy_fp_le_2pct": privacy_fp_pct <= 2.0,
                     "zero_rejected_jobs": len(rejected_jobs) == 0,
                 },
+                "vocab_proposals": get_proposal_stats() if get_proposal_stats is not None else None,
             }
             (out_dir / "s2_extract_cost.json").write_text(json.dumps(out, indent=2, ensure_ascii=False), encoding="utf-8")
             return out

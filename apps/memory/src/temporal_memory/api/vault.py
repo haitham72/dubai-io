@@ -981,3 +981,27 @@ def why_fact(
         "as_of": fact.valid_from or now_iso,
         "demo_data": is_demo or fact.provenance == "demo_fixture",
     }
+
+
+@router.get("/vocab/learned")
+def vault_learned_vocab(
+    owner: str,
+    _: AuthContext = Depends(require_owner_access),
+    store: GraphStore = Depends(get_store),
+) -> dict[str, Any]:
+    """Return owner-scoped learned vocabulary terms with source record provenance."""
+    now_iso, is_demo = _meta(store, owner)
+    db_obj = getattr(store, "db", None)
+    items: list[dict[str, Any]] = []
+    if db_obj is not None:
+        from temporal_memory.vocab.proposals import list_owner_learned_terms
+
+        with db_obj.connection() as conn:
+            items = list_owner_learned_terms(conn, owner)
+    return {
+        "owner": owner,
+        "items": items,
+        "count": len(items),
+        "provenance": "demo_fixture" if is_demo else "inferred",
+        "as_of": now_iso,
+    }

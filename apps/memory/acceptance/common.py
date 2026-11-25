@@ -489,6 +489,16 @@ def dump_graph_snapshot(db: Database, owner: str, out_path: Path) -> dict[str, A
             "entity_subjects": conn.execute("SELECT * FROM entity_subjects WHERE owner = %s", (owner,)).fetchall(),
             "quarantine": conn.execute("SELECT * FROM quarantine WHERE owner = %s ORDER BY id", (owner,)).fetchall(),
         }
+        has_lt = conn.execute(
+            "SELECT 1 FROM information_schema.tables WHERE table_schema = current_schema() AND table_name = 'learned_terms'"
+        ).fetchone()
+        if has_lt:
+            snap["learned_terms"] = conn.execute(
+                "SELECT * FROM learned_terms WHERE owner = %s ORDER BY path", (owner,)
+            ).fetchall()
+            snap["learned_term_sources"] = conn.execute(
+                "SELECT * FROM learned_term_sources WHERE owner = %s ORDER BY term_folded, record_id", (owner,)
+            ).fetchall()
     out_path.write_text(json.dumps(snap, indent=2, default=str, ensure_ascii=False), encoding="utf-8")
     return snap
 
@@ -575,6 +585,23 @@ def load_graph_snapshot(db: Database, snap_path: Path) -> str:
                 "INSERT INTO quarantine (owner, category, record_ids, status) VALUES (%s,%s,%s::jsonb,%s)",
                 (owner, q["category"], json.dumps(q["record_ids"]), q["status"]),
             )
+        if snap.get("learned_terms"):
+            has_lt = conn.execute(
+                "SELECT 1 FROM information_schema.tables WHERE table_schema = current_schema() AND table_name = 'learned_terms'"
+            ).fetchone()
+            if has_lt:
+                for lt in snap["learned_terms"]:
+                    conn.execute(
+                        "INSERT INTO learned_terms (owner, term_folded, term, parent_path, path, provenance) "
+                        "VALUES (%s,%s,%s,%s,%s,%s) ON CONFLICT DO NOTHING",
+                        (owner, lt["term_folded"], lt["term"], lt["parent_path"], lt["path"], lt.get("provenance", "inferred")),
+                    )
+                for lts in snap.get("learned_term_sources") or []:
+                    conn.execute(
+                        "INSERT INTO learned_term_sources (owner, term_folded, record_id) "
+                        "VALUES (%s,%s,%s) ON CONFLICT DO NOTHING",
+                        (owner, lts["term_folded"], lts["record_id"]),
+                    )
     return owner
 
 

@@ -841,6 +841,11 @@ def apply(
             (owner,),
         )
 
+        if getattr(out, "new_terms", None):
+            from temporal_memory.vocab.proposals import apply_new_terms
+
+            apply_new_terms(conn, owner, out.new_terms, set(job.input_ref or []))
+
         # 8) Bump facts_version
         conn.execute(
             "UPDATE owners SET facts_version = facts_version + 1 WHERE id = %s",

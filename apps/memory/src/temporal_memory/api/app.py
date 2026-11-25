@@ -21,6 +21,7 @@ from temporal_memory.models import (
     FactEntity,
     FactOp,
     LinkRel,
+    NewTerm,
     OutEntity,
     OutFact,
     OutLink,
@@ -125,10 +126,17 @@ class OutLinkIn(BaseModel):
     evidence: list[str] = Field(default_factory=list)
 
 
+class NewTermIn(BaseModel):
+    term: str
+    is_a: str
+    evidence: list[str] = Field(default_factory=list)
+
+
 class ExtractionOutputIn(BaseModel):
     entities: list[OutEntityIn] = Field(default_factory=list)
     facts: list[OutFactIn] = Field(default_factory=list)
     links: list[OutLinkIn] = Field(default_factory=list)
+    new_terms: list[NewTermIn] = Field(default_factory=list)
 
 
 class AttemptIn(BaseModel):
@@ -217,6 +225,14 @@ def _deserialize_attempt(job_id: str, body: AttemptIn) -> Attempt:
                     evidence=list(lk.evidence),
                 )
                 for lk in body.output.links
+            ],
+            new_terms=[
+                NewTerm(
+                    term=nt.term,
+                    is_a=nt.is_a,
+                    evidence=list(nt.evidence),
+                )
+                for nt in body.output.new_terms
             ],
         )
     cost_usd = 0.0 if body.worker_kind == "owner-hook" else float(body.cost_usd)

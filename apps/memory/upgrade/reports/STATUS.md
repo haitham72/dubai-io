@@ -78,3 +78,5 @@ E9b: branch e9b/s2-quality 37f0d1f pushed (not merged); pytest 475/8 skip; S2 su
 2026-11-25 | E11a | gemini-integrator | e11a/temporal-fixes | 722aa37 | merged → main (A1/A2; memory 524p/8s/0f; historical S2 7/8 superseded gate open; handoff committed)
 2026-11-25 | E11b | devin | e11b/review-fixes | 3c0e178 | ready-for-review (B1–B6 done; memory 482p/8s, api 671p/16s, messenger test:memory 10+13, desktop 32+typecheck; report E11b.md)
 2026-11-25 | E11b | gemini-integrator | e11b/review-fixes | 61f230d | merged → main (PR #7; B1–B6; full-venv memory 530p/8s/0f, api 671p/16s, messenger 10+13, desktop 32p; follow-ups queued for E12)
+2026-11-25 09:03 | E10 | gemini | e10/topic-tree | HEAD | ready-for-review (D18 weight floor 0.05 applied, 0 delete paths, privacy/forget.py untouched; 183 nodes/463 aliases/32 lexicon; 486 passed/0 failed; S2 proposals 10: 5 kept / 5 dropped; mean $0.004956/day; 20k p95 12.71ms ctx / 111.11ms srch / 102.07ms mcp; see E10.md)
+2026-11-25 | E10 | gemini-integrator | e10/topic-tree | f33242c | merged → main (independent sub-agent review in E10.review.md; D17+D18; combined memory 540p/8s/0f)

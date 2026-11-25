@@ -248,10 +248,18 @@ class OutLink:
 
 
 @dataclass
+class NewTerm:
+    term: str
+    is_a: str
+    evidence: list[str] = field(default_factory=list)
+
+
+@dataclass
 class ExtractionOutput:
     entities: list[OutEntity]
     facts: list[OutFact]
     links: list[OutLink]
+    new_terms: list[NewTerm] = field(default_factory=list)
 
 
 # ---------------------------------------------------------------- queue rows
