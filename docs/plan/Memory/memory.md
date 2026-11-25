@@ -444,12 +444,12 @@ The memory engine's export and graph representation is rendered to the user via 
 | Surface | State |
 |---|---|
 | Live context pack (no LLM; aliases EN / AR / Arabizi, dates, AED, BM25 + RRF; ≤ 1.5k tokens; target p95 < 150 ms) | ✅ works; ✅ SQL candidates (FTS GIN + entity / alias + 1 hop + subject + date → RRF) fused with local multilingual embeddings (U1c, U4) |
-| `/search` (bridge) | ✅ on Postgres with the prefix filter in SQL (57 ms p95 at 20k); 🔧 ranked candidates in U1c |
+| `/search` (bridge) | ✅ hybrid keyword + local multilingual embedding search (U1c / U4) |
 | Vault API (`/vault/subjects`, `/vault/people`, `/quests`, `/hypotheses`, `/timeline`, `/onboarding-status`, `/why`) | ✅ exists; ✅ provenance rendered (U1c) |
 | `/vault/graph?view=subjects\|people` (versioned DTO, 7 clusters, Rule 9 gated, `+N more`, T1 + suggestions) + `POST …/tier` | ✅ U1c |
 | `/why` with a cited reason span or "reason unknown"; `/story` (a deterministic cited timeline, optional verified narration) | ✅ U5 |
-| §9 Quest-like export tree | ⚠️ the old tree today → 📋 **U5 Part C** parity |
-| MCP tools (claim / submit jobs, `memory_search`, `memory_context`, vault summary) | ✅ (search hydration cap → U1c) |
+| §9 Quest-like export tree | ⚠️ Quest-like export parity remains U6 work (paused handoff) |
+| MCP tools (claim / submit jobs, `memory_search`, `memory_context`, vault summary) | ✅ |
 | Community / Messenger CR-TM bridge (`/records`, `/forget`, `/facts/{id}/resolve`, `/context`, `/search`) | ✅ on Postgres, 8/8 live ops (U1a); 📋 CS-1 adds live bridge contract tests |
 
 Access is by hashed tokens with roles admin / worker / owner-device, owner-scoped.

@@ -18,7 +18,7 @@ The single plan: identity, founder decisions, scope locks, live rulings, contest
 
 **Three pillars:** **Know** (memory, reveal, people map) · **Notice** (daily matched cards and feeds) · **Do** (task threads, journeys, services as capabilities). The trust rules (`CLAUDE.md` 1–10) cut across all three. UI comes after the headless pipeline works.
 
-**References:** Quest (new.quest) is the closest reference for Know and Notice — its experience, not its access methods (a cloud phone linked to the user's WhatsApp, residential proxies, unconfirmed inference of sensitive facts). Grok Bot is the reference for task threads.
+**References:** Quest (new.quest) is the reference for Know and Notice — its experience, not its access methods (a cloud phone linked to the user's WhatsApp, residential proxies, unconfirmed inference of sensitive facts). Grok Bot is the reference for task threads.
 
 **What it is not:** not a visitor or tourist app (visitor framing retired 22 Oct) · not a DubaiNow clone · not a services-only or shop app (services are capabilities inside Do) · not a social network (Dubai-io itself; the social/community track is the separate Community entry, which replaces Persocial; person-to-person messaging belongs to the separate Messenger entry).
 
@@ -157,7 +157,7 @@ Proposed, not yet approved:
 
 Civic RAG with citations · background geofencing · ticket wallet · media memory · Arabic RTL UI · live AR try-on · affiliate marketplace feeds. A broader audience does not automatically activate these features. (Unlocked 23 Oct by founder: resident bills + Salik/DEWA displays, payments and third-party purchasing, government transactions — each ships only behind a real adapter with verified evidence; no fake sends.)
 
-Also out of the contest build for now [24 Nov: Community and Messenger are now separate entries on `main`]: **community/social track** (parked 9 Nov; code stays) · **UI work** (paused 9 Nov until the headless pipeline works; when it resumes, no UI track is done without founder visual review of a staged preview) · native iOS (STOPPED 23 Oct).
+Also deferred / parked [24 Nov: Community and Messenger are separate entries on `main`, not parked]: the `apps/site` Next.js UI (paused) · design polish (follows the E0–E4 round; no UI track is done without founder visual review of a staged preview) · Android and the $99 Apple Developer account · native Swift iOS (`apps/ios`, STOPPED 23 Oct).
 
 ### NEVER
 
