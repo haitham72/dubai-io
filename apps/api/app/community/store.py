@@ -40,7 +40,8 @@ DDL = (
         text TEXT NOT NULL, revision INTEGER NOT NULL DEFAULT 1,
         pinned INTEGER NOT NULL DEFAULT 0, deleted INTEGER NOT NULL DEFAULT 0,
         provenance TEXT NOT NULL DEFAULT 'user_supplied',
-        created_at TEXT NOT NULL, updated_at TEXT NOT NULL)""",
+        created_at TEXT NOT NULL, updated_at TEXT NOT NULL,
+        flair TEXT NOT NULL DEFAULT '', repost_of_id TEXT)""",
     "CREATE INDEX IF NOT EXISTS cm_posts_feed ON cm_posts(group_id, created_at)",
     """CREATE TABLE IF NOT EXISTS cm_post_revisions (
         post_id TEXT NOT NULL, revision INTEGER NOT NULL, text TEXT NOT NULL,
@@ -68,10 +69,29 @@ DDL = (
         text TEXT NOT NULL DEFAULT '', dedupe_key TEXT NOT NULL,
         is_read INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL)""",
     "CREATE UNIQUE INDEX IF NOT EXISTS cm_notifications_dedupe ON cm_notifications(dedupe_key)",
+    """CREATE TABLE IF NOT EXISTS cm_votes (
+        owner TEXT NOT NULL, target_type TEXT NOT NULL DEFAULT 'post',
+        target_id TEXT NOT NULL, value INTEGER NOT NULL, created_at TEXT NOT NULL,
+        PRIMARY KEY(owner, target_type, target_id))""",
+    "CREATE INDEX IF NOT EXISTS cm_votes_target ON cm_votes(target_type, target_id)",
+    """CREATE TABLE IF NOT EXISTS cm_post_tags (
+        post_id TEXT NOT NULL, tag TEXT NOT NULL, created_at TEXT NOT NULL,
+        PRIMARY KEY(post_id, tag))""",
+    "CREATE INDEX IF NOT EXISTS cm_post_tags_tag ON cm_post_tags(tag)",
+    """CREATE TABLE IF NOT EXISTS cm_user_blocks (
+        owner TEXT NOT NULL, blocked_owner TEXT NOT NULL, created_at TEXT NOT NULL,
+        PRIMARY KEY(owner, blocked_owner))""",
+    """CREATE TABLE IF NOT EXISTS cm_user_mutes (
+        owner TEXT NOT NULL, kind TEXT NOT NULL, target TEXT NOT NULL, created_at TEXT NOT NULL,
+        PRIMARY KEY(owner, kind, target))""",
+    """CREATE TABLE IF NOT EXISTS cm_memory_preferences (
+        owner TEXT PRIMARY KEY, remember_saved_discussions INTEGER NOT NULL DEFAULT 0,
+        remember_public_posts INTEGER NOT NULL DEFAULT 0, updated_at TEXT NOT NULL)""",
 )
 TABLES = ("cm_profiles", "cm_follows", "cm_groups", "cm_group_members", "cm_posts",
           "cm_post_revisions", "cm_comments", "cm_reactions", "cm_bookmarks",
-          "cm_group_moderation_log", "cm_notifications")
+          "cm_group_moderation_log", "cm_notifications",
+          "cm_votes", "cm_post_tags", "cm_user_blocks", "cm_user_mutes", "cm_memory_preferences")
 
 DEMO_GROUP_ID = "demo-marina-foodies"
 DEMO_POST_IDS = ("demo-post-01", "demo-post-02")
@@ -94,10 +114,21 @@ def setup(store):
         return
     for statement in DDL:
         store.db.execute(statement)
+    store.db.commit()
+    for alter_sql in (
+        "ALTER TABLE cm_posts ADD COLUMN flair TEXT NOT NULL DEFAULT ''",
+        "ALTER TABLE cm_posts ADD COLUMN repost_of_id TEXT",
+    ):
+        try:
+            store.db.execute(alter_sql)
+            store.db.commit()
+        except Exception:
+            pass
     if store.db.dialect == "postgres":
         for table in TABLES:
             try:
                 store.db.execute(f"ALTER TABLE {table} ENABLE ROW LEVEL SECURITY")
+                store.db.commit()
             except Exception:
                 pass
     stamp = now()
@@ -115,9 +146,19 @@ def setup(store):
 
 
 def notify(store, recipient, actor, kind, dedupe_key, text="", post_id=None, comment_id=None, group_id=None):
-    """Insert a deduped notification; returns the row id or None if deduped/self."""
+    """Insert a deduped notification; returns the row id or None if deduped/self/blocked."""
     if not recipient or recipient == actor:
         return None
+    if actor:
+        try:
+            blocked = store.db.execute(
+                "SELECT 1 FROM cm_user_blocks WHERE (owner=? AND blocked_owner=?) OR (owner=? AND blocked_owner=?)",
+                (recipient, actor, actor, recipient),
+            ).fetchone()
+            if blocked:
+                return None
+        except Exception:
+            pass
     nid = uuid4().hex
     try:
         store.db.execute(
