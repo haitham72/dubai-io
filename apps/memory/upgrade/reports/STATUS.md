@@ -69,3 +69,6 @@ States: in-progress · ready-for-review · fixes-requested (see `<WP>.review.md`
 - 2026-11-25 E9c admin token not needed: start-all.ps1 (since 630ea72) already generates a 32-byte URL-safe TM_ADMIN_TOKEN into git-ignored apps/memory/.env when missing/empty, never printed; compose env_file (.env, required:false) + `up -d --build api` picks it up; README already documents it — Claude
 E9b: branch e9b/s2-quality 37f0d1f pushed (not merged); pytest 475/8 skip; S2 sup 7/8 ended 5/5 late 3/4 FP 1.96%; S3/S5/S7 PASS; live context semantic fix (embeddings were never written; Docker lacked [semantic]). See E9b.md
 - 2026-11-25 E9b merged into main 9d7b9e5 — Claude verifier
+2026-11-25 07:46 | E10 | gemini | e10/topic-tree | — | queued (prompts/E10_topic_tree.md; founder decision on _SYNONYM_GROUPS)
+2026-11-25 07:46 | E11a | codex | e11a/temporal-fixes | — | queued (prompts/E11_review_fixes.md Part A)
+2026-11-25 07:46 | E11b | devin | e11b/review-fixes | — | queued (prompts/E11_review_fixes.md Part B)

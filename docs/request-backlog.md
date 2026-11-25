@@ -16,6 +16,11 @@ Unlocked: government transactions, bill top-ups/payments, in-app donations, thir
 
 Current execution queue: E0–E4 in `apps/memory/upgrade/prompts/`. MEM-01 is superseded by temporal_note (`docs/plan/Memory/memory.md` §18). AC-1 and the AC-3 Hindsight rewriter gate are retired; track any remaining card-lifecycle (AC-2) work independently. The LAB-01 queue below is kept as dated evidence.
 
+Queued 25 Nov (founder decision D17, topic vocabulary):
+
+- **E10 (Gemini):** one topic tree replaces the hard-coded `_SYNONYM_GROUPS`; the LLM may propose new words under an existing word with a cited source. Prompt: [E10_topic_tree.md](../apps/memory/upgrade/prompts/E10_topic_tree.md). Branch `e10/topic-tree`. Queued.
+- **E11 (Codex part A, Devin part B):** review fixes from the E1–E9 reviews. Prompt: [E11_review_fixes.md](../apps/memory/upgrade/prompts/E11_review_fixes.md). Part A `e11a/temporal-fixes` (Codex), part B `e11b/review-fixes` (Devin). Queued.
+
 ## HISTORICAL — LAB-01 headless Know / Notice / Do pipeline (9–16 Nov)
 
 Founder, 9 Nov: pause UI work; build the pipeline headless in `apps/api/app/lab/`. Numbered steps, specs and acceptance: `apps/api/app/lab/CLAUDE.md`. Each slice ships with fixtures plus a happy-path and a failure-path test.

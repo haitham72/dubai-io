@@ -183,6 +183,12 @@ The redesign's latest design is current: commit `6b45ba4`, "AI workspace replace
 - **The integrator (Claude) merges into `main`;** agents never commit to, push or merge into `main` themselves. On `CLAUDE.md` / `PLAN.md` / `docs/` overlaps, keep both sides. `apps/web` stays frozen. `main` is never force-pushed.
 - Still true from D15: the products are **separate apps** sharing only the per-user layer (identity + temporal_note). No imports between apps.
 
+## D17 — Topic vocabulary: fixed general topics, expanded subtopics, LLM-proposed words (25 Nov)
+
+> "fix general topics first and expand sub topics as well, but let llm propose to backend that new words may be added, as world is canvas that never ends, but every thing is traced to a source and branch at some point"
+
+- Replaces the hard-coded `_SYNONYM_GROUPS` (MORNING.md §E #4). General topics are the ontology roots and first branches (`docs/references/residence-ontology-tree.md`): fixed, edited only by the founder. Subtopics are curated and expanded. The extraction LLM may propose new words only as children of an existing word, with a cited source record. The backend validates each proposal (branch, source, Rule 9) and keeps accepted words per user (provenance `inferred`). Forgetting the last source removes them. Work package: `apps/memory/upgrade/prompts/E10_topic_tree.md` (Gemini).
+
 ## Founder to-dos (not agent work)
 
 - Share `docs/submissions/shared/handoff-temporal-note.md` (on GitHub) with the memory team.
