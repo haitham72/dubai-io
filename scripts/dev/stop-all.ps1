@@ -53,7 +53,9 @@ if (Test-Path $PidsFile) {
                     } catch {}
                 }
                 if (-not ($nameOk -and $startedOk)) {
-                    $found = "$($p.ProcessName) started $($p.StartTime.ToString('o'))"
+                    $pStartText = "unreadable"
+                    try { $pStartText = $p.StartTime.ToString('o') } catch {}
+                    $found = "$($p.ProcessName) started $pStartText"
                     $want = if ($m) { "$($m.process) started $($m.started)" } else { "no recorded metadata" }
                     Write-Host "Skipping $($prop.Name) (pid=$procId): PID reused or unverifiable (recorded $want; live $found)."
                     continue
