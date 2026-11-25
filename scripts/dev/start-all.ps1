@@ -3,6 +3,7 @@
 param(
     [switch]$NoDesktop,
     [switch]$Rebuild,
+    [switch]$Shells,
     [int]$ExpoPort = 8081,
     [int]$ApiPort = 8000,
     [int]$MemoryPort = 8040
@@ -36,8 +37,10 @@ function Ensure-NodeModules([string]$Dir, [string]$Label) {
         Write-Host "[setup] npm ci in $Label..."
         Push-Location $Dir
         try {
-            & npm.cmd ci --no-audit --no-fund | Out-Null
-            if ($LASTEXITCODE -ne 0) { throw "npm ci failed in $Label" }
+            # Shells without a committed package-lock.json (community/messenger mobile+desktop) fall back to npm install.
+            $npmArgs = if (Test-Path $lock) { @("ci", "--no-audit", "--no-fund") } else { @("install", "--no-audit", "--no-fund") }
+            & npm.cmd @npmArgs | Out-Null
+            if ($LASTEXITCODE -ne 0) { throw "npm $($npmArgs[0]) failed in $Label" }
         } finally { Pop-Location }
     }
 }
@@ -525,6 +528,51 @@ if (-not $NoDesktop -and -not (Is-Alive $pids["desktop"])) {
     }
 } else {
     Write-Host "[6/6] Desktop skipped or already running."
+}
+
+# 6b. Community + Messenger shells (E14c, only with -Shells): the two Expo dev servers (community :8082,
+#     messenger :8083) and the two Electron desktop apps. PIDs are recorded like the others, so stop-all.ps1
+#     stops them and health.ps1 shows them. ELECTRON_RUN_AS_NODE is removed from the Electron children's
+#     environment (VS Code/agent shells often export it, which makes `electron .` run as plain Node).
+if ($Shells) {
+    Write-Host "[6b] Community + Messenger shells (-Shells): Expo :8082/:8083 + Electron desktops..."
+    $CommMobileDir = Join-Path $CommunityDir "mobile"
+    $MessMobileDir = Join-Path $MessengerDir "mobile"
+    $CommDesktopDir = Join-Path $CommunityDir "desktop"
+    $MessDesktopDir = Join-Path $MessengerDir "desktop"
+    foreach ($sd in @($CommMobileDir, $MessMobileDir, $CommDesktopDir, $MessDesktopDir)) {
+        if (Test-Path (Join-Path $sd "package.json")) { Ensure-NodeModules $sd "shell $sd" }
+    }
+    function Start-ShellsProcess([string]$Name, [string]$Dir, [string[]]$CmdArgs, [int]$Port) {
+        if ($Port -and (Test-PortOpen $Port)) { return }
+        if (-not $Port -and (Is-Alive $pids[$Name])) { return }
+        $pr = Start-Process -FilePath "cmd.exe" -ArgumentList (@("/c") + $CmdArgs) `
+            -WorkingDirectory $Dir `
+            -RedirectStandardOutput (Join-Path $LogsDir "$Name.out.log") `
+            -RedirectStandardError (Join-Path $LogsDir "$Name.err.log") `
+            -WindowStyle Hidden -PassThru
+        $pids[$Name] = $pr.Id
+        if ($Port) {
+            $dl = (Get-Date).AddSeconds(90)
+            while (-not (Test-PortOpen $Port) -and (Get-Date) -lt $dl) { Start-Sleep -Seconds 2 }
+            if (-not (Test-PortOpen $Port)) { Write-Warning "$Name did not open port $Port (see scripts\dev\logs\$Name.err.log)" }
+        }
+    }
+    # Expo shells: the phone reaches the website over LAN, so the WebView target is the LAN address.
+    Start-ShellsProcess "community_mobile" $CommMobileDir `
+        @("set EXPO_PUBLIC_COMMUNITY_URL=http://${lanIp}:$CommunityWebPort&& set CI=1&& set EXPO_NO_TELEMETRY=1&& npx.cmd expo start --host lan --port 8082") 8082
+    Start-ShellsProcess "messenger_mobile" $MessMobileDir `
+        @("set EXPO_PUBLIC_MESSENGER_URL=http://${lanIp}:$MessengerWebPort&& set CI=1&& set EXPO_NO_TELEMETRY=1&& npx.cmd expo start --host lan --port 8083") 8083
+    # Electron shells run on this PC: the websites' localhost addresses are correct (their defaults).
+    $savedErn = [Environment]::GetEnvironmentVariable("ELECTRON_RUN_AS_NODE", "Process")
+    [Environment]::SetEnvironmentVariable("ELECTRON_RUN_AS_NODE", $null, "Process")
+    try {
+        Start-ShellsProcess "community_desktop" $CommDesktopDir @("npm.cmd start") 0
+        Start-ShellsProcess "messenger_desktop" $MessDesktopDir @("npm.cmd start") 0
+    } finally {
+        [Environment]::SetEnvironmentVariable("ELECTRON_RUN_AS_NODE", $savedErn, "Process")
+    }
+    Save-Pids $pids
 }
 
 Save-Pids $pids
