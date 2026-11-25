@@ -71,4 +71,4 @@ E9b: branch e9b/s2-quality 37f0d1f pushed (not merged); pytest 475/8 skip; S2 su
 - 2026-11-25 E9b merged into main 9d7b9e5 — Claude verifier
 2026-11-25 07:46 | E10 | gemini | e10/topic-tree | — | queued (prompts/E10_topic_tree.md; founder decision on _SYNONYM_GROUPS)
 2026-11-25 07:46 | E11a | codex | e11a/temporal-fixes | — | queued (prompts/E11_review_fixes.md Part A)
-2026-11-25 07:46 | E11b | devin | e11b/review-fixes | — | queued (prompts/E11_review_fixes.md Part B)
+2026-11-25 | E11b | devin | e11b/review-fixes | 3c0e178 | ready-for-review (B1–B6 done; memory 482p/8s, api 671p/16s, messenger test:memory 10+13, desktop 32+typecheck; report E11b.md)
