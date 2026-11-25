@@ -41,6 +41,29 @@ def test_agent_cli_classifier_fail_closed(monkeypatch: pytest.MonkeyPatch) -> No
     assert "padel league" not in blocked and blocked["diagnosed with diabetes"] == "unscreened"
 
 
+def test_agent_cli_classifier_missing_category_fails_closed(monkeypatch: pytest.MonkeyPatch) -> None:
+    """E11b: an item with a number but no `category` is malformed — screened as unscreened, not 'none'."""
+    from temporal_memory.privacy import sensitive
+
+    monkeypatch.setenv("TM_CLASSIFIER_RUNNER", "agent-cli")
+    reply = {"result": json.dumps({"items": [{"n": 1}]})}
+    monkeypatch.setattr(__import__("subprocess"), "run",
+                        lambda *a, **k: SimpleNamespace(returncode=0, stdout=json.dumps(reply), stderr=""))
+    blocked = sensitive.screen(["padel league"])
+    assert blocked["padel league"] == "unscreened"
+
+
+def test_agent_cli_classifier_explicit_none_stays_clean(monkeypatch: pytest.MonkeyPatch) -> None:
+    """E11b: an explicit "none" category still passes layer 2 (layer 1 may still screen it)."""
+    from temporal_memory.privacy import sensitive
+
+    monkeypatch.setenv("TM_CLASSIFIER_RUNNER", "agent-cli")
+    reply = {"result": json.dumps({"items": [{"n": 1, "category": "none"}]})}
+    monkeypatch.setattr(__import__("subprocess"), "run",
+                        lambda *a, **k: SimpleNamespace(returncode=0, stdout=json.dumps(reply), stderr=""))
+    assert "padel league" not in sensitive.screen(["padel league"])
+
+
 def test_agent_cli_classifier_outage_raises(monkeypatch: pytest.MonkeyPatch) -> None:
     from temporal_memory.privacy import sensitive
 

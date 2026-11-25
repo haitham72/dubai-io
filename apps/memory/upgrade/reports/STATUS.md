@@ -76,3 +76,5 @@ E9b: branch e9b/s2-quality 37f0d1f pushed (not merged); pytest 475/8 skip; S2 su
 2026-11-25 08:28 | E12 | devin | e12/community-wiring | — | queued after E11b (prompts/E12_community_wiring.md)
 2026-11-25 08:24 | E11a | codex | e11a/temporal-fixes | 2d6af51 | A1/A2 implemented; pytest 524 passed, 8 skipped; S2 6/8 superseded, 5/5 ended, 3/4 late on repeat; historical supersession gate open (paired score unchanged). See E11a.md.
 2026-11-25 | E11a | gemini-integrator | e11a/temporal-fixes | 722aa37 | merged → main (A1/A2; memory 524p/8s/0f; historical S2 7/8 superseded gate open; handoff committed)
+2026-11-25 | E11b | devin | e11b/review-fixes | 3c0e178 | ready-for-review (B1–B6 done; memory 482p/8s, api 671p/16s, messenger test:memory 10+13, desktop 32+typecheck; report E11b.md)
+2026-11-25 | E11b | gemini-integrator | e11b/review-fixes | 61f230d | merged → main (PR #7; B1–B6; full-venv memory 530p/8s/0f, api 671p/16s, messenger 10+13, desktop 32p; follow-ups queued for E12)

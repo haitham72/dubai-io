@@ -12,6 +12,7 @@ $ErrorActionPreference = "Stop"
 $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 $LogsDir = Join-Path $PSScriptRoot "logs"
 $PidsFile = Join-Path $PSScriptRoot ".pids.json"
+$PidsMetaFile = Join-Path $PSScriptRoot ".pids.meta.json"
 $MemDir = Join-Path $RepoRoot "apps\memory"
 $MemCompose = Join-Path $MemDir "docker-compose.yml"
 $MemEnv = Join-Path $MemDir ".env"
@@ -167,6 +168,18 @@ function Load-Pids {
 function Save-Pids([hashtable]$Pids) {
     $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
     [System.IO.File]::WriteAllText($PidsFile, ($Pids | ConvertTo-Json -Depth 4), $utf8NoBom)
+    # E11b: record each live PID's process name and start time so stop-all can detect PID reuse.
+    $meta = @{}
+    foreach ($k in $Pids.Keys) {
+        $id = $Pids[$k]
+        if (-not $id) { continue }
+        $p = Get-Process -Id ([int]$id) -ErrorAction SilentlyContinue
+        if ($p) {
+            try { $started = $p.StartTime.ToString("o") } catch { $started = "" }
+            $meta[$k] = @{ process = [string]$p.ProcessName; started = $started }
+        }
+    }
+    [System.IO.File]::WriteAllText($PidsMetaFile, ($meta | ConvertTo-Json -Depth 4), $utf8NoBom)
 }
 
 function Is-Alive($Id) {

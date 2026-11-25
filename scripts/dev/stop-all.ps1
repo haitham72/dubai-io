@@ -22,20 +22,49 @@ while (Test-Path $lock) {
 }
 
 if (Test-Path $PidsFile) {
+    # E11b: start-all records each PID's process name and start time in .pids.meta.json.
+    # Before killing, verify the live process still matches — a reused PID is skipped, not killed.
+    $metaPath = Join-Path $PSScriptRoot ".pids.meta.json"
+    $hasMeta = Test-Path $metaPath
+    $meta = @{}
+    if ($hasMeta) {
+        try {
+            $rawMeta = Get-Content $metaPath -Raw -Encoding UTF8 | ConvertFrom-Json
+            foreach ($mp in $rawMeta.PSObject.Properties) { $meta[$mp.Name] = $mp.Value }
+        } catch { $hasMeta = $false }
+    }
     try {
         $pids = Get-Content $PidsFile -Raw -Encoding UTF8 | ConvertFrom-Json
         foreach ($prop in $pids.PSObject.Properties) {
             $procId = $prop.Value
-            if ($procId) {
-                $p = Get-Process -Id ([int]$procId) -ErrorAction SilentlyContinue
-                if ($p) {
-                    Write-Host "Stopping $($prop.Name) (pid=$procId) [PID file entry]..."
-                    & taskkill /PID $procId /T /F 2>$null | Out-Null
+            if (-not $procId) { continue }
+            $p = Get-Process -Id ([int]$procId) -ErrorAction SilentlyContinue
+            if (-not $p) { continue }
+            if ($hasMeta) {
+                $m = $meta[$prop.Name]
+                $nameOk = $false
+                $startedOk = $false
+                if ($m) {
+                    $nameOk = ($p.ProcessName -ieq [string]$m.process)
+                    try {
+                        $expectedStart = [DateTime]::Parse([string]$m.started)
+                        $pStart = $p.StartTime
+                        $startedOk = ([Math]::Abs(($pStart - $expectedStart).TotalSeconds) -lt 2)
+                    } catch {}
+                }
+                if (-not ($nameOk -and $startedOk)) {
+                    $found = "$($p.ProcessName) started $($p.StartTime.ToString('o'))"
+                    $want = if ($m) { "$($m.process) started $($m.started)" } else { "no recorded metadata" }
+                    Write-Host "Skipping $($prop.Name) (pid=$procId): PID reused or unverifiable (recorded $want; live $found)."
+                    continue
                 }
             }
+            Write-Host "Stopping $($prop.Name) (pid=$procId) [PID file entry]..."
+            & taskkill /PID $procId /T /F 2>$null | Out-Null
         }
     } catch {}
     Remove-Item $PidsFile -Force -ErrorAction SilentlyContinue
+    if ($hasMeta) { Remove-Item $metaPath -Force -ErrorAction SilentlyContinue }
 }
 
 if ($dockerSkipped) {

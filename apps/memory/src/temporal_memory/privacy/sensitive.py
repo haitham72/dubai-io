@@ -300,7 +300,9 @@ def _agent_cli_classifier(labels: list[str]) -> dict[str, str]:
             raise RuntimeError("agent CLI reported an error")
         content = env.get("result") or ""
         data = _json.loads(content[content.find("{"): content.rfind("}") + 1])
-        seen = {int(i["n"]): i.get("category", "none") for i in data.get("items", []) if "n" in i}
+        # E11b: an item with a number but no "category" is malformed — fail closed to
+        # "unscreened" (blocking), never silently "none".
+        seen = {int(i["n"]): i.get("category") for i in data.get("items", []) if "n" in i}
     except Exception as exc:
         raise ScreenUnavailable(f"agent-cli classifier failed: {exc}") from exc
     cats = {c for c in SCREEN_CATS}

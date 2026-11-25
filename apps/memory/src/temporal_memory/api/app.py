@@ -368,6 +368,7 @@ def create_app(db: Database | None = None, *, admin_token: str | None = None) ->
         if not get_settings().semantic_enabled:
             return {"ok": False, "reason": "semantic_disabled", "semantic": _embed.status()}
         try:
+            _embed.load_model()
             _embed.embed_query("warm-up")
         except Exception as exc:
             return {"ok": False, "reason": f"embedder_unavailable: {type(exc).__name__}", "semantic": _embed.status()}

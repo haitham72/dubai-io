@@ -851,7 +851,7 @@ def apply(
         # E9b: live facts need a vector for the semantic channel; best effort, never fails the apply.
         from temporal_memory.core.embed import ensure_embeddings
 
-        ensure_embeddings(database, owner, limit=200, once_per_version=False)
+        ensure_embeddings(database, owner, once_per_version=False)
 
     return Verdict(
         ok=True,

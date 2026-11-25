@@ -223,6 +223,39 @@ def test_pairing_codes_are_one_time_expiring_and_signed_in_only(env, monkeypatch
     assert client.post("/api/identity/pair/start", headers=pc_h, json={"ttl_seconds": 9999}).status_code == 422
 
 
+def test_failed_pairing_consume_leaves_no_session_row(env, monkeypatch):
+    """E11b: the code is consumed first inside one transaction — a failed consume writes no session row."""
+    from app.identity.service import _sha256_hex
+
+    _svc, store, _tm, client, _state, _g = env
+    pc = _login(client, "code-a")
+    pc_h = {"X-App-Session": pc["session_token"]}
+    code = client.post("/api/identity/pair/start", headers=pc_h).json()["code"]
+    code_hash = _sha256_hex(code.strip().upper())
+    sessions_before = store.db.execute("SELECT COUNT(*) FROM cs_app_sessions").fetchone()[0]
+
+    # simulate a lost consume race: the atomic consume reports failure
+    fail = {"on": True}
+    real_atomic = store.consume_pairing_code_and_issue_session
+
+    def flaky_atomic(**kwargs):
+        return False if fail["on"] else real_atomic(**kwargs)
+
+    monkeypatch.setattr(store, "consume_pairing_code_and_issue_session", flaky_atomic)
+    lost = client.post("/api/identity/pair/complete", json={"code": code, "device_label": "iPhone"})
+    assert lost.status_code == 409 and lost.json()["detail"]["code"] == "code_already_used"
+
+    # no session row was written and the code was not burned
+    assert store.db.execute("SELECT COUNT(*) FROM cs_app_sessions").fetchone()[0] == sessions_before
+    rec = store.get_pairing_code(code_hash)
+    assert rec["consumed_at"] is None and rec["consumed_by_session_id"] is None
+
+    # the code still pairs once the race is gone
+    fail["on"] = False
+    done = client.post("/api/identity/pair/complete", json={"code": code, "device_label": "iPhone"})
+    assert done.status_code == 200, done.text
+
+
 def test_account_a_never_sees_account_b(env):
     _svc, _store, tm, client, _state, _g = env
     a = _login(client, "code-a")

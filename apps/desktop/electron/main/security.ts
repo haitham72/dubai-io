@@ -29,6 +29,46 @@ export function resolveAppUrl(env: Record<string, string | undefined> = process.
   }
 }
 
+const LOCAL_HOSTNAMES = new Set(["localhost", "127.0.0.1", "::1", "[::1]"]);
+
+function isPrivateIPv4(host: string): boolean {
+  const m = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(host);
+  if (!m) return false;
+  const a = Number(m[1]);
+  const b = Number(m[2]);
+  return a === 10 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || (a === 169 && b === 254);
+}
+
+function isPrivateIPv6(host: string): boolean {
+  // URL.hostname keeps the brackets on IPv6 literals.
+  const h = host.replace(/^\[|\]$/g, "").toLowerCase();
+  return h.startsWith("fc") || h.startsWith("fd") || h.startsWith("fe80");
+}
+
+/** E11b: https anywhere, or plain http only on localhost / loopback / private-LAN addresses. */
+export function isTrustedAppUrl(url: string): boolean {
+  try {
+    const u = new URL(url);
+    if (u.protocol === "https:") return true;
+    if (u.protocol !== "http:") return false;
+    const host = u.hostname.toLowerCase();
+    if (LOCAL_HOSTNAMES.has(host) || host.endsWith(".localhost")) return true;
+    return isPrivateIPv4(host) || isPrivateIPv6(host);
+  } catch {
+    return false;
+  }
+}
+
+/** Warning text when the resolved app URL is a plain-http non-local origin, else null. */
+export function appUrlWarning(url: string): string | null {
+  if (isTrustedAppUrl(url)) return null;
+  return (
+    `DUBAI_APP_URL points at a plain-http origin outside localhost/LAN: ${url}. ` +
+    "Session tokens and app data will cross the network unencrypted. " +
+    "Use https://, a LAN address, or unset DUBAI_APP_URL to return to http://localhost:8081."
+  );
+}
+
 export function isAllowedNavigationOrigin(targetUrl: string, allowedOriginUrl: string): boolean {
   try {
     const target = new URL(targetUrl);

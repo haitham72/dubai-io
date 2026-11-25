@@ -866,3 +866,67 @@ class IdentityStore:
             )
             self.db.commit()
             return cur.rowcount == 1
+
+    def consume_pairing_code_and_issue_session(
+        self,
+        *,
+        code_hash: str,
+        consumed_at: str,
+        session_fields: dict[str, Any],
+        audit_events: list[dict[str, Any]],
+    ) -> bool:
+        """Consume a pairing code and write its session + audit rows in ONE transaction.
+
+        The consume UPDATE runs first; when it matches no row nothing else is written
+        and False is returned, so a failed consume never leaves a session row behind.
+        Any error rolls the whole transaction back, leaving the code unconsumed.
+        """
+        with self.lock:
+            try:
+                cur = self.db.execute(
+                    """UPDATE cs_pairing_codes
+                       SET consumed_at = ?, consumed_by_session_id = ?
+                       WHERE code_hash = ? AND consumed_at IS NULL""",
+                    (consumed_at, session_fields["session_id"], code_hash),
+                )
+                if cur.rowcount != 1:
+                    self.db.rollback()
+                    return False
+                self.db.execute(
+                    """INSERT INTO cs_app_sessions
+                       (session_id, token_hash, user_id, app_id, capabilities, session_version,
+                        source_jti, device_label, created_at, expires_at, revoked_at, revocation_reason)
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL)""",
+                    (
+                        session_fields["session_id"],
+                        session_fields["token_hash"],
+                        session_fields["user_id"],
+                        session_fields["app_id"],
+                        json.dumps(sorted(session_fields["capabilities"])),
+                        session_fields["session_version"],
+                        session_fields["source_jti"],
+                        session_fields["device_label"],
+                        session_fields["created_at"],
+                        session_fields["expires_at"],
+                    ),
+                )
+                for ev in audit_events:
+                    self.db.execute(
+                        """INSERT INTO cs_identity_audit
+                           (id, user_id, app_id, session_id, event_kind, at, detail)
+                           VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                        (
+                            f"aud_{uuid.uuid4().hex}",
+                            ev["user_id"],
+                            ev["app_id"],
+                            ev["session_id"],
+                            ev["event_kind"],
+                            ev.get("at") or iso_utc(),
+                            json.dumps(ev["detail"]),
+                        ),
+                    )
+                self.db.commit()
+                return True
+            except Exception:
+                self.db.rollback()
+                raise
