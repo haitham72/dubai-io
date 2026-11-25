@@ -38,6 +38,7 @@ from temporal_memory.models import (
     HELD_BACK_ROOTS,
     JobBundle,
     LinkRel,
+    NewTerm,
     OutEntity,
     OutFact,
     OutLink,
@@ -159,6 +160,16 @@ OUTPUT_SCHEMA: dict[str, Any] = _obj(
                 }
             ),
         },
+        "new_terms": {
+            "type": "array",
+            "items": _obj(
+                {
+                    "term": _S,
+                    "is_a": _S,
+                    "evidence": _LIST,
+                }
+            ),
+        },
     }
 )
 
@@ -206,11 +217,14 @@ def build_system_prompt(owner: Owner | None) -> str:
         f"  credential/password/OTP code, set one of {sens}; else null.\n"
         f"- subject_path: one leaf under these roots {SUBJECT_ROOTS}. health and faith are never clusters.\n"
         "  Food and outings go under events (e.g. \"events/restaurants\", \"career/job-search\").\n"
-        f"- links: typed links between entities, rel one of {LINK_RELS}.\n\n"
+        f"- links: typed links between entities, rel one of {LINK_RELS}.\n"
+        "- new_terms: propose unknown domain/brand/activity words under one existing generic word we already know:\n"
+        "  {\"term\":\"...\",\"is_a\":\"known word\",\"evidence\":[\"rec-1\"]}; keep [] when nothing new.\n\n"
         "JSON shape:\n"
         "{\"entities\":[{\"ref\":\"e3|new:Name\",\"kind\":\"person|org|place|project|event\",\"aliases\":[\"...\"],\"relation_to_user\":\"friend|null\",\"place_type\":null}],\n"
         " \"facts\":[{\"text\":\"...\",\"text_orig\":null,\"subject_path\":\"career/job-search\",\"entities\":[{\"entity_id\":\"e3\",\"role\":\"colleague\"}],\"op\":\"new|update|end\",\"target\":null,\"valid_from\":\"YYYY-MM-DD\",\"evidence\":[\"rec-1\"],\"sensitive\":null,\"stated\":true,\"reason_text\":null,\"reason_record_id\":null,\"reason_start\":null,\"reason_end\":null}],\n"
-        " \"links\":[{\"src\":\"e1\",\"rel\":\"WORKS_AT\",\"dst\":\"new:QamarTech\",\"valid_from\":\"YYYY-MM-DD\",\"evidence\":[\"rec-1\"]}]}"
+        " \"links\":[{\"src\":\"e1\",\"rel\":\"WORKS_AT\",\"dst\":\"new:QamarTech\",\"valid_from\":\"YYYY-MM-DD\",\"evidence\":[\"rec-1\"]}],\n"
+        " \"new_terms\":[]}"
     )
 
 
@@ -382,7 +396,23 @@ def _parse_extraction_output(data: dict[str, Any]) -> ExtractionOutput:
             )
         )
 
-    return ExtractionOutput(entities=entities, facts=facts, links=links)
+    new_terms: list[NewTerm] = []
+    for raw in (data.get("new_terms") or []):
+        if not isinstance(raw, dict):
+            continue
+        term = str(raw.get("term") or "").strip()
+        is_a = str(raw.get("is_a") or "").strip()
+        if not term or not is_a:
+            continue
+        new_terms.append(
+            NewTerm(
+                term=term,
+                is_a=is_a,
+                evidence=[str(ev) for ev in (raw.get("evidence") or []) if ev is not None],
+            )
+        )
+
+    return ExtractionOutput(entities=entities, facts=facts, links=links, new_terms=new_terms)
 
 
 def _worker_kind_for_runner(runner: str) -> WorkerKind:

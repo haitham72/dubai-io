@@ -6,11 +6,14 @@ import contextvars
 from datetime import date, timedelta
 import os
 import re
+from threading import RLock
 from typing import Any, Iterable, Literal
 
 from temporal_memory.config import get_settings
 from temporal_memory.db.db import Database, fold_text
 from temporal_memory.models import Candidate
+from temporal_memory.vocab.loader import OwnerLearnedIndex, arabic_variants as _arabic_variants, get_vocab
+from temporal_memory.vocab.proposals import load_owner_learned_index
 
 # E9b: how the semantic channel went on the latest search in this context: ok | no_embeddings |
 # embedder_unavailable | disabled | skipped. The live context pack surfaces it so degradation is honest.
@@ -42,33 +45,36 @@ _NOISE_TOKENS = frozenset({
     "thx", "thanks", "ty", "yep", "yup", "nope", "nice", "cool", "wow", "gm", "gn", "hi", "hey",
 })
 
-# Lightweight EN <-> AR <-> Arabizi everyday domain bridges for Postgres simple FTS + subjects.
-_SYNONYM_GROUPS: tuple[tuple[str, ...], ...] = (
-    ("wedding", "marry", "marriage", "bride", "groom", "فرح", "زفاف", "عرس", "زواج", "fara7"),
-    ("course", "cohort", "class", "classes", "training", "كورس", "دورة", "تدريب", "الوكلاء"),
-    ("start", "starts", "started", "begin", "begins", "يبدأ", "يبدا", "بدا", "بتبدأ", "hayebda2", "yebda2"),
-    ("price", "cost", "aed", "سعر", "بكام", "كم", "تمن", "bekam", "درهم"),
-    ("car", "camry", "autohub", "vehicle", "سيارة", "عربية", "عربيه", "كامري"),
-    ("gym", "fitness", "workout", "train", "trainer", "coach", "fitzone", "peakform", "جيم", "نادي", "الجيم", "تمرين", "يمرن", "بيمرني", "بيمرن", "مدرب", "كوتش"),
-    ("rent", "flat", "apartment", "housing", "landlord", "building", "lobby", "lease", "ايجار", "إيجار", "شقة", "شقه", "سكن"),
-    ("interview", "hiring", "round", "recruiter", "offer", "مقابلة", "توظيف"),
-    ("work", "works", "job", "office", "company", "boss", "manager", "شغل", "عمل", "يشتغل", "شركة", "مدير", "مديره", "مديرة", "مديرتي"),
-    ("mom", "mother", "mama", "ماما", "امي", "أمي", "الوالدة"),
-    ("father", "dad", "baba", "بابا", "ابي", "أبي", "والد", "والدي"),
-    ("doctor", "clinic", "hospital", "medical", "health", "دكتور", "عيادة", "مستشفى", "صحة"),
-    ("travel", "flight", "trip", "airport", "hotel", "سفر", "رحلة", "طيران", "مطار", "فندق"),
-    ("restaurant", "cafe", "coffee", "dinner", "lunch", "food", "مطعم", "كافيه", "قهوة", "عشاء", "غداء", "أكل"),
-    ("project", "app", "beta", "ship", "testflight", "مشروع", "تطبيق"),
-    ("sport", "sports", "surf", "surfing", "football", "soccer", "padel", "tennis", "swim", "swimming", "basketball",
-     "cycling", "yoga", "climbing", "volleyball", "cricket", "golf", "run", "running", "marathon", "رياضة", "كورة", "سباحة"),
-    ("run", "running", "marathon", "10k", "half", "جري", "ماراثون"),
-)
+_LEARNED_CACHE_LOCK = RLock()
+_LEARNED_CACHE: dict[tuple[int, str], tuple[int, OwnerLearnedIndex]] = {}
 
-_SYNONYM_MAP: dict[str, tuple[str, ...]] = {}
-for _grp in _SYNONYM_GROUPS:
-    _folded = tuple(dict.fromkeys(fold_text(w) for w in _grp if fold_text(w)))
-    for _tok in _folded:
-        _SYNONYM_MAP[_tok] = _folded
+
+def invalidate_learned_cache(owner: str | None = None) -> None:
+    """Drop cached per-owner learned-term trees on Forget or update."""
+    with _LEARNED_CACHE_LOCK:
+        if owner is None:
+            _LEARNED_CACHE.clear()
+            return
+        stale = [k for k in _LEARNED_CACHE if k[1] == owner]
+        for k in stale:
+            _LEARNED_CACHE.pop(k, None)
+
+
+def _get_owner_learned(db: Database, conn: Any, owner: str) -> OwnerLearnedIndex:
+    try:
+        row = conn.execute("SELECT facts_version FROM owners WHERE id = %s", (owner,)).fetchone()
+        fver = int(row["facts_version"]) if row else 0
+    except Exception:
+        fver = 0
+    key = (id(db), owner)
+    with _LEARNED_CACHE_LOCK:
+        cached = _LEARNED_CACHE.get(key)
+        if cached is not None and cached[0] == fver:
+            return cached[1]
+    idx = load_owner_learned_index(conn, owner)
+    with _LEARNED_CACHE_LOCK:
+        _LEARNED_CACHE[key] = (fver, idx)
+    return idx
 
 _MONTHS = {
     "jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6,
@@ -148,26 +154,14 @@ def _arabic_variants(tok: str) -> list[str]:
     return out
 
 
-def _expand_terms(tokens: Iterable[str], *, max_terms: int = 40) -> tuple[list[str], list[str]]:
-    """Return (primary_terms, expanded_terms) sanitized for simple tsquery."""
-    primary: list[str] = []
-    expanded: list[str] = []
-    seen_p: set[str] = set()
-    seen_e: set[str] = set()
-
-    def _add(target: list[str], seen: set[str], term: str) -> None:
-        for part in fold_text(term).split():
-            if _SAFE_TS_TOKEN.fullmatch(part) and part not in seen:
-                seen.add(part)
-                target.append(part)
-
-    for tok in tokens:
-        for var in _arabic_variants(tok):
-            _add(primary, seen_p, var)
-            _add(expanded, seen_e, var)
-            for syn in _SYNONYM_MAP.get(var, ()):
-                _add(expanded, seen_e, syn)
-    return primary[:20], expanded[:max_terms]
+def _expand_terms(
+    tokens: Iterable[str],
+    *,
+    learned: OwnerLearnedIndex | None = None,
+    max_terms: int = 40,
+) -> tuple[list[str], list[str]]:
+    """Return (primary_terms, expanded_terms) via the curated + learned topic tree."""
+    return get_vocab().expand_terms(tokens, learned=learned, max_terms=max_terms)
 
 
 def extract_query_dates(text: str, *, reference_date: date | None = None) -> list[str]:
@@ -203,7 +197,13 @@ def extract_query_dates(text: str, *, reference_date: date | None = None) -> lis
     return hits
 
 
-def _match_seed_entities(conn: Any, owner: str, tokens: list[str]) -> list[str]:
+def _match_seed_entities(
+    conn: Any,
+    owner: str,
+    tokens: list[str],
+    *,
+    learned: OwnerLearnedIndex | None = None,
+) -> list[str]:
     """Match entity aliases by n-gram phrase and strip-ال variants; resolve simple collisions."""
     if not tokens:
         return []
@@ -252,7 +252,7 @@ def _match_seed_entities(conn: Any, owner: str, tokens: list[str]) -> list[str]:
                     if var in by_key:
                         hit_eids = [eid for eid, _ in by_key[var]]
                         break
-                    for syn in _SYNONYM_MAP.get(var, ()):
+                    for syn in get_vocab().expand_token(var, learned=learned):
                         if syn in by_key:
                             hit_eids = [eid for eid, _ in by_key[syn]]
                             break
@@ -291,9 +291,9 @@ def _match_seed_entities(conn: Any, owner: str, tokens: list[str]) -> list[str]:
     ent_tokens: dict[str, set[str]] = defaultdict(set)
     for row in fact_rows:
         blob = f"{row['text']} {row['text_orig'] or ''} {row['s_label'] or ''} {row['s_path'] or ''}"
-        ent_tokens[row["entity_id"]].update(_expand_terms(_content_tokens(blob))[1])
+        ent_tokens[row["entity_id"]].update(_expand_terms(_content_tokens(blob), learned=learned)[1])
 
-    q_expanded = set(_expand_terms(tokens)[1])
+    q_expanded = set(_expand_terms(tokens, learned=learned)[1])
     neighbors: set[str] = set()
     if unambiguous:
         lnk_rows = conn.execute(
@@ -325,7 +325,13 @@ def _match_seed_entities(conn: Any, owner: str, tokens: list[str]) -> list[str]:
     return list(dict.fromkeys(selected))
 
 
-def _match_seed_subjects(conn: Any, owner: str, expanded_tokens: list[str]) -> list[str]:
+def _match_seed_subjects(
+    conn: Any,
+    owner: str,
+    expanded_tokens: list[str],
+    *,
+    learned: OwnerLearnedIndex | None = None,
+) -> list[str]:
     if not expanded_tokens:
         return []
     q_set = set(expanded_tokens)
@@ -341,7 +347,8 @@ def _match_seed_subjects(conn: Any, owner: str, expanded_tokens: list[str]) -> l
     for r in rows:
         if r["sensitive_cat"] is not None:
             continue
-        s_toks = set(_expand_terms(_content_tokens(f"{r['path']} {r['label']}"))[1])
+        leaf_seg = (r["path"] or "").rsplit("/", 1)[-1]
+        s_toks = set(_expand_terms(_content_tokens(f"{leaf_seg} {r['label']}"), learned=learned)[1])
         if q_set & s_toks:
             matched.append(r["id"])
     return matched
@@ -365,13 +372,15 @@ def search_candidates(
 
     q_clean = (query or "").strip()
     tokens = _content_tokens(q_clean)
-    primary_terms, expanded_terms = _expand_terms(tokens)
 
     channel_ranks: list[tuple[ChannelName, float, list[str]]] = []
     status_by_id: dict[str, str] = {}
     sem_sims: dict[str, float] = {}
 
     with db.connection() as conn:
+        learned_idx = _get_owner_learned(db, conn, owner)
+        primary_terms, expanded_terms = _expand_terms(tokens, learned=learned_idx)
+
         # 1. FTS channel (GIN index on facts.tsv — tight AND first, relax to OR if < 15 hits)
         if primary_terms or expanded_terms:
             ts_primary = " | ".join(primary_terms) if primary_terms else ""
@@ -424,7 +433,7 @@ def search_candidates(
                 channel_ranks.append(("fts", 1.0, fts_ids[:_PER_CHANNEL_LIMIT]))
 
         # 2. Entity / Alias + 1-hop link expansion channel
-        seed_eids = list(entity_ids) if entity_ids is not None else _match_seed_entities(conn, owner, tokens)
+        seed_eids = list(entity_ids) if entity_ids is not None else _match_seed_entities(conn, owner, tokens, learned=learned_idx)
         if seed_eids:
             ent_fid_rows = conn.execute(
                 "SELECT DISTINCT fact_id FROM fact_entities WHERE owner = %s AND entity_id = ANY(%s)",
@@ -511,7 +520,7 @@ def search_candidates(
         # 3. Subject + descendants channel.
         # Topic aliases are a SQL seed (indexed equality on folded query tokens),
         # then the same descendant walk and Rule-9 filter as a path/label hit.
-        seed_sids = list(subject_ids) if subject_ids is not None else _match_seed_subjects(conn, owner, expanded_terms)
+        seed_sids = list(subject_ids) if subject_ids is not None else _match_seed_subjects(conn, owner, expanded_terms, learned=learned_idx)
         if tokens:
             alias_rows = conn.execute(
                 """
@@ -870,8 +879,11 @@ def compute_subject_salience_sql(conn: Any, owner: str) -> dict[str, float]:
                    s.user_confirmed_at,
                    COUNT(f.id) FILTER (
                        WHERE f.valid_from >= to_char(CURRENT_DATE - 30, 'YYYY-MM-DD')
+                         AND (s.provenance <> 'inferred' OR s.user_confirmed_at IS NOT NULL OR COALESCE(f.confidence, 1.0) > 0.05)
                    )::int AS mentions_30d,
-                   MAX(NULLIF(substr(f.valid_from, 1, 10), '')) AS max_valid_day
+                   MAX(NULLIF(substr(f.valid_from, 1, 10), '')) FILTER (
+                       WHERE s.provenance <> 'inferred' OR s.user_confirmed_at IS NOT NULL OR COALESCE(f.confidence, 1.0) > 0.05
+                   ) AS max_valid_day
             FROM subjects s
             LEFT JOIN facts f ON f.owner = s.owner AND f.subject_id = s.id
               AND f.erased_at IS NULL AND f.status <> 'history'

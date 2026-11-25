@@ -72,3 +72,4 @@ E9b: branch e9b/s2-quality 37f0d1f pushed (not merged); pytest 475/8 skip; S2 su
 2026-11-25 07:46 | E10 | gemini | e10/topic-tree | — | queued (prompts/E10_topic_tree.md; founder decision on _SYNONYM_GROUPS)
 2026-11-25 07:46 | E11a | codex | e11a/temporal-fixes | — | queued (prompts/E11_review_fixes.md Part A)
 2026-11-25 07:46 | E11b | devin | e11b/review-fixes | — | queued (prompts/E11_review_fixes.md Part B)
+2026-11-25 09:03 | E10 | gemini | e10/topic-tree | HEAD | ready-for-review (D18 weight floor 0.05 applied, 0 delete paths, privacy/forget.py untouched; 183 nodes/463 aliases/32 lexicon; 486 passed/0 failed; S2 proposals 10: 5 kept / 5 dropped; mean $0.004956/day; 20k p95 12.71ms ctx / 111.11ms srch / 102.07ms mcp; see E10.md)
