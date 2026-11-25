@@ -157,7 +157,7 @@ Proposed, not yet approved:
 
 Civic RAG with citations · background geofencing · ticket wallet · media memory · Arabic RTL UI · live AR try-on · affiliate marketplace feeds. A broader audience does not automatically activate these features. (Unlocked 23 Oct by founder: resident bills + Salik/DEWA displays, payments and third-party purchasing, government transactions — each ships only behind a real adapter with verified evidence; no fake sends.)
 
-Also out of the contest build for now [24 Nov: Community and Messenger are now separate entries on `main`]: **community/social track** (parked 9 Nov; code stays) · **UI work** (paused 9 Nov until the headless pipeline works; when it resumes, no UI track is done without founder visual review of a staged preview) · native iOS (STOPPED 23 Oct).
+Also deferred / parked [24 Nov: Community and Messenger are separate entries on `main`, not parked]: the `apps/site` Next.js UI (paused) · design polish (follows the E0–E4 round; no UI track is done without founder visual review of a staged preview) · Android and the $99 Apple Developer account · native Swift iOS (`apps/ios`, STOPPED 23 Oct).
 
 ### NEVER
 

@@ -26,7 +26,7 @@
 | User folders | Seven life themes: `01-people` · `02-career-and-craft` · `03-projects` · `04-learning-and-ideas` · `05-home-and-money` · `06-events-and-occasions` · `07-travel-and-places` |
 | Cards | **App owns UI.** Memory feeds state; it does not render cards |
 | Knowledge Vault UI | **Dual-View Sovereign Graph:** `Subjects` (458 nodes across 6 life clusters) and `People & Places` (179 nodes with `T1` Inner Circle boundary). Locked 20 Nov 2026 in `design/20-11-2026/INDEX.md`. |
-| Gate | No new memory feature work until **AC-1** (live Hindsight LLM retain), **AC-2** (card lifecycle), **AC-3** (query rewriter) are green. *(Proposed AC-4: cross-agent restart continuity test).* |
+| Gate | No new memory feature work until **AC-1** (live Hindsight LLM retain), **AC-2** (card lifecycle), **AC-3** (query rewriter) are green. *(Proposed AC-4: cross-agent restart continuity test).* [24 Nov: the AC gates no longer apply (see the §1 backend row); work is gated by the U/E rounds in `apps/memory/upgrade/`.] |
 | LLM Provider Rule | **Zero Gemini API calls.** All extractions run through local LLMs / LM Studio / Qwen 1.5B–3B / Ollama or Antigravity/Haiku/Codex hooks. |
 | Provider Health Probe | **Startup verification required:** Backend must respond to health probe and pass 1 test round-trip; otherwise mark degraded and fall back to local session layer with visible notice. |
 
@@ -245,7 +245,7 @@ flowchart TD
 * [x] Live OAuth transport pipeline for Gmail (50k tokens cap) & YouTube (Channel uploads + Liked videos).
 
 ### Phase 2: Acceptance Gates & Ingestion Execution (CURRENT ACTIVE)
-* [ ] **AC-1:** Live Hindsight LLM-provider extraction proof (`HINDSIGHT_URL` + provider enabled).
+* [ ] **AC-1:** Live Hindsight LLM-provider extraction proof (`HINDSIGHT_URL` + provider enabled). [24 Nov: no longer applies (see the §1 backend row); work is gated by the U/E rounds in `apps/memory/upgrade/`.]
 * [ ] **AC-2:** Card lifecycle state machine (`new → seen → actioned → dismissed → resolved`).
 * [ ] **AC-3:** Orchestrator query rewriter (`phone` $\to$ `tech/devices/phone` + aliases).
 * [ ] **Proposed AC-4:** Cross-agent continuity test across restarts with stable `user_id` resolution.
@@ -444,12 +444,12 @@ The memory engine's export and graph representation is rendered to the user via 
 | Surface | State |
 |---|---|
 | Live context pack (no LLM; aliases EN / AR / Arabizi, dates, AED, BM25 + RRF; ≤ 1.5k tokens; target p95 < 150 ms) | ✅ works; ✅ SQL candidates (FTS GIN + entity / alias + 1 hop + subject + date → RRF) fused with local multilingual embeddings (U1c, U4) |
-| `/search` (bridge) | ✅ on Postgres with the prefix filter in SQL (57 ms p95 at 20k); 🔧 ranked candidates in U1c |
+| `/search` (bridge) | ✅ hybrid keyword + local multilingual embedding search (U1c / U4) |
 | Vault API (`/vault/subjects`, `/vault/people`, `/quests`, `/hypotheses`, `/timeline`, `/onboarding-status`, `/why`) | ✅ exists; ✅ provenance rendered (U1c) |
 | `/vault/graph?view=subjects\|people` (versioned DTO, 7 clusters, Rule 9 gated, `+N more`, T1 + suggestions) + `POST …/tier` | ✅ U1c |
 | `/why` with a cited reason span or "reason unknown"; `/story` (a deterministic cited timeline, optional verified narration) | ✅ U5 |
-| §9 Quest-like export tree | ⚠️ the old tree today → 📋 **U5 Part C** parity |
-| MCP tools (claim / submit jobs, `memory_search`, `memory_context`, vault summary) | ✅ (search hydration cap → U1c) |
+| §9 Quest-like export tree | ✅ U6 Quest tree + persona cards merged 24 Nov (PR #4, bf7d52e); gold-month e2e not run (corpus not in repo; see `apps/memory/upgrade/reports/U6.md`) |
+| MCP tools (claim / submit jobs, `memory_search`, `memory_context`, vault summary) | ✅ |
 | Community / Messenger CR-TM bridge (`/records`, `/forget`, `/facts/{id}/resolve`, `/context`, `/search`) | ✅ on Postgres, 8/8 live ops (U1a); 📋 CS-1 adds live bridge contract tests |
 
 Access is by hashed tokens with roles admin / worker / owner-device, owner-scoped.

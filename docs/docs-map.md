@@ -228,6 +228,9 @@ Because the memory architecture evolved across five iterations between 13 Oct an
 | **5** | **External `quest/*` Hindsight Prototype** | `docs/plan/BUILD_REPORT.md` (untracked, 17 Nov) | Hindsight 1.2.1 bank + SQLite `Catalog` (`quest/catalog.py`) | **External prototype report** — `quest/*` code does not exist in this repo; conflicts with `PLAN.md` §2 (16 Nov). |
 | **6** | **Unmerged Emails Agent Schema** | `origin/docs/consolidate-plan-agents` (`docs/services/agents/emails.md`) | `source_items`, `item_labels`, `label_rules`, `entities`, `entity_items` | **Unmerged 15 Nov draft** on remote branch. |
 
+> [!NOTE]
+> **Historical 17 Nov snapshot:** the 10-table Postgres schema below is superseded by `temporal_note` (`apps/memory/`, documented in `docs/plan/Memory/memory.md` §18). Keep the entries below for historical reference only.
+
 > [!IMPORTANT]
 > **Consolidation Fix for Memory:**
 > `PLAN.md` §2 (16 Nov) already settled the memory design: the **10-table Postgres schema** (`sources, source_records, chunks, topics, memories, entities, links, followups, profile, alias_suggestions`) is the target store, and `apps/api/app/lab/` (`lab_rows`, `lab_annotations`, `lab_followups`, `lab_alias_suggestions`, `lab_vectors`) is its working SQLite prototype.

@@ -157,9 +157,9 @@ Freeze one `models.py` change request for U1–U3. Add versioned, idempotent mig
 - cache keyed by generation + `facts_version` + query;
 - falls back to the template when over budget. | R3 R5 | S–M |
 | **U7** | Rerun U0's harness after each WP; full run at release. | all | M |
-| **U4** | **Embeddings: deferred.** Only if U7 shows an Arabic or paraphrase bucket below its floor after U1–U3. Try `pg_trgm` + a small EN↔AR synonym map first; then local multilingual embeddings, with exact scoring on the candidate pool; HNSW only if needed. | R3 | L, if needed |
+| **U4** | **Embeddings: deferred.** [25 Nov: not deferred — U4 merged 24 Nov (BAAI/bge-m3, hybrid RRF); see `reports/U4.md`.] Only if U7 shows an Arabic or paraphrase bucket below its floor after U1–U3. Try `pg_trgm` + a small EN↔AR synonym map first; then local multilingual embeddings, with exact scoring on the candidate pool; HNSW only if needed. | R3 | L, if needed |
 
-**Order:** U0 → U1 → U3 → U2 → U5 → U7 → (U4 only if needed). The mobile app switches to `/vault/graph` only after U1 passes its Rule 9 and Forget gates (Cursor/Muse on `ios`, through an additive adapter in `vaultApi.ts`; the demo fallback stays labelled).
+**Order:** U0 → U1 → U3 → U2 → U5 → U7 → (U4 only if needed). The mobile app switches to `/vault/graph` only after U1 passes its Rule 9 and Forget gates (on `main` through an additive adapter in `vaultApi.ts`; the demo fallback stays labelled).
 
 ### 5.1 `/vault/graph` DTO (merged from the audits)
 
