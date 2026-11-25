@@ -88,3 +88,5 @@ E9b: branch e9b/s2-quality 37f0d1f pushed (not merged); pytest 475/8 skip; S2 su
 2026-11-25 | E13b | gemini | e13b/shared-vocab-agent | — | queued (prompts/E13b_similar_queries_vocab_agent.md — D21 similar-query logical agent + E10 review cleanups)
 2026-11-25 | E14a | devin | e14a/community-social-parity | — | queued (prompts/E14a_community_social_parity.md — D22 Facebook/Reddit social core + E11b/E12 cleanups)
 2026-11-25 | E14b | devin | e14b/community-two-tower | — | queued after E14a (prompts/E14b_community_two_tower_context.md — D22 real Two-Tower + foreground context + usage profile)
+2026-11-25 | E14 | gemini-integrator (4 sub-agents) | e14/community-replica-recommender | 1275b25 | in-progress, UNVERIFIED WIP pushed (2 of 4 agents hit quota; two-tower not wired into server.py/agents.py; 2 failing tests; web UI gates not run) - see prompts/HANDOFF_integrator_2026-11-25b.md
+2026-11-25 | HANDOFF | gemini-integrator | main | 55878ab | handoff 2 written (prompts/HANDOFF_integrator_2026-11-25b.md); PR #9 (chore/e11b-e12-cleanups) open, E13a uncommitted in contest-e13a
