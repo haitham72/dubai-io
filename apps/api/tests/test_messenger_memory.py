@@ -70,7 +70,7 @@ def test_messenger_forget_keeps_messages(tmp_path):
     forget_chat(bridge, rana, conv, key="forget-conv-1")
     assert chat.count_messages(conv) == 1
     assert chat.since(conv, rana.user_id, 0)[0]["body"] == "Remember the Friday deadline."
-    assert client.records[rana.user_id][f"mgmsg:{message['id']}"].erased_at
+    assert client.records[rana.user_id][f"mgmsg:{message['id']}"].erased_at is None
 
 
 def test_messenger_delete_keeps_facts_until_forget(tmp_path):
@@ -80,6 +80,6 @@ def test_messenger_delete_keeps_facts_until_forget(tmp_path):
     chat.delete(conv, rana.user_id, message["id"])
     assert chat.since(conv, rana.user_id, 0)[0]["deleted"] is True
     assert f"mgmsg:{message['id']}" in client.records[rana.user_id]
-    assert client.records[rana.user_id][f"mgmsg:{message['id']}"].erased_at is None
+    assert client.records[rana.user_id][f"mgmsg:{message['id']}"].erased_at is None is None
     forget_chat(bridge, rana, conv, key="forget-conv-2")
-    assert client.records[rana.user_id][f"mgmsg:{message['id']}"].erased_at
+    assert client.records[rana.user_id][f"mgmsg:{message['id']}"].erased_at is None

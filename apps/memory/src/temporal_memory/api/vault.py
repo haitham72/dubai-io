@@ -69,11 +69,12 @@ def get_auth(authorization: str | None = Header(default=None)) -> AuthContext:
 
 
 def require_owner_access(owner: str = FPath(...), auth: AuthContext = Depends(get_auth)) -> AuthContext:
-    if auth.role == "admin":
-        return auth
-    if auth.role == "owner-device" and auth.owner == owner:
-        return auth
-    raise HTTPException(status_code=403, detail="owner access required")
+    if auth.role != "admin" and not (auth.role == "owner-device" and auth.owner == owner):
+        raise HTTPException(status_code=403, detail="owner access required")
+    from temporal_memory.privacy.controls import account_deleted
+    if account_deleted(get_store(), owner):
+        raise HTTPException(status_code=403, detail="Account data has been deleted")
+    return auth
 
 
 def require_admin(auth: AuthContext = Depends(get_auth)) -> AuthContext:
@@ -181,6 +182,8 @@ def vault_subjects(
     for s in subjects:
         children_map[s.parent_id].append(s)
 
+    from temporal_memory.privacy.controls import subject_states
+    weights = subject_states(store, owner)
     collected_provs: list[str] = []
 
     def _build(node: Subject, *, parent_sensitive: bool = False) -> dict[str, Any] | None:
@@ -208,6 +211,7 @@ def vault_subjects(
             "kind": node.kind,
             "status": node.status,
             "salience": sal_map.get(node.id, node.salience),
+            **weights.get(node.id, {}),
             "fact_count": total,
             "direct_fact_count": own_cnt,
             "sensitive_cat": node.sensitive_cat,
@@ -449,6 +453,8 @@ def hypotheses(
             if f.status == "hypothesis" and not _is_sensitive_subject(subjects.get(f.subject_id))
         ][:limit]
 
+    from temporal_memory.privacy.controls import fact_states
+    weights = fact_states(store, owner, [f.id for f in hyps])
     return {
         "owner": owner,
         "hypotheses": [
@@ -461,7 +467,8 @@ def hypotheses(
                 "provenance": f.provenance,
                 "review_state": _review_state(f.provenance, is_demo),
                 "as_of": f.valid_from or now_iso,
-                "actions": ["Confirm", "Edit", "Not true", "Forget"],
+                "actions": ["Confirm", "Edit", "Not true", "Restore" if weights.get(f.id, {}).get("lowered") else "Lower"],
+                **weights.get(f.id, {}),
                 "demo_data": is_demo or f.provenance == "demo_fixture",
             }
             for f in hyps
@@ -478,6 +485,7 @@ def timeline(
     date_from: str | None = Query(default=None),
     date_to: str | None = Query(default=None),
     limit: int = Query(default=200, ge=1, le=2000),
+    lowered: bool = Query(default=False),
     _: AuthContext = Depends(require_owner_access),
     store: GraphStore = Depends(get_store),
 ) -> dict[str, Any]:
@@ -486,7 +494,11 @@ def timeline(
     iter_fn = getattr(store, "iter_visible_facts", None)
     items_facts: list[Fact] = []
     if callable(iter_fn):
-        for f in iter_fn(owner, date_from=date_from, date_to=date_to, page_size=min(limit, 500)):
+        from temporal_memory.privacy.controls import fact_states
+        filters = {"lowered_only": True} if lowered and hasattr(store, "db") else {}
+        for f in iter_fn(owner, date_from=date_from, date_to=date_to, page_size=min(limit, 500), **filters):
+            if lowered and not filters and not fact_states(store, owner, [f.id]).get(f.id, {}).get("lowered"):
+                continue
             if f.status == "history":
                 continue
             if _is_sensitive_subject(subjects.get(f.subject_id)) and f.provenance not in (
@@ -509,6 +521,8 @@ def timeline(
         items_facts.sort(key=lambda x: (x.valid_from or "", x.id), reverse=True)
         items_facts = items_facts[:limit]
 
+    from temporal_memory.privacy.controls import fact_states
+    weights = fact_states(store, owner, [f.id for f in items_facts])
     return {
         "owner": owner,
         "items": [
@@ -520,6 +534,7 @@ def timeline(
                 "valid_from": f.valid_from,
                 "valid_to": f.valid_to,
                 "status": f.status,
+                **weights.get(f.id, {}),
                 "superseded_by": f.superseded_by,
                 "provenance": f.provenance,
                 "review_state": _review_state(f.provenance, is_demo),
@@ -997,7 +1012,12 @@ def vault_learned_vocab(
         from temporal_memory.vocab.proposals import list_owner_learned_terms
 
         with db_obj.connection() as conn:
+            from temporal_memory.privacy.controls import learned_weights
             items = list_owner_learned_terms(conn, owner)
+            weights = learned_weights(conn, owner)
+            for item in items:
+                item["weight"] = weights.get(item["term_folded"], 0.01)
+            items.sort(key=lambda item: (-item["weight"], item["term_folded"]))
     return {
         "owner": owner,
         "items": items,

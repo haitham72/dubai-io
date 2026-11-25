@@ -41,7 +41,7 @@ test("desktop Chrome and AI sessions raise completeness to 73% or more", async (
 test("reveal cards show Confirm, Forget, and src evidence", async () => {
   const view = await render(<InitialRevealCard />);
   expect(view.getAllByText("Confirm").length).toBeGreaterThan(0);
-  expect(view.getAllByText("Forget").length).toBeGreaterThan(0);
+  expect(view.getAllByText("Lower").length).toBeGreaterThan(0);
   expect(view.getByText(/src: gmail/)).toBeTruthy();
   expect(view.getByText(/src: youtube:interests/)).toBeTruthy();
   await fireEvent.press(view.getAllByText("Confirm")[0]);

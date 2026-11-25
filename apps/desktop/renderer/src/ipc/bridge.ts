@@ -149,6 +149,7 @@ export interface DesktopBridge {
   authStatus(): Promise<AuthStatus>;
   authSignIn(payload?: { apiBaseUrl?: string }): Promise<AuthStatus>;
   authSignOut(): Promise<AuthStatus>;
+  browserMemoryWeight(lower: boolean): Promise<void>;
   scanSessions(payload: { tool?: AgentTool; since?: string }): Promise<{ count: number }>;
   resumeCommand(payload: { agentTool: AgentTool; sessionId: string; cwd: string }): Promise<ResumeResult>;
   previewBrowser(payload: { browser: BrowserKind; profileName: string }): Promise<Record<string, number>>;
@@ -209,6 +210,7 @@ export function demoBridge(): DesktopBridge {
     async authSignIn() {
       throw new Error("Sign-in is available in the desktop app, not in this preview.");
     },
+    async browserMemoryWeight() { throw new Error("Sign in on the desktop to update memory"); },
     async authSignOut() {
       return { ...SIGNED_OUT };
     },

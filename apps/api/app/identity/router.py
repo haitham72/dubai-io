@@ -205,6 +205,32 @@ def create_identity_router(
     ) -> VerifiedPrincipal:
         return require_verified_jwt(request, authorization=authorization, service=service)
 
+    @router.post("/delete-my-data")
+    def delete_my_data(
+        request: Request, response: Response, body: dict = Body(...),
+        principal: VerifiedPrincipal = Depends(_require_verified_any),
+        service: IdentityService = Depends(service_dep),
+    ) -> dict[str, Any]:
+        if body != {"confirm": True} or body.get("confirm") is not True:
+            raise HTTPException(422, detail="Explicit confirmation is required")
+        client = getattr(request.app.state, "temporal_memory_client", None)
+        remove = getattr(client, "delete_my_data", None)
+        if not callable(remove):
+            raise HTTPException(503, detail="Account deletion is unavailable")
+        from ..memory_bridge.models import MemoryBridgeError
+        from ..today_feed import clear_today_cache
+        try:
+            result = remove(principal.user_id)
+        except MemoryBridgeError as exc:
+            raise HTTPException(exc.status_code, detail=exc.code) from exc
+        if not result.get("deleted_from_external") or not result.get("deleted_at"):
+            raise HTTPException(503, detail="Account deletion could not be verified")
+        service.store.delete_account_access(principal.user_id, deleted_at=result["deleted_at"])
+        clear_today_cache(principal.user_id)
+        for app_id in ("quest", "community", "messenger"):
+            response.delete_cookie(f"cs_session_{app_id}", path="/")
+        return result
+
     @router.get("/me")
     def get_me(
         principal: VerifiedPrincipal = Depends(_require_verified_any),

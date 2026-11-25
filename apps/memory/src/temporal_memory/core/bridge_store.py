@@ -233,6 +233,8 @@ def resolve_fact(store: Any, owner: str, fact_id: str, body: Any) -> dict[str, A
         if fact is None:
             raise HTTPException(status_code=404, detail="Fact not found or forgotten")
         status = fact["status"]
+        from temporal_memory.privacy.controls import lock_active_owner
+        lock_active_owner(conn, owner)
         if body.action == "confirm":
             conn.execute(
                 """
@@ -303,11 +305,7 @@ def resolve_fact(store: Any, owner: str, fact_id: str, body: Any) -> dict[str, A
             status = "active"
         elif body.action == "reject":
             conn.execute(
-                "UPDATE facts SET erased_at = now(), embedding = NULL, embedding_model = NULL, embedded_at = NULL WHERE owner = %s AND id = %s",
-                (owner, fact_id),
-            )
-            conn.execute(
-                "DELETE FROM fact_evidence WHERE owner = %s AND fact_id = %s",
+                "UPDATE facts SET weight_steps = weight_steps + 1 WHERE owner = %s AND id = %s",
                 (owner, fact_id),
             )
             status = "rejected"
@@ -371,7 +369,7 @@ def _sql_search(store: Any, owner: str, query: str, limit: int, source_prefix: s
         params.extend([like, like])
     params.append(limit)
     sql = f"""
-        SELECT vf.id, vf.text, vf.subject_id, vf.status, vf.provenance, vf.valid_from,
+        SELECT vf.id, vf.text, vf.subject_id, vf.status, vf.provenance, vf.valid_from, w.weight,
                COALESCE((
                    SELECT json_agg(fe.record_id ORDER BY fe.record_id)
                    FROM fact_evidence fe
@@ -383,7 +381,7 @@ def _sql_search(store: Any, owner: str, query: str, limit: int, source_prefix: s
                    JOIN records r ON r.owner = fe.owner AND r.id = fe.record_id
                    WHERE fe.owner = vf.owner AND fe.fact_id = vf.id AND r.erased_at IS NULL
                ), '[]'::json) AS sources
-        FROM visible_facts vf
+        FROM memory_surface_facts vf JOIN memory_fact_weights w ON (w.owner,w.id) = (vf.owner,vf.id)
         WHERE {' AND '.join(clauses)}
         ORDER BY vf.valid_from DESC, vf.id ASC
         LIMIT %s
@@ -396,6 +394,7 @@ def _sql_search(store: Any, owner: str, query: str, limit: int, source_prefix: s
             "text": row["text"],
             "subject_id": row["subject_id"],
             "status": row["status"],
+            "weight": row["weight"],
             "provenance": row["provenance"],
             "as_of": row["valid_from"],
             "evidence": _as_list(row["evidence"]),
@@ -412,7 +411,7 @@ def _hydrate_ranked_facts(store: Any, owner: str, ranked_ids: list[str], limit: 
     with store.db.connection() as conn:
         rows = conn.execute(
             """
-            SELECT f.id, f.text, f.subject_id, f.status, f.provenance, f.valid_from,
+            SELECT f.id, f.text, f.subject_id, f.status, f.provenance, f.valid_from, w.weight,
                    COALESCE((
                        SELECT json_agg(fe.record_id ORDER BY fe.record_id)
                        FROM fact_evidence fe
@@ -424,8 +423,8 @@ def _hydrate_ranked_facts(store: Any, owner: str, ranked_ids: list[str], limit: 
                        JOIN records r ON r.owner = fe.owner AND r.id = fe.record_id
                        WHERE fe.owner = f.owner AND fe.fact_id = f.id AND r.erased_at IS NULL
                    ), '[]'::json) AS sources
-            FROM facts f
-            WHERE f.owner = %s AND f.id = ANY(%s) AND (f.erased_at IS NULL)::int = 1
+            FROM memory_surface_facts f JOIN memory_fact_weights w ON (w.owner,w.id) = (f.owner,f.id)
+            WHERE f.owner = %s AND f.id = ANY(%s)
             """,
             (owner, target_ids),
         ).fetchall()
@@ -435,6 +434,7 @@ def _hydrate_ranked_facts(store: Any, owner: str, ranked_ids: list[str], limit: 
             "text": row["text"],
             "subject_id": row["subject_id"],
             "status": row["status"],
+            "weight": row["weight"],
             "provenance": row["provenance"],
             "as_of": row["valid_from"],
             "evidence": _as_list(row["evidence"]),

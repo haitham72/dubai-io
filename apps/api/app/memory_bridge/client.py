@@ -376,8 +376,11 @@ class HttpTemporalMemoryClient:
         date_from: str | None = None,
         date_to: str | None = None,
         limit: int = 200,
+        lowered: bool = False,
     ) -> dict[str, Any]:
         params: dict[str, Any] = {"limit": int(limit)}
+        if lowered:
+            params["lowered"] = True
         if date_from is not None:
             params["date_from"] = date_from
         if date_to is not None:
@@ -424,25 +427,39 @@ class HttpTemporalMemoryClient:
         assert resp is not None
         return dict(resp.json())
 
-    def forget_source(self, owner_id: str, record_ids: list[str]) -> dict[str, Any]:
-        resp = self._request(
-            "POST",
-            f"/v1/owners/{_quote(owner_id)}/forget",
-            headers=self._owner_headers(owner_id),
-            json_body={"record_ids": list(record_ids), "fact_id": None},
+    def set_memory_lowered(self, owner_id: str, *, lower: bool = True, **target: Any) -> dict[str, Any]:
+        response = self._request(
+            "POST", f"/v1/owners/{_quote(owner_id)}/{'lower' if lower else 'restore'}",
+            headers=self._owner_headers(owner_id), json_body=target,
         )
-        assert resp is not None
-        return dict(resp.json())
+        return dict(response.json())
+
+    def lowered_record_ids(self, owner_id: str) -> set[str]:
+        response = self._request(
+            "GET", f"/v1/owners/{_quote(owner_id)}/lowered-records",
+            headers=self._owner_headers(owner_id),
+        )
+        return set(response.json()["record_ids"])
+
+    def delete_my_data(self, owner_id: str) -> dict[str, Any]:
+        response = self._request(
+            "POST", f"/v1/owners/{_quote(owner_id)}/delete-my-data",
+            headers=self._admin_headers(),
+        )
+        return dict(response.json())
+
+    def memory_version(self, owner_id: str) -> int:
+        response = self._request(
+            "GET", f"/v1/owners/{_quote(owner_id)}/memory-version",
+            headers=self._owner_headers(owner_id),
+        )
+        return int(response.json()["facts_version"])
+
+    def forget_source(self, owner_id: str, record_ids: list[str]) -> dict[str, Any]:
+        return self.set_memory_lowered(owner_id, record_ids=record_ids) if record_ids else {"ok": True, "records": 0}
 
     def forget_fact(self, owner_id: str, fact_id: str) -> dict[str, Any]:
-        resp = self._request(
-            "POST",
-            f"/v1/owners/{_quote(owner_id)}/forget",
-            headers=self._owner_headers(owner_id),
-            json_body={"record_ids": [], "fact_id": fact_id},
-        )
-        assert resp is not None
-        return dict(resp.json())
+        return self.set_memory_lowered(owner_id, fact_id=fact_id)
 
     def export_markdown_zip(self, owner_id: str) -> bytes:
         resp = self._request(

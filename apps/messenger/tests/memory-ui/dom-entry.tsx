@@ -33,7 +33,7 @@ function fakeClient() {
     state: async () => ({ enabled: true, as_of: "T", items: [] }),
     setConsent: async () => ({ enabled: false, as_of: "T" }),
     setChatMode: async () => { calls.mode++; return { mode: "save" }; },
-    forget: async () => ({ records_forgotten: 1, facts_erased: 1, as_of: "T" }),
+    setLowered: async () => ({ records: 1, lowered: true, as_of: "T" }),
   };
   return { client, calls };
 }

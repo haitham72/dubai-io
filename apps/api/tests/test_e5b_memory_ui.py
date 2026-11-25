@@ -38,7 +38,7 @@ def test_community_consent_get_post_roundtrip_and_off_does_not_forget(tmp_path, 
     assert client.get("/api/community/memory/consent").json()["write_enabled"] is False
 
 
-def test_community_forget_returns_server_counts_and_erases(tmp_path, monkeypatch):
+def test_community_legacy_alias_preserves_memory_records(tmp_path, monkeypatch):
     client, bridge, fake = community_client(tmp_path, monkeypatch)
     owner = _me(client)
     client.post("/api/community/memory/consent", json={"read_enabled": True, "write_enabled": True})
@@ -46,8 +46,8 @@ def test_community_forget_returns_server_counts_and_erases(tmp_path, monkeypatch
     res = client.post("/api/community/memory/forget")
     assert res.status_code == 200
     body = res.json()
-    assert body["records_forgotten"] >= 1 and body["as_of"]
-    assert all(r.erased_at for r in fake.records[owner].values())
+    assert body["records_forgotten"] == 0 and body["as_of"]
+    assert all(r.erased_at is None for r in fake.records[owner].values())
 
 
 def test_community_consent_failure_paths(tmp_path, monkeypatch):
@@ -124,7 +124,7 @@ def test_messages_are_not_memories_until_the_tap_and_preview_lists_fields(mg):
     assert "FORGED" not in str(rec) and "Friday" in str(rec)
 
 
-def test_saved_list_comes_from_server_and_forget_removes_it(mg):
+def test_saved_list_shows_lowered_and_restores_it(mg):
     client, fake, ha, hb, conv, ua, _ub = mg
     _turn_on(client, ha, hb, conv)
     msg = _send(client, ha, conv, "m2", "Order the panels on Monday.")
@@ -134,8 +134,11 @@ def test_saved_list_comes_from_server_and_forget_removes_it(mg):
     assert state["items"][0]["provenance"] == "user_supplied"
     assert client.get("/api/messenger/memory", headers=hb).json()["items"] == []
     res = client.post("/api/messenger/memory/forget", headers=ha, json={"record_id": state["items"][0]["record_id"]})
-    assert res.status_code == 200 and res.json()["records_forgotten"] == 1
-    assert client.get("/api/messenger/memory", headers=ha).json()["items"] == []
+    assert res.status_code == 200 and res.json()["records"] == 1
+    assert client.get("/api/messenger/memory", headers=ha).json()["items"][0]["lowered"]
+    assert client.post("/api/messenger/memory/lower", headers=ha,
+                       json={"record_id": state["items"][0]["record_id"], "lower": False}).status_code == 200
+    assert not client.get("/api/messenger/memory", headers=ha).json()["items"][0]["lowered"]
     assert client.post("/api/messenger/memory/forget", headers=ha, json={}).status_code == 422
 
 

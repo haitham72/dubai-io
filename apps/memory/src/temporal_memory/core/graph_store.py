@@ -539,6 +539,7 @@ class PostgresGraphStore:
         date_to: str | None = None,
         after: tuple[str, str] | None = None,
         page_size: int = 500,
+        lowered_only: bool = False,
     ) -> Iterator[Fact]:
         """Iterate visible facts by (valid_from, id) descending using keyset cursors."""
         if page_size < 1:
@@ -547,6 +548,9 @@ class PostgresGraphStore:
         while True:
             clauses = ["vf.owner = %s"]
             params: list[Any] = [owner]
+            if lowered_only:
+                clauses.append("EXISTS (SELECT 1 FROM memory_fact_weights w "
+                               "WHERE (w.owner,w.id) = (vf.owner,vf.id) AND w.lowered)")
             if date_from is not None:
                 clauses.append("substr(vf.valid_from, 1, 10) >= %s")
                 params.append(date_from[:10])
@@ -587,6 +591,18 @@ class PostgresGraphStore:
                 (owner,),
             ).fetchone()
         return int(row["privacy_revision"]) if row else 0
+
+    def external_versions(self, owner: str) -> tuple[int, int, int] | None:
+        with self.db.connection() as conn:
+            row = conn.execute(
+                "SELECT alias_version, facts_version, privacy_revision, deleted_from_external "
+                "FROM owners WHERE id = %s", (owner,),
+            ).fetchone()
+        if row is None:
+            return (0, 0, 0)
+        if row["deleted_from_external"]:
+            return None
+        return row["alias_version"], row["facts_version"], row["privacy_revision"]
 
     def privacy_revision(self, owner: str) -> int:
         """Read current privacy_revision for cache keying."""
@@ -915,8 +931,8 @@ class PostgresGraphStore:
     def owner_generation(self, owner: str) -> int:
         with self.db.connection() as conn:
             row = conn.execute(
-                "SELECT COALESCE(MAX(generation), 0) AS g FROM records WHERE owner = %s",
-                (owner,),
+                "SELECT GREATEST(COALESCE(MAX(r.generation), 0), COALESCE(MAX(o.deletion_generation), 0)) AS g "
+                "FROM owners o LEFT JOIN records r ON r.owner = o.id WHERE o.id = %s", (owner,),
             ).fetchone()
         return int(row["g"]) if row else 0
 

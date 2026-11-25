@@ -151,8 +151,8 @@ def test_http_client_endpoints_and_token_isolation():
             return httpx.Response(200, json={"ok": True, "id": "tok_1"})
         if path.endswith("/records"):
             return httpx.Response(200, json={"ok": True, "record_ids": ["r1"], "job_id": "j1", "fact_ids": ["f1"], "quarantined": 0})
-        if path.endswith("/forget"):
-            return httpx.Response(200, json={"ok": True, "generation": 2, "records": 1, "facts_erased": 1, "facts_trimmed": 0, "entity_subjects_recomputed": 0, "jobs_requeued": 0, "jobs_enqueued": 0})
+        if path.endswith("/lower"):
+            return httpx.Response(200, json={"ok": True, "generation": 2, "records": 1, "facts_erased": 0, "facts_trimmed": 0, "entity_subjects_recomputed": 0, "jobs_requeued": 0, "jobs_enqueued": 0})
         if path.endswith("/resolve"):
             return httpx.Response(200, json={"ok": True, "fact_id": "f1", "new_fact_id": None, "status": "active", "facts_version": 2})
         if path.endswith("/vault/subjects"):
@@ -205,7 +205,7 @@ def test_http_client_endpoints_and_token_isolation():
     assert client.get_timeline(SYNTH_OWNER_A, date_from="2026-11-01")["items"] == []
     assert client.get_why_fact(SYNTH_OWNER_A, "f1")["fact_id"] == "f1"
     assert client.resolve_fact(SYNTH_OWNER_A, "f1", action="confirm")["status"] == "active"
-    assert client.forget_source(SYNTH_OWNER_A, ["r1"])["facts_erased"] == 1
+    assert client.forget_source(SYNTH_OWNER_A, ["r1"])["facts_erased"] == 0
     assert client.forget_fact(SYNTH_OWNER_A, "f1")["ok"] is True
     assert client.export_markdown_zip(SYNTH_OWNER_A).startswith(b"PK")
 
@@ -529,7 +529,7 @@ def test_fake_client_direct_fact_validation_resolve_and_export():
     assert all("2026-11-20" <= item["valid_from"][:10] <= "2026-11-21" for item in tl["items"])
 
     fake.resolve_fact(SYNTH_OWNER_A, edited_id, action="reject")
-    assert not any(f["id"] == edited_id for f in fake.search_facts(SYNTH_OWNER_A, "Raft"))
+    assert any(f["id"] == edited_id and f["weight"] == 0.5 for f in fake.search_facts(SYNTH_OWNER_A, "Raft"))
 
     ff = fake.forget_fact(SYNTH_OWNER_A, "fact-q-1")
     assert ff["facts_erased"] == 1

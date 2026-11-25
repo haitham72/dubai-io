@@ -40,7 +40,7 @@ _HELD_BACK_ROOTS = frozenset(HELD_BACK_ROOTS)
 
 _DEFAULT_STORE: GraphStore | None = None
 _ALIAS_CACHE: dict[str, tuple[Any, dict[str, list[Entity]], dict[str, Entity]]] = {}
-_PACK_CACHE: dict[str, tuple[Any, dict[tuple[str, int], dict[str, Any]]]] = {}
+_PACK_CACHE: dict[str, tuple[Any, dict[tuple[str, int, str], dict[str, Any]]]] = {}
 
 _MONTHS = {
     "jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6,
@@ -355,8 +355,11 @@ def context_pack(owner: str, text: str, max_tokens: int = 1500, *, store: GraphS
         raise RuntimeError("No GraphStore configured for live.context_pack")
 
     now_iso = datetime.now(timezone.utc).isoformat()
-    ver = _version_tuple(st, owner)
-    cache_key = (fold(text), max_tokens)
+    versions = getattr(st, "external_versions", None)
+    ver = versions(owner) if callable(versions) else _version_tuple(st, owner)
+    if ver is None:
+        return {"facts": [], "entities": [], "open_changes": [], "as_of": now_iso}
+    cache_key = (fold(text), max_tokens, now_iso[:10])
     cached_owner = _PACK_CACHE.get(owner)
     if cached_owner and cached_owner[0] == ver and cache_key in cached_owner[1]:
         hit_pack = copy.deepcopy(cached_owner[1][cache_key])
@@ -433,9 +436,14 @@ def context_pack(owner: str, text: str, max_tokens: int = 1500, *, store: GraphS
     open_changes: list[dict[str, Any]] = []
     open_fn = getattr(st, "list_open_changes", None)
     if callable(open_fn):
-        for f, sup_text in open_fn(owner, entity_ids=list(matched_eids), fact_ids=top_fids, limit=8):
-            if _is_sensitive_hidden(f, subjects_by_id):
+        changes = open_fn(owner, entity_ids=list(matched_eids), fact_ids=top_fids, limit=16)
+        from temporal_memory.privacy.controls import fact_states
+        weights = fact_states(st, owner, [fid for f, _ in changes for fid in (f.id, f.superseded_by) if fid])
+        for f, sup_text in changes:
+            if _is_sensitive_hidden(f, subjects_by_id) or weights.get(f.id, {}).get("weight", 1.0) < 0.10:
                 continue
+            if weights.get(f.superseded_by, {}).get("weight", 1.0) < 0.10:
+                sup_text = None
             open_changes.append({
                 "fact_id": f.id,
                 "status": f.status,
@@ -478,13 +486,18 @@ def context_pack(owner: str, text: str, max_tokens: int = 1500, *, store: GraphS
             if len(open_changes) >= 8:
                 break
 
+    if callable(versions):
+        allowed_eids = {fe.entity_id for fact in candidate_facts for fe in fact.entities}
+        resolved_entities = [item for item in resolved_entities if item["entity"].id in allowed_eids]
+    allowed_roles = {f.subject_id for f in candidate_facts}
+
     char_budget = max(200, max_tokens * 4)
     used_chars = 0
 
     es_by_eid: dict[str, list[EntitySubject]] = defaultdict(list)
     for es in entity_subjects:
         subj = subjects_by_id.get(es.subject_id)
-        if subj and subj.sensitive_cat is not None:
+        if (subj and subj.sensitive_cat is not None) or (callable(versions) and es.subject_id not in allowed_roles):
             continue
         es_by_eid[es.entity_id].append(es)
 

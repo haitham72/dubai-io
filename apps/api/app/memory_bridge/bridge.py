@@ -1600,7 +1600,11 @@ class MemoryBridge:
                 age_days = max(0.0, (now_dt - _parse_iso(valid_from_str)).total_seconds() / 86400.0)
             except MemoryBridgeError:
                 age_days = 0.0
-            if confidence_tier == "confirmed":
+            if "weight" in fact:
+                weight = float(fact["weight"])
+                if weight < 0.10:
+                    continue
+            elif confidence_tier == "confirmed":
                 # R-ND: user_supplied / confirmed facts do not decay away.
                 weight = 0.95
             else:

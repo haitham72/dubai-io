@@ -4,7 +4,7 @@ import { colors, noShadow, radii, spacing, typography } from "@dubai-io/design-t
 import { DemoPill } from "../../components/DemoPill";
 import { REVEAL_FACTS } from "./completeness";
 
-type Verdict = "confirm" | "edit" | "not-true" | "forget";
+type Verdict = "confirm" | "edit" | "not-true" | "lower";
 
 export function InitialRevealCard() {
   const [verdicts, setVerdicts] = useState<Record<string, Verdict>>({});
@@ -18,14 +18,14 @@ export function InitialRevealCard() {
           <Text>{fact.text}</Text>
           <Text style={styles.meta}>src: {fact.src} · as_of: {fact.asOf} · provenance: demo_fixture</Text>
           <View style={styles.actions}>
-            {(["confirm", "edit", "not-true", "forget"] as Verdict[]).map((action) => (
+            {(["confirm", "edit", "not-true", "lower"] as Verdict[]).map((action) => (
               <Pressable
                 key={action}
                 accessibilityRole="button"
                 onPress={() => setVerdicts((prev) => ({ ...prev, [fact.id]: action }))}
                 style={styles.action}
               >
-                <Text>{action === "not-true" ? "Not true" : action === "confirm" ? "Confirm" : action === "edit" ? "Edit" : "Forget"}</Text>
+                <Text>{action === "not-true" ? "Not true" : action === "confirm" ? "Confirm" : action === "edit" ? "Edit" : "Lower"}</Text>
               </Pressable>
             ))}
           </View>

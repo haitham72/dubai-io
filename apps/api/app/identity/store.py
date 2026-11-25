@@ -524,6 +524,29 @@ class IdentityStore:
             self.db.commit()
             return int(cur.rowcount)
 
+    def delete_account_access(self, user_id: str, *, deleted_at: str) -> int:
+        with self.lock:
+            try:
+                self.db.execute(
+                    "UPDATE cs_users SET status = 'deleted', display_name = '', email = NULL, "
+                    "session_version = session_version + 1, updated_at = ? "
+                    "WHERE user_id = ? AND status != 'deleted'",
+                    (deleted_at, user_id),
+                )
+                sessions = self.db.execute(
+                    "UPDATE cs_app_sessions SET revoked_at = ?, revocation_reason = 'account_deleted' "
+                    "WHERE user_id = ? AND revoked_at IS NULL", (deleted_at, user_id),
+                )
+                self.db.execute(
+                    "UPDATE cs_memory_tokens SET revoked_at = ?, encrypted_token = NULL "
+                    "WHERE user_id = ? AND revoked_at IS NULL", (deleted_at, user_id),
+                )
+                self.db.commit()
+                return int(sessions.rowcount)
+            except Exception:
+                self.db.rollback()
+                raise
+
     def revoke_jti(self, *, jti: str, user_id: str, revoked_at: str, expires_at: str) -> None:
         with self.lock:
             self.db.execute(

@@ -15,6 +15,7 @@ const IPC = {
   authStatus: "auth:status",
   authSignIn: "auth:signIn",
   authSignOut: "auth:signOut",
+  browserMemoryWeight: "memory:browserWeight",
 } as const;
 
 const dubaiDesktop = {
@@ -31,6 +32,7 @@ const dubaiDesktop = {
   authStatus: () => ipcRenderer.invoke(IPC.authStatus),
   authSignIn: (payload?: unknown) => ipcRenderer.invoke(IPC.authSignIn, payload),
   authSignOut: () => ipcRenderer.invoke(IPC.authSignOut),
+  browserMemoryWeight: (lower: boolean) => ipcRenderer.invoke(IPC.browserMemoryWeight, lower),
 };
 
 contextBridge.exposeInMainWorld("dubaiDesktop", dubaiDesktop);

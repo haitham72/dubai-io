@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { BrainCircuit } from "lucide-react";
 import { Button } from "../../ui";
 import { useStore } from "../../store";
-import { createMemoryClient, type ForgetResult, type MemoryClient, type MemoryState } from "../../apiclient/memory";
+import { createMemoryClient, type LowerResult, type MemoryClient, type MemoryState } from "../../apiclient/memory";
 import { Group, Row, ToggleRow } from "../shared";
 
 /** Settings > Memory. Everything shown (switch, saved items, results) is what the server returned. */
@@ -11,7 +11,7 @@ export function MemorySection({ client }: { client: MemoryClient }) {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [forgot, setForgot] = useState<ForgetResult | null>(null);
+  const [lowerResult, setLowerResult] = useState<LowerResult | null>(null);
 
   useEffect(() => {
     let live = true;
@@ -28,13 +28,13 @@ export function MemorySection({ client }: { client: MemoryClient }) {
     } catch (e) { setError(`Not changed: ${(e as Error).message}`); } finally { setBusy(false); }
   }
 
-  async function forget(recordId: string) {
+  async function setLowered(recordId: string, lower: boolean) {
     if (busy) return;
-    setBusy(true); setError(null); setForgot(null);
+    setBusy(true); setError(null); setLowerResult(null);
     try {
-      setForgot(await client.forget(recordId));
+      setLowerResult(await client.setLowered(recordId, lower));
       setData(await client.state()); // the list is re-read from the server, not edited locally
-    } catch (e) { setError(`Forget did not complete: ${(e as Error).message}`); } finally { setBusy(false); }
+    } catch (e) { setError(`Memory update did not complete: ${(e as Error).message}`); } finally { setBusy(false); }
   }
 
   return (
@@ -49,12 +49,12 @@ export function MemorySection({ client }: { client: MemoryClient }) {
           <Row key={i.record_id} icon={BrainCircuit}
             label={i.text ?? "(the original message was deleted)"}
             value={`${i.written_by_you ? "You wrote this" : "Another member wrote this"} · saved ${i.saved_at}${i.provenance ? ` · ${i.provenance}` : ""}`}>
-            <Button onClick={() => forget(i.record_id)} disabled={busy}>Forget</Button>
+            <Button onClick={() => setLowered(i.record_id, !i.lowered)} disabled={busy}>{i.lowered ? "Restore" : "Lower"}</Button>
           </Row>
         ))}
       </>}
       {error && <p role="alert">{error}</p>}
-      {forgot && <p role="status" data-testid="forget-result">Server reports {forgot.records_forgotten} record(s) and {forgot.facts_erased} fact(s) forgotten (as of {forgot.as_of}).</p>}
+      {lowerResult && <p role="status" data-testid="forget-result">Server reports {lowerResult.records_lowerResultten} record(s) and {lowerResult.facts_erased} fact(s) lowerResultten (as of {lowerResult.as_of}).</p>}
     </Group>
   );
 }

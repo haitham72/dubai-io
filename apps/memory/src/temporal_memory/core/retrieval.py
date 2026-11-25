@@ -71,7 +71,8 @@ def _get_owner_learned(db: Database, conn: Any, owner: str) -> OwnerLearnedIndex
         cached = _LEARNED_CACHE.get(key)
         if cached is not None and cached[0] == fver:
             return cached[1]
-    idx = load_owner_learned_index(conn, owner)
+    from temporal_memory.privacy.controls import weight_learned_index
+    idx = weight_learned_index(conn, owner, load_owner_learned_index(conn, owner))
     with _LEARNED_CACHE_LOCK:
         _LEARNED_CACHE[key] = (fver, idx)
     return idx
@@ -378,6 +379,9 @@ def search_candidates(
     sem_sims: dict[str, float] = {}
 
     with db.connection() as conn:
+        from temporal_memory.privacy.controls import owner_deleted
+        if owner_deleted(conn, owner):
+            return []
         learned_idx = _get_owner_learned(db, conn, owner)
         primary_terms, expanded_terms = _expand_terms(tokens, learned=learned_idx)
 
@@ -757,8 +761,8 @@ def search_candidates(
             cand_rows = conn.execute(
                 """
                 SELECT f.id, f.text
-                FROM facts f
-                WHERE f.owner = %s AND f.id = ANY(%s)
+                FROM memory_fact_weights f
+                WHERE f.owner = %s AND f.id = ANY(%s) AND f.weight >= 0.10
                   AND (f.erased_at IS NULL)::int = 1 AND f.status <> 'history'
                 """,
                 (owner, all_cand_ids),
@@ -885,8 +889,7 @@ def compute_subject_salience_sql(conn: Any, owner: str) -> dict[str, float]:
                        WHERE s.provenance <> 'inferred' OR s.user_confirmed_at IS NOT NULL OR COALESCE(f.confidence, 1.0) > 0.05
                    ) AS max_valid_day
             FROM subjects s
-            LEFT JOIN facts f ON f.owner = s.owner AND f.subject_id = s.id
-              AND f.erased_at IS NULL AND f.status <> 'history'
+            LEFT JOIN memory_surface_facts f ON f.owner = s.owner AND f.subject_id = s.id
             WHERE s.owner = %s
             GROUP BY s.id, s.provenance, s.user_confirmed_at
         )

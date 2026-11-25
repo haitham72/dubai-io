@@ -1,11 +1,6 @@
 """CR-TM routes on PostgresGraphStore, including Forget cache invalidation."""
 from __future__ import annotations
 
-import json
-import os
-import subprocess
-import sys
-
 import pytest
 from fastapi.testclient import TestClient
 
@@ -123,7 +118,7 @@ def test_search_applies_source_prefix_before_limit(api, monkeypatch):
     assert all(src.startswith("notes:") for fact in facts for src in fact["sources"])
 
 
-def test_forget_drops_warm_context_and_is_durable(api):
+def test_lower_hides_from_warm_context_and_restores(api):
     client, headers = api["client"], api["karim"]
     text = "Karim keeps a blue notebook in the drawer"
     created = client.post("/v1/owners/karim/records", headers=headers, json={
@@ -142,54 +137,23 @@ def test_forget_drops_warm_context_and_is_durable(api):
     warm = client.post("/v1/owners/karim/context", headers=headers, json={"text": text, "max_tokens": 1500})
     assert warm.status_code == 200
     assert any(item["id"] == fact_id for item in warm.json()["facts"])
-    forgotten = client.post("/v1/owners/karim/forget", headers=headers, json={
-        "record_ids": [],
-        "fact_id": fact_id,
-        "idempotency_key": "forget-nb",
-    })
-    assert forgotten.status_code == 200, forgotten.text
-    assert forgotten.json()["facts_erased"] == 1
-    cold = client.post("/v1/owners/karim/context", headers=headers, json={"text": text, "max_tokens": 1500})
-    assert all(item["id"] != fact_id for item in cold.json()["facts"])
-    again = client.post("/v1/owners/karim/forget", headers=headers, json={
-        "record_ids": [],
-        "fact_id": fact_id,
-        "idempotency_key": "forget-nb",
-    })
-    assert again.json() == forgotten.json()
-
-    env = os.environ.copy()
-    env["TM_TEST_DATABASE_URL"] = api["db"].dsn
-    env["TM_SCHEMA"] = api["schema"]
-    env["PYTHONPATH"] = os.path.join(os.path.dirname(__file__), "..", "src")
-    script = (
-        "import json, os\n"
-        "from temporal_memory.core.bridge_store import forget\n"
-        "from temporal_memory.core.graph_store import PostgresGraphStore\n"
-        "from temporal_memory.db.db import Database\n"
-        "from temporal_memory.db import db as db_module\n"
-        "db = Database(os.environ['TM_TEST_DATABASE_URL'], schema=os.environ['TM_SCHEMA'])\n"
-        "db_module._DEFAULT_DB = db\n"
-        "print(json.dumps(forget(PostgresGraphStore(db), 'karim', [], %r, 'forget-nb')))\n" % fact_id
-    )
+    lowered = client.post("/v1/owners/karim/lower", headers=headers, json={"fact_id": fact_id})
+    assert lowered.json()["weight"] == 0.01
+    assert lowered.json()["facts_erased"] == 0
+    cold = client.post("/v1/owners/karim/context", headers=headers, json={"text": text})
+    assert fact_id not in cold.text
+    assert fact_id not in client.get("/v1/owners/karim/search", headers=headers, params={"q": "notebook"}).text
+    vault = client.get("/v1/owners/karim/timeline", headers=headers, params={"lowered": True}).json()["items"]
+    assert any(f["id"] == fact_id and f["lowered"] and f["weight"] == 0.01 for f in vault)
     with api["db"].connection() as conn:
-        before = conn.execute(
-            "SELECT facts_version, privacy_revision FROM owners WHERE id = 'karim'"
-        ).fetchone()
-    assert int(before["facts_version"]) >= 1
-    assert int(before["privacy_revision"]) >= 1
-    proc = subprocess.run([sys.executable, "-c", script], env=env, capture_output=True, text=True, check=False)
-    assert proc.returncode == 0, proc.stderr
-    assert json.loads(proc.stdout)["facts_erased"] == 1
-    with api["db"].connection() as conn:
-        after = conn.execute(
-            "SELECT facts_version, privacy_revision FROM owners WHERE id = 'karim'"
-        ).fetchone()
-    assert int(after["facts_version"]) == int(before["facts_version"])
-    assert int(after["privacy_revision"]) == int(before["privacy_revision"])
+        assert conn.execute("SELECT erased_at, text FROM facts WHERE id = %s", (fact_id,)).fetchone() == {
+            "erased_at": None, "text": text,
+        }
+    assert client.post("/v1/owners/karim/restore", headers=headers, json={"fact_id": fact_id}).json()["lowered"] is False
+    assert fact_id in client.post("/v1/owners/karim/context", headers=headers, json={"text": text}).text
 
 
-def test_forget_blocks_reimport_and_cross_owner(api):
+def test_legacy_forget_alias_preserves_source_and_checks_owner(api):
     client = api["client"]
     created = client.post("/v1/owners/karim/records", headers=api["karim"], json={
         "records": [_record("gone", "messenger:c1", "harbour goodbye", "2026-11-05T09:00:00+04:00")],
@@ -205,7 +169,11 @@ def test_forget_blocks_reimport_and_cross_owner(api):
         "records": [_record("gone", "messenger:c1", "harbour goodbye", "2026-11-05T09:00:00+04:00")],
         "enqueue": "none",
     })
-    assert blocked.status_code == 409
+    assert blocked.status_code == 200
+    with api["db"].connection() as conn:
+        assert conn.execute("SELECT erased_at, text FROM records WHERE id = 'gone'").fetchone() == {
+            "erased_at": None, "text": "harbour goodbye",
+        }
     cross = client.post("/v1/owners/karim/forget", headers=api["layla"], json={"record_ids": ["gone"]})
     assert cross.status_code == 403
 
@@ -246,10 +214,15 @@ def test_resolve_confirm_edit_reject(api):
     assert rejected.status_code == 200
     assert rejected.json()["status"] == "rejected"
     missing = client.get("/v1/owners/karim/search", headers=headers, params={"q": "dusk", "limit": 5})
-    assert missing.json()["facts"] == []
+    assert any(f["id"] == edited.json()["new_fact_id"] for f in missing.json()["facts"])
+    with api["db"].connection() as conn:
+        row = conn.execute("SELECT weight, lowered FROM memory_fact_weights WHERE id = %s",
+                           (edited.json()["new_fact_id"],)).fetchone()
+    assert row == {"weight": 0.5, "lowered": False}
 
 
-def test_leased_job_submit_is_generation_stale(api):
+def test_account_deletion_fences_leased_job(api, monkeypatch):
+    monkeypatch.setenv("TM_REDIS_URL", "")
     from temporal_memory.models import Attempt, ExtractionOutput, OutFact, Worker
     from temporal_memory.queue.jobs import PostgresJobs
 
@@ -271,7 +244,7 @@ def test_leased_job_submit_is_generation_stale(api):
     bundles = jobs.claim(worker, ["internal"], owner="karim", limit=1)
     assert bundles and bundles[0].job.fence_token
     leased = bundles[0].job
-    forgotten = client.post("/v1/owners/karim/forget", headers=headers, json={"record_ids": ["live1"]})
+    forgotten = client.post("/v1/owners/karim/delete-my-data", headers={"Authorization": "Bearer adm"})
     assert forgotten.status_code == 200
     verdict = jobs.submit(Attempt(
         job_id=leased.id, attempt_no=leased.attempt_no, fence_token=leased.fence_token,
@@ -286,7 +259,7 @@ def test_leased_job_submit_is_generation_stale(api):
         ),
     ))
     assert verdict.ok is False
-    assert any("generation" in reason or "fence" in reason for reason in verdict.reasons)
+    assert any("generation" in reason or "fence" in reason or "job_not_leased" in reason for reason in verdict.reasons)
 
 
 def test_admin_warmup_is_admin_only_and_honest_when_semantic_off(api, monkeypatch):
@@ -295,3 +268,94 @@ def test_admin_warmup_is_admin_only_and_honest_when_semantic_off(api, monkeypatc
     monkeypatch.setenv("TM_SEMANTIC", "0")
     body = client.post("/v1/admin/warmup", headers={"Authorization": "Bearer adm"}).json()
     assert body["ok"] is False and body["reason"] == "semantic_disabled"
+
+
+@pytest.mark.parametrize("age, steps, confidence, provenance, lowered, expected", [
+    (30, 0, 1.0, "inferred", False, 1.0),
+    (60, 0, 1.0, "inferred", False, 0.5),
+    (60, 2, 0.8, "inferred", False, 0.1),
+    (600, 0, 1.0, "inferred", False, 0.05),
+    (600, 8, 1.0, "inferred", False, 0.01),
+    (600, 1, 1.0, "user_supplied", False, 0.5),
+    (600, 0, 1.0, "provider_confirmed", False, 1.0),
+    (0, 0, 1.0, "user_supplied", True, 0.01),
+])
+def test_memory_weight(api, age, steps, confidence, provenance, lowered, expected):
+    with api["db"].connection() as conn:
+        result = conn.execute("SELECT memory_weight(1.0,%s,%s,%s,%s,%s) AS w",
+                              (confidence, age, steps, provenance, lowered)).fetchone()
+    assert result["w"] == pytest.approx(expected)
+
+
+def _seed_direct(api, headers, owner, record, source, subject, text, *, provenance="user_supplied"):
+    created = api["client"].post(f"/v1/owners/{owner}/records", headers=headers, json={
+        "records": [_record(record, source, text, "2026-11-25T09:00:00+04:00")],
+        "enqueue": "none",
+        "direct_fact": {"text": text, "subject_path": subject, "valid_from": "2026-11-25",
+                        "evidence": [record], "provenance": provenance},
+    })
+    assert created.status_code == 200, created.text
+    return created.json()["fact_ids"][0]
+
+
+def test_source_lower_covers_future_import_and_restore(api):
+    client, headers = api["client"], api["karim"]
+    base = "/v1/owners/karim"
+    client.post(f"{base}/lower", headers=headers, json={"source": "browser"}).raise_for_status()
+    fact = _seed_direct(api, headers, "karim", "browser-1", "browser:history", "learning/research", "Blue notebook research")
+    assert fact not in client.get(f"{base}/search", headers=headers, params={"q": "notebook"}).text
+    assert fact not in client.post(f"{base}/context", headers=headers, json={"text": "notebook"}).text
+    assert fact in client.get(f"{base}/timeline", headers=headers).text
+    client.post(f"{base}/restore", headers=headers, json={"source": "browser"}).raise_for_status()
+    assert fact in client.get(f"{base}/search", headers=headers, params={"q": "notebook"}).text
+
+
+def test_account_deletion_purges_local_redis_and_excludes_owner(api, monkeypatch):
+    import uuid
+    import redis
+    from temporal_memory.core import embed, retrieval
+    from temporal_memory.live import context
+
+    url = "redis://127.0.0.1:6390/0"
+    monkeypatch.setenv("TM_REDIS_URL", url)
+    monkeypatch.setenv("TM_SEMANTIC", "0")
+    client, admin = api["client"], {"Authorization": "Bearer adm"}
+    owner = "d19-" + uuid.uuid4().hex
+    base = f"/v1/owners/{owner}"
+    client.post("/v1/owners", headers=admin, json={"id": owner, "label": "Fixture Owner"}).raise_for_status()
+    raw_token = client.post("/v1/tokens", headers=admin, json={"role": "owner-device", "owner": owner}).json()["token"]
+    headers = {"Authorization": f"Bearer {raw_token}"}
+    note = _seed_direct(api, headers, owner, "note", "notes", "learning/research", "Fixture note")
+    _seed_direct(api, headers, owner, "gmail", "gmail:inbox", "career/work", "Fixture email")
+    _seed_direct(api, headers, owner, "video", "takeout_youtube", "travel/air", "Fixture video")
+    _seed_direct(api, headers, owner, "meeting", "calendar", "events/meeting", "Fixture calendar")
+    assert note in client.post(f"{base}/context", headers=headers, json={"text": "Fixture note"}).text
+    embed._PENDING[owner] = {"rows": []}
+    embed._LAST_SWEEP_AT[owner] = 1.0
+    key, unrelated = f"tm:owner:{owner}:context", f"tm:owner:{owner}b:context"
+    with redis.Redis.from_url(url) as cache:
+        cache.set(key, "owned", ex=120)
+        cache.set(unrelated, "other", ex=120)
+        try:
+            assert client.post(f"{base}/delete-my-data", headers=headers).status_code == 403
+            result = client.post(f"{base}/delete-my-data", headers=admin)
+            assert result.status_code == 200, result.text
+            assert result.json()["redis_purged"] is True and not cache.exists(key)
+            assert cache.exists(unrelated)
+            assert owner not in embed._PENDING and owner not in embed._LAST_SWEEP_AT
+            assert owner not in context._PACK_CACHE and owner not in context._ALIAS_CACHE
+            assert all(key[1] != owner for key in retrieval._LEARNED_CACHE)
+            assert client.get(f"{base}/search", headers=headers).status_code == 401
+            for path in ("search", "timeline", "vault/subjects", "vault/graph", "vocab/learned"):
+                assert client.get(f"{base}/{path}", headers=admin).status_code == 403
+            assert client.post(f"{base}/context", headers=admin, json={"text": "Fixture"}).status_code == 403
+            assert client.post("/v1/tokens", headers=admin, json={"role": "owner-device", "owner": owner}).status_code == 403
+            assert client.post(f"{base}/delete-my-data", headers=admin).json()["deleted_at"] == result.json()["deleted_at"]
+            with api["db"].connection() as conn:
+                rows = conn.execute("SELECT surrogate_id, signal_rows FROM training_backups").fetchall()
+                assert len(rows) == 1 and str(rows[0]["surrogate_id"]) != owner
+                assert rows[0]["signal_rows"] == [{"cluster": "learning", "count": 1}]
+                assert conn.execute("SELECT count(*) AS n FROM visible_facts WHERE owner = %s", (owner,)).fetchone()["n"] == 0
+                assert conn.execute("SELECT deletion_generation FROM owners WHERE id = %s", (owner,)).fetchone()["deletion_generation"] >= 1
+        finally:
+            cache.delete(key, unrelated)
