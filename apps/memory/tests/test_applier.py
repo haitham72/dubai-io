@@ -579,10 +579,13 @@ def test_e9b_late_update_gets_back_dated_history_and_keeps_newer_active(db_env):
     assert newer["status"] == "active"
 
 
-def _late_pair(db, store, new_text, late_text, late_at="2026-10-22T09:00:00Z", late_from="2026-10-22", path="home/rent"):
+def _late_pair(
+    db, store, new_text, late_text, late_at="2026-10-22T09:00:00Z",
+    late_from="2026-10-22", path="home/rent", late_author="L",
+):
     store.upsert_records("karim", [
         Record(id="rn", owner="karim", source="gmail", at="2026-10-28T09:00:00Z", author="L", text="newer"),
-        Record(id="rl", owner="karim", source="gmail", at=late_at, author="L", text="late"),
+        Record(id="rl", owner="karim", source="gmail", at=late_at, author=late_author, text="late"),
     ])
     v1 = apply("karim", _job("jn", ["rn"]), _attempt("jn", ExtractionOutput(
         entities=[OutEntity(ref="new:Mostafa", kind="person", aliases=[], relation_to_user=None)],
@@ -616,3 +619,77 @@ def test_e9b_backdated_mention_in_a_newer_record_is_not_late(db_env):
     _, late, newer = _late_pair(db, store, "Barsha rent rises to AED 5,400 per month from November 1",
                                 "Karim paid October rent of AED 5,000 per receipt", late_at="2026-11-05T09:00:00Z")
     assert late["status"] == "active" and newer["status"] == "active"
+
+
+@pytest.mark.parametrize("new_text, late_text, expected", [
+    ("Dubai to Cairo trip on June 12", "Dubai to Cairo trip on March 7", "active"),
+    ("class moved to 7pm", "class at 6pm", "history"),
+    ("class moved from 6pm to 7pm", "class at 6pm", "history"),
+    ("class moved from 5pm to 7pm", "class at 6pm", "active"),
+    ("Karim's Al Barsha one-bedroom rent will be AED 5,400 per month starting November 1",
+     "Mostafa confirmed receipt of Karim's October 2026 rent of AED 5,000", "history"),
+    ("The Barsha rent rises to AED 5,400 per month", "Karim paid Marina rent of AED 5,000", "active"),
+    ("yoga class moved to 7pm", "spin class at 6pm", "active"),
+    ("booking B moved to 7pm", "booking A at 6pm", "active"),
+    ("first Acme interview for an analyst role was moved to Thursday Nov 12",
+     "Acme confirmed the first interview on Nov 5", "history"),
+    ("first Acme interview for an analyst role was moved to Thursday Nov 12",
+     "Acme confirmed the second interview on Nov 5", "active"),
+    ("booking A moved to 7pm", "booking at 6pm", "active"),
+    ("booking A moved to 7pm", "booking A at 6pm", "history"),
+    ("class moved to 7pm", "class at 7:00 pm", "active"),
+    ("class moved to 12 November", "class on Nov 12", "active"),
+    ("class moved to 13 November", "class on Nov 12", "history"),
+    ("blue desk price dropped to AED 100", "blue desk cost AED 150", "history"),
+    ("blue desk price dropped to AED 100", "red desk cost AED 150", "active"),
+    ("blue desk price dropped to 100 AED", "blue desk cost AED 100.00", "active"),
+    ("the monitor's price dropped to $100", "monitor listed at $150", "history"),
+    ("2019 Camry price dropped to AED 48,000", "2019 Camry listed at AED 52,000", "history"),
+    ("2019 Camry price dropped to AED 48,000", "2020 Camry listed at AED 52,000", "active"),
+    ("2019 Camry price dropped to AED 48,000", "Insurance quote for a 2019 Camry was AED 2,400", "active"),
+    ("2019 Camry price never dropped to AED 48,000", "2019 Camry listed at AED 52,000", "active"),
+])
+def test_e11_late_new_fact_requires_a_change_to_the_same_slot(db_env, new_text, late_text, expected):
+    db, store = db_env
+    newer_id, late, newer = _late_pair(db, store, new_text, late_text, path="events/bookings")
+
+    assert newer["status"] == "active"
+    assert late["status"] == expected
+    assert late["superseded_by"] == (newer_id if expected == "history" else None)
+    assert late["valid_to"] == ("2026-11-01" if expected == "history" else None)
+
+
+def test_e11_explicit_class_update_supersedes_the_original_time(db_env):
+    db, store = db_env
+    store.upsert_records("karim", [
+        Record(id="old-class", owner="karim", source="notes", at="2026-10-20T09:00:00Z",
+               author="Karim", text="Class at 6pm"),
+        Record(id="new-class", owner="karim", source="notes", at="2026-10-21T09:00:00Z",
+               author="Karim", text="Class moved to 7pm"),
+    ])
+    old = apply("karim", _job("j-old", ["old-class"]), _attempt("j-old", ExtractionOutput(
+        entities=[OutEntity(ref="new:Acme", kind="org", aliases=[], relation_to_user=None)],
+        facts=[_simple_fact("class at 6pm", "new", None, "2026-10-20", "old-class", "learning/class", "new:Acme")],
+        links=[],
+    )), db=db)
+    original_id, = old.applied_fact_ids
+    new = apply("karim", _job("j-new", ["new-class"]), _attempt("j-new", ExtractionOutput(
+        entities=[],
+        facts=[_simple_fact("class moved to 7pm", "update", original_id, "2026-10-21", "new-class", "learning/class")],
+        links=[],
+    )), db=db)
+    replacement_id, = new.applied_fact_ids
+    with db.connection() as conn:
+        previous = conn.execute(
+            "SELECT status, superseded_by, valid_to FROM facts WHERE id = %s", (original_id,)
+        ).fetchone()
+    assert previous == {"status": "superseded", "superseded_by": replacement_id, "valid_to": "2026-10-21"}
+
+
+def test_e11_unlabelled_rent_needs_same_source_and_author(db_env):
+    db, store = db_env
+    _, late, newer = _late_pair(
+        db, store, "Barsha rent rises to AED 5,400", "Karim paid October rent of AED 5,000",
+        late_author="Another sender",
+    )
+    assert late["status"] == newer["status"] == "active"
