@@ -10,6 +10,7 @@ export interface Post {
 export interface Group {
   id: string; name: string; handle: string; description?: string; visibility: string;
   member_count?: number; members?: number; is_member?: boolean; provenance?: string; as_of?: string;
+  my_role?: string | null; my_status?: string | null;
 }
 export interface Notification {
   id: string; kind?: string; type?: string; actor?: string; text?: string;
@@ -18,5 +19,6 @@ export interface Notification {
 export interface Profile {
   handle: string; display_name?: string; bio?: string; area?: string;
   interests?: string[]; privacy?: string; provenance?: string; as_of?: string;
+  mine?: boolean; owner?: string; age_band?: string;
 }
 export type Lane = "following" | "communities" | "discover";
