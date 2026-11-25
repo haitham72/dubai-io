@@ -2,3 +2,4 @@
 logs/
 .memory-image.json
 .admin-token-passed.json
+.pids.meta.json

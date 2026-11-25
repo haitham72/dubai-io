@@ -267,7 +267,7 @@ class IdentityService:
             device_label=device_label,
         )
 
-    def issue_user_session(
+    def _prepare_user_session(
         self,
         user_id: str,
         *,
@@ -276,7 +276,8 @@ class IdentityService:
         ttl_seconds: Optional[int] = None,
         source_jti: Optional[str] = None,
         device_label: Optional[str] = None,
-    ) -> AppSessionOut:
+    ) -> dict:
+        """Validate and compute everything needed to mint a user session. Performs no writes."""
         if app_id not in VALID_APP_IDS:
             raise IdentityError("invalid_app_id", f"Unsupported app_id: {app_id}", 422)
 
@@ -310,38 +311,80 @@ class IdentityService:
         raw_token = f"cs_{app_id}_{secrets.token_urlsafe(32)}"
         token_hash = _sha256_hex(raw_token)
 
-        self.store.create_app_session(
-            session_id=session_id,
-            token_hash=token_hash,
+        return {
+            "user": user,
+            "app_id": app_id,
+            "granted": granted,
+            "session_id": session_id,
+            "raw_token": raw_token,
+            "token_hash": token_hash,
+            "session_version": user["session_version"],
+            "source_jti": source_jti,
+            "device_label": clean_label,
+            "created_at": now_str,
+            "expires_at": expires_str,
+        }
+
+    @staticmethod
+    def _session_out(prep: dict, app_id: AppId) -> AppSessionOut:
+        user = prep["user"]
+        return AppSessionOut(
+            session_id=prep["session_id"],
+            session_token=prep["raw_token"],
             user_id=user["user_id"],
             app_id=app_id,
-            capabilities=sorted(granted),
-            session_version=user["session_version"],
+            capabilities=tuple(sorted(prep["granted"])),
+            age_band=user["age_band"],
+            expires_at=prep["expires_at"],
+            display_name=user.get("display_name") or "",
+            email=user.get("email"),
+            device_label=prep["device_label"],
+        )
+
+    def issue_user_session(
+        self,
+        user_id: str,
+        *,
+        app_id: AppId,
+        requested_capabilities: Optional[set[str]] = None,
+        ttl_seconds: Optional[int] = None,
+        source_jti: Optional[str] = None,
+        device_label: Optional[str] = None,
+    ) -> AppSessionOut:
+        prep = self._prepare_user_session(
+            user_id,
+            app_id=app_id,
+            requested_capabilities=requested_capabilities,
+            ttl_seconds=ttl_seconds,
             source_jti=source_jti,
-            device_label=clean_label,
-            created_at=now_str,
-            expires_at=expires_str,
+            device_label=device_label,
+        )
+        user = prep["user"]
+        self.store.create_app_session(
+            session_id=prep["session_id"],
+            token_hash=prep["token_hash"],
+            user_id=user["user_id"],
+            app_id=app_id,
+            capabilities=sorted(prep["granted"]),
+            session_version=prep["session_version"],
+            source_jti=prep["source_jti"],
+            device_label=prep["device_label"],
+            created_at=prep["created_at"],
+            expires_at=prep["expires_at"],
         )
         self.store.record_audit(
             user_id=user["user_id"],
             app_id=app_id,
-            session_id=session_id,
+            session_id=prep["session_id"],
             event_kind="app_session_created",
-            detail={"capabilities": sorted(granted), "expires_at": expires_str, "device_label": clean_label},
-            at=now_str,
+            detail={
+                "capabilities": sorted(prep["granted"]),
+                "expires_at": prep["expires_at"],
+                "device_label": prep["device_label"],
+            },
+            at=prep["created_at"],
         )
-        return AppSessionOut(
-            session_id=session_id,
-            session_token=raw_token,
-            user_id=user["user_id"],
-            app_id=app_id,
-            capabilities=tuple(sorted(granted)),
-            age_band=user["age_band"],
-            expires_at=expires_str,
-            display_name=user.get("display_name") or "",
-            email=user.get("email"),
-            device_label=clean_label,
-        )
+        return self._session_out(prep, app_id)
 
     def list_active_sessions(
         self,
@@ -822,27 +865,53 @@ class IdentityService:
         if parse_iso(record["expires_at"]) <= utcnow():
             raise IdentityError("expired_code", "Pairing code has expired", 410)
 
-        session_out = self.issue_user_session(
+        # E11b: consume the code FIRST, then write the session — all in one transaction.
+        # A failed consume leaves no session row at all (previously a revoked orphan row).
+        prep = self._prepare_user_session(
             record["user_id"],
             app_id=app_id,
             device_label=device_label or "iPhone",
         )
+        user = prep["user"]
         now_str = iso_utc()
-        if not self.store.consume_pairing_code_atomic(
-            code_hash,
+        consumed = self.store.consume_pairing_code_and_issue_session(
+            code_hash=code_hash,
             consumed_at=now_str,
-            consumed_by_session_id=session_out.session_id,
-        ):
-            # Another concurrent request consumed the code first — revoke the just-minted session.
-            self.store.revoke_app_session(session_out.session_id, revoked_at=now_str, reason="pairing_race")
-            raise IdentityError("code_already_used", "Pairing code has already been used", 409)
-
-        self.store.record_audit(
-            user_id=record["user_id"],
-            app_id="quest",
-            session_id=session_out.session_id,
-            event_kind="device_pairing_completed",
-            detail={"device_label": session_out.device_label},
-            at=now_str,
+            session_fields={
+                "session_id": prep["session_id"],
+                "token_hash": prep["token_hash"],
+                "user_id": user["user_id"],
+                "app_id": app_id,
+                "capabilities": sorted(prep["granted"]),
+                "session_version": prep["session_version"],
+                "source_jti": prep["source_jti"],
+                "device_label": prep["device_label"],
+                "created_at": prep["created_at"],
+                "expires_at": prep["expires_at"],
+            },
+            audit_events=[
+                {
+                    "user_id": user["user_id"],
+                    "app_id": app_id,
+                    "session_id": prep["session_id"],
+                    "event_kind": "app_session_created",
+                    "detail": {
+                        "capabilities": sorted(prep["granted"]),
+                        "expires_at": prep["expires_at"],
+                        "device_label": prep["device_label"],
+                    },
+                    "at": prep["created_at"],
+                },
+                {
+                    "user_id": record["user_id"],
+                    "app_id": "quest",
+                    "session_id": prep["session_id"],
+                    "event_kind": "device_pairing_completed",
+                    "detail": {"device_label": prep["device_label"]},
+                    "at": now_str,
+                },
+            ],
         )
-        return session_out
+        if not consumed:
+            raise IdentityError("code_already_used", "Pairing code has already been used", 409)
+        return self._session_out(prep, app_id)

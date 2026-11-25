@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { app, BrowserWindow, ipcMain, Menu, safeStorage, shell, type MenuItemConstructorOptions } from "electron";
+import { app, BrowserWindow, dialog, ipcMain, Menu, safeStorage, shell, type MenuItemConstructorOptions } from "electron";
 import {
   IPC,
   parseBrowser,
@@ -24,7 +24,7 @@ import { runDesktopSync } from "./desktopSync";
 import { OwnerHook, TokenStore } from "./ownerHook";
 import { ContinuousSync, filesystemPacketReader, type SyncSource } from "./continuousSync";
 import { createMainWindow, createSettingsWindow, type AppWindow } from "./window";
-import { resolveAppUrl, resolveRendererIndex } from "./security";
+import { appUrlWarning, resolveAppUrl, resolveRendererIndex } from "./security";
 
 const roots = defaultRoots();
 const hookLog = { info: (line: string) => console.info(line) };
@@ -172,6 +172,11 @@ export function boot(): void {
   tokens.loadFromDisk();
   registerIpc();
   const appUrl = resolveAppUrl();
+  const urlWarning = appUrlWarning(appUrl);
+  if (urlWarning) {
+    console.warn(`[desktop] ${urlWarning}`);
+    void dialog.showMessageBox({ type: "warning", title: "Dubai-io", message: urlWarning, buttons: ["OK"] });
+  }
   Menu.setApplicationMenu(buildAppMenu(appUrl));
   mainWindow = createMainWindow(appUrl);
   mainWindow.on("closed", () => {

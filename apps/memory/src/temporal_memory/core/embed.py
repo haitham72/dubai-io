@@ -6,6 +6,7 @@ import logging
 import os
 import re
 import threading
+import time
 from typing import Any, Sequence
 
 from temporal_memory.config import get_settings
@@ -28,6 +29,10 @@ _SESSION: Any = None
 _TOKENIZER: Any = None
 _INPUT_NAMES: tuple[str, ...] = ()
 _QUERY_CACHE: OrderedDict[tuple[str, str], list[float]] = OrderedDict()
+# E11b: a failed model load/download is cached for a backoff window so offline
+# callers fail fast instead of retrying a ~570 MB download on every call.
+_LOAD_RETRY_AT = 0.0
+_LOAD_BACKOFF_S_DEFAULT = 60.0
 
 _ARABIZI_DIGIT_WORD_RE = re.compile(r"\b(?:[a-zA-Z]+[2356789][a-zA-Z0-9]*|[2356789][a-zA-Z]+[a-zA-Z0-9]*)\b")
 _ARABIZI_PARTICLES = frozenset({
@@ -134,8 +139,15 @@ def _download_asset(repo_id: str, filename: str) -> str:
         return hf_hub_download(repo_id=repo_id, filename=filename)
 
 
+def _load_backoff_s() -> float:
+    try:
+        return max(0.0, float(os.environ.get("TM_EMBED_LOAD_BACKOFF_S", _LOAD_BACKOFF_S_DEFAULT)))
+    except ValueError:
+        return _LOAD_BACKOFF_S_DEFAULT
+
+
 def _ensure_loaded(model_name: str | None = None) -> tuple[Any, Any, tuple[str, ...]]:
-    global _LOADED_MODEL_NAME, _SESSION, _TOKENIZER, _INPUT_NAMES
+    global _LOADED_MODEL_NAME, _SESSION, _TOKENIZER, _INPUT_NAMES, _LOAD_RETRY_AT
 
     target = model_name or get_settings().semantic_model or EMBED_MODEL
     if _SESSION is not None and _LOADED_MODEL_NAME == target:
@@ -144,37 +156,55 @@ def _ensure_loaded(model_name: str | None = None) -> tuple[Any, Any, tuple[str, 
     with _LOAD_LOCK:
         if _SESSION is not None and _LOADED_MODEL_NAME == target:
             return _SESSION, _TOKENIZER, _INPUT_NAMES
+        if time.monotonic() < _LOAD_RETRY_AT:
+            raise RuntimeError("embedder model load skipped: previous failure still in backoff")
 
-        import onnxruntime as ort
-        from tokenizers import Tokenizer
+        try:
+            import onnxruntime as ort
+            from tokenizers import Tokenizer
 
-        if target == EMBED_MODEL:
-            tok_repo, onnx_repo, onnx_file = _TOKENIZER_REPO, _ONNX_REPO, _ONNX_FILE
-        else:
-            tok_repo, onnx_repo, onnx_file = target, target, "onnx/model.onnx"
+            if target == EMBED_MODEL:
+                tok_repo, onnx_repo, onnx_file = _TOKENIZER_REPO, _ONNX_REPO, _ONNX_FILE
+            else:
+                tok_repo, onnx_repo, onnx_file = target, target, "onnx/model.onnx"
 
-        tok_path = _download_asset(tok_repo, _TOKENIZER_FILE)
-        model_path = _download_asset(onnx_repo, onnx_file)
+            tok_path = _download_asset(tok_repo, _TOKENIZER_FILE)
+            model_path = _download_asset(onnx_repo, onnx_file)
 
-        tok = Tokenizer.from_file(tok_path)
-        pad_id = tok.token_to_id("<pad>")
-        if pad_id is None:
-            pad_id = tok.token_to_id("[PAD]") or 0
-        pad_tok = tok.id_to_token(pad_id) or "<pad>"
-        tok.enable_truncation(max_length=512)
-        tok.enable_padding(pad_id=pad_id, pad_token=pad_tok)
+            tok = Tokenizer.from_file(tok_path)
+            pad_id = tok.token_to_id("<pad>")
+            if pad_id is None:
+                pad_id = tok.token_to_id("[PAD]") or 0
+            pad_tok = tok.id_to_token(pad_id) or "<pad>"
+            tok.enable_truncation(max_length=512)
+            tok.enable_padding(pad_id=pad_id, pad_token=pad_tok)
 
-        so = ort.SessionOptions()
-        so.intra_op_num_threads = max(1, min(6, os.cpu_count() or 4))
-        so.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
-        sess = ort.InferenceSession(model_path, sess_options=so, providers=["CPUExecutionProvider"])
-        input_names = tuple(i.name for i in sess.get_inputs())
+            so = ort.SessionOptions()
+            so.intra_op_num_threads = max(1, min(6, os.cpu_count() or 4))
+            so.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+            sess = ort.InferenceSession(model_path, sess_options=so, providers=["CPUExecutionProvider"])
+            input_names = tuple(i.name for i in sess.get_inputs())
+        except Exception:
+            _LOAD_RETRY_AT = time.monotonic() + _load_backoff_s()
+            raise
 
+        _LOAD_RETRY_AT = 0.0
         _LOADED_MODEL_NAME = target
         _SESSION = sess
         _TOKENIZER = tok
         _INPUT_NAMES = input_names
         return _SESSION, _TOKENIZER, _INPUT_NAMES
+
+
+def is_loaded(model_name: str | None = None) -> bool:
+    """True when the embedder is already loaded in this process. Never triggers a load or download."""
+    target = model_name or get_settings().semantic_model or EMBED_MODEL
+    return _SESSION is not None and _LOADED_MODEL_NAME == target
+
+
+def load_model(model_name: str | None = None) -> None:
+    """Explicitly load (and download on first run) the embedder. For warmup, workers and scripts only."""
+    _ensure_loaded(model_name)
 
 
 def clear_query_cache() -> None:
@@ -211,9 +241,15 @@ def _encode_batch(texts: Sequence[str], *, model_name: str | None = None) -> lis
 
 
 def embed_query(text: str, *, model_name: str | None = None) -> list[float]:
-    """Embed one search query with Arabizi phonetic expansion (if detected) and LRU cache."""
-    clean = _normalize_query_text(text)
+    """Embed one search query with Arabizi phonetic expansion (if detected) and LRU cache.
+
+    Never loads or downloads the model: callers on a request path must run after the
+    E9d admin warmup. Raises RuntimeError when the embedder is not loaded yet.
+    """
     target = model_name or get_settings().semantic_model or EMBED_MODEL
+    if not is_loaded(target):
+        raise RuntimeError("semantic embedder is not loaded; run the admin warmup first")
+    clean = _normalize_query_text(text)
     key = (target, clean, os.environ.get("TM_ARABIZI_TRANSLIT", "1"))
     with _CACHE_LOCK:
         cached = _QUERY_CACHE.get(key)  # type: ignore[arg-type]
@@ -274,27 +310,25 @@ def is_available() -> bool:
         return False
 
 
-def embed_pending_facts(
+def _select_pending(
     db: Database,
     *,
-    owner: str | None = None,
-    batch_size: int = 64,
-    limit: int | None = None,
-    model_name: str | None = None,
-) -> dict[str, int]:
-    """Backfill embeddings for visible, non-quarantined, non-held-back facts missing the current model vector."""
-    target = model_name or get_settings().semantic_model or EMBED_MODEL
+    owner: str | None,
+    model_name: str,
+    limit: int | None,
+) -> list[dict[str, Any]]:
+    """Visible, non-quarantined, non-held-back facts still missing the current model vector."""
     owner_clause = "AND f.owner = %s" if owner is not None else ""
     lim_clause = "LIMIT %s" if limit is not None else ""
     params: list[Any] = []
     if owner is not None:
         params.append(owner)
-    params.append(target)
+    params.append(model_name)
     if limit is not None:
         params.append(max(1, int(limit)))
 
     with db.connection() as conn:
-        rows = conn.execute(
+        return conn.execute(
             f"""
             SELECT f.owner, f.id, f.text, f.text_orig
             FROM facts f
@@ -337,18 +371,31 @@ def embed_pending_facts(
             tuple(params),
         ).fetchall()
 
-    if not rows:
-        return {"embedded": 0, "batches": 0}
 
+def _embed_rows(
+    db: Database,
+    rows: list[dict[str, Any]],
+    *,
+    batch_size: int,
+    model_name: str,
+    time_budget_s: float | None,
+) -> dict[str, int]:
+    """Embed `rows` in batches, stopping between batches once `time_budget_s` is spent.
+
+    Always finishes the in-flight batch, so each call makes progress. Returns
+    embedded/batches plus `consumed` (rows attempted — a prefix of `rows`).
+    """
     embedded = 0
     batches = 0
+    consumed = 0
     step = max(1, int(batch_size))
+    t0 = time.monotonic()
     for i in range(0, len(rows), step):
         chunk = rows[i : i + step]
         texts = [format_fact_text(r["text"], r["text_orig"]) for r in chunk]
-        vecs = embed_passages(texts, batch_size=step, model_name=target)
+        vecs = embed_passages(texts, batch_size=step, model_name=model_name)
         updates = [
-            (vector_literal(vec), target, r["owner"], r["id"])
+            (vector_literal(vec), model_name, r["owner"], r["id"])
             for r, vec in zip(chunk, vecs)
         ]
         with db.transaction() as conn:
@@ -365,11 +412,69 @@ def embed_pending_facts(
                 )
         embedded += len(updates)
         batches += 1
+        consumed += len(chunk)
+        if time_budget_s is not None and time.monotonic() - t0 >= time_budget_s:
+            break
 
-    return {"embedded": embedded, "batches": batches}
+    return {"embedded": embedded, "batches": batches, "consumed": consumed}
+
+
+def embed_pending_facts(
+    db: Database,
+    *,
+    owner: str | None = None,
+    batch_size: int = 64,
+    limit: int | None = None,
+    model_name: str | None = None,
+    time_budget_s: float | None = None,
+) -> dict[str, int]:
+    """Backfill embeddings for visible, non-quarantined, non-held-back facts missing the current model vector.
+
+    With `time_budget_s`, stops between batches once the budget is spent (always finishes the
+    in-flight batch, so each call makes progress). Returns embedded/batches plus `fetched`
+    (pending rows selected, capped by `limit`) and `remaining` (fetched rows left unembedded);
+    callers that passed `limit` must treat a full page as "possibly more pending".
+    """
+    target = model_name or get_settings().semantic_model or EMBED_MODEL
+    rows = _select_pending(db, owner=owner, model_name=target, limit=limit)
+    if not rows:
+        return {"embedded": 0, "batches": 0, "fetched": 0, "remaining": 0}
+
+    stats = _embed_rows(
+        db, rows, batch_size=batch_size, model_name=target, time_budget_s=time_budget_s
+    )
+    return {
+        "embedded": stats["embedded"],
+        "batches": stats["batches"],
+        "fetched": len(rows),
+        "remaining": len(rows) - stats["consumed"],
+    }
 
 
 _BACKFILLED_AT: dict[str, int] = {}
+_LAST_SWEEP_AT: dict[str, float] = {}
+# Per-owner queue of pending rows fetched by _select_pending. The pending scan is
+# expensive at scale (several NOT EXISTS + an ORDER BY over all live facts), so it
+# runs once per fetch_limit rows instead of once per sweep; each sweep then only
+# pays for the embed batches inside its time budget.
+_PENDING: dict[str, dict[str, Any]] = {}
+_LAZY_BATCH_SIZE = 8
+_LAZY_FETCH_FACTOR = 16
+_LAZY_INTERVAL_S_DEFAULT = 5.0
+
+
+def _lazy_budget_s() -> float:
+    try:
+        return max(0.0, float(os.environ.get("TM_SEMANTIC_LAZY_BUDGET_S", "0.04")))
+    except ValueError:
+        return 0.04
+
+
+def _lazy_interval_s() -> float:
+    try:
+        return max(0.0, float(os.environ.get("TM_SEMANTIC_LAZY_INTERVAL_S", _LAZY_INTERVAL_S_DEFAULT)))
+    except ValueError:
+        return _LAZY_INTERVAL_S_DEFAULT
 
 
 def status() -> dict[str, Any]:
@@ -382,26 +487,66 @@ def status() -> dict[str, Any]:
             "model": cfg.semantic_model}
 
 
-def ensure_embeddings(db: Database, owner: str, *, limit: int = 64, once_per_version: bool = True) -> str | None:
-    """Best-effort: embed visible facts of `owner` that have no vector yet (live-extracted facts never got one).
+def ensure_embeddings(
+    db: Database,
+    owner: str,
+    *,
+    batch_size: int = _LAZY_BATCH_SIZE,
+    once_per_version: bool = True,
+    time_budget_s: float | None = None,
+) -> str | None:
+    """Best-effort lazy backfill of embeddings for `owner`'s visible facts (E11b).
 
-    Never raises. Returns None when fine, else "disabled" / "embedder_unavailable". With `once_per_version`
-    the sweep runs once per owner facts_version per process, so the query path stays cheap.
+    Runs on the query path, so it never loads or downloads the model: until the E9d
+    admin warmup has loaded the embedder it returns "embedder_unavailable". Each call
+    embeds within a small time budget (TM_SEMANTIC_LAZY_BUDGET_S, default 0.04 s) instead of a
+    fixed slice of the newest facts, sweeps are paced to one per TM_SEMANTIC_LAZY_INTERVAL_S
+    (default 5 s) per owner, and the owner's facts_version is marked done only
+    when a sweep finds nothing left — older facts keep embedding on later queries until
+    the backlog is clear. Never raises; returns None when fine, else "disabled" /
+    "embedder_unavailable".
     """
     cfg = get_settings()
     if not cfg.semantic_enabled:
         return "disabled"
     try:
+        ver: int | None = None
         if once_per_version:
             with db.connection() as conn:
                 row = conn.execute("SELECT facts_version FROM owners WHERE id = %s", (owner,)).fetchone()
             ver = int(row["facts_version"]) if row else 0
-            if _BACKFILLED_AT.get(owner) == ver and _SESSION is not None:
+            if _BACKFILLED_AT.get(owner) == ver:
                 return None
-        if not is_available():
+        if not is_loaded(cfg.semantic_model or EMBED_MODEL):
             return "embedder_unavailable"
-        embed_pending_facts(db, owner=owner, limit=limit)
-        if once_per_version:
+        # Sweeps are paced per owner: even a budgeted sweep costs tens of ms on the
+        # query path, so at most one runs per TM_SEMANTIC_LAZY_INTERVAL_S (default 5 s).
+        interval = _lazy_interval_s()
+        now = time.monotonic()
+        if interval > 0 and now - _LAST_SWEEP_AT.get(owner, float("-inf")) < interval:
+            return None
+        _LAST_SWEEP_AT[owner] = now
+        budget = _lazy_budget_s() if time_budget_s is None else time_budget_s
+        step = max(1, int(batch_size))
+        fetch_limit = step * _LAZY_FETCH_FACTOR
+        target = cfg.semantic_model or EMBED_MODEL
+        state = _PENDING.get(owner)
+        if state is None or not state["rows"]:
+            rows = _select_pending(db, owner=owner, model_name=target, limit=fetch_limit)
+            state = {"rows": rows, "eof": len(rows) < fetch_limit}
+            _PENDING[owner] = state
+        stats = _embed_rows(
+            db,
+            state["rows"],
+            batch_size=step,
+            model_name=target,
+            time_budget_s=budget,
+        )
+        del state["rows"][: stats["consumed"]]
+        done = not state["rows"] and state["eof"]
+        if done:
+            _PENDING.pop(owner, None)
+        if once_per_version and done:
             _BACKFILLED_AT[owner] = ver
         return None
     except Exception as exc:  # embedding must never break extraction or retrieval

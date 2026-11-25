@@ -23,3 +23,6 @@ agents/messenger_agents/models/
 agents/models/
 agents/.data/
 tests/memory-ui/bundle.*
+# Memory approval-card DOM click-through: generated page + browser profile (rebuilt by the test script)
+tests/memory-ui/dom-test.html
+tests/memory-ui/.memdom-profile/

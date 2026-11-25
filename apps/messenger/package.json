@@ -11,7 +11,7 @@
     "agents:test": "python3 agents/run.py test || python agents/run.py test",
     "agents:eval": "python3 agents/run.py eval || python agents/run.py eval",
     "test:photo-window": "node tests/photo-window/build.mjs && node tests/photo-window/run.mjs",
-    "test:memory": "node tests/memory-ui/build.mjs && node tests/memory-ui/run.mjs",
+    "test:memory": "node tests/memory-ui/build.mjs && node tests/memory-ui/run.mjs && node tests/memory-ui/dom-build.mjs && node tests/memory-ui/run-dom.mjs",
     "test:store": "node tests/store-wiring/build.mjs && node tests/store-wiring/run.mjs"
   },
   "dependencies": {

@@ -4,9 +4,11 @@ import { describe, expect, it, vi } from "vitest";
 import { IPC } from "../../electron/main/ipcAllowlist";
 import {
   DEFAULT_APP_URL,
+  appUrlWarning,
   attachNavigationGuards,
   buildFallbackHtml,
   classifyDesktopNavigation,
+  isTrustedAppUrl,
   resolveAppUrl,
   resolveRendererIndex,
   webPreferencesBase,
@@ -23,6 +25,37 @@ describe("resolveAppUrl", () => {
     for (const bad of ["file:///C:/x", "javascript:alert(1)", "not a url", "  "]) {
       expect(resolveAppUrl({ DUBAI_APP_URL: bad })).toBe(DEFAULT_APP_URL);
     }
+  });
+});
+
+describe("appUrlWarning (E11b: warn on non-local plain http)", () => {
+  it("stays quiet for localhost, loopback and LAN http", () => {
+    for (const url of [
+      "http://localhost:8081",
+      "http://127.0.0.1:3000",
+      "http://[::1]:8081",
+      "http://192.168.1.5:8081",
+      "http://10.0.0.7:8081",
+      "http://172.16.3.4:8081",
+    ]) {
+      expect(isTrustedAppUrl(url)).toBe(true);
+      expect(appUrlWarning(url)).toBeNull();
+    }
+  });
+  it("stays quiet for https anywhere", () => {
+    expect(isTrustedAppUrl("https://app.example.com")).toBe(true);
+    expect(appUrlWarning("https://203.0.113.10")).toBeNull();
+  });
+  it("warns for plain http on a public host or IP", () => {
+    for (const url of ["http://example.com", "http://203.0.113.10:8081", "http://8.8.8.8"]) {
+      expect(isTrustedAppUrl(url)).toBe(false);
+      expect(appUrlWarning(url)).toContain("DUBAI_APP_URL");
+    }
+  });
+  it("resolved default and invalid overrides never warn", () => {
+    expect(appUrlWarning(resolveAppUrl({}))).toBeNull();
+    expect(appUrlWarning(resolveAppUrl({ DUBAI_APP_URL: "file:///C:/x" }))).toBeNull();
+    expect(appUrlWarning(resolveAppUrl({ DUBAI_APP_URL: "http://example.com" }))).not.toBeNull();
   });
 });
 

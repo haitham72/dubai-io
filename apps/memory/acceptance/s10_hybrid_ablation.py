@@ -15,6 +15,7 @@ from temporal_memory.core.embed import (
     clear_query_cache,
     embed_pending_facts,
     embed_query,
+    load_model,
 )
 from temporal_memory.live import context as live_ctx
 
@@ -129,6 +130,7 @@ def run(out_dir: Path | None = None, *, out_file: Path | None = None) -> dict:
                 ).fetchone()["c"]
 
             # Quick warmup of local ONNX session
+            load_model()
             _ = embed_query("warmup")
 
             with LiveApiServer(db) as srv:
