@@ -206,6 +206,35 @@ foreach ($e in @(@{n="community"; api=8060; web=3060}, @{n="messenger"; api=8070
     Add-Row "$($e.n)-website:$($e.web)" (Test-Http "http://127.0.0.1:$($e.web)/") "http://localhost:$($e.web)  (LAN http://${lanIp}:$($e.web))"
 }
 
+# 2c. Community + Messenger shells (E14c): checked only when start-all.ps1 -Shells recorded them in .pids.json;
+#     otherwise the rows are SKIP so a plain start-all run is not marked red.
+$pidsShells = @{}
+if (Test-Path $PidsFile) {
+    try {
+        $shellPids = Get-Content $PidsFile -Raw | ConvertFrom-Json
+        foreach ($sp in $shellPids.PSObject.Properties) { $pidsShells[$sp.Name] = $sp.Value }
+    } catch {}
+}
+foreach ($s in @(@{comp="community-mobile:8082"; key="community_mobile"; port=8082},
+                 @{comp="messenger-mobile:8083"; key="messenger_mobile"; port=8083})) {
+    if ($pidsShells[$s.key]) {
+        Add-Row $s.comp (Test-Port $s.port) "exp://${lanIp}:$($s.port)"
+    } else {
+        $rows.Add([PSCustomObject]@{ Component = $s.comp; Status = "SKIP"; Detail = "start-all.ps1 -Shells not used" })
+    }
+}
+foreach ($d in @(@{comp="community-desktop"; key="community_desktop"},
+                 @{comp="messenger-desktop"; key="messenger_desktop"})) {
+    $dPid = $pidsShells[$d.key]
+    if ($dPid -and (Get-Process -Id ([int]$dPid) -ErrorAction SilentlyContinue)) {
+        Add-Row $d.comp $true "pid=$dPid"
+    } elseif ($dPid) {
+        Add-Row $d.comp $false "pid=$dPid not running"
+    } else {
+        $rows.Add([PSCustomObject]@{ Component = $d.comp; Status = "SKIP"; Detail = "start-all.ps1 -Shells not used" })
+    }
+}
+
 $lanOk = ($lanIp -ne "127.0.0.1")
 Add-Row "lan-ip" $lanOk $lanIp
 
