@@ -79,11 +79,15 @@ Create a new `apps/memory/src/temporal_memory/vocab/`. It holds one data file (Y
   - Add `GET /vocab/learned`, scoped to the owner. It returns each term, its parent path and its source record ids.
   - Add **no** UI. UI work is paused.
 
-### 4. Forget follows the source
+### 4. Weights go down; nothing is deleted (founder D18, 25 Nov)
 
-- When Forget or a source revoke erases a learned term's **last** source record, delete the term.
-- Close `MORNING.md` §E #18 the same way: after a Forget, delete the owner's `candidate` / inferred `subjects` and `subject_aliases` rows that have no live fact or source left.
-- Keep user-supplied and confirmed subjects.
+The founder: "I only allow lower weights, not forget."
+
+- **Term weight:** a learned term's weight is the highest weight among the facts and records that cite it.
+- **Lowering:** when those weights drop, the term's weight drops too, down to the existing floor. A drop can come from decay, "Not true" or the user lowering a fact. The term row is never deleted.
+- **Expansion order:** expansion orders learned terms by weight, so terms at the floor come last, still within the cap.
+- **§E #18 closes the same way:** an inferred subject whose facts are all at the floor sits at the floor itself. No sweep deletes it. User-supplied and confirmed subjects are unaffected.
+- **No new delete path:** add no delete path anywhere, and don't edit `privacy/forget.py`.
 
 ### 5. Tests (synthetic owners; LLM output stubbed)
 
@@ -97,9 +101,9 @@ Failure paths:
 
 - "surf" does **not** return a fact that only mentions padel.
 - Proposals are dropped for `no_branch`, `ambiguous`, `no_source` (another owner's record), `rule9` (under a health or family node) and `curated_clash`, with the counts recorded.
-- Forgetting the only source deletes the learned term. Forgetting one of two sources keeps it.
+- Lowering the only source fact's weight drops the learned term to the floor, and the term row still exists. With two sources, the term keeps the higher weight.
 - A vocabulary file whose node has a missing parent fails to load.
-- The §E #18 sweep deletes an orphaned inferred subject and keeps a confirmed one.
+- After weights are lowered, the row counts of learned terms, `subjects` and `subject_aliases` are unchanged (nothing is deleted).
 
 ### 6. Honest acceptance
 
@@ -117,7 +121,6 @@ Failure paths:
 - `core/subject_aliases.py`
 - `core/extract.py`, for the `new_terms` field in the prompt and the parser
 - `core/applier.py`, but **only** the new proposal checks and storage. Codex's E11a edits `_late_superseder` in the same file, so don't reformat other functions.
-- `privacy/forget.py`
 - one new migration
 - the API route for `GET /vocab/learned`
 - tests

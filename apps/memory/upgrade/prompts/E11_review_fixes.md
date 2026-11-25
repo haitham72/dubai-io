@@ -2,7 +2,7 @@
 
 Read `E0_real_data_round.md` first. Every item comes from `reports/MORNING.md` §E and the review file named next to it. Each fix ships with a happy-path test and a failure-path test. Do not touch `apps/web`, which is frozen.
 
-- **Concurrent work:** Gemini is building E10 (the topic tree) at the same time. It owns `core/retrieval.py`, `core/subject_aliases.py`, `core/extract.py`, `privacy/forget.py`, and the new-terms code in `core/applier.py`. Don't edit those, except where an item below names them.
+- **Concurrent work:** Gemini is building E10 (the topic tree) at the same time. It owns `core/retrieval.py`, `core/subject_aliases.py`, `core/extract.py`, and the new-terms code in `core/applier.py`. Don't edit those, except where an item below names them.
 - **Before ready-for-review:** rebase on `main` if E10 has already merged.
 - **Status:** add a line to `reports/STATUS.md` when the work is `ready-for-review`.
 
@@ -88,5 +88,5 @@ In `ensure_embeddings` (the embeddings module of `apps/memory`; not `retrieval.p
 
 ## Not in E11 (waiting for founder decisions)
 
-- §E #6: forgetting a fact keeps the source email's text. Say so in the UI, or offer "forget the source too".
+- §E #6 (forgetting a fact keeps the source email's text) no longer applies under D18: the founder allows only lower weights, not forget. Whether to remove the existing Forget feature is a separate founder decision and is not in E11.
 - §E #8: Community saved discussions and public posts share one consent flag.

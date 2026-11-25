@@ -189,6 +189,13 @@ The redesign's latest design is current: commit `6b45ba4`, "AI workspace replace
 
 - Replaces the hard-coded `_SYNONYM_GROUPS` (MORNING.md §E #4). General topics are the ontology roots and first branches (`docs/references/residence-ontology-tree.md`): fixed, edited only by the founder. Subtopics are curated and expanded. The extraction LLM may propose new words only as children of an existing word, with a cited source record. The backend validates each proposal (branch, source, Rule 9) and keeps accepted words per user (provenance `inferred`). Forgetting the last source removes them. Work package: `apps/memory/upgrade/prompts/E10_topic_tree.md` (Gemini).
 
+## D18 — No forget, only lower weights (25 Nov)
+
+> "i am so opposed to the whole 'forget' thing, i only allow 'lower weights' not forget"
+
+- Applies now to all new work: no new delete paths. Learned vocabulary terms and inferred subjects decay to the weight floor instead of being deleted (E10 §4 rewritten; MORNING.md §E #6 and the #18 deletion sweep dropped).
+- Open: whether to remove the existing user-tapped Forget / source-revoke erasure (E8). Pending founder, given the user-erasure points (UAE PDPL right to erasure; YouTube API policy on deleting data after a user revokes access) and canon Rule 9 / ARCHITECTURE §7, which still list Forget. Canon docs are NOT changed by this entry.
+
 ## Founder to-dos (not agent work)
 
 - Share `docs/submissions/shared/handoff-temporal-note.md` (on GitHub) with the memory team.
