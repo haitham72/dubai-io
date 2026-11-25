@@ -72,3 +72,4 @@ E9b: branch e9b/s2-quality 37f0d1f pushed (not merged); pytest 475/8 skip; S2 su
 2026-11-25 07:46 | E10 | gemini | e10/topic-tree | — | queued (prompts/E10_topic_tree.md; founder decision on _SYNONYM_GROUPS)
 2026-11-25 07:46 | E11a | codex | e11a/temporal-fixes | — | queued (prompts/E11_review_fixes.md Part A)
 2026-11-25 07:46 | E11b | devin | e11b/review-fixes | — | queued (prompts/E11_review_fixes.md Part B)
+2026-11-25 08:24 | E11a | codex | e11a/temporal-fixes | 2d6af51 | A1/A2 implemented; pytest 524 passed, 8 skipped; S2 6/8 superseded, 5/5 ended, 3/4 late on repeat; historical supersession gate open (paired score unchanged). See E11a.md.
