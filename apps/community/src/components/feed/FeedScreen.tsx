@@ -115,10 +115,12 @@ export default function FeedScreen() {
 
   // For-you = discovery picks first, then the rest of the real feed (deduped),
   // so a user's own new post always shows at the top of the default lane.
+  // Top/Hot re-rank the whole lane by engagement like the other lanes.
   const foryouAll = useMemo(() => {
     const seen = new Set(foryouPosts.map((p) => p.id));
-    return [...foryouPosts, ...posts.filter((p) => !seen.has(p.id))];
-  }, [foryouPosts, posts]);
+    const merged = [...foryouPosts, ...posts.filter((p) => !seen.has(p.id))];
+    return sort === "new" ? merged : sortPosts(merged, sort);
+  }, [foryouPosts, posts, sort]);
 
   const demoPhone = useMemo(() => sortFixture(phonePosts, sort), [sort]);
   const demoDesktop = useMemo(() => {

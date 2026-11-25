@@ -316,13 +316,17 @@ def _select_pending(
     owner: str | None,
     model_name: str,
     limit: int | None,
+    only_ids: Sequence[str] | None = None,
 ) -> list[dict[str, Any]]:
     """Visible, non-quarantined, non-held-back facts still missing the current model vector."""
     owner_clause = "AND f.owner = %s" if owner is not None else ""
+    id_clause = "AND f.id = ANY(%s)" if only_ids is not None else ""
     lim_clause = "LIMIT %s" if limit is not None else ""
     params: list[Any] = []
     if owner is not None:
         params.append(owner)
+    if only_ids is not None:
+        params.append(list(only_ids))
     params.append(model_name)
     if limit is not None:
         params.append(max(1, int(limit)))
@@ -336,6 +340,7 @@ def _select_pending(
             WHERE f.erased_at IS NULL
               AND f.status <> 'history'
               {owner_clause}
+              {id_clause}
               AND (f.embedding IS NULL OR f.embedding_model IS DISTINCT FROM %s)
               AND (
                   s.id IS NULL
@@ -510,13 +515,14 @@ def ensure_embeddings(
     if not cfg.semantic_enabled:
         return "disabled"
     try:
-        ver: int | None = None
-        if once_per_version:
-            with db.connection() as conn:
-                row = conn.execute("SELECT facts_version FROM owners WHERE id = %s", (owner,)).fetchone()
-            ver = int(row["facts_version"]) if row else 0
-            if _BACKFILLED_AT.get(owner) == ver:
-                return None
+        # facts_version is read on every call (cheap PK lookup): it both gates the
+        # once-per-version fast path and invalidates the queued _PENDING rows when
+        # facts changed since they were selected.
+        with db.connection() as conn:
+            row = conn.execute("SELECT facts_version FROM owners WHERE id = %s", (owner,)).fetchone()
+        ver = int(row["facts_version"]) if row else 0
+        if once_per_version and _BACKFILLED_AT.get(owner) == ver:
+            return None
         if not is_loaded(cfg.semantic_model or EMBED_MODEL):
             return "embedder_unavailable"
         # Sweeps are paced per owner: even a budgeted sweep costs tens of ms on the
@@ -531,10 +537,21 @@ def ensure_embeddings(
         fetch_limit = step * _LAZY_FETCH_FACTOR
         target = cfg.semantic_model or EMBED_MODEL
         state = _PENDING.get(owner)
+        if state is not None and state.get("ver") != ver:
+            # Facts changed since the queue was fetched: drop it and rescan so
+            # newly pending facts are picked up and stale rows are not embedded.
+            _PENDING.pop(owner, None)
+            state = None
         if state is None or not state["rows"]:
             rows = _select_pending(db, owner=owner, model_name=target, limit=fetch_limit)
-            state = {"rows": rows, "eof": len(rows) < fetch_limit}
+            state = {"rows": rows, "eof": len(rows) < fetch_limit, "ver": ver}
             _PENDING[owner] = state
+        # Queued rows may have been quarantined, erased or forgotten since the
+        # scan; re-verify eligibility (id-scoped, cheap) before embedding them.
+        state["rows"] = _select_pending(
+            db, owner=owner, model_name=target, limit=None,
+            only_ids=[r["id"] for r in state["rows"]],
+        )
         stats = _embed_rows(
             db,
             state["rows"],
