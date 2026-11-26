@@ -49,7 +49,7 @@
   3. Median paired latency (both correct) and the exact-detail latency delta.
   4. **Decision:** advance only if raw search recovers **≥ 3** verified answers the graph missed **or** cuts median latency **≥ 25 %** over **≥ 6** jointly correct exact-detail prompts, **and** there are **0** scope failures. Otherwise keep it as a local diagnostic.
   5. **How to use it (if it advances):** the graph-first fallback rule (when graph evidence is insufficient **and** a searchable clue exists), source scoping, D19/D19b behaviour (lowered sources excluded from passive use, explicit queries only), "Delete my data" and source revocation removing search access, the Rule 9 screen on outputs, no write-back, and the latency budget. Plus the held-out validation still needed.
-- Then: append one `STATUS.md` row, commit **only** `GREPMEM_pilot.md` + the `STATUS.md` row on branch `grepmem/pilot-report` from `origin/main`, open a PR, and **STOP**.
+- Then **do not commit**: leave the finished aggregate report at `G:\Haitham\lab-data\grepmem-pilot\GREPMEM_pilot.md` and tell the integrator. Claude copies it to `apps/memory/upgrade/reports/` and commits it (branch rule: only main + `dev/dubai-io`, `dev/community`, `dev/messenger`).
 
 ## 6. Done means
 
