@@ -192,9 +192,9 @@ def test_two_user_flow(stack):
         bob = _context(browser, stack, "bob")
         pa, pb = alice.new_page(), bob.new_page()
 
-        # -- A creates a profile-backed post via the real UI --
+        # -- A creates a profile-backed post with #hashtag via the real UI --
         pa.goto(f"{stack['web']}/create", wait_until="load", timeout=120_000)
-        pa.fill("#post-text", "E2E: marina walk at sunrise — who is in for Saturday?")
+        pa.fill("#post-text", "E2E: marina walk at sunrise — who is in for Saturday? #dubaimarina")
         pa.click("button.primary")
         try:
             pa.wait_for_selector("article.v2-card:visible", timeout=60_000)
@@ -224,25 +224,33 @@ def test_two_user_flow(stack):
         card = pb.locator("article.v2-card:visible", has_text="marina walk").first
         card.wait_for(state="visible", timeout=30_000)
 
-        # -- B likes and replies (threaded reply covered by unit tests) --
-        like_btn = card.get_by_role("button", name="Like")
-        like_btn.click()
+        # -- B upvotes, checks safety menu, and replies (threaded reply covered by unit tests) --
+        upvote_btn = card.get_by_role("button", name="Upvote")
+        upvote_btn.click()
         deadline = time.time() + 20
-        while like_btn.get_attribute("aria-pressed") != "true" and time.time() < deadline:
+        while upvote_btn.get_attribute("aria-pressed") != "true" and time.time() < deadline:
             pb.wait_for_timeout(250)
-        assert like_btn.get_attribute("aria-pressed") == "true"
-        assert card.locator(".v2-count").first.text_content() == "1"
+        assert upvote_btn.get_attribute("aria-pressed") == "true"
+        assert card.locator("[data-testid=vote-score]").text_content() == "1"
+        assert card.locator("[data-testid=post-tags] a", has_text="#dubaimarina").count() == 1
+        card.get_by_role("button", name="More actions").click()
+        assert card.locator("[data-testid=post-menu]").get_by_role("menuitem", name="Report post").is_visible()
+        assert card.locator("[data-testid=post-menu]").get_by_role("menuitem", name="Block author").is_visible()
+        card.get_by_role("button", name="More actions").click()
         card.get_by_role("button", name="Comments").click()
         card.locator(".v2-replybox input").fill("Count me in — see you Saturday!")
         card.locator(".v2-replybox button", has_text="Send").click()
         card.locator("text=Count me in").wait_for(state="visible", timeout=15_000)
         _shot(pb, "02-thread-bob-reply.png")
 
-        # -- A sees the like count and the reply notification --
+        # -- A sees the vote score, #tag filter route, and the reply notification --
         pa.goto(f"{stack['web']}/", wait_until="load", timeout=120_000)
         a_card = pa.locator("article.v2-card:visible", has_text="marina walk").first
         a_card.wait_for(state="visible", timeout=30_000)
-        assert a_card.locator(".v2-count").first.text_content() == "1"
+        assert a_card.locator("[data-testid=vote-score]").text_content() == "1"
+        pa.goto(f"{stack['web']}/t/dubaimarina", wait_until="load", timeout=120_000)
+        pa.wait_for_selector("h1", timeout=30_000)
+        assert "#dubaimarina" in pa.locator("h1").inner_text().lower()
         pa.goto(f"{stack['web']}/inbox", wait_until="load", timeout=120_000)
         pa.wait_for_selector("text=Count me in", timeout=30_000)
         _shot(pa, "03-inbox-alice-notification.png")
@@ -272,7 +280,7 @@ def test_two_user_flow(stack):
         assert any(k in ("reply", "comment") for k in kinds), inbox
 
         status, post = api_call(stack, "alice", "GET", f"/api/community/posts/{post_id}")
-        assert status == 200 and post["post"]["reaction_count"] >= 1
+        assert status == 200 and (post["post"].get("score") or post["post"].get("reaction_count") or 0) >= 1
 
 
 def test_private_group_fenced(stack):

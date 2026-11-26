@@ -61,11 +61,17 @@ def community_health():
     return {"ok": True, "service": "community"}
 
 
-for _name in ("media", "moderation", "agents", "memory_routes"):
+import logging as _logging
+
+_log = _logging.getLogger("app.community.server")
+for _name in ("media", "moderation", "agents", "memory_routes", "context_profile"):
     try:
         _mod = importlib.import_module(f".{_name}", __package__)
         _router = getattr(_mod, "router", None)
         if _router is not None:
             app.include_router(_router)
+        else:
+            _log.error("Community module %r imported but has no router — endpoints missing", _name)
     except ImportError:
-        pass
+        _log.exception("Failed to import Community router module %r — refusing to start silently", _name)
+        raise

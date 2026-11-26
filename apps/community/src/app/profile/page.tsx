@@ -3,6 +3,8 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import DemoPill from "@/components/DemoPill";
 import MemoryPanel from "@/components/MemoryPanel";
+import SafetyPanel from "@/components/SafetyPanel";
+import UsageProfilePanel from "@/components/UsageProfilePanel";
 import * as api from "@/lib/api";
 import { seedProfile } from "@/lib/seed";
 import type { Profile } from "@/lib/types";
@@ -91,6 +93,12 @@ export default function ProfilePage() {
         <ProfileForm initial={null} onSaved={(p) => { setProfile(p); setLoadFailed(false); }} onCancel={() => {}} creating />
       )}
       <MemoryPanel />
+      {signedIn && !demo && (
+        <>
+          <UsageProfilePanel />
+          <SafetyPanel />
+        </>
+      )}
     </section>
   );
 }

@@ -1,8 +1,45 @@
 import type { Lane, Post } from "./types";
 import type { DiscoveryItem, DiscoveryResult } from "./api";
 
+export const POST_FLAIRS = [
+  "Question",
+  "Recommendation",
+  "Event",
+  "Warning",
+  "Housing",
+] as const;
+
+export const DUBAI_AREAS = [
+  "Dubai Marina",
+  "JLT",
+  "DIFC",
+  "Downtown Dubai",
+  "Business Bay",
+  "Jumeirah",
+  "Al Quoz",
+  "Deira",
+  "Bur Dubai",
+] as const;
+
 export function isDemo(post: { provenance?: string }): boolean {
   return post.provenance === "demo_fixture";
+}
+
+/** Extract unique normalized hashtag slugs (lowercase, without `#`) from post.tags and post.text. */
+export function extractHashtags(text: string, existingTags?: string[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  const add = (raw: string) => {
+    const clean = raw.trim().replace(/^#+/, "").toLowerCase();
+    if (!clean || !/^[a-z0-9_]{2,40}$/.test(clean) || seen.has(clean)) return;
+    seen.add(clean);
+    out.push(clean);
+  };
+  for (const t of existingTags ?? []) add(t);
+  const re = /(?:^|[\s(])#([a-zA-Z0-9_]{2,40})\b/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(text || "")) !== null) add(m[1]);
+  return out;
 }
 
 export function filterPostsByLane(
@@ -21,21 +58,51 @@ export function filterPostsByLane(
   return [...posts];
 }
 
-export type FeedSort = "new" | "top" | "hot";
+export type FeedSort = "hot" | "top" | "new" | "rising" | "controversial";
 
 const postTime = (p: Post): number => {
   const t = Date.parse(p.created_at ?? p.as_of ?? "");
   return Number.isNaN(t) ? 0 : t;
 };
-const postReactions = (p: Post): number => p.reaction_count ?? p.reactions ?? 0;
+const postScore = (p: Post): number => p.score ?? p.reaction_count ?? p.reactions ?? 0;
 const postComments = (p: Post): number => p.comment_count ?? p.comments ?? 0;
 
-/** Sort real feed posts. "new" keeps the API's created_at-desc order; ties fall back to id for stability. */
+function hotScore(p: Post): number {
+  const s = postScore(p);
+  const order = Math.log10(Math.max(1, Math.abs(s)));
+  const sign = s > 0 ? 1 : s < 0 ? -1 : 0;
+  const sec = postTime(p) / 1000;
+  return sign * order + sec / 45000;
+}
+
+function risingScore(p: Post): number {
+  const ageHours = Math.max(0.5, (Date.now() - postTime(p)) / 3_600_000);
+  return (postScore(p) + postComments(p) * 1.5 + 1) / Math.pow(ageHours + 2, 1.4);
+}
+
+function controversialScore(p: Post): number {
+  const ups = p.upvotes ?? Math.max(0, postScore(p));
+  const downs = p.downvotes ?? 0;
+  const total = ups + downs + postComments(p);
+  if (ups === 0 && downs === 0) return postComments(p);
+  const balance = Math.min(ups, downs) / Math.max(1, Math.max(ups, downs));
+  return total * (0.5 + balance);
+}
+
+/** Sort real feed posts across Hot, Top, New, Rising, Controversial. */
 export function sortPosts(posts: Post[], sort: FeedSort): Post[] {
   const copy = [...posts];
-  if (sort === "top") copy.sort((a, b) => postReactions(b) - postReactions(a) || postTime(b) - postTime(a));
-  else if (sort === "hot") copy.sort((a, b) => postComments(b) - postComments(a) || postReactions(b) - postReactions(a));
-  else copy.sort((a, b) => postTime(b) - postTime(a) || String(b.id).localeCompare(String(a.id)));
+  if (sort === "top") {
+    copy.sort((a, b) => postScore(b) - postScore(a) || postTime(b) - postTime(a));
+  } else if (sort === "hot") {
+    copy.sort((a, b) => hotScore(b) - hotScore(a) || postComments(b) - postComments(a));
+  } else if (sort === "rising") {
+    copy.sort((a, b) => risingScore(b) - risingScore(a) || postTime(b) - postTime(a));
+  } else if (sort === "controversial") {
+    copy.sort((a, b) => controversialScore(b) - controversialScore(a) || postComments(b) - postComments(a));
+  } else {
+    copy.sort((a, b) => postTime(b) - postTime(a) || String(b.id).localeCompare(String(a.id)));
+  }
   return copy;
 }
 
