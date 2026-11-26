@@ -732,3 +732,33 @@ def test_offline_owner_device_fallback_to_internal_worker(seeded: dict[str, Any]
     assert claimed["count"] == 1
     assert claimed["jobs"][0]["job"]["id"] == job.id
     assert claimed["jobs"][0]["job"]["pool"] == "internal"
+
+
+def test_mcp_lower_restore_and_account_exclusion(seeded, monkeypatch):
+    monkeypatch.setenv("TM_REDIS_URL", "redis://127.0.0.1:6390/0")
+    monkeypatch.setenv("TM_SEMANTIC", "0")
+    db, client = seeded["db"], seeded["client"]
+    dev = create_token(db, role="owner-device", owner="karim")["token"]
+    headers = {"Authorization": f"Bearer {dev}"}
+    base = "/v1/owners/karim"
+    up = client.post(f"{base}/records", headers=headers, json={
+        "enqueue": "none", "direct_fact": {"text": "Biology workshop at the school",
+            "subject_path": "learning/workshops", "evidence": ["n001"], "provenance": "user_supplied"},
+    })
+    assert up.status_code == 200, up.text
+    fact_id = up.json()["fact_ids"][0]
+
+    def ids():
+        code, body = _mcp_call(client, dev, "memory_search", {"query": "workshop"})
+        assert code == 200, body
+        return {fact["id"] for fact in _parse_tool_json(body)["facts"]}
+
+    assert fact_id in ids()
+    client.post(f"{base}/lower", headers=headers, json={"fact_id": fact_id}).raise_for_status()
+    assert fact_id not in ids()
+    client.post(f"{base}/restore", headers=headers, json={"fact_id": fact_id}).raise_for_status()
+    assert fact_id in ids()
+    client.post(f"{base}/delete-my-data", headers={"Authorization": f"Bearer {ADMIN_TOKEN}"}).raise_for_status()
+    assert _mcp_call(client, dev, "memory_search", {"query": "workshop"})[0] == 401
+    code, body = _mcp_call(client, ADMIN_TOKEN, "memory_context", {"text": "workshop", "owner": "karim"})
+    assert code == 200 and body["result"]["isError"] and fact_id not in str(body)

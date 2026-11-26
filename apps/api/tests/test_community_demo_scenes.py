@@ -202,8 +202,7 @@ def _run_scenes(root, monkeypatch, run_n):
     forgotten = client.post("/api/community/memory/forget")
     assert forgotten.status_code == 200, forgotten.text
     assert forgotten.json()["forgotten"] is True
-    # E13a D19 soft-forget asserts `erased_at is None` — keep that form when merging E13a.
-    assert saved_record.erased_at  # current Fake hard-forget until E13a coordinator lands
+    assert saved_record.erased_at is None
     still_public = client.get(f"/api/community/posts/{public_post_id}")
     assert still_public.status_code == 200, still_public.text
 

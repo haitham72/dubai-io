@@ -373,8 +373,8 @@ def extract_owner_interests(
     owner: str,
 ) -> tuple[list[InterestItem], list[InterestItem], str | None]:
     """Read owner memory and return (confirmed_interests, unconfirmed_interests, area_hint)."""
-    subjects = _fetch_owner_subjects(client, owner)
-    hypotheses = _fetch_owner_hypotheses(client, owner)
+    subjects = [item for item in _fetch_owner_subjects(client, owner) if item.get("weight", 1.0) >= 0.10]
+    hypotheses = [item for item in _fetch_owner_hypotheses(client, owner) if item.get("weight", 1.0) >= 0.10]
     facts = _fetch_owner_facts(client, owner)
 
     confirmed_facts_by_subj: dict[str, list[dict[str, Any]]] = {}
@@ -649,7 +649,10 @@ async def get_today_feed(
     ttl = _cache_ttl_seconds()
     now_mono = time.monotonic()
 
-    if refresh == 0:
+    # The remote owner version changes on Lower, Restore and account deletion, including
+    # changes made outside this API process. Never return an unvalidated remote cache entry.
+    local_cache = not callable(getattr(client, "memory_version", None))
+    if refresh == 0 and local_cache:
         with _CACHE_LOCK:
             entry = _OWNER_CACHE.get(owner)
             if entry is not None and (now_mono - entry.created_mono) < ttl:
@@ -689,8 +692,9 @@ async def get_today_feed(
             "provenance": "provider_confirmed",
             "demo": False,
         }
-        with _CACHE_LOCK:
-            _OWNER_CACHE[owner] = _CacheEntry(created_mono=now_mono, payload=deepcopy(payload))
+        if local_cache:
+            with _CACHE_LOCK:
+                _OWNER_CACHE[owner] = _CacheEntry(created_mono=now_mono, payload=deepcopy(payload))
         return payload
 
     # Rule 9: Only confirmed interests ever trigger external provider searches.
@@ -756,6 +760,7 @@ async def get_today_feed(
         "provenance": "provider_confirmed",
         "demo": False,
     }
-    with _CACHE_LOCK:
-        _OWNER_CACHE[owner] = _CacheEntry(created_mono=now_mono, payload=deepcopy(payload))
+    if local_cache:
+        with _CACHE_LOCK:
+            _OWNER_CACHE[owner] = _CacheEntry(created_mono=now_mono, payload=deepcopy(payload))
     return payload

@@ -23,6 +23,8 @@ export interface VaultEntity {
   sensitive_cat?: string | null; quarantined?: boolean; sensitive?: boolean;
 }
 export interface VaultFact {
+  lowered?: boolean;
+  weight?: number;
   id: string; text: string; subject_id?: string; valid_from?: string;
   provenance?: string; as_of?: string; sensitive_cat?: string | null;
   quarantined?: boolean; sensitive?: boolean;
@@ -252,7 +254,7 @@ export async function loadVault(
   apiBaseUrl: string, _owner: string,
   fixtures: VaultData,
   fetcher: Fetcher = defaultFetcher,
-  options?: { demo?: boolean; sessionToken?: string | null },
+  options?: { demo?: boolean; sessionToken?: string | null; loweredOnly?: boolean },
 ): Promise<VaultData> {
   if (options?.demo) {
     return { ...fixtures, isDemo: true, demoData: true, error: null };
@@ -270,7 +272,7 @@ export async function loadVault(
     const [subjectRes, peopleRes, timeline] = await Promise.all([
       readBody(fetcher, `${base}/graph?view=subjects`, init),
       readBody(fetcher, `${base}/graph?view=people`, init),
-      getJson(fetcher, `${base}/timeline`, init).catch(() => ({ items: [] })),
+      getJson(fetcher, `${base}/timeline${options?.loweredOnly ? "?lowered=true" : ""}`, init).catch(() => ({ items: [] })),
     ]);
     const subjectGraph = subjectRes.missing ? null : asGraph(subjectRes.body);
     const peopleGraph = peopleRes.missing ? null : asGraph(peopleRes.body);
@@ -307,7 +309,7 @@ export async function loadWhy(
   apiBaseUrl: string, _owner: string, factId: string,
   fixtureWhy: WhyResult | null,
   fetcher: Fetcher = defaultFetcher,
-  options?: { demo?: boolean; sessionToken?: string | null },
+  options?: { demo?: boolean; sessionToken?: string | null; loweredOnly?: boolean },
 ): Promise<{ why: WhyResult | null; isDemo: boolean; error: string | null }> {
   if (options?.demo && fixtureWhy) {
     return { why: { ...fixtureWhy, evidence: fixtureWhy.evidence.filter((e) => !isSensitive(e)) },

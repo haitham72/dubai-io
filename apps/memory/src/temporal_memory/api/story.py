@@ -149,6 +149,8 @@ def _write_cache(
     to_store = {k: v for k, v in payload.items() if k != "cached"}
     try:
         with db_obj.transaction() as conn:
+            from temporal_memory.privacy.controls import lock_active_owner
+            lock_active_owner(conn, owner)
             conn.execute(
                 """
                 INSERT INTO story_cache (

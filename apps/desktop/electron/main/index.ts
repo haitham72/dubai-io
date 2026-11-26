@@ -108,6 +108,19 @@ export function registerIpc(): void {
     return { ...sync.status(), uploaded: result.uploaded, errors: result.errors, signedIn: result.signedIn };
   });
 
+  ipcMain.handle(IPC.browserMemoryWeight, async (_event, lower: unknown) => {
+    if (typeof lower !== "boolean") throw new Error("Choose Lower or Restore");
+    let sessionToken: string | undefined;
+    tokens.withCredentials((credentials) => { sessionToken = credentials.sessionToken; });
+    if (!sessionToken) throw new Error("Sign in required");
+    const action = lower ? "lower" : "restore";
+    const response = await fetch(apiBaseUrl().replace(/\/$/, "") + "/api/ingest/browser/" + action, {
+      method: "POST",
+      headers: { "X-App-Session": sessionToken },
+    });
+    if (!response.ok) throw new Error("Browser memory update failed (" + response.status + ")");
+  });
+
   ipcMain.handle(IPC.authStatus, async () => auth.status());
   ipcMain.handle(IPC.authSignIn, async (_event, payload: unknown) => {
     const body = parseSignIn(payload);

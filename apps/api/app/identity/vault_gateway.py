@@ -40,7 +40,10 @@ class TierUpdateIn(BaseModel):
     tier: Optional[Literal["T1", "T2", "T3"]] = None
 
 
-class ForgetIn(BaseModel):
+class LowerIn(BaseModel):
+    lower: bool = True
+    subject_id: Optional[str] = Field(default=None, min_length=1, max_length=256)
+    source: Optional[str] = Field(default=None, min_length=1, max_length=256)
     model_config = ConfigDict(extra="forbid")
     fact_id: Optional[str] = Field(default=None, min_length=1, max_length=256)
     record_ids: Optional[list[str]] = Field(default=None, max_length=500)
@@ -196,13 +199,19 @@ def create_vault_gateway_router(
         date_from: Optional[str] = Query(default=None),
         date_to: Optional[str] = Query(default=None),
         limit: int = Query(default=200, ge=1, le=500),
+        lowered: bool = Query(default=False),
         principal: VerifiedPrincipal = Depends(read_principal),
         client: TemporalMemoryClient = Depends(tm_dep),
     ) -> dict[str, Any]:
         owner = principal.user_id
         try:
             _ensure_owner_provisioned(request, client, owner)
-            data = client.get_timeline(owner, date_from=date_from, date_to=date_to, limit=limit)
+            timeline_options = {"date_from": date_from, "date_to": date_to, "limit": limit}
+            if lowered and isinstance(client, HttpTemporalMemoryClient):
+                timeline_options["lowered"] = True
+            data = client.get_timeline(owner, **timeline_options)
+            if lowered:
+                data["items"] = [item for item in data.get("items", []) if item.get("lowered")]
             data["items"] = [f for f in data.get("items", []) if not _is_sensitive_item(f)]
             return data
         except MemoryBridgeError as exc:
@@ -221,6 +230,7 @@ def create_vault_gateway_router(
             data = client.get_why_fact(owner, fact_id)
             if isinstance(data.get("evidence"), list):
                 data["evidence"] = [e for e in data["evidence"] if not _is_sensitive_item(e)]
+            client.reinforce_recall(owner, [fact_id])
             return data
         except MemoryBridgeError as exc:
             raise _http_from_tm_error(exc) from exc
@@ -265,9 +275,10 @@ def create_vault_gateway_router(
         except MemoryBridgeError as exc:
             raise _http_from_tm_error(exc) from exc
 
-    @router.post("/forget")
-    def vault_forget(
-        body: ForgetIn,
+    @router.post("/lower")
+    @router.post("/forget", include_in_schema=False)
+    def vault_lower(
+        body: LowerIn,
         request: Request,
         principal: VerifiedPrincipal = Depends(forget_principal),
         client: TemporalMemoryClient = Depends(tm_dep),
@@ -280,14 +291,11 @@ def create_vault_gateway_router(
         owner = principal.user_id
         try:
             _ensure_owner_provisioned(request, client, owner)
-            if body.fact_id:
-                return client.forget_fact(owner, body.fact_id)
-            if body.record_ids:
-                return client.forget_source(owner, body.record_ids)
-            raise HTTPException(
-                status_code=422,
-                detail={"code": "missing_target", "message": "Provide fact_id or record_ids"},
-            )
+            target = body.model_dump(include={"fact_id", "record_ids", "subject_id", "source"}, exclude_none=True)
+            result = client.set_memory_lowered(owner, lower=body.lower, **target)
+            from ..today_feed import clear_today_cache
+            clear_today_cache(owner)
+            return result
         except MemoryBridgeError as exc:
             raise _http_from_tm_error(exc) from exc
 

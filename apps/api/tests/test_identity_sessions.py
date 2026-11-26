@@ -411,3 +411,71 @@ def test_identity_memory_token_store_and_router_hook(tmp_path):
     assert store.revoke_memory_token("tmtok-1", revoked_at=datetime.now(timezone.utc).isoformat()) is False
     assert store.get_active_memory_token(uid, kind="bridge_service") is None
 
+
+
+def test_delete_my_data_requires_confirmation_and_revokes_all_app_access(tmp_path, monkeypatch):
+    from unittest.mock import Mock
+    from app.memory_bridge.models import MemoryBridgeUnavailable
+    from app import today_feed
+
+    svc, store, _actions, client = _setup(tmp_path)
+    jwt = sign_hs256_jwt(default_claims(sub="550e8400-e29b-41d4-a716-446655440099"))
+    bearer = {"Authorization": f"Bearer {jwt}"}
+    quest = client.post("/api/identity/sessions", headers=bearer, json={"app_id": "quest"}).json()
+    messenger = client.post("/api/identity/sessions", headers=bearer, json={"app_id": "messenger"}).json()
+    owner = quest["user_id"]
+    headers = {"X-App-Session": quest["session_token"]}
+    store.create_memory_token(record_id="delete-token", user_id=owner, tm_owner_id=owner, tm_token_id="tm-delete",
+                              kind="device", label="device", encrypted_token=b"secret",
+                              created_at="2026-11-25T09:00:00Z")
+    today_feed._OWNER_CACHE[owner] = object()
+    cache_purge = Mock()
+    monkeypatch.setattr("app.identity.router.purge_api_owner_cache", cache_purge)
+    handler = client.app.state.temporal_memory_client = Mock()
+    handler.delete_my_data.side_effect = MemoryBridgeUnavailable("Redis unavailable")
+    url = "/api/identity/delete-my-data"
+    assert client.post(url, headers=headers, json={"confirm": True, "owner": "other"}).status_code == 422
+    assert client.post(url, headers=headers, json={"confirm": True}).status_code == 503
+    assert client.get("/api/identity/me", headers=headers).status_code == 200
+    handler.delete_my_data.side_effect = None
+    handler.delete_my_data.return_value = {
+        "ok": True, "deleted_from_external": True, "redis_purged": False,
+        "deleted_at": "2026-11-25T09:01:00Z",
+    }
+    assert client.post(url, headers=headers, json={"confirm": True}).status_code == 503
+    assert client.get("/api/identity/me", headers=headers).status_code == 200
+    handler.delete_my_data.return_value["redis_purged"] = True
+    assert client.post(url, headers=headers, json={"confirm": True}).status_code == 200
+    handler.delete_my_data.assert_called_with(owner)
+    assert cache_purge.call_count == 4
+    assert store.get_user(owner)["status"] == "deleted"
+    assert store.get_active_memory_token(owner, kind="device") is None
+    assert owner not in today_feed._OWNER_CACHE
+    assert client.get("/api/identity/me", headers=headers).status_code == 401
+    assert client.get("/api/identity/me", headers={"X-App-Session": messenger["session_token"]}).status_code == 401
+    assert client.get("/api/identity/me", headers=bearer).status_code == 403
+
+
+
+def test_api_account_cache_purge_targets_configured_redis_and_owner(monkeypatch):
+    from unittest.mock import MagicMock, call
+    import pytest
+    from fastapi import HTTPException
+    from app.identity import router
+
+    monkeypatch.delenv("REDIS_URL", raising=False)
+    monkeypatch.setenv("TM_REDIS_URL", "")
+    with pytest.raises(HTTPException) as exc:
+        router.purge_api_owner_cache("alice")
+    assert exc.value.status_code == 503
+
+    monkeypatch.setenv("REDIS_URL", "redis://api")
+    monkeypatch.setenv("TM_REDIS_URL", "redis://memory")
+    cache = MagicMock()
+    cache.__enter__.return_value = cache
+    cache.scan_iter.return_value = [b"api:alice:state", b"api:alice2:state"]
+    connect = MagicMock(return_value=cache)
+    monkeypatch.setattr(router.redis.Redis, "from_url", connect)
+    router.purge_api_owner_cache("alice")
+    assert {args.args[0] for args in connect.call_args_list} == {"redis://api", "redis://memory"}
+    assert cache.delete.call_args_list == [call("cm:ctx:alice"), call(b"api:alice:state")] * 2

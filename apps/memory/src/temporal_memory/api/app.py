@@ -390,6 +390,13 @@ def create_app(db: Database | None = None, *, admin_token: str | None = None) ->
             return {"ok": False, "reason": f"embedder_unavailable: {type(exc).__name__}", "semantic": _embed.status()}
         return {"ok": True, "semantic": _embed.status()}
 
+    @app.post("/v1/owners/{owner}/delete-my-data")
+    def delete_my_data(owner: str, auth: AuthInfo = Depends(require_auth)) -> dict[str, Any]:
+        from temporal_memory.privacy.controls import delete_account
+        if auth.role != "admin":
+            raise HTTPException(403, "Delete my data must be requested through the signed-in account")
+        return delete_account(store, owner)
+
     @app.post("/v1/owners")
     def create_owner(body: OwnerCreateIn, _: AuthInfo = Depends(require_admin)) -> dict[str, Any]:
         with database.transaction() as conn:
@@ -403,10 +410,13 @@ def create_app(db: Database | None = None, *, admin_token: str | None = None) ->
                     display_name = EXCLUDED.display_name,
                     self_aliases = EXCLUDED.self_aliases,
                     timezone = EXCLUDED.timezone
+                WHERE NOT owners.deleted_from_external
                 RETURNING id, label, kind, display_name, self_aliases, timezone
                 """,
                 (body.id, body.label, body.kind, body.display_name, Jsonb(body.self_aliases), body.timezone),
             ).fetchone()
+        if row is None:
+            raise HTTPException(403, "Account data has been deleted")
         return dict(row)
 
     @app.post("/v1/tokens")
@@ -417,6 +427,9 @@ def create_app(db: Database | None = None, *, admin_token: str | None = None) ->
         raw_token = secrets.token_urlsafe(32)
         token_hash = _hash_token(raw_token)
         with database.transaction() as conn:
+            if body.owner:
+                from temporal_memory.privacy.controls import lock_active_owner
+                lock_active_owner(conn, body.owner)
             conn.execute(
                 "INSERT INTO tokens (id, token_hash, role, owner, label) VALUES (%s, %s, %s, %s, %s)",
                 (token_id, token_hash, body.role, body.owner, body.label),

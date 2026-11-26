@@ -423,6 +423,7 @@ class PostgresJobs:
         cfg = get_settings()
         clauses = [
             "state = 'queued'",
+            "EXISTS (SELECT 1 FROM owners WHERE id = jobs.owner AND NOT deleted_from_external)",
             "pool = ANY(%s)",
             "not_before <= now()",
             "(sensitive_flag = FALSE OR pool = 'internal')",

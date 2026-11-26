@@ -37,6 +37,9 @@ def create_token(
     token_hash = hash_token(raw_token)
 
     with db.transaction() as conn:
+        if owner:
+            from temporal_memory.privacy.controls import lock_active_owner
+            lock_active_owner(conn, owner)
         conn.execute(
             "INSERT INTO tokens (id, token_hash, role, owner, label) VALUES (%s, %s, %s, %s, %s)",
             (token_id, token_hash, role, owner, label),

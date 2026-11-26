@@ -56,8 +56,11 @@ class RecordsIn(BaseModel):
     close_session: bool = False
 
 
-class ForgetIn(BaseModel):
-    record_ids: list[str] = Field(default_factory=list)
+class LowerIn(BaseModel):
+    lower: bool = True
+    subject_id: str | None = Field(default=None, min_length=1, max_length=256)
+    source: str | None = Field(default=None, min_length=1, max_length=256)
+    record_ids: list[str] = Field(default_factory=list, max_length=500)
     fact_id: str | None = None
     idempotency_key: str | None = None
 
@@ -75,7 +78,6 @@ class ContextIn(BaseModel):
 
 
 router = APIRouter(prefix="/v1/owners/{owner}", tags=["bridge"])
-_FORGET_IDEMPOTENCY: dict[tuple[str, str], dict[str, Any]] = {}
 
 
 def _hash(source: str, at: str, text: str) -> str:
@@ -192,43 +194,23 @@ def _ingest_fake_records(owner: str, body: RecordsIn, store: GraphStore) -> dict
     return {"ok": True, "record_ids": record_ids, "job_id": job_id, "fact_ids": fact_ids, "quarantined": quarantined}
 
 
-@router.post("/forget")
-def forget_owner(
-    owner: str,
-    body: ForgetIn,
-    _: AuthContext = Depends(require_owner_access),
+@router.post("/lower")
+@router.post("/forget", include_in_schema=False)
+def lower_owner(
+    owner: str, body: LowerIn, _: AuthContext = Depends(require_owner_access),
     store: GraphStore = Depends(get_store),
 ) -> dict[str, Any]:
-    from temporal_memory.core.bridge_store import _postgres, forget as pg_forget
+    from temporal_memory.privacy.controls import set_lowered
+    return set_lowered(store, owner, body, lower=body.lower)
 
-    if _postgres(store):
-        return pg_forget(store, owner, body.record_ids, body.fact_id, body.idempotency_key)
-    if body.idempotency_key:
-        cached = _FORGET_IDEMPOTENCY.get((owner, body.idempotency_key))
-        if cached is not None:
-            return cached
-    result = {"ok": True, "generation": int(getattr(store, "generations", {}).get(owner, 0)),
-              "records": 0, "facts_erased": 0, "facts_trimmed": 0,
-              "entity_subjects_recomputed": 0, "jobs_requeued": 0, "jobs_enqueued": 0}
-    if body.record_ids and hasattr(store, "forget_source"):
-        raw = store.forget_source(owner, body.record_ids)
-        result.update({
-            "generation": raw.get("generation") or result["generation"],
-            "records": raw.get("records", raw.get("records_forgotten", 0)),
-            "facts_erased": raw.get("facts_erased", 0),
-            "facts_trimmed": raw.get("facts_trimmed", 0),
-            "entity_subjects_recomputed": raw.get("entity_subjects_recomputed", 0),
-            "jobs_requeued": raw.get("jobs_requeued", 0),
-            "jobs_enqueued": raw.get("jobs_enqueued", 0),
-        })
-    if body.fact_id and hasattr(store, "forget_fact"):
-        store.forget_fact(owner, body.fact_id)
-        result["facts_erased"] = int(result["facts_erased"]) + 1
-        result["generation"] = int(getattr(store, "generations", {}).get(owner, result["generation"]))
-    invalidate_alias_cache(owner)
-    if body.idempotency_key:
-        _FORGET_IDEMPOTENCY[(owner, body.idempotency_key)] = result
-    return result
+
+@router.post("/restore")
+def restore_owner(
+    owner: str, body: LowerIn, _: AuthContext = Depends(require_owner_access),
+    store: GraphStore = Depends(get_store),
+) -> dict[str, Any]:
+    from temporal_memory.privacy.controls import set_lowered
+    return set_lowered(store, owner, body, lower=False)
 
 
 def _find_fact(store: Any, owner: str, fact_id: str) -> Fact | None:
@@ -314,23 +296,58 @@ def owner_context(
     return context_pack(owner, body.text, max_tokens=body.max_tokens, store=store)
 
 
+class RecallIn(BaseModel):
+    fact_ids: list[str] = Field(min_length=1, max_length=500)
+
+
+@router.post("/recall")
+def recall_facts(
+    owner: str, body: RecallIn,
+    auth: AuthContext = Depends(require_owner_access),
+    store: GraphStore = Depends(get_store),
+) -> dict[str, Any]:
+    from temporal_memory.privacy.controls import reinforce_recall
+
+    if auth.role != "owner-device":
+        raise HTTPException(403, "Explicit recall requires an owner device")
+    from temporal_memory.core.bridge_store import _hydrate_ranked_facts
+
+    weights = reinforce_recall(store, owner, body.fact_ids)
+    facts = (_hydrate_ranked_facts(store, owner, list(weights), len(weights), include_lowered=True)
+             if weights else [])
+    return {"ok": True, "weights": weights, "facts": facts}
+
+
 @router.get("/search")
 def search_facts(
     owner: str,
     q: str = Query(...),
     limit: int = Query(default=20, ge=1, le=500),
     source_prefix: str | None = Query(default=None),
-    _: AuthContext = Depends(require_owner_access),
+    include_lowered: bool = Query(default=False),
+    reinforce: bool = Query(default=True),
+    auth: AuthContext = Depends(require_owner_access),
     store: GraphStore = Depends(get_store),
 ) -> dict[str, Any]:
     from temporal_memory.core.bridge_store import _postgres, search_facts as pg_search
 
+    if include_lowered and auth.role != "owner-device":
+        raise HTTPException(403, "Explicit recall requires an owner device")
     if _postgres(store):
-        return pg_search(store, owner, q, limit, source_prefix)
+        result = pg_search(store, owner, q, limit, source_prefix, include_lowered=include_lowered)
+        if include_lowered and reinforce and q.strip():
+            from temporal_memory.privacy.controls import reinforce_recall
+
+            weights = reinforce_recall(store, owner, [fact["id"] for fact in result["facts"]])
+            result["facts"] = [dict(fact, weight=weights[fact["id"]])
+                               for fact in result["facts"] if fact["id"] in weights]
+        return result
     needle = q.casefold()
     records = getattr(store, "records", {}).get(owner, {})
     hits = []
     for fact in store.visible_facts(owner, limit=10_000):
+        if not include_lowered and getattr(store, "fact_lowered", lambda *_: False)(owner, fact.id):
+            continue
         if needle not in fact.text.casefold():
             continue
         if source_prefix is not None:
@@ -353,3 +370,20 @@ def search_facts(
         if len(hits) >= limit:
             break
     return {"ok": True, "facts": hits}
+
+
+@router.get("/memory-version")
+def memory_version(
+    owner: str, _: AuthContext = Depends(require_owner_access),
+    store: GraphStore = Depends(get_store),
+) -> dict[str, int]:
+    return {"facts_version": store.facts_version(owner)}
+
+
+@router.get("/lowered-records")
+def lowered_records(
+    owner: str, _: AuthContext = Depends(require_owner_access), store: GraphStore = Depends(get_store),
+) -> dict[str, list[str]]:
+    with store.db.connection() as conn:
+        rows = conn.execute("SELECT id FROM memory_lowered_records WHERE owner = %s", (owner,)).fetchall()
+    return {"record_ids": [row["id"] for row in rows]}

@@ -421,8 +421,15 @@ def test_mb_messenger_chat_scope_and_group_gate(tmp_path: Path, memory_bridge_en
         bridge.set_app_consent(
             alice_m, "messenger", read_enabled=True, write_enabled=True, allow_cross_source_recall=True
         )
+        client = bridge.client
+        [quest_fact] = client.search_facts(alice_id, "flights", source_prefix="quest:t1")
+        client.set_memory_lowered(alice_id, fact_id=quest_fact["id"])
+        assert not client.search_facts(alice_id, "flights", source_prefix="quest:t1")
+
         recall = bridge.read_messenger_owner_recall(alice_m, "conv-A", query="flights")
-        assert len(recall) == 1 and "morning flights" in recall[0].text
+        assert len(recall) == 1 and recall[0].fact_id == quest_fact["id"]
+        [refreshed] = client.search_facts(alice_id, "flights", source_prefix="quest:t1")
+        assert refreshed["weight"] == pytest.approx(0.35)
     finally:
         db.close()
 

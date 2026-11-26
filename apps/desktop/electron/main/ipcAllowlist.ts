@@ -17,6 +17,7 @@ export const IPC = {
   authStatus: "auth:status",
   authSignIn: "auth:signIn",
   authSignOut: "auth:signOut",
+  browserMemoryWeight: "memory:browserWeight",
 } as const;
 
 export type IpcChannel = (typeof IPC)[keyof typeof IPC];

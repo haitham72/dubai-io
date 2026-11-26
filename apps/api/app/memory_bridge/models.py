@@ -270,6 +270,8 @@ class TemporalMemoryClient(Protocol):
         max_tokens: int = 1500,
     ) -> dict[str, Any]: ...
 
+    def reinforce_recall(self, owner_id: str, fact_ids: list[str]) -> dict[str, float]: ...
+
     def search_facts(
         self,
         owner_id: str,
@@ -277,7 +279,12 @@ class TemporalMemoryClient(Protocol):
         *,
         limit: int = 20,
         source_prefix: str | None = None,
+        include_lowered: bool = False,
     ) -> list[dict[str, Any]]: ...
+
+    def set_memory_lowered(self, owner_id: str, *, lower: bool = True, **target: Any) -> dict[str, Any]: ...
+
+    def lowered_record_ids(self, owner_id: str) -> set[str]: ...
 
     def get_vault_subjects(self, owner_id: str) -> dict[str, Any]: ...
 

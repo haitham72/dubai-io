@@ -305,6 +305,9 @@ def apply(
 
     with database.transaction() as conn:
         conn.execute("SELECT pg_advisory_xact_lock(hashtext(%s))", (owner,))
+        from temporal_memory.privacy.controls import owner_deleted
+        if owner_deleted(conn, owner):
+            return Verdict(ok=False, reasons=["owner_deleted"])
 
         # 1) Generation & erasure fence
         rec_gen: dict[str, int] = {}
