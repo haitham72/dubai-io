@@ -102,6 +102,17 @@ def test_ensure_embeddings_never_loads_model_on_query_path(pg_db, monkeypatch) -
 
 
 def test_failed_model_load_is_cached_for_backoff_window(monkeypatch) -> None:
+    # The download path is what matters here, so stub the optional ONNX deps:
+    # the load fails inside _download_asset before onnxruntime is ever used.
+    import sys
+    import types
+
+    fake_ort = types.ModuleType("onnxruntime")
+    fake_tok = types.ModuleType("tokenizers")
+    fake_tok.Tokenizer = object  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, "onnxruntime", fake_ort)
+    monkeypatch.setitem(sys.modules, "tokenizers", fake_tok)
+
     monkeypatch.setenv("TM_SEMANTIC", "1")
     monkeypatch.setenv("TM_EMBED_LOAD_BACKOFF_S", "60")
     monkeypatch.setattr(embed, "_SESSION", None)

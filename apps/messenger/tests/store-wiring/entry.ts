@@ -22,6 +22,7 @@ export {
   deleteMessageRest,
   sendReceiptRest,
 } from "../../src/api";
+export { googleSignInStartUrl } from "../../src/apiclient/chatCore";
 
 export function readChatListSnapshot(): { list: Chat[]; activeFallback: Chat } {
   const internals = (

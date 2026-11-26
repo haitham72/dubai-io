@@ -94,7 +94,8 @@ Tracks *when, where, and on which device/state* a consented adult user prefers e
 2. **D19 Weight Formula (`w_min = 0.01`, `tau_surface = 0.10`):**
    - Positive engagement (`upvote`, `save`, `reply`, `dwell>15s`) refreshes `last_seen_at` and adds bounded evidence (`log(1 + count)`).
    - Unrefreshed usage affinity decays by age after 30 days with 30-day half-life down to natural floor `0.05`.
-   - User-tapped **Lower / Less like this** drops that usage-bucket weight immediately to $w_{\min} = 0.01$ (`< 0.10`, stopping feed influence immediately while staying inspectable under **Profile → How Community adapts to you** with **Lower** / **Restore** controls).
+   - User-tapped **Lower / Less like this** drops that usage-bucket weight immediately to $w_{\min} = 0.01$ (`< 0.10`, stopping unsolicited feed influence immediately while staying inspectable under **Profile → How Community adapts to you** with **Lower** / **Restore** controls).
+   - **Explicit recall & reinforcement (D19b):** If the user explicitly searches for, selects, or triggers a lowered topic/memory, it remains **100% callable** and that explicit call adds back to its weight ($w_{\text{new}} = \min(1.0, \max(0.35, w_{\text{eff}} + 0.25))$, clearing `lowered_at`).
    - **Account-level Delete my data** purges Redis context keys, `cm_usage_profile`, and `cm_interaction_events` from external queries immediately.
 
 ---

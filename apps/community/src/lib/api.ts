@@ -1,8 +1,20 @@
 import type { Group, Notification, Post, Profile } from "./types";
 import { authHeaders, getSessionToken } from "./session";
 
-export const API_BASE =
-  process.env.NEXT_PUBLIC_CM_API ?? "http://localhost:8060";
+export function getApiBase(): string {
+  const envBase = process.env.NEXT_PUBLIC_CM_API?.trim();
+  if (envBase) return envBase.replace(/\/+$/, "");
+  if (typeof window !== "undefined") {
+    const host = window.location?.hostname;
+    if (host && host !== "localhost" && host !== "127.0.0.1") {
+      const proto = window.location.protocol === "https:" ? "https:" : "http:";
+      return `${proto}//${host}:8060`;
+    }
+  }
+  return "http://localhost:8060";
+}
+
+export const API_BASE = getApiBase();
 
 export class ApiError extends Error {
   status: number;
@@ -15,7 +27,7 @@ export class ApiError extends Error {
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let res: Response;
   try {
-    res = await fetch(`${API_BASE}${path}`, {
+    res = await fetch(`${getApiBase()}${path}`, {
       credentials: "include",
       headers: { "content-type": "application/json", ...authHeaders(typeof window === "undefined" ? null : getSessionToken()) },
       ...init,

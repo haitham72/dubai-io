@@ -316,7 +316,17 @@ export async function openIdentitySession(
 
 /** Where the Google sign-in starts: apps/api (:8000) holds the Google client; this app only redeems the code. */
 export function googleSignInStartUrl(returnTo: string, dubaiApi?: string): string {
-  const base = (dubaiApi ?? getEnv("VITE_DUBAI_API_URL") ?? "http://localhost:8000").trim().replace(/\/+$/, "");
+  const configured = (dubaiApi !== undefined ? dubaiApi : getEnv("VITE_DUBAI_API_URL"))?.trim();
+  let base = configured ? configured.replace(/\/+$/, "") : "";
+  if (!base) {
+    const loc = typeof window !== "undefined" ? window.location : globalThis.location;
+    if (loc?.hostname && loc.hostname !== "localhost" && loc.hostname !== "127.0.0.1") {
+      const proto = loc.protocol === "https:" ? "https:" : "http:";
+      base = `${proto}//${loc.hostname}:8000`;
+    } else {
+      base = "http://localhost:8000";
+    }
+  }
   const q = new URLSearchParams({ client: "web", return_to: returnTo });
   return `${base}/api/identity/google/start?${q.toString()}`;
 }
