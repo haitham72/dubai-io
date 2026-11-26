@@ -16,6 +16,7 @@ Hard privacy & safety guarantees:
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
+from functools import lru_cache
 import json
 import math
 import os
@@ -255,11 +256,9 @@ def compute_time_bucket(dt_utc: datetime | None = None) -> tuple[str, bool]:
     return bucket, is_weekend
 
 
-def is_sensitive_topic(text: str) -> bool:
+@lru_cache(maxsize=8192)
+def _is_sensitive_topic_cached(clean: str) -> bool:
     """Rule-9 deterministic sensitivity check using memory_bridge/lab sensitive + E10 vocab."""
-    clean = (text or "").strip()
-    if not clean:
-        return False
     checked = False
     try:
         from app.memory_bridge.sensitive import pre_write
@@ -290,9 +289,18 @@ def is_sensitive_topic(text: str) -> bool:
             vnode = vocab.by_path.get(path)
             if vnode is not None and vnode.sensitive:
                 return True
+        checked = True
     except Exception:
         pass
+    # Fail closed only when no checker could run.
     return not checked
+
+
+def is_sensitive_topic(text: str) -> bool:
+    clean = (text or "").strip()
+    if not clean:
+        return False
+    return _is_sensitive_topic_cached(clean.lower())
 
 
 def _parse_iso(ts: str | None) -> datetime | None:

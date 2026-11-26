@@ -49,10 +49,34 @@ from app.community.recommender import (  # noqa: E402
     setup_recommender,
 )
 
-try:
-    import torch
-except Exception:  # pragma: no cover - numpy fallback is exercised when torch is absent
-    torch = None  # type: ignore[assignment]
+def _safe_import_torch():
+    """Import torch only when a subprocess probe succeeds.
+
+    Broken Anaconda/Windows torch builds can abort the process on import, which
+    cannot be caught with try/except in-process. Probe first, then import.
+    """
+    import os
+    import subprocess
+
+    if os.environ.get("CM_FORCE_NUMPY_TRAINER", "").strip().lower() in ("1", "true", "yes"):
+        return None
+    try:
+        probe = subprocess.run(
+            [sys.executable, "-c", "import torch; torch.zeros(1)"],
+            capture_output=True,
+            timeout=45,
+            check=False,
+        )
+        if probe.returncode != 0:
+            return None
+        import torch as _torch  # noqa: WPS433
+
+        return _torch
+    except Exception:  # pragma: no cover - numpy fallback when torch is unavailable
+        return None
+
+
+torch = _safe_import_torch()
 
 EVENT_SIGNAL_WEIGHTS: dict[str, float] = {
     "bookmark": 1.5,

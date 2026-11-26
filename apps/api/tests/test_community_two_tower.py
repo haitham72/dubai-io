@@ -260,6 +260,8 @@ def test_benchmark_2000_posts_under_150ms_and_trained_weights(tmp_path, monkeypa
     import importlib.util
     from pathlib import Path
 
+    # Broken local torch builds can abort the process on import; force NumPy trainer.
+    monkeypatch.setenv("CM_FORCE_NUMPY_TRAINER", "1")
     trainer_path = Path(__file__).resolve().parents[3] / "scripts" / "train_community_two_tower.py"
     spec = importlib.util.spec_from_file_location("train_community_two_tower", trainer_path)
     assert spec and spec.loader

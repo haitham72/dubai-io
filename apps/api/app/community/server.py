@@ -61,7 +61,7 @@ def community_health():
     return {"ok": True, "service": "community"}
 
 
-for _name in ("media", "moderation", "agents", "memory_routes"):
+for _name in ("media", "moderation", "agents", "memory_routes", "context_profile"):
     try:
         _mod = importlib.import_module(f".{_name}", __package__)
         _router = getattr(_mod, "router", None)

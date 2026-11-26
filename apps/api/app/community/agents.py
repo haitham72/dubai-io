@@ -289,11 +289,56 @@ def _discovery_source(local_marked, bridge_marked):
     return "local_cm_profile"
 
 
+def _compat_discovery_source(items, features_used, reason):
+    """Map two-tower origins onto the legacy discovery source labels tests/UI expect."""
+    if reason and "Cold start" in reason:
+        return "local_cm_profile"
+    bridge_marked = any(
+        it.get("origin") == "interest_feature" or it.get("also_interest_feature") for it in items
+    )
+    local_marked = any(
+        it.get("origin") in ("local", "two_tower")
+        or any(str(f).startswith(("interest:", "follow:")) for f in (it.get("features_used") or []))
+        for it in items
+    ) or any(str(f).startswith(("interest:", "follow:")) for f in (features_used or []))
+    if local_marked or bridge_marked:
+        return _discovery_source(local_marked, bridge_marked)
+    return "local_cm_profile"
+
+
+def _interest_matched_groups(store, owner: str, interests: list[str], follow_handles: dict, follow_owners: set, limit: int):
+    """Legacy group discovery cards (interest/follow features) merged after post ranking."""
+    items = []
+    for g in store.db.execute(
+        "SELECT id,name,handle,description,visibility,owner,provenance,created_at FROM cm_groups WHERE visibility='public' ORDER BY created_at"
+    ).fetchall():
+        hay = f"{g[1]} {g[2]} {g[3]}".lower()
+        matched = [i for i in interests if i in hay]
+        features = [f"interest:{i}" for i in matched]
+        follow_handle = follow_handles.get(g[5]) if g[5] in follow_owners else None
+        if follow_handle:
+            features.append(f"follow:{follow_handle}")
+        if not features:
+            continue
+        items.append(_why_chip({
+            "kind": "group", "type": "group", "id": g[0], "group_id": g[0],
+            "name": g[1], "handle": g[2], "description": g[3],
+            "score": len(matched) * 2 + (1 if follow_handle else 0),
+            "features_used": features, "why_this": _local_why(matched, follow_handle),
+            "provenance": g[6], "as_of": g[7], "origin": "local",
+        }))
+        if len(items) >= limit:
+            break
+    return items
+
+
 @router.get("/api/community/discovery")
 def discovery(request: Request, limit: int = Query(default=20, ge=1, le=100)):
     store, owner = scope(request)
     with store.lock:
         setup_agents(store)
+        from .recommender import rank_discovery
+
         prof = profile_by_owner(store, owner)
         interests = []
         if prof:
@@ -303,95 +348,63 @@ def discovery(request: Request, limit: int = Query(default=20, ge=1, le=100)):
                 interests = []
         follows = store.db.execute(
             "SELECT f.followee, p.handle FROM cm_follows f LEFT JOIN cm_profiles p ON p.owner=f.followee WHERE f.follower=?",
-            (owner,)).fetchall()
+            (owner,),
+        ).fetchall()
         follow_owners = {r[0] for r in follows}
-        follow_handles = {r[0]: r[1] for r in follows}
+        follow_handles = {r[0]: r[1] for r in follows if r[1]}
 
-        def log(candidate_type, candidate_id, features, why, reason=""):
-            store.db.execute(
-                "INSERT INTO cm_recommendation_events (id,owner,candidate_type,candidate_id,features,why_this,reason,created_at) VALUES (?,?,?,?,?,?,?,?)",
-                (uuid4().hex, owner, candidate_type, candidate_id, json.dumps(features), why, reason, cm.now()))
+        ranked = rank_discovery(request, store, owner, limit=limit)
+        items = list(ranked.get("items") or [])
+        reason = ranked.get("reason")
 
-        items = []
-        for g in store.db.execute(
-                "SELECT id,name,handle,description,visibility,owner,provenance,created_at FROM cm_groups WHERE visibility='public' ORDER BY created_at").fetchall():
-            if g[4] != "public":
-                continue
-            hay = f"{g[1]} {g[2]} {g[3]}".lower()
-            matched = [i for i in interests if i in hay]
-            features = [f"interest:{i}" for i in matched]
-            follow_handle = follow_handles.get(g[5]) if g[5] in follow_owners else None
-            if follow_handle:
-                features.append(f"follow:{follow_handle}")
-            if not features:
-                continue
-            items.append(_why_chip({
-                "kind": "group", "type": "group", "id": g[0], "group_id": g[0],
-                "name": g[1], "handle": g[2], "description": g[3],
-                "score": len(matched) * 2 + (1 if follow_handle else 0),
-                "features_used": features, "why_this": _local_why(matched, follow_handle),
-                "provenance": g[6], "as_of": g[7], "origin": "local",
-            }))
-        for p in store.db.execute(
-                "SELECT id,owner,group_id,text,revision,pinned,deleted,provenance,created_at,updated_at FROM cm_posts WHERE deleted=0 ORDER BY created_at DESC").fetchall():
-            if p[1] == owner:
-                continue
-            if p[2]:
-                g = group_row(store, p[2])
-                if not g or g[4] != "public":
-                    continue
-            hay = (p[3] or "").lower()
-            matched = [i for i in interests if i in hay]
-            features = [f"interest:{i}" for i in matched]
-            follow_handle = follow_handles.get(p[1]) if p[1] in follow_owners else None
-            if follow_handle:
-                features.append(f"follow:{follow_handle}")
-            if not features:
-                continue
-            items.append(_why_chip({
-                "kind": "post", "type": "post", "id": p[0], "post_id": p[0],
-                "group_id": p[2], "text": p[3],
-                "score": len(matched) * 2 + (2 if follow_handle else 0),
-                "features_used": features, "why_this": _local_why(matched, follow_handle),
-                "provenance": p[7], "as_of": p[9], "origin": "local",
-            }))
-        items.sort(key=lambda x: (-x["score"], x["kind"], x["id"]))
+        # Merge interest-matched public groups so Scene A / legacy discovery UX still
+        # surfaces communities (rank_discovery is post-first).
+        group_cards = _interest_matched_groups(
+            store, owner, interests, follow_handles, follow_owners, limit=max(5, limit // 2),
+        )
+        if group_cards:
+            seen = {it["id"] for it in items}
+            merged = [g for g in group_cards if g["id"] not in seen] + items
+            items = merged[:limit]
+            if reason and "Cold start" in str(reason) and any(it.get("origin") == "local" for it in items):
+                reason = None
 
-        by_post = {item["id"]: item for item in items if item["kind"] == "post"}
-        for extra in _bridge_post_items(request, store, owner):
-            if extra["id"] not in by_post:
-                items.append(extra)
-                by_post[extra["id"]] = extra
-                continue
-            existing = by_post[extra["id"]]
-            for feat in extra["features_used"]:
-                if feat not in existing["features_used"]:
-                    existing["features_used"].append(feat)
-            if _CROSS_WHY not in (existing.get("why_this") or ""):
-                existing["why_this"] = f"{existing['why_this']}. {_CROSS_WHY}"
-            existing["also_interest_feature"] = True
-
-        local_marked = any(item.get("origin") == "local" for item in items)
-        bridge_marked = any(item.get("origin") == "interest_feature" or item.get("also_interest_feature") for item in items)
-        items = items[:limit]
         if not items:
             items = _cold_start_groups(store, limit)
-            reason = "Cold start: public communities, not personalised." if items else "Cold start: no public communities yet."
+            reason = (
+                "Cold start: public communities, not personalised."
+                if items
+                else "Cold start: no public communities yet."
+            )
+            stamp = cm.now()
             for it in items:
-                log(it["kind"], it["id"], [], it["why_this"], reason)
+                store.db.execute(
+                    "INSERT INTO cm_recommendation_events (id,owner,candidate_type,candidate_id,features,why_this,reason,created_at) VALUES (?,?,?,?,?,?,?,?)",
+                    (uuid4().hex, owner, it["kind"], it["id"], json.dumps([]), it.get("why_this") or "", reason or "", stamp),
+                )
             if not items:
-                log(None, None, [], "", reason)
+                store.db.execute(
+                    "INSERT INTO cm_recommendation_events (id,owner,candidate_type,candidate_id,features,why_this,reason,created_at) VALUES (?,?,?,?,?,?,?,?)",
+                    (uuid4().hex, owner, None, None, json.dumps([]), "", reason or "", stamp),
+                )
             store.db.commit()
-            return {"items": items, "candidates": items, "reason": reason, "empty": len(items) == 0,
-                    "features_used": [], "source": "local_cm_profile", "why_chip": "Why this?"}
 
-        source = _discovery_source(local_marked, bridge_marked)
-        used = sorted({f for it in items for f in it.get("features_used") or []})
+        source = _compat_discovery_source(items, [], reason)
+        if reason and "Cold start" in str(reason):
+            used: list[str] = []
+        else:
+            used = sorted({f for it in items for f in (it.get("features_used") or [])})
         for it in items:
-            log(it["kind"], it["id"], it.get("features_used") or [], it.get("why_this") or "")
-        store.db.commit()
-        return {"items": items, "candidates": items, "reason": None, "empty": False,
-                "features_used": used, "source": source, "why_chip": "Why this?"}
+            it.setdefault("why_chip", ranked.get("why_chip") or "Why this?")
+        return {
+            "items": items,
+            "candidates": items,
+            "reason": reason,
+            "empty": len(items) == 0,
+            "features_used": used,
+            "source": source,
+            "why_chip": ranked.get("why_chip") or "Why this?",
+        }
 
 
 # ---------------------------------------------------------------- Community Answer

@@ -1073,8 +1073,8 @@ def rank_discovery(
                 features_used.append("tower:semantic")
                 origin = "two_tower"
 
-            # Profile interests (non-sensitive only).
-            matched_interests = [i for i in interests if i in hay and not is_sensitive_topic(i)]
+            # Profile interests (already Rule-9 filtered when loaded into `interests`).
+            matched_interests = [i for i in interests if i in hay]
             if matched_interests:
                 personal_boost += 0.25 * min(2, len(matched_interests))
                 for mi in matched_interests[:2]:
