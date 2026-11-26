@@ -142,19 +142,6 @@ def _content_tokens(query: str) -> list[str]:
     return list(dict.fromkeys(raw))
 
 
-def _arabic_variants(tok: str) -> list[str]:
-    out = [tok]
-    # Strip definite article / common attached Arabic proclitics for stem hits
-    if any("\u0621" <= ch <= "\u064a" for ch in tok):
-        if tok.startswith("ال") and len(tok) >= 4:
-            out.append(tok[2:])
-        if len(tok) >= 4 and tok[0] in ("و", "ب", "ل", "ك", "ف") and tok[1:].startswith("ال"):
-            out.append(tok[3:])
-        if len(tok) >= 5 and tok[0] in ("ب", "ي", "ت") and tok.endswith(("ني", "نا", "كم", "هم", "ها")):
-            out.append(tok[1:-2])
-    return out
-
-
 def _expand_terms(
     tokens: Iterable[str],
     *,

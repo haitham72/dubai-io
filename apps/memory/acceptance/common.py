@@ -598,9 +598,9 @@ def load_graph_snapshot(db: Database, snap_path: Path) -> str:
                     )
                 for lts in snap.get("learned_term_sources") or []:
                     conn.execute(
-                        "INSERT INTO learned_term_sources (owner, term_folded, record_id) "
-                        "VALUES (%s,%s,%s) ON CONFLICT DO NOTHING",
-                        (owner, lts["term_folded"], lts["record_id"]),
+                        "INSERT INTO learned_term_sources (owner, term_folded, record_id, had_fact) "
+                        "VALUES (%s,%s,%s,%s) ON CONFLICT DO NOTHING",
+                        (owner, lts["term_folded"], lts["record_id"], bool(lts.get("had_fact", False))),
                     )
     return owner
 
