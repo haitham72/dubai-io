@@ -1,5 +1,6 @@
 import { build } from "esbuild";
 import { writeFileSync } from "node:fs";
+import path from "node:path";
 
 // Bundle the DOM click-through entry for the browser (IIFE, no modules -> works from file://).
 await build({
@@ -11,6 +12,16 @@ await build({
   logLevel: "error",
   loader: { ".css": "local-css", ".png": "dataurl", ".jpg": "dataurl", ".svg": "dataurl" },
   jsx: "automatic",
+  plugins: [
+    {
+      name: "videos-stub",
+      setup(b) {
+        b.onResolve({ filter: /^\.\.?\/videos$/ }, () => ({
+          path: path.resolve("tests/photo-window/videos-stub.ts"),
+        }));
+      },
+    },
+  ],
 });
 
 writeFileSync(

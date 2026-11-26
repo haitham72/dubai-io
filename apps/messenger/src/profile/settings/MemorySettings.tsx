@@ -54,7 +54,7 @@ export function MemorySection({ client }: { client: MemoryClient }) {
         ))}
       </>}
       {error && <p role="alert">{error}</p>}
-      {lowerResult && <p role="status" data-testid="forget-result">Server reports {lowerResult.records_lowerResultten} record(s) and {lowerResult.facts_erased} fact(s) lowerResultten (as of {lowerResult.as_of}).</p>}
+      {lowerResult && <p role="status" data-testid="lower-result">{lowerResult.lowered ? "Lowered" : "Restored"} {lowerResult.records} item(s), as of {lowerResult.as_of}.</p>}
     </Group>
   );
 }

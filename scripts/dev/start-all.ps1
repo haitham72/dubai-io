@@ -324,6 +324,7 @@ foreach ($cand in @(
 if (-not $MemPy) { throw "No python venv with the memory engine found (apps/memory/.venv, contest-memory venv or apps/api venv)" }
 $workerRunner = if ($env:DUBAI_WORKER_RUNNER) { $env:DUBAI_WORKER_RUNNER } elseif ($lmOk) { "lmstudio" } else { "agent-cli" }
 $workerNode = "w"
+$hostMemoryRedisUrl = "redis://localhost:6390/0"
 function Start-HostCelery([string]$Name, [string[]]$CeleryArgs) {
     if (Is-Alive $pids[$Name]) { return }
     $saved = @{}
@@ -335,7 +336,7 @@ function Start-HostCelery([string]$Name, [string[]]$CeleryArgs) {
         "TM_AGENT_CLI_CMD" = 'claude'
         "TM_DATABASE_URL" = "postgresql://tm:tm@localhost:5442/tm"
         "TM_BROKER_URL" = "amqp://guest:guest@localhost:5682//"
-        "TM_REDIS_URL" = "redis://localhost:6390/0"
+        "TM_REDIS_URL" = $hostMemoryRedisUrl
         "TM_LMSTUDIO_URL" = "http://127.0.0.1:1234/v1"
         # Rule-9 layer-2 screen: no local classifier model is served by default, so use the same claude CLI (fail-closed).
         "TM_CLASSIFIER_RUNNER" = $(if ($env:TM_CLASSIFIER_MODEL) { "" } else { "agent-cli" })
@@ -397,10 +398,16 @@ if (-not (Test-HttpOk "http://127.0.0.1:$ApiPort/api/health")) {
     if (-not $apiMap["TM_SERVICE_TOKEN"]) { $env:TM_SERVICE_TOKEN = $svcToken }
     $apiOut = Join-Path $LogsDir "api.out.log"
     $apiErr = Join-Path $LogsDir "api.err.log"
-    $proc = Start-Process -FilePath $ApiPy `
-        -ArgumentList @("-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "$ApiPort") `
-        -WorkingDirectory $ApiDir -RedirectStandardOutput $apiOut -RedirectStandardError $apiErr `
-        -WindowStyle Hidden -PassThru
+    $previousMemoryRedisUrl = [Environment]::GetEnvironmentVariable("TM_REDIS_URL")
+    try {
+        $env:TM_REDIS_URL = $hostMemoryRedisUrl
+        $proc = Start-Process -FilePath $ApiPy `
+            -ArgumentList @("-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "$ApiPort") `
+            -WorkingDirectory $ApiDir -RedirectStandardOutput $apiOut -RedirectStandardError $apiErr `
+            -WindowStyle Hidden -PassThru
+    } finally {
+        [Environment]::SetEnvironmentVariable("TM_REDIS_URL", $previousMemoryRedisUrl)
+    }
     $pids["apps_api"] = $proc.Id
     $adminPassed["apps_api"] = $proc.Id
     Remove-Item Env:MEMORY_BRIDGE_BACKEND, Env:TM_BASE_URL, Env:PUBLIC_API_BASE_URL, Env:TM_SERVICE_TOKEN, Env:TM_ADMIN_TOKEN, Env:PUBLIC_WEB_ORIGINS -ErrorAction SilentlyContinue
@@ -435,6 +442,7 @@ function Start-EntryApi([string]$Name, [string]$Module, [int]$Port) {
     $vars = @{
         "MEMORY_BRIDGE_BACKEND" = "http"; "TM_BASE_URL" = "http://localhost:$MemoryPort"; "TM_SERVICE_TOKEN" = $entrySvcToken
         "TM_ADMIN_TOKEN" = $memAdminToken
+        "TM_REDIS_URL" = $hostMemoryRedisUrl
         "DUBAI_SHARED_IDENTITY_DB" = $identityTarget
         "COMMUNITY_ALLOWED_ORIGINS" = "http://localhost:$CommunityWebPort,http://127.0.0.1:$CommunityWebPort,http://${lanIp}:$CommunityWebPort"
         "MESSENGER_ALLOWED_ORIGINS" = "http://localhost:$MessengerWebPort,http://127.0.0.1:$MessengerWebPort,http://${lanIp}:$MessengerWebPort"
