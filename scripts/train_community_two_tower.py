@@ -40,6 +40,10 @@ from app.community.context_profile import (  # noqa: E402
     record_interaction_event,
     setup_context_profile,
 )
+from app.community.demo_10_users import (  # noqa: E402
+    is_demo_entity_id,
+    is_demo_namespace_owner,
+)
 from app.community.moderation import owner_is_minor  # noqa: E402
 from app.community.recommender import (  # noqa: E402
     DEFAULT_TASK_WEIGHTS,
@@ -252,6 +256,9 @@ def _load_training_data(store: ActionStore) -> tuple[np.ndarray, np.ndarray, lis
     for p in post_rows:
         pid, _owner, _gid, text = p[0], p[1], p[2], p[3]
         prov = str(p[4]) if len(p) > 4 else ""
+        # 10-user demo cohort is never used for ranking training.
+        if is_demo_entity_id(pid) or is_demo_namespace_owner(_owner):
+            continue
         if _is_google_limited_use_provenance(prov):
             continue
         vec, _tp, _area = encode_item_vector(text or "")
@@ -278,6 +285,8 @@ def _load_training_data(store: ActionStore) -> tuple[np.ndarray, np.ndarray, lis
 
     for owner, pid, tkey, etype, _val, area in ev_rows:
         if pid not in post_idx:
+            continue
+        if is_demo_namespace_owner(owner) or is_demo_entity_id(pid):
             continue
         if not _owner_eligible_for_training(store, owner):
             continue

@@ -652,6 +652,18 @@ def record_interaction_event(
 ) -> dict[str, Any]:
     """Persist one deduped interaction event and project it into `cm_usage_profile`."""
     setup_context_profile(store)
+    # 10-user demo cohort never enters usage-profile / interaction training paths.
+    try:
+        from app.community.demo_10_users import is_demo_entity_id, is_demo_namespace_owner
+        if is_demo_namespace_owner(owner) or is_demo_entity_id(post_id):
+            return {
+                "deduped": False,
+                "skipped": "demo_fixture",
+                "event": None,
+                "profile_entry": None,
+            }
+    except Exception:
+        pass
     etype = (event_type or "").strip().lower()
     if etype not in EVENT_TYPES:
         raise HTTPException(422, f"Unsupported event_type: {etype}")

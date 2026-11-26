@@ -17,6 +17,18 @@ def remember(request: Request, *, record_id: str, source_id: str, text: str, aut
         return None
     if principal.is_minor_protected:
         return None
+    # Demo cohort never becomes temporal_memory / verified facts about real users.
+    try:
+        from app.community.demo_10_users import is_demo_entity_id, is_demo_namespace_owner
+        if (
+            is_demo_namespace_owner(author_id)
+            or is_demo_entity_id(source_id)
+            or is_demo_entity_id(record_id)
+            or is_demo_namespace_owner(getattr(principal, "user_id", None))
+        ):
+            return None
+    except Exception:
+        pass
     try:
         return bridge.write_consented(
             principal,
