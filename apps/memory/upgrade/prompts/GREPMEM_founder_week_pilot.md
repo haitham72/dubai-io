@@ -4,6 +4,7 @@
 - **Design (read first):** `docs/submissions/shared/research/grepmem-whatsapp-pilot-plan.md`. Paper: GrepMem (Yang, Shi, Zhao, 18 Nov 2026). Memory engine guide: `apps/memory/CLAUDE.md`.
 - **Question to answer:** does searching the original message text (regex/ripgrep) find correct, source-backed answers that our temporal_note graph recall misses, or find them faster? If yes, how should Dubai-io use it?
 - **Timebox:** one working day after the founder hands over the exports.
+- **Prior work to reuse (read the setup files only, not chat contents):** `G:\Haitham\lab-data\mamty-hindsight\` (Antigravity's WhatsApp memory tests with Hindsight: `RUN.md`, `AGENT_PROMPT*.md`, `RESERVATIONS.md`, week-split scripts) and `G:\Haitham\lab-data\memory-bakeoff\` (`DECISION.md`, `LEADERBOARD.md`, `runs/*hindsight*`). Reuse their export handling and week splitting; this pilot still needs **last week's** fresh exports.
 
 ## 0. Privacy rules (hard; stop if any can't be met)
 
