@@ -1,10 +1,22 @@
-# Status — 25 Nov 2026
+# Status — 26 Nov 2026
 
 Single current-state file. Scope: `PLAN.md`. Open requests: [request-backlog.md](request-backlog.md).
 
-## Direction (25 Nov 2026)
+## Direction (26 Nov 2026)
 
-All three products and their nine client targets (iPhone via Expo Go, website, Electron, for each of Dubai-io, Community and Messenger) are on `main`, with **E10, E11a, E11b, and E12 merged** and the full 5-lane acceptance rerun recorded in `apps/memory/upgrade/reports/U7_post_E11.md` (removed 26 Nov; see git history). Next queued packages (`D19–D22`, tracked in `apps/memory/upgrade/reports/STATUS.md`): `E13a` (Lower-to-floor `0.01` + Delete-my-data immediate external/Redis purge with de-identified training backup), `E13b` (similar-query logical agent for shared vocab proposals), and `E14a`/`E14b` (Dubai Community Facebook/Reddit parity + real Two-Tower Recommender + context-aware usage profile). Engine: temporal_note (`docs/plan/Memory/memory.md` §18). Delivery matrix: `PLAN.md` §0. Treat the 16–18 Nov lab results below as historical.
+All 3 products and 9 client targets (Expo Go iPhone, website, Electron desktop for Dubai-io, Community, and Messenger) are on `main` (`0360773`) with **PRs #11–#15 merged and 0 open PRs**:
+- **PR #11 (`E14`):** Community Facebook/Reddit social parity + two-tower recommender + opt-in TTL context profile + real Lower/recall + Community purge hook.
+- **PR #12 (`E13a`):** D19 Lower/Restore (`0.01` floor / `0.10` active surface cutoff), D19b 100% explicit recall + weight boost, immediate account `"Delete my data"` (Redis + caches + sessions + Community purge + de-identified non-Google training backup).
+- **PR #13 (`E13b`):** Shared vocabulary agent + `0009` migration + E10 cleanups.
+- **PR #14:** Dev Test Bench (`/testbench/`, gated by `DEV_TESTBENCH=1`) + Community purge hard import.
+- **PR #15:** Guarded Community 10-user / 7-group demo seed (`scripts/seed_community_10_users.py --apply` with `DEMO_SEED_ENABLED=true`).
+- **Docs cleanup (`baf70a6`):** tracked markdown reduced from 330 to 175 files.
+
+- **GrepMem pilot (`G:\Haitham\lab-data\grepmem-pilot\`, outside git):** standalone harness verified (8/8 synthetic). Per-export 7-day snapshot rebuilt on isolated owner `grepmem-pilot-2611` across 2 scoped chats (271 messages imported, 4 skipped; Chrome history: no; founder written OK for `claude -p` Haiku medium for this pilot only). Currently **blocked** on 8 extraction jobs stuck leased by Docker workers (`temporal-memory-worker-p0-1`, `worker-p1-1`, `beat-1`), which lack host `claude` CLI (`FileNotFoundError: 'claude'`). Fix: stop Docker worker/beat containers and run host Celery workers (`scripts/dev/start-all.ps1` does this automatically), requeue the 8 jobs until `facts > 0` + idle, redraft 24 prompts, then founder approval -> benchmark -> Lower pilot owner -> aggregate report to Claude.
+- **Waiting on founder:** 13-check closed-Wi-Fi 3×3 test run (`apps/memory/upgrade/prompts/HANDOFF_integrator_2026-11-26b_testing.md` §3), GrepMem prompt approval after redraft, contest portal registration + prayer widget wording, and OpenAI model selection (`gpt-6-luna` is latest `luna`; `gpt-6.2-sol` / `gpt-6.2-astra` available).
+- **Next queue (post-testing):** `dev/dubai-io` desktop screen-time widget then Google Drive + memory; `dev/community` fail-closed `demo_fixture` guard follow-up from PR #15; `dev/messenger` idle.
+
+Engine: `temporal_note` (`docs/plan/Memory/memory.md` §18). Delivery matrix: `PLAN.md` §0. Treat the 16–18 Nov lab results below as historical.
 
 ## Historical: MEM-01 & Acceptance Gates Status (18 Nov 2026; superseded by temporal_note)
 
@@ -34,13 +46,14 @@ Framework in `apps/api/app/connectors`; consolidated docs in `docs/connectors/RE
 
 ## Runtime
 
-- `DATABASE_URL` blank (a single space) → SQLite fallback. Local Supabase optional (`supabase/CLAUDE.md`); PostgreSQL apply of recent migrations unverified.
-- Run: follow E1 (`apps/memory/upgrade/prompts/E1_run_stack.md` (removed 26 Nov; see git history)) for the local demo stack on the founder's PC; E1 tracks the one-command launcher and its health check. API only: `cd apps/api; $env:DATABASE_URL=' '; .\.venv\Scripts\python.exe -m uvicorn app.main:app --port 8030`. Use local Postgres for round verification; keep OAuth keys server-side.
+- `apps/api/.env` is populated for local SQLite (`DATABASE_URL=` blank; offline `:15422` preserved as `#` comment) + Google OAuth (`installed` client) + Fernet keys + `TM_ADMIN_TOKEN`. (Local Supabase optional: `supabase/CLAUDE.md`; PostgreSQL apply of recent migrations unverified.)
+- Launch all 3×3 targets with `scripts\dev\start-all.ps1 -Shells` (controlled same-network Wi-Fi, no tunnel for this phase; physical iPhone uses 6-character PC pairing code on Community & Messenger and QR pairing on Dubai-io). API only: `cd apps/api; $env:DATABASE_URL=' '; .\.venv\Scripts\python.exe -m uvicorn app.main:app --port 8030`. Keep OAuth keys server-side.
+- Community 10-user demo seed: `$env:DEMO_SEED_ENABLED="true"; apps\api\.venv\Scripts\python.exe scripts\seed_community_10_users.py --apply`. Dev Test Bench at `http://localhost:8000/testbench/` (gated by `DEV_TESTBENCH=1`).
 
 ## Keys (names only)
 
-- In use (2 Nov): `OPENAI_API_KEY`, `GOOGLE_PLACES_KEY`, `SERPAPI_KEY`, `TVLY_API_KEY`. Optional: `GOOGLE_MAPS_BROWSER_KEY`, `VERTEX_PROJECT` + ADC / `VERTEX_ACCESS_TOKEN`; flags `TRYON_FIXTURE=1`, `DEMO_MAIL=1`.
-- Founder to supply (from docs/archive/root/handoff.md (removed 26 Nov; see git history), 2 Nov): `GOOGLE_OAUTH_CLIENT_ID` / `_SECRET` / `_REDIRECT_URI` + `OAUTH_TOKEN_KEY`, Gmail API enabled — **needed first**; Microsoft Graph app; GitHub token; `GOOGLE_MAPS_BROWSER_KEY` before public hosting; `DATABASE_URL` (Supabase); Apple/Google developer accounts + desktop signing.
+- Populated in gitignored `apps/api/.env`: `OPENAI_API_KEY`, `GOOGLE_PLACES_KEY`, `SERPAPI_KEY`, `TVLY_API_KEY`, `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, redirect URIs, `OAUTH_TOKEN_KEY`, `IDENTITY_TOKEN_KEY`, `TM_SERVICE_TOKEN`, `TM_ADMIN_TOKEN` (flags `TRYON_FIXTURE=1`, `DEMO_MAIL=1` optional).
+- Optional keys still unset: `GOOGLE_MAPS_BROWSER_KEY`, `NARAROUTER_API_KEY`, `WHATSAPP_EVOLUTION_*`, `VERTEX_*`. (Before public hosting / later phases: `GOOGLE_MAPS_BROWSER_KEY`, `DATABASE_URL` Supabase, Microsoft Graph app, GitHub token, Apple/Google developer accounts + desktop signing.)
 
 ## Parked (not claimed)
 
@@ -54,4 +67,4 @@ The current demo runs on the founder's PC with local Postgres (E1). Cloudflare T
 
 ## Branches
 
-All three products are on `main` (D16). Feature branches start from `main`; the integrator verifies gates and merges into `main`. `apps/web` is frozen at `mobile-pwa-baseline-2026-10-23`.
+3-dev-branch rule: `main` + `dev/dubai-io`, `dev/community`, `dev/messenger`, all synced with `main` (one agent per dev branch; integrator gates PRs into `main`). `apps/web` is frozen at `mobile-pwa-baseline-2026-10-23`.

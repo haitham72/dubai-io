@@ -5,7 +5,7 @@
 
 ## 0. Update — end of 26 Nov stage (read this first)
 
-`main` = `ccde58b`. **Every PR is merged (#11–#15); 0 open.** Branches: `main` + `dev/dubai-io`, `dev/community`, `dev/messenger`, all fast-forwarded to `ccde58b`. One agent per dev branch; the integrator gates each PR into `main`.
+`main` = `0360773`. **Every PR is merged (#11–#15); 0 open.** Branches: `main` + `dev/dubai-io`, `dev/community`, `dev/messenger`, all fast-forwarded to `0360773`. One agent per dev branch; the integrator gates each PR into `main`.
 
 | PR | What | Gate |
 |---|---|---|
@@ -16,10 +16,12 @@
 
 Next queue:
 - **Founder testing** (§3 below).
-- **GrepMem pilot:** harness ready at `G:\Haitham\lab-data\grepmem-pilot\` (Antigravity). Waiting on the founder's exports, LM Studio and prompt approval.
+- **GrepMem pilot:** standalone harness verified (8/8 synthetic) + `haiku_hook` runner wired (founder written OK for `claude -p` Haiku medium for this pilot only); per-export 7d snapshot rebuilt for `grepmem-pilot-2611` across 2 scoped chats (271 processed / 4 skipped; no Chrome); **BLOCKED** on 8 extraction jobs leased by Docker workers lacking host `claude` CLI (`facts = 0`; fix: stop Docker `worker-p0-1`/`worker-p1-1`/`beat-1`, run host workers via `start-all.ps1`, requeue 8 jobs until `facts > 0` + idle, redraft 24 prompts -> founder approval -> benchmark -> Lower pilot owner -> aggregate report to Claude).
 - `dev/dubai-io`: desktop screen-time widget, then Google Drive + memory (ledger rows 26 Nov).
 - `dev/community`: make the `demo_fixture` guards fail closed (follow-up from #15).
 - `dev/messenger`: idle.
+
+- **Sandbox `.env`:** `apps/api/.env` is populated and live-verified for SQLite + Google OAuth (pending OpenAI model decision: `gpt-6-luna` is latest `luna`; `gpt-6.2-sol` and `gpt-6.2-astra` are available).
 
 Known limit: the test bench can't call the memory server (`:8040`) directly because of its CORS policy; use the Dubai-io API paths.
 
