@@ -15,7 +15,7 @@ router = APIRouter(tags=["community-memory"])
 
 
 class ConsentIn(BaseModel):
-    model_config = ConfigDict(extra="ignore")
+    model_config = ConfigDict(extra="forbid")
     read_enabled: bool | None = None
     write_enabled: bool | None = None
     allow_interest_export: bool | None = None
