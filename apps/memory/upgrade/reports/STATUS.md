@@ -104,4 +104,4 @@ E9b: branch e9b/s2-quality 37f0d1f pushed (not merged); pytest 475/8 skip; S2 su
 2026-11-26 | E13a | codex | e13a/lower-and-delete | - | D19b and Phase A2 E1-E7 implemented; memory 559p/8sk, API 674p/16sk, client gates and apps/web freeze pass; awaiting Claude review (E13a.md)
 2026-11-26 | E13b | cursor (Muse WIP finish) | e13b/shared-vocab-agent | 480c28d | ready-for-review (0009 shared vocab + similarity/proposer/admin; HMAC fail-closed; E10 cleanups 461/35; memory 551p/8s; apps/web frozen; wait for E13a PR#12 before merge) - E13b.md
 
-2026-11-26 | E13b | cursor | e13b/shared-vocab-agent | (pending) | ready-for-review (PR #13 re-review: F1-F5; merged main+E13a; memory 572p/8s; apps/web frozen) - E13b.md
+2026-11-26 | E13b | cursor | e13b/shared-vocab-agent | ab397ce | ready-for-review (PR #13 re-review: F1-F5; merged main+E13a; memory 572p/8s; apps/web frozen) - E13b.md
