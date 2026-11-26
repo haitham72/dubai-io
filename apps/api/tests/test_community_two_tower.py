@@ -17,6 +17,7 @@ from app.community.context_profile import (
     lower_usage_topic,
     record_interaction_event,
     router as context_router,
+    set_context_aware_enabled,
     set_ephemeral_context,
 )
 from app.community.moderation import record_model_flag, router as mod_router, setup_mod
@@ -131,6 +132,7 @@ def test_driving_safe_mode_collapses_and_deprioritizes_long_posts(env):
     p_long = bob.post("/api/community/posts", json={"text": long_text}).json()["post"]["id"]
     p_short = bob.post("/api/community/posts", json={"text": short_text}).json()["post"]["id"]
 
+    set_context_aware_enabled(store, owner, True)
     set_ephemeral_context(owner, {"area_coarse": "DIFC", "device_class": "mobile_ios", "user_state": "driving"})
     ranked = rank_discovery(_make_req(_adult_principal(owner)), store, owner, limit=10)
     assert ranked["driving_safe_mode"] is True
@@ -158,6 +160,7 @@ def test_d19_lower_stops_feed_influence_and_d19b_recall_restores_and_boosts(env)
             store, owner, post_id=p_coffee, topic_key="coffee", event_type="upvote",
             area_coarse="DIFC", time_bucket="lunch", session_id="s2",
         )
+    set_context_aware_enabled(store, owner, True)
     set_ephemeral_context(owner, {"area_coarse": "DIFC", "time_bucket": "lunch", "device_class": "desktop", "user_state": "sitting"})
     before = rank_discovery(_make_req(_adult_principal(owner)), store, owner, limit=10)
     top_before = next(it for it in before["items"] if it["id"] == p_coffee)

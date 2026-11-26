@@ -89,6 +89,21 @@ EVENT_SIGNAL_WEIGHTS: dict[str, float] = {
     "lower": -1.5,
 }
 
+# Google Limited Use: never train on Gmail / Calendar / YouTube / Takeout / generic Google rows.
+_GOOGLE_LIMITED_USE_MARKERS: frozenset[str] = frozenset(
+    {"gmail", "calendar", "youtube", "takeout", "google"}
+)
+
+
+def _is_google_limited_use_text(*parts: str | None) -> bool:
+    blob = " ".join(str(p or "").lower() for p in parts)
+    if not blob.strip():
+        return False
+    for marker in _GOOGLE_LIMITED_USE_MARKERS:
+        if marker in blob:
+            return True
+    return False
+
 
 def _populate_synthetic_db(store: ActionStore) -> None:
     setup_recommender(store)
@@ -180,21 +195,32 @@ def _populate_synthetic_db(store: ActionStore) -> None:
 def _load_training_data(store: ActionStore) -> tuple[np.ndarray, np.ndarray, list[tuple[int, int, float]], list[str]]:
     """Build item vectors, user vectors, and `(user_idx, item_idx, label_weight)` triplets."""
     setup_recommender(store)
-    post_rows = store.db.execute(
-        "SELECT id,owner,group_id,text FROM cm_posts WHERE deleted=0"
-    ).fetchall()
+    # Prefer provenance when present so Google Limited Use rows can be excluded.
+    try:
+        post_rows = store.db.execute(
+            "SELECT id,owner,group_id,text,provenance FROM cm_posts WHERE deleted=0"
+        ).fetchall()
+    except Exception:
+        post_rows = store.db.execute(
+            "SELECT id,owner,group_id,text FROM cm_posts WHERE deleted=0"
+        ).fetchall()
     if not post_rows:
         return np.zeros((0, DIM), dtype=np.float32), np.zeros((0, DIM), dtype=np.float32), [], []
 
     post_idx: dict[str, int] = {}
     item_vecs: list[list[float]] = []
     post_ids: list[str] = []
+    post_meta: dict[str, tuple[str, str]] = {}
     for p in post_rows:
-        pid, _owner, _gid, text = p
+        pid, _owner, _gid, text = p[0], p[1], p[2], p[3]
+        prov = str(p[4]) if len(p) > 4 else ""
+        if _is_google_limited_use_text(text, prov):
+            continue
         vec, _tp, _area = encode_item_vector(text or "")
         post_idx[pid] = len(post_ids)
         post_ids.append(pid)
         item_vecs.append(vec)
+        post_meta[pid] = (text or "", prov)
 
     # Lowered topics per owner from D19 cm_usage_profile.
     lowered_map: dict[str, set[str]] = {}
@@ -219,6 +245,9 @@ def _load_training_data(store: ActionStore) -> tuple[np.ndarray, np.ndarray, lis
             continue
         if tkey and is_sensitive_topic(tkey):
             continue
+        text_m, prov_m = post_meta.get(pid, ("", ""))
+        if _is_google_limited_use_text(tkey, text_m, prov_m):
+            continue
         if owner not in users:
             users[owner] = len(users)
             user_accum[owner] = np.zeros(DIM, dtype=np.float32)
@@ -228,8 +257,9 @@ def _load_training_data(store: ActionStore) -> tuple[np.ndarray, np.ndarray, lis
         i_idx = post_idx[pid]
         samples.append((users[owner], i_idx, w, etype))
         if w > 0:
+            # area_coarse is ephemeral — train without permanent geo traits.
             t_vec = np.asarray(
-                encode_text_topic_vector(tkey or "", area_coarse=area or "unknown", is_query=True, apply_trained=False),
+                encode_text_topic_vector(tkey or "", area_coarse="unknown", is_query=True, apply_trained=False),
                 dtype=np.float32,
             )
             user_accum[owner] += w * t_vec

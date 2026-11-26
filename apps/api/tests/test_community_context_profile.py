@@ -21,8 +21,10 @@ from app.community.context_profile import (
     compute_time_bucket,
     compute_usage_weight,
     get_ephemeral_context,
+    purge_owner_community_data,
     record_interaction_event,
     router as context_router,
+    set_context_aware_enabled,
     set_ephemeral_context,
     snap_coordinates_to_area,
 )
@@ -106,10 +108,11 @@ def test_coarse_snapping_and_zero_gps_persistence(ctx_client):
     assert ev_resp.status_code == 200, ev_resp.text
     assert ev_resp.json()["event"]["area_coarse"] == "Dubai Marina"
 
-    # Scan all SQL tables and ephemeral context for raw coordinate leakage.
-    cur_ctx = c.get("/api/community/context/current").json()["context"]
+    # Scan SQL + response for raw coordinate leakage (context may be inactive until D22 opt-in).
+    cur = c.get("/api/community/context/current").json()
+    cur_ctx = cur.get("context") or {}
     assert "lat" not in cur_ctx and "lng" not in cur_ctx
-    dumped_ctx = json.dumps(cur_ctx)
+    dumped_ctx = json.dumps(cur)
     assert "25.212345" not in dumped_ctx and "55.280987" not in dumped_ctx
 
     rows = store.db.execute("SELECT * FROM cm_interaction_events WHERE owner=?", (owner,)).fetchall()
@@ -182,6 +185,16 @@ def test_rule9_zero_health_facts_from_user_state_and_sensitive_topics(ctx_client
     # Also ensure user_state never leaks into cm_usage_profile.
     cols = [r[1] for r in store.db.execute("PRAGMA table_info(cm_usage_profile)").fetchall()]
     assert "user_state" not in cols
+    # D22 / Rule 8+9: SQL never permanently stores real user_state or area_coarse values.
+    ev_dump = json.dumps(
+        store.db.execute(
+            "SELECT area_coarse, user_state FROM cm_interaction_events WHERE owner=?",
+            (owner,),
+        ).fetchall()
+    )
+    assert "walking" not in ev_dump and "running" not in ev_dump and "driving" not in ev_dump and "sitting" not in ev_dump
+    assert "Dubai Marina" not in ev_dump
+    assert '"unknown"' in ev_dump or "unknown" in ev_dump
 
     # Sensitive topics are never projected into cm_usage_profile (Rule 9).
     for sens_topic in ("medication", "hospital", "religion"):
@@ -308,7 +321,9 @@ def test_d19_age_decay_lower_restore_and_d19b_recall(ctx_client):
     assert rest_resp.json()["entries"][0]["lowered"] is False
     assert rest_resp.json()["entries"][0]["weight"] >= SURFACE_THRESHOLD
 
-    # Settings toggle off disables context_aware_enabled and clears ephemeral context.
+    # D22: context-aware is opt-in (default 0). Opt in, then toggle off clears ephemeral context.
+    on = c.put("/api/community/profile/usage/settings", json={"context_aware_enabled": True})
+    assert on.status_code == 200 and on.json()["context_aware_enabled"] is True
     c.post("/api/community/context/heartbeat", json={"area_coarse": "DIFC", "user_state": "walking"})
     assert c.get("/api/community/context/current").json()["active"] is True
     off = c.put("/api/community/profile/usage/settings", json={"context_aware_enabled": False})
@@ -316,3 +331,40 @@ def test_d19_age_decay_lower_restore_and_d19b_recall(ctx_client):
     cur_after = c.get("/api/community/context/current").json()
     assert cur_after["context_aware_enabled"] is False
     assert cur_after["active"] is False
+
+
+def test_purge_owner_community_data_clears_sql_and_ephemeral(ctx_client, monkeypatch):
+    c, store, owner, _bridge, _fake = ctx_client
+    monkeypatch.setenv("REDIS_URL", "redis://127.0.0.1:63999/0")
+    set_context_aware_enabled(store, owner, True)
+    set_ephemeral_context(owner, {"area_coarse": "JLT", "user_state": "walking"}, ttl_seconds=600)
+    assert get_ephemeral_context(owner) is not None
+    assert c.post(
+        "/api/community/events",
+        json={"post_id": "p_purge", "topic_key": "padel", "event_type": "upvote", "session_id": "s_purge"},
+    ).status_code == 200
+    assert store.db.execute("SELECT COUNT(*) FROM cm_interaction_events WHERE owner=?", (owner,)).fetchone()[0] >= 1
+    assert store.db.execute("SELECT COUNT(*) FROM cm_usage_profile WHERE owner=?", (owner,)).fetchone()[0] >= 1
+    assert store.db.execute("SELECT COUNT(*) FROM cm_usage_settings WHERE owner=?", (owner,)).fetchone()[0] >= 1
+
+    out = purge_owner_community_data(owner, store=store)
+    assert out["purged"] is True
+    assert get_ephemeral_context(owner) is None
+    assert store.db.execute("SELECT COUNT(*) FROM cm_interaction_events WHERE owner=?", (owner,)).fetchone()[0] == 0
+    assert store.db.execute("SELECT COUNT(*) FROM cm_usage_profile WHERE owner=?", (owner,)).fetchone()[0] == 0
+    assert store.db.execute("SELECT COUNT(*) FROM cm_usage_settings WHERE owner=?", (owner,)).fetchone()[0] == 0
+
+
+def test_context_aware_default_opt_in_is_off(ctx_client):
+    c, store, owner, _bridge, _fake = ctx_client
+    from app.community.context_profile import setup_context_profile
+
+    setup_context_profile(store)
+    # Fresh owner with no settings row → D22 default off.
+    assert store.db.execute("SELECT COUNT(*) FROM cm_usage_settings WHERE owner=?", (owner,)).fetchone()[0] == 0
+    hb = c.post("/api/community/context/heartbeat", json={"area_coarse": "DIFC", "user_state": "walking"})
+    assert hb.status_code == 200, hb.text
+    body = hb.json()
+    assert body["context_aware_enabled"] is False
+    assert body["stored"] is False
+    assert c.get("/api/community/context/current").json()["active"] is False

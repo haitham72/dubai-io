@@ -163,7 +163,7 @@ DDL = (
     )""",
     """CREATE TABLE IF NOT EXISTS cm_usage_settings (
         owner TEXT PRIMARY KEY,
-        context_aware_enabled INTEGER NOT NULL DEFAULT 1,
+        context_aware_enabled INTEGER NOT NULL DEFAULT 0,
         updated_at TEXT NOT NULL
     )""",
 )
@@ -442,25 +442,43 @@ def clear_ephemeral_context(owner: str) -> None:
         _EPHEMERAL_CACHE.pop(key, None)
 
 
-def purge_owner_context(store, owner: str) -> None:
-    """Account-level Delete my data: purge Redis/TTL context and usage profile/events."""
-    clear_ephemeral_context(owner)
+def purge_owner_community_data(owner_id: str, store=None) -> dict[str, Any]:
+    """Account-level Delete my data (D19): clear Community SQL + Redis/TTL context.
+
+    Deletes `cm_interaction_events`, `cm_usage_profile`, `cm_usage_settings`, the
+    Redis key `cm:ctx:{owner}`, and the in-process TTL fallback cache.
+    """
+    if store is None:
+        from app import actions as _actions
+
+        eng = getattr(_actions, "_engine", None)
+        if eng is None or getattr(eng, "store", None) is None:
+            raise RuntimeError("Action engine store is not initialized")
+        store = eng.store
+    clear_ephemeral_context(owner_id)
     setup_context_profile(store)
-    store.db.execute("DELETE FROM cm_usage_profile WHERE owner=?", (owner,))
-    store.db.execute("DELETE FROM cm_interaction_events WHERE owner=?", (owner,))
-    store.db.execute("DELETE FROM cm_usage_settings WHERE owner=?", (owner,))
+    store.db.execute("DELETE FROM cm_usage_profile WHERE owner=?", (owner_id,))
+    store.db.execute("DELETE FROM cm_interaction_events WHERE owner=?", (owner_id,))
+    store.db.execute("DELETE FROM cm_usage_settings WHERE owner=?", (owner_id,))
     store.db.commit()
+    return {"purged": True, "owner": owner_id}
+
+
+def purge_owner_context(store, owner: str) -> None:
+    """Backward-compatible alias for `purge_owner_community_data`."""
+    purge_owner_community_data(owner, store=store)
 
 
 # ---------------------------------------------------------------- settings & qualification
 def is_context_aware_enabled(store, owner: str) -> bool:
+    """D22: context-aware usage is strictly opt-in (default off when unset)."""
     setup_context_profile(store)
     row = store.db.execute(
         "SELECT context_aware_enabled FROM cm_usage_settings WHERE owner=?",
         (owner,),
     ).fetchone()
     if row is None:
-        return True
+        return False
     return bool(row[0])
 
 
@@ -572,7 +590,10 @@ def _present_usage_entry(row: Mapping[str, Any] | tuple[Any, ...], *, context_en
     weight = compute_usage_weight(d, now=now)
     qualified = is_usage_qualified(d)
     lowered = bool(d.get("lowered_at")) or bool(int(d.get("suppressed") or 0))
-    active_in_feed = bool(context_enabled and not lowered and qualified and weight >= SURFACE_THRESHOLD)
+    # Topic affinity can personalise the feed without sensor opt-in.
+    # D22 context_enabled gates ephemeral area/user_state only (see heartbeat/ranker).
+    _ = context_enabled
+    active_in_feed = bool(not lowered and qualified and weight >= SURFACE_THRESHOLD)
     return {
         "owner": d["owner"],
         "topic_key": d["topic_key"],
@@ -645,12 +666,15 @@ def record_interaction_event(
         clean_device = "unknown"
     clean_topic = _normalize_topic_key(topic_key)
     ctx_now = get_ephemeral_context(owner) or {}
+    # Ephemeral only (D22 / Rule 8+9): never permanently store area_coarse or user_state.
     clean_area = normalize_area_coarse(area_coarse or ctx_now.get("area_coarse") or "unknown")
     tb = (time_bucket or "").strip() or ctx_now.get("time_bucket") or compute_time_bucket()[0]
     fmt = _infer_format_bucket(store, post_id, format_bucket)
     stamp = created_at or _now_iso()
     dkey = (dedupe_key or "").strip()[:160]
     sess = (session_id or "").strip()[:120]
+    persisted_area = "unknown"
+    persisted_state = "unknown"
 
     if dkey:
         existing = store.db.execute(
@@ -663,8 +687,9 @@ def record_interaction_event(
                 "event": {
                     "id": existing[0], "owner": existing[1], "post_id": existing[2],
                     "topic_key": existing[3], "event_type": existing[4], "value": float(existing[5]),
-                    "area_coarse": existing[6], "device_class": existing[7], "time_bucket": existing[8],
-                    "user_state": existing[9], "session_id": existing[10], "dedupe_key": existing[11],
+                    # Echo request/ephemeral values; SQL columns stay unknown.
+                    "area_coarse": clean_area, "device_class": existing[7], "time_bucket": existing[8],
+                    "user_state": clean_state, "session_id": existing[10], "dedupe_key": existing[11],
                     "created_at": existing[12],
                 },
                 "profile_entry": None,
@@ -674,8 +699,8 @@ def record_interaction_event(
     if sess and clean_topic:
         seen_session_before = bool(
             store.db.execute(
-                "SELECT 1 FROM cm_interaction_events WHERE owner=? AND topic_key=? AND time_bucket=? AND area_coarse=? AND session_id=? LIMIT 1",
-                (owner, clean_topic, tb, clean_area, sess),
+                "SELECT 1 FROM cm_interaction_events WHERE owner=? AND topic_key=? AND time_bucket=? AND session_id=? LIMIT 1",
+                (owner, clean_topic, tb, sess),
             ).fetchone()
         )
 
@@ -684,18 +709,37 @@ def record_interaction_event(
         """INSERT OR IGNORE INTO cm_interaction_events
            (id,owner,post_id,topic_key,event_type,value,area_coarse,device_class,time_bucket,user_state,session_id,dedupe_key,created_at)
            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-        (eid, owner, post_id or "", clean_topic, etype, float(value), clean_area, clean_device, tb, clean_state, sess, dkey, stamp),
+        (eid, owner, post_id or "", clean_topic, etype, float(value), persisted_area, clean_device, tb, persisted_state, sess, dkey, stamp),
     )
+
+    # Refresh ephemeral TTL envelope only (never SQL) when context-aware is opted in.
+    if is_context_aware_enabled(store, owner) and (clean_area != "unknown" or clean_state != "unknown"):
+        tb_now, is_wk = compute_time_bucket()
+        set_ephemeral_context(
+            owner,
+            {
+                "area_coarse": clean_area if clean_area != "unknown" else ctx_now.get("area_coarse", "unknown"),
+                "device_class": clean_device,
+                "time_bucket": tb or tb_now,
+                "is_weekend": bool(ctx_now.get("is_weekend", is_wk)),
+                "user_state": clean_state if clean_state != "unknown" else ctx_now.get("user_state", "unknown"),
+                "confidence": float(ctx_now.get("confidence") or 0.0),
+                "source": str(ctx_now.get("source") or "event"),
+                "updated_at": stamp,
+            },
+            ttl_seconds=CONTEXT_TTL_SECONDS,
+        )
 
     profile_entry = None
     # Rule 9: never persist sensitive topics into long-term usage profile.
+    # D22: usage profile buckets never key on ephemeral area_coarse.
     if clean_topic and not is_sensitive_topic(clean_topic):
         profile_entry = _project_usage_event(
             store,
             owner=owner,
             topic_key=clean_topic,
             time_bucket=tb,
-            area_coarse=clean_area,
+            area_coarse=persisted_area,
             format_bucket=fmt,
             event_type=etype,
             value=float(value),
