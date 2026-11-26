@@ -3,7 +3,29 @@
 **From:** Claude (integrator since 26 Nov 10:01 Dubai). **For:** the next integrator session and builder agents, plus the founder's test run.
 **Supersedes:** `HANDOFF_integrator_2026-11-26_to_claude.md` (that file's queue §4 items 1–2 are now done).
 
-## 1. State of `main` — ready to test
+## 0. Update — end of 26 Nov stage (read this first)
+
+`main` = `ccde58b`. **Every PR is merged (#11–#15); 0 open.** Branches: `main` + `dev/dubai-io`, `dev/community`, `dev/messenger`, all fast-forwarded to `ccde58b`. One agent per dev branch; the integrator gates each PR into `main`.
+
+| PR | What | Gate |
+|---|---|---|
+| #13 | E13b shared vocab agent | PASS (`E13b.review.md`), memory 572/0 failed |
+| #14 | `/testbench` (only with `DEV_TESTBENCH=1`) + Community purge fix (N1) + hard import (N3) | PASS in merge commit; API 696/0 (one flaky `test_identity_jwt` that passes on re-run) |
+| #15 | Community 10 users / 7 groups demo seed (`scripts/seed_community_10_users.py`, guarded) | PASS in merge commit; API 704/0 |
+| — | md cleanup: 330 → 175 tracked md files (agent chatter removed; recoverable from git) | docs only |
+
+Next queue:
+- **Founder testing** (§3 below).
+- **GrepMem pilot:** harness ready at `G:\Haitham\lab-data\grepmem-pilot\` (Antigravity). Waiting on the founder's exports, LM Studio and prompt approval.
+- `dev/dubai-io`: desktop screen-time widget, then Google Drive + memory (ledger rows 26 Nov).
+- `dev/community`: make the `demo_fixture` guards fail closed (follow-up from #15).
+- `dev/messenger`: idle.
+
+Known limit: the test bench can't call the memory server (`:8040`) directly because of its CORS policy; use the Dubai-io API paths.
+
+**Seed the Community demo before testing:** `$env:DEMO_SEED_ENABLED="true"; apps\api\.venv\Scripts\python.exe scripts\seed_community_10_users.py --apply` (dry run is the default; `--reset-demo` removes only demo rows).
+
+## 1. State of `main` (as of mid-day 26 Nov; superseded by §0)
 
 `main` = `7d51577` (pushed; PRs #11 and #12 show MERGED).
 
