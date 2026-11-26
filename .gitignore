@@ -50,3 +50,7 @@ docs/Researches/quest - info/
 /docs/plan/Memory/_archive/quest-memory-export/
 /docs/plan/Memory/_archive/quest-memory-export.zip
 /docs/plan/Memory/_archive/hindsight-kb-export/
+
+# Build caches
+*.tsbuildinfo
+apps/desktop/renderer/dist/

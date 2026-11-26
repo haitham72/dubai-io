@@ -102,7 +102,7 @@ APIs: apps/api `:8000`, Community API `:8060`, Messenger API `:8070`, memory `:8
 ## 4. Guardrails for the next session
 - `apps/web` frozen (`git diff --quiet mobile-pwa-baseline-2026-10-23 HEAD -- apps/web` = 0).
 - No force-push; no branch, worktree or folder deletion without founder OK.
-- Never stage the untracked founder or build files: `apps/community/tsconfig.tsbuildinfo`, `apps/desktop/renderer/dist/`, `design/20-11-2026/Dubai-io Quest Milestones Showcase.jpg`, `docs/Researches/new tools research.md`, `docs/plan/Memory/deepseek_markdown_20261124_fbeb70.md`, `docs/submissions/shared/research/grepmem-whatsapp-pilot-plan.md`, `docs/plan/02A_COMMUNITY_10_USER_AGENT_ORCHESTRATION.md`, `env (2)`. Stage explicit paths only.
+- Never stage `.env*`, `client_secret*.json`, build caches, or real exports; stage explicit paths only.
 - Never print `.env` values.
 - Merge order rule: builders push + open a PR + STOP; the integrator writes `<item>.review.md` with PASS, then merges `--no-ff`. `STATUS.md` conflicts: keep both sides' rows.
 - Running tests from a worktree: put that worktree's `apps/memory/src` (and `apps/api`) on `PYTHONPATH`. The contest-memory venv otherwise imports the old `temporal_memory`.
