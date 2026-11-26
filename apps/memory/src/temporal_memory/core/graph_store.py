@@ -480,6 +480,7 @@ class PostgresGraphStore:
         date_to: str | None = None,
         source_prefix: str | None = None,
         limit: int = 50,
+        include_lowered: bool = False,
     ) -> list[Candidate]:
         """Rank unique visible fact IDs via Postgres multi-channel RRF."""
         from temporal_memory.core.retrieval import search_candidates as _pg_search_candidates
@@ -494,6 +495,7 @@ class PostgresGraphStore:
             date_to=date_to,
             source_prefix=source_prefix,
             limit=limit,
+            include_lowered=include_lowered,
         )
 
     def get_facts(self, owner: str, fact_ids: list[str]) -> list[Fact]:

@@ -1350,6 +1350,8 @@ class MemoryBridge:
 
         views: list[MemoryFactView] = []
         for item in tl.get("items") or []:
+            if item.get("lowered") or float(item.get("weight", 1.0)) < 0.10:
+                continue
             evidence_ids, source_ids = self._resolve_fact_sources(item, ref_map, fact_index)
             consented_sources = [
                 s for s in source_ids
@@ -1475,6 +1477,7 @@ class MemoryBridge:
             bool(why.get("demo_data")),
         )
         out = dict(why)
+        self.client.reinforce_recall(owner_id, [fact_id])
         out["evidence"] = filtered_evidence
         out["trust_tier"] = trust_tier
         out["display_prefix"] = prefix
@@ -1857,7 +1860,7 @@ class MemoryBridge:
             raise ConsentDeniedError("messenger conversation ai_mode is off")
 
         lim = max(1, int(limit))
-        raw_facts = self.client.search_facts(owner_id, query, limit=lim * 3)
+        raw_facts = self.client.search_facts(owner_id, query, limit=lim * 3, include_lowered=True)
         ref_map = self._record_ref_map(owner_id)
         source_cache: dict[str, ConsentGrant] = {}
         conv_cache: dict[str, ConsentGrant] = {}
@@ -1873,12 +1876,13 @@ class MemoryBridge:
                         consented_sources.append(s)
                 elif self._source_consented_for_quest(owner_id, s, source_cache, conv_cache):
                     consented_sources.append(s)
-            if not consented_sources:
+            if not consented_sources or len(consented_sources) != len(source_ids):
                 continue
             views.append(self._to_fact_view(f, evidence_ids=evidence_ids, source_ids=consented_sources))
             if len(views) >= lim:
                 break
 
+        self.client.reinforce_recall(owner_id, [view.fact_id for view in views])
         self._record_audit(
             owner_id=owner_id,
             actor_id=owner_id,

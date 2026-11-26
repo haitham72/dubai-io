@@ -11,6 +11,7 @@ from fastapi import HTTPException
 from psycopg.types.json import Jsonb
 
 from temporal_memory.config import get_settings
+from temporal_memory.models import HELD_BACK_ROOTS
 
 WEIGHT_FLOOR = 0.01
 SURFACE_WEIGHT_THRESHOLD = 0.10
@@ -80,7 +81,7 @@ def set_lowered(store, owner: str, body, *, lower: bool) -> dict:
                 raise HTTPException(422, "Source is required")
             if lower:
                 conn.execute(
-                    "INSERT INTO lowered_sources(owner, source) VALUES (%s,%s) ON CONFLICT DO NOTHING",
+                    "INSERT INTO lowered_sources(owner, source) VALUES (%s,%s) ON CONFLICT (owner, source) DO UPDATE SET lowered_at = now()",
                     (owner, source),
                 )
             else:
@@ -104,6 +105,34 @@ def set_lowered(store, owner: str, body, *, lower: bool) -> dict:
     return {"ok": True, "lowered": lower, "weight": WEIGHT_FLOOR if lower else None,
             "records": records, "affected": changed, "facts_erased": 0,
             "facts_version": version["facts_version"]}
+
+
+def reinforce_recall(store, owner: str, ids: list[str]) -> dict[str, float]:
+    """Refresh only owner-visible facts selected by an explicit recall."""
+    if not ids or not hasattr(store, "db"):
+        return {}
+    with store.db.transaction() as conn:
+        lock_active_owner(conn, owner)
+        rows = conn.execute(
+            """
+            UPDATE facts f SET lowered_at = NULL, last_refreshed_at = clock_timestamp(),
+                weight_steps = 0, refreshed_weight = LEAST(1.0, GREATEST(0.35, w.weight + 0.25))
+            FROM visible_facts vf JOIN memory_fact_weights w USING (owner, id)
+            WHERE (f.owner, f.id) = (vf.owner, vf.id) AND f.owner = %s AND f.id = ANY(%s)
+              AND (f.provenance IN ('user_supplied', 'provider_confirmed') OR NOT EXISTS (
+                  SELECT 1 FROM subjects s WHERE (s.owner, s.id) = (f.owner, f.subject_id)
+                    AND (s.sensitive_cat IS NOT NULL OR lower(split_part(s.path, '/', 1)) = ANY(%s))
+              ))
+            RETURNING f.id, f.refreshed_weight
+            """,
+            (owner, ids, sorted(HELD_BACK_ROOTS)),
+        ).fetchall()
+        if rows:
+            conn.execute("UPDATE owners SET facts_version = facts_version + 1 WHERE id = %s", (owner,))
+            conn.execute("DELETE FROM story_cache WHERE owner = %s", (owner,))
+    if rows:
+        invalidate_owner(owner)
+    return {row["id"]: row["refreshed_weight"] for row in rows}
 
 
 def fact_states(store, owner: str, ids: list[str]) -> dict:
@@ -159,8 +188,7 @@ def weight_learned_index(conn, owner: str, index):
 def purge_redis(owner: str) -> bool:
     url = get_settings().redis_url
     if not url:
-        log.warning("Account deletion skipped Redis purge: TM_REDIS_URL is unconfigured")
-        return False
+        raise HTTPException(503, "Redis purge unavailable; TM_REDIS_URL is unconfigured")
     import redis
 
     pattern = "*" + "".join("\\" + c if c in r"\*?[]" else c for c in owner) + "*"
@@ -183,7 +211,7 @@ def delete_account(store, owner: str) -> dict:
         if row is None:
             conn.execute("INSERT INTO owners (id, label) VALUES (%s, '')", (owner,))
             row = {"deleted_at": None}
-        redis_purged = purge_redis(owner)
+        purge_redis(owner)
         if row["deleted_at"] is None:
             # Store only coarse, allowlisted training signals. Unknown or mixed provenance is
             # excluded, as are all free text, entities, record IDs and precise timestamps.
@@ -222,6 +250,7 @@ def delete_account(store, owner: str) -> dict:
             )
             conn.execute("DELETE FROM story_cache WHERE owner = %s", (owner,))
     invalidate_owner(owner, deleted=True)
+    redis_purged = purge_redis(owner)
     return {"ok": True, "deleted_from_external": True,
             "deleted_at": row["deleted_at"].isoformat(), "redis_purged": redis_purged}
 

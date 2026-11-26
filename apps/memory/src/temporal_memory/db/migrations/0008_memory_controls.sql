@@ -5,7 +5,9 @@ ALTER TABLE owners
 ALTER TABLE facts
     ADD COLUMN lowered_at timestamptz,
     ADD COLUMN weight_steps integer NOT NULL DEFAULT 0 CHECK (weight_steps >= 0),
-    ADD COLUMN base_weight double precision NOT NULL DEFAULT 1.0;
+    ADD COLUMN base_weight double precision NOT NULL DEFAULT 1.0,
+    ADD COLUMN last_refreshed_at timestamptz,
+    ADD COLUMN refreshed_weight double precision;
 ALTER TABLE subjects ADD COLUMN lowered_at timestamptz;
 ALTER TABLE records ADD COLUMN lowered_at timestamptz;
 
@@ -75,18 +77,27 @@ WHERE r.lowered_at IS NOT NULL OR EXISTS (
 );
 CREATE VIEW memory_fact_weights AS
 SELECT f.owner, f.id, f.subject_id, f.text, f.status, f.erased_at,
-       memory_weight(f.base_weight, COALESCE(f.confidence, 1.0),
-           memory_age_days(f.valid_from, f.created_at::date), f.weight_steps, f.provenance, x.lowered) AS weight,
+       memory_weight(COALESCE(f.refreshed_weight, f.base_weight),
+           CASE WHEN f.refreshed_weight IS NULL THEN COALESCE(f.confidence, 1.0) ELSE 1.0 END,
+           CASE WHEN f.last_refreshed_at IS NULL THEN memory_age_days(f.valid_from, f.created_at::date)
+                ELSE CURRENT_DATE - f.last_refreshed_at::date END,
+           f.weight_steps, f.provenance, x.lowered) AS weight,
        x.lowered
 FROM facts f CROSS JOIN LATERAL (
     SELECT f.lowered_at IS NOT NULL OR EXISTS (
         SELECT 1 FROM subjects target JOIN subjects parent ON parent.owner = target.owner
-        WHERE (target.owner, target.id) = (f.owner, f.subject_id) AND parent.lowered_at IS NOT NULL
+        WHERE (target.owner, target.id) = (f.owner, f.subject_id) AND parent.lowered_at > COALESCE(f.last_refreshed_at, '-infinity'::timestamptz)
           AND (target.path = parent.path OR starts_with(target.path, parent.path || '/'))
     ) OR EXISTS (
         SELECT 1 FROM fact_evidence fe
-        JOIN memory_lowered_records r ON (r.owner, r.id) = (fe.owner, fe.record_id)
+        JOIN records r ON (r.owner, r.id) = (fe.owner, fe.record_id)
         WHERE (fe.owner, fe.fact_id) = (f.owner, f.id)
+          AND (r.lowered_at > COALESCE(f.last_refreshed_at, '-infinity'::timestamptz)
+               OR EXISTS (
+                   SELECT 1 FROM lowered_sources ls WHERE ls.owner = r.owner
+                     AND ls.lowered_at > COALESCE(f.last_refreshed_at, '-infinity'::timestamptz)
+                     AND memory_source_matches(r.source, r.id, ls.source)
+               ))
     ) AS lowered
 ) x;
 CREATE VIEW memory_surface_facts AS

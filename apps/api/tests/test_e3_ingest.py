@@ -187,13 +187,15 @@ def test_source_lower_preserves_fact_and_evidence_and_restores(e3):
     }})
     assert response.status_code == 200, response.text
     fact_id, = response.json()["fact_ids"]
-    assert tm.get(f"{base}/why/{fact_id}", headers=tm_headers).status_code == 200
-    assert client.delete("/api/ingest/gmail/data", headers=SECOND).json()["records"]["value"] == 0
-    assert tm.get(f"{base}/why/{fact_id}", headers=tm_headers).status_code == 200
+    assert tm.get(f"{base}/why/{fact_id}", headers=tm_headers, params={"reinforce": False}).status_code == 200
+    other = client.delete("/api/ingest/gmail/data", headers=SECOND)
+    assert other.status_code == 200, other.text
+    assert other.json()["records"]["value"] == 0
+    assert tm.get(f"{base}/why/{fact_id}", headers=tm_headers, params={"reinforce": False}).status_code == 200
     result = client.delete("/api/ingest/gmail/data", headers=FIRST)
     assert result.status_code == 200, result.text
     assert result.json()["records"]["value"] == 1
-    assert tm.get(f"{base}/why/{fact_id}", headers=tm_headers).status_code == 200
+    assert tm.get(f"{base}/why/{fact_id}", headers=tm_headers, params={"reinforce": False}).status_code == 200
     assert fact_id not in tm.post(f"{base}/context", headers=tm_headers,
                                  json={"text": "Coral architecture workshop"}).text
     with state.connection() as conn:

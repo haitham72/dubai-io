@@ -735,7 +735,7 @@ def test_offline_owner_device_fallback_to_internal_worker(seeded: dict[str, Any]
 
 
 def test_mcp_lower_restore_and_account_exclusion(seeded, monkeypatch):
-    monkeypatch.setenv("TM_REDIS_URL", "")
+    monkeypatch.setenv("TM_REDIS_URL", "redis://127.0.0.1:6390/0")
     monkeypatch.setenv("TM_SEMANTIC", "0")
     db, client = seeded["db"], seeded["client"]
     dev = create_token(db, role="owner-device", owner="karim")["token"]

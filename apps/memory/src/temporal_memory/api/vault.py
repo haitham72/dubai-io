@@ -872,7 +872,8 @@ def _extract_record_span(
 def why_fact(
     owner: str,
     fact_id: str,
-    _: AuthContext = Depends(require_owner_access),
+    reinforce: bool = Query(default=True),
+    auth: AuthContext = Depends(require_owner_access),
     store: GraphStore = Depends(get_store),
 ) -> dict[str, Any]:
     now_iso, is_demo = _meta(store, owner)
@@ -976,6 +977,11 @@ def why_fact(
             }
     else:
         reason_value = "reason unknown"
+
+    if reinforce is True and auth.role == "owner-device":
+        from temporal_memory.privacy.controls import reinforce_recall
+
+        reinforce_recall(store, owner, [fact.id])
 
     return {
         "owner": owner,

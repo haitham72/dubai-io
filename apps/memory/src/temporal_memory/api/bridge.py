@@ -296,24 +296,57 @@ def owner_context(
     return context_pack(owner, body.text, max_tokens=body.max_tokens, store=store)
 
 
+class RecallIn(BaseModel):
+    fact_ids: list[str] = Field(min_length=1, max_length=500)
+
+
+@router.post("/recall")
+def recall_facts(
+    owner: str, body: RecallIn,
+    auth: AuthContext = Depends(require_owner_access),
+    store: GraphStore = Depends(get_store),
+) -> dict[str, Any]:
+    from temporal_memory.privacy.controls import reinforce_recall
+
+    if auth.role != "owner-device":
+        raise HTTPException(403, "Explicit recall requires an owner device")
+    from temporal_memory.core.bridge_store import _hydrate_ranked_facts
+
+    weights = reinforce_recall(store, owner, body.fact_ids)
+    facts = (_hydrate_ranked_facts(store, owner, list(weights), len(weights), include_lowered=True)
+             if weights else [])
+    return {"ok": True, "weights": weights, "facts": facts}
+
+
 @router.get("/search")
 def search_facts(
     owner: str,
     q: str = Query(...),
     limit: int = Query(default=20, ge=1, le=500),
     source_prefix: str | None = Query(default=None),
-    _: AuthContext = Depends(require_owner_access),
+    include_lowered: bool = Query(default=False),
+    reinforce: bool = Query(default=True),
+    auth: AuthContext = Depends(require_owner_access),
     store: GraphStore = Depends(get_store),
 ) -> dict[str, Any]:
     from temporal_memory.core.bridge_store import _postgres, search_facts as pg_search
 
+    if include_lowered and auth.role != "owner-device":
+        raise HTTPException(403, "Explicit recall requires an owner device")
     if _postgres(store):
-        return pg_search(store, owner, q, limit, source_prefix)
+        result = pg_search(store, owner, q, limit, source_prefix, include_lowered=include_lowered)
+        if include_lowered and reinforce and q.strip():
+            from temporal_memory.privacy.controls import reinforce_recall
+
+            weights = reinforce_recall(store, owner, [fact["id"] for fact in result["facts"]])
+            result["facts"] = [dict(fact, weight=weights[fact["id"]])
+                               for fact in result["facts"] if fact["id"] in weights]
+        return result
     needle = q.casefold()
     records = getattr(store, "records", {}).get(owner, {})
     hits = []
     for fact in store.visible_facts(owner, limit=10_000):
-        if getattr(store, "fact_lowered", lambda *_: False)(owner, fact.id):
+        if not include_lowered and getattr(store, "fact_lowered", lambda *_: False)(owner, fact.id):
             continue
         if needle not in fact.text.casefold():
             continue

@@ -66,6 +66,8 @@ class _FakeFact:
     demo_data: bool = False
     erased_at: str | None = None
     weight_steps: int = 0
+    refreshed_weight: float | None = None
+    recall_override: bool = False
 
 
 class _ScopedFakeClient:
@@ -129,6 +131,10 @@ class _ScopedFakeClient:
         self._store.authorize(self._raw_token, owner_id=owner_id, vault_access=True)
         return self._store.context_pack(owner_id, text, max_tokens=max_tokens)
 
+    def reinforce_recall(self, owner_id: str, fact_ids: list[str]) -> dict[str, float]:
+        self._store.authorize(self._raw_token, owner_id=owner_id, vault_access=True)
+        return self._store.reinforce_recall(owner_id, fact_ids)
+
     def search_facts(
         self,
         owner_id: str,
@@ -136,10 +142,11 @@ class _ScopedFakeClient:
         *,
         limit: int = 20,
         source_prefix: str | None = None,
+        include_lowered: bool = False,
     ) -> list[dict[str, Any]]:
         self._store.authorize(self._raw_token, owner_id=owner_id, vault_access=True)
         return self._store.search_facts(
-            owner_id, query, limit=limit, source_prefix=source_prefix
+            owner_id, query, limit=limit, source_prefix=source_prefix, include_lowered=include_lowered
         )
 
     def get_vault_subjects(self, owner_id: str) -> dict[str, Any]:
@@ -395,7 +402,9 @@ class FakeTemporalMemoryClient:
         return out
 
     def _fact_lowered(self, owner_id: str, fact: _FakeFact) -> bool:
-        denied = self._lowered[owner_id]
+        return not fact.recall_override and self._matches_lowering(owner_id, fact, self._lowered[owner_id])
+
+    def _matches_lowering(self, owner_id: str, fact: _FakeFact, denied: set[tuple[str, str]]) -> bool:
         return bool(
             ("fact_id", fact.id) in denied or ("subject_id", fact.subject_id) in denied
             or any(("record_ids", rid) in denied for rid in fact.evidence)
@@ -421,6 +430,9 @@ class FakeTemporalMemoryClient:
             for ident in ids:
                 if lower:
                     self._lowered[owner_id].add((kind, ident))
+                    for fact in self.facts[owner_id]:
+                        if fact.recall_override and self._matches_lowering(owner_id, fact, {(kind, ident)}):
+                            fact.recall_override = False
                 else:
                     self._lowered[owner_id].discard((kind, ident))
             self.facts_version[owner_id] += 1
@@ -432,7 +444,7 @@ class FakeTemporalMemoryClient:
             return {value for kind, value in self._lowered[owner_id] if kind == "record_ids"}
 
     def _fact_weight(self, owner_id: str, fact: _FakeFact) -> float:
-        return 0.01 if self._fact_lowered(owner_id, fact) else max(0.01, 0.5 ** fact.weight_steps)
+        return 0.01 if self._fact_lowered(owner_id, fact) else max(0.01, (fact.refreshed_weight or 1.0) * 0.5 ** fact.weight_steps)
 
     def _fact_sources(self, owner_id: str, fact: _FakeFact) -> list[str]:
         recs = self.records.get(owner_id, {})
@@ -721,6 +733,20 @@ class FakeTemporalMemoryClient:
                 "demo_data": is_demo,
             }
 
+    def reinforce_recall(self, owner_id: str, fact_ids: list[str]) -> dict[str, float]:
+        with self._lock:
+            weights = {}
+            for fact in self._visible_facts(owner_id):
+                if fact.id in fact_ids:
+                    weight = min(1.0, max(0.35, self._fact_weight(owner_id, fact) + 0.25))
+                    self._lowered[owner_id].discard(("fact_id", fact.id))
+                    fact.refreshed_weight = weights[fact.id] = weight
+                    fact.recall_override = True
+                    fact.weight_steps = 0
+            if weights:
+                self.facts_version[owner_id] += 1
+            return weights
+
     def search_facts(
         self,
         owner_id: str,
@@ -728,13 +754,14 @@ class FakeTemporalMemoryClient:
         *,
         limit: int = 20,
         source_prefix: str | None = None,
+        include_lowered: bool = False,
     ) -> list[dict[str, Any]]:
         with self._lock:
             q_tokens = [t for t in _fold(query).split() if t]
             recs = self.records.get(owner_id, {})
             visible = [
                 f
-                for f in self._visible_facts(owner_id) if self._fact_weight(owner_id, f) >= 0.10
+                for f in self._visible_facts(owner_id) if include_lowered or self._fact_weight(owner_id, f) >= 0.10
                 if f.status not in ("superseded", "history")
             ]
             matched: list[_FakeFact] = []
@@ -872,6 +899,8 @@ class FakeTemporalMemoryClient:
                         "valid_to": f.valid_to,
                         "status": f.status,
                         "superseded_by": f.superseded_by,
+                        "lowered": self._fact_lowered(owner_id, f),
+                        "weight": self._fact_weight(owner_id, f),
                         "provenance": f.provenance,
                         "evidence": list(f.evidence),
                         "as_of": f.valid_from or now_iso,

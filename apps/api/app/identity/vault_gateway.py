@@ -230,6 +230,7 @@ def create_vault_gateway_router(
             data = client.get_why_fact(owner, fact_id)
             if isinstance(data.get("evidence"), list):
                 data["evidence"] = [e for e in data["evidence"] if not _is_sensitive_item(e)]
+            client.reinforce_recall(owner, [fact_id])
             return data
         except MemoryBridgeError as exc:
             raise _http_from_tm_error(exc) from exc

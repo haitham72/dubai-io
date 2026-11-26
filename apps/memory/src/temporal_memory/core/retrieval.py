@@ -366,6 +366,7 @@ def search_candidates(
     date_to: str | None = None,
     source_prefix: str | None = None,
     limit: int = 50,
+    include_lowered: bool = False,
 ) -> list[Candidate]:
     """Multi-channel Postgres retrieval over visible_facts fused with weighted RRF."""
     if limit <= 0:
@@ -644,7 +645,7 @@ def search_candidates(
                 for fid in rids[:3]:
                     if fid not in top_seed_fids:
                         top_seed_fids.append(fid)
-        if top_seed_fids[:3] and not seed_sids:
+        if top_seed_fids[:3] and not seed_sids and not include_lowered:
             sid_rows = conn.execute(
                 """
                 SELECT DISTINCT f.subject_id
@@ -762,10 +763,10 @@ def search_candidates(
                 """
                 SELECT f.id, f.text
                 FROM memory_fact_weights f
-                WHERE f.owner = %s AND f.id = ANY(%s) AND f.weight >= 0.10
+                WHERE f.owner = %s AND f.id = ANY(%s) AND (%s OR f.weight >= 0.10)
                   AND (f.erased_at IS NULL)::int = 1 AND f.status <> 'history'
                 """,
-                (owner, all_cand_ids),
+                (owner, all_cand_ids, include_lowered),
             ).fetchall()
             if cand_rows:
                 cand_ids_alive = [r["id"] for r in cand_rows]

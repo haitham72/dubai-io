@@ -300,6 +300,15 @@ class HttpTemporalMemoryClient:
             {"text": text, "owner": owner_id, "max_tokens": int(max_tokens)},
         )
 
+    def reinforce_recall(self, owner_id: str, fact_ids: list[str]) -> dict[str, float]:
+        if not fact_ids:
+            return {}
+        response = self._request(
+            "POST", f"/v1/owners/{_quote(owner_id)}/recall",
+            headers=self._owner_headers(owner_id), json_body={"fact_ids": fact_ids},
+        )
+        return response.json()["weights"]
+
     def search_facts(
         self,
         owner_id: str,
@@ -307,8 +316,11 @@ class HttpTemporalMemoryClient:
         *,
         limit: int = 20,
         source_prefix: str | None = None,
+        include_lowered: bool = False,
     ) -> list[dict[str, Any]]:
         params: dict[str, Any] = {"q": query, "limit": int(limit)}
+        if include_lowered:
+            params.update(include_lowered=True, reinforce=False)
         if source_prefix is not None:
             params["source_prefix"] = source_prefix
         resp = self._request(
@@ -399,6 +411,7 @@ class HttpTemporalMemoryClient:
             "GET",
             f"/v1/owners/{_quote(owner_id)}/why/{_quote(fact_id)}",
             headers=self._owner_headers(owner_id),
+            params={"reinforce": False},
         )
         assert resp is not None
         return dict(resp.json())

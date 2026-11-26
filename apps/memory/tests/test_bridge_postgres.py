@@ -222,7 +222,7 @@ def test_resolve_confirm_edit_reject(api):
 
 
 def test_account_deletion_fences_leased_job(api, monkeypatch):
-    monkeypatch.setenv("TM_REDIS_URL", "")
+    monkeypatch.setenv("TM_REDIS_URL", "redis://127.0.0.1:6390/0")
     from temporal_memory.models import Attempt, ExtractionOutput, OutFact, Worker
     from temporal_memory.queue.jobs import PostgresJobs
 
@@ -328,11 +328,28 @@ def test_account_deletion_purges_local_redis_and_excludes_owner(api, monkeypatch
     note = _seed_direct(api, headers, owner, "note", "notes", "learning/research", "Fixture note")
     _seed_direct(api, headers, owner, "gmail", "gmail:inbox", "career/work", "Fixture email")
     _seed_direct(api, headers, owner, "video", "takeout_youtube", "travel/air", "Fixture video")
+    _seed_direct(api, headers, owner, "youtube", "youtube:history", "learning/tutorials", "Fixture channel")
     _seed_direct(api, headers, owner, "meeting", "calendar", "events/meeting", "Fixture calendar")
     assert note in client.post(f"{base}/context", headers=headers, json={"text": "Fixture note"}).text
     embed._PENDING[owner] = {"rows": []}
     embed._LAST_SWEEP_AT[owner] = 1.0
     key, unrelated = f"tm:owner:{owner}:context", f"tm:owner:{owner}b:context"
+    from temporal_memory.privacy import controls
+
+    purge = controls.purge_redis
+    purge_visibility = []
+
+    def observe_purge(target):
+        with api["db"].connection() as conn:
+            deleted = controls.owner_deleted(conn, target)
+        purge_visibility.append(deleted)
+        if deleted:
+            # Simulate an in-flight read repopulating Redis before the fence committed.
+            with redis.Redis.from_url(url) as late_cache:
+                late_cache.set(key, "late", ex=120)
+        return purge(target)
+
+    monkeypatch.setattr(controls, "purge_redis", observe_purge)
     with redis.Redis.from_url(url) as cache:
         cache.set(key, "owned", ex=120)
         cache.set(unrelated, "other", ex=120)
@@ -342,6 +359,7 @@ def test_account_deletion_purges_local_redis_and_excludes_owner(api, monkeypatch
             assert result.status_code == 200, result.text
             assert result.json()["redis_purged"] is True and not cache.exists(key)
             assert cache.exists(unrelated)
+            assert purge_visibility == [False, True]
             assert owner not in embed._PENDING and owner not in embed._LAST_SWEEP_AT
             assert owner not in context._PACK_CACHE and owner not in context._ALIAS_CACHE
             assert all(key[1] != owner for key in retrieval._LEARNED_CACHE)
@@ -359,3 +377,79 @@ def test_account_deletion_purges_local_redis_and_excludes_owner(api, monkeypatch
                 assert conn.execute("SELECT deletion_generation FROM owners WHERE id = %s", (owner,)).fetchone()["deletion_generation"] >= 1
         finally:
             cache.delete(key, unrelated)
+
+
+@pytest.mark.parametrize(("mode", "weight"), [
+    ("fact", 0.35), ("source", 0.35), ("record", 0.35), ("subject", 0.35),
+    ("aged", 0.35), ("partial", 0.75), ("cap", 1.0),
+])
+def test_explicit_recall_reinforces_only_selected_fact(api, monkeypatch, mode, weight):
+    monkeypatch.setenv("TM_SEMANTIC", "0")
+    client, headers = api["client"], api["karim"]
+    base = "/v1/owners/karim"
+    text = "copper observatory"
+    fact = _seed_direct(api, headers, "karim", "note", "notes", "learning/research", text)
+    peer = _seed_direct(api, headers, "karim", "peer", "notes", "learning/research", "silver telescope")
+    with api["db"].transaction() as conn:
+        current = conn.execute("SELECT subject_id FROM facts WHERE id = %s", (fact,)).fetchone()
+        if mode == "subject":
+            conn.execute("UPDATE subjects SET lowered_at = now() WHERE id = %s", (current["subject_id"],))
+        if mode == "aged":
+            conn.execute("UPDATE facts SET valid_from = '2000-01-01', provenance = 'inferred' WHERE id = %s", (fact,))
+        if mode == "partial":
+            conn.execute("UPDATE facts SET weight_steps = 1 WHERE id = %s", (fact,))
+        before = conn.execute("SELECT valid_from, provenance, status FROM facts WHERE id = %s", (fact,)).fetchone()
+    target = {"fact": {"fact_id": fact}, "record": {"record_ids": ["note"]}, "source": {"source": "notes"}}.get(mode)
+    if target:
+        client.post(f"{base}/lower", headers=headers, json=target).raise_for_status()
+    if mode not in ("partial", "cap"):
+        assert fact not in client.post(f"{base}/context", headers=headers, json={"text": text}).text
+        passive = client.get(f"{base}/search", headers=headers, params={"q": text}).json()["facts"]
+        assert fact not in {hit["id"] for hit in passive}
+    for denied in ({"Authorization": "Bearer adm"}, api["layla"]):
+        assert client.get(f"{base}/search", headers=denied, params={"q": text, "include_lowered": True}).status_code == 403
+        assert client.post(f"{base}/recall", headers=denied, json={"fact_ids": [fact]}).status_code == 403
+
+    if mode in ("fact", "aged"):
+        hits = client.get(f"{base}/search", headers=headers, params={"q": text, "include_lowered": True}).json()["facts"]
+        assert hits[0]["id"] == fact and hits[0]["weight"] == pytest.approx(weight)
+    elif mode == "record":
+        client.get(f"{base}/why/{fact}", headers=headers).raise_for_status()
+    else:
+        result = client.post(f"{base}/recall", headers=headers, json={"fact_ids": [fact]}).json()
+        assert result["facts"][0]["id"] == fact
+        assert result["weights"] == {fact: pytest.approx(weight)}
+
+    with api["db"].connection() as conn:
+        after = conn.execute(
+            "SELECT f.valid_from, f.provenance, f.status, f.lowered_at, f.last_refreshed_at, w.weight "
+            "FROM facts f JOIN memory_fact_weights w USING (owner, id) WHERE f.id = %s", (fact,),
+        ).fetchone()
+        assert {key: after[key] for key in before} == before
+        assert after["last_refreshed_at"] is not None
+        assert after["lowered_at"] is None
+        assert after["weight"] == pytest.approx(weight)
+        if mode in ("source", "subject"):
+            assert conn.execute("SELECT weight FROM memory_fact_weights WHERE id = %s", (peer,)).fetchone()["weight"] == 0.01
+    assert fact in client.post(f"{base}/context", headers=headers, json={"text": text}).text
+
+
+def test_delete_account_fails_closed_when_redis_is_empty(api, monkeypatch):
+    monkeypatch.setenv("TM_REDIS_URL", "")
+    client = api["client"]
+    assert client.post("/v1/owners/karim/delete-my-data", headers={"Authorization": "Bearer adm"}).status_code == 503
+    with api["db"].connection() as conn:
+        assert conn.execute("SELECT deleted_at FROM owners WHERE id = 'karim'").fetchone()["deleted_at"] is None
+
+
+def test_training_backup_is_referenced_only_by_deletion():
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1] / "src" / "temporal_memory"
+    readers = [
+        path.relative_to(root).as_posix() for path in root.rglob("*.py")
+        if "training_backups" in path.read_text(encoding="utf-8").casefold()
+    ]
+    assert readers == ["privacy/controls.py"]
+    controls = (root / readers[0]).read_text(encoding="utf-8")
+    assert controls.count("training_backups") == controls.count("INSERT INTO training_backups") == 1
