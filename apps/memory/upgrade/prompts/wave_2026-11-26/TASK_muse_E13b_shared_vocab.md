@@ -12,7 +12,22 @@
   - `apps/memory/upgrade/prompts/E13b_similar_queries_vocab_agent.md`
   - `apps/memory/upgrade/reports/E10.review.md`
   - `docs/submissions/shared/founder-decisions.md` (D17, D19, D21)
-  - `apps/memory/CLAUDE.md` and root `CLAUDE.md` (Rule 9, `apps/web` frozen)
+  - `apps/memory/CLAUDE.md` and root `CLAUDE.md` (Rule 9, Google Limited Use, `apps/web` frozen)
+
+---
+
+## Claude Phase A Mandatory Privacy Fixes
+
+Incorporate all of the following (`A1 #4` & `A1 #5`):
+
+1. **Google Limited Use (`A1 #4`):**
+   - Drop any `learned_terms` whose provenance includes `gmail`, `calendar`, `youtube`, `takeout`, or `google` **before** clustering or sending to the LLM.
+2. **Keyed HMAC-SHA256 (`A1 #5`):**
+   - Hash owner IDs in `vocab_query_signals` with server-keyed **HMAC-SHA256** (`TM_SIGNAL_HMAC_KEY` env / server secret) — **NEVER** plain unkeyed SHA-256.
+3. **User-Typed Queries Only (`A1 #5`):**
+   - Log **ONLY** queries the user explicitly typed — **NEVER** log automatic `/context` calls into `vocab_query_signals`.
+4. **Delete-My-Data Exclusion (`A1 #5`):**
+   - Exclude deleted owners from `distinct_owners` counts and provide **`purge_owner_query_signals(conn, owner_id)`** so account deletion removes/excludes the user's signals immediately.
 
 ---
 
@@ -20,22 +35,23 @@
 
 ### 1. Migration `0009_shared_vocab_proposals.sql` (Explicitly `0009`)
 - Path: `apps/memory/src/temporal_memory/db/migrations/0009_shared_vocab_proposals.sql`
-- **Do NOT use `0008`** — `0008_memory_controls.sql` is reserved exclusively for E13a.
+- **Do NOT use `0008` or `0010`** — `0008_memory_controls.sql` (and `0010_d19b_recall_boost.sql`, if `:5442` already recorded `version = 8`) are reserved exclusively for E13a.
+- **Migration coordination note:** Run `0009_shared_vocab_proposals.sql` knowing E13a may add `0010` if `:5442` already recorded `version = 8`, OR if E13a keeps everything in unmerged `0008`, `0009` remains cleanly after `0008`; E13b merges **after** E13a and will rebase cleanly on `main`.
 - Define:
-  - Privacy-safe anonymised query signal storage (e.g., `vocab_query_signals`: hashed owner key, folded query/term, 1024-d `BAAI/bge-m3` `vector(1024)` embedding, hit count, resolved branch if any, timestamps — **never** store raw owner IDs or raw PII sentences).
+  - Privacy-safe anonymised query signal storage (e.g., `vocab_query_signals`: server-keyed HMAC-SHA256 owner key, folded query/term, 1024-d `BAAI/bge-m3` `vector(1024)` embedding, hit count, resolved branch if any, timestamps — **never** store raw owner IDs, plain SHA-256 owner hashes, or raw PII sentences).
   - `shared_vocab_proposals` table (`id`, `canonical_term`, `aliases_en_ar`, `parent_path`, `rationale`, `distinct_owners`, `cluster_metadata`, `status` `'pending' | 'approved' | 'rejected'`, `decided_at`, `decided_by`, `created_at`).
 
 ### 2. Similar-Query Retrieval & Clustering (`vocab/similarity.py`)
 - Path: `apps/memory/src/temporal_memory/vocab/similarity.py`
-- Screen any recorded unknown/low-hit search or context query token through `privacy/sensitive.py` **before** writing to `vocab_query_signals` (never store phone/email/names/Rule 9 sensitive terms).
+- Log **ONLY** queries the user explicitly typed (never automatic `/context` calls), and screen any recorded unknown/low-hit user-typed query token through `privacy/sensitive.py` **before** writing to `vocab_query_signals` (never store phone/email/names/Rule 9 sensitive terms).
 - Implement **`find_similar_queries_and_terms(conn, query_text, *, top_k=15, min_sim=0.68)`**:
   - Combines `pgvector` cosine similarity over `bge-m3` query embeddings + existing curated `vocab/tree.json` node/alias embeddings with folded/Arabic-normalized lexical overlap (`fold_text`, `_arabic_variants` from `vocab/loader.py`).
-  - Returns ranked similar queries/terms with **aggregate `distinct_owners` count only** (zero owner IDs exposed), nearest curated `parent_path`, and similarity score.
+  - Returns ranked similar queries/terms with **aggregate `distinct_owners` count only** (zero owner IDs exposed, excluding deleted owners), nearest curated `parent_path`, and similarity score.
 
 ### 3. Logical Agent for Shared Vocabulary Proposals (`vocab/shared_proposer.py`)
 - Path: `apps/memory/src/temporal_memory/vocab/shared_proposer.py`
 - Implement **`propose_shared_vocab_promotions(conn, *, min_owners=3, min_sim=0.72, runner=None)`**:
-  - Clusters anonymised multi-owner query terms and recurring per-owner `learned_terms` crossing `>= min_owners` distinct owners (aggregate counts only — zero cross-owner data leaks).
+  - Clusters anonymised multi-owner query terms and recurring per-owner `learned_terms` (dropping any `learned_terms` whose provenance includes `gmail`, `calendar`, `youtube`, `takeout`, or `google` **before** clustering or LLM calls, and excluding deleted owners) crossing `>= min_owners` distinct owners (aggregate counts only — zero cross-owner data leaks).
   - Filters every candidate strictly through `privacy/sensitive.py` + `eligible_subject` + `VocabTree.blocks_proposals` fail-closed.
   - Runs logical verification via `core/extract.py` LLM runner (receiving **only** anonymized term cluster, distinct owner count, and candidate parent branches from `vocab/tree.json` — zero raw user data) to judge genuine generalizable Dubai/everyday terms, assign `{canonical_term, aliases_en_ar, parent_path, rationale}`, or reject noise.
   - Inserts approved candidates into `shared_vocab_proposals` with `status = 'pending'`; **never** auto-edits `vocab/tree.json`.
@@ -57,6 +73,11 @@
 - New `apps/memory/tests/test_shared_vocab_agent.py`:
   - Happy path: `>= 3` distinct owners querying/learning semantically similar EN/AR/Arabizi terms cluster via `find_similar_queries_and_terms`, pass logical agent (`mocked` + structured runner check), and land in `shared_vocab_proposals` with `distinct_owners >= 3` and zero owner IDs leaked.
   - Failure paths: `< min_owners` rejected, sensitive/Rule-9 term blocked fail-closed, non-admin/owner/worker caller gets `403` on `/v1/admin/vocab/proposals*`.
+  - **Phase A Privacy Tests (`A1 #4`, `A1 #5`):**
+    - Google-source `learned_terms` (`gmail`, `calendar`, `youtube`, `takeout`, `google` provenance) are dropped before clustering / LLM calls.
+    - Keyed HMAC-SHA256 (`TM_SIGNAL_HMAC_KEY`) is used for `vocab_query_signals` owner hashing (verify non-plain unkeyed SHA-256 hash).
+    - Automatic `/context` calls are NOT logged to `vocab_query_signals` (user-typed queries only).
+    - Deleted owners are excluded from `distinct_owners` counts and `purge_owner_query_signals(conn, owner_id)` removes/excludes their signals immediately.
 - Run full `apps/memory` Postgres suite in `contest-memory` venv against `:5442`:
   - `$env:TM_TEST_DATABASE_URL="postgresql://tm:tm@localhost:5442/tm"`
   - `G:\Haitham\VsCode\contest-memory\apps\memory\.venv\Scripts\python.exe -m pytest -q` (all pass, 0 failed).

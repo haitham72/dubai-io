@@ -30,6 +30,19 @@ describe("community session helpers", () => {
 
     vi.stubEnv("NEXT_PUBLIC_DUBAI_API", " https://api.example.test/ ");
     expect(getDubaiApi()).toBe("https://api.example.test");
+
+    vi.stubGlobal("location", { hostname: "192.168.1.50", protocol: "http:" });
+    vi.stubEnv("NEXT_PUBLIC_DUBAI_API", "http://localhost:8000");
+    expect(getDubaiApi()).toBe("http://192.168.1.50:8000");
+    const rewrittenUrl = new URL(googleStartUrl("http://192.168.1.50:3060/signin"));
+    expect(rewrittenUrl.origin + rewrittenUrl.pathname).toBe("http://192.168.1.50:8000/api/identity/google/start");
+
+    vi.stubEnv("NEXT_PUBLIC_DUBAI_API", "http://127.0.0.1:8000/");
+    expect(getDubaiApi()).toBe("http://192.168.1.50:8000");
+
+    vi.stubGlobal("location", { hostname: "localhost", protocol: "http:" });
+    vi.stubEnv("NEXT_PUBLIC_DUBAI_API", "http://localhost:8000");
+    expect(getDubaiApi()).toBe("http://localhost:8000");
   });
   test("token round-trips and sign-out clears it; headers only when signed in", () => {
     expect(authHeaders(getSessionToken())).toEqual({});

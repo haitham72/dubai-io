@@ -1,16 +1,22 @@
 // One sign-in across Quest / Community / Messenger: the Google flow runs on apps/api (:8000), the code is redeemed at
 // THIS app's own API for a community-scoped session of the same user_id. The token only lives in this browser.
+
+/** Rewrite a loopback base URL (localhost / 127.0.0.1) to the browser's LAN host when accessed from another device. */
+export function rewriteLoopbackForLanHost(baseUrl: string): string {
+  const clean = baseUrl.trim().replace(/\/+$/, "");
+  const m = clean.match(/^https?:\/\/(?:localhost|127\.0\.0\.1)(:\d+)?(\/.*)?$/i);
+  if (!m) return clean;
+  const loc = typeof window !== "undefined" ? window.location : globalThis.location;
+  if (loc?.hostname && loc.hostname !== "localhost" && loc.hostname !== "127.0.0.1") {
+    const proto = loc.protocol === "https:" ? "https:" : "http:";
+    return `${proto}//${loc.hostname}${m[1] ?? ""}${m[2] ?? ""}`;
+  }
+  return clean;
+}
+
 export function getDubaiApi(): string {
   const envBase = process.env.NEXT_PUBLIC_DUBAI_API?.trim();
-  if (envBase) return envBase.replace(/\/+$/, "");
-  if (typeof window !== "undefined") {
-    const host = window.location?.hostname;
-    if (host && host !== "localhost" && host !== "127.0.0.1") {
-      const proto = window.location.protocol === "https:" ? "https:" : "http:";
-      return `${proto}//${host}:8000`;
-    }
-  }
-  return "http://localhost:8000";
+  return rewriteLoopbackForLanHost(envBase || "http://localhost:8000");
 }
 
 export const DUBAI_API = getDubaiApi();
