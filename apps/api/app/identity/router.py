@@ -253,12 +253,9 @@ def create_identity_router(
         bridge = getattr(request.app.state, "memory_bridge", None)
         if bridge is not None:
             bridge.consent_store.invalidate_projection_cache(owner)
-        try:
-            from ..community.context_profile import purge_owner_community_data
-        except ImportError:
-            pass
-        else:
-            purge_owner_community_data(owner)
+        from ..community.context_profile import purge_owner_community_data
+
+        purge_owner_community_data(owner)
         purge_api_owner_cache(owner)
         service.store.delete_account_access(owner, deleted_at=result["deleted_at"])
         for app_id in ("quest", "community", "messenger"):

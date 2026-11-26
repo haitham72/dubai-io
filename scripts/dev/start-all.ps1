@@ -399,14 +399,17 @@ if (-not (Test-HttpOk "http://127.0.0.1:$ApiPort/api/health")) {
     $apiOut = Join-Path $LogsDir "api.out.log"
     $apiErr = Join-Path $LogsDir "api.err.log"
     $previousMemoryRedisUrl = [Environment]::GetEnvironmentVariable("TM_REDIS_URL")
+    $previousDevTestbench = [Environment]::GetEnvironmentVariable("DEV_TESTBENCH")
     try {
         $env:TM_REDIS_URL = $hostMemoryRedisUrl
+        $env:DEV_TESTBENCH = "1"
         $proc = Start-Process -FilePath $ApiPy `
             -ArgumentList @("-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "$ApiPort") `
             -WorkingDirectory $ApiDir -RedirectStandardOutput $apiOut -RedirectStandardError $apiErr `
             -WindowStyle Hidden -PassThru
     } finally {
         [Environment]::SetEnvironmentVariable("TM_REDIS_URL", $previousMemoryRedisUrl)
+        [Environment]::SetEnvironmentVariable("DEV_TESTBENCH", $previousDevTestbench)
     }
     $pids["apps_api"] = $proc.Id
     $adminPassed["apps_api"] = $proc.Id
@@ -426,6 +429,7 @@ if (-not (Test-HttpOk "http://127.0.0.1:$ApiPort/api/health")) {
 $CommunityApiPort = 8060; $MessengerApiPort = 8070; $CommunityWebPort = 3060; $MessengerWebPort = 5173
 $CommunityDir = Join-Path $RepoRoot "apps\community"
 $MessengerDir = Join-Path $RepoRoot "apps\messenger"
+$testbenchOrigins = "http://localhost:$ApiPort,http://127.0.0.1:$ApiPort,http://${lanIp}:$ApiPort"
 Ensure-NodeModules $CommunityDir "apps/community"
 Ensure-NodeModules $MessengerDir "apps/messenger"
 Write-Host "[4b] Community + Messenger (API + website), shared identity and http memory..."
@@ -444,8 +448,8 @@ function Start-EntryApi([string]$Name, [string]$Module, [int]$Port) {
         "TM_ADMIN_TOKEN" = $memAdminToken
         "TM_REDIS_URL" = $hostMemoryRedisUrl
         "DUBAI_SHARED_IDENTITY_DB" = $identityTarget
-        "COMMUNITY_ALLOWED_ORIGINS" = "http://localhost:$CommunityWebPort,http://127.0.0.1:$CommunityWebPort,http://${lanIp}:$CommunityWebPort"
-        "MESSENGER_ALLOWED_ORIGINS" = "http://localhost:$MessengerWebPort,http://127.0.0.1:$MessengerWebPort,http://${lanIp}:$MessengerWebPort"
+        "COMMUNITY_ALLOWED_ORIGINS" = "http://localhost:$CommunityWebPort,http://127.0.0.1:$CommunityWebPort,http://${lanIp}:$CommunityWebPort,$testbenchOrigins"
+        "MESSENGER_ALLOWED_ORIGINS" = "http://localhost:$MessengerWebPort,http://127.0.0.1:$MessengerWebPort,http://${lanIp}:$MessengerWebPort,$testbenchOrigins"
     }
     $saved = @{}
     foreach ($k in $vars.Keys) { $saved[$k] = [Environment]::GetEnvironmentVariable($k); [Environment]::SetEnvironmentVariable($k, $vars[$k]) }
