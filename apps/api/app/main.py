@@ -6,6 +6,7 @@ Run: cd apps/api && .venv/Scripts/python -m uvicorn app.main:app --host 0.0.0.0 
 Then open http://<pc-ip>:8000/lab/home-v2-cyan.html
 """
 import os
+from pathlib import Path
 import secrets
 from threading import RLock
 import uuid
@@ -425,5 +426,12 @@ def root():
 
 
 app.mount("/dash", StaticFiles(directory=settings.dash_dir, html=True), name="dash")  # before the "/" catch-all
+if os.environ.get("DEV_TESTBENCH") == "1":
+    @app.get("/testbench", include_in_schema=False)
+    def testbench_root():
+        return RedirectResponse("/testbench/")
+
+    testbench_dir = Path(__file__).resolve().parents[2] / "testbench"
+    app.mount("/testbench", StaticFiles(directory=testbench_dir, html=True), name="testbench")
 app.mount("/lab", StaticFiles(directory=settings.web_dir, html=True), name="lab")
 app.mount("/", StaticFiles(directory=settings.web_dir, html=True), name="web")

@@ -449,12 +449,9 @@ def purge_owner_community_data(owner_id: str, store=None) -> dict[str, Any]:
     Redis key `cm:ctx:{owner}`, and the in-process TTL fallback cache.
     """
     if store is None:
-        from app import actions as _actions
+        from app.actions import engine
 
-        eng = getattr(_actions, "_engine", None)
-        if eng is None or getattr(eng, "store", None) is None:
-            raise RuntimeError("Action engine store is not initialized")
-        store = eng.store
+        store = engine().store
     clear_ephemeral_context(owner_id)
     setup_context_profile(store)
     store.db.execute("DELETE FROM cm_usage_profile WHERE owner=?", (owner_id,))

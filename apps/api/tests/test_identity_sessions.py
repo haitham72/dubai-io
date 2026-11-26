@@ -418,13 +418,17 @@ def test_delete_my_data_requires_confirmation_and_revokes_all_app_access(tmp_pat
     from app.memory_bridge.models import MemoryBridgeUnavailable
     from app import today_feed
 
+    monkeypatch.setattr(actions, "_engine", None)
+    monkeypatch.setattr(actions.settings, "database_url", "")
+    monkeypatch.setattr(actions.settings, "data_dir", tmp_path)
     svc, store, _actions, client = _setup(tmp_path)
     jwt = sign_hs256_jwt(default_claims(sub="550e8400-e29b-41d4-a716-446655440099"))
     bearer = {"Authorization": f"Bearer {jwt}"}
     quest = client.post("/api/identity/sessions", headers=bearer, json={"app_id": "quest"}).json()
     messenger = client.post("/api/identity/sessions", headers=bearer, json={"app_id": "messenger"}).json()
     owner = quest["user_id"]
-    headers = {"X-App-Session": quest["session_token"]}
+    quest_headers = {"X-App-Session": quest["session_token"]}
+    headers = {"X-App-Session": messenger["session_token"]}
     store.create_memory_token(record_id="delete-token", user_id=owner, tm_owner_id=owner, tm_token_id="tm-delete",
                               kind="device", label="device", encrypted_token=b"secret",
                               created_at="2026-11-25T09:00:00Z")
@@ -447,12 +451,13 @@ def test_delete_my_data_requires_confirmation_and_revokes_all_app_access(tmp_pat
     handler.delete_my_data.return_value["redis_purged"] = True
     assert client.post(url, headers=headers, json={"confirm": True}).status_code == 200
     handler.delete_my_data.assert_called_with(owner)
+    assert actions.engine().store.db.execute("SELECT COUNT(*) FROM cm_usage_profile WHERE owner=?", (owner,)).fetchone()[0] == 0
     assert cache_purge.call_count == 4
     assert store.get_user(owner)["status"] == "deleted"
     assert store.get_active_memory_token(owner, kind="device") is None
     assert owner not in today_feed._OWNER_CACHE
     assert client.get("/api/identity/me", headers=headers).status_code == 401
-    assert client.get("/api/identity/me", headers={"X-App-Session": messenger["session_token"]}).status_code == 401
+    assert client.get("/api/identity/me", headers=quest_headers).status_code == 401
     assert client.get("/api/identity/me", headers=bearer).status_code == 403
 
 
