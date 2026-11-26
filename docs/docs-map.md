@@ -102,23 +102,18 @@ docs/archive/
 │   ├── dashboard.md (125 lines)
 │   ├── domains.md (29 lines)
 │   ├── ios-upgrade.md (60 lines)
-│   ├── review-prompt.md (37 lines)
 │   ├── unified-app-design.md (147 lines)
 │   └── website-rebuild.md (70 lines)
 ├── references/
 │   ├── api-authorization-outreach.md (37 lines)
 │   ├── assistant-context.md (67 lines)
-│   ├── assistant-design-interaction-review-prompt.md (59 lines)
 │   ├── assistant-design-interaction-review.md (384 lines, 45 KB)
 │   ├── assistant-experience-plan.md (201 lines, 26 KB)
 │   ├── assistant-experience-review.md (622 lines, 83 KB)
-│   ├── assistant-plan-review-prompt.md (52 lines)
 │   ├── assistant-review-decisions.md (128 lines, 20 KB)
 │   ├── community-content-sources.md (23 lines)
 │   ├── community-data-storage-plan.md (104 lines)
-│   ├── external-review-prompt.md (32 lines)
 │   ├── ios-swift-plan.md (143 lines)
-│   ├── ios-web-agent-prompt.md (88 lines)
 │   ├── personal-assistant-direction.md (154 lines)
 │   ├── redesign.md (680 lines, 44 KB)
 │   └── visuals-libraries.md (174 lines)
@@ -127,10 +122,6 @@ docs/archive/
 │   ├── Dubai-io android integration.md (228 lines)
 │   ├── Dubai-io iPhone integration.md (258 lines)
 │   └── Dubai-io_product evolution.md (156 lines)
-├── root/
-│   ├── cursor-plan.md (77 lines)
-│   ├── handoff.md (231 lines, 42 KB)
-│   └── handoff-ios.md (37 lines)
 └── superpowers/plans/
     ├── 2026-10-23-device-switch-and-phone-core.md (80 lines)
     ├── 2026-10-23-unified-app-foundation.md (137 lines)
@@ -286,7 +277,7 @@ Because the memory architecture evolved across five iterations between 13 Oct an
    - Also contains `fcc0f37`, which rewrote `CLAUDE.md` rules 1–10 into *"Guardrails (industry standard, founder 15 Nov)"* where sensitive categories are *"stored only when the user states them or opts in"*.
    - **Action:** Ask the founder (§7 below) whether to rescue `docs/services/agents/*` and the 15 Nov guardrail wording into `main`, or archive `origin/docs/consolidate-plan-agents`.
 2. **Unmerged Branch `remotes/origin/cursor/readme-project-story-cd6a` (14 Nov, `dac3d4f`):**
-   - Rewrote `README.md` into a 251-line narrative based on pre-9-Nov docs (`handoff.md`, `cursor-plan.md`, community track as active).
+   - Rewrote `README.md` into a 251-line narrative based on pre-9-Nov docs (`handoff.md`, `cursor-plan.md` (both removed 26 Nov; see git history), community track as active).
    - **Action:** Do **not** merge `dac3d4f` (it re-introduces stale pre-9-Nov paths and parked community claims); delete the remote branch after review.
 3. **Untracked 17 Nov Files in `docs/plan/`:**
    - `docs/plan/BUILD_REPORT.md`: Documents an external `quest/*` Hindsight 1.2.1 prototype. **Move to `docs/Researches/quest-hindsight-prototype-2026-11.md` (or `docs/archive/Researches/`)** after rescuing its 5 engineering lessons (already summarized in `desktop-llm-sessions.md` §10).

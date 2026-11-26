@@ -448,7 +448,7 @@ The memory engine's export and graph representation is rendered to the user via 
 | Vault API (`/vault/subjects`, `/vault/people`, `/quests`, `/hypotheses`, `/timeline`, `/onboarding-status`, `/why`) | ✅ exists; ✅ provenance rendered (U1c) |
 | `/vault/graph?view=subjects\|people` (versioned DTO, 7 clusters, Rule 9 gated, `+N more`, T1 + suggestions) + `POST …/tier` | ✅ U1c |
 | `/why` with a cited reason span or "reason unknown"; `/story` (a deterministic cited timeline, optional verified narration) | ✅ U5 |
-| §9 Quest-like export tree | ✅ U6 Quest tree + persona cards merged 24 Nov (PR #4, bf7d52e); gold-month e2e not run (corpus not in repo; see `apps/memory/upgrade/reports/U6.md`) |
+| §9 Quest-like export tree | ✅ U6 Quest tree + persona cards merged 24 Nov (PR #4, bf7d52e); gold-month e2e not run (corpus not in repo; see `apps/memory/upgrade/reports/U6.md` (removed 26 Nov; see git history)) |
 | MCP tools (claim / submit jobs, `memory_search`, `memory_context`, vault summary) | ✅ |
 | Community / Messenger CR-TM bridge (`/records`, `/forget`, `/facts/{id}/resolve`, `/context`, `/search`) | ✅ on Postgres, 8/8 live ops (U1a); 📋 CS-1 adds live bridge contract tests |
 

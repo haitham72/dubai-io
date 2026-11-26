@@ -4,7 +4,7 @@ Single current-state file. Scope: `PLAN.md`. Open requests: [request-backlog.md]
 
 ## Direction (25 Nov 2026)
 
-All three products and their nine client targets (iPhone via Expo Go, website, Electron, for each of Dubai-io, Community and Messenger) are on `main`, with **E10, E11a, E11b, and E12 merged** and the full 5-lane acceptance rerun recorded in `apps/memory/upgrade/reports/U7_post_E11.md`. Next queued packages (`D19–D22`, tracked in `apps/memory/upgrade/reports/STATUS.md`): `E13a` (Lower-to-floor `0.01` + Delete-my-data immediate external/Redis purge with de-identified training backup), `E13b` (similar-query logical agent for shared vocab proposals), and `E14a`/`E14b` (Dubai Community Facebook/Reddit parity + real Two-Tower Recommender + context-aware usage profile). Engine: temporal_note (`docs/plan/Memory/memory.md` §18). Delivery matrix: `PLAN.md` §0. Treat the 16–18 Nov lab results below as historical.
+All three products and their nine client targets (iPhone via Expo Go, website, Electron, for each of Dubai-io, Community and Messenger) are on `main`, with **E10, E11a, E11b, and E12 merged** and the full 5-lane acceptance rerun recorded in `apps/memory/upgrade/reports/U7_post_E11.md` (removed 26 Nov; see git history). Next queued packages (`D19–D22`, tracked in `apps/memory/upgrade/reports/STATUS.md`): `E13a` (Lower-to-floor `0.01` + Delete-my-data immediate external/Redis purge with de-identified training backup), `E13b` (similar-query logical agent for shared vocab proposals), and `E14a`/`E14b` (Dubai Community Facebook/Reddit parity + real Two-Tower Recommender + context-aware usage profile). Engine: temporal_note (`docs/plan/Memory/memory.md` §18). Delivery matrix: `PLAN.md` §0. Treat the 16–18 Nov lab results below as historical.
 
 ## Historical: MEM-01 & Acceptance Gates Status (18 Nov 2026; superseded by temporal_note)
 
@@ -35,12 +35,12 @@ Framework in `apps/api/app/connectors`; consolidated docs in `docs/connectors/RE
 ## Runtime
 
 - `DATABASE_URL` blank (a single space) → SQLite fallback. Local Supabase optional (`supabase/CLAUDE.md`); PostgreSQL apply of recent migrations unverified.
-- Run: follow E1 (`apps/memory/upgrade/prompts/E1_run_stack.md`) for the local demo stack on the founder's PC; E1 tracks the one-command launcher and its health check. API only: `cd apps/api; $env:DATABASE_URL=' '; .\.venv\Scripts\python.exe -m uvicorn app.main:app --port 8030`. Use local Postgres for round verification; keep OAuth keys server-side.
+- Run: follow E1 (`apps/memory/upgrade/prompts/E1_run_stack.md` (removed 26 Nov; see git history)) for the local demo stack on the founder's PC; E1 tracks the one-command launcher and its health check. API only: `cd apps/api; $env:DATABASE_URL=' '; .\.venv\Scripts\python.exe -m uvicorn app.main:app --port 8030`. Use local Postgres for round verification; keep OAuth keys server-side.
 
 ## Keys (names only)
 
 - In use (2 Nov): `OPENAI_API_KEY`, `GOOGLE_PLACES_KEY`, `SERPAPI_KEY`, `TVLY_API_KEY`. Optional: `GOOGLE_MAPS_BROWSER_KEY`, `VERTEX_PROJECT` + ADC / `VERTEX_ACCESS_TOKEN`; flags `TRYON_FIXTURE=1`, `DEMO_MAIL=1`.
-- Founder to supply (from docs/archive/root/handoff.md, 2 Nov): `GOOGLE_OAUTH_CLIENT_ID` / `_SECRET` / `_REDIRECT_URI` + `OAUTH_TOKEN_KEY`, Gmail API enabled — **needed first**; Microsoft Graph app; GitHub token; `GOOGLE_MAPS_BROWSER_KEY` before public hosting; `DATABASE_URL` (Supabase); Apple/Google developer accounts + desktop signing.
+- Founder to supply (from docs/archive/root/handoff.md (removed 26 Nov; see git history), 2 Nov): `GOOGLE_OAUTH_CLIENT_ID` / `_SECRET` / `_REDIRECT_URI` + `OAUTH_TOKEN_KEY`, Gmail API enabled — **needed first**; Microsoft Graph app; GitHub token; `GOOGLE_MAPS_BROWSER_KEY` before public hosting; `DATABASE_URL` (Supabase); Apple/Google developer accounts + desktop signing.
 
 ## Parked (not claimed)
 

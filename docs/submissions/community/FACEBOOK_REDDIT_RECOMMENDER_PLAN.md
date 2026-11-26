@@ -28,7 +28,7 @@
 | **Thread Collapse & Deep Links** | Collapsible Reddit comment trees | Recursive tree hydration (`GET /posts/{id}/comments`) | Inline `[ - ]` collapse/expand per branch + "Continue thread" |
 | **Block & Mute** | Silence abusive authors/topics server-side | `cm_user_blocks (owner, blocked_owner)`, `cm_user_mutes (owner, kind='owner'\|'group'\|'tag', target)`; enforced on feed, search, discovery, inbox | Overflow `...` menu on posts/profiles ("Mute user/community/tag", "Block user") + Settings list with Unblock/Unmute |
 | **Reports & Moderation Queue** | Structured flagging with human-in-the-loop resolution | `cm_reports (id, reporter, target_type, target_id, reason, detail, priority, status, resolved_by, created_at)`; `POST /api/community/reports`, `GET /api/community/moderation/queue`, `.../resolve` | Report modal on cards & comments; Moderator tab on group pages; priority bump on safety issues |
-| **Split Memory Consent** | Fix `MORNING.md` §E #8 | Split `remember_saved_discussions` vs `remember_public_posts` on `PUT /api/community/memory/consent` | Two independent switches in Community Profile → Memory |
+| **Split Memory Consent** | Fix `MORNING.md` (removed 26 Nov; see git history) §E #8 | Split `remember_saved_discussions` vs `remember_public_posts` on `PUT /api/community/memory/consent` | Two independent switches in Community Profile → Memory |
 
 ---
 

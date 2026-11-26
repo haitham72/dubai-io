@@ -9,7 +9,7 @@ External research and founder-supplied context. **Nothing here is the plan of re
 | File | What it is | Watch out for |
 |---|---|---|
 | `contest.md` | Cleaned copy of the Dubai Chambers **Create AI Agents Championship** rules: **four** categories (Societal / Personal / Business / Youth, under 21 only), USD 150k grants, registration and submission (prototype + pitch deck + demo video) Jan 2027, 24 semi-finalists Jan, 12 finalists March, Grand Final first week of May 2027; finalists need a fully working agent; original work; English. | The official page, not our plan. Contest facts used by the plan are in `PLAN.md` §5. |
-| `memory-research-MOVED.md` | Pointer only (18 Nov). | **Plan:** `docs/plan/Memory/memory.md`. Historical research: `docs/plan/Memory/_archive/`. |
+| `memory-research-MOVED.md` (removed 26 Nov; see git history) | Pointer only (18 Nov). | **Plan:** `docs/plan/Memory/memory.md`. Historical research: `docs/plan/Memory/_archive/`. |
 
 Moved to `docs/archive/Researches/`: phone-notification research (iPhone ANCS, Android `NotificationListenerService`) and product-evolution report (9 Nov; no phone connector is approved), and `persocial-intake.md` (separate, deprioritised project with its own repo `G:\Haitham\VsCode\Persocial`). The 17 Nov Hark (`quest-feed` / `BUILD_REPORT.md`) prototype was superseded into `docs/plan/morning-brief.md` §8, `apps/api/app/lab/CLAUDE.md`, and `memory-research-2026-11.md` §7 and removed.
 
