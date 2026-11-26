@@ -17,6 +17,7 @@ const {
   fetchMessages,
   sendMessageRest,
   resolveWsUrl,
+  googleSignInStartUrl,
   img,
   avatar,
   ORB,
@@ -679,6 +680,54 @@ let activeConvId = "";
 
   assert(isLocalDemoAsset(ORB) && ORB === "/demo/messenger-orb.svg", `unexpected ORB: ${ORB}`);
   console.log("PASS (h): img(), avatar(), and ORB return local /demo/ asset paths with zero hotlinks");
+}
+
+/* ---------- (i) googleSignInStartUrl() LAN host vs localhost fallback ---------- */
+{
+  const prevLocation = globalThis.location;
+  try {
+    delete globalThis.location;
+    assert(
+      googleSignInStartUrl("http://localhost:5173/").startsWith("http://localhost:8000/api/identity/google/start?"),
+      "expected localhost:8000 when location is unset",
+    );
+
+    globalThis.location = { hostname: "localhost", protocol: "http:" };
+    assert(
+      googleSignInStartUrl("http://localhost:5173/").startsWith("http://localhost:8000/api/identity/google/start?"),
+      "expected localhost:8000 on localhost",
+    );
+
+    globalThis.location = { hostname: "127.0.0.1", protocol: "http:" };
+    assert(
+      googleSignInStartUrl("http://127.0.0.1:5173/").startsWith("http://localhost:8000/api/identity/google/start?"),
+      "expected localhost:8000 on 127.0.0.1",
+    );
+
+    globalThis.location = { hostname: "192.168.1.50", protocol: "http:" };
+    const lanUrl = googleSignInStartUrl("http://192.168.1.50:5173/");
+    assert(
+      lanUrl.startsWith("http://192.168.1.50:8000/api/identity/google/start?"),
+      `expected http://192.168.1.50:8000, got ${lanUrl}`,
+    );
+
+    globalThis.location = { hostname: "192.168.1.50", protocol: "https:" };
+    const lanHttpsUrl = googleSignInStartUrl("https://192.168.1.50:5173/");
+    assert(
+      lanHttpsUrl.startsWith("https://192.168.1.50:8000/api/identity/google/start?"),
+      `expected https://192.168.1.50:8000, got ${lanHttpsUrl}`,
+    );
+
+    const explicitUrl = googleSignInStartUrl("http://192.168.1.50:5173/", "https://api.example.test/");
+    assert(
+      explicitUrl.startsWith("https://api.example.test/api/identity/google/start?"),
+      `expected explicit dubaiApi override, got ${explicitUrl}`,
+    );
+  } finally {
+    if (prevLocation === undefined) delete globalThis.location;
+    else globalThis.location = prevLocation;
+  }
+  console.log("PASS (i): googleSignInStartUrl resolves LAN host (:8000), localhost fallback, and explicit override");
 }
 
 actions.signOut();

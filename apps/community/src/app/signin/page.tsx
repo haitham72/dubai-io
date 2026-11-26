@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { API_BASE } from "@/lib/api";
+import { getApiBase } from "@/lib/api";
 import { authHeaders, getSessionToken, googleStartUrl, setSessionToken } from "@/lib/session";
 
 type Me = { display_name?: string; user_id?: string };
@@ -16,7 +16,7 @@ export default function SignInPage() {
     async function run() {
       if (code) {
         window.history.replaceState({}, "", url.pathname);
-        const r = await fetch(`${API_BASE}/api/identity/google/exchange`, {
+        const r = await fetch(`${getApiBase()}/api/identity/google/exchange`, {
           method: "POST", headers: { "content-type": "application/json" },
           body: JSON.stringify({ auth_code: code, app_id: "community", device_label: "Community web" }),
         });
@@ -25,7 +25,7 @@ export default function SignInPage() {
       }
       const token = getSessionToken();
       if (!token) return;
-      const r = await fetch(`${API_BASE}/api/identity/me`, { headers: authHeaders(token) });
+      const r = await fetch(`${getApiBase()}/api/identity/me`, { headers: authHeaders(token) });
       if (!r.ok) { setSessionToken(null); return; }
       if (live) setMe(await r.json());
     }

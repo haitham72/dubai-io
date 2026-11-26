@@ -4,6 +4,7 @@ import { setSessionToken } from "@/lib/session";
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
   setSessionToken(null);
 });
 
@@ -163,5 +164,36 @@ describe("api client: honest errors", () => {
   test("network failure is an ApiError with status 0", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => { throw new Error("ECONNREFUSED"); }));
     await expect(api.getFeed()).rejects.toMatchObject({ status: 0 });
+  });
+});
+
+describe("getApiBase: LAN Wi-Fi host vs localhost fallback", () => {
+  test("returns localhost fallback on localhost, 127.0.0.1, or unset hostname", () => {
+    vi.stubGlobal("location", { hostname: "localhost", protocol: "http:" });
+    expect(api.getApiBase()).toBe("http://localhost:8060");
+
+    vi.stubGlobal("location", { hostname: "127.0.0.1", protocol: "http:" });
+    expect(api.getApiBase()).toBe("http://localhost:8060");
+
+    vi.stubGlobal("location", { hostname: "", protocol: "http:" });
+    expect(api.getApiBase()).toBe("http://localhost:8060");
+  });
+
+  test("derives LAN API URL on non-loopback host and uses it dynamically in request()", async () => {
+    vi.stubGlobal("location", { hostname: "192.168.1.50", protocol: "http:" });
+    expect(api.getApiBase()).toBe("http://192.168.1.50:8060");
+
+    const f = stubFetch(200, { posts: [] });
+    await api.getFeed(5);
+    expect(lastCall(f).url).toBe("http://192.168.1.50:8060/api/community/feed?limit=5");
+
+    vi.stubGlobal("location", { hostname: "192.168.1.50", protocol: "https:" });
+    expect(api.getApiBase()).toBe("https://192.168.1.50:8060");
+  });
+
+  test("prefers NEXT_PUBLIC_CM_API env var and strips trailing slashes", () => {
+    vi.stubGlobal("location", { hostname: "192.168.1.50", protocol: "http:" });
+    vi.stubEnv("NEXT_PUBLIC_CM_API", " https://community.example.test/// ");
+    expect(api.getApiBase()).toBe("https://community.example.test");
   });
 });
