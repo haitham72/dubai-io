@@ -196,4 +196,20 @@ describe("getApiBase: LAN Wi-Fi host vs localhost fallback", () => {
     vi.stubEnv("NEXT_PUBLIC_CM_API", " https://community.example.test/// ");
     expect(api.getApiBase()).toBe("https://community.example.test");
   });
+
+  test("rewrites loopback NEXT_PUBLIC_CM_API to LAN host while preserving port and protocol", () => {
+    vi.stubGlobal("location", { hostname: "192.168.1.50", protocol: "http:" });
+    vi.stubEnv("NEXT_PUBLIC_CM_API", "http://localhost:8060");
+    expect(api.getApiBase()).toBe("http://192.168.1.50:8060");
+
+    vi.stubEnv("NEXT_PUBLIC_CM_API", "http://127.0.0.1:8060/");
+    expect(api.getApiBase()).toBe("http://192.168.1.50:8060");
+
+    vi.stubGlobal("location", { hostname: "192.168.1.50", protocol: "https:" });
+    vi.stubEnv("NEXT_PUBLIC_CM_API", "http://localhost:8060");
+    expect(api.getApiBase()).toBe("https://192.168.1.50:8060");
+
+    vi.stubGlobal("location", { hostname: "localhost", protocol: "http:" });
+    expect(api.getApiBase()).toBe("http://localhost:8060");
+  });
 });

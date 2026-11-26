@@ -12,6 +12,7 @@ export {
   resolveWsUrl,
   signInSupabasePassword,
   openIdentitySession,
+  completePairingCode,
   getIdentityMe,
   issueWsTicket,
   listConversations,

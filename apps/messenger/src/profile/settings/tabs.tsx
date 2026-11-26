@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import { Avatar, Button, ICON, Segmented } from "../../ui";
 import { actions, useStore } from "../../store";
-import { googleSignInStartUrl } from "../../apiclient/chatCore";
+import { completePairingCode, googleSignInStartUrl } from "../../apiclient/chatCore";
 import { applyFrost, loadFrost } from "../../frost";
 import { Group, Row, ToggleRow } from "../shared";
 import MemorySettings from "./MemorySettings";
@@ -53,6 +53,27 @@ export function AccountTab({ say }: TabProps) {
   const [language, setLanguage] = useState(me.language);
   const [region, setRegion] = useState("United Arab Emirates");
   const [dateFmt, setDateFmt] = useState("DD/MM/YYYY");
+  const [pairCode, setPairCode] = useState("");
+  const [pairing, setPairing] = useState(false);
+
+  async function handlePair() {
+    const clean = pairCode.trim().toUpperCase();
+    if (!clean) {
+      say("Enter the 6-character pairing code from Dubai-io");
+      return;
+    }
+    setPairing(true);
+    try {
+      const out = await completePairingCode(clean);
+      await actions.signInWithSessionToken(out.session_token, { displayName: out.display_name });
+      setPairCode("");
+      say(out.display_name ? `Paired as ${out.display_name}` : "Device paired");
+    } catch (err) {
+      say(err instanceof Error && err.message ? err.message : "Pairing code invalid or expired");
+    } finally {
+      setPairing(false);
+    }
+  }
 
   return <>
     <div className={st.summary}>
@@ -67,6 +88,26 @@ export function AccountTab({ say }: TabProps) {
     <Group title="Sign-in & security">
       <Row icon={KeyRound} label="Continue with Google" value="Same account as Quest and Community"
         onClick={() => { window.location.href = googleSignInStartUrl(`${window.location.origin}/`); }} />
+      <Row icon={KeyRound} label="Pair with PC code">
+        <span className={p.editActions}>
+          <input
+            type="text"
+            className={p.editField}
+            value={pairCode}
+            onChange={(e) => setPairCode(e.target.value.toUpperCase())}
+            placeholder="6-char code"
+            aria-label="Pair with PC code"
+            maxLength={6}
+            autoCapitalize="characters"
+            autoCorrect="off"
+            spellCheck={false}
+            style={{ width: 120, letterSpacing: "0.1em", fontFamily: "ui-monospace, monospace" }}
+          />
+          <Button disabled={pairing} onClick={() => { void handlePair(); }}>
+            {pairing ? "Pairing..." : "Pair"}
+          </Button>
+        </span>
+      </Row>
       {sessions.map((x, i) => (
         <Row key={x.label} icon={sessionIcons[i % sessionIcons.length]} label={x.label} value={x.value} action={x.action}
           onClick={() => say(`${x.label}: we'll email you a secure link`)} />

@@ -130,13 +130,26 @@ export class ChatApiError extends Error {
 
 function getEnv(key: string): string | undefined {
   const meta = import.meta as { env?: Record<string, string | undefined> };
-  return meta?.env?.[key];
+  const proc = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process;
+  return meta?.env?.[key] ?? proc?.env?.[key];
+}
+
+function rewriteLoopbackForLanHost(baseUrl: string): string {
+  const clean = baseUrl.trim().replace(/\/+$/, "");
+  const m = clean.match(/^https?:\/\/(?:localhost|127\.0\.0\.1)(:\d+)?(\/.*)?$/i);
+  if (!m) return clean;
+  const loc = typeof window !== "undefined" ? window.location : globalThis.location;
+  if (loc?.hostname && loc.hostname !== "localhost" && loc.hostname !== "127.0.0.1") {
+    const proto = loc.protocol === "https:" ? "https:" : "http:";
+    return `${proto}//${loc.hostname}${m[1] ?? ""}${m[2] ?? ""}`;
+  }
+  return clean;
 }
 
 /** Resolve API base URL without hardcoding any port or tunnel host. */
 export function resolveApiBase(apiBase?: string): string {
   const raw = apiBase !== undefined ? apiBase : (getEnv("VITE_MESSENGER_API_URL") ?? "");
-  return raw.trim().replace(/\/+$/, "");
+  return rewriteLoopbackForLanHost(raw);
 }
 
 /** Derive the WebSocket endpoint URL from `apiBase` or `wsBase` (or current origin). */
@@ -317,16 +330,7 @@ export async function openIdentitySession(
 /** Where the Google sign-in starts: apps/api (:8000) holds the Google client; this app only redeems the code. */
 export function googleSignInStartUrl(returnTo: string, dubaiApi?: string): string {
   const configured = (dubaiApi !== undefined ? dubaiApi : getEnv("VITE_DUBAI_API_URL"))?.trim();
-  let base = configured ? configured.replace(/\/+$/, "") : "";
-  if (!base) {
-    const loc = typeof window !== "undefined" ? window.location : globalThis.location;
-    if (loc?.hostname && loc.hostname !== "localhost" && loc.hostname !== "127.0.0.1") {
-      const proto = loc.protocol === "https:" ? "https:" : "http:";
-      base = `${proto}//${loc.hostname}:8000`;
-    } else {
-      base = "http://localhost:8000";
-    }
-  }
+  const base = rewriteLoopbackForLanHost(configured || "http://localhost:8000");
   const q = new URLSearchParams({ client: "web", return_to: returnTo });
   return `${base}/api/identity/google/start?${q.toString()}`;
 }
@@ -343,6 +347,24 @@ export async function exchangeGoogleAuthCode(
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ auth_code: authCode, app_id: "messenger", device_label: "Messenger web" }),
+    },
+    opts.fetchImpl,
+  );
+}
+
+/** Redeem a short-lived 6-character PC pairing code for a Messenger session on this device. */
+export async function completePairingCode(
+  code: string,
+  opts: ClientOptions = {},
+): Promise<{ session_token: string; user_id: string; display_name?: string }> {
+  const clean = code.trim().toUpperCase();
+  const base = resolveApiBase(opts.apiBase);
+  return requestJson(
+    `${base}/api/identity/pair/complete`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code: clean, app_id: "messenger", device_label: "Messenger phone" }),
     },
     opts.fetchImpl,
   );

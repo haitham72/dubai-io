@@ -50,6 +50,7 @@ export {
   resolveSupabaseConfig,
   signInSupabasePassword,
   openIdentitySession,
+  completePairingCode,
   getIdentityMe,
   issueWsTicket,
   listConversations,

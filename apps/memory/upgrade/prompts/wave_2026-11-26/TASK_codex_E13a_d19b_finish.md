@@ -6,10 +6,44 @@
 - **Base / Target:** Rebase/merge onto `origin/main` (`e115077` or latest), open PR into `main`
 - **Scope Note:** 57 files for D19 are already committed at `b0785c3`. Keep your remaining quota focused and surgical — finish **D19b**, verify **Google Limited Use**, reconcile `origin/main`, run all gates, and open the PR.
 
-**Mandatory Reads First:**
+- **Mandatory Reads First:**
 - `docs/submissions/shared/founder-decisions.md` (**D19** and **D19b**)
 - `apps/memory/upgrade/prompts/E13a_lower_weights_delete_my_data.md`
 - `CLAUDE.md` (Rule 9, Google Limited Use, `apps/web` frozen)
+
+---
+
+## Claude Phase A Audit Defects (Fix All in One Pass)
+
+Address every defect below cleanly in this pass alongside D19b (`A1 #6` and `A2 E1`–`E7`):
+
+1. **`E1` (Scoped Explicit-Trigger Recall & Boost):**
+   - Implement `include_lowered=True` / explicit-trigger recall + weight boost (`w_new = min(1.0, max(0.35, w_eff + 0.25))`) **ONLY** for explicit user-device calls (`/recall`, explicit user search/query, Vault open).
+   - **NEVER** apply `include_lowered=True` or boost on admin, worker, `/context`, Today, or recommender paths.
+   - Explicit recall/boost **MUST NOT** mutate provenance/status or count toward Rule 9's two-visit promotion rule.
+2. **`E2 + A1 #6` (Per-Memory Recall Weight Override + Migration Safety Check):**
+   - Add `last_refreshed_at` + a **per-memory recall weight override** column so an explicitly recalled memory beats inherited topic, source, or record lowering (`0.01`) without altering `valid_from` (real memory date).
+   - **Migration safety check:** Inspect `SELECT version FROM schema_migrations WHERE version = 8` against `:5442`:
+     - Add these columns to unmerged `0008_memory_controls.sql` **ONLY** if `version = 8` is **NOT** recorded in `schema_migrations`.
+     - If `version = 8` **IS** already recorded in `schema_migrations`, add **`0010_d19b_recall_boost.sql`** (**NEVER** `0009`, which is reserved exclusively for E13b!).
+3. **`E3` (Fail-Closed Redis Purge When `TM_REDIS_URL` Empty):**
+   - In `privacy/controls.py` / `apps/api/app/identity/router.py`, if `TM_REDIS_URL` is empty during account deletion, **fail closed with an error** (matching the Redis-error branch) instead of returning success with `redis_purged: false` (allow explicit test fake client injection only).
+4. **`E4` (Post-Commit Second Redis Purge):**
+   - Run a second Redis purge **after** Postgres commits `deleted_from_external = true` (`controls.py:186` vs `:209-217`) so no in-flight request can refill Redis mid-commit.
+5. **`E5` (`apps/api` Redis + In-Process + Optional Community Purge Hook):**
+   - In `apps/api/app/identity/router.py`, purge `apps/api` Redis (`REDIS_URL` / `TM_REDIS_URL`, scanning `*{owner}*` and `cm:ctx:{owner}`), clear `apps/api` in-process caches, and invoke the optional Community purge hook (`A1 #2`):
+     ```python
+     try:
+         from ..community.context_profile import purge_owner_community_data
+         purge_owner_community_data(owner)
+     except ImportError:
+         pass
+     ```
+6. **`E6` (Automated `training_backups` Route/Tool Isolation Test):**
+   - Add an automated test asserting **zero** API routes or MCP tools reference `training_backups` (since `REVOKE ALL ... FROM PUBLIC` does not restrict the table owner role).
+7. **`E7` (Cross-Process Cache Safety Documentation):**
+   - Document in `apps/memory/upgrade/reports/E13a.md` that sibling worker processes rely on the `owner_deleted` DB check (`retrieval.py:382`) for cross-process cache safety.
+- **Allowed File Overlap Note (`A1 #8`):** E13a (`b0785c3`) already edits `apps/api/tests/test_community_demo_scenes.py` and `apps/api/tests/test_community_memory.py` (`erased_at is None` D19 checks). This is the one allowed overlap with E14; keep those D19 test checks intact and make no other edits under `apps/api/app/community/**` or `apps/community/**`.
 
 ---
 
@@ -63,12 +97,12 @@ Run inside `G:\Haitham\VsCode\contest-e13a`:
 ## File Ownership Boundaries
 
 - **ALLOWED:**
-  - `apps/memory/src/temporal_memory/db/migrations/0008_memory_controls.sql`
+  - `apps/memory/src/temporal_memory/db/migrations/0008_memory_controls.sql` (and `0010_d19b_recall_boost.sql` ONLY if `version = 8` is already in `schema_migrations` on `:5442`)
   - `apps/memory/src/temporal_memory/privacy/controls.py`
   - D19/D19b weight/lower/recall/delete paths in `apps/memory/**`, `apps/api/app/memory_bridge/**`, `apps/api/app/identity/**`, `apps/api/app/ingest_routes.py`, `apps/api/app/messenger/routes_memory.py`, `apps/api/app/today_feed.py`
   - Client memory settings & vault/delete UI (`apps/mobile/**`, `apps/desktop/**`, `apps/messenger/**` memory settings)
   - `docs/PRIVACY_AND_MEMORY_FAQ.md`
-  - Related tests in `apps/memory/tests/**`, `apps/api/tests/**`, client memory tests
+  - Related tests in `apps/memory/tests/**`, `apps/api/tests/**`, client memory tests (including existing `b0785c3` `erased_at is None` D19 checks in `apps/api/tests/test_community_demo_scenes.py` and `test_community_memory.py` — the one allowed overlap with E14 per `A1 #8`)
   - `apps/memory/upgrade/reports/E13a.md` + `STATUS.md` (append row only)
 - **FORBIDDEN (Do NOT touch):**
   - `apps/memory/src/temporal_memory/db/migrations/0009_*` (E13b ONLY)

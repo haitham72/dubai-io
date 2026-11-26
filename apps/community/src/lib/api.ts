@@ -1,17 +1,9 @@
 import type { Group, Notification, Post, Profile } from "./types";
-import { authHeaders, getSessionToken } from "./session";
+import { authHeaders, getSessionToken, rewriteLoopbackForLanHost } from "./session";
 
 export function getApiBase(): string {
   const envBase = process.env.NEXT_PUBLIC_CM_API?.trim();
-  if (envBase) return envBase.replace(/\/+$/, "");
-  if (typeof window !== "undefined") {
-    const host = window.location?.hostname;
-    if (host && host !== "localhost" && host !== "127.0.0.1") {
-      const proto = window.location.protocol === "https:" ? "https:" : "http:";
-      return `${proto}//${host}:8060`;
-    }
-  }
-  return "http://localhost:8060";
+  return rewriteLoopbackForLanHost(envBase || "http://localhost:8060");
 }
 
 export const API_BASE = getApiBase();

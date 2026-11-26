@@ -16,8 +16,10 @@ const {
   readChatListSnapshot,
   fetchMessages,
   sendMessageRest,
+  resolveApiBase,
   resolveWsUrl,
   googleSignInStartUrl,
+  completePairingCode,
   img,
   avatar,
   ORB,
@@ -137,6 +139,21 @@ function createMockBackend() {
         capabilities: ["messenger:chat", "messenger:ws"],
         age_band: null,
         expires_at: Math.floor(Date.now() / 1000) + 3600,
+      });
+    }
+
+    if (path === "/api/identity/pair/complete" && method === "POST") {
+      if (body.code !== "AB12CD" || body.app_id !== "messenger" || body.device_label !== "Messenger phone") {
+        return jsonRes(400, { detail: "Pairing code invalid or expired." });
+      }
+      const sessionToken = `sess-paired-${sessions.size + 1}`;
+      sessions.set(sessionToken, { user_id: "user-paired", age_band: "adult_18_plus" });
+      return jsonRes(200, {
+        session_token: sessionToken,
+        user_id: "user-paired",
+        display_name: "Paired Phone",
+        app_id: body.app_id,
+        device_label: body.device_label,
       });
     }
 
@@ -682,11 +699,16 @@ let activeConvId = "";
   console.log("PASS (h): img(), avatar(), and ORB return local /demo/ asset paths with zero hotlinks");
 }
 
-/* ---------- (i) googleSignInStartUrl() LAN host vs localhost fallback ---------- */
+/* ---------- (i) resolveApiBase() & googleSignInStartUrl() LAN host vs loopback env ---------- */
 {
   const prevLocation = globalThis.location;
+  const prevApiEnv = process.env.VITE_MESSENGER_API_URL;
+  const prevDubaiEnv = process.env.VITE_DUBAI_API_URL;
   try {
+    delete process.env.VITE_MESSENGER_API_URL;
+    delete process.env.VITE_DUBAI_API_URL;
     delete globalThis.location;
+    assert(resolveApiBase() === "", `expected empty resolveApiBase() when unset, got ${resolveApiBase()}`);
     assert(
       googleSignInStartUrl("http://localhost:5173/").startsWith("http://localhost:8000/api/identity/google/start?"),
       "expected localhost:8000 when location is unset",
@@ -705,12 +727,37 @@ let activeConvId = "";
     );
 
     globalThis.location = { hostname: "192.168.1.50", protocol: "http:" };
+    assert(resolveApiBase() === "", `expected empty resolveApiBase() on LAN when env unset, got ${resolveApiBase()}`);
     const lanUrl = googleSignInStartUrl("http://192.168.1.50:5173/");
     assert(
       lanUrl.startsWith("http://192.168.1.50:8000/api/identity/google/start?"),
       `expected http://192.168.1.50:8000, got ${lanUrl}`,
     );
 
+    process.env.VITE_MESSENGER_API_URL = "http://localhost:8070";
+    process.env.VITE_DUBAI_API_URL = "http://localhost:8000";
+    assert(
+      resolveApiBase() === "http://192.168.1.50:8070",
+      `expected loopback VITE_MESSENGER_API_URL rewritten to LAN, got ${resolveApiBase()}`,
+    );
+    const envLanUrl = googleSignInStartUrl("http://192.168.1.50:5173/");
+    assert(
+      envLanUrl.startsWith("http://192.168.1.50:8000/api/identity/google/start?"),
+      `expected loopback VITE_DUBAI_API_URL rewritten to LAN, got ${envLanUrl}`,
+    );
+
+    process.env.VITE_MESSENGER_API_URL = "https://messenger-tunnel.example.test/";
+    process.env.VITE_DUBAI_API_URL = "https://dubai-tunnel.example.test/";
+    assert(
+      resolveApiBase() === "https://messenger-tunnel.example.test",
+      `expected non-loopback VITE_MESSENGER_API_URL untouched, got ${resolveApiBase()}`,
+    );
+    assert(
+      googleSignInStartUrl("https://192.168.1.50:5173/").startsWith("https://dubai-tunnel.example.test/api/identity/google/start?"),
+      "expected non-loopback VITE_DUBAI_API_URL untouched",
+    );
+
+    delete process.env.VITE_DUBAI_API_URL;
     globalThis.location = { hostname: "192.168.1.50", protocol: "https:" };
     const lanHttpsUrl = googleSignInStartUrl("https://192.168.1.50:5173/");
     assert(
@@ -726,8 +773,27 @@ let activeConvId = "";
   } finally {
     if (prevLocation === undefined) delete globalThis.location;
     else globalThis.location = prevLocation;
+    if (prevApiEnv === undefined) delete process.env.VITE_MESSENGER_API_URL;
+    else process.env.VITE_MESSENGER_API_URL = prevApiEnv;
+    if (prevDubaiEnv === undefined) delete process.env.VITE_DUBAI_API_URL;
+    else process.env.VITE_DUBAI_API_URL = prevDubaiEnv;
   }
-  console.log("PASS (i): googleSignInStartUrl resolves LAN host (:8000), localhost fallback, and explicit override");
+  console.log("PASS (i): resolveApiBase and googleSignInStartUrl rewrite loopback env on LAN host and preserve non-loopback overrides");
+}
+
+/* ---------- (j) completePairingCode() uppercases code & posts to /api/identity/pair/complete ---------- */
+{
+  const paired = await completePairingCode("ab12cd", {
+    apiBase: API_BASE,
+    fetchImpl: mock.fetchImpl,
+  });
+  assert(paired.user_id === "user-paired", `expected paired user_id, got ${paired.user_id}`);
+  assert(paired.display_name === "Paired Phone", `expected Paired Phone, got ${paired.display_name}`);
+  assert(
+    mock.requestedUrls[mock.requestedUrls.length - 1] === `${API_BASE}/api/identity/pair/complete`,
+    `expected /api/identity/pair/complete request, got ${mock.requestedUrls[mock.requestedUrls.length - 1]}`,
+  );
+  console.log("PASS (j): completePairingCode uppercases code and posts { code, app_id: 'messenger', device_label: 'Messenger phone' }");
 }
 
 actions.signOut();

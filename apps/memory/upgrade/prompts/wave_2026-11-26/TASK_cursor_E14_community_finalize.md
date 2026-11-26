@@ -3,12 +3,34 @@
 - **Agent:** Cursor
 - **Branch:** `e14/community-replica-recommender` (currently at WIP `1275b25`)
 - **Worktree:** `G:\Haitham\VsCode\contest-e14-community`
-- **Base / Target:** Rebase onto `origin/main` (`e115077` or latest), open PR into `main`
+- **Base / Target:** Rebase onto `origin/main` (latest), open PR into `main`
 - **Mandatory Reads First:**
   - `apps/memory/upgrade/prompts/HANDOFF_integrator_2026-11-25b.md`
   - `docs/submissions/community/FACEBOOK_REDDIT_RECOMMENDER_PLAN.md`
   - `docs/submissions/shared/founder-decisions.md` (D3, D11, D14, D19, D22)
-  - `CLAUDE.md` (Rules 8, 9, `apps/web` frozen)
+  - `CLAUDE.md` (Rules 8, 9, Google Limited Use, light mode / zero drop shadows, `apps/web` frozen)
+
+---
+
+## Claude Phase A Mandatory Fixes (Include in This PR)
+
+1. **`cm_usage_settings.context_aware_enabled` DEFAULT `0` (Opt-In per D22):**
+   - Currently `DEFAULT 1` — change schema/migration/init default to `0` so context-aware usage is strictly opt-in per **D22**.
+2. **`user_state` and `area_coarse` Strictly Ephemeral with Short TTL (`A1 #3`):**
+   - `apps/api/app/community/context_profile.py:129-161` currently persists `user_state` and `area_coarse` permanently.
+   - Store them **ONLY** in TTL-bounded Redis (`cm:ctx:{owner}`) + an in-memory TTL dict fallback — **never** persist `user_state` or `area_coarse` permanently in SQLite/Postgres.
+3. **`purge_owner_community_data(owner_id: str)` Deletion Hook (`A1 #2`):**
+   - Add `purge_owner_community_data(owner_id: str)` in `apps/api/app/community/context_profile.py` to delete `cm_interaction_events`, `cm_usage_profile`, `cm_usage_settings`, Redis `cm:ctx:{owner}`, and the in-process fallback cache.
+   - Add a unit test verifying `purge_owner_community_data(owner_id)` clears all Community tables, Redis key, and in-process fallback cache so E13a's `"Delete my data"` clears Community data immediately.
+4. **Google Limited Use (`A1 #4`):**
+   - Exclude any rows derived from `gmail`, `calendar`, `youtube`, `takeout`, or `google` in `scripts/train_community_two_tower.py`.
+5. **Ownership & Rebase Guards (`A1 #8` + `A3`):**
+   - Preserve E13a's D19 `erased_at is None` checks in `apps/api/tests/test_community_demo_scenes.py` and `apps/api/tests/test_community_memory.py` (the one allowed overlap with E13a `b0785c3`).
+   - Keep the Rule 9 fix strictly inside `apps/api/app/community/**` (never touch `memory_bridge`).
+   - Preserve `origin/main`'s LAN helpers (`getApiBase`, `getDubaiApi`) and the `"Pair with PC code"` UI in `apps/community/src/app/signin/page.tsx`.
+6. **D11 + D14 Merge Gate (`A1 #7`):**
+   - **D14** = native-social look (no serif/cream/gold, icon action row, stop for founder approval after Feed); light mode / zero drop shadows is enforced by `CLAUDE.md`.
+   - **D11** = founder visual review of a staged preview is **REQUIRED** before merging UI work — after Claude's `E14.review.md` `PASS`, stage a preview for **founder visual approval** before merging (**E14 MUST NOT merge on Claude's review alone**).
 
 ---
 
@@ -22,8 +44,8 @@
   - `apps/community/src/lib/api.ts`
   - `apps/community/src/lib/session.ts`
   - `apps/community/src/app/signin/page.tsx`
-- **Keep both:** PR #9 fixes already on `main` **and** the LAN `getApiBase` / `getDubaiApi` hostname logic so iPhone/LAN testing does not hardcode `localhost` when accessed via LAN IP.
-- Preserve `apps/community/src/styles/feed.css` and D14 rules (light mode, zero drop shadows).
+- **Keep both:** PR #9 + `main` fixes **and** the LAN `getApiBase` / `getDubaiApi` hostname logic + `"Pair with PC code"` UI in `apps/community/src/app/signin/page.tsx` so controlled same-network Wi-Fi iPhone/LAN testing works without hardcoding `localhost`.
+- Preserve `apps/community/src/styles/feed.css`, D14 native-social styling (no serif/cream/gold, icon action row), and `CLAUDE.md` rules (light mode, zero drop shadows).
 
 ### 2. Wire the 2 Missing Backend Seams
 1. **`apps/api/app/community/server.py`:** Include `context_profile.router` so all context-profile endpoints are mounted on the Community server.
@@ -53,11 +75,11 @@ Run inside `G:\Haitham\VsCode\contest-e14-community` (unset `DATABASE_URL` so SQ
 6. Frozen `apps/web` check:
    - `git diff --quiet mobile-pwa-baseline-2026-10-23 HEAD -- apps/web` (MUST exit `0`).
 
-### 5. Report, Commit, Push & Open PR (STOP Before Merge)
-- Write `apps/memory/upgrade/reports/E14.md` with exact commands run, test counts, benchmark ms, and compliance check against D3 (no P2P messaging), D11 (18+), D14 (light mode / no shadows), Rule 8 (foreground-only sensors, no background geofencing, no stored coordinates), Rule 9 (zero health/sensitive inference), and D19 (lower/recall).
+### 5. Report, Commit, Push & Open PR (STOP for Review + Founder Visual Approval)
+- Write `apps/memory/upgrade/reports/E14.md` with exact commands run, test counts, benchmark ms, and compliance check against D3 (no P2P messaging), D11 (18+ gate + staged visual preview required), D14 (native-social look: no serif/cream/gold, icon action row) + `CLAUDE.md` (light mode / no shadows), Rule 8 & D22 (opt-in `context_aware_enabled DEFAULT 0`, ephemeral TTL `user_state`/`area_coarse`, foreground-only sensors, no background geofencing, no stored coordinates), Rule 9 (zero health/sensitive inference), Google Limited Use (`train_community_two_tower.py` exclusion), and D19 (`purge_owner_community_data` + preserved `erased_at is None` checks).
 - Append a single summary row to `apps/memory/upgrade/reports/STATUS.md`.
 - Check `git status` — **NEVER** stage `apps/community/tsconfig.tsbuildinfo` or any of the 3 founder untracked files.
-- Commit, `git push origin e14/community-replica-recommender` (no `--force` unless rebased with care — coordinate if needed, prefer clean rebase before push or standard push), open PR into `main`, and **STOP** (do NOT merge; Claude must complete `E14.review.md` first).
+- Commit, `git push origin e14/community-replica-recommender` (no `--force` unless rebased with care — coordinate if needed, prefer clean rebase before push or standard push), open PR into `main`, and **STOP** (do NOT merge; Claude must complete `E14.review.md` `PASS` **AND** founder must visually approve a staged preview per **D11** before merge).
 
 ---
 
@@ -65,7 +87,7 @@ Run inside `G:\Haitham\VsCode\contest-e14-community` (unset `DATABASE_URL` so SQ
 
 - **ALLOWED:**
   - `apps/api/app/community/**`
-  - `apps/api/tests/test_community_*.py`
+  - `apps/api/tests/test_community_*.py` (preserving E13a's D19 `erased_at is None` checks in `test_community_demo_scenes.py` and `test_community_memory.py`)
   - `apps/community/**` (excluding `tsconfig.tsbuildinfo`)
   - `scripts/train_community_two_tower.py`
   - `apps/memory/upgrade/reports/E14.md`
@@ -73,5 +95,6 @@ Run inside `G:\Haitham\VsCode\contest-e14-community` (unset `DATABASE_URL` so SQ
 - **FORBIDDEN (Do NOT modify):**
   - `apps/web/**` (frozen)
   - `apps/memory/src/**` and `apps/memory/tests/**` (owned by E13a & E13b)
+  - `apps/api/app/memory_bridge/**` (keep Rule 9 fix strictly inside `apps/api/app/community/**`)
   - `apps/messenger/**`, `apps/mobile/**`, `apps/desktop/**`
   - `docs/PRIVACY_AND_MEMORY_FAQ.md`

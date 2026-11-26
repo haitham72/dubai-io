@@ -455,13 +455,13 @@ function Start-EntryApi([string]$Name, [string]$Module, [int]$Port) {
 Start-EntryApi "community_api" "app.community.server:app" $CommunityApiPort
 Start-EntryApi "messenger_api" "app.messenger.server:app" $MessengerApiPort
 if (-not (Test-PortOpen $CommunityWebPort)) {
-    $cmdArgs = "/c set NEXT_TELEMETRY_DISABLED=1&& set NEXT_PUBLIC_CM_API=http://localhost:$CommunityApiPort&& set NEXT_PUBLIC_DUBAI_API=http://localhost:$ApiPort&& npx.cmd next dev -p $CommunityWebPort -H 0.0.0.0"
+    $cmdArgs = "/c set NEXT_TELEMETRY_DISABLED=1&& npx.cmd next dev -p $CommunityWebPort -H 0.0.0.0"
     $pr = Start-Process -FilePath "cmd.exe" -ArgumentList @($cmdArgs) -WorkingDirectory $CommunityDir `
         -RedirectStandardOutput (Join-Path $LogsDir "community_web.out.log") -RedirectStandardError (Join-Path $LogsDir "community_web.err.log") -WindowStyle Hidden -PassThru
     $pids["community_web"] = $pr.Id
 }
 if (-not (Test-PortOpen $MessengerWebPort)) {
-    $cmdArgs = "/c set VITE_MESSENGER_API_URL=http://localhost:$MessengerApiPort&& set VITE_DUBAI_API_URL=http://localhost:$ApiPort&& npx.cmd vite --host 0.0.0.0 --port $MessengerWebPort --strictPort"
+    $cmdArgs = "/c npx.cmd vite --host 0.0.0.0 --port $MessengerWebPort --strictPort"
     $pr = Start-Process -FilePath "cmd.exe" -ArgumentList @($cmdArgs) -WorkingDirectory $MessengerDir `
         -RedirectStandardOutput (Join-Path $LogsDir "messenger_web.out.log") -RedirectStandardError (Join-Path $LogsDir "messenger_web.err.log") -WindowStyle Hidden -PassThru
     $pids["messenger_web"] = $pr.Id
@@ -580,7 +580,7 @@ Save-Pids $pids
 
 # Firewall: never changed by this script. Report what is missing so the founder can run the documented command.
 $missingFw = @()
-foreach ($p in @($ApiPort, $ExpoPort)) {
+foreach ($p in @($ApiPort, $ExpoPort, $CommunityApiPort, $CommunityWebPort, $MessengerApiPort, $MessengerWebPort, 8082, 8083)) {
     $ruleExists = Get-NetFirewallRule -Direction Inbound -Enabled True -Action Allow -ErrorAction SilentlyContinue |
         Get-NetFirewallPortFilter -ErrorAction SilentlyContinue |
         Where-Object { $_.Protocol -eq "TCP" -and ($_.LocalPort -eq "$p" -or $_.LocalPort -eq "Any") }
