@@ -105,7 +105,7 @@ describe("MemoryPanel split consent + D19 lower weight", () => {
     expect(el.querySelector("[data-testid=lower-memory-result]")!.textContent).toContain("0.01");
   });
 
-  test("Delete my data shows server counts only after the response", async () => {
+  test("Lower Community memory shows server counts only after the response", async () => {
     let resolve!: (v: unknown) => void;
     const api: MemoryApi = {
       getMemoryConsent: async () => off,
@@ -114,7 +114,7 @@ describe("MemoryPanel split consent + D19 lower weight", () => {
     };
     const el = await mount(api);
     const btn = [...el.querySelectorAll("button")].find((b) =>
-      b.textContent?.includes("Delete my data"),
+      b.textContent?.includes("Lower Community memory"),
     )!;
     await act(async () => {
       btn.click();
@@ -128,7 +128,7 @@ describe("MemoryPanel split consent + D19 lower weight", () => {
     );
   });
 
-  test("a failed Delete my data reports the failure and no success text", async () => {
+  test("a failed Lower Community memory reports the failure and no success text", async () => {
     const api: MemoryApi = {
       getMemoryConsent: async () => off,
       setMemoryConsent: vi.fn() as unknown as MemoryApi["setMemoryConsent"],
@@ -138,13 +138,13 @@ describe("MemoryPanel split consent + D19 lower weight", () => {
     };
     const el = await mount(api);
     const btn = [...el.querySelectorAll("button")].find((b) =>
-      b.textContent?.includes("Delete my data"),
+      b.textContent?.includes("Lower Community memory"),
     )!;
     await act(async () => {
       btn.click();
     });
     expect(el.querySelector("[data-testid=forget-result]")).toBeNull();
-    expect(el.textContent).toContain("Delete my data did not complete: Community service unavailable");
+    expect(el.textContent).toContain("Lower Community memory did not complete: Community service unavailable");
   });
 
   test("when the status cannot load the switches are disabled and say so", async () => {

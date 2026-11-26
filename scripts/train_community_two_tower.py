@@ -89,20 +89,53 @@ EVENT_SIGNAL_WEIGHTS: dict[str, float] = {
     "lower": -1.5,
 }
 
-# Google Limited Use: never train on Gmail / Calendar / YouTube / Takeout / generic Google rows.
+# Google Limited Use: exclude by provenance/source token only — never by post text
+# (Community posts mentioning "google"/"calendar" are not Google API data).
 _GOOGLE_LIMITED_USE_MARKERS: frozenset[str] = frozenset(
-    {"gmail", "calendar", "youtube", "takeout", "google"}
+    {"gmail", "calendar", "youtube", "takeout", "google", "google_takeout", "gmail_api"}
 )
+_DELETED_PRIVACY: frozenset[str] = frozenset({"deleted", "erased", "purged", "closed"})
 
 
-def _is_google_limited_use_text(*parts: str | None) -> bool:
-    blob = " ".join(str(p or "").lower() for p in parts)
-    if not blob.strip():
-        return False
-    for marker in _GOOGLE_LIMITED_USE_MARKERS:
-        if marker in blob:
+def _is_google_limited_use_provenance(*fields: str | None) -> bool:
+    """True when a provenance/source field is a Google Limited Use origin."""
+    for field in fields:
+        token = str(field or "").strip().lower().replace("-", "_")
+        if not token:
+            continue
+        if token in _GOOGLE_LIMITED_USE_MARKERS:
+            return True
+        # Compound tokens like "source:gmail" / "google_calendar_import".
+        parts = {p for p in token.replace(":", "_").replace("/", "_").split("_") if p}
+        if parts & _GOOGLE_LIMITED_USE_MARKERS:
             return True
     return False
+
+
+def _owner_eligible_for_training(store: ActionStore, owner: str) -> bool:
+    """Plan §69: train only on consented, non-deleted, non-minor owners."""
+    if owner_is_minor(store, owner):
+        return False
+    row = store.db.execute(
+        "SELECT privacy, provenance FROM cm_profiles WHERE owner=?",
+        (owner,),
+    ).fetchone()
+    if row is None:
+        return False  # deleted / purged account (no profile)
+    privacy = str(row[0] or "").strip().lower()
+    if privacy in _DELETED_PRIVACY:
+        return False
+    if _is_google_limited_use_provenance(row[1] if len(row) > 1 else None):
+        return False
+    # Opt-in: memory preferences on, or demo_fixture synthetic smoke users.
+    pref = store.db.execute(
+        "SELECT remember_saved_discussions, remember_public_posts FROM cm_memory_preferences WHERE owner=?",
+        (owner,),
+    ).fetchone()
+    if pref and (bool(pref[0]) or bool(pref[1])):
+        return True
+    prov = str(row[1] or "").strip().lower()
+    return prov == "demo_fixture"
 
 
 def _populate_synthetic_db(store: ActionStore) -> None:
@@ -127,6 +160,11 @@ def _populate_synthetic_db(store: ActionStore) -> None:
         store.db.execute(
             "INSERT OR IGNORE INTO cm_profiles (owner,handle,display_name,bio,area,interests,age_band,privacy,provenance,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
             (owner, owner, f"User {u_idx}", "", pref_area, json.dumps([pref_topic]), "18+", "public", "demo_fixture", stamp, stamp),
+        )
+        # Synthetic smoke users are opted in for training (plan §69).
+        store.db.execute(
+            "INSERT OR IGNORE INTO cm_memory_preferences (owner, remember_saved_discussions, remember_public_posts, updated_at) VALUES (?,?,?,?)",
+            (owner, 1, 1, stamp),
         )
 
     post_ids_by_topic: dict[str, list[str]] = {t[0]: [] for t in topics}
@@ -214,7 +252,7 @@ def _load_training_data(store: ActionStore) -> tuple[np.ndarray, np.ndarray, lis
     for p in post_rows:
         pid, _owner, _gid, text = p[0], p[1], p[2], p[3]
         prov = str(p[4]) if len(p) > 4 else ""
-        if _is_google_limited_use_text(text, prov):
+        if _is_google_limited_use_provenance(prov):
             continue
         vec, _tp, _area = encode_item_vector(text or "")
         post_idx[pid] = len(post_ids)
@@ -241,12 +279,12 @@ def _load_training_data(store: ActionStore) -> tuple[np.ndarray, np.ndarray, lis
     for owner, pid, tkey, etype, _val, area in ev_rows:
         if pid not in post_idx:
             continue
-        if owner_is_minor(store, owner):
+        if not _owner_eligible_for_training(store, owner):
             continue
         if tkey and is_sensitive_topic(tkey):
             continue
-        text_m, prov_m = post_meta.get(pid, ("", ""))
-        if _is_google_limited_use_text(tkey, text_m, prov_m):
+        _text_m, prov_m = post_meta.get(pid, ("", ""))
+        if _is_google_limited_use_provenance(prov_m):
             continue
         if owner not in users:
             users[owner] = len(users)

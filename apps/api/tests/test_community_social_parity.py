@@ -281,7 +281,7 @@ def test_block_and_mute_enforced_everywhere(env):
 
 # ---------------------------------------------------------------- Split Memory Consent & D19 Lower
 def test_split_memory_consent_and_lower_endpoint(env):
-    alice, app, _, _, fake = env
+    alice, app, store, _, fake = env
     profile_resp = alice.put("/api/community/profiles/me", json={"handle": "alice_m", "age_band": "18+"})
     owner = profile_resp.json()["profile"]["owner"]
     bob, _ = _new_user(app, "bob_m")
@@ -318,12 +318,47 @@ def test_split_memory_consent_and_lower_endpoint(env):
     ).json()
     assert legacy["read_enabled"] is True and legacy["write_enabled"] is True and legacy["allow_interest_export"] is True
 
-    # D19 lower endpoint lowers weight to 0.01 without erasing history
+    # Seed real usage-profile rows, then D19 lower must write weight 0.01 (B3).
+    from app.community.context_profile import (
+        WEIGHT_MIN,
+        compute_usage_weight,
+        record_interaction_event,
+        setup_context_profile,
+    )
+
+    with store.lock:
+        setup_context_profile(store)
+        record_interaction_event(
+            store,
+            owner,
+            post_id=bob_post,
+            topic_key="padel",
+            event_type="upvote",
+            session_id="s_lower_1",
+            dedupe_key="lower-seed-1",
+        )
+        record_interaction_event(
+            store,
+            owner,
+            post_id=bob_post,
+            topic_key="padel",
+            event_type="bookmark",
+            session_id="s_lower_2",
+            dedupe_key="lower-seed-2",
+        )
+
     lowered = alice.post("/api/community/memory/lower", json={"topic": "padel"}).json()
     assert lowered["lowered"] is True
-    assert lowered["weight"] == 0.01
-    assert lowered["provenance"] == "provider_confirmed"
+    assert lowered["weight"] == WEIGHT_MIN == 0.01
+    assert lowered["weights_lowered"] >= 1
+    assert lowered["provenance"] == "user_supplied"
     assert lowered["as_of"]
+    row = store.db.execute(
+        "SELECT * FROM cm_usage_profile WHERE owner=? AND topic_key='padel'",
+        (owner,),
+    ).fetchone()
+    assert row is not None
+    assert compute_usage_weight(row) == WEIGHT_MIN
     assert any(not rec.erased_at for rec in fake.records[owner].values())
 
     # Forget continues to work

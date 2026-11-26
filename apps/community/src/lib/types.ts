@@ -113,7 +113,5 @@ export interface ContextEnvelope {
   confidence?: number;
   source?: "expo_sensors" | "user_override" | "unavailable" | string;
   paused?: boolean;
-  lat?: number;
-  lng?: number;
   as_of?: string;
 }

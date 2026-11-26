@@ -33,6 +33,7 @@ import {
 } from "@/lib/feed";
 import type { FeedSort } from "@/lib/feed";
 import { desktopPosts, jlt, phonePosts, suggested } from "@/lib/feedFixture";
+import { snapCoordinatesToArea } from "@/lib/geo";
 import { isSignedIn } from "@/lib/session";
 import type { ContextEnvelope, DeviceClass, Group, Post, UserState } from "@/lib/types";
 
@@ -203,13 +204,12 @@ export default function FeedScreen() {
   const sendManualHeartbeat = useCallback(
     async (nextArea: string, nextState: string, paused: boolean) => {
       if (paused || !isSignedIn()) return;
-      const send = async (coords?: { lat: number; lng: number }) => {
+      const send = async (area?: string) => {
         const payload: ContextEnvelope = {
-          ...(nextArea && nextArea !== "auto" ? { area_coarse: nextArea } : {}),
-          ...(coords ? { lat: coords.lat, lng: coords.lng } : {}),
+          ...(area && area !== "auto" ? { area_coarse: area } : {}),
           user_state: (nextState === "auto" ? "unknown" : nextState) as UserState,
           device_class: detectDeviceClass(),
-          source: coords ? "expo_sensors" : "user_override",
+          source: area && nextArea === "auto" ? "expo_sensors" : "user_override",
           paused: false,
         };
         try {
@@ -225,7 +225,8 @@ export default function FeedScreen() {
       if (nextArea === "auto" && typeof navigator !== "undefined" && navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (pos) => {
-            void send({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+            // Snap on-device; only coarse area crosses the boundary (S3).
+            void send(snapCoordinatesToArea(pos.coords.latitude, pos.coords.longitude));
           },
           () => {
             setContextNotice("Foreground location unavailable — pick an area manually.");
@@ -234,7 +235,7 @@ export default function FeedScreen() {
           { maximumAge: 60_000, timeout: 6000 },
         );
       } else {
-        await send();
+        await send(nextArea === "auto" ? undefined : nextArea);
       }
     },
     [refresh],

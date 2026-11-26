@@ -135,7 +135,7 @@ export default function MemoryPanel({ api = realApi }: { api?: MemoryApi }) {
     try {
       setForgot(await api.forgetMemory());
     } catch (e) {
-      setError(`Delete my data did not complete: ${(e as Error).message || "request failed"}`);
+      setError(`Lower Community memory did not complete: ${(e as Error).message || "request failed"}`);
     } finally {
       setBusy(null);
     }
@@ -201,11 +201,11 @@ export default function MemoryPanel({ api = realApi }: { api?: MemoryApi }) {
         <button
           type="button"
           className="action-box"
-          style={{ maxWidth: 220 }}
+          style={{ maxWidth: 260 }}
           disabled={busy !== null}
           onClick={forget}
         >
-          {busy === "forget" ? "Deleting…" : "Delete my data"}
+          {busy === "forget" ? "Clearing…" : "Lower Community memory"}
         </button>
       </div>
       {lowered && (
@@ -217,12 +217,12 @@ export default function MemoryPanel({ api = realApi }: { api?: MemoryApi }) {
       )}
       {forgot && (
         <p className="meta" role="status" data-testid="forget-result">
-          Server reports {forgot.records_forgotten} record(s) and {forgot.facts_erased} fact(s) purged
+          Server reports {forgot.records_forgotten} record(s) and {forgot.facts_erased} fact(s) cleared from the Community memory source
           {forgot.as_of ? `, as of ${forgot.as_of}` : ""}.
         </p>
       )}
       <p className="meta">
-        Lower weight reduces preference influence to 0.01 without erasing history. Delete my data purges stored memory and context immediately.
+        Lower weight reduces preference influence to 0.01 without erasing history. Lower Community memory clears Community-sourced records only — account deletion is Delete my data under identity settings.
       </p>
     </article>
   );

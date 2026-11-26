@@ -152,16 +152,43 @@ def set_consent(body: ConsentIn, request: Request):
 
 @router.post("/api/community/memory/lower")
 def lower_memory(request: Request, body: LowerIn | None = None):
-    """D19: Lower usage/interest signal weight to 0.01 floor without deleting history."""
-    scope(request)
+    """D19: Lower usage-profile weights to 0.01 without deleting history (real write)."""
+    store, owner = scope(request)
     principal = getattr(request.state, "community_principal", None)
     if principal is not None and principal.is_minor_protected:
         raise HTTPException(403, detail={"code": "adults_only", "message": "Community is adults only (18+)."})
+
+    from .context_profile import WEIGHT_MIN, lower_usage_topic, setup_context_profile
+
+    topic = None
+    if body is not None:
+        topic = (body.topic or body.target_id or body.source_id or "").strip() or None
+
+    with store.lock:
+        setup_context_profile(store)
+        updated = 0
+        if topic:
+            result = lower_usage_topic(store, owner, topic)
+            updated = int(result.get("updated") or 0)
+        else:
+            topics = [
+                r[0]
+                for r in store.db.execute(
+                    "SELECT DISTINCT topic_key FROM cm_usage_profile WHERE owner=? AND topic_key <> ''",
+                    (owner,),
+                ).fetchall()
+            ]
+            for tkey in topics:
+                updated += int(lower_usage_topic(store, owner, tkey).get("updated") or 0)
+
     payload = {
-        "lowered": True,
-        "weight": 0.01,
+        "lowered": updated > 0,
+        "weight": WEIGHT_MIN,
+        "w_min": WEIGHT_MIN,
+        "weights_lowered": updated,
+        "updated": updated,
         "as_of": datetime.now(timezone.utc).isoformat(),
-        "provenance": "provider_confirmed",
+        "provenance": "user_supplied",
     }
     if body is not None:
         if body.target_id is not None:

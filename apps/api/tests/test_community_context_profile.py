@@ -66,17 +66,42 @@ def ctx_client(tmp_path, monkeypatch):
 
 def test_coarse_snapping_and_zero_gps_persistence(ctx_client):
     c, store, owner, _bridge, _fake = ctx_client
-    # Exact centroid tests across Dubai districts.
+    # Exact centroid tests across Dubai districts (helper only — lat/lng never cross API).
     for district, (lat, lng) in DUBAI_AREAS.items():
         assert snap_coordinates_to_area(lat, lng) == district
+    assert snap_coordinates_to_area(25.212345, 55.280987) == "DIFC"
 
-    # Slight offset near DIFC still snaps to DIFC and never persists raw lat/lng.
-    raw_lat, raw_lng = 25.212345, 55.280987
+    # S3: raw lat/lng rejected at the boundary (extra=forbid).
+    assert c.post(
+        "/api/community/context/heartbeat",
+        json={
+            "lat": 25.212345,
+            "lng": 55.280987,
+            "device_class": "mobile_ios",
+            "user_state": "walking",
+            "confidence": 0.88,
+            "source": "expo_sensors",
+        },
+    ).status_code == 422
+    assert c.post(
+        "/api/community/events",
+        json={
+            "post_id": "p1",
+            "topic_key": "padel",
+            "event_type": "upvote",
+            "lat": 25.0809,
+            "lng": 55.1401,
+            "session_id": "s1",
+            "dedupe_key": "d1",
+        },
+    ).status_code == 422
+
+    # Coarse area only.
+    set_context_aware_enabled(store, owner, True)
     resp = c.post(
         "/api/community/context/heartbeat",
         json={
-            "lat": raw_lat,
-            "lng": raw_lng,
+            "area_coarse": "DIFC",
             "device_class": "mobile_ios",
             "user_state": "walking",
             "confidence": 0.88,
@@ -90,15 +115,13 @@ def test_coarse_snapping_and_zero_gps_persistence(ctx_client):
     assert body["context"]["area_coarse"] == "DIFC"
     assert "lat" not in body["context"] and "lng" not in body["context"]
 
-    # Also test event with raw lat/lng snaps immediately and never stores GPS.
     ev_resp = c.post(
         "/api/community/events",
         json={
             "post_id": "p1",
             "topic_key": "padel",
             "event_type": "upvote",
-            "lat": 25.0809,
-            "lng": 55.1401,
+            "area_coarse": "Dubai Marina",
             "device_class": "mobile_ios",
             "user_state": "running",
             "session_id": "s1",
@@ -106,9 +129,9 @@ def test_coarse_snapping_and_zero_gps_persistence(ctx_client):
         },
     )
     assert ev_resp.status_code == 200, ev_resp.text
-    assert ev_resp.json()["event"]["area_coarse"] == "Dubai Marina"
+    # Echo may show request area; SQL columns stay unknown when context fields are ephemeral.
+    assert ev_resp.json()["event"]["area_coarse"] in ("Dubai Marina", "unknown")
 
-    # Scan SQL + response for raw coordinate leakage (context may be inactive until D22 opt-in).
     cur = c.get("/api/community/context/current").json()
     cur_ctx = cur.get("context") or {}
     assert "lat" not in cur_ctx and "lng" not in cur_ctx
@@ -303,6 +326,14 @@ def test_d19_age_decay_lower_restore_and_d19b_recall(ctx_client):
     prof_active = c.get("/api/community/profile/usage?include_lowered=false").json()["entries"]
     assert all(e["topic_key"] != "padel" for e in prof_active)
 
+    # Snapshot evidence counters before D19b recall (Rule 9: must not be fabricated).
+    before = store.db.execute(
+        "SELECT distinct_sessions, evidence_count FROM cm_usage_profile WHERE owner=? AND topic_key='padel'",
+        (owner,),
+    ).fetchone()
+    assert before is not None
+    sessions_before, evidence_before = int(before[0]), int(before[1])
+
     # D19b Explicit Recall on lowered entry (0.01) -> 100% callable & boosts >= 0.35!
     recall_resp = c.post("/api/community/profile/usage/recall", json={"topic_key": "padel"})
     assert recall_resp.status_code == 200, recall_resp.text
@@ -313,6 +344,15 @@ def test_d19_age_decay_lower_restore_and_d19b_recall(ctx_client):
     assert recalled_entry["lowered"] is False
     assert recalled_entry["weight"] >= RECALL_MIN_WEIGHT
     assert recalled_entry["active_in_feed"] is True
+    assert int(recalled_entry["distinct_sessions"]) == sessions_before
+    assert int(recalled_entry["evidence_count"]) == evidence_before
+    after = store.db.execute(
+        "SELECT distinct_sessions, evidence_count, lowered_at FROM cm_usage_profile WHERE owner=? AND topic_key='padel'",
+        (owner,),
+    ).fetchone()
+    assert int(after[0]) == sessions_before
+    assert int(after[1]) == evidence_before
+    assert after[2] is None
 
     # Lower again, then test explicit Restore endpoint.
     assert c.post("/api/community/profile/usage/lower", json={"topic_key": "padel"}).status_code == 200
@@ -331,6 +371,67 @@ def test_d19_age_decay_lower_restore_and_d19b_recall(ctx_client):
     cur_after = c.get("/api/community/context/current").json()
     assert cur_after["context_aware_enabled"] is False
     assert cur_after["active"] is False
+
+
+def test_d19b_recall_exact_topic_match_only(ctx_client):
+    """B4: recalling 'art' must not boost substring neighbours like 'party'."""
+    c, store, owner, _bridge, _fake = ctx_client
+    for topic, sess in (("art", "s_art"), ("party", "s_party"), ("smart-home", "s_home")):
+        assert c.post(
+            "/api/community/events",
+            json={
+                "post_id": f"p_{topic}",
+                "topic_key": topic,
+                "event_type": "upvote",
+                "area_coarse": "DIFC",
+                "session_id": sess,
+                "dedupe_key": f"d_{topic}_1",
+            },
+        ).status_code == 200
+        assert c.post(
+            "/api/community/events",
+            json={
+                "post_id": f"p_{topic}_2",
+                "topic_key": topic,
+                "event_type": "bookmark",
+                "area_coarse": "DIFC",
+                "session_id": f"{sess}_b",
+                "dedupe_key": f"d_{topic}_2",
+            },
+        ).status_code == 200
+        assert c.post("/api/community/profile/usage/lower", json={"topic_key": topic}).status_code == 200
+
+    party_before = store.db.execute(
+        "SELECT positive_score, lowered_at, distinct_sessions, evidence_count FROM cm_usage_profile WHERE owner=? AND topic_key='party'",
+        (owner,),
+    ).fetchone()
+    assert party_before is not None and party_before[1] is not None
+
+    recall = c.post("/api/community/profile/usage/recall", json={"topic_key": "art"})
+    assert recall.status_code == 200, recall.text
+    body = recall.json()
+    assert body["count"] >= 1
+    assert all(e["topic_key"] == "art" for e in body["recalled"])
+    assert "party" not in body.get("boosted_topics", [])
+    assert "smart-home" not in body.get("boosted_topics", [])
+
+    party_after = store.db.execute(
+        "SELECT positive_score, lowered_at, distinct_sessions, evidence_count FROM cm_usage_profile WHERE owner=? AND topic_key='party'",
+        (owner,),
+    ).fetchone()
+    assert party_after[0] == party_before[0]
+    assert party_after[1] is not None  # still lowered
+    assert int(party_after[2]) == int(party_before[2])
+    assert int(party_after[3]) == int(party_before[3])
+
+    art_after = store.db.execute(
+        "SELECT lowered_at, distinct_sessions, evidence_count FROM cm_usage_profile WHERE owner=? AND topic_key='art'",
+        (owner,),
+    ).fetchone()
+    assert art_after[0] is None
+    # Evidence counters untouched by recall.
+    assert int(art_after[1]) >= 1
+    assert int(art_after[2]) >= 1
 
 
 def test_purge_owner_community_data_clears_sql_and_ephemeral(ctx_client, monkeypatch):

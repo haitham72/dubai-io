@@ -534,9 +534,6 @@ def is_usage_qualified(row: Mapping[str, Any] | tuple[Any, ...]) -> bool:
     evidence = int(d.get("evidence_count") or 0)
     if sessions >= 2 and evidence >= 2:
         return True
-    if sessions >= 2 and evidence == 0:
-        # Explicitly recalled/confirmed entries guarantee distinct_sessions >= 2.
-        return True
     if evidence >= 2:
         first_dt = _parse_iso(d.get("first_seen_at"))
         last_dt = _parse_iso(d.get("last_seen_at"))
@@ -959,8 +956,9 @@ def recall_usage_topic(
 ) -> list[dict[str, Any]]:
     """D19b explicit recall: 100% callable even if lowered (0.01) or aged (0.05).
 
-    Clears `lowered_at`, refreshes `last_seen_at`, ensures `distinct_sessions >= 2`,
-    and boosts effective weight to `min(1.0, max(0.35, w_eff + 0.25))`.
+    Clears `lowered_at`, refreshes `last_seen_at`, and boosts effective weight to
+    `min(1.0, max(0.35, w_eff + 0.25))`. Evidence counters stay untouched (Rule 9
+    two-visit must not be fabricated). Matches the normalized topic key exactly.
     """
     setup_context_profile(store)
     clean_topic = _normalize_topic_key(topic_key)
@@ -972,12 +970,10 @@ def recall_usage_topic(
     stamp = now_dt.isoformat(timespec="seconds")
 
     rows = store.db.execute(
-        f"SELECT {','.join(_USAGE_COLS)} FROM cm_usage_profile WHERE owner=? AND lower(topic_key) LIKE ?",
-        (owner, f"%{clean_topic}%"),
+        f"SELECT {','.join(_USAGE_COLS)} FROM cm_usage_profile WHERE owner=? AND lower(topic_key)=?",
+        (owner, clean_topic),
     ).fetchall()
-    # Prefer exact topic matches; fall back to substring matches so partial queries still recall.
-    exact = [r for r in rows if _normalize_topic_key(r[1]) == clean_topic]
-    targets = exact if exact else rows
+    targets = [r for r in rows if _normalize_topic_key(r[1]) == clean_topic]
 
     ctx_enabled = is_context_aware_enabled(store, owner)
     recalled: list[dict[str, Any]] = []
@@ -988,14 +984,12 @@ def recall_usage_topic(
         net_needed = _weight_to_net_score(w_new)
         neg = float(d.get("negative_score") or 0.0)
         new_pos = max(float(d.get("positive_score") or 0.0), neg + net_needed)
-        new_sessions = max(2, int(d.get("distinct_sessions") or 0))
-        new_evidence = max(2, int(d.get("evidence_count") or 0))
+        # Rule 9: never fabricate distinct_sessions / evidence_count.
         store.db.execute(
             """UPDATE cm_usage_profile
-               SET positive_score=?, evidence_count=?, distinct_sessions=?,
-                   last_seen_at=?, lowered_at=NULL, suppressed=0, updated_at=?
+               SET positive_score=?, last_seen_at=?, lowered_at=NULL, suppressed=0, updated_at=?
                WHERE owner=? AND topic_key=? AND time_bucket=? AND area_coarse=? AND format_bucket=?""",
-            (new_pos, new_evidence, new_sessions, stamp, stamp,
+            (new_pos, stamp, stamp,
              owner, d["topic_key"], d["time_bucket"], d["area_coarse"], d["format_bucket"]),
         )
         updated = store.db.execute(
@@ -1012,8 +1006,7 @@ def recall_usage_topic(
 # ---------------------------------------------------------------- FastAPI models & routes
 class HeartbeatIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    lat: float | None = Field(default=None, ge=-90.0, le=90.0)
-    lng: float | None = Field(default=None, ge=-180.0, le=180.0)
+    # Coarse area only crosses the boundary (S3) — raw lat/lng stay on-device.
     area_coarse: str | None = Field(default=None, max_length=80)
     device_class: str = Field(default="unknown", max_length=40)
     user_state: str = Field(default="unknown", max_length=40)
@@ -1044,8 +1037,6 @@ class InteractionEventIn(BaseModel):
     event_type: str = Field(pattern="^(upvote|downvote|reply|bookmark|repost|dwell|hide|lower)$")
     value: float = Field(default=1.0, ge=0.0, le=1000.0)
     area_coarse: str | None = Field(default=None, max_length=80)
-    lat: float | None = Field(default=None, ge=-90.0, le=90.0)
-    lng: float | None = Field(default=None, ge=-180.0, le=180.0)
     device_class: str = Field(default="unknown", max_length=40)
     time_bucket: str | None = Field(default=None, max_length=40)
     user_state: str = Field(default="unknown", max_length=40)
@@ -1078,11 +1069,7 @@ def context_heartbeat(body: HeartbeatIn, request: Request):
     store, owner = scope(request)
     with store.lock:
         enabled = is_context_aware_enabled(store, owner)
-    # Snap raw coordinates immediately and never persist lat/lng anywhere.
-    if body.lat is not None and body.lng is not None:
-        area = snap_coordinates_to_area(body.lat, body.lng)
-    else:
-        area = normalize_area_coarse(body.area_coarse)
+    area = normalize_area_coarse(body.area_coarse)
     time_bucket, is_weekend = compute_time_bucket()
     payload = {
         "area_coarse": area,
@@ -1135,7 +1122,6 @@ def context_current(request: Request):
 @router.post("/api/community/events")
 def log_interaction_event(body: InteractionEventIn, request: Request):
     store, owner = scope(request)
-    area = snap_coordinates_to_area(body.lat, body.lng) if (body.lat is not None and body.lng is not None) else body.area_coarse
     with store.lock:
         res = record_interaction_event(
             store,
@@ -1144,7 +1130,7 @@ def log_interaction_event(body: InteractionEventIn, request: Request):
             topic_key=body.topic_key,
             event_type=body.event_type,
             value=body.value,
-            area_coarse=area,
+            area_coarse=body.area_coarse,
             device_class=body.device_class,
             time_bucket=body.time_bucket,
             user_state=body.user_state,
