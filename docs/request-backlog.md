@@ -34,11 +34,11 @@ Founder, 9 Nov: pause UI work; build the pipeline headless in `apps/api/app/lab/
   3. **AC-3 (P1-5):** Orchestrator query rewriter (`"why am I not getting accepted"` → `ScopedQuery(categories=['job_search', 'career'])`, `docs/plan/morning-brief.md` §8.1.1, contract test in `tests/test_live_hindsight_llm.py`).
   4. **AC-4 (P1-6):** Sensitive-category rule in canon (`CLAUDE.md` rule 9, `ARCHITECTURE.md` §7, enforced by `apps/api/app/lab/sensitive.py` and verified in `tests/test_live_hindsight_llm.py` & `tests/test_lab_rows.py`).
   5. **AC-5 (P0-3):** `MEM-01` decision recorded in `PLAN.md` §2 (verified in `tests/test_live_hindsight_llm.py`).
-  6. **P2-7:** Backfill agent spec (`docs/plan/backfill-agent.md` — one accountable lead + bounded delegation + goal-loop `"done"` contract + durable SQLite `backfill_jobs` queue with `blocked` = human review).
+  6. **P2-7:** Backfill agent spec (`docs/plan/Memory/memory.md` §20 — one accountable lead + bounded delegation + goal-loop `"done"` contract + durable SQLite `backfill_jobs` queue with `blocked` = human review).
   7. **P2-8:** Reading & video triage appendix (`docs/Researches/memory-research-2026-11.md` §8).
   8. **L1–L5 (`mamty-hindsight` Lab Ingest Addendum, after SRE 1–3):**
      - **L1 (AC-L1):** Honest labeling of `mamty-hindsight` as a **"prompt-level retain lab run"** across `docs/status.md`, `apps/api/app/lab/CLAUDE.md`, and `docs/Researches/memory-research-2026-11.md` (done).
-     - **L2 (AC-L2):** Capture weekly WhatsApp retain playbook pointer (`RUN.md`, `weeks.json`, `claims.md`, `AGENT_PROMPT*.md`, no-overwrite on `status=done`) in `apps/api/app/lab/CLAUDE.md` & `docs/plan/backfill-agent.md` §6 (done).
+     - **L2 (AC-L2):** Capture weekly WhatsApp retain playbook pointer (`RUN.md`, `weeks.json`, `claims.md`, `AGENT_PROMPT*.md`, no-overwrite on `status=done`) in `apps/api/app/lab/CLAUDE.md` & `docs/plan/Memory/memory.md` §20 (done).
      - **L3 (AC-L3):** Week JSON schema validator (`{week_id, agent, facts[]}`, reject `list_root` such as `2026-04-27_...`) + `circle.json` alias normalizer (`Hadil`/`هديل`, `Asr`/`Aser`, `mamty (user's mother)`) before any import (contract & test in `apps/api/tests/test_live_hindsight_llm.py`).
      - **L4 (AC-L4):** Wire `circle.json` aliases + `sensitive.py` filter + `"I noticed"` confirmation gate before any promotion to `mem_*` (contract & test in `apps/api/tests/test_live_hindsight_llm.py`; raw 444 facts blocked from `mem_*`).
      - **L5 (P2-9):** Cross-week consolidate pass (`unrelated | repeats | changes | ends` + `observations[]`) on lab bank **after** SRE AC-1 passes.

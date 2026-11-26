@@ -95,7 +95,7 @@ Paths below are the redesign repo’s own paths, so a builder can find the files
 | Motion photos | `motion graphics/app/public/photos/` | No licence in that folder | rebuild | Founder confirms rights or replaces the files. |
 | Pytest dump | `pytest-of-h.ibrahim/` | Commit `cce429a`. Pytest basetemp plus cleaner JPEGs | exclude | Accidental test output. `h.ibrahim` is only a directory segment. The commit author is `haitham72`. |
 | Project licence | Repo root | `package.json` is `"private": true` and has no `license` field | rebuild | The snapshot needs a founder licence statement. The pdoom MIT file and the two OFL notices do not licence the app. |
-| Founder docs | `README.md`, `ARCHITECTURE.md`, `CLAUDE.md`, the design doc, `PRESENTATION_GUIDE.md`, `prompt.md`, `run.md`, `docs/` | Diwan and Nadi contracts live in `ARCHITECTURE.md` | keep | Founder design and build docs. The rebrand renames the product string. |
+| Founder docs | `README.md`, `ARCHITECTURE.md`, `CLAUDE.md`, the design doc, `PRESENTATION_GUIDE.md`, `docs/` (`prompt.md` and `run.md` removed 26 Nov; see git history) | Diwan and Nadi contracts live in `ARCHITECTURE.md` | keep | Founder design and build docs. The rebrand renames the product string. |
 | Founder tests | `tests/` and `agents/tests/` | Photo-window script in `package.json`. The pytest dump is the exclude row | keep | Tests travel with the kept code. Drop or rewrite tests that only cover excluded sticker generation or excluded images. |
 
 ## Repo identity (kept from the 23 Nov audit)

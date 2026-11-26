@@ -6,7 +6,7 @@ Canon lives at the repo root (`CLAUDE.md`, `PLAN.md`, `ARCHITECTURE.md`, `README
 |---|---|---|
 | Current state, shipped spine, headless lab state, runtime, keys | `status.md` | Single state file. Keep short. |
 | Active task, open items, `## Feature decisions` ledger | `request-backlog.md` | The `## Feature decisions` table is written by the `feature-ledger` skill. |
-| Active feature designs (Know / Notice / Do) | `plan/<feature>.md` | `morning-brief.md`, `journeys.md`, `backfill-agent.md`, plus proposed `desktop-sessions.md`, `domain-agents.md`. Header: status, date, proposed or approved. Cite `ARCHITECTURE.md` sections, don't copy them. |
+| Active feature designs (Know / Notice / Do) | `plan/<feature>.md` | `morning-brief.md`, `journeys.md`, `Memory/memory.md` §20 (backfill), plus proposed `desktop-sessions.md`, `domain-agents.md`. Header: status, date, proposed or approved. Cite `ARCHITECTURE.md` sections, don't copy them. |
 | **Memory plan (single)** | `plan/Memory/memory.md` | Memory design lives in `plan/Memory/memory.md` (§9 export, §17 Vault, §18 engine). Execution lives in `apps/memory/upgrade/`. Folder guide: `plan/Memory/CLAUDE.md`. Historical research only in `plan/Memory/_archive/`. |
 | Service intake & cases menu | `services/` | `intake.md`, `cases.md` (plus `services/<shops|service>/<category>/`). Follow `services/intake.md`. Never write a case into `PLAN.md`. |
 | Consolidated connector architecture, 40-source capability matrix, priority scores, and WhatsApp evaluation | `connectors/README.md` | Single consolidated reference; split files archived in `archive/connectors/`. |

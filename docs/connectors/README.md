@@ -268,3 +268,15 @@ Leave the flag unset. Turning it on is an explicit choice to accept the ban and 
   - Scopes: `channels:history`, `groups:history`, `im:history`, `mpim:history`, `channels:read`, `groups:read`, `im:read`, `users:read`, `search:read`.
   - Rate limit constraint (since 2025): non-Marketplace apps in *other* workspaces get ~1 req/min and 15 messages per call on `conversations.history`/`replies` (founder's own workspace is not limited). Mitigate with `search.messages` + incremental sync.
 - **Gmail / Outlook:** Gmail OAuth in "Testing" status supports up to 100 test users without verification (refresh tokens expire every 7 days → "Reconnect"); Outlook uses Microsoft Graph `Mail.Read`.
+
+## 6. Dubai-io as a Knowledge Vault connector: scopes and interface (merged from `docs/plan/dubai_io_knowledge_connector.md`, 26 Nov)
+
+Architectural plan of record (19 Nov): Dubai-io is the user's sovereign, permission-gated Knowledge Vault, exposed to external tools (`ide-companio`, studios, civic recommenders) over MCP/REST like a Drive connector, never as raw access. The resident can inspect, toggle or revoke each slice. Full original: `git show 1ea0d3b:docs/plan/dubai_io_knowledge_connector.md`. UI reference image: `design/references/quest/generated/page4_knowledge_connector.png`.
+
+| Tier | Themes | Visibility | Consumers | Enforcement |
+|---|---|---|---|---|
+| 1 Private (vault only) | inner circle, health, faith, personal finances | 0% shared | none (resident UI only) | `sensitive.py` fail-closed gate, encryption |
+| 2 Partner / craft | career-and-craft, projects, dev sessions, git commits | selective, scoped | `ide-companio`, VS Code, Claude Code | scoped token, usage audit, masked credentials |
+| 3 Civic and lifestyle | home-and-money, events, travel, public interests | ecosystem pool | Dubai-io Two-Tower, Community mesh | aggregated, anonymised candidate matching |
+
+(The "85% / 100% visibility" percentages in the original are illustrative labels, not measured values.) Interface: `connector://dubai-io/scopes` (scopes and grant status), `me/profile` (confirmed traits filtered by caller scope), `memory/query` (scoped semantic + FTS search), `vault/export` (encrypted portable export of verified facts), `vault/revoke` (instant one-click token revocation across sessions).

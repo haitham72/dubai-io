@@ -107,3 +107,14 @@ Retention: session-interest rows 24 hours, behavioral events 90 days, ranking ru
 4. **Broaden coverage:** reuse the ranker for existing service/product/place candidates; validate source-specific retention and recommendation reasons. Add events/occasion feeds or sponsorship only through their separately tracked scope/data-source work.
 
 Compare relevance and useful selections against the current distance/category baseline, along with dismissal rate, diversity and latency. Do not optimize clicks alone. Test deterministic ranking/decay, duplicate/out-of-order/concurrent updates, evidence authenticity, cross-user isolation, provider failures, and existing order/approval behavior. SQL/tag matching is sufficient initially; pgvector can later improve semantic retrieval over permitted content without becoming a prerequisite. [pgvector search behavior](https://github.com/pgvector/pgvector#querying).
+
+## Two-Tower Recommender and Shared News Engine (merged from `docs/plan/two-tower-recommender.md`, 26 Nov)
+
+Active architecture for contest entry 1 (Best Personal AI Agent, Notice pillar), 19 Nov; gate AC-2 / AC-3. Full original with the pool DDL and mermaid diagram: `git show 1ea0d3b:docs/plan/two-tower-recommender.md`.
+
+- **Idea:** the news server reads from an internal shared pool (`shared_news_pool` + FTS5 + embeddings), not ad-hoc external APIs per request; stories are re-served across similar users. External search only fills gaps, and results go back into the pool.
+- **User tower:** YouTube watch history, dev sessions/git log, Postgres memory facts -> user context vector plus topic clusters.
+- **Phase 1, pool match (local, zero tokens):** hybrid BM25 + dense cosine with RRF (`1/(60+rank_bm25) + 1/(60+rank_cosine)`); gap analysis flags interests whose pool items are older than 48 h or have zero hits.
+- **Phase 2, at most 10 targeted external searches per day** (slots: 1-3 AI engineering/tools, 4-6 Dubai tech careers incl. NaukriGulf/LinkedIn, 7-8 devices and deals, 9-10 Dubai tech meetups). Results are deduplicated by URL, categorised under the news ontology and stored with publisher and publication date. Providers: Tavily (`TVLY_API_KEY`, ~1,000/month free), Google Custom Search (100/day free, good for `site:` queries), plus zero-quota curated UAE RSS feeds.
+- **Phase 3, Notice cards with "Because..." attribution:** headline, source and age, an evidence pill citing the memory topic or watch history, actions (View / Remind me tomorrow / Dismiss / Not interested).
+- **Invariant:** no search result becomes a card without passing `ScopeGuard`, i.e. it must link to a confirmed user topic or a qualified hypothesis (two-visit rule).

@@ -6,7 +6,7 @@
 > **24 Nov 2026 update (founder decisions):**
 > - **Engine:** **temporal_note** (`apps/memory/`, on `main`) replaced Hindsight, Honcho and mem0 (bakeoff `DECISION.md`, 23 Nov). The founder doesn't want competitor comparisons: it's judged on the app's requirements only.
 > - **Wins on conflict:** where §1, §4–§8 and §11–§13 still say "Hindsight", **§18 wins**. The §2 mental model, the §9 Quest-like export tree and §16 trust still stand. Use §18 for engine behavior and §9 for the Quest-like export design; use §17 for Vault interaction design, with §18 taking precedence on taxonomy, retrieval and evidence. §9 / §17 got small updates.
-> - **Current engine architecture, measured state and owners:** **§18**. Live execution tracker: `apps/memory/upgrade/TN_UPGRADE_PLAN.md` + `apps/memory/upgrade/reports/STATUS.md`.
+> - **Current engine architecture, measured state and owners:** **§18**. Live execution tracker: §19 below + `apps/memory/upgrade/reports/STATUS.md`.
 > - **Three products** (Dubai-io, Community, Messenger) share only the per-user layer: identity + this memory (D15).
 
 ---
@@ -375,7 +375,7 @@ The memory engine's export and graph representation is rendered to the user via 
 - 🔧 in progress (a branch exists);
 - 📋 planned (spec only).
 
-**As of** `main` @ `d813e7f` (24 Nov, evening). Execution tracker, gates and owners: `apps/memory/upgrade/TN_UPGRADE_PLAN.md`, `apps/memory/upgrade/reports/STATUS.md`, and the measured scores in `G:\Haitham\lab-data\memory-bakeoff\acceptance\BASELINE.md` (the acceptance harness and synthetic gold dataset are in `apps/memory/acceptance/`; current implementation and verified status: §18.7 and `apps/memory/upgrade/reports/STATUS.md`).
+**As of** `main` @ `d813e7f` (24 Nov, evening). Execution tracker, gates and owners: §19 below, `apps/memory/upgrade/reports/STATUS.md`, and the measured scores in `G:\Haitham\lab-data\memory-bakeoff\acceptance\BASELINE.md` (the acceptance harness and synthetic gold dataset are in `apps/memory/acceptance/`; current implementation and verified status: §18.7 and `apps/memory/upgrade/reports/STATUS.md`).
 
 ### 18.1 Requirements (founder, 24 Nov)
 
@@ -490,3 +490,32 @@ Access is by hashed tokens with roles admin / worker / owner-device, owner-scope
 | E1–E4 | **real-data round:** one-command stack on the PC; Google sign-in on the PC + QR pairing for the iPhone; Gmail / Calendar / YouTube / Takeout / WhatsApp / desktop ingest with consent; chat on real memory + the Today feed from real interests (`apps/memory/upgrade/prompts/E0–E4`) | Gemini / Codex (half volume) / Devin | 🔧 active |
 | Design | rewrite of `design/20-11-2026/INDEX.md` from the images (parked at tag `archive/design-spec-20-11`); restyle **after** the real-data round | — | parked |
 
+## 19. temporal_note upgrade plan: decisions and specs (merged from `apps/memory/upgrade/TN_UPGRADE_PLAN.md`, 26 Nov)
+
+The v1 plan (24 Nov, approved; merged audits by Codex, Cursor, Gemini and DeepSeek) was built as work packages U0-U7 and E0-E14; per-item gate evidence lives in `apps/memory/upgrade/reports/STATUS.md`. The full original is recoverable with `git show 1ea0d3b:apps/memory/upgrade/TN_UPGRADE_PLAN.md`. Kept here: requirements, founder decisions, the graph DTO and the gates.
+
+**Requirements.** R1 low cost. R2 fast in conversation (obvious triples such as `person -> buys -> iPhone` extracted instantly, about $0). R3 backfill: who, where, why, contradict, update, retrieve, story. R4 graph map (Subjects, People & Places with a T1 ring). R5 root rules 1, 2, 9 (no false status; provenance + `as_of`; inferences are "I noticed"; two-visit qualification; health, family and faith never inferred). R6 places and topics the user talks about or keeps asking about are remembered and retrievable.
+
+**Founder decisions (24 Nov).**
+- **D-a clusters:** the engine's 7 (Career, Learning, Projects, People & family, Events, Home & money, Travel). One taxonomy from extraction to API to app; no Health cluster; People & family is a sensitive cluster (shown only with user-stated or confirmed facts).
+- **D-b catch-up pass:** local Qwen first, Haiku fallback, once per session (idle or close), never per message (`extract.session` job kind).
+- **D-c T1 ring:** the engine suggests T1 from interaction frequency and recency (shown as "I noticed", never from family or sensitive signals); a person joins the ring only on user confirm. Stored as `closeness_suggested` (+ evidence) separately from `closeness_tier`.
+
+**Design.** In conversation: narrow first-person templates with reject lists (negation, questions, plans, third parties, sarcasm), triples as optional `Fact` fields (no `thing` entity kind), gated by `pre_write`; a no-LLM topic counter creates an "I noticed" hypothesis after 2 separate sessions. Backfill: one call per day packet (who/where/why with a cited reason span, changes, actions, places and preferences, place type). On demand: SQL candidates (FTS + entity/alias + 1-hop subject + date, RRF); `/why` = exact fact + cited reason or "reason unknown"; story = deterministic cited timeline first, optional capped LLM narration. Embeddings (U4) merged 24 Nov as hybrid keyword + local multilingual (BAAI/bge-m3, RRF).
+
+**Blockers found by the audits (B1-B4, addressed by U0a/U1a-c/U0c):** bridge only worked on the in-memory store (Postgres 500s); quarantined facts left readable entities/edges; Forget left facts and warm `context_pack` caches; schema changes never reached existing DBs (`migrate()` only `CREATE TABLE IF NOT EXISTS`).
+
+**`/vault/graph?view=subjects|people` DTO (versioned, Rule 9 gated server-side).** `{version, owner, view, center_id, as_of, provenance, demo_data, counts:{total_nodes, shown_nodes, people, places, projects, relations, hidden_by_group}, nodes:[{id, kind, label, subtitle, group, tier, fact_count, salience, provenance, review_state, as_of, evidence_fact_ids}], edges:[{id, src, dst, rel, kind: observed|membership, provenance, review_state, valid_from, valid_to, evidence_fact_ids}], key_items}`. Every edge connects visible nodes; `+N more` = `hidden_by_group`; counts computed over the gated projection before capping; the client draws the T1 ring from `tier`.
+
+**Acceptance gates.** Retrieval p95 < 150 ms at 20k facts over HTTP (n >= 100, also during backfill; the old-fact needle is found). Search per-bucket floors set from the extracted-graph baseline; 0 sensitive leaks on every surface (graph, context, why, story, export, MCP, caches). Live-triple precision on the trap set (auditors propose >= 90% to >= 98% for `user_supplied`; founder picks). Backfill mean cost per owner-day <= about $0.0044 on `apps/memory`'s own worker, changes 8/8 superseded + 4/4 ended + 4/4 late, privacy false positives <= 2%. Forget: 0 survivors across facts, links, entities, counts, caches and stories, warm and cold. Bridge: the `contest-shared` HTTP contract suite passes on Postgres. Graph: true counts, no orphan edges. R6: a restaurant mentioned once with a lasting signal is retrievable by name, area and "restaurant"; a topic asked in >= 2 separate sessions yields one hypothesis, asked once yields none.
+
+## 20. Backfill agent and goal loop (merged from `docs/plan/backfill-agent.md`, 26 Nov)
+
+Locked design (17 Nov, `PLAN.md` §2). Full original with the `backfill_jobs` DDL: `git show 1ea0d3b:docs/plan/backfill-agent.md`.
+
+- **Gate:** never run an autonomous backfill loop over unproven extraction. Backfill execution requires AC-1 (live Hindsight LLM fact/entity/supersession verification), AC-2 (card lifecycle state machine) and AC-3 (orchestrator query rewriter) green.
+- **Topology:** one accountable lead orchestrator (run plan, cursors, budget, `ScopeGuard` audit log, testable "done" contract per slice) plus bounded stateless workers that get one slice and return strict-schema JSON. No standing specialist mesh unless a benchmark proves it necessary.
+- **Model routing:** Tier 1 deterministic rules (known senders, regex dates/amounts, `content_hash` dedupe, `forget_rules` pre-check, `sensitive.py` layer 1); Tier 2 local Qwen 1.5-3B classifier for closed-set `{category, status, sender_cluster}` plus confidence (borderline target < 10%; never creates tasks, rewrites queries or resolves contradictions); Tier 3 temporal backend retains absolute-dated facts, reflects contradictions, emits supersession links (never deletes by age); Tier 4 frontier lead plans slices, rewrites queries to `ScopedQuery`, adjudicates contradictions (never fabricates statuses or bypasses `ScopeGuard`).
+- **Durable queue:** `backfill_jobs` rows (`queued -> running -> done | blocked | failed`, `max_attempts` 3, `done_contract_json`, `audit_json`, lease). A slice goes `blocked` (human review queue, Confirm / Edit / Not true / Forget; feeds no proactive cards) on borderline classification, ambiguous identity/alias, high-stakes contradiction with a `user_supplied` fact, or an ambiguous layer-2 privacy screen.
+- **Done contract (machine-checked, never LLM self-certified):** `seen == retained + duplicates + blocked_by_forget_rule + sensitive_withheld + escalated_to_blocked`; every retained fact has an absolute ISO time, a valid `source_ref` range, `provenance` and `as_of`; zero unconfirmed sensitive-category rows with content; for async backends wait for `pending_operations == 0` and `failed_operations == 0`.
+- **Offline weekly WhatsApp retain (`mamty-hindsight` lab, AC-L2-L4):** prompts, claim state and outputs live outside the repo (`G:\Haitham\lab-data\mamty-hindsight\`); workers never read repo docs; one ISO week at a time, recent to older, day packets of ~40-80 messages, Arabic/Arabizi verbatim; a week marked `done` is immutable unless a supervisor marks `reopen`. Promotion gate: `weeks/*.json` (object `{week_id, agent, facts[]}`, reject bare-list roots) -> `circle.json` alias normalisation -> `sensitive.py` (`filter_statement` + `screen()`, no health/family as plain facts) -> "I noticed" hypothesis -> user confirm -> `mem_*`. Cross-week consolidation only after AC-1 passes.

@@ -10,7 +10,7 @@ Two layouts from one codebase:
 - **iPhone 17 Pro Max** (any phone-width screen) — iOS 26 Liquid Glass look, 4 tabs, Messenger stories, Dynamic Island, voice mode, UAE PASS e-sign (mock). Opens full-screen from the Home Screen.
 
 Visual references live in `Messenger-redesign.md`, `Slides/output_grid/` and `screens/`.
-Run it locally: [run.md](run.md) · how the AI agents work, data map and connector contracts: [ARCHITECTURE.md](ARCHITECTURE.md).
+Run it locally: [Run details](README.md#run-details-merged-from-runmd-26-nov) · how the AI agents work, data map and connector contracts: [ARCHITECTURE.md](ARCHITECTURE.md).
 
 **Stack:** React · TypeScript · Vite · Vercel Functions (`api/`) · Python agents · Lucide
 
@@ -45,7 +45,7 @@ npm install
 cp .env.example .env   # set OPENAI_API_KEY; the rest are optional
 npm run dev            # → http://localhost:5173 (the dev server also runs api/*.ts — no separate backend)
 npm run typecheck      # app + API
-npm run agents         # optional, second terminal: the Python agents service on :8787 (see run.md)
+npm run agents         # optional, second terminal: the Python agents service on :8787 (see Run details below)
 ```
 
 - Phone layout on a desktop browser: **http://localhost:5173/?device** (draws an iPhone 17 Pro Max frame).
@@ -65,6 +65,14 @@ npm run agents         # optional, second terminal: the Python agents service on
 Image and video generation are not part of this app. `media/videos/` holds the bundled clips the film plays.
 
 ---
+
+## Run details (merged from run.md, 26 Nov)
+
+- All commands run from the repo root; there is no `npm run server` (the old Python server is retired). Needs Node 18+ and Python 3.11+ (agents service only). On Windows PowerShell use `npm.cmd` / `npx.cmd` if execution policy blocks the wrappers.
+- Two terminals: `npm run dev` (app on :5173, also serves `api/*.ts`) and `npm run agents` (agents service on :8787; first run creates `agents/.venv`). The app works without the second terminal; features that need agents fall back to demo data.
+- Checks: `npm run typecheck`; `npm run agents:test` (offline); `npm run agents:eval` (dev set) and `-- --set holdout`; `npx vite build`; `curl http://localhost:5173/agents/connectors` shows each connector as demo or live.
+- Optional: Redis for memory persistence (`docker compose -f agents/docker-compose.yml up -d redis`); live AI is off by default (`AGENTS_LIVE=1`, hard cap `AGENTS_BUDGET_USD`, default 1.00); Clean AI Detection needs a local GPU env (~6 GiB VRAM) running the agents app from an env that has `remove-ai-watermarks`.
+- Troubleshooting: TLS/CA errors on `npm run agents` mean `SSL_CERT_FILE` / `REQUESTS_CA_BUNDLE` points at a deleted file (clear them); "Python was not found" means install Python 3.11+ or disable the Store alias; port 5173/8787 in use means verify the owning process before stopping that exact PID; restart terminal 2 after agents code changes; some `agents:test` tests need loopback sockets (`tests/test_ai_cleaner.py` is socket-free).
 
 ## Deploy (Vercel) - historical, superseded by D13 (founder's PC)
 
