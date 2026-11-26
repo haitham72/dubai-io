@@ -6,7 +6,7 @@
   - Root `CLAUDE.md`
   - `docs/submissions/shared/founder-decisions.md` (`D3`, `D11`, `D14`, `D16`–`D22`, `D19b`)
   - `apps/memory/upgrade/prompts/wave_2026-11-26/WAVE_PLAN_2026-11-26.md`
-  - Prior handoffs: `HANDOFF_integrator_2026-11-25.md`, `HANDOFF_integrator_2026-11-25b.md`, `HANDOFF_integrator_2026-11-25c_EOD.md`
+  - Prior handoffs: `HANDOFF_integrator_2026-11-25.md` (removed 26 Nov; see git history), `HANDOFF_integrator_2026-11-25b.md`, `HANDOFF_integrator_2026-11-25c_EOD.md`
 
 ---
 

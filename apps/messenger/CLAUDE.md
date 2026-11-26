@@ -2,7 +2,7 @@
 
 **What this is:** a good-looking investor demo of Messenger — a private chat app with an AI assistant, agentic tasks and utility workspaces. A clickable demo ("Figma you can tap"), not a product. Light theme. Two layouts from one codebase: **desktop** (1920×1080 shell) and **iPhone 17 Pro Max** (`src/mobile/`, used at ≤820px).
 
-**Sources of truth:** `README.md` (app overview, deploy), `run.md` (run locally), `ARCHITECTURE.md` (agents, data map, connector contracts), `Messenger-redesign.md` (desktop UI spec), `Slides/output_grid/output_grid_1..4.jpg` (desktop R01–R15, mapped in spec §31), `screens/` (iOS references incl. `screens/dynamic island/`).
+**Sources of truth:** `README.md` (app overview, deploy), `README.md` "Run details" (run locally), `ARCHITECTURE.md` (agents, data map, connector contracts), `Messenger-redesign.md` (desktop UI spec), `Slides/output_grid/output_grid_1..4.jpg` (desktop R01–R15, mapped in spec §31), `screens/` (iOS references incl. `screens/dynamic island/`).
 
 ## Run
 
@@ -35,7 +35,7 @@ npx vite build
 
 ## Read, in order
 
-1. `run.md` — how to run it locally (two terminals, from the repo root).
+1. `README.md` (Run + Run details) — how to run it locally (two terminals, from the repo root).
 2. `ARCHITECTURE.md` — how the AI works, the data map (demo vs live), connector contracts, what each needs to go live.
 3. `agents/README.md` — the Python agents service (voice, research, chat skills, stickers, verified vs not verified).
 4. `agents/eval/REPORT.md` — the voice eval: what is measured, held-out first runs, timing choices.

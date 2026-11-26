@@ -51,7 +51,7 @@ Stop the dev server by its PID only.
 - **other:** `GET /api/reading`, `/api/reading/thumbnails/{id}`, `/api/prayer-times`, `/api/ops/health`, `/api/ops/ml`, `/api/ml/status`, `/api/community/search`
 - **community (parked):** `/api/communities` (+`/{id}/join|leave|stories|posts`), `/api/feed`, `/api/posts/{id}` (+`/comments`, `/hide`), `/api/votes`, `/api/me/posts`, `/api/chats` (+`/{id}/messages|read|archive`), `/api/contacts`, `/api/calls`
 
-**vs `docs/archive/references/ios-swift-plan.md` (23 Oct inventory):** every endpoint it names exists. **Planned** (named there, absent in code): Supabase Auth bearer-token verification in FastAPI; outbox → APNs push. The shared per-user modules are `app/identity` and `app/memory_bridge`. Reuse existing Google OAuth helpers, connectors and temporal_note importers; see E2 (`apps/memory/upgrade/prompts/E2_signin_pairing_wiring.md`) for sign-in and pairing and E3 for consented ingest wiring and acceptance (`ARCHITECTURE.md` §14).
+**vs `docs/archive/references/ios-swift-plan.md` (23 Oct inventory):** every endpoint it names exists. **Planned** (named there, absent in code): Supabase Auth bearer-token verification in FastAPI; outbox → APNs push. The shared per-user modules are `app/identity` and `app/memory_bridge`. Reuse existing Google OAuth helpers, connectors and temporal_note importers; see E2 (`apps/memory/upgrade/prompts/E2_signin_pairing_wiring.md` (removed 26 Nov; see git history)) for sign-in and pairing and E3 for consented ingest wiring and acceptance (`ARCHITECTURE.md` §14).
 
 ## Contracts (FIN-08)
 
@@ -67,7 +67,7 @@ Demo hosting (24 Nov): the founder's PC with local Postgres; use E1 for current 
 - DB connection: direct or session pooler for persistent Python/LangGraph, never transaction pooling blindly.
 - No paid deployment or budget assumed. Healthy durable writes precede runtime adoption; a hosted worker, health visibility and an agreed budget precede any always-on promise.
 
-(from `docs/archive/references/ios-swift-plan.md` "Architecture and hosting"; `docs/archive/root/handoff.md`; `docs/archive/implementation-plan.md` §0.7, DB-03; `docs/archive/references/assistant-review-decisions.md` #6)
+(from `docs/archive/references/ios-swift-plan.md` "Architecture and hosting"; `docs/archive/root/handoff.md` (removed 26 Nov; see git history); `docs/archive/implementation-plan.md` §0.7, DB-03; `docs/archive/references/assistant-review-decisions.md` #6)
 
 ## Rules
 

@@ -1,6 +1,6 @@
 # End-of-Day Handoff — 25 Nov 2026 (Dubai)
 
-Continues `HANDOFF_integrator_2026-11-25.md` and `HANDOFF_integrator_2026-11-25b.md`.
+Continues `HANDOFF_integrator_2026-11-25.md` (removed 26 Nov; see git history) and `HANDOFF_integrator_2026-11-25b.md`.
 Hard rules remain unchanged: `apps/web` frozen (`git diff --quiet mobile-pwa-baseline-2026-10-23 HEAD -- apps/web`), no force-push, no worktree/branch deletion without founder approval, never stage the 3 founder untracked files (`design/20-11-2026/Dubai-io Quest Milestones Showcase.jpg`, `docs/Researches/new tools research.md`, `docs/plan/Memory/deepseek_markdown_20261124_fbeb70.md`) or build outputs (`apps/desktop/renderer/dist/`), never print `.env` values.
 
 ---
@@ -10,7 +10,7 @@ Hard rules remain unchanged: `apps/web` frozen (`git diff --quiet mobile-pwa-bas
 - **E11b PR #7** (`e11b/review-fixes` `61f230d`, independently verified) — merged (full-venv Postgres `apps/memory` 530p/8s, `apps/api` 671p/16s, Messenger 10+13, Desktop 32p).
 - **E10** (`e10/topic-tree` `f33242c`, independently verified in `reports/E10.review.md`) — merged (D17 unified topic tree + D18 weight floor 0.05; combined Postgres `apps/memory` 540p/8s).
 - **E12 PR #8** (`e12/community-wiring` `bee0aa0`, independently verified) — merged (`apps/community` vitest 40p + build 9 routes, mobile 8p, desktop 11p, `apps/api` community 65p, Playwright 2-user E2E 4/4).
-- **U7_post_E11** (`reports/U7_post_E11.md`) — 5-lane E6 rerun on `74cbb1b` (Lane 1 9/10 PASS; Lane 2 10/10 PASS; Lane 3 89/89 E2E PASS; Lane 4 20/22 PASS; Lane 5 3/3 Electron PASS).
+- **U7_post_E11** (`reports/U7_post_E11.md` (removed 26 Nov; see git history)) — 5-lane E6 rerun on `74cbb1b` (Lane 1 9/10 PASS; Lane 2 10/10 PASS; Lane 3 89/89 E2E PASS; Lane 4 20/22 PASS; Lane 5 3/3 Electron PASS).
 - **D19–D22 + D19b canon** — recorded in `docs/submissions/shared/founder-decisions.md`, canon patches archived to `docs/archive/canon-patches-2026-11-25/`, Community replica/two-tower plan written (`docs/submissions/community/FACEBOOK_REDDIT_RECOMMENDER_PLAN.md`), prompts `E13a`, `E13b`, `E14a`, `E14b`, `E14c` committed.
 - **PR #9** (`chore/e11b-e12-cleanups` `ab6ca8c`) — verified (Postgres `test_embed_lazy_backfill` + `test_semantic_hybrid` 8/8 passed; `stop-all.ps1` parses clean; `apps/community` vitest 40p, `tsc --noEmit` clean, `next build` 9 routes) and **merged into `main`**.
 - **PR #10** (`e14c-1/start-shells` `f41494f`) — verified (`start-all.ps1 -Shells`, `health.ps1`, `stop-all.ps1` parse clean) and **merged into `main`**.

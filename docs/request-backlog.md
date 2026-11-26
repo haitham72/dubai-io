@@ -18,9 +18,9 @@ Current execution queue: E0–E4 in `apps/memory/upgrade/prompts/`. MEM-01 is su
 
 Queued 25 Nov (founder decision D17, topic vocabulary):
 
-- **E10 (Gemini):** one topic tree replaces the hard-coded `_SYNONYM_GROUPS`; the LLM may propose new words under an existing word with a cited source. Prompt: [E10_topic_tree.md](../apps/memory/upgrade/prompts/E10_topic_tree.md). Branch `e10/topic-tree`. Queued.
-- **E11 (Codex part A, Devin part B):** review fixes from the E1–E9 reviews. Prompt: [E11_review_fixes.md](../apps/memory/upgrade/prompts/E11_review_fixes.md). Part A `e11a/temporal-fixes` (Codex), part B `e11b/review-fixes` (Devin). Queued.
-- **E12 (Devin, after E11b):** wire the Community website to the real backend (feed, post actions, follows, groups, search, For you). Prompt: [E12_community_wiring.md](../apps/memory/upgrade/prompts/E12_community_wiring.md). Branch `e12/community-wiring`. Queued.
+- **E10 (Gemini):** one topic tree replaces the hard-coded `_SYNONYM_GROUPS`; the LLM may propose new words under an existing word with a cited source. Prompt: E10_topic_tree.md (removed 26 Nov; see git history). Branch `e10/topic-tree`. Queued.
+- **E11 (Codex part A, Devin part B):** review fixes from the E1–E9 reviews. Prompt: E11_review_fixes.md (removed 26 Nov; see git history). Part A `e11a/temporal-fixes` (Codex), part B `e11b/review-fixes` (Devin). Queued.
+- **E12 (Devin, after E11b):** wire the Community website to the real backend (feed, post actions, follows, groups, search, For you). Prompt: E12_community_wiring.md (removed 26 Nov; see git history). Branch `e12/community-wiring`. Queued.
 
 ## HISTORICAL — LAB-01 headless Know / Notice / Do pipeline (9–16 Nov)
 
@@ -34,11 +34,11 @@ Founder, 9 Nov: pause UI work; build the pipeline headless in `apps/api/app/lab/
   3. **AC-3 (P1-5):** Orchestrator query rewriter (`"why am I not getting accepted"` → `ScopedQuery(categories=['job_search', 'career'])`, `docs/plan/morning-brief.md` §8.1.1, contract test in `tests/test_live_hindsight_llm.py`).
   4. **AC-4 (P1-6):** Sensitive-category rule in canon (`CLAUDE.md` rule 9, `ARCHITECTURE.md` §7, enforced by `apps/api/app/lab/sensitive.py` and verified in `tests/test_live_hindsight_llm.py` & `tests/test_lab_rows.py`).
   5. **AC-5 (P0-3):** `MEM-01` decision recorded in `PLAN.md` §2 (verified in `tests/test_live_hindsight_llm.py`).
-  6. **P2-7:** Backfill agent spec (`docs/plan/backfill-agent.md` — one accountable lead + bounded delegation + goal-loop `"done"` contract + durable SQLite `backfill_jobs` queue with `blocked` = human review).
+  6. **P2-7:** Backfill agent spec (`docs/plan/Memory/memory.md` §20 — one accountable lead + bounded delegation + goal-loop `"done"` contract + durable SQLite `backfill_jobs` queue with `blocked` = human review).
   7. **P2-8:** Reading & video triage appendix (`docs/Researches/memory-research-2026-11.md` §8).
   8. **L1–L5 (`mamty-hindsight` Lab Ingest Addendum, after SRE 1–3):**
      - **L1 (AC-L1):** Honest labeling of `mamty-hindsight` as a **"prompt-level retain lab run"** across `docs/status.md`, `apps/api/app/lab/CLAUDE.md`, and `docs/Researches/memory-research-2026-11.md` (done).
-     - **L2 (AC-L2):** Capture weekly WhatsApp retain playbook pointer (`RUN.md`, `weeks.json`, `claims.md`, `AGENT_PROMPT*.md`, no-overwrite on `status=done`) in `apps/api/app/lab/CLAUDE.md` & `docs/plan/backfill-agent.md` §6 (done).
+     - **L2 (AC-L2):** Capture weekly WhatsApp retain playbook pointer (`RUN.md`, `weeks.json`, `claims.md`, `AGENT_PROMPT*.md`, no-overwrite on `status=done`) in `apps/api/app/lab/CLAUDE.md` & `docs/plan/Memory/memory.md` §20 (done).
      - **L3 (AC-L3):** Week JSON schema validator (`{week_id, agent, facts[]}`, reject `list_root` such as `2026-04-27_...`) + `circle.json` alias normalizer (`Hadil`/`هديل`, `Asr`/`Aser`, `mamty (user's mother)`) before any import (contract & test in `apps/api/tests/test_live_hindsight_llm.py`).
      - **L4 (AC-L4):** Wire `circle.json` aliases + `sensitive.py` filter + `"I noticed"` confirmation gate before any promotion to `mem_*` (contract & test in `apps/api/tests/test_live_hindsight_llm.py`; raw 444 facts blocked from `mem_*`).
      - **L5 (P2-9):** Cross-week consolidate pass (`unrelated | repeats | changes | ends` + `observations[]`) on lab bank **after** SRE AC-1 passes.

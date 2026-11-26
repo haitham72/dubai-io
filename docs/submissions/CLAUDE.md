@@ -64,17 +64,17 @@ origin/main @ f016856 (23 Nov) ── contest-shared ──┬── societal   
 
 | Phase | Branch · brief | Output | Gate to the next phase |
 |---|---|---|---|
-| **P1 — Plan each entry** (2 agents in parallel) | `societal` · `community/briefs/1-plan.md`; `business` · `messenger/briefs/1-plan.md` | Per entry: `audit.md`, `IMPLEMENTATION_GAP_MATRIX.md`, `DELIVERY_ROADMAP.md`, `identity-memory-needs.md`, `demo-script.md`, `sources.md`, `open-questions.md`, `log.md`; plus `ip-and-baseline.md` for the Messenger | Both entry plans committed and pushed |
-| **P2 — Shared contract + cross-check** (1 agent) | `contest-shared` · `shared/briefs/2-contract.md` | `shared/THREE_ENTRIES_OVERVIEW.md`, `shared/SHARED_MEMORY_CROSS_APP_CONTRACT.md`, `shared/shared-slices.md`, `shared/cross-check.md`, `shared/canon-patches/*.md`; then merged into both entry branches | **Founder gate:** answers each entry's `open-questions.md` (≤ 5 blocking each), confirms the Messenger's **M0 file list** (founder-authored → keep; office-origin → exclude or rebuild) and picks its new name, and sets the status line of both roadmaps to `approved — <date>` |
-| **B0 — Shared build** | `contest-shared` · `shared/briefs/3-build-shared.md` | Verified identity, memory bridge, consent scopes, forget propagation, contract tests | **Gate S:** contract tests green; merged into both entry branches |
-| **B — Entry builds** | `societal` · `community/briefs/2-build.md`; `business` · `messenger/briefs/2-build.md` | Working apps, demos, packaging | Per slice: §4 gates. After the founder gate, each entry may start the slices that need neither shared identity nor memory; **slices that need them wait for Gate S**. The Messenger also needs its M0 file list confirmed. |
+| **P1 — Plan each entry** (2 agents in parallel) | `societal` · `community/briefs/1-plan.md` (removed 26 Nov; see git history); `business` · `messenger/briefs/1-plan.md` (removed 26 Nov; see git history) | Per entry: `audit.md`, `IMPLEMENTATION_GAP_MATRIX.md`, `DELIVERY_ROADMAP.md`, `identity-memory-needs.md`, `demo-script.md`, `sources.md`, `open-questions.md`, `log.md`; plus `ip-and-baseline.md` for the Messenger | Both entry plans committed and pushed |
+| **P2 — Shared contract + cross-check** (1 agent) | `contest-shared` · `shared/briefs/2-contract.md` (removed 26 Nov; see git history) | `shared/THREE_ENTRIES_OVERVIEW.md`, `shared/SHARED_MEMORY_CROSS_APP_CONTRACT.md`, `shared/shared-slices.md`, `shared/cross-check.md`, `shared/canon-patches/*.md`; then merged into both entry branches | **Founder gate:** answers each entry's `open-questions.md` (≤ 5 blocking each), confirms the Messenger's **M0 file list** (founder-authored → keep; office-origin → exclude or rebuild) and picks its new name, and sets the status line of both roadmaps to `approved — <date>` |
+| **B0 — Shared build** | `contest-shared` · `shared/briefs/3-build-shared.md` (removed 26 Nov; see git history) | Verified identity, memory bridge, consent scopes, forget propagation, contract tests | **Gate S:** contract tests green; merged into both entry branches |
+| **B — Entry builds** | `societal` · `community/briefs/2-build.md` (removed 26 Nov; see git history); `business` · `messenger/briefs/2-build.md` (removed 26 Nov; see git history) | Working apps, demos, packaging | Per slice: §4 gates. After the founder gate, each entry may start the slices that need neither shared identity nor memory; **slices that need them wait for Gate S**. The Messenger also needs its M0 file list confirmed. |
 
 **Current roster (24 Nov):** Gemini handles E1, E2 and E4. Codex handles E3 at half volume. Devin is available, Muse is unavailable, and Claude verifies gates and integrates into `main`. **Historical roster** (original planning phase):
 
 | Phase | Lead |
 |---|---|
 | P1 Community (`societal`) | **Muse** (taken over from Codex, 23 Nov) |
-| P1 Messenger (`business`) | **Cursor**: done; then revised to D1–D6 (`messenger/briefs/1b-revise.md`) |
+| P1 Messenger (`business`) | **Cursor**: done; then revised to D1–D6 (`messenger/briefs/1b-revise.md` (removed 26 Nov; see git history)) |
 | P2 Shared contract + cross-check | **Antigravity** (Part A now, Part B after Community's plan) |
 | B0 Shared build | **Antigravity** |
 | B Community | **Muse** |

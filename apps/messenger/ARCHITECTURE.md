@@ -1,7 +1,7 @@
 # Architecture — Messenger agents
 
 How the app's AI works, where every piece of data comes from, and the contracts of the outside systems it talks to.
-Run instructions: [run.md](run.md) · app overview and deploy: [README.md](README.md) · agents service internals:
+Run instructions: [Run details](README.md#run-details-merged-from-runmd-26-nov) · app overview and deploy: [README.md](README.md) · agents service internals:
 [agents/README.md](agents/README.md) · voice evaluation: [agents/eval/REPORT.md](agents/eval/REPORT.md).
 
 **Principles**

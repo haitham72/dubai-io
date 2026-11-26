@@ -19,4 +19,4 @@ Twelve JPG video frames supplied 22 Oct 2026. Review them in the order below. Th
 | `2026-10-22 10-31-48 (0-01-15-17).jpg` | Finding → optional investigation with quick responses |
 | `2026-10-22 10-31-48 (0-01-23-07).jpg` | Finding → explanation → proposed experiment |
 
-Use the [design/interaction review prompt](../../../docs/archive/references/assistant-design-interaction-review-prompt.md). Output a new `docs/archive/references/assistant-design-interaction-review.md`; preserve the earlier product/architecture review and reconcile findings by ID. DubaiIO retains cyan, approved gradients, no shadows and its own approval/evidence rules. The payment/government examples visible here do not authorize those features in DubaiIO.
+Use the design/interaction review prompt (removed 26 Nov; see git history). Output a new `docs/archive/references/assistant-design-interaction-review.md`; preserve the earlier product/architecture review and reconcile findings by ID. DubaiIO retains cyan, approved gradients, no shadows and its own approval/evidence rules. The payment/government examples visible here do not authorize those features in DubaiIO.

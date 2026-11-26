@@ -1,10 +1,10 @@
 # Handoff 2: integrator session ended on quota, 25 Nov 2026 (11:30 Dubai)
 
-Continues `HANDOFF_integrator_2026-11-25.md`. Read that, root `CLAUDE.md`, `docs/submissions/shared/founder-decisions.md` (D16–D22 + D19b) first. Hard rules are unchanged: `apps/web` frozen (`git diff --quiet mobile-pwa-baseline-2026-10-23 HEAD -- apps/web`), no force-push, no deletions without the founder, never stage the 3 founder untracked files, no new top-level `*.md`, never print `.env` values.
+Continues `HANDOFF_integrator_2026-11-25.md` (removed 26 Nov; see git history). Read that, root `CLAUDE.md`, `docs/submissions/shared/founder-decisions.md` (D16–D22 + D19b) first. Hard rules are unchanged: `apps/web` frozen (`git diff --quiet mobile-pwa-baseline-2026-10-23 HEAD -- apps/web`), no force-push, no deletions without the founder, never stage the 3 founder untracked files, no new top-level `*.md`, never print `.env` values.
 
 ## State of `main`: 55878ab (pushed)
 
-Merged this session, all gated and independently verified: E11a, E11b (PR #7), E10, E12 (PR #8). Full 5-lane E6 rerun is in `reports/U7_post_E11.md` (Lane 1 9/10 PASS, S2 fails on cost $0.00514/day and changes 6/8 sup, 1/4 late; Lane 2 all green; Lane 3 89/89 E2E; Lane 4 20/22; Lane 5 3/3). Decisions D19 (Lower, floor 0.01, surface 0.10, Delete-my-data), D19b (lowered memories stay 100% callable on explicit user trigger and the call adds back weight), D20 (canon patches finalized + archived), D21, D22 are recorded. Prompts E13a, E13b, E14a, E14b are in this folder.
+Merged this session, all gated and independently verified: E11a, E11b (PR #7), E10, E12 (PR #8). Full 5-lane E6 rerun is in `reports/U7_post_E11.md` (removed 26 Nov; see git history) (Lane 1 9/10 PASS, S2 fails on cost $0.00514/day and changes 6/8 sup, 1/4 late; Lane 2 all green; Lane 3 89/89 E2E; Lane 4 20/22; Lane 5 3/3). Decisions D19 (Lower, floor 0.01, surface 0.10, Delete-my-data), D19b (lowered memories stay 100% callable on explicit user trigger and the call adds back weight), D20 (canon patches finalized + archived), D21, D22 are recorded. Prompts E13a, E13b, E14a, E14b are in this folder.
 
 ## In-flight work (nothing below is merged)
 
@@ -32,7 +32,7 @@ Merged this session, all gated and independently verified: E11a, E11b (PR #7), E
 
 Observed on this PC, not assumed:
 - **Blocker 1: DB.** `apps/api/.env` `DATABASE_URL` points to port **15422**, which is offline. Either start that Postgres or blank `DATABASE_URL` for SQLite. A clean worktree with no `.env` starts fine (that is how E6 ran).
-- **Blocker 2: Google sign-in.** `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_OAUTH_REDIRECT_URI`, `OAUTH_TOKEN_KEY` are **not set** in `apps/api/.env`. Real login needs them plus the 2 redirect URIs and test users (MORNING.md §B step 2). Synthetic sessions work without them.
+- **Blocker 2: Google sign-in.** `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_OAUTH_REDIRECT_URI`, `OAUTH_TOKEN_KEY` are **not set** in `apps/api/.env`. Real login needs them plus the 2 redirect URIs and test users (MORNING.md (removed 26 Nov; see git history) §B step 2). Synthetic sessions work without them.
 - **Firewall:** inbound TCP rules exist for 8000, 8060, 8070, 8081, 8082, 8083, 3060, 5173. Nothing to add.
 - **Launcher covers 5 of 9 client targets.** `scripts/dev/start-all.ps1` starts the three websites (:8081 Dubai-io Expo web, :3060 Community, :5173 Messenger), the Dubai-io Expo server and the Dubai-io Electron app. **Not started by it:** Community and Messenger Expo Go shells and Community/Messenger Electron shells. Run by hand: `apps/community/mobile` `npm start`, `apps/messenger/mobile` `npm start`, `apps/community/desktop` `npm start`, `apps/messenger/desktop` `npm start`. Adding them to `start-all.ps1` is a small open task.
 - **iPhone caveat:** Community web `API_BASE` is `http://localhost:8060`, which points at the phone itself on a LAN. The E14 web agent was fixing this (use `window.location.hostname`) but it is unverified. Messenger similarly uses `VITE_MESSENGER_API_URL` / `http://localhost:8000`. Test iPhone with the LAN IP printed by `start-all.ps1`, and set the shells' Server URL to `http://<LAN-IP>:3060` / `:5173`.

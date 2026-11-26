@@ -12,10 +12,10 @@
 
 | Doc | Why |
 |---|---|
-| `docs/plan/Memory/memory.md` §18 | Current engine and gates (MEM-01 / AC gates superseded). Execution: `apps/memory/upgrade/TN_UPGRADE_PLAN.md`, `prompts/`, `reports/STATUS.md` |
+| `docs/plan/Memory/memory.md` §18 | Current engine and gates (MEM-01 / AC gates superseded). Execution: `docs/plan/Memory/memory.md` §19, `prompts/`, `reports/STATUS.md` |
 | `ARCHITECTURE.md` §7 | Memory contracts |
 | `apps/api/app/lab/CLAUDE.md` | Lab pipeline + mamty-hindsight playbook |
-| `docs/plan/backfill-agent.md` | Historical backfill queue (lab and older backfill/brief docs are context only) |
+| `docs/plan/Memory/memory.md` §20 | Historical backfill queue (lab and older backfill/brief docs are context only) |
 | `docs/plan/morning-brief.md` §8 | Cards, ScopeGuard, generators |
 | `docs/references/residence-ontology-tree.md` | Fine topic spine IDs |
 | `docs/references/recommender-plan.md` | Interest weights (superseded in part by morning-brief) |

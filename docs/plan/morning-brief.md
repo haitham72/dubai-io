@@ -214,7 +214,7 @@ Each generator starts from deterministic SQL/catalog counts and selections (`cat
 | **3. Hindsight (swappable backend)** | Temporal reasoning | `retain` absolute-dated facts & entities, `reflect` contradictions, supersession chains. |
 | **4. Orchestrator** | Planning & routing | Task creation, query rewriting (§8.1.1), `ScopeGuard` enforcement, card generation & ranking. |
 
-- **Constraints:** Fine-tuning requires a seed dataset (150+ real examples expanded synthetically). Borderline classification cases (target `<10%`) route to the durable human review queue (`blocked` state in `docs/plan/backfill-agent.md`). Raw email/chat classification stays local with zero per-email cloud calls.
+- **Constraints:** Fine-tuning requires a seed dataset (150+ real examples expanded synthetically). Borderline classification cases (target `<10%`) route to the durable human review queue (`blocked` state in `docs/plan/Memory/memory.md` §20). Raw email/chat classification stays local with zero per-email cloud calls.
 
 ## References
 

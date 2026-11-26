@@ -187,13 +187,13 @@ The redesign's latest design is current: commit `6b45ba4`, "AI workspace replace
 
 > "fix general topics first and expand sub topics as well, but let llm propose to backend that new words may be added, as world is canvas that never ends, but every thing is traced to a source and branch at some point"
 
-- Replaces the hard-coded `_SYNONYM_GROUPS` (MORNING.md §E #4). General topics are the ontology roots and first branches (`docs/references/residence-ontology-tree.md`): fixed, edited only by the founder. Subtopics are curated and expanded. The extraction LLM may propose new words only as children of an existing word, with a cited source record. The backend validates each proposal (branch, source, Rule 9) and keeps accepted words per user (provenance `inferred`). Forgetting the last source removes them. Work package: `apps/memory/upgrade/prompts/E10_topic_tree.md` (Gemini).
+- Replaces the hard-coded `_SYNONYM_GROUPS` (MORNING.md (removed 26 Nov; see git history) §E #4). General topics are the ontology roots and first branches (`docs/references/residence-ontology-tree.md`): fixed, edited only by the founder. Subtopics are curated and expanded. The extraction LLM may propose new words only as children of an existing word, with a cited source record. The backend validates each proposal (branch, source, Rule 9) and keeps accepted words per user (provenance `inferred`). Forgetting the last source removes them. Work package: `apps/memory/upgrade/prompts/E10_topic_tree.md` (removed 26 Nov; see git history) (Gemini).
 
 ## D18 — No forget, only lower weights (25 Nov)
 
 > "i am so opposed to the whole 'forget' thing, i only allow 'lower weights' not forget"
 
-- Applies now to all new work: no new delete paths. Learned vocabulary terms and inferred subjects decay to the weight floor instead of being deleted (E10 §4 rewritten; MORNING.md §E #6 and the #18 deletion sweep dropped).
+- Applies now to all new work: no new delete paths. Learned vocabulary terms and inferred subjects decay to the weight floor instead of being deleted (E10 §4 rewritten; MORNING.md (removed 26 Nov; see git history) §E #6 and the #18 deletion sweep dropped).
 - Open: whether to remove the existing user-tapped Forget / source-revoke erasure (E8). Pending founder, given the user-erasure points (UAE PDPL right to erasure; YouTube API policy on deleting data after a user revokes access) and canon Rule 9 / ARCHITECTURE §7, which still list Forget. Canon docs are NOT changed by this entry. *(Settled 25 Nov 2026 by D19 below.)*
 
 ## D19 — Never forget (lower weights to formula minimum); "Delete my data" purges external queries & Redis immediately with de-identified training backup (25 Nov)
@@ -211,7 +211,7 @@ The redesign's latest design is current: commit `6b45ba4`, "AI workspace replace
 
 > "idk what you are talking about, but if they are succesffuly done and stale then finalize them"
 
-- Missing valid pieces from `docs/submissions/shared/canon-patches/` (`PLAN.patch.md` `### NEVER` additions and `ARCHITECTURE.patch.md` §4 `cs_*`/`cm_*`/`mg_*` rows, §7 Cross-App Memory via `temporal_note`, §9.3 Verified Cross-App Identity, and §10 D3/D6/D7 exclusions) are merged into canon; already-superseded `CLAUDE.patch.md` and `docs-status.patch.md` and all four `.patch.md` files are moved via `git mv` into `docs/archive/canon-patches-2026-11-25/`.
+- Missing valid pieces from `docs/submissions/shared/canon-patches/` (`PLAN.patch.md` (removed 26 Nov; see git history) `### NEVER` additions and `ARCHITECTURE.patch.md` (removed 26 Nov; see git history) §4 `cs_*`/`cm_*`/`mg_*` rows, §7 Cross-App Memory via `temporal_note`, §9.3 Verified Cross-App Identity, and §10 D3/D6/D7 exclusions) are merged into canon; already-superseded `CLAUDE.patch.md` (removed 26 Nov; see git history) and `docs-status.patch.md` (removed 26 Nov; see git history) and all four `.patch.md` files are moved via `git mv` into `docs/archive/canon-patches-2026-11-25/`.
 
 ## D21 — Similar-query clustering and logical agent for shared vocabulary proposals (25 Nov)
 
@@ -224,7 +224,7 @@ The redesign's latest design is current: commit `6b45ba4`, "AI workspace replace
 > "we are building facebook/reddit replica for dubai community, plan for it and check recommender systems/two tower recommendation/ logic for populating profile usage understanding coupled with location/mobile/time of day/userState like walking standing sitting driving etc"
 
 - Expands Entry 2 (`apps/community/`, `apps/api/app/community/`) into full Facebook + Reddit social parity while preserving D3 (zero P2P messaging inside Community), D11 (18+ gate), and D14 (light mode, no shadows, native social UI).
-- Replaces `scripts/run_two_tower_recommender.py` (which is a 10-query Tavily search prototype) with a real 4-stage **Two-Tower Recommender** (`pgvector` HNSW + `BAAI/bge-m3` + E10 topic tree + calibrated multi-task ranker + diversity + deterministic `Why this?`) and a **Context-Aware Profile Usage Understanding** projector combining opt-in foreground `area_coarse`, `device_class`, `time_of_day`, and `user_state` (`stationary|sitting|standing|walking|running|driving|unknown`) — strictly foreground-only (zero background geofencing per Rule 8), zero health inference (Rule 9), driving safety filter, and ephemeral Redis TTL. Plan: `docs/submissions/community/FACEBOOK_REDDIT_RECOMMENDER_PLAN.md`; work packages: `E14a_community_social_parity.md` and `E14b_community_two_tower_context.md`.
+- Replaces `scripts/run_two_tower_recommender.py` (which is a 10-query Tavily search prototype) with a real 4-stage **Two-Tower Recommender** (`pgvector` HNSW + `BAAI/bge-m3` + E10 topic tree + calibrated multi-task ranker + diversity + deterministic `Why this?`) and a **Context-Aware Profile Usage Understanding** projector combining opt-in foreground `area_coarse`, `device_class`, `time_of_day`, and `user_state` (`stationary|sitting|standing|walking|running|driving|unknown`) — strictly foreground-only (zero background geofencing per Rule 8), zero health inference (Rule 9), driving safety filter, and ephemeral Redis TTL. Plan: `docs/submissions/community/FACEBOOK_REDDIT_RECOMMENDER_PLAN.md`; work packages: `E14a_community_social_parity.md` (removed 26 Nov; see git history) and `E14b_community_two_tower_context.md` (removed 26 Nov; see git history).
 
 ## Founder to-dos (not agent work)
 

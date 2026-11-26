@@ -3,6 +3,8 @@
 One line per event, newest last: `<date time> | <WP> | <agent> | <branch> | <commit> | <state>`
 States: in-progress · ready-for-review · fixes-requested (see `<WP>.review.md`) · merged.
 
+> Note (26 Nov): the per-item reports (`<WP>.md`, `<WP>.review.md`, handoffs) and agent prompts named in the log below were removed from the tree in the markdown cleanup (removed 26 Nov; see git history). Recover any of them with `git show 1ea0d3b:apps/memory/upgrade/reports/<file>` or `.../prompts/<file>`. The `E10`, `E13a`, `E13a.review`, `E13b.review`, `E14`, `E14.review` reports and the `wave_2026-11-26/` prompts are still present.
+
 2026-11-24 | U1a | codex | mem-wpU1a | afcec62 | merged → memory 9ac5875 (Claude: 343 passed; 21 Postgres)
 2026-11-24 | U0a | ? | mem-wpU0a | 3923366 | merged → memory 267b0cf (Claude: 348 passed; 26 Postgres)
 2026-11-24 | U0b | gemini | (acceptance/) | e05371f-20261124-1059 | baseline done
