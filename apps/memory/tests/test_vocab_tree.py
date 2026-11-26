@@ -401,7 +401,7 @@ def test_proposal_validation_drops_chaining_duplicates_and_api_endpoint(pg):
     assert client.get("/v1/owners/o1/vocab/learned", headers={"Authorization": f"Bearer {tok_wk}"}).status_code == 403
 
 
-def test_d18_weight_lowering_floor_ordering_and_no_deletion(pg):
+def test_weight_lowering_floor_ordering_and_no_deletion(pg):
     today = "2026-11-25"
     with pg.transaction() as conn:
         _seed_owner(conn, "o_d18")
@@ -441,8 +441,8 @@ def test_d18_weight_lowering_floor_ordering_and_no_deletion(pg):
         assert (init_lt, init_subj, init_alias) == (3, 3, 1)
 
     store = PostgresGraphStore(pg)
-    # 1) "Not true" on the only source fact drops SpinZone to WEIGHT_FLOOR (row kept!)
-    resolve_fact(store, "o_d18", "f_spin", SimpleNamespace(action="reject"))
+    from temporal_memory.privacy.controls import learned_weights, set_lowered, weight_learned_index
+    set_lowered(store, "o_d18", SimpleNamespace(fact_id="f_spin", subject_id=None, record_ids=[], source=None), lower=True)
     # 2) Lowering confidence to floor on f_low drops LowClub AND leaves s_inf with no >floor facts
     # 3) Lowering ONLY one of FitZone's two sources keeps FitZone at the higher weight (1.0)
     with pg.transaction() as conn:
@@ -451,7 +451,10 @@ def test_d18_weight_lowering_floor_ordering_and_no_deletion(pg):
 
     with pg.connection() as conn:
         items = {it["term_folded"]: it for it in list_owner_learned_terms(conn, "o_d18")}
-        idx = load_owner_learned_index(conn, "o_d18")
+        weights = learned_weights(conn, "o_d18")
+        for term, weight in weights.items():
+            items[term]["weight"] = weight
+        idx = weight_learned_index(conn, "o_d18", load_owner_learned_index(conn, "o_d18"))
         sal = compute_subject_salience_sql(conn, "o_d18")
         after_lt = conn.execute("SELECT count(*)::int AS c FROM learned_terms WHERE owner = 'o_d18'").fetchone()["c"]
         after_subj = conn.execute("SELECT count(*)::int AS c FROM subjects WHERE owner = 'o_d18'").fetchone()["c"]
@@ -459,7 +462,7 @@ def test_d18_weight_lowering_floor_ordering_and_no_deletion(pg):
 
     # Nothing deleted across learned_terms, subjects, or subject_aliases
     assert (after_lt, after_subj, after_alias) == (init_lt, init_subj, init_alias)
-    assert items["spinzone"]["weight"] == pytest.approx(WEIGHT_FLOOR)
+    assert items["spinzone"]["weight"] == pytest.approx(0.01)
     assert items["lowclub"]["weight"] == pytest.approx(WEIGHT_FLOOR)
     assert items["fitzone"]["weight"] == pytest.approx(1.0)
     assert sorted(items["spinzone"]["source_record_ids"]) == ["r_spin"]
@@ -467,10 +470,7 @@ def test_d18_weight_lowering_floor_ordering_and_no_deletion(pg):
     # Expansion puts curated node's own aliases, then high-weight FitZone, and floor-weight terms LAST.
     _, exp = get_vocab().expand_terms(["gym"], learned=idx, max_terms=40)
     assert "fitzone" in exp
-    assert "lowclub" in exp and "spinzone" in exp
-    assert exp.index("fitness") < exp.index("fitzone") < exp.index("lowclub")
-    assert exp.index("fitzone") < exp.index("spinzone")
-    assert set(exp[-2:]) == {"lowclub", "spinzone"}
+    assert "lowclub" not in exp and "spinzone" not in exp
 
     # §E #18 D18: inferred unconfirmed subject sits at salience floor 0.05; confirmed & user-supplied stay higher.
     assert sal["s_inf"] == pytest.approx(WEIGHT_FLOOR)

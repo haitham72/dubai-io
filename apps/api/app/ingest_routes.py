@@ -256,23 +256,24 @@ def desktop_ingest(
     return ingest.commit(owner, source, row["revision"], records, device_token=device_token)
 
 
-@router.delete("/{source}/data")
-def forget_source(source: Source, principal: Principal, ingest: Service):
+@router.post("/{source}/lower")
+@router.delete("/{source}/data", include_in_schema=False)
+def lower_source(source: Source, principal: Principal, ingest: Service):
+    return _source_weight(source, principal, ingest, "lower")
+
+
+@router.post("/{source}/restore")
+def restore_source(source: Source, principal: Principal, ingest: Service):
+    return _source_weight(source, principal, ingest, "restore")
+
+
+def _source_weight(source: Source, principal: VerifiedPrincipal, ingest: Ingest, action: str):
     owner = principal.user_id
-    forgotten = 0
-    with ingest.state.lock(owner, source) as conn:
-        ingest.state.set_consent(conn, owner, source, False)
-        ids = ingest.state.record_ids(conn, owner, source)
-        for start in range(0, len(ids), 300):
-            batch = ids[start:start + 300]
-            key = sha256("\0".join(batch).encode()).hexdigest()
-            response = ingest.bridge.request(owner, "POST", "forget", body={
-                "record_ids": batch, "idempotency_key": f"e3:{source}:{key}",
-            })
-            forgotten += int(response["records"])
-        if ingest.state.record_ids(conn, owner, source):
-            raise HTTPException(409, "Source data remains in memory; retry Forget")
-    return {"source": source, "enabled": False, "records_forgotten": measured(forgotten)}
+    with ingest.state.lock(owner, source):
+        result = ingest.bridge.request(owner, "POST", action, body={"source": source})
+    from .today_feed import clear_today_cache
+    clear_today_cache(owner)
+    return {"source": source, "lowered": action == "lower", "records": measured(result["records"])}
 
 
 @router.get("/status")

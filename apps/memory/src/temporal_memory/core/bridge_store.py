@@ -16,7 +16,7 @@ from fastapi import HTTPException
 
 from temporal_memory.core.daytime import local_day
 from temporal_memory.core.graph_store import _record_hash
-from temporal_memory.models import Record
+from temporal_memory.models import HELD_BACK_ROOTS, Record
 from temporal_memory.privacy.sensitive import pre_write
 
 _PROVENANCE = {"user_supplied", "inferred", "provider_confirmed", "demo_fixture"}
@@ -233,6 +233,8 @@ def resolve_fact(store: Any, owner: str, fact_id: str, body: Any) -> dict[str, A
         if fact is None:
             raise HTTPException(status_code=404, detail="Fact not found or forgotten")
         status = fact["status"]
+        from temporal_memory.privacy.controls import lock_active_owner
+        lock_active_owner(conn, owner)
         if body.action == "confirm":
             conn.execute(
                 """
@@ -303,11 +305,7 @@ def resolve_fact(store: Any, owner: str, fact_id: str, body: Any) -> dict[str, A
             status = "active"
         elif body.action == "reject":
             conn.execute(
-                "UPDATE facts SET erased_at = now(), embedding = NULL, embedding_model = NULL, embedded_at = NULL WHERE owner = %s AND id = %s",
-                (owner, fact_id),
-            )
-            conn.execute(
-                "DELETE FROM fact_evidence WHERE owner = %s AND fact_id = %s",
+                "UPDATE facts SET weight_steps = weight_steps + 1 WHERE owner = %s AND id = %s",
                 (owner, fact_id),
             )
             status = "rejected"
@@ -341,10 +339,19 @@ def _as_list(value: Any) -> list[Any]:
     return list(value)
 
 
-def _sql_search(store: Any, owner: str, query: str, limit: int, source_prefix: str | None) -> list[dict[str, Any]]:
+def _sql_search(store: Any, owner: str, query: str, limit: int, source_prefix: str | None,
+                *, include_lowered: bool = False) -> list[dict[str, Any]]:
+    facts_view = "visible_facts" if include_lowered else "memory_surface_facts"
     clauses = ["vf.owner = %s", "(vf.text ILIKE %s OR coalesce(vf.text_orig, '') ILIKE %s)"]
-    needle = f"%{query}%"
+    needle = "%" + _like_prefix(query) if include_lowered else f"%{query}%"
     params: list[Any] = [owner, needle, needle]
+    if include_lowered:
+        clauses.append(
+            "(vf.provenance IN ('user_supplied', 'provider_confirmed') OR NOT EXISTS ("
+            "SELECT 1 FROM subjects s WHERE (s.owner, s.id) = (vf.owner, vf.subject_id) "
+            "AND (s.sensitive_cat IS NOT NULL OR lower(split_part(s.path, '/', 1)) = ANY(%s))))"
+        )
+        params.append(sorted(HELD_BACK_ROOTS))
     if source_prefix:
         like = _like_prefix(source_prefix)
         clauses.append(
@@ -371,7 +378,7 @@ def _sql_search(store: Any, owner: str, query: str, limit: int, source_prefix: s
         params.extend([like, like])
     params.append(limit)
     sql = f"""
-        SELECT vf.id, vf.text, vf.subject_id, vf.status, vf.provenance, vf.valid_from,
+        SELECT vf.id, vf.text, vf.subject_id, vf.status, vf.provenance, vf.valid_from, w.weight,
                COALESCE((
                    SELECT json_agg(fe.record_id ORDER BY fe.record_id)
                    FROM fact_evidence fe
@@ -383,7 +390,7 @@ def _sql_search(store: Any, owner: str, query: str, limit: int, source_prefix: s
                    JOIN records r ON r.owner = fe.owner AND r.id = fe.record_id
                    WHERE fe.owner = vf.owner AND fe.fact_id = vf.id AND r.erased_at IS NULL
                ), '[]'::json) AS sources
-        FROM visible_facts vf
+        FROM {facts_view} vf JOIN memory_fact_weights w ON (w.owner,w.id) = (vf.owner,vf.id)
         WHERE {' AND '.join(clauses)}
         ORDER BY vf.valid_from DESC, vf.id ASC
         LIMIT %s
@@ -396,6 +403,7 @@ def _sql_search(store: Any, owner: str, query: str, limit: int, source_prefix: s
             "text": row["text"],
             "subject_id": row["subject_id"],
             "status": row["status"],
+            "weight": row["weight"],
             "provenance": row["provenance"],
             "as_of": row["valid_from"],
             "evidence": _as_list(row["evidence"]),
@@ -405,14 +413,16 @@ def _sql_search(store: Any, owner: str, query: str, limit: int, source_prefix: s
     ]
 
 
-def _hydrate_ranked_facts(store: Any, owner: str, ranked_ids: list[str], limit: int) -> list[dict[str, Any]]:
+def _hydrate_ranked_facts(store: Any, owner: str, ranked_ids: list[str], limit: int,
+                          *, include_lowered: bool = False) -> list[dict[str, Any]]:
+    facts_view = "visible_facts" if include_lowered else "memory_surface_facts"
     if not ranked_ids or limit <= 0:
         return []
     target_ids = list(dict.fromkeys(ranked_ids))[:limit]
     with store.db.connection() as conn:
         rows = conn.execute(
-            """
-            SELECT f.id, f.text, f.subject_id, f.status, f.provenance, f.valid_from,
+            f"""
+            SELECT f.id, f.text, f.subject_id, f.status, f.provenance, f.valid_from, w.weight,
                    COALESCE((
                        SELECT json_agg(fe.record_id ORDER BY fe.record_id)
                        FROM fact_evidence fe
@@ -424,8 +434,8 @@ def _hydrate_ranked_facts(store: Any, owner: str, ranked_ids: list[str], limit: 
                        JOIN records r ON r.owner = fe.owner AND r.id = fe.record_id
                        WHERE fe.owner = f.owner AND fe.fact_id = f.id AND r.erased_at IS NULL
                    ), '[]'::json) AS sources
-            FROM facts f
-            WHERE f.owner = %s AND f.id = ANY(%s) AND (f.erased_at IS NULL)::int = 1
+            FROM {facts_view} f JOIN memory_fact_weights w ON (w.owner,w.id) = (f.owner,f.id)
+            WHERE f.owner = %s AND f.id = ANY(%s)
             """,
             (owner, target_ids),
         ).fetchall()
@@ -435,6 +445,7 @@ def _hydrate_ranked_facts(store: Any, owner: str, ranked_ids: list[str], limit: 
             "text": row["text"],
             "subject_id": row["subject_id"],
             "status": row["status"],
+            "weight": row["weight"],
             "provenance": row["provenance"],
             "as_of": row["valid_from"],
             "evidence": _as_list(row["evidence"]),
@@ -445,8 +456,21 @@ def _hydrate_ranked_facts(store: Any, owner: str, ranked_ids: list[str], limit: 
     return [by_id[fid] for fid in target_ids if fid in by_id]
 
 
-def search_facts(store: Any, owner: str, query: str, limit: int, source_prefix: str | None) -> dict[str, Any]:
+def search_facts(store: Any, owner: str, query: str, limit: int, source_prefix: str | None,
+                 *, include_lowered: bool = False) -> dict[str, Any]:
     """Prefer the contract method and hydrate exact ranked IDs by PK; fall back to substring SQL when empty."""
+    if include_lowered:
+        exact = _sql_search(store, owner, query, limit, source_prefix, include_lowered=True)
+        if len(exact) == limit or not query.strip():
+            return {"ok": True, "facts": exact}
+        candidates = store.search_candidates(
+            owner, query, limit=limit, source_prefix=source_prefix, include_lowered=True,
+        )
+        seen = {fact["id"] for fact in exact}
+        ranked_ids = [c.fact_id for c in candidates if c.fact_id not in seen]
+        return {"ok": True, "facts": exact + _hydrate_ranked_facts(
+            store, owner, ranked_ids, limit - len(exact), include_lowered=True,
+        )}
     fn = getattr(store, "search_candidates", None)
     if callable(fn):
         params = inspect.signature(fn).parameters

@@ -517,9 +517,12 @@ def test_mb_supersession_and_correction(tmp_path: Path, memory_bridge_env) -> No
                 new_text="My password is SecretPassword1!",
             )
 
-        # 3. Reject hides immediately from timeline, search, and Community projection.
+        # 3. Each rejection halves the weight until it falls below the passive threshold.
         res_rej = bridge.resolve_fact(alice_q, new_fid, action="reject", host_app="quest")
         assert res_rej["status"] == "rejected"
+        assert any(v.fact_id == new_fid for v in bridge.read_quest_timeline(alice_q))
+        for _ in range(3):
+            bridge.resolve_fact(alice_q, new_fid, action="reject", host_app="quest")
         assert all(v.fact_id != new_fid for v in bridge.read_quest_timeline(alice_q))
         assert bridge.read_community_interest_features(alice_c) == []
     finally:

@@ -202,7 +202,7 @@ def _run_scenes(root, monkeypatch, run_n):
     forgotten = client.post("/api/community/memory/forget")
     assert forgotten.status_code == 200, forgotten.text
     assert forgotten.json()["forgotten"] is True
-    assert saved_record.erased_at
+    assert saved_record.erased_at is None
     still_public = client.get(f"/api/community/posts/{public_post_id}")
     assert still_public.status_code == 200, still_public.text
 

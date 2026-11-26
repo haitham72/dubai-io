@@ -127,6 +127,7 @@ def memory_state(request: Request, principal: VerifiedPrincipal = Depends(_membe
     chat = request.app.state.chat_store
     source = bridge.get_consent(principal, "source", "messenger")
     items = []
+    lowered = bridge.client.lowered_record_ids(principal.user_id)
     for ref in bridge.list_record_refs(principal, "messenger"):
         conv = ref["source_id"].split(":", 1)[-1]
         text = None
@@ -138,6 +139,7 @@ def memory_state(request: Request, principal: VerifiedPrincipal = Depends(_membe
             text = msg["body"] if msg and not msg["deleted"] else None
         items.append({
             "record_id": ref["record_id"],
+            "lowered": ref["record_id"] in lowered,
             "conversation_id": conv,
             "text": text,
             "saved_at": ref["saved_at"],
@@ -149,7 +151,7 @@ def memory_state(request: Request, principal: VerifiedPrincipal = Depends(_membe
 
 @router.put("/api/messenger/memory/consent")
 def set_consent(request: Request, body: dict = Body(...), principal: VerifiedPrincipal = Depends(_writer)):
-    """Master switch for Messenger extraction. Off never deletes anything: Forget is separate."""
+    """Master switch for Messenger extraction. Off never deletes anything: Lower is separate."""
     if not isinstance(body.get("enabled"), bool):
         raise HTTPException(422, detail={"code": "enabled_required", "message": "enabled must be true or false."})
     enabled = body["enabled"]
@@ -178,14 +180,20 @@ def set_mode(conversation_id: str, request: Request, body: dict = Body(...), pri
     return {"conversation_id": conversation_id, "mode": mode, "as_of": grant.updated_at}
 
 
-@router.post("/api/messenger/memory/forget")
-def forget_item(request: Request, body: dict = Body(...), principal: VerifiedPrincipal = Depends(_forgetter)):
-    record_id = str(body.get("record_id") or "")
-    if not record_id:
-        raise HTTPException(422, detail={"code": "record_id_required", "message": "record_id is required."})
-    bridge = _bridge(request)
+@router.post("/api/messenger/memory/lower")
+@router.post("/api/messenger/memory/forget", include_in_schema=False)
+def lower_item(request: Request, body: dict = Body(...), principal: VerifiedPrincipal = Depends(_forgetter)):
+    record_id = body.get("record_id")
+    if not isinstance(record_id, str) or not record_id.startswith("mgmsg:"):
+        raise HTTPException(422, detail={"code": "record_id_required", "message": "A Messenger record is required."})
+    lower = body.get("lower", True)
+    if type(lower) is not bool:
+        raise HTTPException(422, detail="lower must be a boolean")
     try:
-        receipt = bridge.forget_records(principal, [record_id], host_app="messenger", idempotency_key=f"forget-mg:{principal.user_id}:{record_id}:{uuid4().hex}")
+        bridge = _bridge(request)
+        if record_id not in {item["record_id"] for item in bridge.list_record_refs(principal, "messenger")}:
+            raise HTTPException(404, detail="Saved Messenger memory not found")
+        result = bridge.client.set_memory_lowered(principal.user_id, lower=lower, record_ids=[record_id])
     except MemoryBridgeError as exc:
         raise _bridge_error(exc) from exc
-    return {"records_forgotten": receipt.records_forgotten, "facts_erased": receipt.facts_erased, "as_of": _now(), "provenance": "provider_confirmed"}
+    return {**result, "as_of": _now(), "provenance": "provider_confirmed"}

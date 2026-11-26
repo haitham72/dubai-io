@@ -173,7 +173,7 @@ def test_gmail_is_incremental_encrypted_idempotent_and_owner_scoped(e3):
     assert len(calls) == before
 
 
-def test_forget_revokes_source_and_hides_its_fact_and_evidence(e3):
+def test_source_lower_preserves_fact_and_evidence_and_restores(e3):
     client, tm, tokens, state, _ = e3
     enable(client, "gmail")
     assert finish(client, connect(client)).status_code == 200
@@ -187,17 +187,21 @@ def test_forget_revokes_source_and_hides_its_fact_and_evidence(e3):
     }})
     assert response.status_code == 200, response.text
     fact_id, = response.json()["fact_ids"]
-    assert tm.get(f"{base}/why/{fact_id}", headers=tm_headers).status_code == 200
-    assert client.delete("/api/ingest/gmail/data", headers=SECOND).json()["records_forgotten"]["value"] == 0
-    assert tm.get(f"{base}/why/{fact_id}", headers=tm_headers).status_code == 200
+    assert tm.get(f"{base}/why/{fact_id}", headers=tm_headers, params={"reinforce": False}).status_code == 200
+    other = client.delete("/api/ingest/gmail/data", headers=SECOND)
+    assert other.status_code == 200, other.text
+    assert other.json()["records"]["value"] == 0
+    assert tm.get(f"{base}/why/{fact_id}", headers=tm_headers, params={"reinforce": False}).status_code == 200
     result = client.delete("/api/ingest/gmail/data", headers=FIRST)
     assert result.status_code == 200, result.text
-    assert result.json()["records_forgotten"]["value"] == 1
-    assert tm.get(f"{base}/why/{fact_id}", headers=tm_headers).status_code == 404
+    assert result.json()["records"]["value"] == 1
+    assert tm.get(f"{base}/why/{fact_id}", headers=tm_headers, params={"reinforce": False}).status_code == 200
     assert fact_id not in tm.post(f"{base}/context", headers=tm_headers,
                                  json={"text": "Coral architecture workshop"}).text
     with state.connection() as conn:
-        assert state.record_ids(conn, owner, "gmail") == []
+        assert state.record_ids(conn, owner, "gmail") == ["e3:gmail:primary:memo"]
+    assert client.post("/api/ingest/gmail/restore", headers=FIRST).status_code == 200
+    assert fact_id in tm.get(f"{base}/search", headers=tm_headers, params={"q": "workshop"}).text
 
 
 def test_upload_rejects_bad_archive_and_imports_a_consented_whatsapp_file(e3):

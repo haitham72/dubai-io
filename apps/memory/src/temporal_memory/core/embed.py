@@ -569,3 +569,12 @@ def ensure_embeddings(
     except Exception as exc:  # embedding must never break extraction or retrieval
         log.warning("ensure_embeddings failed: %s", exc)
         return "embedder_unavailable"
+
+
+def invalidate_owner_embeddings(owner: str) -> None:
+    _PENDING.pop(owner, None)
+    _BACKFILLED_AT.pop(owner, None)
+    _LAST_SWEEP_AT.pop(owner, None)
+    # Query embeddings share a cache, so their keys cannot be attributed to an owner.
+    with _CACHE_LOCK:
+        _QUERY_CACHE.clear()

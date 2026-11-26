@@ -110,7 +110,7 @@ def test_backfill_skips_quarantine_sensitive_history_and_forget_rules(pg_db) -> 
     assert emb_ids == {"f_elig", "f_sens_usr"}
 
 
-def test_forget_and_reject_clear_embedding_same_transaction(pg_db) -> None:
+def test_legacy_forget_clears_embeddings_and_reject_retains_them(pg_db) -> None:
     with pg_db.transaction() as conn:
         conn.execute("INSERT INTO owners (id, label, kind) VALUES ('u4f', 'u4f', 'demo')")
         conn.execute("INSERT INTO subjects (id, owner, path, label, kind, status) VALUES ('s1', 'u4f', 'travel/docs', 'Docs', 'topic', 'active')")
@@ -147,6 +147,9 @@ def test_forget_and_reject_clear_embedding_same_transaction(pg_db) -> None:
         ).fetchall()
     assert len(rows) == 3
     for r in rows:
+        if r["id"] == "f_rej":
+            assert not r["erased"] and not r["emb_cleared"]
+            continue
         assert r["erased"] is True
         assert r["emb_cleared"] is True
         assert r["embedding_model"] is None

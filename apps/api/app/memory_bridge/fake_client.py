@@ -65,6 +65,9 @@ class _FakeFact:
     sensitive_cat: str | None = None
     demo_data: bool = False
     erased_at: str | None = None
+    weight_steps: int = 0
+    refreshed_weight: float | None = None
+    recall_override: bool = False
 
 
 class _ScopedFakeClient:
@@ -128,6 +131,10 @@ class _ScopedFakeClient:
         self._store.authorize(self._raw_token, owner_id=owner_id, vault_access=True)
         return self._store.context_pack(owner_id, text, max_tokens=max_tokens)
 
+    def reinforce_recall(self, owner_id: str, fact_ids: list[str]) -> dict[str, float]:
+        self._store.authorize(self._raw_token, owner_id=owner_id, vault_access=True)
+        return self._store.reinforce_recall(owner_id, fact_ids)
+
     def search_facts(
         self,
         owner_id: str,
@@ -135,10 +142,11 @@ class _ScopedFakeClient:
         *,
         limit: int = 20,
         source_prefix: str | None = None,
+        include_lowered: bool = False,
     ) -> list[dict[str, Any]]:
         self._store.authorize(self._raw_token, owner_id=owner_id, vault_access=True)
         return self._store.search_facts(
-            owner_id, query, limit=limit, source_prefix=source_prefix
+            owner_id, query, limit=limit, source_prefix=source_prefix, include_lowered=include_lowered
         )
 
     def get_vault_subjects(self, owner_id: str) -> dict[str, Any]:
@@ -190,6 +198,10 @@ class _ScopedFakeClient:
             evidence_record_id=evidence_record_id,
         )
 
+    def set_memory_lowered(self, owner_id: str, *, lower: bool = True, **target: Any) -> dict[str, Any]:
+        self._store.authorize(self._raw_token, owner_id)
+        return self._store.set_memory_lowered(owner_id, lower=lower, **target)
+
     def forget_source(self, owner_id: str, record_ids: list[str]) -> dict[str, Any]:
         self._store.authorize(self._raw_token, owner_id=owner_id, vault_access=True)
         return self._store.forget_source(owner_id, record_ids)
@@ -208,6 +220,7 @@ class FakeTemporalMemoryClient:
 
     def __init__(self) -> None:
         self._lock = threading.RLock()
+        self._lowered = defaultdict(set)
         self.owners: dict[str, dict[str, Any]] = {}
         self.records: dict[str, dict[str, _FakeRecord]] = defaultdict(dict)
         self.facts: dict[str, list[_FakeFact]] = defaultdict(list)
@@ -388,6 +401,51 @@ class FakeTemporalMemoryClient:
             out.append(f)
         return out
 
+    def _fact_lowered(self, owner_id: str, fact: _FakeFact) -> bool:
+        return not fact.recall_override and self._matches_lowering(owner_id, fact, self._lowered[owner_id])
+
+    def _matches_lowering(self, owner_id: str, fact: _FakeFact, denied: set[tuple[str, str]]) -> bool:
+        return bool(
+            ("fact_id", fact.id) in denied or ("subject_id", fact.subject_id) in denied
+            or any(("record_ids", rid) in denied for rid in fact.evidence)
+            or any(src == val or src.startswith(val + ":")
+                   for typ, val in denied if typ == "source" for src in self._fact_sources(owner_id, fact))
+        )
+
+    def set_memory_lowered(self, owner_id: str, *, lower: bool = True, **target: Any) -> dict[str, Any]:
+        with self._lock:
+            self._ensure_owner_internal(owner_id)
+            selected = [(k, v) for k, v in target.items() if v]
+            if len(selected) != 1:
+                raise MemoryBridgeError("Choose one memory target", status_code=422)
+            kind, val = selected[0]
+            allowed = {
+                "record_ids": self.records[owner_id],
+                "fact_id": {f.id for f in self.facts[owner_id]},
+                "subject_id": self.subjects[owner_id],
+            }
+            ids = list(dict.fromkeys(val)) if kind == "record_ids" else [val]
+            if kind in allowed and any(i not in allowed[kind] for i in ids):
+                raise MemoryBridgeError("Memory target not found", status_code=404)
+            for ident in ids:
+                if lower:
+                    self._lowered[owner_id].add((kind, ident))
+                    for fact in self.facts[owner_id]:
+                        if fact.recall_override and self._matches_lowering(owner_id, fact, {(kind, ident)}):
+                            fact.recall_override = False
+                else:
+                    self._lowered[owner_id].discard((kind, ident))
+            self.facts_version[owner_id] += 1
+            return {"ok": True, "lowered": lower, "weight": 0.01 if lower else None,
+                    "records": len(ids) if kind == "record_ids" else 0, "affected": len(ids), "facts_erased": 0}
+
+    def lowered_record_ids(self, owner_id: str) -> set[str]:
+        with self._lock:
+            return {value for kind, value in self._lowered[owner_id] if kind == "record_ids"}
+
+    def _fact_weight(self, owner_id: str, fact: _FakeFact) -> float:
+        return 0.01 if self._fact_lowered(owner_id, fact) else max(0.01, (fact.refreshed_weight or 1.0) * 0.5 ** fact.weight_steps)
+
     def _fact_sources(self, owner_id: str, fact: _FakeFact) -> list[str]:
         recs = self.records.get(owner_id, {})
         sources: list[str] = []
@@ -413,6 +471,8 @@ class FakeTemporalMemoryClient:
             "provenance": fact.provenance,
             "evidence": list(fact.evidence),
             "sources": self._fact_sources(owner_id, fact),
+            "lowered": self._fact_lowered(owner_id, fact),
+            "weight": self._fact_weight(owner_id, fact),
             "sensitive_cat": fact.sensitive_cat,
             "demo_data": is_demo,
         }
@@ -614,7 +674,7 @@ class FakeTemporalMemoryClient:
             now_iso = _now_iso()
             tokens = [t for t in _fold(text).split() if len(t) >= 2]
             visible = [
-                f for f in self._visible_facts(owner_id) if f.status != "history"
+                f for f in self._visible_facts(owner_id) if f.status != "history" and self._fact_weight(owner_id, f) >= 0.10
             ]
             scored: list[tuple[int, _FakeFact]] = []
             for f in visible:
@@ -673,6 +733,20 @@ class FakeTemporalMemoryClient:
                 "demo_data": is_demo,
             }
 
+    def reinforce_recall(self, owner_id: str, fact_ids: list[str]) -> dict[str, float]:
+        with self._lock:
+            weights = {}
+            for fact in self._visible_facts(owner_id):
+                if fact.id in fact_ids:
+                    weight = min(1.0, max(0.35, self._fact_weight(owner_id, fact) + 0.25))
+                    self._lowered[owner_id].discard(("fact_id", fact.id))
+                    fact.refreshed_weight = weights[fact.id] = weight
+                    fact.recall_override = True
+                    fact.weight_steps = 0
+            if weights:
+                self.facts_version[owner_id] += 1
+            return weights
+
     def search_facts(
         self,
         owner_id: str,
@@ -680,13 +754,14 @@ class FakeTemporalMemoryClient:
         *,
         limit: int = 20,
         source_prefix: str | None = None,
+        include_lowered: bool = False,
     ) -> list[dict[str, Any]]:
         with self._lock:
             q_tokens = [t for t in _fold(query).split() if t]
             recs = self.records.get(owner_id, {})
             visible = [
                 f
-                for f in self._visible_facts(owner_id)
+                for f in self._visible_facts(owner_id) if include_lowered or self._fact_weight(owner_id, f) >= 0.10
                 if f.status not in ("superseded", "history")
             ]
             matched: list[_FakeFact] = []
@@ -824,6 +899,8 @@ class FakeTemporalMemoryClient:
                         "valid_to": f.valid_to,
                         "status": f.status,
                         "superseded_by": f.superseded_by,
+                        "lowered": self._fact_lowered(owner_id, f),
+                        "weight": self._fact_weight(owner_id, f),
                         "provenance": f.provenance,
                         "evidence": list(f.evidence),
                         "as_of": f.valid_from or now_iso,
@@ -957,9 +1034,7 @@ class FakeTemporalMemoryClient:
                 }
 
             if action == "reject":
-                fact.erased_at = _now_iso()
-                fact.evidence = []
-                self.forgotten_fact_ids[owner_id].add(fact.id)
+                fact.weight_steps += 1
                 self.facts_version[owner_id] += 1
                 return {
                     "ok": True,

@@ -708,3 +708,24 @@ def test_chat_empty_pack_answers_without_memory_and_never_sends_unrelated_facts(
     assert r["citations"] == [] and r["applied_fact_ids"] == []
     assert r["memory_used"] is False
     assert "surf" not in prompts[0] and '"fact_id"' not in prompts[0]
+
+
+def test_today_ignores_lowered_and_aged_inputs():
+    from types import SimpleNamespace
+    from app.today_feed import extract_owner_interests
+
+    client = SimpleNamespace(
+        list_subjects=lambda owner: [
+            {"id": "suppressed", "path": "events/tennis", "label": "Tennis",
+             "provenance": "user_supplied", "weight": 0.01, "status": "active"},
+            {"id": "aged", "path": "events/jogging", "label": "Jogging",
+             "provenance": "user_supplied", "weight": 0.05, "status": "active"},
+        ],
+        list_hypotheses=lambda owner: [
+            {"id": "hyp", "text": "I noticed tennis", "subject_path": "events/tennis",
+             "weight": 0.01, "provenance": "inferred"},
+        ],
+        search_facts=lambda owner, query, limit: [],
+    )
+    confirmed, inferred, _ = extract_owner_interests(client, "fixture")
+    assert confirmed == [] and inferred == []

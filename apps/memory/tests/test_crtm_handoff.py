@@ -104,7 +104,7 @@ def test_crtm1_records_upsert_and_direct_fact():
     assert "mgmsg:secret" not in store.records["karim"]
 
 
-def test_crtm2_forget_erases_trims_and_requeues_live_jobs():
+def test_crtm2_lower_preserves_evidence_and_queued_jobs():
     store = FakeGraphStore()
     _owner(store)
     store.records["karim"]["r-only"] = Record(id="r-only", owner="karim", source="messenger:c1", at="2026-11-23T10:00:00+04:00", author="karim", text="only")
@@ -124,12 +124,13 @@ def test_crtm2_forget_erases_trims_and_requeues_live_jobs():
     })
     assert res.status_code == 200
     body = res.json()
-    assert body["facts_erased"] == 1 and body["facts_trimmed"] == 1
+    assert body["facts_erased"] == 0 and body["lowered"]
     visible = {fact.id for fact in store.visible_facts("karim", limit=20)}
-    assert "f-only" not in visible and "f-shared" in visible
+    assert visible == {"f-only", "f-shared"}
+    assert all(store.fact_lowered("karim", fid) for fid in visible)
     job = next(item for item in store.jobs if item.id == "live-1")
-    assert job.state == "queued" and job.input_ref == ["r-keep"]
-    assert store.check_fence("karim", 0) == "fence_stale"
+    assert job.state == "queued" and job.input_ref == ["r-only", "r-keep"]
+    assert store.owner_generation("karim") == 0
 
 
 def test_crtm3_resolve_confirm_edit_reject():
@@ -182,7 +183,7 @@ def test_crtm4_http_context_and_source_prefix_search():
     assert ids == {"fm1"}
 
 
-def test_crtm2_forget_blocks_reimport():
+def test_crtm2_lower_keeps_reimport_idempotent():
     store = FakeGraphStore()
     _owner(store)
     client = _client(store)
@@ -197,6 +198,6 @@ def test_crtm2_forget_blocks_reimport():
     assert client.post("/v1/owners/karim/records", headers=hdr, json=payload).status_code == 200
     forgotten = client.post("/v1/owners/karim/forget", headers=hdr, json={"record_ids": ["mgmsg:m-101"], "idempotency_key": "once"})
     assert forgotten.status_code == 200
-    assert "mgmsg:m-101" in store.forget_rule_values["karim"]
+    assert "mgmsg:m-101" in store.lowered_records["karim"]
     again = client.post("/v1/owners/karim/records", headers=hdr, json=payload)
-    assert again.status_code == 409
+    assert again.status_code == 200

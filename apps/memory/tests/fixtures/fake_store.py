@@ -37,6 +37,8 @@ class FakeGraphStore:
         self.entities: dict[str, list[Entity]] = defaultdict(list)
         self.subjects: dict[str, list[Subject]] = defaultdict(list)
         self.records: dict[str, dict[str, Record]] = defaultdict(dict)
+        self.lowered_facts = defaultdict(set)
+        self.lowered_records = defaultdict(set)
         self.facts: dict[str, list[Fact]] = defaultdict(list)
         self.links: dict[str, list[Link]] = defaultdict(list)
         self.milestones: dict[str, list[Milestone]] = defaultdict(list)
@@ -142,6 +144,25 @@ class FakeGraphStore:
     def facts_version(self, owner: str) -> int:
         return self._facts_ver[owner]
 
+    def fact_lowered(self, owner, fact_id):
+        return fact_id in self.lowered_facts[owner] or bool(
+            self.lowered_records[owner] and any(
+                fact.id == fact_id and set(fact.evidence) & self.lowered_records[owner]
+                for fact in self.facts[owner]
+            )
+        )
+
+    def set_memory_lowered(self, owner, body, *, lower):
+        if body.fact_id:
+            targets, marked = [body.fact_id], self.lowered_facts[owner]
+        else:
+            targets, marked = body.record_ids, self.lowered_records[owner]
+        (marked.update if lower else marked.difference_update)(targets)
+        self._facts_ver[owner] += 1
+        from temporal_memory.live.context import invalidate_alias_cache
+        invalidate_alias_cache(owner)
+        return {"ok": True, "lowered": lower, "facts_erased": 0, "records": len(body.record_ids)}
+
     def search_candidates(
         self, owner: str, query: str, *, entity_ids: list[str] | None = None,
         subject_ids: list[str] | None = None, date_from: str | None = None,
@@ -152,6 +173,8 @@ class FakeGraphStore:
         subject_filter = set(subject_ids or [])
         candidates: list[Candidate] = []
         for fact in self.iter_visible_facts(owner, date_from=date_from, date_to=date_to):
+            if fact.id in self.lowered_facts[owner] or self.lowered_records[owner].intersection(fact.evidence):
+                continue
             if source_prefix is not None:
                 records = self.get_records(owner, fact.evidence)
                 if not records or len(records) != len(fact.evidence):

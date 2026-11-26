@@ -2,7 +2,11 @@
 from __future__ import annotations
 
 import hashlib
+import os
+import re
 from typing import Any, Callable, Literal, Optional
+
+import redis
 
 from fastapi import APIRouter, Body, Depends, Header, HTTPException, Query, Request, Response
 from fastapi.responses import RedirectResponse
@@ -157,6 +161,23 @@ def _session_out_dict(session_out: Any) -> dict[str, Any]:
     }
 
 
+def purge_api_owner_cache(owner: str) -> None:
+    urls = {url for name in ("REDIS_URL", "TM_REDIS_URL") if (url := os.getenv(name, "").strip())}
+    if not urls:
+        raise HTTPException(503, detail="Account deletion requires Redis configuration")
+    pattern = "*" + re.sub(r"([\\*?\[\]])", r"\\\1", owner) + "*"
+    owner_segment = re.compile(r"(?<![A-Za-z0-9-])" + re.escape(owner) + r"(?![A-Za-z0-9-])")
+    try:
+        for url in urls:
+            with redis.Redis.from_url(url, socket_timeout=5, socket_connect_timeout=5) as cache:
+                cache.delete(f"cm:ctx:{owner}")
+                for key in cache.scan_iter(match=pattern, count=250):
+                    if owner_segment.search(key.decode("utf-8", errors="replace")):
+                        cache.delete(key)
+    except (redis.RedisError, OSError, ValueError) as exc:
+        raise HTTPException(503, detail="Account cache purge unavailable; retry deletion") from exc
+
+
 def create_identity_router(
     get_service: Optional[Callable[[Request], IdentityService]] = None,
     *,
@@ -204,6 +225,45 @@ def create_identity_router(
         service: IdentityService = Depends(service_dep),
     ) -> VerifiedPrincipal:
         return require_verified_jwt(request, authorization=authorization, service=service)
+
+    @router.post("/delete-my-data")
+    def delete_my_data(
+        request: Request, response: Response, body: dict = Body(...),
+        principal: VerifiedPrincipal = Depends(_require_verified_any),
+        service: IdentityService = Depends(service_dep),
+    ) -> dict[str, Any]:
+        if body != {"confirm": True} or body.get("confirm") is not True:
+            raise HTTPException(422, detail="Explicit confirmation is required")
+        client = getattr(request.app.state, "temporal_memory_client", None)
+        remove = getattr(client, "delete_my_data", None)
+        if not callable(remove):
+            raise HTTPException(503, detail="Account deletion is unavailable")
+        from ..memory_bridge.models import MemoryBridgeError
+        from ..today_feed import clear_today_cache
+        owner = principal.user_id
+        purge_api_owner_cache(owner)
+        try:
+            result = remove(owner)
+        except MemoryBridgeError as exc:
+            raise HTTPException(exc.status_code, detail=exc.code) from exc
+        if (not result.get("deleted_from_external") or not result.get("deleted_at")
+                or result.get("redis_purged") is not True):
+            raise HTTPException(503, detail="Account deletion could not be verified")
+        clear_today_cache(owner)
+        bridge = getattr(request.app.state, "memory_bridge", None)
+        if bridge is not None:
+            bridge.consent_store.invalidate_projection_cache(owner)
+        try:
+            from ..community.context_profile import purge_owner_community_data
+        except ImportError:
+            pass
+        else:
+            purge_owner_community_data(owner)
+        purge_api_owner_cache(owner)
+        service.store.delete_account_access(owner, deleted_at=result["deleted_at"])
+        for app_id in ("quest", "community", "messenger"):
+            response.delete_cookie(f"cs_session_{app_id}", path="/")
+        return result
 
     @router.get("/me")
     def get_me(

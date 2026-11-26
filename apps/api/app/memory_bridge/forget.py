@@ -234,42 +234,15 @@ class ForgetCoordinator:
             resolved_rids: list[str]
             if explicit_record_ids is not None:
                 resolved_rids = sorted({str(r).strip() for r in explicit_record_ids if str(r).strip()})
-                self._mark_records_erased(owner_id, resolved_rids, now_iso)
             elif ref_filter_col is not None and ref_filter_val is not None:
                 rows = self._db.execute(
-                    f"SELECT record_id, source_id FROM cs_memory_record_refs "
+                    f"SELECT record_id FROM cs_memory_record_refs "
                     f"WHERE owner_id = ? AND {ref_filter_col} = ? AND erased_at IS NULL",
                     (owner_id, ref_filter_val),
                 ).fetchall()
-                resolved_rids = sorted({str(r[0]) for r in rows})
-                source_ids = sorted({str(r[1]) for r in rows if r[1]})
-                self._db.execute(
-                    f"UPDATE cs_memory_record_refs SET erased_at = ? "
-                    f"WHERE owner_id = ? AND {ref_filter_col} = ? AND erased_at IS NULL",
-                    (now_iso, owner_id, ref_filter_val),
-                )
-                if ref_filter_col in ("source_id", "source_kind"):
-                    self._db.execute(
-                        f"UPDATE cs_two_visit_signals SET erased_at = ? "
-                        f"WHERE owner_id = ? AND {ref_filter_col} = ? AND erased_at IS NULL",
-                        (now_iso, owner_id, ref_filter_val),
-                    )
-                elif source_ids:
-                    placeholders = ", ".join("?" for _ in source_ids)
-                    self._db.execute(
-                        f"UPDATE cs_two_visit_signals SET erased_at = ? "
-                        f"WHERE owner_id = ? AND erased_at IS NULL AND source_id IN ({placeholders})",
-                        (now_iso, owner_id, *source_ids),
-                    )
+                resolved_rids = sorted({str(row[0]) for row in rows})
             else:
                 resolved_rids = []
-
-            if fact_id is not None:
-                self._db.execute(
-                    "UPDATE cs_two_visit_signals SET erased_at = ? "
-                    "WHERE owner_id = ? AND promoted_fact_id = ? AND erased_at IS NULL",
-                    (now_iso, owner_id, fact_id),
-                )
 
             self._db.commit()
             return consent_gen, resolved_rids
@@ -322,24 +295,16 @@ class ForgetCoordinator:
             target_ids = [fact_id] if fact_id is not None else resolved_rids
             is_retry = False
 
-        # Step 3: Generation-fenced temporal_memory forget (outside DB lock).
+        # Compatibility receipts retain the legacy keys with zero destructive effects.
         try:
+            res = {"records": 0}
             if fact_id is not None:
-                res = self._client.forget_fact(owner_id, fact_id)
-                records_forgotten = 0
-                facts_erased = int(res.get("facts_erased", 0) or 0)
-                facts_trimmed = 0
-                jobs_requeued = 0
-            else:
-                res = self._client.forget_source(owner_id, target_ids)
-                records_forgotten = int(
-                    res.get("records", res.get("records_forgotten", 0)) or 0
-                )
-                facts_erased = int(res.get("facts_erased", 0) or 0)
-                facts_trimmed = int(res.get("facts_trimmed", 0) or 0)
-                jobs_requeued = int(res.get("jobs_requeued", 0) or 0)
-            temporal_gen_raw = res.get("generation")
-            temporal_gen = int(temporal_gen_raw) if temporal_gen_raw is not None else None
+                res = self._client.set_memory_lowered(owner_id, fact_id=fact_id)
+            elif target_ids:
+                for start in range(0, len(target_ids), 500):
+                    self._client.set_memory_lowered(owner_id, record_ids=target_ids[start:start + 500])
+            records_forgotten = facts_erased = facts_trimmed = jobs_requeued = 0
+            temporal_gen = res.get("facts_version")
         except (ConsentDeniedError, MinorProtectionError):
             raise
         except (MemoryBridgeUnavailable, Exception):

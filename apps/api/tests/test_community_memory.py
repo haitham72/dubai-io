@@ -160,6 +160,6 @@ def test_community_forget_source_propagates(tmp_path, monkeypatch):
     forgotten = client.post("/api/community/memory/forget")
     assert forgotten.status_code == 200, forgotten.text
     record = next(iter(fake.records[owner].values()))
-    assert record.erased_at
+    assert record.erased_at is None
     still = client.get(f"/api/community/posts/{posted.json()['post']['id']}")
     assert still.status_code == 200

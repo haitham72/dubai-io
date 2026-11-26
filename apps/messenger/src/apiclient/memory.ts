@@ -13,11 +13,11 @@ export interface MemoryPreview {
 }
 export interface SaveResult { saved: boolean; status: string; held_back: boolean; record_id: string; as_of: string }
 export interface SavedItem {
-  record_id: string; conversation_id: string; text: string | null; saved_at: string;
+  record_id: string; lowered?: boolean; conversation_id: string; text: string | null; saved_at: string;
   provenance: string | null; written_by_you: boolean;
 }
 export interface MemoryState { enabled: boolean; as_of: string; items: SavedItem[] }
-export interface ForgetResult { records_forgotten: number; facts_erased: number; as_of: string }
+export interface LowerResult { lowered: boolean; records: number; as_of: string }
 
 export class MemoryApiError extends Error {
   constructor(readonly status: number, readonly code: string, message: string, readonly heldBack = false) {
@@ -31,7 +31,7 @@ export interface MemoryClient {
   state(): Promise<MemoryState>;
   setConsent(enabled: boolean): Promise<{ enabled: boolean; as_of: string }>;
   setChatMode(conversationId: string, mode: "off" | "save"): Promise<{ mode: string }>;
-  forget(recordId: string): Promise<ForgetResult>;
+  setLowered(recordId: string, lower: boolean): Promise<LowerResult>;
 }
 
 export function createMemoryClient(sessionToken: string, opts: ClientOptions = {}): MemoryClient {
@@ -66,6 +66,6 @@ export function createMemoryClient(sessionToken: string, opts: ClientOptions = {
     state: () => call("GET", "/api/messenger/memory"),
     setConsent: (enabled) => call("PUT", "/api/messenger/memory/consent", { enabled }),
     setChatMode: (c, mode) => call("PUT", `/api/messenger/conversations/${encodeURIComponent(c)}/memory-mode`, { mode }),
-    forget: (recordId) => call("POST", "/api/messenger/memory/forget", { record_id: recordId }),
+    setLowered: (recordId, lower) => call("POST", "/api/messenger/memory/lower", { record_id: recordId, lower }),
   };
 }

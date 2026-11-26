@@ -5,6 +5,7 @@
 import { createElement } from "react";
 import { createRoot } from "react-dom/client";
 import SaveToMemory from "../../src/chats/SaveToMemory";
+import { MemorySection } from "../../src/profile/settings/MemorySettings";
 import type { MemoryClient, MemoryPreview, SaveResult } from "../../src/apiclient/memory";
 
 const preview: MemoryPreview = {
@@ -33,7 +34,7 @@ function fakeClient() {
     state: async () => ({ enabled: true, as_of: "T", items: [] }),
     setConsent: async () => ({ enabled: false, as_of: "T" }),
     setChatMode: async () => { calls.mode++; return { mode: "save" }; },
-    forget: async () => ({ records_forgotten: 1, facts_erased: 1, as_of: "T" }),
+    setLowered: async () => ({ records: 1, lowered: true, as_of: "T" }),
   };
   return { client, calls };
 }
@@ -117,6 +118,44 @@ async function scenarioCancel() {
   m.host.remove();
 }
 
+async function scenarioLowerRestore() {
+  const { client } = fakeClient();
+  let lowered = false;
+  client.state = async () => ({
+    enabled: true,
+    as_of: preview.as_of,
+    items: [{
+      record_id: "mgmsg:1", conversation_id: "c1", text: preview.fields[0].value,
+      saved_at: preview.as_of, provenance: preview.provenance, written_by_you: true, lowered,
+    }],
+  });
+  client.setLowered = async (_recordId, lower) => {
+    lowered = lower;
+    return { records: 1, lowered, as_of: preview.as_of };
+  };
+
+  const host = document.createElement("div");
+  document.body.appendChild(host);
+  const root = createRoot(host);
+  try {
+    root.render(createElement(MemorySection, { client }));
+    for (const [button, verb] of [["Lower", "Lowered"], ["Restore", "Restored"]]) {
+      const action = await waitFor(() => {
+        const candidate = byText(host, button);
+        return candidate && !candidate.disabled ? candidate : null;
+      });
+      action.click();
+      await waitFor(() => byText(host, button === "Lower" ? "Restore" : "Lower"));
+      const status = await waitFor(() => host.querySelector("[role='status'][data-testid='lower-result']"));
+      check(button + ": status shows server count and timestamp",
+        status.textContent === verb + " 1 item(s), as of " + preview.as_of + ".", status.textContent ?? undefined);
+    }
+  } finally {
+    root.unmount();
+    host.remove();
+  }
+}
+
 async function scenarioDoubleApprove() {
   // covered inside scenarioApprove via the second click; kept as its own named result line.
   results.push({ name: "approve: second tap ignored (single approval)", pass: true });
@@ -134,6 +173,11 @@ async function run() {
     check("cancel scenario completed", false, String(e));
   }
   await scenarioDoubleApprove();
+  try {
+    await scenarioLowerRestore();
+  } catch (e) {
+    check("lower and restore scenario completed", false, String(e));
+  }
   const pre = document.createElement("pre");
   pre.id = "memdom-results";
   const failed = results.filter((r) => !r.pass);

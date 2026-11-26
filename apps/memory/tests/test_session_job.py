@@ -175,13 +175,13 @@ def test_session_worker_dedupes_a_new_assertion_with_same_evidence(api, monkeypa
     assert model.call_args.args[1] == "lmstudio"
 
 
-def test_forget_excludes_an_open_session_turn(api):
+def test_lower_preserves_an_open_session_turn(api):
     db, client = api
     post(client, [record("r1", "Hello first", "s"), record("r2", "Hello second", "s")])
     res = client.post(f"{BASE}/forget", json={"record_ids": ["r1"]})
     assert res.status_code == 200
     job = post(client, close_session=True, session_id="s")["job_id"]
-    assert query(db, "SELECT input_ref FROM jobs WHERE id=%s", (job,)) == [{"input_ref": ["r2"]}]
+    assert query(db, "SELECT input_ref FROM jobs WHERE id=%s", (job,)) == [{"input_ref": ["r1", "r2"]}]
 
 
 def test_http_hot_path_p95_under_50_ms(api):
@@ -210,53 +210,29 @@ def test_empty_implicit_close_works_even_after_idle(api, monkeypatch):
     assert query(db, "SELECT input_ref FROM jobs WHERE id=%s", (first,)) == [{"input_ref": ["r1"]}]
 
 
-def test_forgotten_first_visit_cannot_qualify_a_topic(api):
+def test_lowered_first_visit_does_not_surface_the_topic(api):
     _, client = api
     post(client, [record("r1", "How do AI agents work?", "s1")])
     assert client.post(f"{BASE}/forget", json={"record_ids": ["r1"]}).status_code == 200
-    assert not post(client, [record("r2", "What are AI agents?", "s2")])["fact_ids"]
-    assert post(client, [record("r3", "Explain AI agents", "s3")])["fact_ids"]
+    fact_id, = post(client, [record("r2", "What are AI agents?", "s2")])["fact_ids"]
+    assert fact_id not in client.post(f"{BASE}/context", json={"text": "AI agents"}).text
+    assert fact_id in client.get(f"{BASE}/hypotheses").text
 
 
 
-@pytest.mark.parametrize("replacement,erase", [(False, True), (True, False)])
-def test_topic_forget_rechecks_distinct_cited_sessions(api, replacement, erase, monkeypatch):
-    monkeypatch.setenv('TM_SEMANTIC', '0')
+def test_topic_lower_preserves_cited_sessions(api, monkeypatch):
+    monkeypatch.setenv("TM_SEMANTIC", "0")
     db, client = api
     post(client, [record("visit1", "How do AI agents work?", "first")])
-    if replacement:
-        post(client, [record("backup", "More about AI agents", "first")])
     fact_id, = post(client, [record("visit2", "Explain AI agents", "second")])["fact_ids"]
-    post(client, [record("unrelated", "An unrelated remark", "third")])
-
-    def surfaces():
-        return {
-            "hypotheses": client.get(f"{BASE}/hypotheses"),
-            "graph": client.get(f"{BASE}/vault/graph?view=subjects"),
-            "context": client.post(f"{BASE}/context", json={"text": "Tell me about AI agents"}),
-        }
-
-    def forget(rid):
-        req = client.post(f"{BASE}/forget", json={"record_ids": [rid]})
-        assert req.status_code == 200, req.text
-        return req.json()
-
-    assert fact_id in surfaces()["hypotheses"].text
-    assert forget("unrelated")["facts_erased"] == 0
-    assert fact_id in surfaces()["hypotheses"].text
-    revision = query(db, "SELECT privacy_revision FROM owners")[0]["privacy_revision"]
-    result = forget("visit1")
-    assert result["facts_erased"] == int(erase)
-    assert query(db, "SELECT privacy_revision FROM owners")[0]["privacy_revision"] == revision + 1
-    current = surfaces()
-    assert all(response.status_code == 200 for response in current.values())
-    assert (fact_id in current["hypotheses"].text) is not erase
+    result = client.post(f"{BASE}/lower", json={"record_ids": ["visit1"]})
+    assert result.json()["facts_erased"] == 0
+    assert fact_id not in client.post(f"{BASE}/context", json={"text": "AI agents"}).text
+    hyp, = [item for item in client.get(f"{BASE}/hypotheses").json()["hypotheses"] if item["id"] == fact_id]
+    assert hyp["lowered"] and hyp["weight"] == 0.01
     assert query(db, "SELECT session_id FROM topic_mentions ORDER BY session_id") == [
-        {"session_id": key} for key in (["client:second"] if erase else ["client:first", "client:second"])
+        {"session_id": "client:first"}, {"session_id": "client:second"},
     ]
-    if erase:
-        assert all(fact_id not in response.text for response in current.values())
-    else:
-        assert query(db, "SELECT record_id FROM fact_evidence ORDER BY record_id") == [
-            {"record_id": "backup"}, {"record_id": "visit2"},
-        ]
+    assert query(db, "SELECT record_id FROM fact_evidence ORDER BY record_id") == [
+        {"record_id": "visit1"}, {"record_id": "visit2"},
+    ]

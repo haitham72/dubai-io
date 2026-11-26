@@ -591,7 +591,7 @@ def test_gate_s_full_cross_app_e2e(tmp_path: Path, memory_bridge_env) -> None:
 
 
 @fake_only
-def test_gate_s_e2e_stale_worker_generation_fence_fake_only(tmp_path: Path, memory_bridge_env) -> None:
+def test_gate_s_e2e_lower_hides_in_flight_extraction_fake_only(tmp_path: Path, memory_bridge_env) -> None:
     """Fake-only E2E check verifying simulate_worker_submit respects the forget generation fence."""
     db, _id_svc, fake_tm, _token_svc, _bridge, client = _build_e2e_app(tmp_path, memory_bridge_env.client)
     try:
@@ -658,7 +658,8 @@ def test_gate_s_e2e_stale_worker_generation_fence_fake_only(tmp_path: Path, memo
             "Late extracted conv-A memory",
             subject_path="plans/meetup",
         )
-        assert stale["ok"] is False and stale["verdict"] == "fence_stale"
+        assert stale["ok"] is True
+        assert not fake_tm.search_facts(uid_a, "Late extracted conv-A memory")
     finally:
         db.close()
 

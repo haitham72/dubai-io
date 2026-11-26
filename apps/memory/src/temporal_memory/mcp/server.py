@@ -452,6 +452,10 @@ def create_mcp_app(
     def memory_search(query: str, owner: str | None = None, limit: int = 10) -> dict[str, Any]:
         auth = _require_auth()
         target_owner = _scoped_owner(auth, owner)
+        from temporal_memory.privacy.controls import owner_deleted
+        with database.connection() as conn:
+            if owner_deleted(conn, target_owner):
+                raise ToolError("Account data has been deleted")
         clamped_limit = max(1, min(int(limit), 100))
         q_clean = (query or "").strip()
 
@@ -478,6 +482,10 @@ def create_mcp_app(
     def memory_context(text: str, owner: str | None = None, max_tokens: int = 1500) -> dict[str, Any]:
         auth = _require_auth()
         target_owner = _scoped_owner(auth, owner)
+        from temporal_memory.privacy.controls import owner_deleted
+        with database.connection() as conn:
+            if owner_deleted(conn, target_owner):
+                raise ToolError("Account data has been deleted")
         return context_pack(target_owner, text, max_tokens=int(max_tokens), store=graph_store)
 
     @mcp.tool(description="Return owner subject/people counts and a visible memory summary.")
@@ -485,6 +493,10 @@ def create_mcp_app(
     def memory_vault(owner: str | None = None) -> dict[str, Any]:
         auth = _require_auth()
         target_owner = _scoped_owner(auth, owner)
+        from temporal_memory.privacy.controls import owner_deleted
+        with database.connection() as conn:
+            if owner_deleted(conn, target_owner):
+                raise ToolError("Account data has been deleted")
         counts_by_subj = graph_store.fact_counts_by_subject(target_owner)
         confirmed_by_subj = (
             graph_store.confirmed_fact_counts_by_subject(target_owner)

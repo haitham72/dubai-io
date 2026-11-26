@@ -10,8 +10,7 @@ export function SettingsPanel({ bridge }: { bridge: DesktopBridge }) {
   const [status, setStatus] = useState("Hook is off.");
   const [error, setError] = useState<string | null>(null);
   const [sources, setSources] = useState({ chrome: false, claude: false, codex: false });
-  const [forgetArmed, setForgetArmed] = useState(false);
-  const [forgot, setForgot] = useState<string | null>(null);
+  const [memoryStatus, setMemoryStatus] = useState<string | null>(null);
   const [auth, setAuth] = useState<AuthStatus | null>(null);
   const [authBusy, setAuthBusy] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
@@ -46,6 +45,15 @@ export function SettingsPanel({ bridge }: { bridge: DesktopBridge }) {
     const result = await bridge.hookToggle({ enabled: next, model: model || undefined, owner: "karim" });
     setEnabled(result.running);
     setStatus(result.running ? `Processing on ${result.model} ($0 app cost).` : "Hook is off.");
+  }
+
+  async function setBrowserWeight(lower: boolean) {
+    try {
+      await bridge.browserMemoryWeight(lower);
+      setMemoryStatus(lower ? "Browser memory lowered." : "Browser source override removed.");
+    } catch (error) {
+      setMemoryStatus(error instanceof Error ? error.message : "Browser memory update failed.");
+    }
   }
 
   return (
@@ -89,23 +97,10 @@ export function SettingsPanel({ bridge }: { bridge: DesktopBridge }) {
           {source}
         </label>
       ))}
-      <h3>Forget by source</h3>
-      <button type="button" onClick={() => setForgetArmed(true)} data-testid="forget-arm">
-        Forget browser source
-      </button>
-      {forgetArmed ? (
-        <button
-          type="button"
-          onClick={() => {
-            setForgot("Browser source marked for forget. No records were deleted in this preview.");
-            setForgetArmed(false);
-          }}
-          data-testid="forget-confirm"
-        >
-          Confirm forget
-        </button>
-      ) : null}
-      {forgot ? <p>{forgot}</p> : null}
+      <h3>Browser memory</h3>
+      <button type="button" disabled={!auth?.signedIn} onClick={() => void setBrowserWeight(true)}>Lower browser source</button>
+      <button type="button" disabled={!auth?.signedIn} onClick={() => void setBrowserWeight(false)}>Restore browser source</button>
+      {memoryStatus ? <p role="status">{memoryStatus}</p> : null}
     </section>
   );
 }

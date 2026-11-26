@@ -20,7 +20,7 @@ const fakeClient = (over = {}) => {
     state: async () => ({ enabled: true, as_of: "T", items: [] }),
     setConsent: async () => ({ enabled: false, as_of: "T" }),
     setChatMode: async () => { calls.mode++; return { mode: "save" }; },
-    forget: async () => ({ records_forgotten: 1, facts_erased: 1, as_of: "T" }),
+    setLowered: async () => ({ records: 1, lowered: true, as_of: "T" }),
     ...over,
   };
 };
@@ -79,13 +79,13 @@ const html = (state) => renderToStaticMarkup(createElement(ApprovalCard, { state
 // client: Forget happy + error path against a fake fetch; session header only, base joined
 {
   const seen = [];
-  const ok = createMemoryClient("tok", { apiBase: "http://x", fetchImpl: async (u, i) => { seen.push([u, i]); return new Response(JSON.stringify({ records_forgotten: 2, facts_erased: 1, as_of: "T" }), { status: 200 }); } });
-  const r = await ok.forget("mgmsg:1");
-  assert.equal(r.records_forgotten, 2);
-  assert.equal(seen[0][0], "http://x/api/messenger/memory/forget"); assert.equal(seen[0][1].headers["X-App-Session"], "tok");
-  assert.deepEqual(JSON.parse(seen[0][1].body), { record_id: "mgmsg:1" });
+  const ok = createMemoryClient("tok", { apiBase: "http://x", fetchImpl: async (u, i) => { seen.push([u, i]); return new Response(JSON.stringify({ records: 2, lowered: true, as_of: "T" }), { status: 200 }); } });
+  const r = await ok.setLowered("mgmsg:1", true);
+  assert.equal(r.records, 2);
+  assert.equal(seen[0][0], "http://x/api/messenger/memory/lower"); assert.equal(seen[0][1].headers["X-App-Session"], "tok");
+  assert.deepEqual(JSON.parse(seen[0][1].body), { record_id: "mgmsg:1", lower: true });
   const bad = createMemoryClient("tok", { apiBase: "http://x", fetchImpl: async () => new Response(JSON.stringify({ detail: { code: "x", message: "nope" } }), { status: 403 }) });
-  await assert.rejects(() => bad.forget("m"), (e) => e instanceof MemoryApiError && e.message === "nope" && e.status === 403);
+  await assert.rejects(() => bad.setLowered("m", true), (e) => e instanceof MemoryApiError && e.message === "nope" && e.status === 403);
   const down = createMemoryClient("tok", { apiBase: "http://x", fetchImpl: async () => { throw new TypeError("fail"); } });
   await assert.rejects(() => down.state(), /unavailable/);
   // consent switch and save carry only what is intended
