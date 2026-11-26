@@ -426,3 +426,64 @@ def get_vocab(*, reload: bool = False) -> VocabTree:
         if _CACHED_VOCAB is None or reload:
             _CACHED_VOCAB = load_vocab()
         return _CACHED_VOCAB
+
+
+def approved_overlay_nodes(conn: Any) -> list[VocabNode]:
+    """Leaf nodes built from approved `shared_vocab_proposals` (E13b).
+
+    Fail-closed: rows whose parent is missing, sensitive or blocks_proposals
+    are skipped, as are rows already present in the base tree. Never raises
+    when the proposals table does not exist yet.
+    """
+    base = get_vocab()
+    try:
+        rows = conn.execute(
+            "SELECT canonical_term, aliases_en_ar, parent_path "
+            "FROM shared_vocab_proposals WHERE status = 'approved'"
+        ).fetchall()
+    except Exception:
+        return []
+    out: list[VocabNode] = []
+    for row in rows:
+        canonical = str(row["canonical_term"] or "").strip()
+        parent_path = str(row["parent_path"] or "")
+        parent = base.by_path.get(parent_path)
+        if not canonical or parent is None or parent.sensitive or parent.blocks_proposals:
+            continue
+        leaf = fold_text(canonical).replace(" ", "_")
+        if not leaf:
+            continue
+        path = f"{parent_path}/{leaf}"
+        if path in base.by_path:
+            continue
+        aliases = tuple(
+            a for a in (str(x).strip() for x in (row["aliases_en_ar"] or []) if x) if a
+        )
+        folded = tuple(
+            dict.fromkeys(
+                f for f in (fold_text(canonical), fold_text(leaf), *(fold_text(a) for a in aliases)) if f
+            )
+        )
+        out.append(
+            VocabNode(
+                path=path,
+                parent=parent_path,
+                label=canonical,
+                cluster=parent.cluster,
+                fixed=False,
+                sensitive=parent.sensitive,
+                blocks_proposals=parent.blocks_proposals,
+                aliases=aliases,
+                folded_terms=folded,
+            )
+        )
+    return out
+
+
+def get_vocab_with_approved(conn: Any, *, reload: bool = False) -> VocabTree:
+    """`tree.json` plus the approved-proposal overlay in one VocabTree."""
+    base = get_vocab(reload=reload)
+    extra = approved_overlay_nodes(conn)
+    if not extra:
+        return base
+    return VocabTree(list(base.nodes) + extra, dict(base.lexicon_groups))

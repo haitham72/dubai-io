@@ -1005,3 +1005,8 @@ def vault_learned_vocab(
         "provenance": "demo_fixture" if is_demo else "inferred",
         "as_of": now_iso,
     }
+
+
+# E13b (D21): mount the admin-only shared-vocab router at absolute /v1/admin/vocab/*.
+from temporal_memory.api.vocab_admin import mount_onto  # noqa: E402
+mount_onto(router)
