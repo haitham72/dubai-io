@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+import logging
 import os
 from typing import Any, Iterable, Sequence
 
@@ -25,20 +26,22 @@ from temporal_memory.db.db import fold_text
 from temporal_memory.privacy import sensitive
 from temporal_memory.vocab.loader import arabic_variants, get_vocab_with_approved
 
-# Google Limited Use: learned terms whose citing records come from these source
-# prefixes (or whose provenance names them) never enter shared aggregates.
+log = logging.getLogger(__name__)
+
+# Google Limited Use: match E13a backup filter — source, record id (e3:<src>:…),
+# meta, and provenance. Mixed / unknown Google-adjacent rows are excluded.
 GOOGLE_SOURCES = ("gmail", "calendar", "youtube", "takeout", "google")
-_GOOGLE_LIKE = " OR ".join(
-    f"lower(r.source) LIKE '{src}%'" for src in GOOGLE_SOURCES
-)
-_GOOGLE_PROVENANCE = "|".join(GOOGLE_SOURCES)
+_GOOGLE_RE = "|".join(GOOGLE_SOURCES)
 LEARNED_GOOGLE_FILTER = (
+    # True when no citing record is Google-adjacent (source / id / meta / e3:<src>:).
     "NOT EXISTS ("
     "SELECT 1 FROM learned_term_sources lts "
     "JOIN records r ON r.owner = lts.owner AND r.id = lts.record_id "
     "WHERE lts.owner = lt.owner AND lts.term_folded = lt.term_folded "
-    f"AND ({_GOOGLE_LIKE}))"
-    f" AND lt.provenance !~* '{_GOOGLE_PROVENANCE}'"
+    f"AND (lower(r.source) ~ '{_GOOGLE_RE}' "
+    f"OR lower(r.id) ~ '{_GOOGLE_RE}' "
+    f"OR lower(COALESCE(r.meta::text, '')) ~ '{_GOOGLE_RE}')) "
+    f"AND lt.provenance !~* '{_GOOGLE_RE}'"
 )
 
 
@@ -115,10 +118,10 @@ def record_query_signal(
 
     `source` is mandatory (E13b Phase A): only `source="user_typed"` is
     logged — automatic `/context` calls must pass `source="context"` and are
-    never written. Each folded token (`len >= 2`) is screened with
-    `passes_privacy` before writing; blocked tokens are skipped, never
-    stored. Upserts `(owner_hash, term_folded, query_folded)` bumping
-    `hit_count`. Returns the folded terms actually stored.
+    never written. If **any** folded token fails `passes_privacy`, the whole
+    query is skipped (Rule 9: never persist blocked text in `query_folded`).
+    Otherwise each token is stored with `query_folded` = only the screened
+    token set (never the raw full query). Returns the folded terms stored.
     """
     if source != "user_typed":
         return []
@@ -129,6 +132,11 @@ def record_query_signal(
     tokens = list(dict.fromkeys(_content_tokens(folded_query)))
     if not tokens or not (owner or "").strip():
         return []
+    # F1: fail closed on any blocked token — do not keep a partial row whose
+    # query_folded would still contain clinic/phone/password text.
+    if any(not passes_privacy(tok) for tok in tokens):
+        return []
+    safe_query = " ".join(tokens)  # screened tokens only (equals all tokens here)
     vec_lit: str | None = None
     if embedding is not None and len(embedding) == EMBED_DIM:
         from temporal_memory.core.embed import vector_literal
@@ -136,8 +144,6 @@ def record_query_signal(
         vec_lit = vector_literal(embedding)
     stored: list[str] = []
     for tok in tokens:
-        if not passes_privacy(tok):
-            continue
         if vec_lit is not None:
             conn.execute(
                 """
@@ -150,7 +156,7 @@ def record_query_signal(
                     embedding = COALESCE(EXCLUDED.embedding, vocab_query_signals.embedding),
                     updated_at = now()
                 """,
-                (owner_hash, tok, folded_query, vec_lit, embedding_model or EMBED_MODEL, resolved_branch),
+                (owner_hash, tok, safe_query, vec_lit, embedding_model or EMBED_MODEL, resolved_branch),
             )
         else:
             conn.execute(
@@ -162,7 +168,7 @@ def record_query_signal(
                     resolved_branch = COALESCE(EXCLUDED.resolved_branch, vocab_query_signals.resolved_branch),
                     updated_at = now()
                 """,
-                (owner_hash, tok, folded_query, 1, resolved_branch),
+                (owner_hash, tok, safe_query, 1, resolved_branch),
             )
         stored.append(tok)
     _ = hit_count  # accepted for caller context; persistence is per-signal hit_count
@@ -306,14 +312,16 @@ def find_similar_queries_and_terms(
             sem_best[term] = max(sem_best.get(term, 0.0), sim)
 
     # 3) Recurring per-owner learned_terms folded into the same aggregates
-    #    (alive owners only; Google Limited Use sources excluded).
+    #    (alive, non-deleted owners only; Google Limited Use sources excluded).
     try:
         learned_rows = conn.execute(
             "SELECT lt.term_folded, lt.owner FROM learned_terms lt "
             "JOIN owners o ON o.id = lt.owner "
-            f"WHERE {LEARNED_GOOGLE_FILTER}"
+            f"WHERE NOT COALESCE(o.deleted_from_external, false) "
+            f"AND ({LEARNED_GOOGLE_FILTER})"
         ).fetchall()
     except Exception:
+        log.exception("learned_terms aggregate query failed in find_similar_queries_and_terms")
         learned_rows = []
     for row in learned_rows:
         term = row["term_folded"] or ""

@@ -21,6 +21,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 import json
+import logging
 import os
 from typing import Any, Callable
 
@@ -41,6 +42,8 @@ from temporal_memory.vocab.similarity import (
     layer2_blocked,
     passes_privacy,
 )
+
+log = logging.getLogger(__name__)
 
 VerdictRunner = Callable[[str, str], dict[str, Any]]
 
@@ -166,9 +169,11 @@ def _gather(conn: Any, tree: VocabTree) -> tuple[dict[str, set[str]], dict[str, 
         learned_rows = conn.execute(
             "SELECT lt.term_folded, lt.owner, lt.parent_path FROM learned_terms lt "
             "JOIN owners o ON o.id = lt.owner "
-            f"WHERE {LEARNED_GOOGLE_FILTER}"
+            f"WHERE NOT COALESCE(o.deleted_from_external, false) "
+            f"AND ({LEARNED_GOOGLE_FILTER})"
         ).fetchall()
     except Exception:
+        log.exception("learned_terms aggregate query failed in shared_proposer._gather")
         learned_rows = []
     for row in learned_rows:
         term = (row["term_folded"] or "").strip()

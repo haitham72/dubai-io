@@ -326,6 +326,7 @@ def search_facts(
     source_prefix: str | None = Query(default=None),
     include_lowered: bool = Query(default=False),
     reinforce: bool = Query(default=True),
+    user_typed: bool = Query(default=False),
     auth: AuthContext = Depends(require_owner_access),
     store: GraphStore = Depends(get_store),
 ) -> dict[str, Any]:
@@ -333,6 +334,22 @@ def search_facts(
 
     if include_lowered and auth.role != "owner-device":
         raise HTTPException(403, "Explicit recall requires an owner device")
+    # E13b D21: record ONLY explicit owner-device typed search (include_lowered
+    # or user_typed). Never from /context, Today, or the recommender.
+    if (include_lowered or user_typed) and auth.role == "owner-device" and q.strip():
+        db = getattr(store, "db", None)
+        if db is not None:
+            try:
+                from temporal_memory.vocab.similarity import record_query_signal
+
+                with db.transaction() as conn:
+                    record_query_signal(conn, owner, q, source="user_typed")
+            except Exception:
+                import logging
+
+                logging.getLogger(__name__).exception(
+                    "record_query_signal failed on typed search for owner=%s", owner
+                )
     if _postgres(store):
         result = pg_search(store, owner, q, limit, source_prefix, include_lowered=include_lowered)
         if include_lowered and reinforce and q.strip():

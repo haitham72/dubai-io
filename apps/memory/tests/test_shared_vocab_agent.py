@@ -109,7 +109,7 @@ def test_happy_path_three_owners_en_ar_arabizi_pending_proposal(api, monkeypatch
             conn, "bob", f"كورفبول {NOVEL} partners", source="user_typed", resolved_branch=PARENT
         )
         assert record_query_signal(
-            conn, "carol", f"{NOVEL} arabizi korfbol court", source="user_typed", resolved_branch=PARENT
+            conn, "carol", f"{NOVEL} arabizi korfbol partners", source="user_typed", resolved_branch=PARENT
         )
 
         similar = find_similar_queries_and_terms(conn, NOVEL, min_sim=0.5)
@@ -177,29 +177,53 @@ def test_rule9_sensitive_term_blocked(pg, monkeypatch):
         assert result["proposed"] == []
 
 
+def test_f1_mixed_blocked_and_allowed_leaves_no_blocked_text(pg, monkeypatch):
+    """F1: query_folded must never retain blocked clinic/password tokens."""
+    monkeypatch.setenv("TM_SIGNAL_HMAC_KEY", HMAC_KEY)
+    with pg.transaction() as conn:
+        _seed_owner(conn, "alice")
+        mixed = f"{NOVEL} clinic appointment password hospital"
+        assert record_query_signal(conn, "alice", mixed, source="user_typed") == []
+        rows = conn.execute(
+            "SELECT term_folded, query_folded FROM vocab_query_signals"
+        ).fetchall()
+        blob = " ".join(f"{r['term_folded']} {r['query_folded']}" for r in rows)
+        assert "clinic" not in blob
+        assert "password" not in blob
+        assert "hospital" not in blob
+        assert rows == []
+
+
 def test_google_sourced_learned_terms_excluded(pg, monkeypatch):
     monkeypatch.setenv("TM_SIGNAL_HMAC_KEY", HMAC_KEY)
     with pg.transaction() as conn:
         for i, oid in enumerate(("alice", "bob", "carol")):
             _seed_owner(conn, oid)
-            rid = f"g{i}"
+            # Mix: gmail source, e3:gmail: id (E13a-style), and google in meta.
+            if i == 0:
+                rid, source, meta = f"g{i}", "gmail:inbox", "{}"
+            elif i == 1:
+                rid, source, meta = f"e3:gmail:msg{i}", "notes:inbox", "{}"
+            else:
+                rid, source, meta = f"g{i}", "notes:inbox", '{"via":"youtube_takeout"}'
             conn.execute(
-                "INSERT INTO records (id, owner, source, at, author, text, content_hash) "
-                "VALUES (%s,%s,%s,%s,%s,%s,%s)",
+                "INSERT INTO records (id, owner, source, at, author, text, content_hash, meta) "
+                "VALUES (%s,%s,%s,%s,%s,%s,%s,%s::jsonb)",
                 (
                     rid,
                     oid,
-                    "gmail:inbox",
+                    source,
                     "2026-11-20T09:00:00Z",
                     oid,
                     f"{NOVEL} meetup",
                     hashlib.sha256(f"{oid}:{rid}".encode()).hexdigest(),
+                    meta,
                 ),
             )
             conn.execute(
                 "INSERT INTO learned_terms (owner, term_folded, term, parent_path, path, provenance) "
                 "VALUES (%s,%s,%s,%s,%s,%s)",
-                (oid, fold_text(NOVEL), NOVEL, PARENT, f"{PARENT}/{NOVEL}", "gmail"),
+                (oid, fold_text(NOVEL), NOVEL, PARENT, f"{PARENT}/{NOVEL}", "inferred"),
             )
             conn.execute(
                 "INSERT INTO learned_term_sources (owner, term_folded, record_id, had_fact) "
@@ -212,16 +236,49 @@ def test_google_sourced_learned_terms_excluded(pg, monkeypatch):
         assert not any(r["term_folded"] == fold_text(NOVEL) for r in similar)
 
 
-def test_deleted_owner_signals_purged_and_excluded(pg, monkeypatch):
+def test_deleted_owner_signals_purged_and_excluded(api, monkeypatch):
+    """F2: delete_account purges signals; deleted_from_external drops learned aggregates."""
     monkeypatch.setenv("TM_SIGNAL_HMAC_KEY", HMAC_KEY)
-    with pg.transaction() as conn:
+    monkeypatch.setattr(
+        "temporal_memory.privacy.controls.purge_redis",
+        lambda owner: True,
+    )
+    db = api["db"]
+    with db.transaction() as conn:
         for oid in ("alice", "bob", "carol"):
-            _seed_owner(conn, oid)
             record_query_signal(conn, oid, f"{NOVEL} club", source="user_typed", resolved_branch=PARENT)
+            rid = f"lt-{oid}"
+            conn.execute(
+                "INSERT INTO records (id, owner, source, at, author, text, content_hash) "
+                "VALUES (%s,%s,%s,%s,%s,%s,%s)",
+                (rid, oid, "notes:a", "2026-11-20T09:00:00Z", oid, f"{NOVEL}", hashlib.sha256(rid.encode()).hexdigest()),
+            )
+            conn.execute(
+                "INSERT INTO learned_terms (owner, term_folded, term, parent_path, path, provenance) "
+                "VALUES (%s,%s,%s,%s,%s,%s)",
+                (oid, fold_text(NOVEL), NOVEL, PARENT, f"{PARENT}/{NOVEL}-{oid}", "inferred"),
+            )
+            conn.execute(
+                "INSERT INTO learned_term_sources (owner, term_folded, record_id, had_fact) "
+                "VALUES (%s,%s,%s,%s)",
+                (oid, fold_text(NOVEL), rid, False),
+            )
         before = find_similar_queries_and_terms(conn, NOVEL, min_sim=0.5)
         assert any(r["distinct_owners"] >= 3 for r in before)
-        deleted = purge_owner_query_signals(conn, "carol")
-        assert deleted >= 1
+
+    # Admin delete-my-data triggers purge_owner_query_signals inside the transaction.
+    resp = api["client"].post("/v1/owners/carol/delete-my-data", headers=api["admin"])
+    assert resp.status_code == 200, resp.text
+    with db.connection() as conn:
+        carol_hash = hash_owner("carol")
+        left = conn.execute(
+            "SELECT COUNT(*) AS n FROM vocab_query_signals WHERE owner_hash = %s",
+            (carol_hash,),
+        ).fetchone()["n"]
+        assert int(left) == 0
+        assert conn.execute(
+            "SELECT deleted_from_external FROM owners WHERE id = 'carol'"
+        ).fetchone()["deleted_from_external"] is True
         after = find_similar_queries_and_terms(conn, NOVEL, min_sim=0.5)
         assert all(r["distinct_owners"] < 3 for r in after)
         result = propose_shared_vocab_promotions(conn, min_owners=3, min_sim=0.5, runner=_mock_runner_ok)
@@ -237,6 +294,54 @@ def test_only_user_typed_queries_recorded(pg, monkeypatch):
         assert record_query_signal(conn, "alice", f"{NOVEL} typed", source="user_typed")
         n = conn.execute("SELECT COUNT(*) AS n FROM vocab_query_signals").fetchone()["n"]
         assert int(n) >= 1
+
+
+def test_f3_search_records_typed_context_does_not(api, monkeypatch):
+    """F3: /search with include_lowered or user_typed records; /context never does."""
+    monkeypatch.setenv("TM_SIGNAL_HMAC_KEY", HMAC_KEY)
+    client, headers = api["client"], api["owner"]["alice"]
+    db = api["db"]
+
+    assert client.post(
+        "/v1/owners/alice/context",
+        headers=headers,
+        json={"text": f"{NOVEL} from context pack"},
+    ).status_code == 200
+    with db.connection() as conn:
+        n0 = conn.execute("SELECT COUNT(*) AS n FROM vocab_query_signals").fetchone()["n"]
+    assert int(n0) == 0
+
+    # Plain search without flags → not recorded.
+    assert client.get(
+        "/v1/owners/alice/search",
+        headers=headers,
+        params={"q": f"{NOVEL} plain"},
+    ).status_code == 200
+    with db.connection() as conn:
+        n1 = conn.execute("SELECT COUNT(*) AS n FROM vocab_query_signals").fetchone()["n"]
+    assert int(n1) == 0
+
+    # Explicit owner-device typed search → recorded.
+    assert client.get(
+        "/v1/owners/alice/search",
+        headers=headers,
+        params={"q": f"{NOVEL} typed", "include_lowered": "true"},
+    ).status_code == 200
+    with db.connection() as conn:
+        n2 = conn.execute("SELECT COUNT(*) AS n FROM vocab_query_signals").fetchone()["n"]
+        rows = conn.execute("SELECT term_folded, query_folded FROM vocab_query_signals").fetchall()
+    assert int(n2) >= 1
+    blob = " ".join(f"{r['term_folded']} {r['query_folded']}" for r in rows)
+    assert fold_text(NOVEL) in blob
+
+    assert client.get(
+        "/v1/owners/alice/search",
+        headers=headers,
+        params={"q": f"{NOVEL} flag", "user_typed": "true"},
+    ).status_code == 200
+    with db.connection() as conn:
+        n3 = conn.execute("SELECT COUNT(*) AS n FROM vocab_query_signals").fetchone()["n"]
+    assert int(n3) >= int(n2)
 
 
 def test_hmac_key_unset_fail_closed_no_admin_fallback(pg, monkeypatch):

@@ -249,6 +249,9 @@ def delete_account(store, owner: str) -> dict:
                 "WHERE owner = %s AND state IN ('queued','leased')", (owner,)
             )
             conn.execute("DELETE FROM story_cache WHERE owner = %s", (owner,))
+            # E13b (integrator-approved 2-line exception): purge anonymised query signals.
+            from temporal_memory.vocab.similarity import purge_owner_query_signals
+            purge_owner_query_signals(conn, owner)
     invalidate_owner(owner, deleted=True)
     redis_purged = purge_redis(owner)
     return {"ok": True, "deleted_from_external": True,
